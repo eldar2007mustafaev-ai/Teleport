@@ -2,6 +2,7 @@ package com.teleport.sens;
 
 import android.app.Activity;
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 import android.webkit.JavascriptInterface;
 import android.webkit.WebSettings;
@@ -44,14 +45,22 @@ public class MainActivity extends Activity {
         public void requestShizukuPermission() {
             runOnUiThread(() -> {
                 try {
+                    // Вызываем системный интент запроса прав Shizuku, аналогичный сторонним утилитам
                     Intent intent = new Intent("moe.shizuku.privileged.api.intent.action.REQUEST_PERMISSION");
                     intent.setPackage("moe.shizuku.privileged.api");
                     intent.putExtra("moe.shizuku.privileged.api.intent.extra.AUTHORIZATION_REQUEST_PACKAGE", getPackageName());
                     startActivity(intent);
                     Toast.makeText(MainActivity.this, "Запрос отправлен в Shizuku", Toast.LENGTH_SHORT).show();
-                    webView.postDelayed(() -> checkAndSendStatus(), 2000);
+                    webView.postDelayed(() -> checkAndSendStatus(), 2500);
                 } catch (Exception e) {
-                    Toast.makeText(MainActivity.this, "Откройте Shizuku вручную", Toast.LENGTH_LONG).show();
+                    try {
+                        Intent launchIntent = getPackageManager().getLaunchIntentForPackage("moe.shizuku.privileged.api");
+                        if (launchIntent != null) {
+                            startActivity(launchIntent);
+                        }
+                    } catch (Exception ex) {
+                        Toast.makeText(MainActivity.this, "Откройте Shizuku вручную", Toast.LENGTH_LONG).show();
+                    }
                 }
             });
         }
