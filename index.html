@@ -7,46 +7,44 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
+    <div class="app-title">Teleport Sens</div>
 
-    <!-- Стартовый экран доступа к Shizuku -->
-    <div id="welcome-modal" class="welcome-overlay" style="display: flex;">
-        <div class="welcome-modal">
-            <h2>Добро пожаловать в Teleport</h2>
-            <p>Для активации сжатия экрана и оптимизации отклика сенсора требуется подключение через Shizuku.</p>
-            <button class="action-btn" onclick="initShizukuConnection()">Запросить доступ Shizuku</button>
-        </div>
-    </div>
-
-    <div class="header">
-        <h1>Teleport Sens</h1>
-        <p>Настройка дисплея и отклика touch-слоя</p>
-    </div>
-
-    <!-- Статус Shizuku -->
-    <div class="card">
-        <div class="card-title">Состояние системы</div>
-        <div class="status-badge" onclick="requestPermissions()" style="cursor: pointer;">
-            <div class="status-info">
-                <div id="status-dot" class="status-dot"></div>
-                <span id="shizuku-status" class="status-text">Проверка Shizuku...</span>
+    <div class="card status-card" onclick="requestShizuku()">
+        <div class="status-left">
+            <div id="dot" class="dot"></div>
+            <div>
+                <div id="status-title" class="status-text">Shizuku — Нажми</div>
+                <div id="status-sub" class="status-sub">Требуется авторизация</div>
             </div>
         </div>
     </div>
 
+    <div class="grid-2">
+        <div class="mini-card">
+            <div class="mini-title">FPS игры</div>
+            <div class="mini-value">120</div>
+        </div>
+        <div class="mini-card">
+            <div class="mini-title">Задержка тача</div>
+            <div class="mini-value" style="color: #2ed573;">1.2мс</div>
+        </div>
+    </div>
+
     <div class="card">
-        <div class="card-title">Формат экрана</div>
+        <div class="section-title">Растяжение экрана</div>
         <div class="btn-group">
             <button class="btn active" onclick="setRatio('4:3', this)">4:3</button>
             <button class="btn" onclick="setRatio('16:10', this)">16:10</button>
             <button class="btn" onclick="setRatio('16:9', this)">16:9</button>
         </div>
-        <div id="ratio-info" class="result">Режим 4:3 выбран</div>
     </div>
 
-    <div class="card">
-        <div class="card-title">Разгон сенсора</div>
-        <button class="action-btn" onclick="applySens()">Активировать буст</button>
-        <div id="sens-status" class="result" style="color: #94a1b2;">Готов к активации</div>
+    <div class="card row-card">
+        <div>
+            <div class="section-title" style="margin-bottom:2px;">Тепающаяся сенса</div>
+            <div style="font-size:11px; color:#57606f;">Ускорение + фикс отклика</div>
+        </div>
+        <button id="sens-btn" class="action-switch" onclick="toggleSens()">ВКЛ</button>
     </div>
 
     <script src="script.js"></script>
