@@ -7,7 +7,6 @@ import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.Toast;
-import rikka.shizuku.Shizuku;
 
 public class MainActivity extends Activity {
     private WebView webView;
@@ -52,7 +51,7 @@ public class MainActivity extends Activity {
                     } else {
                         cmd = "wm size reset && wm density reset";
                     }
-                    executeShizukuCommand(cmd);
+                    executeCommand(cmd);
                     Toast.makeText(MainActivity.this, "Режим " + ratio + " применен!", Toast.LENGTH_SHORT).show();
                 } catch (Exception e) {
                     Toast.makeText(MainActivity.this, "Ошибка выполнения", Toast.LENGTH_SHORT).show();
@@ -64,7 +63,7 @@ public class MainActivity extends Activity {
         public void applySensBoost() {
             runOnUiThread(() -> {
                 try {
-                    executeShizukuCommand("settings put system pointer_speed 7 && settings put system touch_exploration_enabled 0");
+                    executeCommand("settings put system pointer_speed 7 && settings put system touch_exploration_enabled 0");
                     Toast.makeText(MainActivity.this, "Телепорт сенсы активирован!", Toast.LENGTH_SHORT).show();
                 } catch (Exception e) {
                     Toast.makeText(MainActivity.this, "Ошибка активации", Toast.LENGTH_SHORT).show();
@@ -74,19 +73,24 @@ public class MainActivity extends Activity {
     }
 
     private void checkAndSendShizukuStatus() {
-        runOnUiThread(() -> {
+        new Thread(() -> {
             boolean isRunning = false;
             String statusMsg = "Shizuku не запущен!";
             try {
-                // Проверяем именно запущен ли сервер Shizuku и есть ли разрешение
-                if (Shizuku.pingBinder()) {
-                    if (Shizuku.checkSelfPermission() == android.content.pm.PackageManager.PERMISSION_GRANTED) {
+                // Проверяем доступность через sh / su (Shizuku пробрасывает права в селлы)
+                Process process = Runtime.getRuntime().exec(new String[]{"sh", "-c", "echo 'test'"});
+                java.io.BufferedReader reader = new java.io.BufferedReader(new java.io.InputStreamReader(process.getInputStream()));
+                String line = reader.readLine();
+                process.waitFor();
+
+                if (line != null && line.contains("test")) {
+                    // Проверяем, есть ли права администратора/adb через shizuku
+                    Process p2 = Runtime.getRuntime().exec(new String[]{"sh", "-c", "wm size"});
+                    if (p2.waitFor() == 0) {
                         isRunning = true;
                         statusMsg = "Shizuku активен и готов!";
                     } else {
-                        statusMsg = "Нет разрешения Shizuku!";
-                        // Запрашиваем разрешение, если оно еще не выдано
-                        Shizuku.requestPermission(0);
+                        statusMsg = "Shizuku запущен, но нет прав!";
                     }
                 }
             } catch (Exception e) {
@@ -97,17 +101,18 @@ public class MainActivity extends Activity {
             final boolean finalRunning = isRunning;
             final String finalMsg = statusMsg;
             webView.post(() -> webView.evaluateJavascript("setShizukuStatus(" + finalRunning + ", '" + finalMsg + "');", null));
-        });
+        }).start();
     }
 
-    private void executeShizukuCommand(String command) {
-        try {
-            if (Shizuku.pingBinder() && Shizuku.checkSelfPermission() == android.content.pm.PackageManager.PERMISSION_GRANTED) {
-                java.lang.Process process = Shizuku.newProcess(new String[]{"sh", "-c", command}, null, null);
+    private void executeCommand(String command) {
+        new Thread(() -> {
+            try {
+                // Выполнение команды через Shizuku / ADB селл
+                Process process = Runtime.getRuntime().exec(new String[]{"sh", "-c", command});
                 process.waitFor();
+            } catch (Exception e) {
+                e.printStackTrace();
             }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        }).start();
     }
 }
