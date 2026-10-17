@@ -7,28 +7,46 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <h1>TELEPORT SENS</h1>
 
-    <!-- Блок статуса Shizuku (кликабельный для принудительного запроса прав) -->
-    <div class="card" id="status-card" style="border-color: #ff3333; cursor: pointer;" onclick="requestPermissions()">
-        <div class="card-title" style="color: #ff3333;">Статус Shizuku (Нажми для запроса прав)</div>
-        <div id="shizuku-status" class="result" style="color: #ff3333;">Проверка...</div>
+    <!-- Стартовый экран доступа к Shizuku -->
+    <div id="welcome-modal" class="welcome-overlay" style="display: flex;">
+        <div class="welcome-modal">
+            <h2>Добро пожаловать в Teleport</h2>
+            <p>Для активации сжатия экрана и оптимизации отклика сенсора требуется подключение через Shizuku.</p>
+            <button class="action-btn" onclick="initShizukuConnection()">Запросить доступ Shizuku</button>
+        </div>
+    </div>
+
+    <div class="header">
+        <h1>Teleport Sens</h1>
+        <p>Настройка дисплея и отклика touch-слоя</p>
+    </div>
+
+    <!-- Статус Shizuku -->
+    <div class="card">
+        <div class="card-title">Состояние системы</div>
+        <div class="status-badge" onclick="requestPermissions()" style="cursor: pointer;">
+            <div class="status-info">
+                <div id="status-dot" class="status-dot"></div>
+                <span id="shizuku-status" class="status-text">Проверка Shizuku...</span>
+            </div>
+        </div>
     </div>
 
     <div class="card">
-        <div class="card-title">Растяжение экрана</div>
+        <div class="card-title">Формат экрана</div>
         <div class="btn-group">
             <button class="btn active" onclick="setRatio('4:3', this)">4:3</button>
             <button class="btn" onclick="setRatio('16:10', this)">16:10</button>
             <button class="btn" onclick="setRatio('16:9', this)">16:9</button>
         </div>
-        <div id="ratio-info" class="result">Режим: 4:3 (Сжатие по горизонтали)</div>
+        <div id="ratio-info" class="result">Режим 4:3 выбран</div>
     </div>
 
     <div class="card">
-        <div class="card-title">Телепорт Сенса</div>
-        <button class="action-btn" onclick="applySens()">Активировать буст сенсы</button>
-        <div id="sens-status" class="result">Состояние: Готов к генерации</div>
+        <div class="card-title">Разгон сенсора</div>
+        <button class="action-btn" onclick="applySens()">Активировать буст</button>
+        <div id="sens-status" class="result" style="color: #94a1b2;">Готов к активации</div>
     </div>
 
     <script src="script.js"></script>
