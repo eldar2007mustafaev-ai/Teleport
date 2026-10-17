@@ -20,24 +20,20 @@ jobs:
 
     - name: Build APK Direct
       run: |
-        # 1. Структура папок
         mkdir -p app/src/main/res/mipmap-hdpi
         mkdir -p app/src/main/assets
         mkdir -p app/src/main/java/com/teleport/sens
         mkdir -p build/gen build/obj build/build_dex
 
-        # 2. Иконка
         if [ -f "gpt-image-2_A_sleek_futuristic_cyberpunk_app_icon_featuring_a_glowing_neon_letter_T_as_the_c-0.jpg" ]; then
           cp "gpt-image-2_A_sleek_futuristic_cyberpunk_app_icon_featuring_a_glowing_neon_letter_T_as_the_c-0.jpg" app/src/main/res/mipmap-hdpi/ic_launcher.jpg
         fi
 
-        # 3. Копируем веб-файлы и код
         cp index.html app/src/main/assets/
         cp style.css app/src/main/assets/
         cp script.js app/src/main/assets/
         cp MainActivity.java app/src/main/java/com/teleport/sens/MainActivity.java
 
-        # 4. AndroidManifest.xml
         cat << 'EOF' > app/src/main/AndroidManifest.xml
         <?xml version="1.0" encoding="utf-8"?>
         <manifest xmlns:android="http://schemas.android.com/apk/res/android"
@@ -45,6 +41,12 @@ jobs:
             android:versionCode="1"
             android:versionName="1.0">
             <uses-permission android:name="android.permission.INTERNET" />
+            <uses-permission android:name="android.permission.QUERY_ALL_PACKAGES" />
+            
+            <queries>
+                <package android:name="moe.shizuku.privileged.api" />
+            </queries>
+
             <uses-sdk android:minSdkVersion="21" android:targetSdkVersion="33" />
             <application
                 android:label="Teleport"
@@ -62,12 +64,10 @@ jobs:
         </manifest>
         EOF
 
-        # 5. Пути SDK
         SDK="$ANDROID_SDK_ROOT"
         BUILD_TOOLS_DIR=$(find "$SDK/build-tools" -mindepth 1 -maxdepth 1 -type d | sort -V | tail -n 1)
         PLATFORM_JAR=$(find "$SDK/platforms" -name "android.jar" | sort -V | tail -n 1)
 
-        # 6. Сборка
         "$BUILD_TOOLS_DIR/aapt2" compile --dir app/src/main/res -o build/res.zip
         "$BUILD_TOOLS_DIR/aapt2" link -o build/base.apk -I "$PLATFORM_JAR" --manifest app/src/main/AndroidManifest.xml -A app/src/main/assets build/res.zip --java build/gen
 
