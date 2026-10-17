@@ -26,7 +26,7 @@ public class MainActivity extends Activity {
             @Override
             public void onPageFinished(WebView view, String url) {
                 super.onPageFinished(view, url);
-                checkShizukuStatus();
+                checkAndSendStatus();
             }
         });
         
@@ -115,9 +115,3 @@ public class MainActivity extends Activity {
             try {
                 Process process = Runtime.getRuntime().exec(new String[]{"sh", "-c", command});
                 process.waitFor();
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        }).start();
-    }
-}
