@@ -2,6 +2,7 @@ package com.teleport.sens;
 
 import android.app.Activity;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.webkit.JavascriptInterface;
 import android.webkit.WebSettings;
@@ -43,13 +44,18 @@ public class MainActivity extends Activity {
         @JavascriptInterface
         public void requestShizukuPermission() {
             runOnUiThread(() -> {
-                // Вызываем системное приложение Shizuku для автоматической авторизации
-                Intent intent = getPackageManager().getLaunchIntentForPackage("moe.shizuku.privileged.api");
-                if (intent != null) {
-                    startActivity(intent);
-                    Toast.makeText(MainActivity.this, "Предоставьте доступ для Teleport в Shizuku", Toast.LENGTH_LONG).show();
-                } else {
-                    Toast.makeText(MainActivity.this, "Приложение Shizuku не найдено!", Toast.LENGTH_SHORT).show();
+                try {
+                    // Пытаемся открыть Shizuku по точному пакету
+                    Intent intent = getPackageManager().getLaunchIntentForPackage("moe.shizuku.privileged.api");
+                    if (intent != null) {
+                        startActivity(intent);
+                        Toast.makeText(MainActivity.this, "Откройте Shizuku и выдайте доступ Teleport", Toast.LENGTH_LONG).show();
+                    } else {
+                        // Если пакет не найден стандартным методом, пробуем через общий запуск
+                        Toast.makeText(MainActivity.this, "Запустите приложение Shizuku вручную", Toast.LENGTH_LONG).show();
+                    }
+                } catch (Exception e) {
+                    Toast.makeText(MainActivity.this, "Ошибка открытия Shizuku", Toast.LENGTH_SHORT).show();
                 }
             });
         }
@@ -82,8 +88,9 @@ public class MainActivity extends Activity {
     private void checkAndSendShizukuStatus() {
         new Thread(() -> {
             boolean isRunning = false;
-            String statusMsg = "Shizuku не подключен";
+            String statusMsg = "Требуется авторизация";
             try {
+                // Проверяем наличие прав на выполнение wm size через селл
                 Process process = Runtime.getRuntime().exec(new String[]{"sh", "-c", "wm size"});
                 if (process.waitFor() == 0) {
                     isRunning = true;
