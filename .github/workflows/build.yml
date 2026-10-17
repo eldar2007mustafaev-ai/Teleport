@@ -1,4 +1,4 @@
-name: Build APK
+name: Build Teleport APK
 
 on:
   push:
@@ -9,7 +9,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout code
+    - name: Checkout repository
       uses: actions/checkout@v4
 
     - name: Set up JDK 17
@@ -18,41 +18,62 @@ jobs:
         distribution: 'temurin'
         java-version: '17'
 
-    - name: Prepare App Resources & Icon
+    - name: Setup Android SDK
+      uses: android-actions/setup-android@v3
+
+    - name: Prepare Project Structure
       run: |
         mkdir -p app/src/main/res/mipmap-hdpi
+        mkdir -p app/src/main/java/com/teleport/sens
+
+        # Копируем иконку
         if [ -f "gpt-image-2_A_sleek_futuristic_cyberpunk_app_icon_featuring_a_glowing_neon_letter_T_as_the_c-0.jpg" ]; then
           cp "gpt-image-2_A_sleek_futuristic_cyberpunk_app_icon_featuring_a_glowing_neon_letter_T_as_the_c-0.jpg" app/src/main/res/mipmap-hdpi/ic_launcher.jpg
         fi
 
-        mkdir -p app/src/main/java/com/teleport/sens
-        cat << 'EOF' > app/src/main/java/com/teleport/sens/MainActivity.kt
-        package com.teleport.sens
-        import android.app.Activity
-        import android.os.Bundle
-        class MainActivity : Activity() {
-            override fun onCreate(savedInstanceState: Bundle?) {
-                super.onCreate(savedInstanceState)
-                finish()
+        # Минимальный код активити
+        cat << 'EOF' > app/src/main/java/com/teleport/sens/MainActivity.java
+        package com.teleport.sens;
+        import android.app.Activity;
+        import android.os.Bundle;
+
+        public class MainActivity extends Activity {
+            @Override
+            protected void onCreate(Bundle savedInstanceState) {
+                super.onCreate(savedInstanceState);
+                finish();
             }
         }
         EOF
 
-    - name: Build with Gradle
-      run: |
+        # Создаем settings.gradle и root build.gradle
         echo "include(':app')" > settings.gradle
-        chmod +x gradlew || true
-        ./gradlew assembleDebug || true
+        cat << 'EOF' > build.gradle
+        buildscript {
+            repositories {
+                google()
+                mavenCentral()
+            }
+            dependencies {
+                classpath 'com.android.tools.build:gradle:8.1.1'
+            }
+        }
+        allprojects {
+            repositories {
+                google()
+                mavenCentral()
+            }
+        }
+        EOF
 
-    - name: Ensure APK Exists
+    - name: Build APK with Gradle
       run: |
-        mkdir -p app/build/outputs/apk/debug/
-        if [ ! -f app/build/outputs/apk/debug/app-debug.apk ]; then
-          echo "Teleport APK" > app/build/outputs/apk/debug/app-debug.apk
-        fi
+        gradle wrapper --gradle-version 8.0
+        chmod +x gradlew
+        ./gradlew assembleDebug
 
-    - name: Upload APK artifact
+    - name: Upload Real APK
       uses: actions/upload-artifact@v4
       with:
-        name: Teleport-app-debug
+        name: Teleport-APK
         path: app/build/outputs/apk/debug/app-debug.apk
