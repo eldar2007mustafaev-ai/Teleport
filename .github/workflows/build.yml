@@ -53,17 +53,26 @@ jobs:
         </manifest>
         EOF
 
-        # 4. Код Java
+        # 4. Код Java (Рабочий экран без мгновенного закрытия)
         cat << 'EOF' > app/src/main/java/com/teleport/sens/MainActivity.java
         package com.teleport.sens;
+
         import android.app.Activity;
         import android.os.Bundle;
+        import android.widget.TextView;
+        import android.view.Gravity;
 
         public class MainActivity extends Activity {
             @Override
             protected void onCreate(Bundle savedInstanceState) {
                 super.onCreate(savedInstanceState);
-                finish();
+                
+                TextView textView = new TextView(this);
+                textView.setText("Teleport Active");
+                textView.setTextSize(24);
+                textView.setGravity(Gravity.CENTER);
+                
+                setContentView(textView);
             }
         }
         EOF
@@ -72,9 +81,6 @@ jobs:
         SDK="$ANDROID_SDK_ROOT"
         BUILD_TOOLS_DIR=$(find "$SDK/build-tools" -mindepth 1 -maxdepth 1 -type d | sort -V | tail -n 1)
         PLATFORM_JAR=$(find "$SDK/platforms" -name "android.jar" | sort -V | tail -n 1)
-
-        echo "Build tools: $BUILD_TOOLS_DIR"
-        echo "Platform jar: $PLATFORM_JAR"
 
         # 6. Сборка
         "$BUILD_TOOLS_DIR/aapt2" compile --dir app/src/main/res -o build/res.zip
@@ -96,4 +102,3 @@ jobs:
       with:
         name: Teleport-APK
         path: app/build/outputs/apk/debug/app-debug.apk
-           
