@@ -24,23 +24,20 @@ jobs:
         mkdir -p app/src/main/res/mipmap-hdpi
         mkdir -p app/src/main/assets
         mkdir -p app/src/main/java/com/teleport/sens
-        mkdir -p build/libs build/gen build/obj build/build_dex
+        mkdir -p build/gen build/obj build/build_dex
 
-        # 2. Скачиваем Shizuku API jar для компиляции
-        curl -L -o build/libs/shizuku-api.jar https://repo1.maven.org/maven2/dev/rikka/shizuku/api/13.1.5/api-13.1.5.jar
-
-        # 3. Иконка
+        # 2. Иконка
         if [ -f "gpt-image-2_A_sleek_futuristic_cyberpunk_app_icon_featuring_a_glowing_neon_letter_T_as_the_c-0.jpg" ]; then
           cp "gpt-image-2_A_sleek_futuristic_cyberpunk_app_icon_featuring_a_glowing_neon_letter_T_as_the_c-0.jpg" app/src/main/res/mipmap-hdpi/ic_launcher.jpg
         fi
 
-        # 4. Копируем веб-файлы и код
+        # 3. Копируем веб-файлы и код
         cp index.html app/src/main/assets/
         cp style.css app/src/main/assets/
         cp script.js app/src/main/assets/
         cp MainActivity.java app/src/main/java/com/teleport/sens/MainActivity.java
 
-        # 5. AndroidManifest.xml
+        # 4. AndroidManifest.xml
         cat << 'EOF' > app/src/main/AndroidManifest.xml
         <?xml version="1.0" encoding="utf-8"?>
         <manifest xmlns:android="http://schemas.android.com/apk/res/android"
@@ -65,17 +62,17 @@ jobs:
         </manifest>
         EOF
 
-        # 6. Пути SDK
+        # 5. Пути SDK
         SDK="$ANDROID_SDK_ROOT"
         BUILD_TOOLS_DIR=$(find "$SDK/build-tools" -mindepth 1 -maxdepth 1 -type d | sort -V | tail -n 1)
         PLATFORM_JAR=$(find "$SDK/platforms" -name "android.jar" | sort -V | tail -n 1)
 
-        # 7. Сборка
+        # 6. Сборка
         "$BUILD_TOOLS_DIR/aapt2" compile --dir app/src/main/res -o build/res.zip
         "$BUILD_TOOLS_DIR/aapt2" link -o build/base.apk -I "$PLATFORM_JAR" --manifest app/src/main/AndroidManifest.xml -A app/src/main/assets build/res.zip --java build/gen
 
-        javac -d build/obj -classpath "$PLATFORM_JAR:build/libs/shizuku-api.jar" build/gen/com/teleport/sens/R.java app/src/main/java/com/teleport/sens/MainActivity.java
-        "$BUILD_TOOLS_DIR/d8" --output build/build_dex build/obj/com/teleport/sens/*.class build/libs/shizuku-api.jar --lib "$PLATFORM_JAR"
+        javac -d build/obj -classpath "$PLATFORM_JAR" build/gen/com/teleport/sens/R.java app/src/main/java/com/teleport/sens/MainActivity.java
+        "$BUILD_TOOLS_DIR/d8" --output build/build_dex build/obj/com/teleport/sens/*.class --lib "$PLATFORM_JAR"
 
         cd build/build_dex && zip -q -r ../base.apk classes.dex && cd ../..
         
