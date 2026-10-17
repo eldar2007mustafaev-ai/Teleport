@@ -1,14 +1,12 @@
 package com.teleport.sens;
 
 import android.app.Activity;
-import android.app.Service;
 import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.PixelFormat;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
-import android.os.IBinder;
 import android.provider.Settings;
 import android.view.Gravity;
 import android.view.MotionEvent;
@@ -23,10 +21,16 @@ import android.widget.Toast;
 
 public class MainActivity extends Activity {
     private WebView webView;
+    private WindowManager windowManager;
+    private Button floatingButton;
+    private boolean isStretched = false;
+    private boolean isOverlayVisible = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        windowManager = (WindowManager) getSystemService(WINDOW_SERVICE);
 
         webView = new WebView(this);
         WebSettings webSettings = webView.getSettings();
@@ -150,125 +154,108 @@ public class MainActivity extends Activity {
 
         @JavascriptInterface
         public void toggleFloatingButton(boolean show) {
-            Intent serviceIntent = new Intent(MainActivity.this, OverlayService.class);
-            serviceIntent.putExtra("action", show ? "START_BUTTON" : "STOP_BUTTON");
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                startForegroundService(serviceIntent);
-            } else {
-                startService(serviceIntent);
-            }
+            runOnUiThread(() -> {
+                if (show) {
+                    showFloatingButtonDirectly();
+                } else {
+                    removeFloatingButtonDirectly();
+                }
+            });
         }
     }
 
-    // Сервис плавающей кнопки
-    public static class OverlayService extends Service {
-        private WindowManager windowManager;
-        private Button floatingButton;
-        private boolean isStretched = false;
+    private void showFloatingButtonDirectly() {
+        if (floatingButton != null || isOverlayVisible) return;
 
-        @Override
-        public IBinder onBind(Intent intent) { return null; }
+        floatingButton = new Button(this);
+        floatingButton.setText("16:9");
+        floatingButton.setTextColor(Color.WHITE);
+        floatingButton.setTextSize(12);
+        floatingButton.setBackgroundColor(Color.parseColor("#CC0059FF"));
 
-        @Override
-        public void onCreate() {
-            super.onCreate();
-            windowManager = (WindowManager) getSystemService(WINDOW_SERVICE);
+        int layoutParamType;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            layoutParamType = WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY;
+        } else {
+            layoutParamType = WindowManager.LayoutParams.TYPE_PHONE;
         }
 
-        @Override
-        public int onStartCommand(Intent intent, int flags, int startId) {
-            if (intent != null && intent.getExtras() != null) {
-                String action = intent.getStringExtra("action");
-                if ("START_BUTTON".equals(action)) {
-                    showFloatingButton();
-                } else if ("STOP_BUTTON".equals(action)) {
-                    removeFloatingButton();
-                }
-            }
-            return START_NOT_STICKY;
-        }
+        WindowManager.LayoutParams params = new WindowManager.LayoutParams(
+                130, 130,
+                layoutParamType,
+                WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE,
+                PixelFormat.TRANSLUCENT
+        );
+        params.gravity = Gravity.TOP | Gravity.START;
+        params.x = 100;
+        params.y = 300;
 
-        private void showFloatingButton() {
-            if (floatingButton != null) return;
-
-            floatingButton = new Button(this);
-            floatingButton.setText("16:9");
-            floatingButton.setTextColor(Color.WHITE);
-            floatingButton.setTextSize(12);
-            floatingButton.setBackgroundColor(Color.parseColor("#990059FF"));
-
-            WindowManager.LayoutParams params = new WindowManager.LayoutParams(
-                    130, 130,
-                    WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY,
-                    WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE,
-                    PixelFormat.TRANSLUCENT
-            );
-            params.gravity = Gravity.TOP | Gravity.START;
-            params.x = 100;
-            params.y = 300;
-
-            // Клик по плавающей кнопке меняет размер экрана
-            floatingButton.setOnClickListener(v -> {
+        floatingButton.setOnClickListener(v -> {
+            new Thread(() -> {
                 try {
                     if (!isStretched) {
                         Runtime.getRuntime().exec(new String[]{"sh", "-c", "wm size 1080x2400"});
                         isStretched = true;
-                        floatingButton.setText("ON");
+                        runOnUiThread(() -> floatingButton.setText("ON"));
                     } else {
                         Runtime.getRuntime().exec(new String[]{"sh", "-c", "wm size reset"});
                         isStretched = false;
-                        floatingButton.setText("16:9");
+                        runOnUiThread(() -> floatingButton.setText("16:9"));
                     }
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
-            });
+            }).start();
+        });
 
-            floatingButton.setOnTouchListener(new View.OnTouchListener() {
-                private int initialX, initialY;
-                private float initialTouchX, initialTouchY;
+        floatingButton.setOnTouchListener(new View.OnTouchListener() {
+            private int initialX, initialY;
+            private float initialTouchX, initialTouchY;
 
-                @Override
-                public boolean onTouch(View v, MotionEvent event) {
-                    switch (event.getAction()) {
-                        case MotionEvent.ACTION_DOWN:
-                            initialX = params.x;
-                            initialY = params.y;
-                            initialTouchX = event.getRawX();
-                            initialTouchY = event.getRawY();
-                            return true;
-                        case MotionEvent.ACTION_MOVE:
-                            params.x = initialX + (int) (event.getRawX() - initialTouchX);
-                            params.y = initialY + (int) (event.getRawY() - initialTouchY);
-                            windowManager.updateViewLayout(floatingButton, params);
-                            return true;
-                    }
-                    return false;
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+                switch (event.getAction()) {
+                    case MotionEvent.ACTION_DOWN:
+                        initialX = params.x;
+                        initialY = params.y;
+                        initialTouchX = event.getRawX();
+                        initialTouchY = event.getRawY();
+                        return true;
+                    case MotionEvent.ACTION_MOVE:
+                        params.x = initialX + (int) (event.getRawX() - initialTouchX);
+                        params.y = initialY + (int) (event.getRawY() - initialTouchY);
+                        windowManager.updateViewLayout(floatingButton, params);
+                        return true;
                 }
-            });
+                return false;
+            }
+        });
 
+        try {
+            windowManager.addView(floatingButton, params);
+            isOverlayVisible = true;
+            Toast.makeText(this, "Плавающая кнопка активирована", Toast.LENGTH_SHORT).show();
+        } catch (Exception e) {
+            e.printStackTrace();
+            Toast.makeText(this, "Ошибка оверлея: дайте разрешение поверх окон", Toast.LENGTH_LONG).show();
+        }
+    }
+
+    private void removeFloatingButtonDirectly() {
+        if (floatingButton != null) {
             try {
-                windowManager.addView(floatingButton, params);
+                windowManager.removeView(floatingButton);
             } catch (Exception e) {
                 e.printStackTrace();
             }
+            floatingButton = null;
+            isOverlayVisible = false;
         }
+    }
 
-        private void removeFloatingButton() {
-            if (floatingButton != null) {
-                try {
-                    windowManager.removeView(floatingButton);
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-                floatingButton = null;
-            }
-        }
-
-        @Override
-        public void onDestroy() {
-            super.onDestroy();
-            removeFloatingButton();
-        }
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        removeFloatingButtonDirectly();
     }
 }
