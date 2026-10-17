@@ -1,7 +1,11 @@
 package com.teleport.sens;
 
 import android.app.Activity;
+import android.content.Intent;
+import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
+import android.provider.Settings;
 import android.webkit.JavascriptInterface;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
@@ -13,99 +17,77 @@ import java.io.InputStreamReader;
 
 public class MainActivity extends Activity {
     private WebView webView;
+    private static final int OVERLAY_PERMISSION_REQ_CODE = 1234;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        
+
         webView = new WebView(this);
         WebSettings webSettings = webView.getSettings();
         webSettings.setJavaScriptEnabled(true);
         webSettings.setDomStorageEnabled(true);
-        
+        webSettings.setAllowFileAccess(true);
+
         webView.addJavascriptInterface(new WebAppInterface(), "AndroidBridge");
-        webView.setWebViewClient(new WebViewClient() {
-            @Override
-            public void onPageFinished(WebView view, String url) {
-                super.onPageFinished(view, url);
-                checkRealSystemAccess();
-            }
-        });
-        
+        webView.setWebViewClient(new WebViewClient());
+
         webView.loadUrl("file:///android_asset/index.html");
         setContentView(webView);
+
+        checkOverlayPermission();
+    }
+
+    private void checkOverlayPermission() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            if (!Settings.canDrawOverlays(this)) {
+                Intent intent = new Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
+                        Uri.parse("package:" + getPackageName()));
+                startActivityForResult(intent, OVERLAY_PERMISSION_REQ_CODE);
+            }
+        }
     }
 
     public class WebAppInterface {
-        @JavascriptInterface
-        public void checkShizukuStatus() {
-            checkRealSystemAccess();
-        }
 
         @JavascriptInterface
-        public void requestShizukuPermission() {
-            runOnUiThread(() -> {
-                checkRealSystemAccess();
-                Toast.makeText(MainActivity.this, "Проверка связи с системой...", Toast.LENGTH_SHORT).show();
-            });
-        }
-
-        @JavascriptInterface
-        public void applyRatio(String ratio) {
-            runOnUiThread(() -> {
-                Toast.makeText(MainActivity.this, "Режим " + ratio + " (ручной растяг)", Toast.LENGTH_SHORT).show();
-            });
-        }
-
-        @JavascriptInterface
-        public void applySensBoost(boolean enable) {
-            runOnUiThread(() -> {
-                if (enable) {
-                    // Твой точный скрипт тепающейся сенсы
-                    String exactScript = "gain=1.8 gainx=1.8 gainy=1.8 nz=2 dz=0 dwellms=100 lock=6 chunk=28 chunkmin=0 chunkcap=600 chunkspd=0 chunkcool=5 kaccel=0 power=1.00 edge=0 straighten=0";
-                    executeSystemCommand(exactScript);
-                    Toast.makeText(MainActivity.this, "Тепающаяся сенса активна!", Toast.LENGTH_SHORT).show();
-                } else {
-                    executeSystemCommand("settings put system pointer_speed 5");
-                    Toast.makeText(MainActivity.this, "Сенса сброшена", Toast.LENGTH_SHORT).show();
+        public void executeCommand(String command) {
+            new Thread(() -> {
+                try {
+                    Process process = Runtime.getRuntime().exec(new String[]{"sh", "-c", command});
+                    process.waitFor();
+                } catch (Exception e) {
+                    e.printStackTrace();
                 }
-            });
+            }).start();
         }
-    }
 
-    private void checkRealSystemAccess() {
-        new Thread(() -> {
-            boolean hasAccess = false;
-            try {
-                // Честная проверка системного доступа через оболочку
-                Process process = Runtime.getRuntime().exec(new String[]{"sh", "-c", "settings get system pointer_speed"});
-                BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
-                String line = reader.readLine();
-                process.waitFor();
+        @JavascriptInterface
+        public void showToast(String message) {
+            runOnUiThread(() -> Toast.makeText(MainActivity.this, message, Toast.LENGTH_SHORT).show());
+        }
 
-                if (line != null && !line.isEmpty() && process.exitValue() == 0) {
-                    hasAccess = true;
-                }
-            } catch (Exception e) {
-                hasAccess = false;
+        @JavascriptInterface
+        public void toggleFloatingButton(boolean show) {
+            Intent serviceIntent = new Intent(MainActivity.this, OverlayService.class);
+            serviceIntent.putExtra("action", show ? "START_BUTTON" : "STOP_BUTTON");
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                startForegroundService(serviceIntent);
+            } else {
+                startService(serviceIntent);
             }
+        }
 
-            final boolean active = hasAccess;
-            final String title = active ? "TELEPORT ACTIVE" : "SHIZUKU — НЕТ СВЯЗИ";
-            final String sub = active ? "Готов к работе :)" : "Требуется ADB/Shizuku";
-
-            webView.post(() -> webView.evaluateJavascript("updateUIStatus(" + active + ", '" + title + "', '" + sub + "');", null));
-        }).start();
-    }
-
-    private void executeSystemCommand(String command) {
-        new Thread(() -> {
-            try {
-                Process process = Runtime.getRuntime().exec(new String[]{"sh", "-c", command});
-                process.waitFor();
-            } catch (Exception e) {
-                e.printStackTrace();
+        @JavascriptInterface
+        public void toggleCrosshair(boolean show, String style) {
+            Intent serviceIntent = new Intent(MainActivity.this, OverlayService.class);
+            serviceIntent.putExtra("action", show ? "START_CROSSHAIR" : "STOP_CROSSHAIR");
+            serviceIntent.putExtra("style", style);
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                startForegroundService(serviceIntent);
+            } else {
+                startService(serviceIntent);
             }
-        }).start();
+        }
     }
 }
