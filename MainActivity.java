@@ -44,7 +44,6 @@ public class MainActivity extends Activity {
         public void requestShizukuPermission() {
             runOnUiThread(() -> {
                 try {
-                    // Вызов нативного диалога Shizuku разрешения для нашего пакета
                     Intent intent = new Intent("moe.shizuku.privileged.api.intent.action.REQUEST_PERMISSION");
                     intent.setPackage("moe.shizuku.privileged.api");
                     intent.putExtra("moe.shizuku.privileged.api.intent.extra.AUTHORIZATION_REQUEST_PACKAGE", getPackageName());
@@ -78,7 +77,6 @@ public class MainActivity extends Activity {
         public void applySensBoost(boolean enable) {
             runOnUiThread(() -> {
                 if (enable) {
-                    // Жесткий системный разгон под «тепающуюся» сенсу
                     executeCommand("settings put system pointer_speed 7 && settings put system touch_exploration_enabled 0");
                     Toast.makeText(MainActivity.this, "Тепающаяся сенса активирована!", Toast.LENGTH_SHORT).show();
                 } else {
