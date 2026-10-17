@@ -2,13 +2,15 @@ package com.teleport.sens;
 
 import android.app.Activity;
 import android.content.Intent;
-import android.net.Uri;
 import android.os.Bundle;
 import android.webkit.JavascriptInterface;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.Toast;
+
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
 
 public class MainActivity extends Activity {
     private WebView webView;
@@ -45,18 +47,15 @@ public class MainActivity extends Activity {
         public void requestShizukuPermission() {
             runOnUiThread(() -> {
                 try {
-                    // Открываем приложение Shizuku для принудительного сопряжения
                     Intent intent = getPackageManager().getLaunchIntentForPackage("moe.shizuku.privileged.api");
                     if (intent != null) {
                         startActivity(intent);
-                        Toast.makeText(MainActivity.this, "Открой Shizuku и разреши доступ для Teleport :)", Toast.LENGTH_LONG).show();
-                    } else {
-                        Toast.makeText(MainActivity.this, "Shizuku не найден!", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(MainActivity.this, "Проверьте статус в Shizuku :)", Toast.LENGTH_SHORT).show();
                     }
                 } catch (Exception e) {
                     Toast.makeText(MainActivity.this, "Ошибка запуска", Toast.LENGTH_SHORT).show();
                 }
-                webView.postDelayed(() -> checkAndSendStatus(), 3000);
+                webView.postDelayed(() -> checkAndSendStatus(), 2000);
             });
         }
 
@@ -71,7 +70,7 @@ public class MainActivity extends Activity {
         public void applySensBoost(boolean enable) {
             runOnUiThread(() -> {
                 if (enable) {
-                    // Запуск твоего точного скрипта тепающейся сенсы
+                    // Точный скрипт тепающейся сенсы
                     String exactScript = "gain=1.8 gainx=1.8 gainy=1.8 nz=2 dz=0 dwellms=100 lock=6 chunk=28 chunkmin=0 chunkcap=600 chunkspd=0 chunkcool=5 kaccel=0 power=1.00 edge=0 straighten=0";
                     executeCommand(exactScript);
                     Toast.makeText(MainActivity.this, "Тепающаяся сенса активна!", Toast.LENGTH_SHORT).show();
@@ -89,9 +88,13 @@ public class MainActivity extends Activity {
             String title = "SHIZUKU — НАЖМИ";
             String sub = "Требуется авторизация";
             try {
-                // Проверяем доступность выполнения команд через sh
+                // Проверяем доступ через шлюз ADB/Shizuku
                 Process process = Runtime.getRuntime().exec(new String[]{"sh", "-c", "settings get system pointer_speed"});
-                if (process.waitFor() == 0) {
+                BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
+                String line = reader.readLine();
+                process.waitFor();
+                
+                if (line != null && !line.isEmpty()) {
                     isRunning = true;
                     title = "SHIZUKU ВКЛ";
                     sub = "Доступ активен :)";
@@ -110,7 +113,7 @@ public class MainActivity extends Activity {
     private void executeCommand(String command) {
         new Thread(() -> {
             try {
-                // Выполняем скрипт через привилегированную оболочку
+                // Выполнение через системный процесс отладки
                 Process process = Runtime.getRuntime().exec(new String[]{"sh", "-c", command});
                 process.waitFor();
             } catch (Exception e) {
