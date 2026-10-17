@@ -18,9 +18,6 @@ jobs:
         distribution: 'temurin'
         java-version: '17'
 
-    - name: Setup Android SDK
-      uses: android-actions/setup-android@v3
-
     - name: Prepare Project Structure
       run: |
         mkdir -p app/src/main/res/mipmap-hdpi
@@ -31,7 +28,7 @@ jobs:
           cp "gpt-image-2_A_sleek_futuristic_cyberpunk_app_icon_featuring_a_glowing_neon_letter_T_as_the_c-0.jpg" app/src/main/res/mipmap-hdpi/ic_launcher.jpg
         fi
 
-        # Минимальный код активити
+        # Код приложения
         cat << 'EOF' > app/src/main/java/com/teleport/sens/MainActivity.java
         package com.teleport.sens;
         import android.app.Activity;
@@ -46,7 +43,7 @@ jobs:
         }
         EOF
 
-        # Создаем settings.gradle и root build.gradle
+        # Файлы сборки Gradle
         echo "include(':app')" > settings.gradle
         cat << 'EOF' > build.gradle
         buildscript {
