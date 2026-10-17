@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.PixelFormat;
+import android.graphics.drawable.GradientDrawable;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -170,8 +171,16 @@ public class MainActivity extends Activity {
         floatingButton = new Button(this);
         floatingButton.setText("16:9");
         floatingButton.setTextColor(Color.WHITE);
-        floatingButton.setTextSize(12);
-        floatingButton.setBackgroundColor(Color.parseColor("#CC0059FF"));
+        floatingButton.setTextSize(13);
+        floatingButton.setTypeface(null, android.graphics.Typeface.BOLD);
+
+        // Создаем стильный градиентный фон с закруглением (Glassmorphism / Cyberpunk style)
+        GradientDrawable drawable = new GradientDrawable();
+        drawable.setShape(GradientDrawable.RECTANGLE);
+        drawable.setCornerRadius(30f);
+        drawable.setColor(Color.parseColor("#E60059FF")); // Полупрозрачный неоновый синий
+        drawable.setStroke(2, Color.parseColor("#3385FF"));
+        floatingButton.setBackground(drawable);
 
         int layoutParamType;
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
@@ -181,7 +190,7 @@ public class MainActivity extends Activity {
         }
 
         WindowManager.LayoutParams params = new WindowManager.LayoutParams(
-                130, 130,
+                140, 110,
                 layoutParamType,
                 WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE,
                 PixelFormat.TRANSLUCENT
@@ -190,24 +199,33 @@ public class MainActivity extends Activity {
         params.x = 100;
         params.y = 300;
 
+        // Полноценный обработчик клика для переключения разрешения
         floatingButton.setOnClickListener(v -> {
             new Thread(() -> {
                 try {
                     if (!isStretched) {
                         Runtime.getRuntime().exec(new String[]{"sh", "-c", "wm size 1080x2400"});
                         isStretched = true;
-                        runOnUiThread(() -> floatingButton.setText("ON"));
+                        runOnUiThread(() -> {
+                            floatingButton.setText("ON");
+                            Toast.makeText(MainActivity.this, "Экран растянут (16:9)", Toast.LENGTH_SHORT).show();
+                        });
                     } else {
                         Runtime.getRuntime().exec(new String[]{"sh", "-c", "wm size reset"});
                         isStretched = false;
-                        runOnUiThread(() -> floatingButton.setText("16:9"));
+                        runOnUiThread(() -> {
+                            floatingButton.setText("16:9");
+                            Toast.makeText(MainActivity.this, "Разрешение сброшено", Toast.LENGTH_SHORT).show();
+                        });
                     }
                 } catch (Exception e) {
                     e.printStackTrace();
+                    runOnUiThread(() -> Toast.makeText(MainActivity.this, "Ошибка выполнения команды", Toast.LENGTH_SHORT).show());
                 }
             }).start();
         });
 
+        // Плавное перетаскивание кнопки по экрану пальцем
         floatingButton.setOnTouchListener(new View.OnTouchListener() {
             private int initialX, initialY;
             private float initialTouchX, initialTouchY;
@@ -220,7 +238,7 @@ public class MainActivity extends Activity {
                         initialY = params.y;
                         initialTouchX = event.getRawX();
                         initialTouchY = event.getRawY();
-                        return true;
+                        return false; // Позволяет срабатывать и клику, и перетаскиванию
                     case MotionEvent.ACTION_MOVE:
                         params.x = initialX + (int) (event.getRawX() - initialTouchX);
                         params.y = initialY + (int) (event.getRawY() - initialTouchY);
@@ -234,7 +252,7 @@ public class MainActivity extends Activity {
         try {
             windowManager.addView(floatingButton, params);
             isOverlayVisible = true;
-            Toast.makeText(this, "Плавающая кнопка активирована", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "Оверлей запущен", Toast.LENGTH_SHORT).show();
         } catch (Exception e) {
             e.printStackTrace();
             Toast.makeText(this, "Ошибка оверлея: дайте разрешение поверх окон", Toast.LENGTH_LONG).show();
@@ -250,6 +268,7 @@ public class MainActivity extends Activity {
             }
             floatingButton = null;
             isOverlayVisible = false;
+            Toast.makeText(this, "Оверлей скрыт", Toast.LENGTH_SHORT).show();
         }
     }
 
