@@ -2,7 +2,6 @@ package com.teleport.sens;
 
 import android.app.Activity;
 import android.content.Intent;
-import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.webkit.JavascriptInterface;
@@ -10,8 +9,6 @@ import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.Toast;
-
-import java.util.List;
 
 public class MainActivity extends Activity {
     private WebView webView;
@@ -48,25 +45,31 @@ public class MainActivity extends Activity {
         public void requestShizukuPermission() {
             runOnUiThread(() -> {
                 try {
-                    PackageManager pm = getPackageManager();
-                    Intent intent = pm.getLaunchIntentForPackage("moe.shizuku.privileged.api");
-                    if (intent != null) {
-                        startActivity(intent);
-                        Toast.makeText(MainActivity.this, "Открываем Shизuku. Запустите службу", Toast.LENGTH_LONG).show();
-                    } else {
-                        Toast.makeText(MainActivity.this, "Shizuku не найден на устройстве!", Toast.LENGTH_LONG).show();
-                    }
-                    webView.postDelayed(() -> checkAndSendStatus(), 2000);
+                    // Принудительно вызываем системный интент авторизации Shizuku для нашего пакета
+                    Intent intent = new Intent("moe.shizuku.privileged.intent.ACTION_REQUEST_PERMISSION");
+                    intent.setPackage("moe.shizuku.privileged.api");
+                    intent.putExtra("android.intent.extra.PACKAGE_NAME", getPackageName());
+                    startActivity(intent);
+                    Toast.makeText(MainActivity.this, "Запрос отправлен! Разрешите доступ в окне Shizuku", Toast.LENGTH_LONG).show();
                 } catch (Exception e) {
-                    Toast.makeText(MainActivity.this, "Ошибка запуска Shizuku", Toast.LENGTH_SHORT).show();
+                    // Если прямой интент заблокирован, открываем само приложение Shizuku
+                    try {
+                        Intent launchIntent = getPackageManager().getLaunchIntentForPackage("moe.shizuku.privileged.api");
+                        if (launchIntent != null) {
+                            startActivity(launchIntent);
+                        }
+                    } catch (Exception ex) {
+                        Toast.makeText(MainActivity.this, "Shizuku не найден на устройстве", Toast.LENGTH_SHORT).show();
+                    }
                 }
+                webView.postDelayed(() -> checkAndSendStatus(), 2500);
             });
         }
 
         @JavascriptInterface
         public void applyRatio(String ratio) {
             runOnUiThread(() -> {
-                Toast.makeText(MainActivity.this, "Режим " + ratio + " (ручной растяг через разделение экрана)", Toast.LENGTH_SHORT).show();
+                Toast.makeText(MainActivity.this, "Режим " + ratio + " (ручной растяг)", Toast.LENGTH_SHORT).show();
             });
         }
 
@@ -74,10 +77,10 @@ public class MainActivity extends Activity {
         public void applySensBoost(boolean enable) {
             runOnUiThread(() -> {
                 if (enable) {
-                    // Запуск твоего фирменного скрипта сенсы через оболочку Shizuku/ADB
+                    // Активация твоего оригинального скрипта тепающейся сенсы
                     String exactScript = "gain=1.8 gainx=1.8 gainy=1.8 nz=2 dz=0 dwellms=100 lock=6 chunk=28 chunkmin=0 chunkcap=600 chunkspd=0 chunkcool=5 kaccel=0 power=1.00 edge=0 straighten=0";
                     executeCommand(exactScript);
-                    Toast.makeText(MainActivity.this, "Тепающаяся сенса активирована!", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(MainActivity.this, "Тепающаяся сенса активирована :)", Toast.LENGTH_SHORT).show();
                 } else {
                     executeCommand("settings put system pointer_speed 5");
                     Toast.makeText(MainActivity.this, "Сенса сброшена", Toast.LENGTH_SHORT).show();
