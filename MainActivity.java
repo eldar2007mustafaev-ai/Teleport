@@ -7,6 +7,7 @@ import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.Toast;
+import java.lang.reflect.Method;
 
 public class MainActivity extends Activity {
     private WebView webView;
@@ -37,6 +38,21 @@ public class MainActivity extends Activity {
         @JavascriptInterface
         public void checkShizukuStatus() {
             checkAndSendShizukuStatus();
+        }
+
+        @JavascriptInterface
+        public void requestShizukuPermission() {
+            runOnUiThread(() -> {
+                try {
+                    Class<?> shizukuClass = Class.forName("rikka.shizuku.Shizuku");
+                    Method requestPermission = shizukuClass.getMethod("requestPermission", int.class);
+                    requestPermission.invoke(null, 0);
+                    Toast.makeText(MainActivity.this, "Запрос прав отправлен в Shizuku!", Toast.LENGTH_SHORT).show();
+                    webView.postDelayed(() -> checkAndSendShizukuStatus(), 1500);
+                } catch (Exception e) {
+                    Toast.makeText(MainActivity.this, "Открой Shizuku вручную", Toast.LENGTH_LONG).show();
+                }
+            });
         }
 
         @JavascriptInterface
@@ -77,25 +93,35 @@ public class MainActivity extends Activity {
             boolean isRunning = false;
             String statusMsg = "Shizuku не запущен!";
             try {
-                // Проверяем доступность через sh / su (Shizuku пробрасывает права в селлы)
-                Process process = Runtime.getRuntime().exec(new String[]{"sh", "-c", "echo 'test'"});
-                java.io.BufferedReader reader = new java.io.BufferedReader(new java.io.InputStreamReader(process.getInputStream()));
-                String line = reader.readLine();
-                process.waitFor();
+                Class<?> shizukuClass = Class.forName("rikka.shizuku.Shizuku");
+                Method pingBinder = shizukuClass.getMethod("pingBinder");
+                boolean active = (boolean) pingBinder.invoke(null);
 
-                if (line != null && line.contains("test")) {
-                    // Проверяем, есть ли права администратора/adb через shizuku
-                    Process p2 = Runtime.getRuntime().exec(new String[]{"sh", "-c", "wm size"});
-                    if (p2.waitFor() == 0) {
+                if (active) {
+                    Method checkSelfPermission = shizukuClass.getMethod("checkSelfPermission");
+                    int perm = (int) checkSelfPermission.invoke(null);
+                    if (perm == 0) {
                         isRunning = true;
                         statusMsg = "Shizuku активен и готов!";
                     } else {
-                        statusMsg = "Shizuku запущен, но нет прав!";
+                        statusMsg = "Нет прав! Нажми для запроса";
+                        Method requestPermission = shizukuClass.getMethod("requestPermission", int.class);
+                        requestPermission.invoke(null, 0);
                     }
                 }
             } catch (Exception e) {
-                isRunning = false;
-                statusMsg = "Shizuku не запущен!";
+                try {
+                    Process process = Runtime.getRuntime().exec(new String[]{"sh", "-c", "wm size"});
+                    if (process.waitFor() == 0) {
+                        isRunning = true;
+                        statusMsg = "Shizuku/Root активен!";
+                    } else {
+                        statusMsg = "Shizuku запущен, но нет прав!";
+                    }
+                } catch (Exception ex) {
+                    isRunning = false;
+                    statusMsg = "Shizuku не запущен!";
+                }
             }
 
             final boolean finalRunning = isRunning;
@@ -107,7 +133,6 @@ public class MainActivity extends Activity {
     private void executeCommand(String command) {
         new Thread(() -> {
             try {
-                // Выполнение команды через Shizuku / ADB селл
                 Process process = Runtime.getRuntime().exec(new String[]{"sh", "-c", command});
                 process.waitFor();
             } catch (Exception e) {
