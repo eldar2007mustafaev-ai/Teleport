@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>NEON TOUCH & STRETCH</title>
+  <style>
+    :root {
+      --bg-color: #06050a;
+      --card-bg: #0f0d1a;
+      --neon-cyan: #00f3ff;
+      --neon-pink: #ff007f;
+      --text-main: #ffffff;
+      --text-sub: #8a8d9b;
+    }
+
+    * {
+      box-sizing: border-box;
+      user-select: none;
+    }
+
+    body {
+      background-color: var(--bg-color);
+      color: var(--text-main);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      margin: 0;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 16px;
+      background: var(--card-bg);
+      border: 1px solid var(--neon-cyan);
+      border-radius: 16px;
+      box-shadow: 0 0 15px rgba(0, 243, 255, 0.2);
+    }
+
+    .title {
+      font-size: 18px;
+      font-weight: 800;
+      letter-spacing: 1px;
+      color: var(--neon-cyan);
+      text-shadow: 0 0 8px rgba(0, 243, 255, 0.6);
+    }
+
+    .badge {
+      font-size: 11px;
+      font-weight: bold;
+      padding: 6px 12px;
+      border-radius: 20px;
+      background: rgba(0, 243, 255, 0.1);
+      color: var(--neon-cyan);
+      border: 1px solid var(--neon-cyan);
+    }
+
+    .card {
+      background: var(--card-bg);
+      border-radius: 20px;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      position: relative;
+    }
+
+    .card-cyan {
+      border: 1px solid var(--neon-cyan);
+      box-shadow: 0 0 20px rgba(0, 243, 255, 0.15);
+    }
+
+    .card-pink {
+      border: 1px solid var(--neon-pink);
+      box-shadow: 0 0 20px rgba(ff, 0, 127, 0.15);
+    }
+
+    h2 {
+      margin: 0;
+      font-size: 16px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    p {
+      margin: 0;
+      font-size: 12px;
+      color: var(--text-sub);
+    }
+
+    .btn-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+    }
+
+    .btn {
+      width: 100%;
+      padding: 14px;
+      border: none;
+      border-radius: 12px;
+      font-weight: 800;
+      font-size: 13px;
+      cursor: pointer;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      transition: all 0.2s ease;
+    }
+
+    .btn-cyan {
+      background: linear-gradient(135deg, #00f3ff, #0066ff);
+      color: #000;
+      box-shadow: 0 0 15px rgba(0, 243, 255, 0.4);
+    }
+
+    .btn-pink {
+      background: linear-gradient(135deg, #ff007f, #9d00ff);
+      color: #fff;
+      box-shadow: 0 0 15px rgba(255, 0, 127, 0.4);
+    }
+
+    .btn:active {
+      transform: scale(0.96);
+      filter: brightness(1.2);
+    }
+
+    .status-text {
+      font-size: 12px;
+      font-weight: bold;
+      color: var(--neon-cyan);
+      margin-top: 4px;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Шапка -->
+  <div class="header">
+    <div class="title">NEON HUB</div>
+    <div class="badge" id="shizukuStatus">SHIZUKU: READY</div>
+  </div>
+
+  <!-- Модуль: Сенса Телепорт -->
+  <div class="card card-cyan">
+    <h2 style="color: var(--neon-cyan);">⚡ ТЕЛЕПОРТ СЕНСА</h2>
+    <p>Мгновенный отклик тачскрина, отключение сглаживания и задержек касания.</p>
+    <button class="btn btn-cyan" onclick="activateTeleport()">Включить Телепорт</button>
+    <div class="status-text" id="sensaStatus">Статус: Не активна</div>
+  </div>
+
+  <!-- Модуль: Растяг Экрана -->
+  <div class="card card-pink">
+    <h2 style="color: var(--neon-pink);">📐 РАСТЯГ ЭКРАНА</h2>
+    <p>Выберите нужный формат растяга для игры:</p>
+    
+    <div class="btn-grid">
+      <button class="btn btn-pink" onclick="setStretch('16:9')">16:9</button>
+      <button class="btn btn-pink" onclick="setStretch('4:3')">4:3</button>
+      <button class="btn btn-pink" style="background: #2a2540; color: #fff; box-shadow: none;" onclick="setStretch('reset')">СБРОС</button>
+    </div>
+    <div class="status-text" id="stretchStatus" style="color: var(--neon-pink);">Разрешение: Стандартное</div>
+  </div>
+
+  <script>
+    function activateTeleport() {
+      // Логика/команды для сенсы-телепорта
+      console.log("Применение параметров Телепорт-Сенсы...");
+      document.getElementById('sensaStatus').innerText = "Статус: ТЕЛЕПОРТ АКТИВЕН (0ms)";
+      document.getElementById('sensaStatus').style.color = "#00f3ff";
+    }
+
+    function setStretch(mode) {
+      const status = document.getElementById('stretchStatus');
+      if (mode === '16:9') {
+        status.innerText = "Режим: Растяг 16:9 АКТИВЕН";
+      } else if (mode === '4:3') {
+        status.innerText = "Режим: Растяг 4:3 АКТИВЕН";
+      } else {
+        status.innerText = "Режим: Сброшен до стандартного";
+      }
+    }
+  </script>
+</body>
+</html>
