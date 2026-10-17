@@ -1,15 +1,24 @@
 package com.teleport.sens;
 
 import android.app.Activity;
+import android.app.Service;
 import android.content.Intent;
+import android.graphics.Color;
+import android.graphics.PixelFormat;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.IBinder;
 import android.provider.Settings;
+import android.view.Gravity;
+import android.view.MotionEvent;
+import android.view.View;
+import android.view.WindowManager;
 import android.webkit.JavascriptInterface;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
+import android.widget.Button;
 import android.widget.Toast;
 
 public class MainActivity extends Activity {
@@ -28,8 +37,7 @@ public class MainActivity extends Activity {
         webView.addJavascriptInterface(new WebAppInterface(), "AndroidBridge");
         webView.setWebViewClient(new WebViewClient());
 
-        // Загружаем интерфейс прямо из кода — папки assets больше не нужны!
-        String htmlContent = "<" + "!DOCTYPE html>" +
+        String htmlContent = "<!DOCTYPE html>" +
             "<html lang=\"ru\"><head><meta charset=\"UTF-8\">" +
             "<meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">" +
             "<title>Teleport App</title>" +
@@ -40,10 +48,6 @@ public class MainActivity extends Activity {
             ".card { background: linear-gradient(135deg, rgba(3, 9, 35, 0.8) 0%, rgba(0, 0, 0, 0.9) 100%); border: 1px solid rgba(0, 89, 255, 0.25); border-radius: 16px; padding: 16px; margin-bottom: 14px; }" +
             ".card-title { font-size: 14px; font-weight: 600; color: #8da4ef; margin-bottom: 10px; text-transform: uppercase; }" +
             ".btn { background: linear-gradient(135deg, #0059FF 0%, #003399 100%); color: #fff; border: none; border-radius: 12px; padding: 12px; font-size: 14px; font-weight: 600; width: 100%; cursor: pointer; margin-top: 8px; }" +
-            ".grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }" +
-            ".preset-btn { background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 10px; padding: 10px; color: #fff; text-align: left; }" +
-            ".preset-btn b { display: block; font-size: 14px; color: #0059FF; }" +
-            ".preset-btn span { font-size: 11px; color: #888; }" +
             ".toggle-row { display: flex; justify-content: space-between; align-items: center; margin-top: 10px; font-size: 13px; }" +
             ".switch { position: relative; display: inline-block; width: 44px; height: 24px; }" +
             ".switch input { opacity: 0; width: 0; height: 0; }" +
@@ -102,6 +106,109 @@ public class MainActivity extends Activity {
             } else {
                 startService(serviceIntent);
             }
+        }
+    }
+
+    // Встроенный сервис оверлея — теперь точно не потеряется при сборке!
+    public static class OverlayService extends Service {
+        private WindowManager windowManager;
+        private View floatingButtonView;
+        private boolean isStretched = false;
+
+        @Override
+        public IBinder onBind(Intent intent) { return null; }
+
+        @Override
+        public void onCreate() {
+            super.onCreate();
+            windowManager = (WindowManager) getSystemService(WINDOW_SERVICE);
+        }
+
+        @Override
+        public int onStartCommand(Intent intent, int flags, int startId) {
+            if (intent != null && intent.getExtras() != null) {
+                String action = intent.getStringExtra("action");
+                if ("START_BUTTON".equals(action)) {
+                    showFloatingButton();
+                } else if ("STOP_BUTTON".equals(action)) {
+                    removeFloatingButton();
+                }
+            }
+            return START_NOT_STICKY;
+        }
+
+        private void showFloatingButton() {
+            if (floatingButtonView != null) return;
+
+            Button button = new Button(this);
+            button.setText("16:9");
+            button.setTextColor(Color.WHITE);
+            button.setBackgroundColor(Color.parseColor("#990059FF"));
+
+            WindowManager.LayoutParams params = new WindowManager.LayoutParams(
+                    140, 140,
+                    WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY,
+                    WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE,
+                    PixelFormat.TRANSLUCENT
+            );
+            params.gravity = Gravity.TOP | Gravity.START;
+            params.x = 100;
+            params.y = 300;
+
+            button.setOnClickListener(v -> {
+                try {
+                    if (!isStretched) {
+                        Runtime.getRuntime().exec(new String[]{"sh", "-c", "wm size 1080x2400"});
+                        isStretched = true;
+                        button.setText("ON");
+                    } else {
+                        Runtime.getRuntime().exec(new String[]{"sh", "-c", "wm size reset"});
+                        isStretched = false;
+                        button.setText("16:9");
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            });
+
+            button.setOnTouchListener(new View.OnTouchListener() {
+                private int initialX, initialY;
+                private float initialTouchX, initialTouchY;
+
+                @Override
+                public boolean onTouch(View v, MotionEvent event) {
+                    switch (event.getAction()) {
+                        case MotionEvent.ACTION_DOWN:
+                            initialX = params.x;
+                            initialY = params.y;
+                            initialTouchX = event.getRawX();
+                            initialTouchY = event.getRawY();
+                            return true;
+                        case MotionEvent.ACTION_MOVE:
+                            params.x = initialX + (int) (event.getRawX() - initialTouchX);
+                            params.y = initialY + (int) (event.getRawY() - initialTouchY);
+                            windowManager.updateViewLayout(floatingButtonView, params);
+                            return true;
+                    }
+                    return false;
+                }
+            });
+
+            floatingButtonView = button;
+            windowManager.addView(floatingButtonView, params);
+        }
+
+        private void removeFloatingButton() {
+            if (floatingButtonView != null) {
+                windowManager.removeView(floatingButtonView);
+                floatingButtonView = null;
+            }
+        }
+
+        @Override
+        public void onDestroy() {
+            super.onDestroy();
+            removeFloatingButton();
         }
     }
 }
