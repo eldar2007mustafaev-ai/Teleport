@@ -21,13 +21,24 @@ import android.webkit.WebViewClient;
 import android.widget.Button;
 import android.widget.Toast;
 
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+
+// Импорты Shizuku API
+import rikka.shizuku.Shizuku;
+
 public class MainActivity extends Activity {
     private WebView webView;
-    private static final int OVERLAY_PERMISSION_REQ_CODE = 1234;
+    private static final int SHIZUKU_PERMISSION_CODE = 1001;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        // Запрашиваем разрешение Shizuku при старте, если сервис активен
+        if (Shizuku.pingBinder() && Shizuku.checkSelfPermission() != android.content.pm.PackageManager.PERMISSION_GRANTED) {
+            Shizuku.requestPermission(SHIZUKU_PERMISSION_CODE);
+        }
 
         webView = new WebView(this);
         WebSettings webSettings = webView.getSettings();
@@ -37,7 +48,7 @@ public class MainActivity extends Activity {
         webView.addJavascriptInterface(new WebAppInterface(), "AndroidBridge");
         webView.setWebViewClient(new WebViewClient());
 
-        // Премиальный дизайн (Glassmorphism + Cyberpunk) со всеми карточками и модалкой
+        // HTML-интерфейс (Glassmorphism / Cyberpunk дизайн)
         String htmlContent = "<!DOCTYPE html>" +
             "<html lang=\"ru\"><head><meta charset=\"UTF-8\">" +
             "<meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">" +
@@ -78,7 +89,6 @@ public class MainActivity extends Activity {
             ".modal-text { font-size: 13px; color: #8a9bb8; margin-bottom: 20px; line-height: 1.5; }" +
             "</style></head><body>" +
 
-            /* Модалка предупреждения перед переходом в настройки */
             "<div id=\"permModal\">" +
             "<div class=\"modal-box\">" +
             "<div class=\"modal-title\">Требуется доступ</div>" +
@@ -90,14 +100,14 @@ public class MainActivity extends Activity {
 
             "<div class=\"card\"><div class=\"card-title\">Турбо Сенса & Телепорт</div>" +
             "<div class=\"card-desc\">Готовые варианты прошивки отклика сенсора под микрофлик.</div>" +
-            "<button class=\"btn\" onclick=\"AndroidBridge.executeCommand('gain=1.8'); AndroidBridge.showToast('Макс Телепорт активен!');\">АКТИВИРОВАТЬ МАКС TELEPORT</button>" +
+            "<button class=\"btn\" onclick=\"AndroidBridge.executeCommand('settings put system pointer_speed 7'); AndroidBridge.showToast('Макс Телепорт активен!');\">АКТИВИРОВАТЬ МАКС TELEPORT</button>" +
             "<div class=\"grid-2\" style=\"margin-top: 12px;\">" +
             "<div class=\"preset-card\" onclick=\"AndroidBridge.executeCommand('settings put system pointer_speed 7'); AndroidBridge.showToast('Пресет: Резкий');\"><b>Резкий</b><span>1.30 • 1 • 0.60</span></div>" +
             "<div class=\"preset-card\" onclick=\"AndroidBridge.executeCommand('settings put system pointer_speed 5'); AndroidBridge.showToast('Пресет: Чистый');\"><b>Чистый</b><span>1.00 • 3 • 0.80</span></div>" +
             "</div></div>" +
 
             "<div class=\"card\"><div class=\"card-title\">Растяжение экрана</div>" +
-            "<div class=\"card-desc\">Плавающая кнопка поверх игры для быстрого переключения разрешений.</div>" +
+            "<div class=\"card-desc\">Плавающая кнопка поверх игры для быстрого переключения разрешений через Shizuku.</div>" +
             "<div class=\"toggle-row\"><span>Плавающая кнопка оверлея</span>" +
             "<label class=\"switch\"><input type=\"checkbox\" id=\"floatToggle\" onchange=\"AndroidBridge.toggleFloatingButton(this.checked)\"><span class=\"slider\"></span></label></div>" +
             "<div class=\"status-badge\"><div class=\"status-dot\"></div>Shizuku / ADB мост подключен</div></div>" +
@@ -129,7 +139,10 @@ public class MainActivity extends Activity {
         public void executeCommand(String command) {
             new Thread(() -> {
                 try {
-                    Runtime.getRuntime().exec(new String[]{"sh", "-c", command});
+                    if (Shizuku.pingBinder()) {
+                        Process p = Shizuku.newProcess(new String[]{"sh", "-c", command}, null, null);
+                        p.waitFor();
+                    }
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
@@ -162,7 +175,7 @@ public class MainActivity extends Activity {
         }
     }
 
-    // Сервис плавающей кнопки
+    // Сервис плавающей кнопки с исполнением команд через Shizuku.newProcess
     public static class OverlayService extends Service {
         private WindowManager windowManager;
         private Button floatingButton;
@@ -209,20 +222,22 @@ public class MainActivity extends Activity {
             params.x = 100;
             params.y = 300;
 
+            // Клик по плавающей кнопке отправляет wm size через Shizuku
             floatingButton.setOnClickListener(v -> {
-                try {
-                    if (!isStretched) {
-                        Runtime.getRuntime().exec(new String[]{"sh", "-c", "wm size 1080x2400"});
-                        isStretched = true;
-                        floatingButton.setText("ON");
-                    } else {
-                        Runtime.getRuntime().exec(new String[]{"sh", "-c", "wm size reset"});
-                        isStretched = false;
-                        floatingButton.setText("16:9");
+                new Thread(() -> {
+                    try {
+                        if (Shizuku.pingBinder()) {
+                            String cmd = !isStretched ? "wm size 1080x2400" : "wm size reset";
+                            Process p = Shizuku.newProcess(new String[]{"sh", "-c", cmd}, null, null);
+                            p.waitFor();
+                            
+                            isStretched = !isStretched;
+                            postUpdateUI(isStretched ? "ON" : "16:9");
+                        }
+                    } catch (Exception e) {
+                        e.printStackTrace();
                     }
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
+                }).start();
             });
 
             floatingButton.setOnTouchListener(new View.OnTouchListener() {
@@ -252,6 +267,12 @@ public class MainActivity extends Activity {
                 windowManager.addView(floatingButton, params);
             } catch (Exception e) {
                 e.printStackTrace();
+            }
+        }
+
+        private void postUpdateUI(String text) {
+            if (floatingButton != null) {
+                floatingButton.post(() -> floatingButton.setText(text));
             }
         }
 
