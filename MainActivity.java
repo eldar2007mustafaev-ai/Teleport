@@ -4,10 +4,7 @@ import android.app.Activity;
 import android.content.Intent;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
-import android.net.Uri;
-import android.os.Build;
 import android.os.Bundle;
-import android.provider.Settings;
 import android.webkit.JavascriptInterface;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
@@ -18,7 +15,6 @@ import java.util.List;
 
 public class MainActivity extends Activity {
     private WebView webView;
-    private static final int OVERLAY_PERMISSION_REQ_CODE = 1234;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -40,13 +36,6 @@ public class MainActivity extends Activity {
         
         webView.loadUrl("file:///android_asset/index.html");
         setContentView(webView);
-
-        // Проверяем разрешение на показ плавающей кнопки поверх окон
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && !Settings.canDrawOverlays(this)) {
-            Intent intent = new Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
-                    Uri.parse("package:" + getPackageName()));
-            startActivityForResult(intent, OVERLAY_PERMISSION_REQ_CODE);
-        }
     }
 
     public class WebAppInterface {
@@ -88,16 +77,7 @@ public class MainActivity extends Activity {
         @JavascriptInterface
         public void applyRatio(String ratio) {
             runOnUiThread(() -> {
-                String cmd = "";
-                if (ratio.equals("4:3")) {
-                    cmd = "wm size 1080x1440 && wm density 360";
-                } else if (ratio.equals("16:10")) {
-                    cmd = "wm size 1080x1728 && wm density 400";
-                } else {
-                    cmd = "wm size reset && wm density reset";
-                }
-                executeCommand(cmd);
-                Toast.makeText(MainActivity.this, "Плавающая кнопка активирована для режима " + ratio, Toast.LENGTH_SHORT).show();
+                Toast.makeText(MainActivity.this, "Режим " + ratio + " (ручной растяг через разделение экрана)", Toast.LENGTH_SHORT).show();
             });
         }
 
@@ -105,13 +85,12 @@ public class MainActivity extends Activity {
         public void applySensBoost(boolean enable) {
             runOnUiThread(() -> {
                 if (enable) {
-                    String sensCmd = "settings put system pointer_speed 11 && " +
-                                     "settings put global pointer_speed 11 && " +
-                                     "settings put system touch_exploration_enabled 0";
-                    executeCommand(sensCmd);
-                    Toast.makeText(MainActivity.this, "Тепающаяся сенса активирована!", Toast.LENGTH_SHORT).show();
+                    // Запуск твоего точного скрипта с параметрами тепающейся сенсы
+                    String exactScript = "gain=1.8 gainx=1.8 gainy=1.8 nz=2 dz=0 dwellms=100 lock=6 chunk=28 chunkmin=0 chunkcap=600 chunkspd=0 chunkcool=5 kaccel=0 power=1.00 edge=0 straighten=0";
+                    executeCommand(exactScript);
+                    Toast.makeText(MainActivity.this, "Фирменный скрипт сенсы активирован :)", Toast.LENGTH_SHORT).show();
                 } else {
-                    executeCommand("settings put system pointer_speed 5 && settings put global pointer_speed 5");
+                    executeCommand("settings put system pointer_speed 5");
                     Toast.makeText(MainActivity.this, "Сенса сброшена", Toast.LENGTH_SHORT).show();
                 }
             });
