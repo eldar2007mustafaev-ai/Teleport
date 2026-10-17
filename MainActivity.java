@@ -2,6 +2,7 @@ package com.teleport.sens;
 
 import android.app.Activity;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.webkit.JavascriptInterface;
 import android.webkit.WebSettings;
@@ -46,12 +47,18 @@ public class MainActivity extends Activity {
         public void requestShizukuPermission() {
             runOnUiThread(() -> {
                 try {
+                    // Принудительно запрашиваем системное разрешение для API Shizuku
+                    if (checkSelfPermission("moe.shizuku.privileged.permission.API") != PackageManager.PERMISSION_GRANTED) {
+                        requestPermissions(new String[]{"moe.shizuku.privileged.permission.API"}, 100);
+                    }
+                    
                     Intent intent = getPackageManager().getLaunchIntentForPackage("moe.shizuku.privileged.api");
                     if (intent != null) {
                         startActivity(intent);
                     }
+                    Toast.makeText(MainActivity.this, "Запрос авторизации отправлен :)", Toast.LENGTH_SHORT).show();
                 } catch (Exception e) {
-                    Toast.makeText(MainActivity.this, "Ошибка запуска", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(MainActivity.this, "Ошибка выдачи прав", Toast.LENGTH_SHORT).show();
                 }
                 webView.postDelayed(() -> checkRealShizukuStatus(), 2000);
             });
@@ -83,24 +90,18 @@ public class MainActivity extends Activity {
         new Thread(() -> {
             boolean isRunning = false;
             try {
-                // Честная проверка сокета Shizuku в системе
-                File socketFile = new File("/dev/socket/shizuku");
-                File binderSocket = new File("/dev/ashmem"); // Проверка доступности памяти шлюза
+                Process process = Runtime.getRuntime().exec(new String[]{"sh", "-c", "ps -A | grep -i shizuku"});
+                java.io.BufferedReader reader = new java.io.BufferedReader(new java.io.InputStreamReader(process.getInputStream()));
+                String line = reader.readLine();
+                process.waitFor();
                 
-                // Дополнительно проверяем через выполнение команды пинга binder
-                Process process = Runtime.getRuntime().exec(new String[]{"sh", "-c", "ls /dev/socket/shizuku"});
-                int exitCode = process.waitFor();
-                
-                if (exitCode == 0 || socketFile.exists()) {
+                if (line != null && !line.isEmpty()) {
                     isRunning = true;
                 } else {
-                    // Альтернативная проверка по активному процессу через pm
-                    Process p2 = Runtime.getRuntime().exec(new String[]{"sh", "-c", "pidof moe.shizuku.privileged.api"});
-                    java.io.BufferedReader reader = new java.io.BufferedReader(new java.io.InputStreamReader(p2.getInputStream()));
-                    if (reader.readLine() != null) {
+                    File socket = new File("/dev/socket/shizuku");
+                    if (socket.exists()) {
                         isRunning = true;
                     }
-                    p2.waitFor();
                 }
             } catch (Exception e) {
                 isRunning = false;
