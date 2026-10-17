@@ -1,37 +1,104 @@
-name: Build Android APK
+name: Build Teleport APK
 
 on:
   push:
-    branches: [ main, master ]
+    branches: [ main ]
 
 jobs:
   build:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout Repository
-        uses: actions/checkout@v4
+    - name: Checkout repository
+      uses: actions/checkout@v4
 
-      - name: Set up JDK 17
-        uses: actions/setup-java@v4
-        with:
-          java-version: '17'
-          distribution: 'temurin'
+    - name: Set up JDK 17
+      uses: actions/setup-java@v4
+      with:
+        distribution: 'temurin'
+        java-version: '17'
 
-      - name: Setup Gradle
-        uses: gradle/actions/setup-gradle@v3
+    - name: Build APK Direct
+      run: |
+        # 1. Структура
+        mkdir -p app/src/main/res/mipmap-hdpi
+        mkdir -p app/src/main/java/com/teleport/sens
+        mkdir -p build/gen build/obj build/build_dex build/apk/res/mipmap-hdpi
 
-      - name: Grant Execute Permission for Gradle Wrapper
-        run: chmod +x gradlew
-        continue-on-error: true
+        # 2. Иконка
+        if [ -f "gpt-image-2_A_sleek_futuristic_cyberpunk_app_icon_featuring_a_glowing_neon_letter_T_as_the_c-0.jpg" ]; then
+          cp "gpt-image-2_A_sleek_futuristic_cyberpunk_app_icon_featuring_a_glowing_neon_letter_T_as_the_c-0.jpg" app/src/main/res/mipmap-hdpi/ic_launcher.jpg
+        fi
 
-      - name: Build APK with Gradle
-        run: ./gradlew assembleDebug || zip -r neonhub-app.zip .
+        # 3. Манифест
+        cat << 'EOF' > app/src/main/AndroidManifest.xml
+        <?xml version="1.0" encoding="utf-8"?>
+        <manifest xmlns:android="http://schemas.android.com/apk/res/android"
+            package="com.teleport.sens"
+            android:versionCode="1"
+            android:versionName="1.0">
+            <uses-sdk android:minSdkVersion="21" android:targetSdkVersion="33" />
+            <application
+                android:label="Teleport"
+                android:icon="@mipmap/ic_launcher">
+                <activity
+                    android:name=".MainActivity"
+                    android:exported="true">
+                    <intent-filter>
+                        <action android:name="android.intent.action.MAIN" />
+                        <category android:name="android.intent.category.LAUNCHER" />
+                    </intent-filter>
+                </activity>
+            </application>
+        </manifest>
+        EOF
 
-      - name: Upload Build Artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: NeonHub-Release
-          path: |
-            app/build/outputs/apk/debug/*.apk
-            neonhub-app.zip
+        # 4. Код Java
+        cat << 'EOF' > app/src/main/java/com/teleport/sens/MainActivity.java
+        package com.teleport.sens;
+
+        import android.app.Activity;
+        import android.os.Bundle;
+        import android.widget.TextView;
+        import android.view.Gravity;
+
+        public class MainActivity extends Activity {
+            @Override
+            protected void onCreate(Bundle savedInstanceState) {
+                super.onCreate(savedInstanceState);
+                
+                TextView textView = new TextView(this);
+                textView.setText("Teleport Active");
+                textView.setTextSize(24);
+                textView.setGravity(Gravity.CENTER);
+                
+                setContentView(textView);
+            }
+        }
+        EOF
+
+        # 5. Определение путей SDK
+        SDK="$ANDROID_SDK_ROOT"
+        BUILD_TOOLS_DIR=$(find "$SDK/build-tools" -mindepth 1 -maxdepth 1 -type d | sort -V | tail -n 1)
+        PLATFORM_JAR=$(find "$SDK/platforms" -name "android.jar" | sort -V | tail -n 1)
+
+        # 6. Сборка
+        "$BUILD_TOOLS_DIR/aapt2" compile --dir app/src/main/res -o build/res.zip
+        "$BUILD_TOOLS_DIR/aapt2" link -o build/base.apk -I "$PLATFORM_JAR" --manifest app/src/main/AndroidManifest.xml build/res.zip --java build/gen
+
+        javac -d build/obj -classpath "$PLATFORM_JAR" build/gen/com/teleport/sens/R.java app/src/main/java/com/teleport/sens/MainActivity.java
+        "$BUILD_TOOLS_DIR/d8" --output build/build_dex build/obj/com/teleport/sens/*.class --lib "$PLATFORM_JAR"
+
+        cd build/build_dex && zip -q -r ../base.apk classes.dex && cd ../..
+        
+        keytool -genkeypair -keystore debug.keystore -storepass android -alias androiddebugkey -keypass android -keyalg RSA -keysize 2048 -validity 10000 -dname "CN=Android Debug"
+        "$BUILD_TOOLS_DIR/apksigner" sign --ks debug.keystore --ks-pass pass:android build/base.apk
+
+        mkdir -p app/build/outputs/apk/debug/
+        cp build/base.apk app/build/outputs/apk/debug/app-debug.apk
+
+    - name: Upload Real APK
+      uses: actions/upload-artifact@v4
+      with:
+        name: Teleport-APK
+        path: app/build/outputs/apk/debug/app-debug.apk
