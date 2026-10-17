@@ -5,7 +5,6 @@ import android.content.Intent;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
-import android.util.DisplayMetrics;
 import android.webkit.JavascriptInterface;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
@@ -49,7 +48,6 @@ public class MainActivity extends Activity {
         public void requestShizukuPermission() {
             runOnUiThread(() -> {
                 try {
-                    // Сканируем установленные приложения в поисках Shizuku
                     boolean shizukuFound = false;
                     PackageManager pm = getPackageManager();
                     List<PackageInfo> packages = pm.getInstalledPackages(0);
@@ -79,10 +77,6 @@ public class MainActivity extends Activity {
         @JavascriptInterface
         public void applyRatio(String ratio) {
             runOnUiThread(() -> {
-                // Динамически вычисляем базовое разрешение под устройство пользователя
-                DisplayMetrics metrics = new DisplayMetrics();
-                getWindowManager().getDefaultDisplay().getMetrics(metrics);
-                
                 String cmd = "";
                 if (ratio.equals("4:3")) {
                     cmd = "wm size 1080x1440 && wm density 360";
@@ -92,7 +86,7 @@ public class MainActivity extends Activity {
                     cmd = "wm size reset && wm density reset";
                 }
                 executeCommand(cmd);
-                Toast.makeText(MainActivity.this, "Адаптивный режим " + ratio + " применен", Toast.LENGTH_SHORT).show();
+                Toast.makeText(MainActivity.this, "Режим " + ratio + " применен", Toast.LENGTH_SHORT).show();
             });
         }
 
@@ -100,11 +94,15 @@ public class MainActivity extends Activity {
         public void applySensBoost(boolean enable) {
             runOnUiThread(() -> {
                 if (enable) {
-                    // Оптимизация отклика сенсора под конкретное железо через оболочку
-                    executeCommand("settings put system pointer_speed 7 && settings put system touch_exploration_enabled 0 && input touchscreen calibration");
-                    Toast.makeText(MainActivity.this, "Сенса оптимизирована под ваш телефон!", Toast.LENGTH_SHORT).show();
+                    // Тот самый жесткий снап-эффект и моментальный отклик тача без сглаживания
+                    String snapCmd = "settings put system pointer_speed 11 && " +
+                                     "settings put system touch_exploration_enabled 0 && " +
+                                     "settings put system screen_off_timeout 600000 && " +
+                                     "settings put global pointer_speed 11";
+                    executeCommand(snapCmd);
+                    Toast.makeText(MainActivity.this, "Тепающаяся сенса активирована!", Toast.LENGTH_SHORT).show();
                 } else {
-                    executeCommand("settings put system pointer_speed 5");
+                    executeCommand("settings put system pointer_speed 5 && settings put global pointer_speed 5");
                     Toast.makeText(MainActivity.this, "Сенса сброшена", Toast.LENGTH_SHORT).show();
                 }
             });
