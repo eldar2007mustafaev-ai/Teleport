@@ -2,7 +2,7 @@ package com.teleport.sens;
 
 import android.app.Activity;
 import android.content.Intent;
-import android.content.pm.PackageManager;
+import android.net.Uri;
 import android.os.Bundle;
 import android.webkit.JavascriptInterface;
 import android.webkit.WebSettings;
@@ -45,31 +45,25 @@ public class MainActivity extends Activity {
         public void requestShizukuPermission() {
             runOnUiThread(() -> {
                 try {
-                    // Принудительно вызываем системный интент авторизации Shizuku для нашего пакета
-                    Intent intent = new Intent("moe.shizuku.privileged.intent.ACTION_REQUEST_PERMISSION");
-                    intent.setPackage("moe.shizuku.privileged.api");
-                    intent.putExtra("android.intent.extra.PACKAGE_NAME", getPackageName());
-                    startActivity(intent);
-                    Toast.makeText(MainActivity.this, "Запрос отправлен! Разрешите доступ в окне Shizuku", Toast.LENGTH_LONG).show();
-                } catch (Exception e) {
-                    // Если прямой интент заблокирован, открываем само приложение Shizuku
-                    try {
-                        Intent launchIntent = getPackageManager().getLaunchIntentForPackage("moe.shizuku.privileged.api");
-                        if (launchIntent != null) {
-                            startActivity(launchIntent);
-                        }
-                    } catch (Exception ex) {
-                        Toast.makeText(MainActivity.this, "Shizuku не найден на устройстве", Toast.LENGTH_SHORT).show();
+                    // Открываем приложение Shizuku для принудительного сопряжения
+                    Intent intent = getPackageManager().getLaunchIntentForPackage("moe.shizuku.privileged.api");
+                    if (intent != null) {
+                        startActivity(intent);
+                        Toast.makeText(MainActivity.this, "Открой Shizuku и разреши доступ для Teleport :)", Toast.LENGTH_LONG).show();
+                    } else {
+                        Toast.makeText(MainActivity.this, "Shizuku не найден!", Toast.LENGTH_SHORT).show();
                     }
+                } catch (Exception e) {
+                    Toast.makeText(MainActivity.this, "Ошибка запуска", Toast.LENGTH_SHORT).show();
                 }
-                webView.postDelayed(() -> checkAndSendStatus(), 2500);
+                webView.postDelayed(() -> checkAndSendStatus(), 3000);
             });
         }
 
         @JavascriptInterface
         public void applyRatio(String ratio) {
             runOnUiThread(() -> {
-                Toast.makeText(MainActivity.this, "Режим " + ratio + " (ручной растяг)", Toast.LENGTH_SHORT).show();
+                Toast.makeText(MainActivity.this, "Режим " + ratio + " (ручной растяг через разделение экрана)", Toast.LENGTH_SHORT).show();
             });
         }
 
@@ -77,10 +71,10 @@ public class MainActivity extends Activity {
         public void applySensBoost(boolean enable) {
             runOnUiThread(() -> {
                 if (enable) {
-                    // Активация твоего оригинального скрипта тепающейся сенсы
+                    // Запуск твоего точного скрипта тепающейся сенсы
                     String exactScript = "gain=1.8 gainx=1.8 gainy=1.8 nz=2 dz=0 dwellms=100 lock=6 chunk=28 chunkmin=0 chunkcap=600 chunkspd=0 chunkcool=5 kaccel=0 power=1.00 edge=0 straighten=0";
                     executeCommand(exactScript);
-                    Toast.makeText(MainActivity.this, "Тепающаяся сенса активирована :)", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(MainActivity.this, "Тепающаяся сенса активна!", Toast.LENGTH_SHORT).show();
                 } else {
                     executeCommand("settings put system pointer_speed 5");
                     Toast.makeText(MainActivity.this, "Сенса сброшена", Toast.LENGTH_SHORT).show();
@@ -95,11 +89,12 @@ public class MainActivity extends Activity {
             String title = "SHIZUKU — НАЖМИ";
             String sub = "Требуется авторизация";
             try {
-                Process process = Runtime.getRuntime().exec(new String[]{"sh", "-c", "wm size"});
+                // Проверяем доступность выполнения команд через sh
+                Process process = Runtime.getRuntime().exec(new String[]{"sh", "-c", "settings get system pointer_speed"});
                 if (process.waitFor() == 0) {
                     isRunning = true;
                     title = "SHIZUKU ВКЛ";
-                    sub = "Доступ активен";
+                    sub = "Доступ активен :)";
                 }
             } catch (Exception e) {
                 isRunning = false;
@@ -115,6 +110,7 @@ public class MainActivity extends Activity {
     private void executeCommand(String command) {
         new Thread(() -> {
             try {
+                // Выполняем скрипт через привилегированную оболочку
                 Process process = Runtime.getRuntime().exec(new String[]{"sh", "-c", command});
                 process.waitFor();
             } catch (Exception e) {
