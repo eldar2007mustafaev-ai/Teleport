@@ -10,8 +10,6 @@ import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.Toast;
 
-import java.io.File;
-
 public class MainActivity extends Activity {
     private WebView webView;
 
@@ -29,7 +27,7 @@ public class MainActivity extends Activity {
             @Override
             public void onPageFinished(WebView view, String url) {
                 super.onPageFinished(view, url);
-                checkRealShizukuStatus();
+                checkShizukuPermissionState();
             }
         });
         
@@ -40,34 +38,28 @@ public class MainActivity extends Activity {
     public class WebAppInterface {
         @JavascriptInterface
         public void checkShizukuStatus() {
-            checkRealShizukuStatus();
+            checkShizukuPermissionState();
         }
 
         @JavascriptInterface
         public void requestShizukuPermission() {
             runOnUiThread(() -> {
                 try {
-                    // Принудительно запрашиваем системное разрешение для API Shizuku
-                    if (checkSelfPermission("moe.shizuku.privileged.permission.API") != PackageManager.PERMISSION_GRANTED) {
-                        requestPermissions(new String[]{"moe.shizuku.privileged.permission.API"}, 100);
-                    }
-                    
                     Intent intent = getPackageManager().getLaunchIntentForPackage("moe.shizuku.privileged.api");
                     if (intent != null) {
                         startActivity(intent);
                     }
-                    Toast.makeText(MainActivity.this, "Запрос авторизации отправлен :)", Toast.LENGTH_SHORT).show();
                 } catch (Exception e) {
-                    Toast.makeText(MainActivity.this, "Ошибка выдачи прав", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(MainActivity.this, "Ошибка открытия", Toast.LENGTH_SHORT).show();
                 }
-                webView.postDelayed(() -> checkRealShizukuStatus(), 2000);
+                webView.postDelayed(() -> checkShizukuPermissionState(), 2000);
             });
         }
 
         @JavascriptInterface
         public void applyRatio(String ratio) {
             runOnUiThread(() -> {
-                Toast.makeText(MainActivity.this, "Режим " + ratio + " (ручной растяг через разделение экрана)", Toast.LENGTH_SHORT).show();
+                Toast.makeText(MainActivity.this, "Режим " + ratio + " (ручной растяг)", Toast.LENGTH_SHORT).show();
             });
         }
 
@@ -86,28 +78,19 @@ public class MainActivity extends Activity {
         }
     }
 
-    private void checkRealShizukuStatus() {
+    private void checkShizukuPermissionState() {
         new Thread(() -> {
-            boolean isRunning = false;
+            boolean hasPermission = false;
             try {
-                Process process = Runtime.getRuntime().exec(new String[]{"sh", "-c", "ps -A | grep -i shizuku"});
-                java.io.BufferedReader reader = new java.io.BufferedReader(new java.io.InputStreamReader(process.getInputStream()));
-                String line = reader.readLine();
-                process.waitFor();
-                
-                if (line != null && !line.isEmpty()) {
-                    isRunning = true;
-                } else {
-                    File socket = new File("/dev/socket/shizuku");
-                    if (socket.exists()) {
-                        isRunning = true;
-                    }
+                int res = getPackageManager().checkPermission("moe.shizuku.privileged.permission.API", getPackageName());
+                if (res == PackageManager.PERMISSION_GRANTED) {
+                    hasPermission = true;
                 }
             } catch (Exception e) {
-                isRunning = false;
+                hasPermission = false;
             }
 
-            final boolean active = isRunning;
+            final boolean active = hasPermission;
             final String title = active ? "SHIZUKU ВКЛ" : "SHIZUKU — НАЖМИ";
             final String sub = active ? "Доступ активен :)" : "Требуется авторизация";
 
