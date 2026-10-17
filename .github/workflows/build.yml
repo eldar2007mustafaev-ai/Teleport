@@ -21,6 +21,7 @@ jobs:
     - name: Prepare Project Structure
       run: |
         mkdir -p app/src/main/res/mipmap-hdpi
+        mkdir -p app/src/main/res/values
         mkdir -p app/src/main/java/com/teleport/sens
 
         # Копируем иконку
@@ -28,7 +29,30 @@ jobs:
           cp "gpt-image-2_A_sleek_futuristic_cyberpunk_app_icon_featuring_a_glowing_neon_letter_T_as_the_c-0.jpg" app/src/main/res/mipmap-hdpi/ic_launcher.jpg
         fi
 
-        # Код приложения
+        # AndroidManifest.xml
+        cat << 'EOF' > app/src/main/AndroidManifest.xml
+        <?xml version="1.0" encoding="utf-8"?>
+        <manifest xmlns:android="http://schemas.android.com/apk/res/android"
+            package="com.teleport.sens">
+            <application
+                android:allowBackup="true"
+                android:icon="@mipmap/ic_launcher"
+                android:label="Teleport"
+                android:supportsRtl="true"
+                android:theme="@android:style/Theme.DeviceDefault">
+                <activity
+                    android:name=".MainActivity"
+                    android:exported="true">
+                    <intent-filter>
+                        <action android:name="android.intent.action.MAIN" />
+                        <category android:name="android.intent.category.LAUNCHER" />
+                    </intent-filter>
+                </activity>
+            </application>
+        </manifest>
+        EOF
+
+        # Java Activity
         cat << 'EOF' > app/src/main/java/com/teleport/sens/MainActivity.java
         package com.teleport.sens;
         import android.app.Activity;
@@ -43,7 +67,7 @@ jobs:
         }
         EOF
 
-        # Файлы сборки Gradle
+        # Settings и Root build.gradle
         echo "include(':app')" > settings.gradle
         cat << 'EOF' > build.gradle
         buildscript {
@@ -65,7 +89,7 @@ jobs:
 
     - name: Build APK with Gradle
       run: |
-        gradle wrapper --gradle-version 8.0
+        gradle wrapper
         chmod +x gradlew
         ./gradlew assembleDebug
 
