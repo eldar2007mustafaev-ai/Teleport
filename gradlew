@@ -1,2 +1,2 @@
 #!/usr/bin/env sh
-gradle assembleDebug
+exec ./gradle/wrapper/gradle-wrapper.jar org.gradle.wrapper.GradleWrapperMain "$@"
