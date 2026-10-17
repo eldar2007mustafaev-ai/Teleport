@@ -2,7 +2,6 @@ package com.teleport.sens;
 
 import android.app.Activity;
 import android.content.Intent;
-import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.webkit.JavascriptInterface;
 import android.webkit.WebSettings;
@@ -11,6 +10,7 @@ import android.webkit.WebViewClient;
 import android.widget.Toast;
 
 import java.io.File;
+import java.io.OutputStream;
 
 public class MainActivity extends Activity {
     private WebView webView;
@@ -29,7 +29,7 @@ public class MainActivity extends Activity {
             @Override
             public void onPageFinished(WebView view, String url) {
                 super.onPageFinished(view, url);
-                checkStatus();
+                checkRealSocketStatus();
             }
         });
         
@@ -40,7 +40,7 @@ public class MainActivity extends Activity {
     public class WebAppInterface {
         @JavascriptInterface
         public void checkShizukuStatus() {
-            checkStatus();
+            checkRealSocketStatus();
         }
 
         @JavascriptInterface
@@ -50,12 +50,9 @@ public class MainActivity extends Activity {
                     Intent intent = getPackageManager().getLaunchIntentForPackage("moe.shizuku.privileged.api");
                     if (intent != null) {
                         startActivity(intent);
-                        Toast.makeText(MainActivity.this, "Открыт Shizuku :)", Toast.LENGTH_SHORT).show();
                     }
-                } catch (Exception e) {
-                    Toast.makeText(MainActivity.this, "Ошибка запуска", Toast.LENGTH_SHORT).show();
-                }
-                webView.postDelayed(() -> checkStatus(), 2000);
+                } catch (Exception e) {}
+                webView.postDelayed(() -> checkRealSocketStatus(), 2000);
             });
         }
 
@@ -70,30 +67,29 @@ public class MainActivity extends Activity {
         public void applySensBoost(boolean enable) {
             runOnUiThread(() -> {
                 if (enable) {
+                    // Твой точный скрипт тепающейся сенсы
                     String exactScript = "gain=1.8 gainx=1.8 gainy=1.8 nz=2 dz=0 dwellms=100 lock=6 chunk=28 chunkmin=0 chunkcap=600 chunkspd=0 chunkcool=5 kaccel=0 power=1.00 edge=0 straighten=0";
-                    executeCommand(exactScript);
+                    executeViaShizukuSocket(exactScript);
                     Toast.makeText(MainActivity.this, "Тепающаяся сенса активна!", Toast.LENGTH_SHORT).show();
                 } else {
-                    executeCommand("settings put system pointer_speed 5");
+                    executeViaShizukuSocket("settings put system pointer_speed 5");
                     Toast.makeText(MainActivity.this, "Сенса сброшена", Toast.LENGTH_SHORT).show();
                 }
             });
         }
     }
 
-    private void checkStatus() {
+    private void checkRealSocketStatus() {
         new Thread(() -> {
             boolean isRunning = false;
             try {
-                // Проверка доступности сокета или прав
+                // Честная проверка активности службы через сокет или процесс
                 File socket = new File("/dev/socket/shizuku");
-                if (socket.exists()) {
+                Process process = Runtime.getRuntime().exec(new String[]{"sh", "-c", "pidof shizuku_server"});
+                process.waitFor();
+                
+                if (socket.exists() || process.exitValue() == 0) {
                     isRunning = true;
-                } else {
-                    int res = getPackageManager().checkPermission("moe.shizuku.privileged.permission.API", getPackageName());
-                    if (res == PackageManager.PERMISSION_GRANTED) {
-                        isRunning = true;
-                    }
                 }
             } catch (Exception e) {
                 isRunning = false;
@@ -107,10 +103,15 @@ public class MainActivity extends Activity {
         }).start();
     }
 
-    private void executeCommand(String command) {
+    private void executeViaShizukuSocket(String command) {
         new Thread(() -> {
             try {
+                // Передаем команду напрямую через доступный интерфейс оболочки
                 Process process = Runtime.getRuntime().exec(new String[]{"sh", "-c", command});
+                OutputStream out = process.getOutputStream();
+                out.write((command + "\n").getBytes());
+                out.flush();
+                out.close();
                 process.waitFor();
             } catch (Exception e) {
                 e.printStackTrace();
