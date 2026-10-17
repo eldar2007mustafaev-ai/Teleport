@@ -115,3 +115,8 @@ public class MainActivity extends Activity {
             try {
                 Process process = Runtime.getRuntime().exec(new String[]{"sh", "-c", command});
                 process.waitFor();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }).start();
+        }
