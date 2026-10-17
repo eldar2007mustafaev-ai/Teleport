@@ -2,6 +2,12 @@ window.onload = function() {
     checkShizuku();
 };
 
+function initShizukuConnection() {
+    if (window.AndroidBridge) {
+        AndroidBridge.requestShizukuPermission();
+    }
+}
+
 function checkShizuku() {
     if (window.AndroidBridge) {
         AndroidBridge.checkShizukuStatus();
@@ -15,27 +21,25 @@ function requestPermissions() {
 }
 
 function setShizukuStatus(isRunning, message) {
-    const card = document.getElementById('status-card');
     const statusText = document.getElementById('shizuku-status');
-    const title = card.querySelector('.card-title');
+    const statusDot = document.getElementById('status-dot');
+    const welcomeModal = document.getElementById('welcome-modal');
+
+    statusText.innerText = message;
 
     if (isRunning) {
-        card.style.borderColor = '#00ff88';
-        title.style.color = '#00ff88';
-        statusText.style.color = '#00ff88';
-        statusText.innerText = message;
+        statusDot.classList.add('active');
+        welcomeModal.style.display = 'none'; // Скрываем стартовый экран, если права есть
     } else {
-        card.style.borderColor = '#ff3333';
-        title.style.color = '#ff3333';
-        statusText.style.color = '#ff3333';
-        statusText.innerText = message;
+        statusDot.classList.remove('active');
+        welcomeModal.style.display = 'flex'; // Показываем экран запроса прав
     }
 }
 
 function setRatio(ratio, element) {
     document.querySelectorAll('.btn-group .btn').forEach(b => b.classList.remove('active'));
     element.classList.add('active');
-    document.getElementById('ratio-info').innerText = 'Режим: ' + ratio + ' активирован';
+    document.getElementById('ratio-info').innerText = 'Режим: ' + ratio;
     
     if (window.AndroidBridge) {
         AndroidBridge.applyRatio(ratio);
@@ -44,12 +48,11 @@ function setRatio(ratio, element) {
 
 function applySens() {
     const status = document.getElementById('sens-status');
-    status.innerText = 'Телепортация сенсы через Shizuku...';
+    status.innerText = 'Применение настроек...';
     
     if (window.AndroidBridge) {
         AndroidBridge.applySensBoost();
-        status.innerText = 'Сенса успешно телепортирована!';
-    } else {
-        status.innerText = 'Ошибка: мост с Android не найден';
+        status.innerText = 'Буст отклика успешно применен!';
+        status.style.color = '#2cb67d';
     }
 }
