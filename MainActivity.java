@@ -7,6 +7,7 @@ import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.Toast;
+import rikka.shizuku.Shizuku;
 
 public class MainActivity extends Activity {
     private WebView webView;
@@ -77,18 +78,20 @@ public class MainActivity extends Activity {
             boolean isRunning = false;
             String statusMsg = "Shizuku не запущен!";
             try {
-                java.lang.Process process = Runtime.getRuntime().exec(new String[]{"sh", "-c", "whoami"});
-                java.io.BufferedReader reader = new java.io.BufferedReader(new java.io.InputStreamReader(process.getInputStream()));
-                String result = reader.readLine();
-                process.waitFor();
-                
-                if (result != null) {
-                    isRunning = true;
-                    statusMsg = "Shizuku активен (Права получены)";
+                // Проверяем именно запущен ли сервер Shizuku и есть ли разрешение
+                if (Shizuku.pingBinder()) {
+                    if (Shizuku.checkSelfPermission() == android.content.pm.PackageManager.PERMISSION_GRANTED) {
+                        isRunning = true;
+                        statusMsg = "Shizuku активен и готов!";
+                    } else {
+                        statusMsg = "Нет разрешения Shizuku!";
+                        // Запрашиваем разрешение, если оно еще не выдано
+                        Shizuku.requestPermission(0);
+                    }
                 }
             } catch (Exception e) {
                 isRunning = false;
-                statusMsg = "Ошибка связи с Shizuku";
+                statusMsg = "Shizuku не запущен!";
             }
 
             final boolean finalRunning = isRunning;
@@ -99,8 +102,10 @@ public class MainActivity extends Activity {
 
     private void executeShizukuCommand(String command) {
         try {
-            java.lang.Process process = Runtime.getRuntime().exec(new String[]{"sh", "-c", "su -c '" + command + "' || sh -c '" + command + "'"});
-            process.waitFor();
+            if (Shizuku.pingBinder() && Shizuku.checkSelfPermission() == android.content.pm.PackageManager.PERMISSION_GRANTED) {
+                java.lang.Process process = Shizuku.newProcess(new String[]{"sh", "-c", command}, null, null);
+                process.waitFor();
+            }
         } catch (Exception e) {
             e.printStackTrace();
         }
