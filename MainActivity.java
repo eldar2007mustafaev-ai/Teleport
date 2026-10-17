@@ -49,10 +49,9 @@ public class MainActivity extends Activity {
                     intent.putExtra("moe.shizuku.privileged.api.intent.extra.AUTHORIZATION_REQUEST_PACKAGE", getPackageName());
                     startActivity(intent);
                     Toast.makeText(MainActivity.this, "Запрос отправлен в Shizuku", Toast.LENGTH_SHORT).show();
-                    
                     webView.postDelayed(() -> checkAndSendStatus(), 2000);
                 } catch (Exception e) {
-                    Toast.makeText(MainActivity.this, "Откройте приложение Shizuku вручную", Toast.LENGTH_LONG).show();
+                    Toast.makeText(MainActivity.this, "Откройте Shizuku вручную", Toast.LENGTH_LONG).show();
                 }
             });
         }
@@ -60,14 +59,9 @@ public class MainActivity extends Activity {
         @JavascriptInterface
         public void applyRatio(String ratio) {
             runOnUiThread(() -> {
-                String cmd = "";
-                if (ratio.equals("4:3")) {
-                    cmd = "wm size 1080x1440 && wm density 360";
-                } else if (ratio.equals("16:10")) {
-                    cmd = "wm size 1080x1728 && wm density 400";
-                } else {
-                    cmd = "wm size reset && wm density reset";
-                }
+                String cmd = ratio.equals("4:3") ? "wm size 1080x1440 && wm density 360" :
+                             ratio.equals("16:10") ? "wm size 1080x1728 && wm density 400" :
+                             "wm size reset && wm density reset";
                 executeCommand(cmd);
                 Toast.makeText(MainActivity.this, "Режим " + ratio + " применен", Toast.LENGTH_SHORT).show();
             });
@@ -115,8 +109,9 @@ public class MainActivity extends Activity {
             try {
                 Process process = Runtime.getRuntime().exec(new String[]{"sh", "-c", command});
                 process.waitFor();
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-            }).start();
-        }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }).start();
+    }
+}
