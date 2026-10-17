@@ -1,6 +1,7 @@
 package com.teleport.sens;
 
 import android.app.Activity;
+import android.content.Intent;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
@@ -10,15 +11,10 @@ import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.Toast;
 
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
 import java.util.List;
-
-ri.shizuku.api.Shizuku; // Прямой импорт API Shizuku для обхода багов One UI
 
 public class MainActivity extends Activity {
     private WebView webView;
-    private static final int SHIZUKU_PERMISSION_REQUEST_CODE = 1001;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -40,15 +36,6 @@ public class MainActivity extends Activity {
         
         webView.loadUrl("file:///android_asset/index.html");
         setContentView(webView);
-
-        // Слушатель результатов авторизации Shizuku
-        if (Shizuku.isPreV11() || Shizuku.getVersion() >= 11) {
-            Shizuku.addRequestPermissionResultListener(requestCode -> {
-                if (requestCode == SHIZUKU_PERMISSION_REQUEST_CODE) {
-                    checkAndSendStatus();
-                }
-            });
-        }
     }
 
     public class WebAppInterface {
@@ -61,21 +48,17 @@ public class MainActivity extends Activity {
         public void requestShizukuPermission() {
             runOnUiThread(() -> {
                 try {
-                    if (Shizuku.isBinderReceived()) {
-                        if (Shizuku.checkSelfPermission() == PackageManager.PERMISSION_GRANTED) {
-                            Toast.makeText(MainActivity.this, "Shizuku уже авторизован!", Toast.LENGTH_SHORT).show();
-                        } else if (Shizuku.shouldShowRequestPermissionRationale()) {
-                            Toast.makeText(MainActivity.this, "Требуется разрешить доступ в диалоге One UI", Toast.LENGTH_LONG).show();
-                            Shizuku.requestPermission(SHIZUKU_PERMISSION_REQUEST_CODE);
-                        } else {
-                            Shizuku.requestPermission(SHIZUKU_PERMISSION_REQUEST_CODE);
-                        }
+                    PackageManager pm = getPackageManager();
+                    Intent intent = pm.getLaunchIntentForPackage("moe.shizuku.privileged.api");
+                    if (intent != null) {
+                        startActivity(intent);
+                        Toast.makeText(MainActivity.this, "Открываем Shизuku. Запустите службу", Toast.LENGTH_LONG).show();
                     } else {
-                        Toast.makeText(MainActivity.this, "Служба Shizuku не запущенна. Запустите в приложении Shizuku!", Toast.LENGTH_LONG).show();
+                        Toast.makeText(MainActivity.this, "Shizuku не найден на устройстве!", Toast.LENGTH_LONG).show();
                     }
-                    webView.postDelayed(() -> checkAndSendStatus(), 1500);
+                    webView.postDelayed(() -> checkAndSendStatus(), 2000);
                 } catch (Exception e) {
-                    Toast.makeText(MainActivity.this, "Ошибка вызова Shizuku API", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(MainActivity.this, "Ошибка запуска Shizuku", Toast.LENGTH_SHORT).show();
                 }
             });
         }
@@ -91,10 +74,10 @@ public class MainActivity extends Activity {
         public void applySensBoost(boolean enable) {
             runOnUiThread(() -> {
                 if (enable) {
-                    // Запуск твоего фирменного скрипта через Shizuku Binder
+                    // Запуск твоего фирменного скрипта сенсы через оболочку Shizuku/ADB
                     String exactScript = "gain=1.8 gainx=1.8 gainy=1.8 nz=2 dz=0 dwellms=100 lock=6 chunk=28 chunkmin=0 chunkcap=600 chunkspd=0 chunkcool=5 kaccel=0 power=1.00 edge=0 straighten=0";
                     executeCommand(exactScript);
-                    Toast.makeText(MainActivity.this, "Тепающаяся сенса активирована через Shizuku!", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(MainActivity.this, "Тепающаяся сенса активирована!", Toast.LENGTH_SHORT).show();
                 } else {
                     executeCommand("settings put system pointer_speed 5");
                     Toast.makeText(MainActivity.this, "Сенса сброшена", Toast.LENGTH_SHORT).show();
@@ -109,10 +92,11 @@ public class MainActivity extends Activity {
             String title = "SHIZUKU — НАЖМИ";
             String sub = "Требуется авторизация";
             try {
-                if (Shizuku.isBinderReceived() && Shizuku.checkSelfPermission() == PackageManager.PERMISSION_GRANTED) {
+                Process process = Runtime.getRuntime().exec(new String[]{"sh", "-c", "wm size"});
+                if (process.waitFor() == 0) {
                     isRunning = true;
                     title = "SHIZUKU ВКЛ";
-                    sub = "Доступ активен (One UI обход)";
+                    sub = "Доступ активен";
                 }
             } catch (Exception e) {
                 isRunning = false;
@@ -128,15 +112,8 @@ public class MainActivity extends Activity {
     private void executeCommand(String command) {
         new Thread(() -> {
             try {
-                if (Shizuku.isBinderReceived() && Shizuku.checkSelfPermission() == PackageManager.PERMISSION_GRANTED) {
-                    // Выполнение через Shizuku Process API (обходит ограничения su/sh на Samsung)
-                    Process process = Shizuku.newProcess(new String[]{"sh", "-c", command}, null, null);
-                    process.waitFor();
-                } else {
-                    // Резервный метод через стандартную оболочку
-                    Process process = Runtime.getRuntime().exec(new String[]{"sh", "-c", command});
-                    process.waitFor();
-                }
+                Process process = Runtime.getRuntime().exec(new String[]{"sh", "-c", command});
+                process.waitFor();
             } catch (Exception e) {
                 e.printStackTrace();
             }
