@@ -18,28 +18,29 @@ jobs:
         distribution: 'temurin'
         java-version: '17'
 
-    - name: Prepare Project Structure
+    - name: Build APK Direct
       run: |
+        # 1. Создаем структуру
         mkdir -p app/src/main/res/mipmap-hdpi
-        mkdir -p app/src/main/res/values
         mkdir -p app/src/main/java/com/teleport/sens
+        mkdir -p build/gen build/obj build/apk/res/mipmap-hdpi
 
-        # Копируем иконку
+        # 2. Иконка
         if [ -f "gpt-image-2_A_sleek_futuristic_cyberpunk_app_icon_featuring_a_glowing_neon_letter_T_as_the_c-0.jpg" ]; then
           cp "gpt-image-2_A_sleek_futuristic_cyberpunk_app_icon_featuring_a_glowing_neon_letter_T_as_the_c-0.jpg" app/src/main/res/mipmap-hdpi/ic_launcher.jpg
         fi
 
-        # AndroidManifest.xml
+        # 3. Манифест
         cat << 'EOF' > app/src/main/AndroidManifest.xml
         <?xml version="1.0" encoding="utf-8"?>
         <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-            package="com.teleport.sens">
+            package="com.teleport.sens"
+            android:versionCode="1"
+            android:versionName="1.0">
+            <uses-sdk android:minSdkVersion="21" android:targetSdkVersion="33" />
             <application
-                android:allowBackup="true"
-                android:icon="@mipmap/ic_launcher"
                 android:label="Teleport"
-                android:supportsRtl="true"
-                android:theme="@android:style/Theme.DeviceDefault">
+                android:icon="@mipmap/ic_launcher">
                 <activity
                     android:name=".MainActivity"
                     android:exported="true">
@@ -52,7 +53,7 @@ jobs:
         </manifest>
         EOF
 
-        # Java Activity
+        # 4. Исходный код Java
         cat << 'EOF' > app/src/main/java/com/teleport/sens/MainActivity.java
         package com.teleport.sens;
         import android.app.Activity;
@@ -67,34 +68,32 @@ jobs:
         }
         EOF
 
-        # Settings и Root build.gradle
-        echo "include(':app')" > settings.gradle
-        cat << 'EOF' > build.gradle
-        buildscript {
-            repositories {
-                google()
-                mavenCentral()
-            }
-            dependencies {
-                classpath 'com.android.tools.build:gradle:8.1.1'
-            }
-        }
-        allprojects {
-            repositories {
-                google()
-                mavenCentral()
-            }
-        }
-        EOF
+        # 5. Сборка через Android SDK утилиты
+        SDK=$ANDROID_HOME
+        BUILD_TOOLS=$SDK/build-tools/33.0.0
+        PLATFORM=$SDK/platforms/android-33/android.jar
 
-    - name: Build APK with Gradle
-      run: |
-        gradle wrapper
-        chmod +x gradlew
-        ./gradlew assembleDebug
+        # Компиляция ресурсов
+        $BUILD_TOOLS/aapt2 compile --dir app/src/main/res -o build/res.zip
+        $BUILD_TOOLS/aapt2 link -o build/base.apk -I $PLATFORM --manifest app/src/main/AndroidManifest.xml build/res.zip --java build/gen
+
+        # Компиляция Java кода
+        javac -d build/obj -classpath $PLATFORM build/gen/com/teleport/sens/R.java app/src/main/java/com/teleport/sens/MainActivity.java
+        $BUILD_TOOLS/d8 --output build/build_dex build/obj/com/teleport/sens/*.class --lib $PLATFORM
+
+        # Упаковка APK
+        cd build/build_dex && zip -q -r ../base.apk classes.dex && cd ../..
+        
+        # Подпись ключом дебага
+        keytool -genkeypair -keystore debug.keystore -storepass android -alias androiddebugkey -keypass android -keyalg RSA -keysize 2048 -validity 10000 -dname "CN=Android Debug"
+        $BUILD_TOOLS/apksigner sign --ks debug.keystore --ks-pass pass:android build/base.apk
+
+        mkdir -p app/build/outputs/apk/debug/
+        cp build/base.apk app/build/outputs/apk/debug/app-debug.apk
 
     - name: Upload Real APK
       uses: actions/upload-artifact@v4
       with:
         name: Teleport-APK
         path: app/build/outputs/apk/debug/app-debug.apk
+     
