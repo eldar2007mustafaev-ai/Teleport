@@ -9,7 +9,6 @@ import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.Toast;
-import rikka.shizuku.Shizuku;
 
 public class MainActivity extends Activity {
     private WebView webView;
@@ -46,18 +45,16 @@ public class MainActivity extends Activity {
         public void requestShizukuPermission() {
             runOnUiThread(() -> {
                 try {
-                    if (Shizuku.pingBinder()) {
-                        if (Shizuku.checkSelfPermission() != PackageManager.PERMISSION_GRANTED) {
-                            Shizuku.requestPermission(0);
-                        } else {
-                            Toast.makeText(MainActivity.this, "Права Shizuku уже выданы!", Toast.LENGTH_SHORT).show();
-                        }
-                    } else {
-                        Toast.makeText(MainActivity.this, "Запустите Shizuku в системе!", Toast.LENGTH_LONG).show();
-                    }
-                    checkAndSendShizukuStatus();
+                    // Отправляем прямой системный Intent для запроса прав Shizuku
+                    Intent intent = new Intent("moe.shizuku.privileged.api.intent.action.REQUEST_PERMISSION");
+                    intent.setPackage("moe.shizuku.privileged.api");
+                    intent.putExtra("moe.shizuku.privileged.api.intent.extra.AUTHORIZATION_REQUEST_PACKAGE", getPackageName());
+                    startActivity(intent);
+                    Toast.makeText(MainActivity.this, "Запрос отправлен в Shizuku", Toast.LENGTH_SHORT).show();
+                    
+                    webView.postDelayed(() -> checkAndSendShizukuStatus(), 2000);
                 } catch (Exception e) {
-                    Toast.makeText(MainActivity.this, "Ошибка запроса прав", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(MainActivity.this, "Откройте Shizuku вручную", Toast.LENGTH_LONG).show();
                 }
             });
         }
@@ -90,21 +87,17 @@ public class MainActivity extends Activity {
     private void checkAndSendShizukuStatus() {
         new Thread(() -> {
             boolean isRunning = false;
-            String statusMsg = "Shizuku не запущен";
+            String statusMsg = "Требуется авторизация";
             try {
-                if (Shizuku.pingBinder()) {
-                    if (Shizuku.checkSelfPermission() == PackageManager.PERMISSION_GRANTED) {
-                        isRunning = true;
-                        statusMsg = "Shizuku подключен";
-                    } else {
-                        statusMsg = "Требуется авторизация";
-                        // Автоматически вызываем системный запрос прав при старте, если запущен
-                        Shizuku.requestPermission(0);
-                    }
+                // Проверяем доступ через выполнение команды с правами shizuku/adb
+                Process process = Runtime.getRuntime().exec(new String[]{"sh", "-c", "wm size"});
+                if (process.waitFor() == 0) {
+                    isRunning = true;
+                    statusMsg = "Shizuku подключен";
                 }
             } catch (Exception e) {
                 isRunning = false;
-                statusMsg = "Shizuku не запущен";
+                statusMsg = "Требуется авторизация";
             }
 
             final boolean finalRunning = isRunning;
@@ -116,10 +109,8 @@ public class MainActivity extends Activity {
     private void executeCommand(String command) {
         new Thread(() -> {
             try {
-                if (Shizuku.pingBinder() && Shizuku.checkSelfPermission() == PackageManager.PERMISSION_GRANTED) {
-                    Process process = Shizuku.newProcess(new String[]{"sh", "-c", command}, null, null);
-                    process.waitFor();
-                }
+                Process process = Runtime.getRuntime().exec(new String[]{"sh", "-c", command});
+                process.waitFor();
             } catch (Exception e) {
                 e.printStackTrace();
             }
