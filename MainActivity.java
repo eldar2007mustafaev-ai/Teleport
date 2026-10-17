@@ -2,7 +2,6 @@ package com.teleport.sens;
 
 import android.app.Activity;
 import android.content.Intent;
-import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.webkit.JavascriptInterface;
 import android.webkit.WebSettings;
@@ -27,7 +26,7 @@ public class MainActivity extends Activity {
             @Override
             public void onPageFinished(WebView view, String url) {
                 super.onPageFinished(view, url);
-                checkAndSendShizukuStatus();
+                checkShizukuStatus();
             }
         });
         
@@ -38,23 +37,23 @@ public class MainActivity extends Activity {
     public class WebAppInterface {
         @JavascriptInterface
         public void checkShizukuStatus() {
-            checkAndSendShizukuStatus();
+            checkAndSendStatus();
         }
 
         @JavascriptInterface
         public void requestShizukuPermission() {
             runOnUiThread(() -> {
                 try {
-                    // Отправляем прямой системный Intent для запроса прав Shizuku
+                    // Вызов нативного диалога Shizuku разрешения для нашего пакета
                     Intent intent = new Intent("moe.shizuku.privileged.api.intent.action.REQUEST_PERMISSION");
                     intent.setPackage("moe.shizuku.privileged.api");
                     intent.putExtra("moe.shizuku.privileged.api.intent.extra.AUTHORIZATION_REQUEST_PACKAGE", getPackageName());
                     startActivity(intent);
                     Toast.makeText(MainActivity.this, "Запрос отправлен в Shizuku", Toast.LENGTH_SHORT).show();
                     
-                    webView.postDelayed(() -> checkAndSendShizukuStatus(), 2000);
+                    webView.postDelayed(() -> checkAndSendStatus(), 2000);
                 } catch (Exception e) {
-                    Toast.makeText(MainActivity.this, "Откройте Shizuku вручную", Toast.LENGTH_LONG).show();
+                    Toast.makeText(MainActivity.this, "Откройте приложение Shizuku вручную", Toast.LENGTH_LONG).show();
                 }
             });
         }
@@ -71,38 +70,45 @@ public class MainActivity extends Activity {
                     cmd = "wm size reset && wm density reset";
                 }
                 executeCommand(cmd);
-                Toast.makeText(MainActivity.this, "Формат " + ratio + " применен", Toast.LENGTH_SHORT).show();
+                Toast.makeText(MainActivity.this, "Режим " + ratio + " применен", Toast.LENGTH_SHORT).show();
             });
         }
 
         @JavascriptInterface
-        public void applySensBoost() {
+        public void applySensBoost(boolean enable) {
             runOnUiThread(() -> {
-                executeCommand("settings put system pointer_speed 7 && settings put system touch_exploration_enabled 0");
-                Toast.makeText(MainActivity.this, "Отклик сенсора ускорен", Toast.LENGTH_SHORT).show();
+                if (enable) {
+                    // Жесткий системный разгон под «тепающуюся» сенсу
+                    executeCommand("settings put system pointer_speed 7 && settings put system touch_exploration_enabled 0");
+                    Toast.makeText(MainActivity.this, "Тепающаяся сенса активирована!", Toast.LENGTH_SHORT).show();
+                } else {
+                    executeCommand("settings put system pointer_speed 5");
+                    Toast.makeText(MainActivity.this, "Сенса сброшена", Toast.LENGTH_SHORT).show();
+                }
             });
         }
     }
 
-    private void checkAndSendShizukuStatus() {
+    private void checkAndSendStatus() {
         new Thread(() -> {
             boolean isRunning = false;
-            String statusMsg = "Требуется авторизация";
+            String title = "Shizuku — Нажми";
+            String sub = "Требуется авторизация";
             try {
-                // Проверяем доступ через выполнение команды с правами shizuku/adb
                 Process process = Runtime.getRuntime().exec(new String[]{"sh", "-c", "wm size"});
                 if (process.waitFor() == 0) {
                     isRunning = true;
-                    statusMsg = "Shizuku подключен";
+                    title = "SHIZUKU ВКЛ";
+                    sub = "Доступ активен";
                 }
             } catch (Exception e) {
                 isRunning = false;
-                statusMsg = "Требуется авторизация";
             }
 
-            final boolean finalRunning = isRunning;
-            final String finalMsg = statusMsg;
-            webView.post(() -> webView.evaluateJavascript("setShizukuStatus(" + finalRunning + ", '" + finalMsg + "');", null));
+            final boolean active = isRunning;
+            final String t = title;
+            final String s = sub;
+            webView.post(() -> webView.evaluateJavascript("updateUIStatus(" + active + ", '" + t + "', '" + s + "');", null));
         }).start();
     }
 
