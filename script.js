@@ -1,76 +1,53 @@
-        cat << 'EOF' > app/src/main/java/com/teleport/sens/MainActivity.java
-        package com.teleport.sens;
+// Автопроверка при запуске
+window.onload = function() {
+    checkShizuku();
+};
 
-        import android.app.Activity;
-        import android.os.Bundle;
-        import android.webkit.JavascriptInterface;
-        import android.webkit.WebSettings;
-        import android.webkit.WebView;
-        import android.webkit.WebViewClient;
-        import android.widget.Toast;
+function checkShizuku() {
+    if (window.AndroidBridge) {
+        window.AndroidBridge.checkShizukuStatus();
+    } else {
+        updateStatusUI(false, "Мост с Android не найден");
+    }
+}
 
-        public class MainActivity extends Activity {
-            private WebView webView;
+// Эта функция вызывается из Java, когда статус известен
+function setShizukuStatus(isRunning, message) {
+    const card = document.getElementById('status-card');
+    const statusText = document.getElementById('shizuku-status');
+    const title = card.querySelector('.card-title');
 
-            @Override
-            protected void onCreate(Bundle savedInstanceState) {
-                super.onCreate(savedInstanceState);
-                
-                webView = new WebView(this);
-                WebSettings webSettings = webView.getSettings();
-                webSettings.setJavaScriptEnabled(true);
-                webSettings.setDomStorageEnabled(true);
-                
-                webView.addJavascriptInterface(new WebAppInterface(), "AndroidBridge");
-                webView.setWebViewClient(new WebViewClient());
-                webView.loadUrl("file:///android_asset/index.html");
-                
-                setContentView(webView);
-            }
+    if (isRunning) {
+        card.style.borderColor = '#00ff88';
+        title.style.color = '#00ff88';
+        statusText.style.color = '#00ff88';
+        statusText.innerText = message;
+    } else {
+        card.style.borderColor = '#ff3333';
+        title.style.color = '#ff3333';
+        statusText.style.color = '#ff3333';
+        statusText.innerText = message;
+    }
+}
 
-            public class WebAppInterface {
-                @JavascriptInterface
-                public void applyRatio(String ratio) {
-                    runOnUiThread(() -> {
-                        try {
-                            String cmd = "";
-                            if (ratio.equals("4:3")) {
-                                // Честное уменьшение ширины для растяжения картинки в игре
-                                cmd = "wm size 1080x1440 && wm density 360";
-                            } else if (ratio.equals("16:10")) {
-                                cmd = "wm size 1080x1728 && wm density 400";
-                            } else {
-                                cmd = "wm size reset && wm density reset";
-                            }
-                            executeShizukuCommand(cmd);
-                            Toast.makeText(MainActivity.this, "Режим " + ratio + " применен!", Toast.LENGTH_SHORT).show();
-                        } catch (Exception e) {
-                            Toast.makeText(MainActivity.this, "Ошибка применения разрешения", Toast.LENGTH_SHORT).show();
-                        }
-                    });
-                }
+function setRatio(ratio, element) {
+    document.querySelectorAll('.btn-group .btn').forEach(b => b.classList.remove('active'));
+    element.classList.add('active');
+    document.getElementById('ratio-info').innerText = 'Режим: ' + ratio + ' активирован';
+    
+    if (window.AndroidBridge) {
+        AndroidBridge.applyRatio(ratio);
+    }
+}
 
-                @JavascriptInterface
-                public void applySensBoost() {
-                    runOnUiThread(() -> {
-                        try {
-                            // Жесткий буст отклика тача и ускорения под «тепающуюся» сенсу
-                            executeShizukuCommand("settings put system pointer_speed 7 && settings put system touch_exploration_enabled 0");
-                            Toast.makeText(MainActivity.this, "Телепорт сенсы активирован!", Toast.LENGTH_SHORT).show();
-                        } catch (Exception e) {
-                            Toast.makeText(MainActivity.this, "Ошибка активации сенсы", Toast.LENGTH_SHORT).show();
-                        }
-                    });
-                }
-            }
-
-            private void executeShizukuCommand(String command) {
-                try {
-                    java.lang.Process process = Runtime.getRuntime().exec(new String[]{"sh", "-c", "su -c '" + command + "' || sh -c '" + command + "'"});
-                    process.waitFor();
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-            }
-        }
-        EOF
+function applySens() {
+    const status = document.getElementById('sens-status');
+    status.innerText = 'Телепортация сенсы через Shizuku...';
+    
+    if (window.AndroidBridge) {
+        AndroidBridge.applySensBoost();
+        status.innerText = 'Сенса успешно телепортирована!';
+    } else {
+        status.innerText = 'Ошибка: мост с Android не найден';
+    }
+}
