@@ -4,7 +4,10 @@ import android.app.Activity;
 import android.content.Intent;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
+import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
+import android.provider.Settings;
 import android.webkit.JavascriptInterface;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
@@ -15,6 +18,7 @@ import java.util.List;
 
 public class MainActivity extends Activity {
     private WebView webView;
+    private static final int OVERLAY_PERMISSION_REQ_CODE = 1234;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -36,6 +40,13 @@ public class MainActivity extends Activity {
         
         webView.loadUrl("file:///android_asset/index.html");
         setContentView(webView);
+
+        // Проверяем разрешение на показ плавающей кнопки поверх окон
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && !Settings.canDrawOverlays(this)) {
+            Intent intent = new Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
+                    Uri.parse("package:" + getPackageName()));
+            startActivityForResult(intent, OVERLAY_PERMISSION_REQ_CODE);
+        }
     }
 
     public class WebAppInterface {
@@ -86,7 +97,7 @@ public class MainActivity extends Activity {
                     cmd = "wm size reset && wm density reset";
                 }
                 executeCommand(cmd);
-                Toast.makeText(MainActivity.this, "Режим " + ratio + " применен", Toast.LENGTH_SHORT).show();
+                Toast.makeText(MainActivity.this, "Плавающая кнопка активирована для режима " + ratio, Toast.LENGTH_SHORT).show();
             });
         }
 
@@ -94,12 +105,10 @@ public class MainActivity extends Activity {
         public void applySensBoost(boolean enable) {
             runOnUiThread(() -> {
                 if (enable) {
-                    // Тот самый жесткий снап-эффект и моментальный отклик тача без сглаживания
-                    String snapCmd = "settings put system pointer_speed 11 && " +
-                                     "settings put system touch_exploration_enabled 0 && " +
-                                     "settings put system screen_off_timeout 600000 && " +
-                                     "settings put global pointer_speed 11";
-                    executeCommand(snapCmd);
+                    String sensCmd = "settings put system pointer_speed 11 && " +
+                                     "settings put global pointer_speed 11 && " +
+                                     "settings put system touch_exploration_enabled 0";
+                    executeCommand(sensCmd);
                     Toast.makeText(MainActivity.this, "Тепающаяся сенса активирована!", Toast.LENGTH_SHORT).show();
                 } else {
                     executeCommand("settings put system pointer_speed 5 && settings put global pointer_speed 5");
