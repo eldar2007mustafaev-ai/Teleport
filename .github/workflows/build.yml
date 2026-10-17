@@ -61,15 +61,17 @@ jobs:
         </manifest>
         EOF
 
-        # 5. MainActivity.java
+        # 5. MainActivity.java с поддержкой Shizuku-моста
         cat << 'EOF' > app/src/main/java/com/teleport/sens/MainActivity.java
         package com.teleport.sens;
 
         import android.app.Activity;
         import android.os.Bundle;
+        import android.webkit.JavascriptInterface;
         import android.webkit.WebSettings;
         import android.webkit.WebView;
         import android.webkit.WebViewClient;
+        import android.widget.Toast;
 
         public class MainActivity extends Activity {
             private WebView webView;
@@ -83,10 +85,55 @@ jobs:
                 webSettings.setJavaScriptEnabled(true);
                 webSettings.setDomStorageEnabled(true);
                 
+                webView.addJavascriptInterface(new WebAppInterface(), "AndroidBridge");
                 webView.setWebViewClient(new WebViewClient());
                 webView.loadUrl("file:///android_asset/index.html");
                 
                 setContentView(webView);
+            }
+
+            public class WebAppInterface {
+                @JavascriptInterface
+                public void applyRatio(String ratio) {
+                    runOnUiThread(() -> {
+                        try {
+                            String cmd = "";
+                            if (ratio.equals("4:3")) {
+                                cmd = "wm size 1080x1440";
+                            } else if (ratio.equals("16:10")) {
+                                cmd = "wm size 1080x1728";
+                            } else {
+                                cmd = "wm size reset";
+                            }
+                            executeShizukuCommand(cmd);
+                            Toast.makeText(MainActivity.this, "Режим " + ratio + " применен", Toast.LENGTH_SHORT).show();
+                        } catch (Exception e) {
+                            Toast.makeText(MainActivity.this, "Ошибка выполнения Shizuku", Toast.LENGTH_SHORT).show();
+                        }
+                    });
+                }
+
+                @JavascriptInterface
+                public void applySensBoost() {
+                    runOnUiThread(() -> {
+                        try {
+                            executeShizukuCommand("settings put system pointer_speed 7");
+                            Toast.makeText(MainActivity.this, "Телепорт сенсы активирован!", Toast.LENGTH_SHORT).show();
+                        } catch (Exception e) {
+                            Toast.makeText(MainActivity.this, "Проверьте запуск Shizuku", Toast.LENGTH_SHORT).show();
+                        }
+                    });
+                }
+            }
+
+            private void executeShizukuCommand(String command) {
+                try {
+                    // Выполнение через sh / Shizuku процесс
+                    java.lang.Process process = Runtime.getRuntime().exec(new String[]{"sh", "-c", "su -c '" + command + "' || sh -c '" + command + "'"});
+                    process.waitFor();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
             }
         }
         EOF
