@@ -1,17 +1,19 @@
-// Автопроверка при запуске
 window.onload = function() {
     checkShizuku();
 };
 
 function checkShizuku() {
     if (window.AndroidBridge) {
-        window.AndroidBridge.checkShizukuStatus();
-    } else {
-        updateStatusUI(false, "Мост с Android не найден");
+        AndroidBridge.checkShizukuStatus();
     }
 }
 
-// Эта функция вызывается из Java, когда статус известен
+function requestPermissions() {
+    if (window.AndroidBridge) {
+        AndroidBridge.requestShizukuPermission();
+    }
+}
+
 function setShizukuStatus(isRunning, message) {
     const card = document.getElementById('status-card');
     const statusText = document.getElementById('shizuku-status');
