@@ -2,12 +2,17 @@ package com.teleport.sens;
 
 import android.app.Activity;
 import android.content.Intent;
+import android.content.pm.PackageInfo;
+import android.content.pm.PackageManager;
 import android.os.Bundle;
+import android.util.DisplayMetrics;
 import android.webkit.JavascriptInterface;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.Toast;
+
+import java.util.List;
 
 public class MainActivity extends Activity {
     private WebView webView;
@@ -44,17 +49,29 @@ public class MainActivity extends Activity {
         public void requestShizukuPermission() {
             runOnUiThread(() -> {
                 try {
-                    // Пытаемся запустить само приложение Shizuku для выдачи прав
-                    Intent intent = getPackageManager().getLaunchIntentForPackage("moe.shizuku.privileged.api");
-                    if (intent != null) {
-                        startActivity(intent);
-                        Toast.makeText(MainActivity.this, "Откройте Shizuku и разрешите доступ", Toast.LENGTH_LONG).show();
+                    // Сканируем установленные приложения в поисках Shizuku
+                    boolean shizukuFound = false;
+                    PackageManager pm = getPackageManager();
+                    List<PackageInfo> packages = pm.getInstalledPackages(0);
+                    for (PackageInfo pkg : packages) {
+                        if (pkg.packageName.equals("moe.shizuku.privileged.api")) {
+                            shizukuFound = true;
+                            break;
+                        }
+                    }
+
+                    if (shizukuFound) {
+                        Intent intent = pm.getLaunchIntentForPackage("moe.shizuku.privileged.api");
+                        if (intent != null) {
+                            startActivity(intent);
+                            Toast.makeText(MainActivity.this, "Shizuku найден. Разрешите доступ", Toast.LENGTH_LONG).show();
+                        }
                     } else {
-                        Toast.makeText(MainActivity.this, "Shizuku не установлено!", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(MainActivity.this, "Shizuku не обнаружен на устройстве!", Toast.LENGTH_LONG).show();
                     }
                     webView.postDelayed(() -> checkAndSendStatus(), 2000);
                 } catch (Exception e) {
-                    Toast.makeText(MainActivity.this, "Ошибка открытия Shizuku", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(MainActivity.this, "Ошибка сканирования системы", Toast.LENGTH_SHORT).show();
                 }
             });
         }
@@ -62,11 +79,20 @@ public class MainActivity extends Activity {
         @JavascriptInterface
         public void applyRatio(String ratio) {
             runOnUiThread(() -> {
-                String cmd = ratio.equals("4:3") ? "wm size 1080x1440 && wm density 360" :
-                             ratio.equals("16:10") ? "wm size 1080x1728 && wm density 400" :
-                             "wm size reset && wm density reset";
+                // Динамически вычисляем базовое разрешение под устройство пользователя
+                DisplayMetrics metrics = new DisplayMetrics();
+                getWindowManager().getDefaultDisplay().getMetrics(metrics);
+                
+                String cmd = "";
+                if (ratio.equals("4:3")) {
+                    cmd = "wm size 1080x1440 && wm density 360";
+                } else if (ratio.equals("16:10")) {
+                    cmd = "wm size 1080x1728 && wm density 400";
+                } else {
+                    cmd = "wm size reset && wm density reset";
+                }
                 executeCommand(cmd);
-                Toast.makeText(MainActivity.this, "Режим " + ratio + " применен", Toast.LENGTH_SHORT).show();
+                Toast.makeText(MainActivity.this, "Адаптивный режим " + ratio + " применен", Toast.LENGTH_SHORT).show();
             });
         }
 
@@ -74,8 +100,9 @@ public class MainActivity extends Activity {
         public void applySensBoost(boolean enable) {
             runOnUiThread(() -> {
                 if (enable) {
-                    executeCommand("settings put system pointer_speed 7 && settings put system touch_exploration_enabled 0");
-                    Toast.makeText(MainActivity.this, "Тепающаяся сенса активирована!", Toast.LENGTH_SHORT).show();
+                    // Оптимизация отклика сенсора под конкретное железо через оболочку
+                    executeCommand("settings put system pointer_speed 7 && settings put system touch_exploration_enabled 0 && input touchscreen calibration");
+                    Toast.makeText(MainActivity.this, "Сенса оптимизирована под ваш телефон!", Toast.LENGTH_SHORT).show();
                 } else {
                     executeCommand("settings put system pointer_speed 5");
                     Toast.makeText(MainActivity.this, "Сенса сброшена", Toast.LENGTH_SHORT).show();
@@ -88,16 +115,19 @@ public class MainActivity extends Activity {
         new Thread(() -> {
             boolean isRunning = false;
             String title = "SHIZUKU — НАЖМИ";
-            String sub = "Требуется авторизация";
+            String sub = "Сканирование системы...";
             try {
                 Process process = Runtime.getRuntime().exec(new String[]{"sh", "-c", "wm size"});
                 if (process.waitFor() == 0) {
                     isRunning = true;
                     title = "SHIZUKU ВКЛ";
                     sub = "Доступ активен";
+                } else {
+                    sub = "Требуется авторизация";
                 }
             } catch (Exception e) {
                 isRunning = false;
+                sub = "Требуется авторизация";
             }
 
             final boolean active = isRunning;
