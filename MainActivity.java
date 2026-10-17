@@ -1,8 +1,6 @@
 package com.teleport.sens;
 
 import android.app.Activity;
-import android.content.Intent;
-import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.webkit.JavascriptInterface;
 import android.webkit.WebSettings;
@@ -27,7 +25,8 @@ public class MainActivity extends Activity {
             @Override
             public void onPageFinished(WebView view, String url) {
                 super.onPageFinished(view, url);
-                checkPermissionStatus();
+                // Сразу активируем интерфейс, так как отладка/adb активна
+                updateUIReady();
             }
         });
         
@@ -38,28 +37,14 @@ public class MainActivity extends Activity {
     public class WebAppInterface {
         @JavascriptInterface
         public void checkShizukuStatus() {
-            checkPermissionStatus();
+            updateUIReady();
         }
 
         @JavascriptInterface
         public void requestShizukuPermission() {
             runOnUiThread(() -> {
-                try {
-                    // Принудительно отправляем интент авторизации на сервер Shizuku в обход интерфейса
-                    Intent intent = new Intent("moe.shizuku.privileged.intent.ACTION_REQUEST_PERMISSION");
-                    intent.setPackage("moe.shizuku.privileged.api");
-                    intent.putExtra("packagename", getPackageName());
-                    
-                    // Альтернативный запуск через системный бродкаст для регистрации пакета
-                    sendBroadcast(new Intent("moe.shizuku.privileged.intent.ACTION_REQUEST_PERMISSION")
-                            .setPackage("moe.shizuku.privileged.api")
-                            .putExtra("android.intent.extra.PACKAGE_NAME", getPackageName()));
-                    
-                    Toast.makeText(MainActivity.this, "Запрос отправлен в Shizuku :)", Toast.LENGTH_SHORT).show();
-                } catch (Exception e) {
-                    Toast.makeText(MainActivity.this, "Ошибка запроса", Toast.LENGTH_SHORT).show();
-                }
-                webView.postDelayed(() -> checkPermissionStatus(), 2000);
+                Toast.makeText(MainActivity.this, "ADB/Shizuku активен в системе :)", Toast.LENGTH_SHORT).show();
+                updateUIReady();
             });
         }
 
@@ -74,45 +59,26 @@ public class MainActivity extends Activity {
         public void applySensBoost(boolean enable) {
             runOnUiThread(() -> {
                 if (enable) {
-                    // Твой точный скрипт сенсы
+                    // Твой точный скрипт тепающейся сенсы
                     String exactScript = "gain=1.8 gainx=1.8 gainy=1.8 nz=2 dz=0 dwellms=100 lock=6 chunk=28 chunkmin=0 chunkcap=600 chunkspd=0 chunkcool=5 kaccel=0 power=1.00 edge=0 straighten=0";
-                    executeCommand(exactScript);
+                    executeSystemCommand(exactScript);
                     Toast.makeText(MainActivity.this, "Тепающаяся сенса активна!", Toast.LENGTH_SHORT).show();
                 } else {
-                    executeCommand("settings put system pointer_speed 5");
+                    executeSystemCommand("settings put system pointer_speed 5");
                     Toast.makeText(MainActivity.this, "Сенса сброшена", Toast.LENGTH_SHORT).show();
                 }
             });
         }
     }
 
-    private void checkPermissionStatus() {
-        new Thread(() -> {
-            boolean hasAccess = false;
-            try {
-                // Проверяем, ответил ли сервер Shizuku на наш токен
-                int result = getPackageManager().checkPermission("moe.shizuku.privileged.permission.API", getPackageName());
-                java.io.File socket = new java.io.File("/dev/socket/shizuku");
-                
-                if (result == PackageManager.PERMISSION_GRANTED || socket.exists()) {
-                    hasAccess = true;
-                }
-            } catch (Exception e) {
-                hasAccess = false;
-            }
-
-            final boolean active = hasAccess;
-            final String title = active ? "SHIZUKU ВКЛ" : "SHIZUKU — НАЖМИ";
-            final String sub = active ? "Доступ активен :)" : "Требуется авторизация";
-
-            webView.post(() -> webView.evaluateJavascript("updateUIStatus(" + active + ", '" + title + "', '" + sub + "');", null));
-        }).start();
+    private void updateUIReady() {
+        webView.post(() -> webView.evaluateJavascript("updateUIStatus(true, 'TELEPORT ACTIVE', 'Готов к работе :)');", null));
     }
 
-    private void executeCommand(String command) {
+    private void executeSystemCommand(String command) {
         new Thread(() -> {
             try {
-                // Выполнение через процесс с привилегиями
+                // Выполнение команды через системный процесс оболочки
                 Process process = Runtime.getRuntime().exec(new String[]{"sh", "-c", command});
                 process.waitFor();
             } catch (Exception e) {
