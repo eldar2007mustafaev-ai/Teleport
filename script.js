@@ -2,57 +2,53 @@ window.onload = function() {
     checkShizuku();
 };
 
-function initShizukuConnection() {
-    if (window.AndroidBridge) {
-        AndroidBridge.requestShizukuPermission();
-    }
-}
-
 function checkShizuku() {
     if (window.AndroidBridge) {
         AndroidBridge.checkShizukuStatus();
     }
 }
 
-function requestPermissions() {
+function requestShizuku() {
     if (window.AndroidBridge) {
         AndroidBridge.requestShizukuPermission();
     }
 }
 
-function setShizukuStatus(isRunning, message) {
-    const statusText = document.getElementById('shizuku-status');
-    const statusDot = document.getElementById('status-dot');
-    const welcomeModal = document.getElementById('welcome-modal');
+function updateUIStatus(isActive, title, sub) {
+    const dot = document.getElementById('dot');
+    const titleEl = document.getElementById('status-title');
+    const subEl = document.getElementById('status-sub');
 
-    statusText.innerText = message;
+    titleEl.innerText = title;
+    subEl.innerText = sub;
 
-    if (isRunning) {
-        statusDot.classList.add('active');
-        welcomeModal.style.display = 'none'; // Скрываем стартовый экран, если права есть
+    if (isActive) {
+        dot.classList.add('active');
     } else {
-        statusDot.classList.remove('active');
-        welcomeModal.style.display = 'flex'; // Показываем экран запроса прав
+        dot.classList.remove('active');
     }
 }
 
 function setRatio(ratio, element) {
     document.querySelectorAll('.btn-group .btn').forEach(b => b.classList.remove('active'));
     element.classList.add('active');
-    document.getElementById('ratio-info').innerText = 'Режим: ' + ratio;
-    
     if (window.AndroidBridge) {
         AndroidBridge.applyRatio(ratio);
     }
 }
 
-function applySens() {
-    const status = document.getElementById('sens-status');
-    status.innerText = 'Применение настроек...';
-    
+let sensActive = false;
+function toggleSens() {
+    sensActive = !sensActive;
+    const btn = document.getElementById('sens-btn');
+    if (sensActive) {
+        btn.classList.add('active');
+        btn.innerText = 'РАБОТАЕТ';
+    } else {
+        btn.classList.remove('active');
+        btn.innerText = 'ВКЛ';
+    }
     if (window.AndroidBridge) {
-        AndroidBridge.applySensBoost();
-        status.innerText = 'Буст отклика успешно применен!';
-        status.style.color = '#2cb67d';
+        AndroidBridge.applySensBoost(sensActive);
     }
 }
