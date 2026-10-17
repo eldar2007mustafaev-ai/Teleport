@@ -2,35 +2,31 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.teleport.sens">
 
-    <!-- Объявляем системное разрешение Shizuku, чтобы система и aShell знали про API -->
-    <uses-permission android:name="moe.shizuku.privileged.permission.API" />
+    <!-- Разрешения для оверлеев и системных настроек -->
+    <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
+    <uses-permission android:name="android.permission.WRITE_SECURE_SETTINGS" />
+    <uses-permission android:name="android.permission.DUMP" />
 
     <application
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
-        android:label="@string/app_name"
+        android:label="Teleport"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
-        android:theme="@style/Theme.AppCompat.NoActionBar">
-
+        android:theme="@android:style/Theme.NoTitleBar.Fullscreen">
+        
         <activity
             android:name=".MainActivity"
-            android:exported="true">
+            android:exported="true"
+            android:configChanges="orientation|screenSize|keyboardHidden">
             <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-                <category android:name="android.intent.category.LAUNCHER" />
+                <action android:name="intent.action.MAIN" />
+                <category android:name="intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
 
-        <!-- Провайдер для корректной работы Binder-моста Shizuku -->
-        <provider
-            android:name="rikka.shizuku.ShizukuProvider"
-            android:authorities="${applicationId}.shizuku"
-            android:enabled="true"
-            android:exported="true"
-            android:multiprocess="false"
-            android:permission="android.permission.INTERACT_ACROSS_USERS_FULL" />
+        <!-- Сервис плавающей кнопки и прицела -->
+        <service android:name=".OverlayService" android:exported="false" />
 
     </application>
-
 </manifest>
