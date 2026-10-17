@@ -20,12 +20,12 @@ jobs:
 
     - name: Build APK Direct
       run: |
-        # 1. Создаем структуру
+        # 1. Структура
         mkdir -p app/src/main/res/mipmap-hdpi
         mkdir -p app/src/main/java/com/teleport/sens
         mkdir -p build/gen build/obj build/apk/res/mipmap-hdpi
 
-        # 2. Копируем иконку
+        # 2. Иконка
         if [ -f "gpt-image-2_A_sleek_futuristic_cyberpunk_app_icon_featuring_a_glowing_neon_letter_T_as_the_c-0.jpg" ]; then
           cp "gpt-image-2_A_sleek_futuristic_cyberpunk_app_icon_featuring_a_glowing_neon_letter_T_as_the_c-0.jpg" app/src/main/res/mipmap-hdpi/ic_launcher.jpg
         fi
@@ -53,7 +53,7 @@ jobs:
         </manifest>
         EOF
 
-        # 4. Исходный код Java
+        # 4. Код Java
         cat << 'EOF' > app/src/main/java/com/teleport/sens/MainActivity.java
         package com.teleport.sens;
         import android.app.Activity;
@@ -68,13 +68,31 @@ jobs:
         }
         EOF
 
-        # 5. Автоматический поиск путей Android SDK
-        SDK=$ANDROID_HOME
-        BUILD_TOOLS=$(ls -d$SDK/build-tools/* | tail -n 1)
-        PLATFORM=$(ls$SDK/platforms/android-*/android.jar | tail -n 1)
+        # 5. Определение путей SDK
+        SDK="$ANDROID_SDK_ROOT"
+        BUILD_TOOLS_DIR=$(find "$SDK/build-tools" -mindepth 1 -maxdepth 1 -type d | sort -V | tail -n 1)
+        PLATFORM_JAR=$(find "$SDK/platforms" -name "android.jar" | sort -V | tail -n 1)
 
-        echo "Using Build Tools from: $BUILD_TOOLS"
-        echo "Using Platform Jar: $PLATFORM"
+        echo "Build tools: $BUILD_TOOLS_DIR"
+        echo "Platform jar: $PLATFORM_JAR"
 
-        # Компиляция ресурсов
-        $BUILD_TOOLS/aapt2 compile --dir app/src/main
+        # 6. Сборка
+        "$BUILD_TOOLS_DIR/aapt2" compile --dir app/src/main/res -o build/res.zip
+        "$BUILD_TOOLS_DIR/aapt2" link -o build/base.apk -I "$PLATFORM_JAR" --manifest app/src/main/AndroidManifest.xml build/res.zip --java build/gen
+
+        javac -d build/obj -classpath "$PLATFORM_JAR" build/gen/com/teleport/sens/R.java app/src/main/java/com/teleport/sens/MainActivity.java
+        "$BUILD_TOOLS_DIR/d8" --output build/build_dex build/obj/com/teleport/sens/*.class --lib "$PLATFORM_JAR"
+
+        cd build/build_dex && zip -q -r ../base.apk classes.dex && cd ../..
+        
+        keytool -genkeypair -keystore debug.keystore -storepass android -alias androiddebugkey -keypass android -keyalg RSA -keysize 2048 -validity 10000 -dname "CN=Android Debug"
+        "$BUILD_TOOLS_DIR/apksigner" sign --ks debug.keystore --ks-pass pass:android build/base.apk
+
+        mkdir -p app/build/outputs/apk/debug/
+        cp build/base.apk app/build/outputs/apk/debug/app-debug.apk
+
+    - name: Upload Real APK
+      uses: actions/upload-artifact@v4
+      with:
+        name: Teleport-APK
+        path: app/build/outputs/apk/debug/app-debug.apk
