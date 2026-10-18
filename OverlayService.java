@@ -46,7 +46,7 @@ public class OverlayService extends Service {
     private final Handler handler = new Handler(Looper.getMainLooper());
     private Runnable longPressRunnable;
 
-    private int screenState = 0; // 0 = норма, 1 = 16:9, 2 = растянуто
+    private int screenState = 0;
     private String physicalSize = null;
 
     private float downX, downY, startX, startY;
@@ -132,8 +132,9 @@ public class OverlayService extends Service {
                 if (Math.abs(dx) > touchSlop || Math.abs(dy) > touchSlop) {
                     moved = true;
                     if (longPressRunnable != null) handler.removeCallbacks(longPressRunnable);
-                    params.x = startX + Math.round(dx);
-                    params.y = startY + Math.round(dy);
+                    // ИСПРАВЛЕНО: явное приведение к int
+                    params.x = (int)(startX + Math.round(dx));
+                    params.y = (int)(startY + Math.round(dy));
                     windowManager.updateViewLayout(floatingButtonView, params);
                 }
                 return true;
@@ -194,11 +195,9 @@ public class OverlayService extends Service {
         }
     }
 
-    // --- ИСПРАВЛЕННЫЙ И УЛУЧШЕННЫЙ МЕТОД ---
     private void runCommand(final String cmd) {
         new Thread(() -> {
             try {
-                // 1. Пробуем выполнить с Root правами
                 Process p = new ProcessBuilder("su", "-c", cmd)
                         .redirectErrorStream(true)
                         .start();
@@ -210,7 +209,6 @@ public class OverlayService extends Service {
                 }
                 int exitCode = p.waitFor();
                 
-                // 2. Если Root недоступен (exitCode != 0), пробуем обычный shell
                 if (exitCode != 0) {
                     p = new ProcessBuilder("sh", "-c", cmd)
                             .redirectErrorStream(true)
@@ -218,7 +216,7 @@ public class OverlayService extends Service {
                     p.waitFor();
                 }
             } catch (Exception e) {
-                handler.post(() -> toast("Ошибка выполнения: " + cmd));
+                handler.post(() -> toast("Ошибка: " + cmd));
                 e.printStackTrace();
             }
         }).start();
