@@ -110,7 +110,7 @@ public class MainActivity extends Activity {
             return "Проверка через команды...";
         }
 
-        // МАКСИМАЛЬНЫЙ TELEPORT MODE
+        // МАКСИМАЛЬНЫЙ TELEPORT MODE — телепающая сенса
         @JavascriptInterface
         public void applyTeleportMode() {
             String[] commands = {
@@ -118,11 +118,11 @@ public class MainActivity extends Activity {
                 "settings put system pointer_speed 7",
                 "settings put secure pointer_speed 7",
                 
-                // Отключаем акселерацию и сглаживание
+                // Отключаем акселерацию и сглаживание (1:1 движение)
                 "settings put system pointer_acceleration 0",
                 "settings put secure pointer_acceleration 0",
                 
-                // Отключаем ВСЕ анимации системы
+                // Отключаем ВСЕ анимации системы (мгновенный отклик)
                 "settings put global window_animation_scale 0",
                 "settings put global transition_animation_scale 0",
                 "settings put global animator_duration_scale 0",
@@ -131,20 +131,23 @@ public class MainActivity extends Activity {
                 "settings put system touch_exploration_enabled 0",
                 "settings put global touch_pressure_scale 0",
                 
-                // Отключаем предсказание движения
+                // Отключаем предсказание движения (убираем интерполяцию)
                 "settings put secure show_ime_with_hard_keyboard 0",
                 "settings put global motion_event_injection_timeout 0",
                 
                 // Оптимизации для снижения input lag
                 "settings put global lowpower_standby 0",
-                "settings put global adaptive_sleep 0"
+                "settings put global adaptive_sleep 0",
+                
+                // Отключаем энергосбережение тачскрина
+                "settings put system touch_boost 1"
             };
             
             for (String cmd : commands) {
                 runCommand(cmd);
             }
             
-            runOnUiThread(() -> Toast.makeText(MainActivity.this, " TELEPORT MODE активирован", Toast.LENGTH_SHORT).show());
+            runOnUiThread(() -> Toast.makeText(MainActivity.this, "⚡ TELEPORT MODE АКТИВИРОВАН", Toast.LENGTH_SHORT).show());
         }
     }
 
