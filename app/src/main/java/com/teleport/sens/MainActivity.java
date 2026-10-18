@@ -1,5 +1,6 @@
 package com.teleport.sens;
 
+import java.lang.reflect.Method;
 import android.app.Activity;
 import android.content.Intent;
 import android.net.Uri;
@@ -16,7 +17,6 @@ import android.widget.Toast;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
-import java.lang.reflect.Method;
 
 public class MainActivity extends Activity {
     private WebView webView;
@@ -95,8 +95,6 @@ public class MainActivity extends Activity {
             return Settings.canDrawOverlays(MainActivity.this);
         }
 
-        // === SHIZUKU — ЧЕРЕЗ РЕФЛЕКСИЮ (сборка пройдёт всегда) ===
-        
         @JavascriptInterface
         public String getShizukuStatus() {
             return ShizukuInputInjector.getStatus();
@@ -153,8 +151,6 @@ public class MainActivity extends Activity {
             Toast.makeText(MainActivity.this, "Команда скопирована", Toast.LENGTH_SHORT).show();
         }
 
-        // === FIXSENS ===
-        
         @JavascriptInterface
         public boolean isFixSensServiceRunning() {
             FixSensService service = FixSensService.getInstance();
@@ -180,9 +176,9 @@ public class MainActivity extends Activity {
             FixSensService service = FixSensService.getInstance();
             if (service != null) {
                 service.setActive(enable);
-                String mode = service.isUsingShizuku() ? " (Shizuku INJECT)" : " (fallback)";
+                String mode = service.isUsingShizuku() ? " (Shizuku)" : " (fallback)";
                 runOnUiThread(() -> Toast.makeText(MainActivity.this, 
-                    "FixSens: " + (enable ? "ВКЛ" : "ВЫКЛ") + mode, Toast.LENGTH_LONG).show());
+                    "FixSens: " + (enable ? "ВКЛ" : "ВЫКЛ") + mode, Toast.LENGTH_SHORT).show());
             } else {
                 runOnUiThread(() -> Toast.makeText(MainActivity.this, 
                     "Сервис не запущен", Toast.LENGTH_SHORT).show());
@@ -194,6 +190,9 @@ public class MainActivity extends Activity {
             FixSensService service = FixSensService.getInstance();
             if (service != null) {
                 service.setProcessorParams(sharpness, noise, straighten);
+                runOnUiThread(() -> Toast.makeText(MainActivity.this, 
+                    String.format("%.2f · %.1f · %.2f", sharpness, noise, straighten), 
+                    Toast.LENGTH_SHORT).show());
             }
         }
 
@@ -210,7 +209,7 @@ public class MainActivity extends Activity {
                 runCommand(cmd);
             }
             runOnUiThread(() -> Toast.makeText(MainActivity.this, 
-                "⚡ TELEPORT MODE", Toast.LENGTH_SHORT).show());
+                " TELEPORT MODE", Toast.LENGTH_SHORT).show());
         }
     }
 
