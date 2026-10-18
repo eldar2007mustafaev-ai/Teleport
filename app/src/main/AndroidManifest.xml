@@ -6,6 +6,10 @@
     <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
     <uses-permission android:name="android.permission.WRITE_SECURE_SETTINGS" />
     <uses-permission android:name="android.permission.DUMP" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_SPECIAL_USE" />
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
 
     <application
         android:allowBackup="true"
@@ -26,7 +30,10 @@
         </activity>
 
         <!-- Сервис плавающей кнопки -->
-        <service android:name=".OverlayService" android:exported="false" />
+        <service 
+            android:name=".OverlayService" 
+            android:exported="false"
+            android:foregroundServiceType="specialUse" />
 
     </application>
 </manifest>
