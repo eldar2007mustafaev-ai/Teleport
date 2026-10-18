@@ -4,3 +4,6 @@
 -keepclassmembers class com.teleport.sens.MainActivity$AppController {
     *;
 }
+-keepclassmembers class com.teleport.sens.OverlayService {
+    *;
+}
