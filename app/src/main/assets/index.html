@@ -1,1 +1,79 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teleport // Standoff 2</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
 
+    <!-- Модальное окно проверки прав -->
+    <div id="permModal">
+        <div class="modal-box">
+            <div class="modal-title">Требуется доступ</div>
+            <div class="modal-text">Предоставьте разрешение на отображение поверх других окон для работы плавающей кнопки в игре.</div>
+            <button class="btn-primary" onclick="AndroidBridge.openPermissionSettings()">РАЗРЕШИТЬ ДОСТУП</button>
+        </div>
+    </div>
+
+    <div class="header">
+        <div class="title">Teleport // Standoff 2</div>
+    </div>
+
+    <!-- Блок сенсы с 4 режимами -->
+    <div class="card">
+        <div class="card-title">Настройка сенсора & Отклика</div>
+        <div class="card-desc">Выберите подходящий пресет ускорения указателя для микрофликов:</div>
+        <div class="sens-grid">
+            <div class="sens-card" onclick="setSensitivity(4, 'Резкая')">
+                <b>Резкая</b><span>Агрессивный флик</span>
+            </div>
+            <div class="sens-card" onclick="setSensitivity(3, 'Плавная')">
+                <b>Плавная</b><span>Контроль спрея</span>
+            </div>
+            <div class="sens-card" onclick="setSensitivity(6, 'Ультра')">
+                <b>Ультра</b><span>Высокая скорость</span>
+            </div>
+            <div class="sens-card" onclick="setSensitivity(7, 'Телепорт')">
+                <b>Телепорт</b><span>Instant Response</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Блок Растяжения экрана -->
+    <div class="card">
+        <div class="card-title">Растяжение экрана (16:9)</div>
+        <div class="card-desc">Включите оверлей для быстрого переключения разрешения прямо в катке.</div>
+        <div class="toggle-row">
+            <span>Плавающая кнопка</span>
+            <label class="switch">
+                <input type="checkbox" id="floatToggle" onchange="AndroidBridge.toggleFloatingButton(this.checked)">
+                <span class="slider"></span>
+            </label>
+        </div>
+        <div class="status-badge"><div class="status-dot"></div>Система готова к работе</div>
+    </div>
+
+    <!-- Бустер производительности -->
+    <div class="card">
+        <div class="card-title">Бустер производительности</div>
+        <div class="toggle-row">
+            <span>Максимальная частота (120 Гц)</span>
+            <label class="switch">
+                <input type="checkbox" onchange="toggleFeature(this.checked, 'settings put system peak_refresh_rate 120.0', '120 Гц запрошено')">
+                <span class="slider"></span>
+            </label>
+        </div>
+        <div class="toggle-row" style="margin-top: 12px;">
+            <span>Отключение системных анимаций</span>
+            <label class="switch">
+                <input type="checkbox" onchange="toggleFeature(this.checked, 'settings put global window_animation_scale 0.0', 'Анимации отключены')">
+                <span class="slider"></span>
+            </label>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
