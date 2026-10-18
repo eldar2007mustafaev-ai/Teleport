@@ -2,10 +2,12 @@ package com.teleport.sens;
 
 import android.app.Activity;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.provider.Settings;
+import android.util.Log;
 import android.view.View;
 import android.webkit.JavascriptInterface;
 import android.webkit.WebSettings;
@@ -16,9 +18,12 @@ import android.widget.Toast;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 
+import rikka.shizuku.Shizuku;
+
 public class MainActivity extends Activity {
     private WebView webView;
     private boolean hasShownPermissionRequest = false;
+    private static final int SHIZUKU_REQUEST_CODE = 1001;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -41,6 +46,17 @@ public class MainActivity extends Activity {
         webView.setWebViewClient(new WebViewClient());
         webView.loadUrl("file:///android_asset/index.html");
         setContentView(webView);
+
+        // Инициализация Shizuku
+        Shizuku.addRequestPermissionResultListener((requestCode, grantResult) -> {
+            if (requestCode == SHIZUKU_REQUEST_CODE) {
+                if (grantResult == PackageManager.PERMISSION_GRANTED) {
+                    runOnUiThread(() -> Toast.makeText(this, "✅ Shizuku разрешение получено", Toast.LENGTH_SHORT).show());
+                } else {
+                    runOnUiThread(() -> Toast.makeText(this, "❌ Отказано в Shizuku", Toast.LENGTH_SHORT).show());
+                }
+            }
+        });
     }
 
     @Override
@@ -67,7 +83,7 @@ public class MainActivity extends Activity {
     public class AppController {
         @JavascriptInterface
         public void executeCommand(String command) {
-            runCommand(command);
+            runShizukuCommand(command);
         }
 
         @JavascriptInterface
@@ -104,46 +120,66 @@ public class MainActivity extends Activity {
             return true;
         }
 
+        // Точная проверка статуса Shizuku для UI
+        @JavascriptInterface
+        public String getShizukuStatus() {
+            if (!Shizuku.pingBinder()) {
+                return "Shizuku не запущен (открой приложение Shizuku и запусти сервис)";
+            }
+            if (Shizuku.checkSelfPermission() != PackageManager.PERMISSION_GRANTED) {
+                return "Нет разрешения Shizuku (нажми кнопку 'Выдать разрешение' в приложении)";
+            }
+            return "Shizuku работает отлично";
+        }
+
+        @JavascriptInterface
+        public void requestShizukuPermission() {
+            if (Shizuku.pingBinder()) {
+                Shizuku.requestPermission(SHIZUKU_REQUEST_CODE);
+            } else {
+                runOnUiThread(() -> Toast.makeText(MainActivity.this, "Сначала запусти Shizuku", Toast.LENGTH_SHORT).show());
+            }
+        }
+
         @JavascriptInterface
         public void applyInstantFlick() {
             String[] commands = {
                 "settings put global window_animation_scale 0",
                 "settings put global transition_animation_scale 0",
                 "settings put global animator_duration_scale 0",
+                "settings put system pointer_speed 7",
+                "settings put secure pointer_speed 7",
                 "settings put system pointer_acceleration 0",
                 "settings put secure pointer_acceleration 0",
-                "settings put system pointer_speed 7",
                 "settings put system touch_exploration_enabled 0",
                 "settings put global touch_pressure_scale 0"
             };
             
             for (String cmd : commands) {
-                runCommand(cmd);
+                runShizukuCommand(cmd);
             }
             
-            runOnUiThread(() -> Toast.makeText(MainActivity.this, "⚡ Instant Flick активирован", Toast.LENGTH_SHORT).show());
+            runOnUiThread(() -> Toast.makeText(MainActivity.this, "⚡ MAX FLICK активирован", Toast.LENGTH_SHORT).show());
         }
     }
 
-    public static void runCommand(String cmd) {
-        new Thread(() -> {
-            try {
-                Process process = Runtime.getRuntime().exec(new String[]{"su", "-c", cmd});
-                BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
-                StringBuilder output = new StringBuilder();
-                String line;
-                while ((line = reader.readLine()) != null) {
-                    output.append(line);
-                }
-                process.waitFor();
-                
-                if (process.exitValue() != 0) {
-                    process = Runtime.getRuntime().exec(new String[]{"sh", "-c", cmd});
-                    process.waitFor();
-                }
-            } catch (Exception e) {
-                e.printStackTrace();
+    // Выполнение команд через Shizuku (ADB права)
+    public static void runShizukuCommand(String cmd) {
+        if (!Shizuku.pingBinder()) {
+            Log.e("Teleport", "Shizuku не запущен");
+            return;
+        }
+        try {
+            Process p = Shizuku.newProcess(new String[]{"sh", "-c", cmd}, null, null);
+            BufferedReader reader = new BufferedReader(new InputStreamReader(p.getInputStream()));
+            StringBuilder output = new StringBuilder();
+            String line;
+            while ((line = reader.readLine()) != null) {
+                output.append(line);
             }
-        }).start();
+            p.waitFor();
+        } catch (Exception e) {
+            Log.e("Teleport", "Ошибка Shizuku: " + e.getMessage());
+        }
     }
 }
