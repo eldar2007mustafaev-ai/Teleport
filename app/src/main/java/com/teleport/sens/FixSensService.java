@@ -29,9 +29,8 @@ public class FixSensService extends AccessibilityService {
         processor.setParams(1.30f, 1.0f, 0.60f);
         mainHandler = new Handler(Looper.getMainLooper());
         
-        // Пытаемся инициализировать Shizuku
         useShizuku = ShizukuInputInjector.init();
-        Log.i(TAG, "Shizuku режим: " + (useShizuku ? "✅ INJECT_EVENTS" : "⚠️ fallback"));
+        Log.i(TAG, "Shizuku: " + (useShizuku ? "✅ INJECT" : "️ fallback"));
     }
     
     @Override
@@ -41,7 +40,7 @@ public class FixSensService extends AccessibilityService {
         mainHandler.post(() -> {
             String msg = useShizuku ? 
                 "✅ FixSens: Shizuku INJECT активен" : 
-                "️ FixSens: fallback режим (нужен Shizuku)";
+                "⚠️ FixSens: fallback (нужен Shizuku)";
             Toast.makeText(this, msg, Toast.LENGTH_LONG).show();
         });
     }
@@ -54,9 +53,7 @@ public class FixSensService extends AccessibilityService {
     }
     
     @Override
-    public void onInterrupt() {
-        instance = null;
-    }
+    public void onInterrupt() { instance = null; }
     
     @Override
     public void onDestroy() {
@@ -64,20 +61,18 @@ public class FixSensService extends AccessibilityService {
         super.onDestroy();
     }
     
-    public static FixSensService getInstance() {
-        return instance;
-    }
-    
+    public static FixSensService getInstance() { return instance; }
     public boolean isServiceRunning() { return instance != null; }
     public boolean isActive() { return isActive; }
+    public boolean isUsingShizuku() { return useShizuku; }
     
     public void setActive(boolean active) {
         this.isActive = active;
         if (!active) processor.reset();
     }
     
-    public void setProcessorParams(float sharpness, float noise, float straighten) {
-        if (processor != null) processor.setParams(sharpness, noise, straighten);
+    public void setProcessorParams(float s, float n, float st) {
+        if (processor != null) processor.setParams(s, n, st);
     }
     
     public float[] getProcessorParams() {
@@ -85,11 +80,6 @@ public class FixSensService extends AccessibilityService {
         return new float[]{1.30f, 1.0f, 0.60f};
     }
     
-    public boolean isUsingShizuku() { return useShizuku; }
-    
-    /**
-     * Главная функция: обрабатывает touch и инжектит
-     */
     public void processAndInjectTouch(float rawX, float rawY, int action) {
         if (!isActive) return;
         
@@ -101,13 +91,10 @@ public class FixSensService extends AccessibilityService {
         MotionEvent event = MotionEvent.obtain(now, now, action, newX, newY, 0);
         
         boolean injected = false;
-        
-        // Пробуем Shizuku
         if (useShizuku) {
             injected = ShizukuInputInjector.injectMotionEvent(event);
         }
         
-        // Fallback
         if (!injected) {
             injectGestureFallback(rawX, rawY, newX, newY);
         }
