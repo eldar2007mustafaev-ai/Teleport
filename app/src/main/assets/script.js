@@ -1,6 +1,6 @@
 // === МОДАЛЬНОЕ ОКНО ===
 function hideModal() {
-    let m = document.getElementById('permModal');
+    var m = document.getElementById('permModal');
     if (m) m.style.display = 'none';
 }
 
@@ -15,20 +15,6 @@ function setSensitivity(speed, name) {
     
     if (navigator.vibrate) navigator.vibrate(30);
     AndroidBridge.showToast('⚡ ' + name);
-
-    document.querySelectorAll('.sens-card').forEach(function(card) {
-        // Снимаем active только с карточек первой секции (без FixSens)
-        if (card.onclick && card.onclick.toString().includes('setSensitivity')) {
-            card.classList.remove('active');
-        }
-    });
-    
-    // Подсвечиваем текущую
-    document.querySelectorAll('.sens-card').forEach(function(card) {
-        if (card.dataset.preset === name && card.onclick && card.onclick.toString().includes('setSensitivity')) {
-            card.classList.add('active');
-        }
-    });
 }
 
 // === ПЕРЕКЛЮЧАТЕЛИ ===
@@ -58,14 +44,12 @@ function setFixSens(sharpness, noise, straighten, element) {
         if (navigator.vibrate) navigator.vibrate(30);
     }
     
-    // Снимаем active со всех FixSens карточек
     document.querySelectorAll('.sens-card').forEach(function(card) {
         if (card.onclick && card.onclick.toString().includes('setFixSens')) {
             card.classList.remove('active');
         }
     });
     
-    // Подсвечиваем выбранную
     if (element) {
         element.classList.add('active');
     }
@@ -86,7 +70,6 @@ function toggleFixSens() {
     AndroidBridge.toggleFixSens(!isActive);
     if (navigator.vibrate) navigator.vibrate([50, 30, 50]);
     
-    // Обновляем UI через 500мс
     setTimeout(updateFixSensUI, 500);
 }
 
@@ -105,5 +88,57 @@ function updateFixSensUI() {
     var status = document.getElementById('fixSensStatus');
     
     if (btn) {
-        btn.textContent = isActive ? '🔴 ВЫКЛ СЕНСУ' : '🔵 ВКЛ СЕНСУ';
-        btn.style.background = isActive
+        btn.textContent = isActive ? ' ВЫКЛ СЕНСУ' : ' ВКЛ СЕНСУ';
+        btn.style.background = isActive 
+            ? 'linear-gradient(135deg, #ef4444 0%, #dc2626 100%)' 
+            : 'linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%)';
+    }
+    if (dot) {
+        dot.style.backgroundColor = isActive ? '#ef4444' : '#34d399';
+        dot.style.boxShadow = isActive ? '0 0 8px #ef4444' : '0 0 8px #34d399';
+    }
+    if (status) {
+        status.textContent = isActive ? 'FixSens активен' : 'Сервис не активен';
+        status.style.color = isActive ? '#ef4444' : '#94a3b8';
+    }
+}
+
+// === ПРОВЕРКА SHIZUKU ===
+function checkShizuku() {
+    if (typeof AndroidBridge !== 'undefined') {
+        var status = AndroidBridge.getShizukuStatus();
+        AndroidBridge.showToast(status);
+    } else {
+        alert('AndroidBridge не найден');
+    }
+}
+
+// === ТЕМА ===
+function applyTheme(t) {
+    document.documentElement.setAttribute('data-theme', t);
+    try { localStorage.setItem('theme', t); } catch (e) {}
+}
+
+function toggleTheme() {
+    var cur = document.documentElement.getAttribute('data-theme') === 'light' ? 'dark' : 'light';
+    applyTheme(cur);
+}
+
+(function () {
+    var saved = 'dark';
+    try { saved = localStorage.getItem('theme') || 'dark'; } catch (e) {}
+    applyTheme(saved);
+})();
+
+// === ПРОВЕРКА РАЗРЕШЕНИЙ ПРИ ЗАГРУЗКЕ ===
+window.addEventListener('load', function() {
+    if (typeof AndroidBridge !== 'undefined') {
+        var hasPermission = AndroidBridge.hasOverlayPermission();
+        var modal = document.getElementById('permModal');
+        if (modal) {
+            modal.style.display = hasPermission ? 'none' : 'flex';
+        }
+        
+        setTimeout(updateFixSensUI, 1000);
+    }
+});
