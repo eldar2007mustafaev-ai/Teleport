@@ -126,7 +126,7 @@ public class OverlayService extends Service {
             windowManager.addView(floatingButtonView, params);
             toast("Кнопка активна");
         } catch (Exception e) {
-            toast("Ошибка: нет разрешения на оверлей");
+            toast("Ошибка: нет разрешения");
             stopSelf();
         }
     }
@@ -193,7 +193,7 @@ public class OverlayService extends Service {
                 int h = Math.round(w * 16f / 9f);
                 runCommand("wm size " + w + "x" + h);
                 screenState = 1;
-                toast("16:9 — полосы включены");
+                toast("16:9 — полосы");
             } else if (screenState == 1) {
                 runCommand("wm size reset");
                 screenState = 2;
@@ -204,10 +204,10 @@ public class OverlayService extends Service {
                 int h = Math.round(w * 16f / 9f);
                 runCommand("wm size " + w + "x" + h);
                 screenState = 1;
-                toast("16:9 — полосы включены");
+                toast("16:9 — полосы");
             }
         } catch (Exception e) {
-            toast("Ошибка изменения разрешения");
+            toast("Ошибка: " + e.getMessage());
         }
     }
 
@@ -309,7 +309,7 @@ public class OverlayService extends Service {
                 ? new Notification.Builder(this, CHANNEL_ID)
                 : new Notification.Builder(this);
         b.setContentTitle("Teleport")
-         .setContentText("Плавающая кнопка активна")
+         .setContentText("Активно")
          .setSmallIcon(android.R.drawable.ic_menu_crop)
          .setOngoing(true);
 
