@@ -1,9 +1,8 @@
 package com.teleport.sens;
 
-import rikka.shizuku.Shizuku;
-import android.content.pm.PackageManager;
 import android.app.Activity;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -21,6 +20,7 @@ import java.io.InputStreamReader;
 
 public class MainActivity extends Activity {
     private WebView webView;
+    private static final String TAG = "Teleport";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -43,12 +43,14 @@ public class MainActivity extends Activity {
         webView.setWebViewClient(new WebViewClient());
         webView.loadUrl("file:///android_asset/index.html");
         setContentView(webView);
+
+        // Проверяем Shizuku при запуске
+        checkShizukuAvailability();
     }
 
     @Override
     protected void onResume() {
         super.onResume();
-        // Проверяем разрешение при каждом возврате в приложение
         webView.postDelayed(() -> {
             boolean hasPermission = Settings.canDrawOverlays(this);
             webView.evaluateJavascript(
@@ -60,6 +62,21 @@ public class MainActivity extends Activity {
                 null
             );
         }, 500);
+    }
+
+    private void checkShizukuAvailability() {
+        try {
+            // Проверяем через рефлексию, доступен ли Shizuku
+            Class<?> shizukuClass = Class.forName("rikka.shizuku.Shizuku");
+            Object pingResult = shizukuClass.getMethod("pingBinder").invoke(null);
+            if (pingResult != null && (Boolean) pingResult) {
+                Log.i(TAG, "Shizuku доступен");
+            } else {
+                Log.w(TAG, "Shizuku не запущен");
+            }
+        } catch (Exception e) {
+            Log.w(TAG, "Shizuku API не найден: " + e.getMessage());
+        }
     }
 
     public class AppController {
@@ -98,35 +115,100 @@ public class MainActivity extends Activity {
 
         @JavascriptInterface
         public String getShizukuStatus() {
-            return "Shizuku проверка...";
+            try {
+                Class<?> shizukuClass = Class.forName("rikka.shizuku.Shizuku");
+                Object pingResult = shizukuClass.getMethod("pingBinder").invoke(null);
+                if (pingResult != null && (Boolean) pingResult) {
+                    Object checkResult = shizukuClass.getMethod("checkSelfPermission").invoke(null);
+                    if (checkResult != null && (Integer) checkResult == PackageManager.PERMISSION_GRANTED) {
+                        return "✅ Shizuku работает отлично";
+                    } else {
+                        return "⚠️ Shizuku запущен, но нет разрешения";
+                    }
+                } else {
+                    return "❌ Shizuku не запущен (открой приложение Shizuku)";
+                }
+            } catch (Exception e) {
+                return "❌ Shizuku API не найден";
+            }
         }
 
-        // Заглушки для FixSens
         @JavascriptInterface
-        public boolean isFixSensServiceRunning() { return false; }
+        public void requestShizukuPermission() {
+            try {
+                Class<?> shizukuClass = Class.forName("rikka.shizuku.Shizuku");
+                Object pingResult = shizukuClass.getMethod("pingBinder").invoke(null);
+                if (pingResult != null && (Boolean) pingResult) {
+                    shizukuClass.getMethod("requestPermission", int.class).invoke(null, 1001);
+                    runOnUiThread(() -> Toast.makeText(MainActivity.this, 
+                        "Запрос разрешения Shizuku...", Toast.LENGTH_SHORT).show());
+                } else {
+                    runOnUiThread(() -> Toast.makeText(MainActivity.this, 
+                        "Сначала запусти Shizuku", Toast.LENGTH_SHORT).show());
+                }
+            } catch (Exception e) {
+                runOnUiThread(() -> Toast.makeText(MainActivity.this, 
+                    "Shizuku API не найден", Toast.LENGTH_SHORT).show());
+            }
+        }
+
+        // === FIXSENS ФУНКЦИИ ===
         
         @JavascriptInterface
-        public boolean isFixSensActive() { return false; }
+        public boolean isFixSensServiceRunning() {
+            FixSensService service = FixSensService.getInstance();
+            return service != null && service.isServiceRunning();
+        }
+        
+        @JavascriptInterface
+        public boolean isFixSensActive() {
+            FixSensService service = FixSensService.getInstance();
+            return service != null && service.isActive();
+        }
         
         @JavascriptInterface
         public void openAccessibilitySettings() {
             Intent intent = new Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS);
             startActivity(intent);
             runOnUiThread(() -> Toast.makeText(MainActivity.this, 
-                "Найди Teleport и включи", Toast.LENGTH_LONG).show());
+                "Найди 'Teleport' и включи", Toast.LENGTH_LONG).show());
         }
         
         @JavascriptInterface
         public void toggleFixSens(boolean enable) {
-            runOnUiThread(() -> Toast.makeText(MainActivity.this, 
-                "FixSens: " + (enable ? "ВКЛ" : "ВЫКЛ"), Toast.LENGTH_SHORT).show());
+            FixSensService service = FixSensService.getInstance();
+            if (service != null) {
+                service.setActive(enable);
+                runOnUiThread(() -> Toast.makeText(MainActivity.this, 
+                    "FixSens: " + (enable ? "ВКЛ" : "ВЫКЛ"), Toast.LENGTH_SHORT).show());
+            } else {
+                runOnUiThread(() -> Toast.makeText(MainActivity.this, 
+                    "Сервис не запущен. Включи в настройках.", Toast.LENGTH_LONG).show());
+            }
         }
         
         @JavascriptInterface
         public void setFixSensParams(float sharpness, float noise, float straighten) {
-            runOnUiThread(() -> Toast.makeText(MainActivity.this, 
-                String.format("%.2f · %.1f · %.2f", sharpness, noise, straighten), 
-                Toast.LENGTH_SHORT).show());
+            FixSensService service = FixSensService.getInstance();
+            if (service != null) {
+                service.setProcessorParams(sharpness, noise, straighten);
+                runOnUiThread(() -> Toast.makeText(MainActivity.this, 
+                    String.format("⚡ %.2f · %.1f · %.2f", sharpness, noise, straighten), 
+                    Toast.LENGTH_SHORT).show());
+            } else {
+                runOnUiThread(() -> Toast.makeText(MainActivity.this, 
+                    "Сначала включи сервис", Toast.LENGTH_SHORT).show());
+            }
+        }
+        
+        @JavascriptInterface
+        public String getFixSensParams() {
+            FixSensService service = FixSensService.getInstance();
+            if (service != null) {
+                float[] p = service.getProcessorParams();
+                return String.format("%.2f·%.1f·%.2f", p[0], p[1], p[2]);
+            }
+            return "1.30·1.0·0.60";
         }
 
         @JavascriptInterface
@@ -142,7 +224,7 @@ public class MainActivity extends Activity {
                 runCommand(cmd);
             }
             runOnUiThread(() -> Toast.makeText(MainActivity.this, 
-                " TELEPORT MODE", Toast.LENGTH_SHORT).show());
+                " TELEPORT MODE активирован", Toast.LENGTH_SHORT).show());
         }
     }
 
@@ -157,10 +239,10 @@ public class MainActivity extends Activity {
                     output.append(line);
                 }
                 process.waitFor();
-                Log.d("Teleport", "Команда: " + cmd);
+                Log.d(TAG, "Команда: " + cmd);
             } catch (Exception e) {
-                Log.e("Teleport", "Ошибка: " + e.getMessage());
+                Log.e(TAG, "Ошибка: " + e.getMessage());
             }
         }).start();
     }
-}
+}         
