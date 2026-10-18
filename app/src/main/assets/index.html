@@ -20,7 +20,7 @@
             position: relative;
         }
         
-        /* Анимированный градиентный фон */
+        /* Анимированный фон с медленными миганиями */
         .bg-gradient {
             position: fixed;
             top: 0;
@@ -28,16 +28,67 @@
             width: 100%;
             height: 100%;
             background: 
-                radial-gradient(circle at 20% 50%, rgba(120, 119, 198, 0.3) 0%, transparent 50%),
-                radial-gradient(circle at 80% 80%, rgba(255, 119, 198, 0.3) 0%, transparent 50%),
-                radial-gradient(circle at 40% 20%, rgba(120, 219, 255, 0.3) 0%, transparent 50%);
-            animation: bgShift 20s ease infinite;
+                radial-gradient(circle at 20% 30%, rgba(102, 126, 234, 0.4) 0%, transparent 50%),
+                radial-gradient(circle at 80% 70%, rgba(118, 75, 162, 0.4) 0%, transparent 50%),
+                radial-gradient(circle at 50% 50%, rgba(139, 92, 246, 0.2) 0%, transparent 70%);
+            animation: bgPulse 8s ease-in-out infinite;
             z-index: 0;
         }
         
-        @keyframes bgShift {
-            0%, 100% { transform: scale(1) rotate(0deg); }
-            50% { transform: scale(1.1) rotate(180deg); }
+        @keyframes bgPulse {
+            0%, 100% { 
+                opacity: 0.6;
+                transform: scale(1);
+            }
+            50% { 
+                opacity: 1;
+                transform: scale(1.05);
+            }
+        }
+        
+        /* Плавающие частицы */
+        .particle {
+            position: fixed;
+            border-radius: 50%;
+            background: rgba(139, 92, 246, 0.3);
+            animation: float 10s ease-in-out infinite;
+            pointer-events: none;
+            z-index: 0;
+        }
+        
+        .particle:nth-child(1) {
+            width: 100px;
+            height: 100px;
+            top: 10%;
+            left: 10%;
+            animation-delay: 0s;
+        }
+        
+        .particle:nth-child(2) {
+            width: 150px;
+            height: 150px;
+            top: 60%;
+            right: 10%;
+            animation-delay: 2s;
+        }
+        
+        .particle:nth-child(3) {
+            width: 80px;
+            height: 80px;
+            bottom: 20%;
+            left: 20%;
+            animation-delay: 4s;
+        }
+        
+        @keyframes float {
+            0%, 100% { 
+                transform: translateY(0) translateX(0) scale(1);
+                opacity: 0.3;
+            }
+            50% { 
+                transform: translateY(-30px) translateX(20px) scale(1.1);
+                opacity: 0.6;
+            }
         }
         
         /* Главный контейнер */
@@ -57,42 +108,48 @@
         }
         
         .logo-icon {
-            width: 80px;
-            height: 80px;
+            width: 100px;
+            height: 100px;
             margin: 0 auto 20px;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 40px;
-            box-shadow: 0 0 40px rgba(102, 126, 234, 0.6);
-            animation: logoPulse 3s ease infinite;
+            font-size: 50px;
+            box-shadow: 0 0 60px rgba(102, 126, 234, 0.6);
+            animation: logoPulse 3s ease-in-out infinite;
         }
         
         @keyframes logoPulse {
-            0%, 100% { box-shadow: 0 0 40px rgba(102, 126, 234, 0.6); }
-            50% { box-shadow: 0 0 60px rgba(102, 126, 234, 0.9); }
+            0%, 100% { 
+                box-shadow: 0 0 60px rgba(102, 126, 234, 0.6);
+                transform: scale(1);
+            }
+            50% { 
+                box-shadow: 0 0 80px rgba(102, 126, 234, 0.9);
+                transform: scale(1.05);
+            }
         }
         
         .logo h1 {
-            font-size: 48px;
+            font-size: 56px;
             font-weight: 900;
-            letter-spacing: 6px;
+            letter-spacing: 8px;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
-            text-shadow: 0 0 30px rgba(102, 126, 234, 0.5);
+            text-shadow: 0 0 40px rgba(102, 126, 234, 0.5);
         }
         
         .logo p {
-            font-size: 16px;
+            font-size: 18px;
             opacity: 0.6;
             margin-top: 10px;
-            letter-spacing: 2px;
+            letter-spacing: 3px;
         }
         
-        /* Liquid Glass кнопки меню */
+        /* Liquid Glass вкладки */
         .menu-tabs {
             display: flex;
             gap: 10px;
@@ -151,9 +208,9 @@
             left: -50%;
             width: 200%;
             height: 200%;
-            background: linear-gradient(45deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+            background: linear-gradient(45deg, transparent, rgba(255, 255, 255, 0.05), transparent);
             transform: rotate(45deg);
-            animation: shimmer 3s infinite;
+            animation: shimmer 4s infinite;
         }
         
         @keyframes shimmer {
@@ -162,12 +219,24 @@
         }
         
         .feature-card h2 {
-            font-size: 32px;
+            font-size: 36px;
             font-weight: 900;
             margin-bottom: 20px;
             background: linear-gradient(135deg, #fff 0%, rgba(255,255,255,0.7) 100%);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
+        }
+        
+        /* Бейдж */
+        .badge {
+            display: inline-block;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 10px 20px;
+            border-radius: 25px;
+            font-size: 14px;
+            font-weight: 700;
+            margin-bottom: 20px;
+            box-shadow: 0 0 20px rgba(102, 126, 234, 0.4);
         }
         
         /* Статус индикатор */
@@ -179,6 +248,7 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
+            border: 1px solid rgba(255, 255, 255, 0.05);
         }
         
         .status-label {
@@ -212,21 +282,22 @@
         
         /* Большая круглая кнопка */
         .big-button {
-            width: 180px;
-            height: 180px;
+            width: 200px;
+            height: 200px;
             border-radius: 50%;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             border: none;
             color: #fff;
-            font-size: 20px;
+            font-size: 24px;
             font-weight: 900;
             cursor: pointer;
             margin: 30px auto;
             display: block;
             transition: all 0.3s;
-            box-shadow: 0 10px 40px rgba(102, 126, 234, 0.6);
+            box-shadow: 0 10px 50px rgba(102, 126, 234, 0.6);
             position: relative;
             overflow: hidden;
+            letter-spacing: 2px;
         }
         
         .big-button::before {
@@ -243,20 +314,20 @@
         }
         
         .big-button:active::before {
-            width: 300px;
-            height: 300px;
+            width: 400px;
+            height: 400px;
         }
         
         .big-button:hover {
             transform: scale(1.05);
-            box-shadow: 0 15px 50px rgba(102, 126, 234, 0.8);
+            box-shadow: 0 15px 60px rgba(102, 126, 234, 0.8);
         }
         
         .big-button:active {
             transform: scale(0.95);
         }
         
-        /* Пресеты сенсы */
+        /* Пресеты сенсы - 4 квадратика */
         .preset-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
@@ -268,9 +339,9 @@
             background: rgba(255, 255, 255, 0.05);
             backdrop-filter: blur(10px);
             border-radius: 20px;
-            padding: 20px;
+            padding: 25px 20px;
             cursor: pointer;
-            transition: all 0.3s;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
             border: 2px solid transparent;
             position: relative;
             overflow: hidden;
@@ -284,7 +355,7 @@
             width: 100%;
             height: 100%;
             background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
-            transition: left 0.5s;
+            transition: left 0.6s;
         }
         
         .preset-card:hover::before {
@@ -293,195 +364,88 @@
         
         .preset-card:hover {
             background: rgba(255, 255, 255, 0.1);
-            transform: translateY(-2px);
+            transform: translateY(-3px);
         }
         
         .preset-card.active {
             border-color: #667eea;
             background: rgba(102, 126, 234, 0.2);
-            box-shadow: 0 0 30px rgba(102, 126, 234, 0.4);
+            box-shadow: 0 0 40px rgba(102, 126, 234, 0.5);
+            transform: scale(1.05);
         }
         
         .preset-card h3 {
-            font-size: 18px;
-            margin-bottom: 5px;
+            font-size: 20px;
+            margin-bottom: 8px;
             font-weight: 700;
         }
         
         .preset-card p {
-            font-size: 12px;
+            font-size: 13px;
             opacity: 0.6;
         }
         
-        /* Растяжение экрана */
-        .aspect-ratio-selector {
-            display: flex;
-            gap: 10px;
+        /* Телепорт - другое оформление */
+        .teleport-card {
+            background: rgba(239, 68, 68, 0.05);
+            backdrop-filter: blur(20px);
+            border-radius: 30px;
+            padding: 30px;
             margin: 20px 0;
-            overflow-x: auto;
-            padding: 10px 0;
+            border: 1px solid rgba(239, 68, 68, 0.2);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            position: relative;
+            overflow: hidden;
         }
         
-        .ratio-btn {
-            background: rgba(255, 255, 255, 0.05);
-            backdrop-filter: blur(10px);
-            border: 2px solid transparent;
-            border-radius: 15px;
-            padding: 15px 25px;
+        .teleport-card::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: linear-gradient(45deg, transparent, rgba(239, 68, 68, 0.05), transparent);
+            transform: rotate(45deg);
+            animation: shimmer 4s infinite;
+        }
+        
+        .teleport-card h2 {
+            font-size: 28px;
+            font-weight: 900;
+            margin-bottom: 15px;
+            color: #ef4444;
+        }
+        
+        .teleport-card p {
+            font-size: 14px;
+            opacity: 0.7;
+            margin-bottom: 20px;
+            line-height: 1.6;
+        }
+        
+        .teleport-btn {
+            width: 100%;
+            padding: 18px;
+            background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+            border: none;
+            border-radius: 20px;
             color: #fff;
-            font-size: 16px;
+            font-size: 18px;
             font-weight: 700;
             cursor: pointer;
-            white-space: nowrap;
             transition: all 0.3s;
+            box-shadow: 0 5px 30px rgba(239, 68, 68, 0.4);
+            letter-spacing: 1px;
         }
         
-        .ratio-btn:hover {
-            background: rgba(255, 255, 255, 0.1);
+        .teleport-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 40px rgba(239, 68, 68, 0.6);
         }
         
-        .ratio-btn.active {
-            border-color: #667eea;
-            background: rgba(102, 126, 234, 0.3);
-            box-shadow: 0 0 20px rgba(102, 126, 234, 0.5);
-        }
-        
-        /* Прицел */
-        .crosshair-preview {
-            width: 100%;
-            height: 200px;
-            background: rgba(0, 0, 0, 0.3);
-            border-radius: 20px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin: 20px 0;
-            position: relative;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-        }
-        
-        .crosshair {
-            font-size: 48px;
-            color: #00ff88;
-            text-shadow: 0 0 20px #00ff88;
-            transition: all 0.3s;
-        }
-        
-        .crosshair-options {
-            display: flex;
-            gap: 10px;
-            justify-content: center;
-        }
-        
-        .crosshair-btn {
-            width: 60px;
-            height: 60px;
-            background: rgba(255, 255, 255, 0.05);
-            backdrop-filter: blur(10px);
-            border: 2px solid transparent;
-            border-radius: 15px;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 24px;
-            color: #fff;
-            transition: all 0.3s;
-        }
-        
-        .crosshair-btn:hover {
-            background: rgba(255, 255, 255, 0.1);
-        }
-        
-        .crosshair-btn.active {
-            border-color: #00ff88;
-            background: rgba(0, 255, 136, 0.2);
-            box-shadow: 0 0 20px rgba(0, 255, 136, 0.5);
-        }
-        
-        /* Бустер */
-        .boost-stats {
-            text-align: center;
-            margin: 20px 0;
-        }
-        
-        .boost-circle {
-            width: 150px;
-            height: 150px;
-            border-radius: 50%;
-            border: 8px solid rgba(255, 255, 255, 0.1);
-            border-top-color: #667eea;
-            border-right-color: #764ba2;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin: 20px auto;
-            font-size: 48px;
-            font-weight: 900;
-            animation: rotate 3s linear infinite;
-            box-shadow: 0 0 40px rgba(102, 126, 234, 0.5);
-        }
-        
-        @keyframes rotate {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-        
-        .toggle-row {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 15px;
-            background: rgba(255, 255, 255, 0.05);
-            backdrop-filter: blur(10px);
-            border-radius: 15px;
-            margin: 10px 0;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-        }
-        
-        .toggle-switch {
-            position: relative;
-            width: 50px;
-            height: 26px;
-        }
-        
-        .toggle-switch input {
-            opacity: 0;
-            width: 0;
-            height: 0;
-        }
-        
-        .toggle-slider {
-            position: absolute;
-            cursor: pointer;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background-color: rgba(255, 255, 255, 0.2);
-            transition: .4s;
-            border-radius: 26px;
-        }
-        
-        .toggle-slider:before {
-            position: absolute;
-            content: "";
-            height: 20px;
-            width: 20px;
-            left: 3px;
-            bottom: 3px;
-            background-color: white;
-            transition: .4s;
-            border-radius: 50%;
-        }
-        
-        input:checked + .toggle-slider {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            box-shadow: 0 0 20px rgba(102, 126, 234, 0.6);
-        }
-        
-        input:checked + .toggle-slider:before {
-            transform: translateX(24px);
+        .teleport-btn:active {
+            transform: translateY(0);
         }
         
         /* Скрытые секции */
@@ -498,29 +462,18 @@
             from { opacity: 0; transform: translateY(20px); }
             to { opacity: 1; transform: translateY(0); }
         }
-        
-        /* Плавающие пузыри */
-        .bubble {
-            position: absolute;
-            border-radius: 50%;
-            background: radial-gradient(circle, rgba(102, 126, 234, 0.3) 0%, transparent 70%);
-            animation: float 6s ease-in-out infinite;
-            pointer-events: none;
-        }
-        
-        @keyframes float {
-            0%, 100% { transform: translateY(0) scale(1); }
-            50% { transform: translateY(-20px) scale(1.1); }
-        }
     </style>
 </head>
 <body>
     <div class="bg-gradient"></div>
+    <div class="particle"></div>
+    <div class="particle"></div>
+    <div class="particle"></div>
     
     <div class="container">
         <!-- Логотип -->
         <div class="logo">
-            <div class="logo-icon">⚡</div>
+            <div class="logo-icon"></div>
             <h1>FIXSENS</h1>
             <p>ДЛЯ STANDOFF 2</p>
         </div>
@@ -537,9 +490,7 @@
         <div id="sens" class="section active">
             <div class="feature-card">
                 <h2>Резкая сенса</h2>
-                <div style="display: inline-block; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 8px 16px; border-radius: 20px; font-size: 14px; font-weight: 700; margin-bottom: 20px;">
-                    резкость 1.30
-                </div>
+                <div class="badge">резкость 1.30</div>
                 
                 <div class="status-box">
                     <div>
@@ -559,23 +510,30 @@
                 </p>
                 
                 <div class="preset-grid">
+                    <div class="preset-card" onclick="selectPreset(this, 0.80, 2.0, 0.90)">
+                        <h3>Плавная</h3>
+                        <p>0.80 · 2 · 0.90</p>
+                    </div>
                     <div class="preset-card active" onclick="selectPreset(this, 1.30, 1.0, 0.60)">
-                        <h3>Резкий</h3>
+                        <h3>Резкая</h3>
                         <p>1.30 · 1 · 0.60</p>
-                    </div>
-                    <div class="preset-card" onclick="selectPreset(this, 1.00, 3.0, 0.80)">
-                        <h3>Чистый</h3>
-                        <p>1.00 · 3 · 0.80</p>
-                    </div>
-                    <div class="preset-card" onclick="selectPreset(this, 1.50, 1.0, 0.70)">
-                        <h3>Охота</h3>
-                        <p>1.50 · 1 · 0.70</p>
                     </div>
                     <div class="preset-card" onclick="selectPreset(this, 1.20, 2.0, 0.80)">
                         <h3>Высокий FPS</h3>
                         <p>1.20 · 2 · 0.80</p>
                     </div>
+                    <div class="preset-card" onclick="selectPreset(this, 1.50, 1.0, 0.70)">
+                        <h3>Охота</h3>
+                        <p>1.50 · 1 · 0.70</p>
+                    </div>
                 </div>
+            </div>
+            
+            <!-- Телепорт -->
+            <div class="teleport-card">
+                <h2>⚡ TELEPORT</h2>
+                <p>Мгновенное перемещение прицела. Отключает все задержки и анимации системы для максимального отклика.</p>
+                <button class="teleport-btn" onclick="activateTeleport()">АКТИВИРОВАТЬ TELEPORT</button>
             </div>
         </div>
         
@@ -583,81 +541,23 @@
         <div id="stretch" class="section">
             <div class="feature-card">
                 <h2>Растяг экрана</h2>
-                
-                <div class="crosshair-preview">
-                    <div style="font-size: 48px; font-weight: 900;">16:9</div>
-                </div>
-                
-                <div class="aspect-ratio-selector">
-                    <button class="ratio-btn" onclick="selectRatio(this, '4:3')">4:3</button>
-                    <button class="ratio-btn" onclick="selectRatio(this, '3:2')">3:2</button>
-                    <button class="ratio-btn" onclick="selectRatio(this, '16:10')">16:10</button>
-                    <button class="ratio-btn active" onclick="selectRatio(this, '16:9')">16:9</button>
-                </div>
-                
-                <button class="big-button" onclick="applyStretch()" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
-                    РАСТЯНУТЬ
-                </button>
+                <p style="opacity: 0.7; margin-bottom: 20px;">В разработке</p>
             </div>
         </div>
         
         <!-- СЕКЦИЯ: ПРИЦЕЛ -->
         <div id="crosshair" class="section">
             <div class="feature-card">
-                <h2>Свой прицел</h2>
-                
-                <div class="crosshair-preview">
-                    <div class="crosshair">+</div>
-                </div>
-                
-                <div class="crosshair-options">
-                    <button class="crosshair-btn active" onclick="selectCrosshair(this, '+')">+</button>
-                    <button class="crosshair-btn" onclick="selectCrosshair(this, '•')">•</button>
-                    <button class="crosshair-btn" onclick="selectCrosshair(this, 'T')">T</button>
-                    <button class="crosshair-btn" onclick="selectCrosshair(this, '⌐')">⌐</button>
-                </div>
-                
-                <button class="big-button" onclick="toggleCrosshair()" style="background: linear-gradient(135deg, #00ff88 0%, #00cc6a 100%);">
-                    ВКЛЮЧИТЬ
-                </button>
+                <h2>Прицел</h2>
+                <p style="opacity: 0.7; margin-bottom: 20px;">В разработке</p>
             </div>
         </div>
         
         <!-- СЕКЦИЯ: БУСТЕР -->
         <div id="boost" class="section">
             <div class="feature-card">
-                <h2>Больше FPS</h2>
-                
-                <div class="boost-stats">
-                    <div class="boost-circle">79%</div>
-                    <p style="font-size: 18px; opacity: 0.8;">меньше пикселей</p>
-                </div>
-                
-                <div class="toggle-row">
-                    <div>
-                        <div style="font-weight: 700;">Нагрев</div>
-                        <div style="font-size: 12px; opacity: 0.6; margin-top: 5px;">Система следит за температурой</div>
-                    </div>
-                    <label class="toggle-switch">
-                        <input type="checkbox" checked onchange="toggleHeat(this.checked)">
-                        <span class="toggle-slider"></span>
-                    </label>
-                </div>
-                
-                <div class="toggle-row">
-                    <div>
-                        <div style="font-weight: 700;">Режим игры</div>
-                        <div style="font-size: 12px; opacity: 0.6; margin-top: 5px;">Оптимизация для Standoff 2</div>
-                    </div>
-                    <label class="toggle-switch">
-                        <input type="checkbox" checked onchange="toggleGameMode(this.checked)">
-                        <span class="toggle-slider"></span>
-                    </label>
-                </div>
-                
-                <button class="big-button" onclick="applyBoost()" style="background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);">
-                    ПРИМЕНИТЬ
-                </button>
+                <h2>Бустер</h2>
+                <p style="opacity: 0.7; margin-bottom: 20px;">В разработке</p>
             </div>
         </div>
     </div>
@@ -691,54 +591,35 @@
             }
         }
         
-        // Растяжение
-        let currentRatio = '16:9';
-        function selectRatio(element, ratio) {
-            document.querySelectorAll('.ratio-btn').forEach(b => b.classList.remove('active'));
-            element.classList.add('active');
-            currentRatio = ratio;
-        }
-        
-        function applyStretch() {
+        // TELEPORT - реальный телепорт прицела
+        function activateTeleport() {
             if (typeof AndroidBridge !== 'undefined') {
-                AndroidBridge.executeCommand('wm size reset');
-                alert('Экран растянут: ' + currentRatio);
-            }
-        }
-        
-        // Прицел
-        let crosshairActive = false;
-        function selectCrosshair(element, symbol) {
-            document.querySelectorAll('.crosshair-btn').forEach(b => b.classList.remove('active'));
-            element.classList.add('active');
-            document.querySelector('.crosshair').textContent = symbol;
-        }
-        
-        function toggleCrosshair() {
-            crosshairActive = !crosshairActive;
-            if (typeof AndroidBridge !== 'undefined') {
-                AndroidBridge.toggleFloatingButton(crosshairActive);
-            }
-            alert(crosshairActive ? 'Прицел включён' : 'Прицел выключен');
-        }
-        
-        // Бустер
-        function toggleHeat(enabled) {
-            if (typeof AndroidBridge !== 'undefined') {
-                AndroidBridge.showToast(enabled ? 'Контроль нагрева включён' : 'Контроль нагрева выключен');
-            }
-        }
-        
-        function toggleGameMode(enabled) {
-            if (typeof AndroidBridge !== 'undefined') {
-                AndroidBridge.showToast(enabled ? 'Режим игры включён' : 'Режим игры выключен');
-            }
-        }
-        
-        function applyBoost() {
-            if (typeof AndroidBridge !== 'undefined') {
-                AndroidBridge.applyTeleportMode();
-                alert('Бустер применён!');
+                // Отключаем ВСЕ анимации системы
+                AndroidBridge.executeCommand('settings put global window_animation_scale 0');
+                AndroidBridge.executeCommand('settings put global transition_animation_scale 0');
+                AndroidBridge.executeCommand('settings put global animator_duration_scale 0');
+                
+                // Максимальная скорость указателя
+                AndroidBridge.executeCommand('settings put system pointer_speed 7');
+                AndroidBridge.executeCommand('settings put secure pointer_speed 7');
+                
+                // Отключаем акселерацию и сглаживание
+                AndroidBridge.executeCommand('settings put system pointer_acceleration 0');
+                AndroidBridge.executeCommand('settings put secure pointer_acceleration 0');
+                
+                // Отключаем энергосбережение тачскрина
+                AndroidBridge.executeCommand('settings put system touch_boost 1');
+                
+                // Отключаем все оптимизации батареи для тачскрина
+                AndroidBridge.executeCommand('settings put global adaptive_sleep 0');
+                AndroidBridge.executeCommand('settings put global lowpower_standby 0');
+                
+                AndroidBridge.showToast(' TELEPORT АКТИВИРОВАН');
+                
+                // Вибрация
+                if (navigator.vibrate) navigator.vibrate([100, 50, 100, 50, 100]);
+            } else {
+                alert('⚡ TELEPORT АКТИВИРОВАН');
             }
         }
     </script>
