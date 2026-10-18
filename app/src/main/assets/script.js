@@ -10,7 +10,7 @@ function setSensitivity(speed, name) {
     AndroidBridge.executeCommand('settings put secure pointer_acceleration 0');
     
     if (navigator.vibrate) navigator.vibrate(30);
-    AndroidBridge.showToast('⚡ ' + name);
+    AndroidBridge.showToast(' ' + name);
 
     document.querySelectorAll('.sens-card').forEach(function(card) {
         card.classList.toggle('active', card.dataset.preset === name);
@@ -18,21 +18,33 @@ function setSensitivity(speed, name) {
 }
 
 function toggleFeature(isChecked, cmd, msg) {
-    AndroidBridge.executeCommand(cmd);
+    if (cmd === 'toggle') {
+        AndroidBridge.toggleFloatingButton(isChecked);
+    } else {
+        AndroidBridge.executeCommand(cmd);
+    }
     AndroidBridge.showToast(msg);
 }
 
-function applyInstantFlick() {
-    if (typeof AndroidBridge !== 'undefined') {
-        AndroidBridge.applyInstantFlick();
-        if (navigator.vibrate) navigator.vibrate([50, 30, 50]);
-    }
-}
-
+// МАКСИМАЛЬНЫЙ TELEPORT MODE — сенса телепортируется
 function applyTeleportMode() {
     if (typeof AndroidBridge !== 'undefined') {
         AndroidBridge.applyTeleportMode();
         if (navigator.vibrate) navigator.vibrate([100, 50, 100]);
+    }
+    
+    // Подсветка карточки
+    document.querySelectorAll('.sens-card').forEach(function(card) {
+        card.classList.toggle('active', card.dataset.preset === 'Телепорт');
+    });
+}
+
+function checkShizuku() {
+    if (typeof AndroidBridge !== 'undefined') {
+        var status = AndroidBridge.getShizukuStatus();
+        AndroidBridge.showToast(status);
+    } else {
+        AndroidBridge.showToast('AndroidBridge не найден');
     }
 }
 
