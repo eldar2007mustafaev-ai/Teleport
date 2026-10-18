@@ -1,6 +1,5 @@
 package com.teleport.sens;
 
-import java.lang.reflect.Method;
 import android.app.Activity;
 import android.content.Intent;
 import android.net.Uri;
@@ -17,6 +16,7 @@ import android.widget.Toast;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
+import java.lang.reflect.Method;
 
 public class MainActivity extends Activity {
     private WebView webView;
@@ -176,9 +176,9 @@ public class MainActivity extends Activity {
             FixSensService service = FixSensService.getInstance();
             if (service != null) {
                 service.setActive(enable);
-                String mode = service.isUsingShizuku() ? " (Shizuku)" : " (fallback)";
+                String mode = service.isUsingShizuku() ? " (Shizuku INJECT ✅)" : " (fallback ⚠️)";
                 runOnUiThread(() -> Toast.makeText(MainActivity.this, 
-                    "FixSens: " + (enable ? "ВКЛ" : "ВЫКЛ") + mode, Toast.LENGTH_SHORT).show());
+                    "FixSens: " + (enable ? "ВКЛ" : "ВЫКЛ") + mode, Toast.LENGTH_LONG).show());
             } else {
                 runOnUiThread(() -> Toast.makeText(MainActivity.this, 
                     "Сервис не запущен", Toast.LENGTH_SHORT).show());
@@ -209,7 +209,7 @@ public class MainActivity extends Activity {
                 runCommand(cmd);
             }
             runOnUiThread(() -> Toast.makeText(MainActivity.this, 
-                " TELEPORT MODE", Toast.LENGTH_SHORT).show());
+                "⚡ TELEPORT MODE", Toast.LENGTH_SHORT).show());
         }
     }
 
