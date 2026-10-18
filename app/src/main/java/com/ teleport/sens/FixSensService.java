@@ -10,9 +10,6 @@ import android.util.Log;
 import android.view.accessibility.AccessibilityEvent;
 import android.widget.Toast;
 
-import java.util.ArrayList;
-import java.util.List;
-
 public class FixSensService extends AccessibilityService {
     
     private static final String TAG = "FixSens";
@@ -22,16 +19,11 @@ public class FixSensService extends AccessibilityService {
     private boolean isActive = false;
     private Handler mainHandler;
     
-    // Очередь событий для обработки
-    private final List<float[]> pendingEvents = new ArrayList<>();
-    private boolean processing = false;
-    
     @Override
     public void onCreate() {
         super.onCreate();
         instance = this;
         processor = new TouchProcessor();
-        // Дефолт — пресет "Резкий" как в FixSens
         processor.setParams(1.30f, 1.0f, 0.60f);
         mainHandler = new Handler(Looper.getMainLooper());
         Log.i(TAG, "FixSens Service создан");
@@ -49,7 +41,6 @@ public class FixSensService extends AccessibilityService {
     
     @Override
     public void onAccessibilityEvent(AccessibilityEvent event) {
-        // Логируем события (можно отключить для производительности)
         if (event.getEventType() == AccessibilityEvent.TYPE_TOUCH_INTERACTION_START) {
             processor.reset();
         }
@@ -80,7 +71,6 @@ public class FixSensService extends AccessibilityService {
         this.isActive = active;
         if (!active) {
             processor.reset();
-            pendingEvents.clear();
         }
         Log.i(TAG, "FixSens " + (active ? "ВКЛ" : "ВЫКЛ"));
     }
@@ -104,10 +94,6 @@ public class FixSensService extends AccessibilityService {
         return new float[]{1.30f, 1.0f, 0.60f};
     }
     
-    /**
-     * Инжекция жеста через Accessibility API
-     * Это основной механизм — перемещает курсор от (fromX, fromY) до (toX, toY)
-     */
     public void injectGesture(float fromX, float fromY, float toX, float toY, long durationMs) {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.N) return;
         if (!isActive) return;
@@ -137,9 +123,6 @@ public class FixSensService extends AccessibilityService {
         }, mainHandler);
     }
     
-    /**
-     * Обработать сырое событие и вернуть модифицированные координаты
-     */
     public float[] processTouch(float rawX, float rawY) {
         if (!isActive) return new float[]{rawX, rawY};
         return processor.process(rawX, rawY);
