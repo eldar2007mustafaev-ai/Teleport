@@ -4,23 +4,29 @@ function hideModal() {
 }
 
 function setSensitivity(speed, name) {
-    // Усиленные значения для максимальной отзывчивости
     AndroidBridge.executeCommand('settings put system pointer_speed ' + speed);
     AndroidBridge.executeCommand('settings put secure pointer_speed ' + speed);
-    // Отключаем акселерацию для мгновенного отклика
     AndroidBridge.executeCommand('settings put system pointer_acceleration 0');
-    AndroidBridge.showToast('⚡ Пресет: ' + name);
+    AndroidBridge.executeCommand('settings put secure pointer_acceleration 0');
+    
+    if (navigator.vibrate) navigator.vibrate(30);
+    AndroidBridge.showToast('⚡ ' + name);
 
-    // подсветка активного пресета
     document.querySelectorAll('.sens-card').forEach(function(card) {
         card.classList.toggle('active', card.dataset.preset === name);
     });
 }
 
 function toggleFeature(isChecked, cmd, msg) {
-    // Выполняем команду независимо от состояния (для переключателей)
     AndroidBridge.executeCommand(cmd);
     AndroidBridge.showToast(msg);
+}
+
+function applyInstantFlick() {
+    if (typeof AndroidBridge !== 'undefined') {
+        AndroidBridge.applyInstantFlick();
+        if (navigator.vibrate) navigator.vibrate([50, 30, 50]);
+    }
 }
 
 function applyTheme(t) {
@@ -33,14 +39,12 @@ function toggleTheme() {
     applyTheme(cur);
 }
 
-// восстановление темы при запуске
 (function () {
     var saved = 'dark';
     try { saved = localStorage.getItem('theme') || 'dark'; } catch (e) {}
     applyTheme(saved);
 })();
 
-// Проверка разрешений при загрузке
 window.addEventListener('load', function() {
     if (typeof AndroidBridge !== 'undefined') {
         var hasPermission = AndroidBridge.hasOverlayPermission();
