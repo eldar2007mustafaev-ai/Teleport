@@ -4,8 +4,12 @@ function hideModal() {
 }
 
 function setSensitivity(speed, name) {
+    // Усиленные значения для максимальной отзывчивости
     AndroidBridge.executeCommand('settings put system pointer_speed ' + speed);
-    AndroidBridge.showToast('Пресет: ' + name);
+    AndroidBridge.executeCommand('settings put secure pointer_speed ' + speed);
+    // Отключаем акселерацию для мгновенного отклика
+    AndroidBridge.executeCommand('settings put system pointer_acceleration 0');
+    AndroidBridge.showToast('⚡ Пресет: ' + name);
 
     // подсветка активного пресета
     document.querySelectorAll('.sens-card').forEach(function(card) {
@@ -14,10 +18,9 @@ function setSensitivity(speed, name) {
 }
 
 function toggleFeature(isChecked, cmd, msg) {
-    if (isChecked) {
-        AndroidBridge.executeCommand(cmd);
-        AndroidBridge.showToast(msg);
-    }
+    // Выполняем команду независимо от состояния (для переключателей)
+    AndroidBridge.executeCommand(cmd);
+    AndroidBridge.showToast(msg);
 }
 
 function applyTheme(t) {
@@ -36,3 +39,16 @@ function toggleTheme() {
     try { saved = localStorage.getItem('theme') || 'dark'; } catch (e) {}
     applyTheme(saved);
 })();
+
+// Проверка разрешений при загрузке
+window.addEventListener('load', function() {
+    if (typeof AndroidBridge !== 'undefined') {
+        var hasPermission = AndroidBridge.hasOverlayPermission();
+        if (!hasPermission) {
+            setTimeout(function() {
+                var modal = document.getElementById('permModal');
+                if (modal) modal.style.display = 'flex';
+            }, 1000);
+        }
+    }
+});
