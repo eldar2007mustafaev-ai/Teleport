@@ -3,95 +3,30 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>FixSens для Standoff 2</title>
+    <title>Teleport для Standoff 2</title>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        
+        * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif;
             background: #0a0a0f;
             color: #fff;
             overflow-x: hidden;
             min-height: 100vh;
             position: relative;
         }
-        
-        /* Анимированный фон с медленными миганиями */
         .bg-gradient {
             position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: 
-                radial-gradient(circle at 20% 30%, rgba(102, 126, 234, 0.4) 0%, transparent 50%),
-                radial-gradient(circle at 80% 70%, rgba(118, 75, 162, 0.4) 0%, transparent 50%),
-                radial-gradient(circle at 50% 50%, rgba(139, 92, 246, 0.2) 0%, transparent 70%);
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: radial-gradient(circle at 20% 30%, rgba(102, 126, 234, 0.4) 0%, transparent 50%),
+                        radial-gradient(circle at 80% 70%, rgba(118, 75, 162, 0.4) 0%, transparent 50%);
             animation: bgPulse 8s ease-in-out infinite;
             z-index: 0;
         }
-        
         @keyframes bgPulse {
-            0%, 100% { 
-                opacity: 0.6;
-                transform: scale(1);
-            }
-            50% { 
-                opacity: 1;
-                transform: scale(1.05);
-            }
+            0%, 100% { opacity: 0.6; transform: scale(1); }
+            50% { opacity: 1; transform: scale(1.05); }
         }
-        
-        /* Плавающие частицы */
-        .particle {
-            position: fixed;
-            border-radius: 50%;
-            background: rgba(139, 92, 246, 0.3);
-            animation: float 10s ease-in-out infinite;
-            pointer-events: none;
-            z-index: 0;
-        }
-        
-        .particle:nth-child(1) {
-            width: 100px;
-            height: 100px;
-            top: 10%;
-            left: 10%;
-            animation-delay: 0s;
-        }
-        
-        .particle:nth-child(2) {
-            width: 150px;
-            height: 150px;
-            top: 60%;
-            right: 10%;
-            animation-delay: 2s;
-        }
-        
-        .particle:nth-child(3) {
-            width: 80px;
-            height: 80px;
-            bottom: 20%;
-            left: 20%;
-            animation-delay: 4s;
-        }
-        
-        @keyframes float {
-            0%, 100% { 
-                transform: translateY(0) translateX(0) scale(1);
-                opacity: 0.3;
-            }
-            50% { 
-                transform: translateY(-30px) translateX(20px) scale(1.1);
-                opacity: 0.6;
-            }
-        }
-        
-        /* Главный контейнер */
         .container {
             max-width: 500px;
             margin: 0 auto;
@@ -100,38 +35,29 @@
             position: relative;
             z-index: 1;
         }
-        
-        /* Логотип */
         .logo {
             text-align: center;
             margin: 40px 0 30px;
         }
-        
         .logo-icon {
             width: 100px;
             height: 100px;
             margin: 0 auto 20px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 50px;
-            box-shadow: 0 0 60px rgba(102, 126, 234, 0.6);
+            overflow: hidden;
+            border: 3px solid rgba(102, 126, 234, 0.5);
+            box-shadow: 0 0 40px rgba(102, 126, 234, 0.6);
             animation: logoPulse 3s ease-in-out infinite;
         }
-        
-        @keyframes logoPulse {
-            0%, 100% { 
-                box-shadow: 0 0 60px rgba(102, 126, 234, 0.6);
-                transform: scale(1);
-            }
-            50% { 
-                box-shadow: 0 0 80px rgba(102, 126, 234, 0.9);
-                transform: scale(1.05);
-            }
+        .logo-icon img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
         }
-        
+        @keyframes logoPulse {
+            0%, 100% { box-shadow: 0 0 40px rgba(102, 126, 234, 0.6); transform: scale(1); }
+            50% { box-shadow: 0 0 60px rgba(102, 126, 234, 0.9); transform: scale(1.05); }
+        }
         .logo h1 {
             font-size: 56px;
             font-weight: 900;
@@ -139,9 +65,7 @@
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
-            text-shadow: 0 0 40px rgba(102, 126, 234, 0.5);
         }
-        
         .logo p {
             font-size: 18px;
             opacity: 0.6;
@@ -149,7 +73,65 @@
             letter-spacing: 3px;
         }
         
-        /* Liquid Glass вкладки */
+        /* Shizuku статус */
+        .shizuku-alert {
+            background: linear-gradient(135deg, rgba(239, 68, 68, 0.2) 0%, rgba(220, 38, 38, 0.2) 100%);
+            backdrop-filter: blur(20px);
+            border-radius: 25px;
+            padding: 25px;
+            margin: 20px 0;
+            border: 2px solid rgba(239, 68, 68, 0.5);
+            box-shadow: 0 10px 40px rgba(239, 68, 68, 0.3);
+            animation: pulseAlert 2s infinite;
+        }
+        @keyframes pulseAlert {
+            0%, 100% { box-shadow: 0 10px 40px rgba(239, 68, 68, 0.3); }
+            50% { box-shadow: 0 10px 60px rgba(239, 68, 68, 0.6); }
+        }
+        .shizuku-alert h3 {
+            color: #ef4444;
+            font-size: 20px;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .shizuku-alert p {
+            font-size: 14px;
+            opacity: 0.9;
+            margin-bottom: 20px;
+            line-height: 1.6;
+        }
+        .shizuku-btn {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+            border: none;
+            border-radius: 15px;
+            color: #fff;
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+            margin-bottom: 10px;
+            transition: all 0.3s;
+        }
+        .shizuku-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(239, 68, 68, 0.5);
+        }
+        .shizuku-btn.secondary {
+            background: rgba(255, 255, 255, 0.1);
+            border: 2px solid rgba(255, 255, 255, 0.2);
+        }
+        .shizuku-success {
+            background: linear-gradient(135deg, rgba(0, 255, 136, 0.2) 0%, rgba(0, 204, 106, 0.2) 100%);
+            border-color: rgba(0, 255, 136, 0.5);
+        }
+        .shizuku-success h3 {
+            color: #00ff88;
+        }
+        
+        /* Вкладки */
         .menu-tabs {
             display: flex;
             gap: 10px;
@@ -160,7 +142,6 @@
             padding: 8px;
             border: 1px solid rgba(255, 255, 255, 0.1);
         }
-        
         .menu-tab {
             flex: 1;
             background: transparent;
@@ -171,23 +152,15 @@
             padding: 12px;
             border-radius: 25px;
             cursor: pointer;
-            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-            position: relative;
-            overflow: hidden;
+            transition: all 0.4s;
         }
-        
         .menu-tab.active {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: #fff;
             box-shadow: 0 0 30px rgba(102, 126, 234, 0.6);
         }
         
-        .menu-tab:hover:not(.active) {
-            background: rgba(255, 255, 255, 0.1);
-            color: #fff;
-        }
-        
-        /* Карточки функций */
+        /* Карточки */
         .feature-card {
             background: rgba(255, 255, 255, 0.05);
             backdrop-filter: blur(20px);
@@ -195,52 +168,24 @@
             padding: 30px;
             margin: 20px 0;
             border: 1px solid rgba(255, 255, 255, 0.1);
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
-            position: relative;
-            overflow: hidden;
-            transition: all 0.4s;
         }
-        
-        .feature-card::before {
-            content: '';
-            position: absolute;
-            top: -50%;
-            left: -50%;
-            width: 200%;
-            height: 200%;
-            background: linear-gradient(45deg, transparent, rgba(255, 255, 255, 0.05), transparent);
-            transform: rotate(45deg);
-            animation: shimmer 4s infinite;
-        }
-        
-        @keyframes shimmer {
-            0% { transform: translateX(-100%) translateY(-100%) rotate(45deg); }
-            100% { transform: translateX(100%) translateY(100%) rotate(45deg); }
-        }
-        
         .feature-card h2 {
             font-size: 36px;
             font-weight: 900;
             margin-bottom: 20px;
-            background: linear-gradient(135deg, #fff 0%, rgba(255,255,255,0.7) 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
         }
-        
-        /* Бейдж */
-        .badge {
-            display: inline-block;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            padding: 10px 20px;
-            border-radius: 25px;
-            font-size: 14px;
-            font-weight: 700;
-            margin-bottom: 20px;
-            box-shadow: 0 0 20px rgba(102, 126, 234, 0.4);
+        .params-info {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 15px;
+            padding: 15px;
+            margin: 15px 0;
+            font-size: 13px;
+            line-height: 1.6;
         }
+        .params-info strong { color: #667eea; }
         
-        /* Статус индикатор */
-        .status-box {
+        /* Статус */
+        .sens-status {
             background: rgba(0, 0, 0, 0.3);
             border-radius: 20px;
             padding: 20px;
@@ -248,186 +193,31 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            border: 1px solid rgba(255, 255, 255, 0.05);
         }
-        
-        .status-label {
-            font-size: 12px;
-            opacity: 0.6;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
-        
-        .status-indicator {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            font-size: 14px;
-            color: #00ff88;
-        }
-        
         .status-dot {
             width: 8px;
             height: 8px;
-            background: #00ff88;
             border-radius: 50%;
             animation: blink 1.5s infinite;
+        }
+        .status-dot.active {
+            background: #00ff88;
             box-shadow: 0 0 10px #00ff88;
         }
-        
+        .status-dot.inactive {
+            background: #ef4444;
+            box-shadow: 0 0 10px #ef4444;
+        }
         @keyframes blink {
             0%, 100% { opacity: 1; }
             50% { opacity: 0.3; }
         }
         
-        /* Большая круглая кнопка */
-        .big-button {
-            width: 200px;
-            height: 200px;
-            border-radius: 50%;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            border: none;
-            color: #fff;
-            font-size: 24px;
-            font-weight: 900;
-            cursor: pointer;
-            margin: 30px auto;
-            display: block;
-            transition: all 0.3s;
-            box-shadow: 0 10px 50px rgba(102, 126, 234, 0.6);
-            position: relative;
-            overflow: hidden;
-            letter-spacing: 2px;
-        }
-        
-        .big-button::before {
-            content: '';
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            width: 0;
-            height: 0;
-            border-radius: 50%;
-            background: rgba(255, 255, 255, 0.3);
-            transform: translate(-50%, -50%);
-            transition: width 0.6s, height 0.6s;
-        }
-        
-        .big-button:active::before {
-            width: 400px;
-            height: 400px;
-        }
-        
-        .big-button:hover {
-            transform: scale(1.05);
-            box-shadow: 0 15px 60px rgba(102, 126, 234, 0.8);
-        }
-        
-        .big-button:active {
-            transform: scale(0.95);
-        }
-        
-        /* Пресеты сенсы - 4 квадратика */
-        .preset-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 15px;
-            margin: 20px 0;
-        }
-        
-        .preset-card {
-            background: rgba(255, 255, 255, 0.05);
-            backdrop-filter: blur(10px);
-            border-radius: 20px;
-            padding: 25px 20px;
-            cursor: pointer;
-            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-            border: 2px solid transparent;
-            position: relative;
-            overflow: hidden;
-        }
-        
-        .preset-card::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: -100%;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
-            transition: left 0.6s;
-        }
-        
-        .preset-card:hover::before {
-            left: 100%;
-        }
-        
-        .preset-card:hover {
-            background: rgba(255, 255, 255, 0.1);
-            transform: translateY(-3px);
-        }
-        
-        .preset-card.active {
-            border-color: #667eea;
-            background: rgba(102, 126, 234, 0.2);
-            box-shadow: 0 0 40px rgba(102, 126, 234, 0.5);
-            transform: scale(1.05);
-        }
-        
-        .preset-card h3 {
-            font-size: 20px;
-            margin-bottom: 8px;
-            font-weight: 700;
-        }
-        
-        .preset-card p {
-            font-size: 13px;
-            opacity: 0.6;
-        }
-        
-        /* Телепорт - другое оформление */
-        .teleport-card {
-            background: rgba(239, 68, 68, 0.05);
-            backdrop-filter: blur(20px);
-            border-radius: 30px;
-            padding: 30px;
-            margin: 20px 0;
-            border: 1px solid rgba(239, 68, 68, 0.2);
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
-            position: relative;
-            overflow: hidden;
-        }
-        
-        .teleport-card::before {
-            content: '';
-            position: absolute;
-            top: -50%;
-            left: -50%;
-            width: 200%;
-            height: 200%;
-            background: linear-gradient(45deg, transparent, rgba(239, 68, 68, 0.05), transparent);
-            transform: rotate(45deg);
-            animation: shimmer 4s infinite;
-        }
-        
-        .teleport-card h2 {
-            font-size: 28px;
-            font-weight: 900;
-            margin-bottom: 15px;
-            color: #ef4444;
-        }
-        
-        .teleport-card p {
-            font-size: 14px;
-            opacity: 0.7;
-            margin-bottom: 20px;
-            line-height: 1.6;
-        }
-        
-        .teleport-btn {
+        /* Кнопки */
+        .toggle-btn {
             width: 100%;
             padding: 18px;
-            background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             border: none;
             border-radius: 20px;
             color: #fff;
@@ -435,29 +225,43 @@
             font-weight: 700;
             cursor: pointer;
             transition: all 0.3s;
-            box-shadow: 0 5px 30px rgba(239, 68, 68, 0.4);
-            letter-spacing: 1px;
+            box-shadow: 0 5px 30px rgba(102, 126, 234, 0.4);
+            margin: 20px 0;
         }
-        
-        .teleport-btn:hover {
+        .toggle-btn:hover {
             transform: translateY(-2px);
-            box-shadow: 0 10px 40px rgba(239, 68, 68, 0.6);
+            box-shadow: 0 10px 40px rgba(102, 126, 234, 0.6);
+        }
+        .toggle-btn.active {
+            background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+            box-shadow: 0 5px 30px rgba(239, 68, 68, 0.4);
         }
         
-        .teleport-btn:active {
-            transform: translateY(0);
+        /* Пресеты */
+        .preset-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin: 20px 0;
         }
-        
-        /* Скрытые секции */
-        .section {
-            display: none;
-            animation: fadeIn 0.4s;
+        .preset-card {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 20px;
+            padding: 20px;
+            cursor: pointer;
+            transition: all 0.3s;
+            border: 2px solid transparent;
         }
-        
-        .section.active {
-            display: block;
+        .preset-card.active {
+            border-color: #667eea;
+            background: rgba(102, 126, 234, 0.2);
+            box-shadow: 0 0 30px rgba(102, 126, 234, 0.4);
         }
+        .preset-card h3 { font-size: 18px; margin-bottom: 5px; }
+        .preset-card p { font-size: 12px; opacity: 0.6; }
         
+        .section { display: none; animation: fadeIn 0.4s; }
+        .section.active { display: block; }
         @keyframes fadeIn {
             from { opacity: 0; transform: translateY(20px); }
             to { opacity: 1; transform: translateY(0); }
@@ -466,19 +270,45 @@
 </head>
 <body>
     <div class="bg-gradient"></div>
-    <div class="particle"></div>
-    <div class="particle"></div>
-    <div class="particle"></div>
     
     <div class="container">
         <!-- Логотип -->
         <div class="logo">
-            <div class="logo-icon"></div>
-            <h1>FIXSENS</h1>
+            <div class="logo-icon">
+                <img src="https://via.placeholder.com/100" alt="Avatar">
+            </div>
+            <h1>TELEPORT</h1>
             <p>ДЛЯ STANDOFF 2</p>
         </div>
         
-        <!-- Меню вкладок -->
+        <!-- Shizuku Alert (показывается если не активен) -->
+        <div id="shizukuAlert" class="shizuku-alert">
+            <h3>️ Требуется Shizuku</h3>
+            <p>
+                Для работы телепортации прицела необходимо приложение Shizuku. 
+                Оно даёт специальные права для модификации ввода.
+            </p>
+            <button class="shizuku-btn" onclick="openShizuku()">
+                📱 Открыть Shizuku
+            </button>
+            <button class="shizuku-btn secondary" onclick="requestPermission()">
+                🔑 Получить разрешение
+            </button>
+            <button class="shizuku-btn secondary" onclick="showAdbHelp()">
+                 Помощь с ADB (One UI 9)
+            </button>
+        </div>
+        
+        <!-- Shizuku Success (показывается если активен) -->
+        <div id="shizukuSuccess" class="shizuku-alert shizuku-success" style="display: none;">
+            <h3>✅ Shizuku активен</h3>
+            <p>
+                Отлично! Shizuku работает и готов к использованию. 
+                Теперь можно включать сенсу.
+            </p>
+        </div>
+        
+        <!-- Вкладки -->
         <div class="menu-tabs">
             <button class="menu-tab active" onclick="showSection('sens', this)">Сенса</button>
             <button class="menu-tab" onclick="showSection('stretch', this)">Растяг</button>
@@ -489,25 +319,29 @@
         <!-- СЕКЦИЯ: СЕНСА -->
         <div id="sens" class="section active">
             <div class="feature-card">
-                <h2>Резкая сенса</h2>
-                <div class="badge">резкость 1.30</div>
+                <h2>Сенса</h2>
                 
-                <div class="status-box">
+                <div class="params-info">
+                    <strong>Как работают числа:</strong><br>
+                    • <strong>Резкость 1.30</strong> — скорость × 1.3 (на 30% быстрее)<br>
+                    • <strong>Шум 1</strong> — фильтр дрожания (меньше = плавнее)<br>
+                    • <strong>Выпрямление 0.60</strong> — прилипание к прямой
+                </div>
+                
+                <div class="sens-status">
                     <div>
-                        <div class="status-label">СЕЙЧАС ВКЛЮЧЕНО</div>
-                        <div style="font-size: 14px; margin-top: 5px;">сенса</div>
+                        <div style="font-size: 12px; opacity: 0.6; text-transform: uppercase;">Статус</div>
+                        <div style="font-size: 16px; margin-top: 5px;" id="sensStatusText">Выключено</div>
                     </div>
-                    <div class="status-indicator">
-                        <div class="status-dot"></div>
-                        <span>работает</span>
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                        <div class="status-dot inactive" id="sensDot"></div>
+                        <span id="sensIndicator">не активно</span>
                     </div>
                 </div>
                 
-                <button class="big-button" onclick="toggleSens()">НАВСЕГДА</button>
-                
-                <p style="text-align: center; opacity: 0.6; font-size: 14px; margin-bottom: 20px;">
-                    Выключить можно кнопкой ниже
-                </p>
+                <button class="toggle-btn" id="sensToggleBtn" onclick="toggleSens()">
+                    ВКЛЮЧИТЬ СЕНСУ
+                </button>
                 
                 <div class="preset-grid">
                     <div class="preset-card" onclick="selectPreset(this, 0.80, 2.0, 0.90)">
@@ -528,58 +362,115 @@
                     </div>
                 </div>
             </div>
-            
-            <!-- Телепорт -->
-            <div class="teleport-card">
-                <h2>⚡ TELEPORT</h2>
-                <p>Мгновенное перемещение прицела. Отключает все задержки и анимации системы для максимального отклика.</p>
-                <button class="teleport-btn" onclick="activateTeleport()">АКТИВИРОВАТЬ TELEPORT</button>
-            </div>
         </div>
         
-        <!-- СЕКЦИЯ: РАСТЯГ -->
+        <!-- Другие секции -->
         <div id="stretch" class="section">
             <div class="feature-card">
-                <h2>Растяг экрана</h2>
-                <p style="opacity: 0.7; margin-bottom: 20px;">В разработке</p>
+                <h2>Растяг</h2>
+                <p style="opacity: 0.7;">В разработке</p>
             </div>
         </div>
         
-        <!-- СЕКЦИЯ: ПРИЦЕЛ -->
         <div id="crosshair" class="section">
             <div class="feature-card">
                 <h2>Прицел</h2>
-                <p style="opacity: 0.7; margin-bottom: 20px;">В разработке</p>
+                <p style="opacity: 0.7;">В разработке</p>
             </div>
         </div>
         
-        <!-- СЕКЦИЯ: БУСТЕР -->
         <div id="boost" class="section">
             <div class="feature-card">
                 <h2>Бустер</h2>
-                <p style="opacity: 0.7; margin-bottom: 20px;">В разработке</p>
+                <p style="opacity: 0.7;">В разработке</p>
             </div>
         </div>
     </div>
     
     <script>
-        // Переключение секций
+        // Проверка Shizuku при загрузке
+        window.addEventListener('load', function() {
+            checkShizuku();
+        });
+        
+        function checkShizuku() {
+            if (typeof AndroidBridge !== 'undefined') {
+                var status = AndroidBridge.getShizukuStatus();
+                updateShizukuUI(status);
+            }
+        }
+        
+        function updateShizukuUI(status) {
+            var alert = document.getElementById('shizukuAlert');
+            var success = document.getElementById('shizukuSuccess');
+            
+            if (status === 'READY') {
+                alert.style.display = 'none';
+                success.style.display = 'block';
+            } else {
+                alert.style.display = 'block';
+                success.style.display = 'none';
+            }
+        }
+        
+        function openShizuku() {
+            if (typeof AndroidBridge !== 'undefined') {
+                AndroidBridge.openShizukuApp();
+            }
+        }
+        
+        function requestPermission() {
+            if (typeof AndroidBridge !== 'undefined') {
+                AndroidBridge.requestShizukuPermission();
+                setTimeout(checkShizuku, 2000);
+            }
+        }
+        
+        function showAdbHelp() {
+            var cmd = 'adb shell sh /sdcard/Android/data/moe.shizuku.privileged.api/start.sh';
+            if (typeof AndroidBridge !== 'undefined') {
+                AndroidBridge.copyAdbCommand();
+            }
+            alert('Команда скопирована в буфер обмена!\n\n' +
+                  '1. Подключи телефон к ПК\n' +
+                  '2. Открой терминал/ADB\n' +
+                  '3. Вставь команду: ' + cmd + '\n' +
+                  '4. Нажми Enter\n' +
+                  '5. Вернись в приложение');
+        }
+        
         function showSection(sectionId, element) {
             document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
             document.querySelectorAll('.menu-tab').forEach(b => b.classList.remove('active'));
-            
             document.getElementById(sectionId).classList.add('active');
             element.classList.add('active');
         }
         
-        // Сенса
         let sensActive = false;
         function toggleSens() {
             sensActive = !sensActive;
+            var btn = document.getElementById('sensToggleBtn');
+            var dot = document.getElementById('sensDot');
+            var text = document.getElementById('sensStatusText');
+            var indicator = document.getElementById('sensIndicator');
+            
+            if (sensActive) {
+                btn.textContent = 'ВЫКЛЮЧИТЬ СЕНСУ';
+                btn.classList.add('active');
+                dot.className = 'status-dot active';
+                text.textContent = 'Включено';
+                indicator.textContent = 'активно';
+            } else {
+                btn.textContent = 'ВКЛЮЧИТЬ СЕНСУ';
+                btn.classList.remove('active');
+                dot.className = 'status-dot inactive';
+                text.textContent = 'Выключено';
+                indicator.textContent = 'не активно';
+            }
+            
             if (typeof AndroidBridge !== 'undefined') {
                 AndroidBridge.toggleFixSens(sensActive);
             }
-            alert(sensActive ? 'Сенса включена' : 'Сенса выключена');
         }
         
         function selectPreset(element, sharpness, noise, straighten) {
@@ -588,38 +479,6 @@
             
             if (typeof AndroidBridge !== 'undefined') {
                 AndroidBridge.setFixSensParams(sharpness, noise, straighten);
-            }
-        }
-        
-        // TELEPORT - реальный телепорт прицела
-        function activateTeleport() {
-            if (typeof AndroidBridge !== 'undefined') {
-                // Отключаем ВСЕ анимации системы
-                AndroidBridge.executeCommand('settings put global window_animation_scale 0');
-                AndroidBridge.executeCommand('settings put global transition_animation_scale 0');
-                AndroidBridge.executeCommand('settings put global animator_duration_scale 0');
-                
-                // Максимальная скорость указателя
-                AndroidBridge.executeCommand('settings put system pointer_speed 7');
-                AndroidBridge.executeCommand('settings put secure pointer_speed 7');
-                
-                // Отключаем акселерацию и сглаживание
-                AndroidBridge.executeCommand('settings put system pointer_acceleration 0');
-                AndroidBridge.executeCommand('settings put secure pointer_acceleration 0');
-                
-                // Отключаем энергосбережение тачскрина
-                AndroidBridge.executeCommand('settings put system touch_boost 1');
-                
-                // Отключаем все оптимизации батареи для тачскрина
-                AndroidBridge.executeCommand('settings put global adaptive_sleep 0');
-                AndroidBridge.executeCommand('settings put global lowpower_standby 0');
-                
-                AndroidBridge.showToast(' TELEPORT АКТИВИРОВАН');
-                
-                // Вибрация
-                if (navigator.vibrate) navigator.vibrate([100, 50, 100, 50, 100]);
-            } else {
-                alert('⚡ TELEPORT АКТИВИРОВАН');
             }
         }
     </script>
