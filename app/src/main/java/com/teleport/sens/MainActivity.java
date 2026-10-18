@@ -19,7 +19,6 @@ import java.io.InputStreamReader;
 
 public class MainActivity extends Activity {
     private WebView webView;
-    private boolean hasShownPermissionRequest = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -47,22 +46,18 @@ public class MainActivity extends Activity {
     @Override
     protected void onResume() {
         super.onResume();
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            boolean canDrawOverlays = Settings.canDrawOverlays(this);
-            if (!canDrawOverlays && !hasShownPermissionRequest) {
-                hasShownPermissionRequest = true;
-                webView.postDelayed(() -> {
-                    webView.evaluateJavascript(
-                        "document.getElementById('permModal').style.display = 'flex';", 
-                        null
-                    );
-                }, 500);
-            } else if (canDrawOverlays) {
-                webView.postDelayed(() -> {
-                    webView.evaluateJavascript("hideModal();", null);
-                }, 300);
-            }
-        }
+        // Проверяем разрешение при каждом возврате в приложение
+        webView.postDelayed(() -> {
+            boolean hasPermission = Settings.canDrawOverlays(this);
+            webView.evaluateJavascript(
+                "if(typeof AndroidBridge !== 'undefined') { " +
+                "var hasPerm = AndroidBridge.hasOverlayPermission(); " +
+                "var modal = document.getElementById('permModal'); " +
+                "if(modal) { modal.style.display = hasPerm ? 'none' : 'flex'; } " +
+                "}", 
+                null
+            );
+        }, 500);
     }
 
     public class AppController {
@@ -78,12 +73,9 @@ public class MainActivity extends Activity {
 
         @JavascriptInterface
         public void openPermissionSettings() {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                Intent intent = new Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
-                        Uri.parse("package:" + getPackageName()));
-                startActivity(intent);
-                hasShownPermissionRequest = true;
-            }
+            Intent intent = new Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
+                    Uri.parse("package:" + getPackageName()));
+            startActivity(intent);
         }
 
         @JavascriptInterface
@@ -99,10 +91,7 @@ public class MainActivity extends Activity {
         
         @JavascriptInterface
         public boolean hasOverlayPermission() {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                return Settings.canDrawOverlays(MainActivity.this);
-            }
-            return true;
+            return Settings.canDrawOverlays(MainActivity.this);
         }
 
         @JavascriptInterface
@@ -151,7 +140,7 @@ public class MainActivity extends Activity {
                 runCommand(cmd);
             }
             runOnUiThread(() -> Toast.makeText(MainActivity.this, 
-                "⚡ TELEPORT MODE", Toast.LENGTH_SHORT).show());
+                " TELEPORT MODE", Toast.LENGTH_SHORT).show());
         }
     }
 
