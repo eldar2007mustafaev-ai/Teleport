@@ -1,5 +1,7 @@
 package com.teleport.sens;
 
+import rikka.shizuku.Shizuku;
+import android.content.pm.PackageManager;
 import android.app.Activity;
 import android.content.Intent;
 import android.net.Uri;
