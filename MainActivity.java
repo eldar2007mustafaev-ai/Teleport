@@ -6,6 +6,7 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.provider.Settings;
+import android.view.View;
 import android.webkit.JavascriptInterface;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
@@ -23,16 +24,21 @@ public class MainActivity extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
+        getWindow().getDecorView().setSystemUiVisibility(
+            View.SYSTEM_UI_FLAG_FULLSCREEN |
+            View.SYSTEM_UI_FLAG_LAYOUT_STABLE |
+            View.SYSTEM_UI_FLAG_LOW_PROFILE
+        );
+
         webView = new WebView(this);
         WebSettings webSettings = webView.getSettings();
         webSettings.setJavaScriptEnabled(true);
         webSettings.setDomStorageEnabled(true);
         webSettings.setAllowFileAccess(true);
+        webSettings.setCacheMode(WebSettings.LOAD_NO_CACHE);
 
         webView.addJavascriptInterface(new AppController(), "AndroidBridge");
         webView.setWebViewClient(new WebViewClient());
-
-        // Загрузка интерфейса из папки assets
         webView.loadUrl("file:///android_asset/index.html");
         setContentView(webView);
     }
@@ -40,12 +46,10 @@ public class MainActivity extends Activity {
     @Override
     protected void onResume() {
         super.onResume();
-        // Проверяем разрешение только один раз при первом запуске
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             boolean canDrawOverlays = Settings.canDrawOverlays(this);
             if (!canDrawOverlays && !hasShownPermissionRequest) {
                 hasShownPermissionRequest = true;
-                // Показываем модалку только если разрешение НЕ дано
                 webView.postDelayed(() -> {
                     webView.evaluateJavascript(
                         "document.getElementById('permModal').style.display = 'flex';", 
@@ -53,7 +57,6 @@ public class MainActivity extends Activity {
                     );
                 }, 500);
             } else if (canDrawOverlays) {
-                // Скрываем модалку если разрешение есть
                 webView.postDelayed(() -> {
                     webView.evaluateJavascript("hideModal();", null);
                 }, 300);
@@ -100,12 +103,31 @@ public class MainActivity extends Activity {
             }
             return true;
         }
+
+        @JavascriptInterface
+        public void applyInstantFlick() {
+            String[] commands = {
+                "settings put global window_animation_scale 0",
+                "settings put global transition_animation_scale 0",
+                "settings put global animator_duration_scale 0",
+                "settings put system pointer_acceleration 0",
+                "settings put secure pointer_acceleration 0",
+                "settings put system pointer_speed 7",
+                "settings put system touch_exploration_enabled 0",
+                "settings put global touch_pressure_scale 0"
+            };
+            
+            for (String cmd : commands) {
+                runCommand(cmd);
+            }
+            
+            runOnUiThread(() -> Toast.makeText(MainActivity.this, "⚡ Instant Flick активирован", Toast.LENGTH_SHORT).show());
+        }
     }
 
     public static void runCommand(String cmd) {
         new Thread(() -> {
             try {
-                // Пробуем с root
                 Process process = Runtime.getRuntime().exec(new String[]{"su", "-c", cmd});
                 BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
                 StringBuilder output = new StringBuilder();
@@ -115,7 +137,6 @@ public class MainActivity extends Activity {
                 }
                 process.waitFor();
                 
-                // Если root не сработал, пробуем без него
                 if (process.exitValue() != 0) {
                     process = Runtime.getRuntime().exec(new String[]{"sh", "-c", cmd});
                     process.waitFor();
