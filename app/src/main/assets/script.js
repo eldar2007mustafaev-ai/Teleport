@@ -29,6 +29,16 @@ function applyInstantFlick() {
     }
 }
 
+// НОВАЯ ФУНКЦИЯ ДЛЯ ПРОВЕРКИ SHIZUKU
+function checkShizuku() {
+    if (typeof AndroidBridge !== 'undefined') {
+        var status = AndroidBridge.getShizukuStatus();
+        AndroidBridge.showToast(status);
+    } else {
+        AndroidBridge.showToast('AndroidBridge не найден');
+    }
+}
+
 function applyTheme(t) {
     document.documentElement.setAttribute('data-theme', t);
     try { localStorage.setItem('theme', t); } catch (e) {}
@@ -39,6 +49,7 @@ function toggleTheme() {
     applyTheme(cur);
 }
 
+// восстановление темы при запуске
 (function () {
     var saved = 'dark';
     try { saved = localStorage.getItem('theme') || 'dark'; } catch (e) {}
