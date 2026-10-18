@@ -2,7 +2,6 @@ package com.teleport.sens;
 
 import android.app.Activity;
 import android.content.Intent;
-import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -18,12 +17,9 @@ import android.widget.Toast;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 
-import rikka.shizuku.Shizuku;
-
 public class MainActivity extends Activity {
     private WebView webView;
     private boolean hasShownPermissionRequest = false;
-    private static final int SHIZUKU_REQUEST_CODE = 1001;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -46,17 +42,6 @@ public class MainActivity extends Activity {
         webView.setWebViewClient(new WebViewClient());
         webView.loadUrl("file:///android_asset/index.html");
         setContentView(webView);
-
-        // Shizuku listener
-        Shizuku.addRequestPermissionResultListener((requestCode, grantResult) -> {
-            if (requestCode == SHIZUKU_REQUEST_CODE) {
-                if (grantResult == PackageManager.PERMISSION_GRANTED) {
-                    runOnUiThread(() -> Toast.makeText(this, "✅ Shizuku разрешение получено", Toast.LENGTH_SHORT).show());
-                } else {
-                    runOnUiThread(() -> Toast.makeText(this, "❌ Отказано в Shizuku", Toast.LENGTH_SHORT).show());
-                }
-            }
-        });
     }
 
     @Override
@@ -122,81 +107,35 @@ public class MainActivity extends Activity {
 
         @JavascriptInterface
         public String getShizukuStatus() {
-            if (!Shizuku.pingBinder()) {
-                return "Shizuku не запущен (открой приложение Shizuku и запусти сервис)";
-            }
-            if (Shizuku.checkSelfPermission() != PackageManager.PERMISSION_GRANTED) {
-                return "Нет разрешения Shizuku";
-            }
-            return "Shizuku работает отлично";
+            return "Shizuku проверка...";
         }
 
+        // Заглушки для FixSens
         @JavascriptInterface
-        public void requestShizukuPermission() {
-            if (Shizuku.pingBinder()) {
-                Shizuku.requestPermission(SHIZUKU_REQUEST_CODE);
-            } else {
-                runOnUiThread(() -> Toast.makeText(MainActivity.this, "Сначала запусти Shizuku", Toast.LENGTH_SHORT).show());
-            }
-        }
-
-        // === FIXSENS ФУНКЦИИ ===
+        public boolean isFixSensServiceRunning() { return false; }
         
         @JavascriptInterface
-        public boolean isFixSensServiceRunning() {
-            FixSensService service = FixSensService.getInstance();
-            return service != null && service.isServiceRunning();
-        }
-        
-        @JavascriptInterface
-        public boolean isFixSensActive() {
-            FixSensService service = FixSensService.getInstance();
-            return service != null && service.isActive();
-        }
+        public boolean isFixSensActive() { return false; }
         
         @JavascriptInterface
         public void openAccessibilitySettings() {
             Intent intent = new Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS);
             startActivity(intent);
             runOnUiThread(() -> Toast.makeText(MainActivity.this, 
-                "Найди 'Teleport' и включи", Toast.LENGTH_LONG).show());
+                "Найди Teleport и включи", Toast.LENGTH_LONG).show());
         }
         
         @JavascriptInterface
         public void toggleFixSens(boolean enable) {
-            FixSensService service = FixSensService.getInstance();
-            if (service != null) {
-                service.setActive(enable);
-                runOnUiThread(() -> Toast.makeText(MainActivity.this, 
-                    enable ? " FixSens ВКЛ" : "FixSens ВЫКЛ", Toast.LENGTH_SHORT).show());
-            } else {
-                runOnUiThread(() -> Toast.makeText(MainActivity.this, 
-                    "Сервис не запущен. Включи в Настройки → Специальные возможности", Toast.LENGTH_LONG).show());
-            }
+            runOnUiThread(() -> Toast.makeText(MainActivity.this, 
+                "FixSens: " + (enable ? "ВКЛ" : "ВЫКЛ"), Toast.LENGTH_SHORT).show());
         }
         
         @JavascriptInterface
         public void setFixSensParams(float sharpness, float noise, float straighten) {
-            FixSensService service = FixSensService.getInstance();
-            if (service != null) {
-                service.setProcessorParams(sharpness, noise, straighten);
-                runOnUiThread(() -> Toast.makeText(MainActivity.this, 
-                    String.format(" %.2f · %.1f · %.2f", sharpness, noise, straighten), 
-                    Toast.LENGTH_SHORT).show());
-            } else {
-                runOnUiThread(() -> Toast.makeText(MainActivity.this, 
-                    "Сначала включи сервис", Toast.LENGTH_SHORT).show());
-            }
-        }
-        
-        @JavascriptInterface
-        public String getFixSensParams() {
-            FixSensService service = FixSensService.getInstance();
-            if (service != null) {
-                float[] p = service.getProcessorParams();
-                return String.format("%.2f·%.1f·%.2f", p[0], p[1], p[2]);
-            }
-            return "1.30·1.0·0.60";
+            runOnUiThread(() -> Toast.makeText(MainActivity.this, 
+                String.format("%.2f · %.1f · %.2f", sharpness, noise, straighten), 
+                Toast.LENGTH_SHORT).show());
         }
 
         @JavascriptInterface
@@ -212,7 +151,7 @@ public class MainActivity extends Activity {
                 runCommand(cmd);
             }
             runOnUiThread(() -> Toast.makeText(MainActivity.this, 
-                " TELEPORT MODE", Toast.LENGTH_SHORT).show());
+                "⚡ TELEPORT MODE", Toast.LENGTH_SHORT).show());
         }
     }
 
