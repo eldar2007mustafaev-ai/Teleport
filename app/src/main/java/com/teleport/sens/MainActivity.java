@@ -96,12 +96,12 @@ public class MainActivity extends Activity {
 
         @JavascriptInterface
         public String getShizukuStatus() {
-            return ShizukuInputInjector.getStatus();
+            return "Shizuku: заглушка";
         }
 
         @JavascriptInterface
         public boolean isShizukuAvailable() {
-            return ShizukuInputInjector.isAvailable();
+            return false;
         }
 
         @JavascriptInterface
@@ -195,7 +195,7 @@ public class MainActivity extends Activity {
                 runCommand(cmd);
             }
             runOnUiThread(() -> Toast.makeText(MainActivity.this, 
-                "⚡ TELEPORT MODE", Toast.LENGTH_SHORT).show());
+                " TELEPORT MODE", Toast.LENGTH_SHORT).show());
         }
     }
 
