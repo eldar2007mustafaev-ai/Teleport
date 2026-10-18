@@ -3,7 +3,6 @@ package com.teleport.sens;
 import android.app.Activity;
 import android.app.Service;
 import android.content.Intent;
-import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.graphics.PixelFormat;
 import android.graphics.Typeface;
@@ -26,17 +25,12 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import rikka.shizuku.Shizuku;
-
 public class MainActivity extends Activity {
     private WebView webView;
-    private static final int SHIZUKU_CODE = 1001;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
-        Shizuku.addRequestPermissionResultListener(this::onRequestPermissionResult);
 
         webView = new WebView(this);
         WebSettings webSettings = webView.getSettings();
@@ -46,7 +40,7 @@ public class MainActivity extends Activity {
         webView.addJavascriptInterface(new AppController(), "AndroidBridge");
         webView.setWebViewClient(new WebViewClient());
 
-        // Чистый и плавный интерфейс без лишней вибрации с мягкими CSS-анимациями
+        // Чистый и плавный интерфейс без вибрации, с мягкими анимациями
         String htmlContent = "<!DOCTYPE html>" +
             "<html lang=\"ru\"><head><meta charset=\"UTF-8\">" +
             "<meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">" +
@@ -67,7 +61,7 @@ public class MainActivity extends Activity {
             ".card-title { font-size: 14px; font-weight: 700; color: #fff; text-transform: uppercase; letter-spacing: 0.5px; }" +
             ".card-desc { font-size: 12px; color: #8a9bb8; margin-bottom: 14px; line-height: 1.4; }" +
             
-            // Плавная анимация нажатия без вибрации
+            // Плавная анимация без вибрации
             ".btn-primary { background: linear-gradient(135deg, #0059FF 0%, #003399 100%); color: #fff; border: none; border-radius: 14px; padding: 12px 20px; font-size: 12px; font-weight: 600; cursor: pointer; box-shadow: 0 4px 15px rgba(0, 89, 255, 0.4); text-align: center; transition: transform 0.2s ease, opacity 0.2s ease; animation: pulseGlow 3s infinite; }" +
             ".btn-primary:active { transform: scale(0.95); opacity: 0.85; }" +
             
@@ -107,10 +101,10 @@ public class MainActivity extends Activity {
 
             "<div class=\"card\">" +
             "<div class=\"card-title\">Растяжение экрана (Оверлей)</div>" +
-            "<div class=\"card-desc\">Плавающая кнопка поверх игры с индикатором и прямой привязкой к Shizuku API.</div>" +
+            "<div class=\"card-desc\">Плавающая кнопка поверх игры с индикатором и быстрым переключением 16:9.</div>" +
             "<div class=\"toggle-row\"><span>Плавающая кнопка оверлея</span>" +
             "<label class=\"switch\"><input type=\"checkbox\" id=\"floatToggle\" onchange=\"AndroidBridge.toggleFloatingButton(this.checked)\"><span class=\"slider\"></span></label></div>" +
-            "<div class=\"status-badge\"><div class=\"status-dot\"></div>Shizuku API готов к работе</div></div>" +
+            "<div class=\"status-badge\"><div class=\"status-dot\"></div>Система готова к работе</div></div>" +
 
             "<div class=\"card\">" +
             "<div class=\"card-title\">Бустер производительности</div>" +
@@ -126,28 +120,6 @@ public class MainActivity extends Activity {
 
         webView.loadDataWithBaseURL(null, htmlContent, "text/html", "UTF-8", null);
         setContentView(webView);
-
-        checkAndRequestShizukuPermission();
-    }
-
-    private void checkAndRequestShizukuPermission() {
-        try {
-            if (Shizuku.pingBinder()) {
-                if (!Shizuku.checkSelfPermission().equals(PackageManager.PERMISSION_GRANTED)) {
-                    Shizuku.requestPermission(SHIZUKU_CODE);
-                }
-            } else {
-                Toast.makeText(this, "Запустите службу Shizuku на телефоне!", Toast.LENGTH_LONG).show();
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
-    private void onRequestPermissionResult(int requestCode, int grantResult) {
-        if (requestCode == SHIZUKU_CODE && grantResult == PackageManager.PERMISSION_GRANTED) {
-            Toast.makeText(this, "Доступ Shizuku успешно получен!", Toast.LENGTH_SHORT).show();
-        }
     }
 
     @Override
@@ -158,16 +130,10 @@ public class MainActivity extends Activity {
         }
     }
 
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
-        Shizuku.removeRequestPermissionResultListener(this::onRequestPermissionResult);
-    }
-
     public class AppController {
         @JavascriptInterface
         public void executeCommand(String command) {
-            runShizukuCommand(command);
+            runCommand(command);
         }
 
         @JavascriptInterface
@@ -196,16 +162,11 @@ public class MainActivity extends Activity {
         }
     }
 
-    public static void runShizukuCommand(String cmd) {
+    public static void runCommand(String cmd) {
         new Thread(() -> {
             try {
-                if (Shizuku.pingBinder() && Shizuku.checkSelfPermission() == PackageManager.PERMISSION_GRANTED) {
-                    Process process = Shizuku.newProcess(new String[]{"sh", "-c", cmd}, null, null);
-                    process.waitFor();
-                } else {
-                    Process process = Runtime.getRuntime().exec(new String[]{"sh", "-c", cmd});
-                    process.waitFor();
-                }
+                Process process = Runtime.getRuntime().exec(new String[]{"sh", "-c", cmd});
+                process.waitFor();
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -250,7 +211,7 @@ public class MainActivity extends Activity {
             updateButtonStyle(false);
             floatingButton.setTextSize(13);
             floatingButton.setTypeface(null, Typeface.BOLD);
-            // Отключаем системный звук/вибрацию при программных нажатиях на вьюху оверлея
+            // Полное отключение вибрации и системных звуков клика на оверлее
             floatingButton.setHapticFeedbackEnabled(false);
             floatingButton.setSoundEffectsEnabled(false);
 
@@ -270,11 +231,11 @@ public class MainActivity extends Activity {
 
             floatingButton.setOnClickListener(v -> {
                 if (!isStretched) {
-                    runShizukuCommand("wm size 1080x2400");
+                    runCommand("wm size 1080x2400");
                     isStretched = true;
                     updateButtonStyle(true);
                 } else {
-                    runShizukuCommand("wm size reset");
+                    runCommand("wm size reset");
                     isStretched = false;
                     updateButtonStyle(false);
                 }
