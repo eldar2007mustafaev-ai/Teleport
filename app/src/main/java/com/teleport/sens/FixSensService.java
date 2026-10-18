@@ -7,7 +7,6 @@ import android.os.Build;
 import android.os.Handler;
 import android.os.Looper;
 import android.util.Log;
-import android.view.MotionEvent;
 import android.view.accessibility.AccessibilityEvent;
 import android.widget.Toast;
 
@@ -19,7 +18,6 @@ public class FixSensService extends AccessibilityService {
     private TouchProcessor processor;
     private boolean isActive = false;
     private Handler mainHandler;
-    private boolean useShizuku = false;
     
     @Override
     public void onCreate() {
@@ -28,21 +26,17 @@ public class FixSensService extends AccessibilityService {
         processor = new TouchProcessor();
         processor.setParams(1.30f, 1.0f, 0.60f);
         mainHandler = new Handler(Looper.getMainLooper());
-        
-        useShizuku = ShizukuInputInjector.init();
-        Log.i(TAG, "Shizuku: " + (useShizuku ? "✅ INJECT" : "️ fallback"));
+        Log.i(TAG, "FixSens Service создан");
     }
     
     @Override
     public void onServiceConnected() {
         super.onServiceConnected();
         instance = this;
-        mainHandler.post(() -> {
-            String msg = useShizuku ? 
-                "✅ FixSens: Shizuku INJECT активен" : 
-                "⚠️ FixSens: fallback (нужен Shizuku)";
-            Toast.makeText(this, msg, Toast.LENGTH_LONG).show();
-        });
+        mainHandler.post(() -> 
+            Toast.makeText(this, "✅ FixSens активен", Toast.LENGTH_SHORT).show()
+        );
+        Log.i(TAG, "FixSens Service подключён");
     }
     
     @Override
@@ -53,7 +47,9 @@ public class FixSensService extends AccessibilityService {
     }
     
     @Override
-    public void onInterrupt() { instance = null; }
+    public void onInterrupt() {
+        instance = null;
+    }
     
     @Override
     public void onDestroy() {
@@ -61,18 +57,27 @@ public class FixSensService extends AccessibilityService {
         super.onDestroy();
     }
     
-    public static FixSensService getInstance() { return instance; }
-    public boolean isServiceRunning() { return instance != null; }
-    public boolean isActive() { return isActive; }
-    public boolean isUsingShizuku() { return useShizuku; }
+    public static FixSensService getInstance() {
+        return instance;
+    }
+    
+    public boolean isServiceRunning() {
+        return instance != null;
+    }
     
     public void setActive(boolean active) {
         this.isActive = active;
         if (!active) processor.reset();
     }
     
-    public void setProcessorParams(float s, float n, float st) {
-        if (processor != null) processor.setParams(s, n, st);
+    public boolean isActive() {
+        return isActive;
+    }
+    
+    public void setProcessorParams(float sharpness, float noise, float straighten) {
+        if (processor != null) {
+            processor.setParams(sharpness, noise, straighten);
+        }
     }
     
     public float[] getProcessorParams() {
@@ -80,42 +85,30 @@ public class FixSensService extends AccessibilityService {
         return new float[]{1.30f, 1.0f, 0.60f};
     }
     
-    public void processAndInjectTouch(float rawX, float rawY, int action) {
-        if (!isActive) return;
-        
-        float[] modified = processor.process(rawX, rawY);
-        float newX = modified[0];
-        float newY = modified[1];
-        
-        long now = System.currentTimeMillis();
-        MotionEvent event = MotionEvent.obtain(now, now, action, newX, newY, 0);
-        
-        boolean injected = false;
-        if (useShizuku) {
-            injected = ShizukuInputInjector.injectMotionEvent(event);
-        }
-        
-        if (!injected) {
-            injectGestureFallback(rawX, rawY, newX, newY);
-        }
-        
-        event.recycle();
+    public boolean isUsingShizuku() {
+        return false;
     }
     
-    private void injectGestureFallback(float fromX, float fromY, float toX, float toY) {
+    public void injectGesture(float fromX, float fromY, float toX, float toY, long durationMs) {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.N) return;
+        if (!isActive) return;
         
         Path path = new Path();
         path.moveTo(fromX, fromY);
         path.lineTo(toX, toY);
         
         GestureDescription.StrokeDescription stroke = 
-            new GestureDescription.StrokeDescription(path, 0, 10);
+            new GestureDescription.StrokeDescription(path, 0, durationMs);
         
         GestureDescription gesture = new GestureDescription.Builder()
             .addStroke(stroke)
             .build();
         
         dispatchGesture(gesture, null, mainHandler);
+    }
+    
+    public float[] processTouch(float rawX, float rawY) {
+        if (!isActive) return new float[]{rawX, rawY};
+        return processor.process(rawX, rawY);
     }
 }
