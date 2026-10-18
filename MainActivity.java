@@ -120,7 +120,6 @@ public class MainActivity extends Activity {
             return true;
         }
 
-        // Точная проверка статуса Shizuku для UI
         @JavascriptInterface
         public String getShizukuStatus() {
             if (!Shizuku.pingBinder()) {
