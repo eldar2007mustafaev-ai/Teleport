@@ -16,7 +16,6 @@ import android.widget.Toast;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
-import java.lang.reflect.Method;
 
 public class MainActivity extends Activity {
     private WebView webView;
@@ -121,19 +120,7 @@ public class MainActivity extends Activity {
 
         @JavascriptInterface
         public void requestShizukuPermission() {
-            try {
-                Class<?> shizukuClass = Class.forName("rikka.shizuku.Shizuku");
-                Method pingBinder = shizukuClass.getMethod("pingBinder");
-                if ((Boolean) pingBinder.invoke(null)) {
-                    Method requestPerm = shizukuClass.getMethod("requestPermission", int.class);
-                    requestPerm.invoke(null, 1001);
-                    Toast.makeText(MainActivity.this, "Запрос разрешения...", Toast.LENGTH_SHORT).show();
-                } else {
-                    Toast.makeText(MainActivity.this, "Shizuku не запущен", Toast.LENGTH_SHORT).show();
-                }
-            } catch (Exception e) {
-                Toast.makeText(MainActivity.this, "Shizuku не найден", Toast.LENGTH_SHORT).show();
-            }
+            Toast.makeText(MainActivity.this, "Shizuku интеграция в разработке", Toast.LENGTH_SHORT).show();
         }
 
         @JavascriptInterface
@@ -176,9 +163,8 @@ public class MainActivity extends Activity {
             FixSensService service = FixSensService.getInstance();
             if (service != null) {
                 service.setActive(enable);
-                String mode = service.isUsingShizuku() ? " (Shizuku INJECT ✅)" : " (fallback ⚠️)";
                 runOnUiThread(() -> Toast.makeText(MainActivity.this, 
-                    "FixSens: " + (enable ? "ВКЛ" : "ВЫКЛ") + mode, Toast.LENGTH_LONG).show());
+                    "FixSens: " + (enable ? "ВКЛ" : "ВЫКЛ"), Toast.LENGTH_SHORT).show());
             } else {
                 runOnUiThread(() -> Toast.makeText(MainActivity.this, 
                     "Сервис не запущен", Toast.LENGTH_SHORT).show());
