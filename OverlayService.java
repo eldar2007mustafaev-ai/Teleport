@@ -26,9 +26,6 @@ import android.view.WindowManager;
 import android.widget.ImageView;
 import android.widget.Toast;
 
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
-
 public class OverlayService extends Service {
 
     public static final String EXTRA_ACTION = "action";
@@ -46,9 +43,8 @@ public class OverlayService extends Service {
     private final Handler handler = new Handler(Looper.getMainLooper());
     private Runnable longPressRunnable;
 
-    private int screenState = 0;
+    private int screenState = 0; // 0 = норма, 1 = 16:9, 2 = растянуто
     private String physicalSize = null;
-    private boolean hasRoot = false;
 
     private float downX, downY, startX, startY;
     private boolean moved = false;
@@ -59,7 +55,6 @@ public class OverlayService extends Service {
         super.onCreate();
         windowManager = (WindowManager) getSystemService(WINDOW_SERVICE);
         touchSlop = android.view.ViewConfiguration.get(this).getScaledTouchSlop();
-        checkRootAccess();
         detectPhysicalSize();
         startForegroundWithNotification();
     }
@@ -79,25 +74,6 @@ public class OverlayService extends Service {
         return START_STICKY;
     }
 
-    private void checkRootAccess() {
-        new Thread(() -> {
-            try {
-                Process process = Runtime.getRuntime().exec("su");
-                process.getOutputStream().write("exit\n".getBytes());
-                process.getOutputStream().flush();
-                process.waitFor();
-                hasRoot = (process.exitValue() == 0);
-            } catch (Exception e) {
-                hasRoot = false;
-            }
-            handler.post(() -> {
-                if (!hasRoot) {
-                    toast("⚠️ Root не обнаружен");
-                }
-            });
-        }).start();
-    }
-
     private void showFloatingButton() {
         if (floatingButtonView != null) return;
 
@@ -113,7 +89,7 @@ public class OverlayService extends Service {
         params = new WindowManager.LayoutParams(
                 size, size,
                 type,
-                WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE,
+                WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE | WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN,
                 PixelFormat.TRANSLUCENT);
         params.gravity = Gravity.TOP | Gravity.START;
         params.x = dp(24);
@@ -126,7 +102,7 @@ public class OverlayService extends Service {
             windowManager.addView(floatingButtonView, params);
             toast("Кнопка активна");
         } catch (Exception e) {
-            toast("Ошибка: нет разрешения");
+            toast("Ошибка: нет разрешения на оверлей");
             stopSelf();
         }
     }
@@ -179,11 +155,6 @@ public class OverlayService extends Service {
     }
 
     private void onTap() {
-        if (!hasRoot) {
-            toast("❌ Требуется Root");
-            return;
-        }
-
         if (physicalSize == null) detectPhysicalSize();
 
         try {
@@ -191,20 +162,20 @@ public class OverlayService extends Service {
                 String[] wh = physicalSize.split("x");
                 int w = Integer.parseInt(wh[0].trim());
                 int h = Math.round(w * 16f / 9f);
-                runCommand("wm size " + w + "x" + h);
+                MainActivity.runShizukuCommand("wm size " + w + "x" + h);
                 screenState = 1;
-                toast("16:9 — полосы");
+                toast("16:9 — полосы включены");
             } else if (screenState == 1) {
-                runCommand("wm size reset");
+                MainActivity.runShizukuCommand("wm size reset");
                 screenState = 2;
                 toast("Растяжение активно");
             } else {
                 String[] wh = physicalSize.split("x");
                 int w = Integer.parseInt(wh[0].trim());
                 int h = Math.round(w * 16f / 9f);
-                runCommand("wm size " + w + "x" + h);
+                MainActivity.runShizukuCommand("wm size " + w + "x" + h);
                 screenState = 1;
-                toast("16:9 — полосы");
+                toast("16:9 — полосы включены");
             }
         } catch (Exception e) {
             toast("Ошибка: " + e.getMessage());
@@ -217,56 +188,18 @@ public class OverlayService extends Service {
     }
 
     private void resetScreen() {
-        if (screenState != 0 && hasRoot) {
+        if (screenState != 0) {
             try {
-                runCommand("wm size reset");
+                MainActivity.runShizukuCommand("wm size reset");
                 screenState = 0;
             } catch (Exception ignored) {}
         }
     }
 
-    private void runCommand(final String cmd) {
-        new Thread(() -> {
-            try {
-                Process p = new ProcessBuilder("su", "-c", cmd)
-                        .redirectErrorStream(true)
-                        .start();
-                BufferedReader reader = new BufferedReader(new InputStreamReader(p.getInputStream()));
-                StringBuilder output = new StringBuilder();
-                String line;
-                while ((line = reader.readLine()) != null) {
-                    output.append(line);
-                }
-                int exitCode = p.waitFor();
-                
-                if (exitCode != 0) {
-                    handler.post(() -> toast("Ошибка: " + cmd));
-                }
-            } catch (Exception e) {
-                handler.post(() -> toast("Ошибка: " + e.getMessage()));
-            }
-        }).start();
-    }
-
     private void detectPhysicalSize() {
-        try {
-            Process p = new ProcessBuilder("su", "-c", "wm size").redirectErrorStream(true).start();
-            BufferedReader r = new BufferedReader(new InputStreamReader(p.getInputStream()));
-            String line;
-            while ((line = r.readLine()) != null) {
-                int i = line.indexOf("Physical size:");
-                if (i >= 0) {
-                    physicalSize = line.substring(i + "Physical size:".length()).trim();
-                    break;
-                }
-            }
-            p.waitFor();
-        } catch (Exception ignored) {}
-
-        if (physicalSize == null) {
-            DisplayMetrics dm = Resources.getSystem().getDisplayMetrics();
-            physicalSize = dm.widthPixels + "x" + dm.heightPixels;
-        }
+        // Для Shizuku просто берем метрики экрана, так как wm size может вернуть текущее (измененное)
+        DisplayMetrics dm = Resources.getSystem().getDisplayMetrics();
+        physicalSize = dm.widthPixels + "x" + dm.heightPixels;
     }
 
     private Bitmap createIconBitmap(int size) {
