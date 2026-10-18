@@ -2,7 +2,6 @@ package com.teleport.sens;
 
 import android.app.Activity;
 import android.content.Intent;
-import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -18,12 +17,9 @@ import android.widget.Toast;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 
-import rikka.shizuku.Shizuku;
-
 public class MainActivity extends Activity {
     private WebView webView;
     private boolean hasShownPermissionRequest = false;
-    private static final int SHIZUKU_REQUEST_CODE = 1001;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -46,17 +42,6 @@ public class MainActivity extends Activity {
         webView.setWebViewClient(new WebViewClient());
         webView.loadUrl("file:///android_asset/index.html");
         setContentView(webView);
-
-        // Инициализация Shizuku
-        Shizuku.addRequestPermissionResultListener((requestCode, grantResult) -> {
-            if (requestCode == SHIZUKU_REQUEST_CODE) {
-                if (grantResult == PackageManager.PERMISSION_GRANTED) {
-                    runOnUiThread(() -> Toast.makeText(this, "✅ Shizuku разрешение получено", Toast.LENGTH_SHORT).show());
-                } else {
-                    runOnUiThread(() -> Toast.makeText(this, "❌ Отказано в Shizuku", Toast.LENGTH_SHORT).show());
-                }
-            }
-        });
     }
 
     @Override
@@ -83,7 +68,7 @@ public class MainActivity extends Activity {
     public class AppController {
         @JavascriptInterface
         public void executeCommand(String command) {
-            runShizukuCommand(command);
+            runCommand(command);
         }
 
         @JavascriptInterface
@@ -122,22 +107,7 @@ public class MainActivity extends Activity {
 
         @JavascriptInterface
         public String getShizukuStatus() {
-            if (!Shizuku.pingBinder()) {
-                return "Shizuku не запущен (открой приложение Shizuku и запусти сервис)";
-            }
-            if (Shizuku.checkSelfPermission() != PackageManager.PERMISSION_GRANTED) {
-                return "Нет разрешения Shizuku (нажми кнопку 'Выдать разрешение' в приложении)";
-            }
-            return "Shizuku работает отлично";
-        }
-
-        @JavascriptInterface
-        public void requestShizukuPermission() {
-            if (Shizuku.pingBinder()) {
-                Shizuku.requestPermission(SHIZUKU_REQUEST_CODE);
-            } else {
-                runOnUiThread(() -> Toast.makeText(MainActivity.this, "Сначала запусти Shizuku", Toast.LENGTH_SHORT).show());
-            }
+            return "Проверка через команды...";
         }
 
         @JavascriptInterface
@@ -155,30 +125,30 @@ public class MainActivity extends Activity {
             };
             
             for (String cmd : commands) {
-                runShizukuCommand(cmd);
+                runCommand(cmd);
             }
             
             runOnUiThread(() -> Toast.makeText(MainActivity.this, "⚡ MAX FLICK активирован", Toast.LENGTH_SHORT).show());
         }
     }
 
-    // Выполнение команд через Shizuku (ADB права)
-    public static void runShizukuCommand(String cmd) {
-        if (!Shizuku.pingBinder()) {
-            Log.e("Teleport", "Shizuku не запущен");
-            return;
-        }
-        try {
-            Process p = Shizuku.newProcess(new String[]{"sh", "-c", cmd}, null, null);
-            BufferedReader reader = new BufferedReader(new InputStreamReader(p.getInputStream()));
-            StringBuilder output = new StringBuilder();
-            String line;
-            while ((line = reader.readLine()) != null) {
-                output.append(line);
+    public static void runCommand(String cmd) {
+        new Thread(() -> {
+            try {
+                // Пробуем через sh (работает с ADB правами)
+                Process process = Runtime.getRuntime().exec(new String[]{"sh", "-c", cmd});
+                BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
+                StringBuilder output = new StringBuilder();
+                String line;
+                while ((line = reader.readLine()) != null) {
+                    output.append(line);
+                }
+                process.waitFor();
+                
+                Log.d("Teleport", "Команда: " + cmd + ", вывод: " + output.toString());
+            } catch (Exception e) {
+                Log.e("Teleport", "Ошибка: " + e.getMessage());
             }
-            p.waitFor();
-        } catch (Exception e) {
-            Log.e("Teleport", "Ошибка Shizuku: " + e.getMessage());
-        }
+        }).start();
     }
 }
