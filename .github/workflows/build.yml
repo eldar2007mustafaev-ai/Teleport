@@ -28,7 +28,13 @@ jobs:
           cp "gpt-image-2_A_sleek_futuristic_cyberpunk_app_icon_featuring_a_glowing_neon_letter_T_as_the_c-0.jpg" app/src/main/res/mipmap-hdpi/ic_launcher.jpg
         fi
 
-        # Убрали копирование из корня, так как файлы теперь лежат в app/src/main/assets/
+        # Автоматически копируем Java файлы из корня на их законное место для компиляции
+        if [ -f "MainActivity.java" ]; then
+          cp MainActivity.java app/src/main/java/com/teleport/sens/MainActivity.java
+        fi
+        if [ -f "OverlayService.java" ]; then
+          cp OverlayService.java app/src/main/java/com/teleport/sens/OverlayService.java
+        fi
 
         cat << 'EOF' > app/src/main/AndroidManifest.xml
         <?xml version="1.0" encoding="utf-8"?>
@@ -57,6 +63,10 @@ jobs:
                         <category android:name="android.intent.category.LAUNCHER" />
                     </intent-filter>
                 </activity>
+                <service
+                    android:name=".OverlayService"
+                    android:enabled="true"
+                    android:exported="false" />
             </application>
         </manifest>
         EOF
