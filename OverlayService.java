@@ -43,7 +43,7 @@ public class OverlayService extends Service {
     private final Handler handler = new Handler(Looper.getMainLooper());
     private Runnable longPressRunnable;
 
-    private int screenState = 0; // 0 = норма, 1 = 16:9, 2 = растянуто
+    private int screenState = 0;
     private String physicalSize = null;
 
     private float downX, downY, startX, startY;
@@ -102,7 +102,7 @@ public class OverlayService extends Service {
             windowManager.addView(floatingButtonView, params);
             toast("Кнопка активна");
         } catch (Exception e) {
-            toast("Ошибка: нет разрешения на оверлей");
+            toast("Ошибка: нет разрешения");
             stopSelf();
         }
     }
@@ -162,20 +162,20 @@ public class OverlayService extends Service {
                 String[] wh = physicalSize.split("x");
                 int w = Integer.parseInt(wh[0].trim());
                 int h = Math.round(w * 16f / 9f);
-                MainActivity.runShizukuCommand("wm size " + w + "x" + h);
+                MainActivity.runCommand("wm size " + w + "x" + h);
                 screenState = 1;
-                toast("16:9 — полосы включены");
+                toast("16:9 — полосы");
             } else if (screenState == 1) {
-                MainActivity.runShizukuCommand("wm size reset");
+                MainActivity.runCommand("wm size reset");
                 screenState = 2;
                 toast("Растяжение активно");
             } else {
                 String[] wh = physicalSize.split("x");
                 int w = Integer.parseInt(wh[0].trim());
                 int h = Math.round(w * 16f / 9f);
-                MainActivity.runShizukuCommand("wm size " + w + "x" + h);
+                MainActivity.runCommand("wm size " + w + "x" + h);
                 screenState = 1;
-                toast("16:9 — полосы включены");
+                toast("16:9 — полосы");
             }
         } catch (Exception e) {
             toast("Ошибка: " + e.getMessage());
@@ -190,14 +190,13 @@ public class OverlayService extends Service {
     private void resetScreen() {
         if (screenState != 0) {
             try {
-                MainActivity.runShizukuCommand("wm size reset");
+                MainActivity.runCommand("wm size reset");
                 screenState = 0;
             } catch (Exception ignored) {}
         }
     }
 
     private void detectPhysicalSize() {
-        // Для Shizuku просто берем метрики экрана, так как wm size может вернуть текущее (измененное)
         DisplayMetrics dm = Resources.getSystem().getDisplayMetrics();
         physicalSize = dm.widthPixels + "x" + dm.heightPixels;
     }
