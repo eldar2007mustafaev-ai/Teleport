@@ -7,6 +7,7 @@ import android.os.Build;
 import android.os.Handler;
 import android.os.Looper;
 import android.util.Log;
+import android.view.MotionEvent;
 import android.view.accessibility.AccessibilityEvent;
 import android.widget.Toast;
 
@@ -18,6 +19,12 @@ public class FixSensService extends AccessibilityService {
     private TouchProcessor processor;
     private boolean isActive = false;
     private Handler mainHandler;
+    private boolean useShizuku = false;
+    
+    // Для отслеживания текущего touch
+    private float lastInjectedX = 0;
+    private float lastInjectedY = 0;
+    private boolean isTouching = false;
     
     @Override
     public void onCreate() {
@@ -26,23 +33,34 @@ public class FixSensService extends AccessibilityService {
         processor = new TouchProcessor();
         processor.setParams(1.30f, 1.0f, 0.60f);
         mainHandler = new Handler(Looper.getMainLooper());
-        Log.i(TAG, "FixSens Service создан");
+        
+        // Инициализируем Shizuku инжектор
+        useShizuku = ShizukuInputInjector.init();
+        Log.i(TAG, "Shizuku инжектор: " + (useShizuku ? "✅ доступен" : "❌ недоступен, используем fallback"));
     }
     
     @Override
     public void onServiceConnected() {
         super.onServiceConnected();
         instance = this;
-        mainHandler.post(() -> 
-            Toast.makeText(this, "✅ FixSens сервис активен", Toast.LENGTH_SHORT).show()
-        );
+        mainHandler.post(() -> {
+            String msg = useShizuku ? 
+                "✅ FixSens активен (Shizuku INJECT)" : 
+                "⚠️ FixSens активен (fallback режим)";
+            Toast.makeText(this, msg, Toast.LENGTH_LONG).show();
+        });
         Log.i(TAG, "FixSens Service подключён");
     }
     
     @Override
     public void onAccessibilityEvent(AccessibilityEvent event) {
-        if (event.getEventType() == AccessibilityEvent.TYPE_TOUCH_INTERACTION_START) {
+        // Отслеживаем начало/конец touch
+        int eventType = event.getEventType();
+        if (eventType == AccessibilityEvent.TYPE_TOUCH_INTERACTION_START) {
             processor.reset();
+            isTouching = true;
+        } else if (eventType == AccessibilityEvent.TYPE_TOUCH_INTERACTION_END) {
+            isTouching = false;
         }
     }
     
@@ -71,6 +89,7 @@ public class FixSensService extends AccessibilityService {
         this.isActive = active;
         if (!active) {
             processor.reset();
+            isTouching = false;
         }
         Log.i(TAG, "FixSens " + (active ? "ВКЛ" : "ВЫКЛ"));
     }
@@ -94,37 +113,65 @@ public class FixSensService extends AccessibilityService {
         return new float[]{1.30f, 1.0f, 0.60f};
     }
     
-    public void injectGesture(float fromX, float fromY, float toX, float toY, long durationMs) {
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.N) return;
+    /**
+     * Главная функция: обрабатывает touch и инжектит модифицированное событие
+     */
+    public void processAndInjectTouch(float rawX, float rawY, int action) {
         if (!isActive) return;
+        
+        // Модифицируем координаты через TouchProcessor
+        float[] modified = processor.process(rawX, rawY);
+        float newX = modified[0];
+        float newY = modified[1];
+        
+        // Создаём MotionEvent
+        long now = System.currentTimeMillis();
+        MotionEvent event = MotionEvent.obtain(
+            now, now, action, newX, newY, 0
+        );
+        
+        boolean injected = false;
+        
+        // Пробуем через Shizuku
+        if (useShizuku) {
+            injected = ShizukuInputInjector.injectMotionEvent(event);
+            if (injected) {
+                lastInjectedX = newX;
+                lastInjectedY = newY;
+            } else {
+                Log.w(TAG, "Shizuku инжекция не удалась, fallback");
+            }
+        }
+        
+        // Fallback: если Shizuku не сработал, используем dispatchGesture
+        if (!injected) {
+            injectGestureFallback(rawX, rawY, newX, newY);
+        }
+        
+        event.recycle();
+    }
+    
+    /**
+     * Fallback: инъекция через dispatchGesture (Accessibility API)
+     */
+    private void injectGestureFallback(float fromX, float fromY, float toX, float toY) {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.N) return;
         
         Path path = new Path();
         path.moveTo(fromX, fromY);
         path.lineTo(toX, toY);
         
         GestureDescription.StrokeDescription stroke = 
-            new GestureDescription.StrokeDescription(path, 0, durationMs);
+            new GestureDescription.StrokeDescription(path, 0, 10);
         
         GestureDescription gesture = new GestureDescription.Builder()
             .addStroke(stroke)
             .build();
         
-        dispatchGesture(gesture, new GestureResultCallback() {
-            @Override
-            public void onCompleted(GestureDescription gesture) {
-                super.onCompleted(gesture);
-            }
-            
-            @Override
-            public void onCancelled(GestureDescription gesture) {
-                super.onCancelled(gesture);
-                Log.w(TAG, "Жест отменён");
-            }
-        }, mainHandler);
+        dispatchGesture(gesture, null, mainHandler);
     }
     
-    public float[] processTouch(float rawX, float rawY) {
-        if (!isActive) return new float[]{rawX, rawY};
-        return processor.process(rawX, rawY);
+    public boolean isUsingShizuku() {
+        return useShizuku;
     }
 }
