@@ -1,9 +1,7 @@
 package com.teleport.sens;
 
-import java.lang.reflect.Method;
 import android.app.Activity;
 import android.content.Intent;
-import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -18,13 +16,11 @@ import android.widget.Toast;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
-
-import rikka.shizuku.Shizuku;
+import java.lang.reflect.Method;
 
 public class MainActivity extends Activity {
     private WebView webView;
     private static final String TAG = "Teleport";
-    private static final int SHIZUKU_REQUEST_CODE = 1001;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -47,38 +43,22 @@ public class MainActivity extends Activity {
         webView.setWebViewClient(new WebViewClient());
         webView.loadUrl("file:///android_asset/index.html");
         setContentView(webView);
-
-        // Проверяем Shizuku при запуске
-        checkAndRequestShizuku();
-    }
-
-    private void checkAndRequestShizuku() {
-        webView.postDelayed(() -> {
-            String status = checkShizukuStatus();
-            webView.evaluateJavascript(
-                "if(typeof updateShizukuUI !== 'undefined') updateShizukuUI('" + status + "');",
-                null
-            );
-        }, 1000);
-    }
-
-    private String checkShizukuStatus() {
-        if (!Shizuku.pingBinder()) {
-            return "NOT_RUNNING"; // Shizuku не запущен
-        }
-        
-        if (Shizuku.checkSelfPermission() != PackageManager.PERMISSION_GRANTED) {
-            return "NO_PERMISSION"; // Нет разрешения
-        }
-        
-        return "READY"; // Всё ок
     }
 
     @Override
     protected void onResume() {
         super.onResume();
-        // Перепроверяем Shizuku при возврате в приложение
-        checkAndRequestShizuku();
+        webView.postDelayed(() -> {
+            boolean hasPermission = Settings.canDrawOverlays(MainActivity.this);
+            webView.evaluateJavascript(
+                "if(typeof AndroidBridge !== 'undefined') { " +
+                "var hasPerm = AndroidBridge.hasOverlayPermission(); " +
+                "var modal = document.getElementById('permModal'); " +
+                "if(modal) { modal.style.display = hasPerm ? 'none' : 'flex'; } " +
+                "}", 
+                null
+            );
+        }, 500);
     }
 
     public class AppController {
@@ -115,24 +95,18 @@ public class MainActivity extends Activity {
             return Settings.canDrawOverlays(MainActivity.this);
         }
 
-        // === SHIZUKU ФУНКЦИИ ===
+        // === SHIZUKU — ЧЕРЕЗ РЕФЛЕКСИЮ (сборка пройдёт всегда) ===
         
         @JavascriptInterface
         public String getShizukuStatus() {
-            return checkShizukuStatus();
+            return ShizukuInputInjector.getStatus();
         }
-        
+
         @JavascriptInterface
-        public String getShizukuStatusText() {
-            if (!Shizuku.pingBinder()) {
-                return "Shizuku не запущен. Откройте приложение Shizuku и включите сервис.";
-            }
-            if (Shizuku.checkSelfPermission() != PackageManager.PERMISSION_GRANTED) {
-                return "Нет разрешения. Нажмите кнопку ниже чтобы получить.";
-            }
-            return "Shizuku готов к работе ✅";
+        public boolean isShizukuAvailable() {
+            return ShizukuInputInjector.isAvailable();
         }
-        
+
         @JavascriptInterface
         public void openShizukuApp() {
             try {
@@ -146,34 +120,40 @@ public class MainActivity extends Activity {
                 Toast.makeText(MainActivity.this, "Ошибка: " + e.getMessage(), Toast.LENGTH_SHORT).show();
             }
         }
-        
+
         @JavascriptInterface
         public void requestShizukuPermission() {
-            if (Shizuku.pingBinder()) {
-                Shizuku.requestPermission(SHIZUKU_REQUEST_CODE);
-                Toast.makeText(MainActivity.this, "Запрос разрешения...", Toast.LENGTH_SHORT).show();
-            } else {
-                Toast.makeText(MainActivity.this, "Сначала запустите Shizuku", Toast.LENGTH_SHORT).show();
+            try {
+                Class<?> shizukuClass = Class.forName("rikka.shizuku.Shizuku");
+                Method pingBinder = shizukuClass.getMethod("pingBinder");
+                if ((Boolean) pingBinder.invoke(null)) {
+                    Method requestPerm = shizukuClass.getMethod("requestPermission", int.class);
+                    requestPerm.invoke(null, 1001);
+                    Toast.makeText(MainActivity.this, "Запрос разрешения...", Toast.LENGTH_SHORT).show();
+                } else {
+                    Toast.makeText(MainActivity.this, "Shizuku не запущен", Toast.LENGTH_SHORT).show();
+                }
+            } catch (Exception e) {
+                Toast.makeText(MainActivity.this, "Shizuku не найден", Toast.LENGTH_SHORT).show();
             }
         }
-        
+
         @JavascriptInterface
         public String getAdbCommand() {
-            // Команда для активации Shizuku через ADB (для One UI 9)
             return "adb shell sh /sdcard/Android/data/moe.shizuku.privileged.api/start.sh";
         }
-        
+
         @JavascriptInterface
         public void copyAdbCommand() {
             String cmd = getAdbCommand();
             android.content.ClipboardManager clipboard = 
                 (android.content.ClipboardManager) getSystemService(CLIPBOARD_SERVICE);
-            android.content.ClipData clip = android.content.ClipData.newPlainText("ADB Command", cmd);
+            android.content.ClipData clip = android.content.ClipData.newPlainText("ADB", cmd);
             clipboard.setPrimaryClip(clip);
             Toast.makeText(MainActivity.this, "Команда скопирована", Toast.LENGTH_SHORT).show();
         }
 
-        // === FIXSENS ФУНКЦИИ ===
+        // === FIXSENS ===
         
         @JavascriptInterface
         public boolean isFixSensServiceRunning() {
@@ -192,7 +172,7 @@ public class MainActivity extends Activity {
             Intent intent = new Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS);
             startActivity(intent);
             runOnUiThread(() -> Toast.makeText(MainActivity.this, 
-                "Найди 'Teleport' и включи", Toast.LENGTH_LONG).show());
+                "Найди Teleport и включи", Toast.LENGTH_LONG).show());
         }
         
         @JavascriptInterface
@@ -200,11 +180,12 @@ public class MainActivity extends Activity {
             FixSensService service = FixSensService.getInstance();
             if (service != null) {
                 service.setActive(enable);
+                String mode = service.isUsingShizuku() ? " (Shizuku INJECT)" : " (fallback)";
                 runOnUiThread(() -> Toast.makeText(MainActivity.this, 
-                    "FixSens: " + (enable ? "ВКЛ" : "ВЫКЛ"), Toast.LENGTH_SHORT).show());
+                    "FixSens: " + (enable ? "ВКЛ" : "ВЫКЛ") + mode, Toast.LENGTH_LONG).show());
             } else {
                 runOnUiThread(() -> Toast.makeText(MainActivity.this, 
-                    "Сервис не запущен. Включи в настройках.", Toast.LENGTH_LONG).show());
+                    "Сервис не запущен", Toast.LENGTH_SHORT).show());
             }
         }
         
@@ -213,9 +194,6 @@ public class MainActivity extends Activity {
             FixSensService service = FixSensService.getInstance();
             if (service != null) {
                 service.setProcessorParams(sharpness, noise, straighten);
-                runOnUiThread(() -> Toast.makeText(MainActivity.this, 
-                    String.format("⚡ %.2f · %.1f · %.2f", sharpness, noise, straighten), 
-                    Toast.LENGTH_SHORT).show());
             }
         }
 
@@ -232,7 +210,7 @@ public class MainActivity extends Activity {
                 runCommand(cmd);
             }
             runOnUiThread(() -> Toast.makeText(MainActivity.this, 
-                "⚡ TELEPORT MODE активирован", Toast.LENGTH_SHORT).show());
+                "⚡ TELEPORT MODE", Toast.LENGTH_SHORT).show());
         }
     }
 
