@@ -17,6 +17,7 @@ import java.io.InputStreamReader;
 
 public class MainActivity extends Activity {
     private WebView webView;
+    private boolean hasShownPermissionRequest = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -26,6 +27,7 @@ public class MainActivity extends Activity {
         WebSettings webSettings = webView.getSettings();
         webSettings.setJavaScriptEnabled(true);
         webSettings.setDomStorageEnabled(true);
+        webSettings.setAllowFileAccess(true);
 
         webView.addJavascriptInterface(new AppController(), "AndroidBridge");
         webView.setWebViewClient(new WebViewClient());
@@ -38,8 +40,24 @@ public class MainActivity extends Activity {
     @Override
     protected void onResume() {
         super.onResume();
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && Settings.canDrawOverlays(this)) {
-            webView.evaluateJavascript("if(typeof hideModal === 'function') { hideModal(); }", null);
+        // Проверяем разрешение только один раз при первом запуске
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            boolean canDrawOverlays = Settings.canDrawOverlays(this);
+            if (!canDrawOverlays && !hasShownPermissionRequest) {
+                hasShownPermissionRequest = true;
+                // Показываем модалку только если разрешение НЕ дано
+                webView.postDelayed(() -> {
+                    webView.evaluateJavascript(
+                        "document.getElementById('permModal').style.display = 'flex';", 
+                        null
+                    );
+                }, 500);
+            } else if (canDrawOverlays) {
+                // Скрываем модалку если разрешение есть
+                webView.postDelayed(() -> {
+                    webView.evaluateJavascript("hideModal();", null);
+                }, 300);
+            }
         }
     }
 
@@ -60,32 +78,48 @@ public class MainActivity extends Activity {
                 Intent intent = new Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
                         Uri.parse("package:" + getPackageName()));
                 startActivity(intent);
+                hasShownPermissionRequest = true;
             }
         }
 
         @JavascriptInterface
         public void toggleFloatingButton(boolean show) {
             Intent serviceIntent = new Intent(MainActivity.this, OverlayService.class);
-            serviceIntent.putExtra("action", show ? "START" : "STOP");
+            serviceIntent.putExtra("action", show ? "show" : "hide");
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                 startForegroundService(serviceIntent);
             } else {
                 startService(serviceIntent);
             }
         }
+        
+        @JavascriptInterface
+        public boolean hasOverlayPermission() {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                return Settings.canDrawOverlays(MainActivity.this);
+            }
+            return true;
+        }
     }
 
     public static void runCommand(String cmd) {
         new Thread(() -> {
             try {
-                Process process = Runtime.getRuntime().exec(new String[]{"sh", "-c", cmd});
-                BufferedReader reader = new BufferedReader(new InputStreamReader(process.getErrorStream()));
-                StringBuilder errorLog = new StringBuilder();
+                // Пробуем с root
+                Process process = Runtime.getRuntime().exec(new String[]{"su", "-c", cmd});
+                BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
+                StringBuilder output = new StringBuilder();
                 String line;
                 while ((line = reader.readLine()) != null) {
-                    errorLog.append(line);
+                    output.append(line);
                 }
                 process.waitFor();
+                
+                // Если root не сработал, пробуем без него
+                if (process.exitValue() != 0) {
+                    process = Runtime.getRuntime().exec(new String[]{"sh", "-c", cmd});
+                    process.waitFor();
+                }
             } catch (Exception e) {
                 e.printStackTrace();
             }
