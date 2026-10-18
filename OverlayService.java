@@ -3,7 +3,6 @@ package com.teleport.sens;
 import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
-import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Intent;
 import android.content.res.Resources;
@@ -30,12 +29,6 @@ import android.widget.Toast;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 
-/**
- * Плавающая кнопка:
- *  - tap  : 16:9 (черные полосы) -> stretched (физ. разрешение, игра растянута)
- *  - long : вернуть экран в норму и удалить кнопку
- *  - drag : перемещение
- */
 public class OverlayService extends Service {
 
     public static final String EXTRA_ACTION = "action";
@@ -53,8 +46,7 @@ public class OverlayService extends Service {
     private final Handler handler = new Handler(Looper.getMainLooper());
     private Runnable longPressRunnable;
 
-    // 0 = норма, 1 = 16:9 (полосы), 2 = растянуто
-    private int screenState = 0;
+    private int screenState = 0; // 0 = норма, 1 = 16:9, 2 = растянуто
     private String physicalSize = null;
 
     private float downX, downY, startX, startY;
@@ -85,8 +77,6 @@ public class OverlayService extends Service {
         return START_STICKY;
     }
 
-    // ---------------- UI ----------------
-
     private void showFloatingButton() {
         if (floatingButtonView != null) return;
 
@@ -116,15 +106,13 @@ public class OverlayService extends Service {
     }
 
     private void removeFloatingButton() {
-        resetScreen(); // на всякий случай возвращаем экран в норму
+        resetScreen();
         if (floatingButtonView != null) {
             try { windowManager.removeView(floatingButtonView); } catch (Exception ignored) {}
             floatingButtonView = null;
         }
         stopSelf();
     }
-
-    // ---------------- Touch ----------------
 
     private boolean onTouch(MotionEvent event) {
         switch (event.getAction()) {
@@ -162,13 +150,10 @@ public class OverlayService extends Service {
         return false;
     }
 
-    // ---------------- Логика растяжения ----------------
-
     private void onTap() {
         if (physicalSize == null) detectPhysicalSize();
 
         if (screenState == 0) {
-            // 16:9 с черными полосами
             try {
                 String[] wh = physicalSize.split("x");
                 int w = Integer.parseInt(wh[0].trim());
@@ -180,12 +165,10 @@ public class OverlayService extends Service {
                 toast("Не удалось определить разрешение");
             }
         } else if (screenState == 1) {
-            // возврат на физическое разрешение -> игра растягивается
             runCommand("wm size reset");
             screenState = 2;
             toast("Растяжение активно");
         } else {
-            // из растянутого состояния тап снова дает 16:9
             try {
                 String[] wh = physicalSize.split("x");
                 int w = Integer.parseInt(wh[0].trim());
@@ -211,22 +194,37 @@ public class OverlayService extends Service {
         }
     }
 
-    // ---------------- Команды ----------------
-
+    // --- ИСПРАВЛЕННЫЙ И УЛУЧШЕННЫЙ МЕТОД ---
     private void runCommand(final String cmd) {
         new Thread(() -> {
             try {
-                Process p = new ProcessBuilder("su", "-c", cmd).redirectErrorStream(true).start();
-                p.waitFor();
+                // 1. Пробуем выполнить с Root правами
+                Process p = new ProcessBuilder("su", "-c", cmd)
+                        .redirectErrorStream(true)
+                        .start();
+                BufferedReader reader = new BufferedReader(new InputStreamReader(p.getInputStream()));
+                StringBuilder output = new StringBuilder();
+                String line;
+                while ((line = reader.readLine()) != null) {
+                    output.append(line);
+                }
+                int exitCode = p.waitFor();
+                
+                // 2. Если Root недоступен (exitCode != 0), пробуем обычный shell
+                if (exitCode != 0) {
+                    p = new ProcessBuilder("sh", "-c", cmd)
+                            .redirectErrorStream(true)
+                            .start();
+                    p.waitFor();
+                }
             } catch (Exception e) {
-                handler.post(() -> toast("Нет root: " + cmd));
+                handler.post(() -> toast("Ошибка выполнения: " + cmd));
+                e.printStackTrace();
             }
         }).start();
     }
 
-    /** Запоминаем физическое разрешение экрана (пока оно не изменено). */
     private void detectPhysicalSize() {
-        // пробуем точное значение через shell
         try {
             Process p = new ProcessBuilder("su", "-c", "wm size").redirectErrorStream(true).start();
             BufferedReader r = new BufferedReader(new InputStreamReader(p.getInputStream()));
@@ -241,35 +239,29 @@ public class OverlayService extends Service {
             p.waitFor();
         } catch (Exception ignored) {}
 
-        // fallback — метрики экрана
         if (physicalSize == null) {
             DisplayMetrics dm = Resources.getSystem().getDisplayMetrics();
             physicalSize = dm.widthPixels + "x" + dm.heightPixels;
         }
     }
 
-    // ---------------- Иконка кнопки ----------------
-
     private Bitmap createIconBitmap(int size) {
         float d = getResources().getDisplayMetrics().density;
         Bitmap bmp = Bitmap.createBitmap(size, size, Bitmap.Config.ARGB_8888);
         Canvas c = new Canvas(bmp);
 
-        // фон — градиентный круг
         Paint p = new Paint(Paint.ANTI_ALIAS_FLAG);
         p.setShader(new LinearGradient(0, 0, size, size,
                 Color.parseColor("#12304a"), Color.parseColor("#070913"),
                 Shader.TileMode.CLAMP));
         c.drawCircle(size / 2f, size / 2f, size / 2f - dp(1), p);
 
-        // обводка
         p.setShader(null);
         p.setStyle(Paint.Style.STROKE);
         p.setStrokeWidth(2f * d);
         p.setColor(Color.parseColor("#38bdf8"));
         c.drawCircle(size / 2f, size / 2f, size / 2f - dp(1), p);
 
-        // текст 16:9
         p.setStyle(Paint.Style.FILL);
         p.setColor(Color.parseColor("#7dd3fc"));
         p.setTextAlign(Paint.Align.CENTER);
@@ -280,8 +272,6 @@ public class OverlayService extends Service {
 
         return bmp;
     }
-
-    // ---------------- Foreground ----------------
 
     private void startForegroundWithNotification() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
@@ -306,8 +296,6 @@ public class OverlayService extends Service {
             startForeground(NOTIFICATION_ID, b.build());
         }
     }
-
-    // ---------------- Utils ----------------
 
     private void toast(final String msg) {
         handler.post(() -> Toast.makeText(this, msg, Toast.LENGTH_SHORT).show());
