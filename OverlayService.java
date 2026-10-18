@@ -48,6 +48,7 @@ public class OverlayService extends Service {
 
     private int screenState = 0;
     private String physicalSize = null;
+    private boolean hasRoot = false;
 
     private float downX, downY, startX, startY;
     private boolean moved = false;
@@ -58,6 +59,7 @@ public class OverlayService extends Service {
         super.onCreate();
         windowManager = (WindowManager) getSystemService(WINDOW_SERVICE);
         touchSlop = android.view.ViewConfiguration.get(this).getScaledTouchSlop();
+        checkRootAccess();
         detectPhysicalSize();
         startForegroundWithNotification();
     }
@@ -75,6 +77,25 @@ public class OverlayService extends Service {
             showFloatingButton();
         }
         return START_STICKY;
+    }
+
+    private void checkRootAccess() {
+        new Thread(() -> {
+            try {
+                Process process = Runtime.getRuntime().exec("su");
+                process.getOutputStream().write("exit\n".getBytes());
+                process.getOutputStream().flush();
+                process.waitFor();
+                hasRoot = (process.exitValue() == 0);
+            } catch (Exception e) {
+                hasRoot = false;
+            }
+            handler.post(() -> {
+                if (!hasRoot) {
+                    toast("⚠️ Root не обнаружен");
+                }
+            });
+        }).start();
     }
 
     private void showFloatingButton() {
@@ -101,8 +122,13 @@ public class OverlayService extends Service {
         btn.setOnTouchListener((v, event) -> onTouch(event));
 
         floatingButtonView = btn;
-        windowManager.addView(floatingButtonView, params);
-        toast("Кнопка активна");
+        try {
+            windowManager.addView(floatingButtonView, params);
+            toast("Кнопка активна");
+        } catch (Exception e) {
+            toast("Ошибка: нет разрешения на оверлей");
+            stopSelf();
+        }
     }
 
     private void removeFloatingButton() {
@@ -132,10 +158,11 @@ public class OverlayService extends Service {
                 if (Math.abs(dx) > touchSlop || Math.abs(dy) > touchSlop) {
                     moved = true;
                     if (longPressRunnable != null) handler.removeCallbacks(longPressRunnable);
-                    // ИСПРАВЛЕНО: явное приведение к int
                     params.x = (int)(startX + Math.round(dx));
                     params.y = (int)(startY + Math.round(dy));
-                    windowManager.updateViewLayout(floatingButtonView, params);
+                    try {
+                        windowManager.updateViewLayout(floatingButtonView, params);
+                    } catch (Exception ignored) {}
                 }
                 return true;
 
@@ -152,34 +179,35 @@ public class OverlayService extends Service {
     }
 
     private void onTap() {
+        if (!hasRoot) {
+            toast("❌ Требуется Root");
+            return;
+        }
+
         if (physicalSize == null) detectPhysicalSize();
 
-        if (screenState == 0) {
-            try {
+        try {
+            if (screenState == 0) {
                 String[] wh = physicalSize.split("x");
                 int w = Integer.parseInt(wh[0].trim());
                 int h = Math.round(w * 16f / 9f);
                 runCommand("wm size " + w + "x" + h);
                 screenState = 1;
                 toast("16:9 — полосы включены");
-            } catch (Exception e) {
-                toast("Не удалось определить разрешение");
-            }
-        } else if (screenState == 1) {
-            runCommand("wm size reset");
-            screenState = 2;
-            toast("Растяжение активно");
-        } else {
-            try {
+            } else if (screenState == 1) {
+                runCommand("wm size reset");
+                screenState = 2;
+                toast("Растяжение активно");
+            } else {
                 String[] wh = physicalSize.split("x");
                 int w = Integer.parseInt(wh[0].trim());
                 int h = Math.round(w * 16f / 9f);
                 runCommand("wm size " + w + "x" + h);
                 screenState = 1;
                 toast("16:9 — полосы включены");
-            } catch (Exception e) {
-                toast("Не удалось определить разрешение");
             }
+        } catch (Exception e) {
+            toast("Ошибка изменения разрешения");
         }
     }
 
@@ -189,9 +217,11 @@ public class OverlayService extends Service {
     }
 
     private void resetScreen() {
-        if (screenState != 0) {
-            runCommand("wm size reset");
-            screenState = 0;
+        if (screenState != 0 && hasRoot) {
+            try {
+                runCommand("wm size reset");
+                screenState = 0;
+            } catch (Exception ignored) {}
         }
     }
 
@@ -210,14 +240,10 @@ public class OverlayService extends Service {
                 int exitCode = p.waitFor();
                 
                 if (exitCode != 0) {
-                    p = new ProcessBuilder("sh", "-c", cmd)
-                            .redirectErrorStream(true)
-                            .start();
-                    p.waitFor();
+                    handler.post(() -> toast("Ошибка: " + cmd));
                 }
             } catch (Exception e) {
-                handler.post(() -> toast("Ошибка: " + cmd));
-                e.printStackTrace();
+                handler.post(() -> toast("Ошибка: " + e.getMessage()));
             }
         }).start();
     }
