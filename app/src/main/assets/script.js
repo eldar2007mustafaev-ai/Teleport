@@ -32,11 +32,6 @@ function applyTeleportMode() {
         AndroidBridge.applyTeleportMode();
         if (navigator.vibrate) navigator.vibrate([100, 50, 100]);
     }
-    
-    // Подсветка карточки
-    document.querySelectorAll('.sens-card').forEach(function(card) {
-        card.classList.toggle('active', card.dataset.preset === 'Телепорт');
-    });
 }
 
 function checkShizuku() {
