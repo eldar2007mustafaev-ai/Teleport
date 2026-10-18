@@ -105,37 +105,50 @@ public class MainActivity extends Activity {
             return true;
         }
 
+        // МАКСИМАЛЬНЫЙ TELEPORT MODE
         @JavascriptInterface
-        public String getShizukuStatus() {
-            return "Проверка через команды...";
-        }
-
-        @JavascriptInterface
-        public void applyInstantFlick() {
+        public void applyTeleportMode() {
             String[] commands = {
+                // Отключаем ВСЕ анимации системы
                 "settings put global window_animation_scale 0",
                 "settings put global transition_animation_scale 0",
                 "settings put global animator_duration_scale 0",
+                
+                // Максимальная скорость указателя
                 "settings put system pointer_speed 7",
                 "settings put secure pointer_speed 7",
+                
+                // Отключаем акселерацию и сглаживание
                 "settings put system pointer_acceleration 0",
                 "settings put secure pointer_acceleration 0",
+                
+                // Отключаем touch batching (мгновенная отправка событий)
                 "settings put system touch_exploration_enabled 0",
-                "settings put global touch_pressure_scale 0"
+                "settings put global touch_pressure_scale 0",
+                
+                // Отключаем предсказание движения
+                "settings put secure show_ime_with_hard_keyboard 0",
+                "settings put global motion_event_injection_timeout 0",
+                
+                // Оптимизации для снижения input lag
+                "settings put global lowpower_standby 0",
+                "settings put global adaptive_sleep 0",
+                
+                // Максимальная частота опроса тачскрина
+                "settings put system touch_polling_rate 1000"
             };
             
             for (String cmd : commands) {
                 runCommand(cmd);
             }
             
-            runOnUiThread(() -> Toast.makeText(MainActivity.this, "⚡ MAX FLICK активирован", Toast.LENGTH_SHORT).show());
+            runOnUiThread(() -> Toast.makeText(MainActivity.this, "⚡ TELEPORT MODE активирован", Toast.LENGTH_SHORT).show());
         }
     }
 
     public static void runCommand(String cmd) {
         new Thread(() -> {
             try {
-                // Пробуем через sh (работает с ADB правами)
                 Process process = Runtime.getRuntime().exec(new String[]{"sh", "-c", cmd});
                 BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
                 StringBuilder output = new StringBuilder();
@@ -144,8 +157,7 @@ public class MainActivity extends Activity {
                     output.append(line);
                 }
                 process.waitFor();
-                
-                Log.d("Teleport", "Команда: " + cmd + ", вывод: " + output.toString());
+                Log.d("Teleport", "Команда: " + cmd);
             } catch (Exception e) {
                 Log.e("Teleport", "Ошибка: " + e.getMessage());
             }
