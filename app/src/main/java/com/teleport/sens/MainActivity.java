@@ -13,7 +13,6 @@ import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.Toast;
-
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 
@@ -88,14 +87,10 @@ public class MainActivity extends Activity {
         }
 
         @JavascriptInterface
-        public String getShizukuStatus() {
-            return ShizukuInputInjector.getStatus();
-        }
+        public String getShizukuStatus() { return "Shizuku: заглушка"; }
 
         @JavascriptInterface
-        public boolean isShizukuAvailable() {
-            return ShizukuInputInjector.isAvailable();
-        }
+        public boolean isShizukuAvailable() { return false; }
 
         @JavascriptInterface
         public void openShizukuApp() {
@@ -110,15 +105,7 @@ public class MainActivity extends Activity {
 
         @JavascriptInterface
         public void requestShizukuPermission() {
-            try {
-                if (ShizukuInputInjector.isAvailable()) {
-                    Toast.makeText(MainActivity.this, "✅ Shizuku уже активен", Toast.LENGTH_SHORT).show();
-                } else {
-                    Toast.makeText(MainActivity.this, "Открой Shizuku и дай разрешение", Toast.LENGTH_LONG).show();
-                }
-            } catch (Exception e) {
-                Toast.makeText(MainActivity.this, "Shizuku не найден", Toast.LENGTH_SHORT).show();
-            }
+            Toast.makeText(MainActivity.this, "Shizuku интеграция в разработке", Toast.LENGTH_SHORT).show();
         }
 
         @JavascriptInterface
@@ -137,48 +124,30 @@ public class MainActivity extends Activity {
         }
 
         @JavascriptInterface
-        public boolean isFixSensServiceRunning() {
-            FixSensService service = FixSensService.getInstance();
-            return service != null && service.isServiceRunning();
-        }
+        public boolean isFixSensServiceRunning() { return false; }
 
         @JavascriptInterface
-        public boolean isFixSensActive() {
-            FixSensService service = FixSensService.getInstance();
-            return service != null && service.isActive();
-        }
+        public boolean isFixSensActive() { return false; }
 
         @JavascriptInterface
         public void openAccessibilitySettings() {
             Intent intent = new Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS);
             startActivity(intent);
             runOnUiThread(() -> Toast.makeText(MainActivity.this,
-                "Найди 'Teleport' и включи переключатель", Toast.LENGTH_LONG).show());
+                "Найди Teleport и включи", Toast.LENGTH_LONG).show());
         }
 
         @JavascriptInterface
         public void toggleFixSens(boolean enable) {
-            FixSensService service = FixSensService.getInstance();
-            if (service != null) {
-                service.setActive(enable);
-                String mode = service.isUsingShizuku() ? " (Shizuku INJECT ✅)" : " (fallback ️)";
-                runOnUiThread(() -> Toast.makeText(MainActivity.this,
-                    "FixSens: " + (enable ? "ВКЛ" : "ВЫКЛ") + mode, Toast.LENGTH_LONG).show());
-            } else {
-                runOnUiThread(() -> Toast.makeText(MainActivity.this,
-                    "Сервис не запущен. Включи в Настройках → Специальные возможности", Toast.LENGTH_LONG).show());
-            }
+            runOnUiThread(() -> Toast.makeText(MainActivity.this,
+                "FixSens: " + (enable ? "ВКЛ (заглушка)" : "ВЫКЛ"), Toast.LENGTH_SHORT).show());
         }
 
         @JavascriptInterface
         public void setFixSensParams(float sharpness, float noise, float straighten) {
-            FixSensService service = FixSensService.getInstance();
-            if (service != null) {
-                service.setProcessorParams(sharpness, noise, straighten);
-                runOnUiThread(() -> Toast.makeText(MainActivity.this,
-                    String.format("⚡ Параметры: %.2f · %.1f · %.2f", sharpness, noise, straighten),
-                    Toast.LENGTH_SHORT).show());
-            }
+            runOnUiThread(() -> Toast.makeText(MainActivity.this,
+                String.format(" Параметры: %.2f · %.1f · %.2f", sharpness, noise, straighten),
+                Toast.LENGTH_SHORT).show());
         }
 
         @JavascriptInterface
