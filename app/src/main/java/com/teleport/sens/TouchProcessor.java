@@ -32,6 +32,7 @@ public class TouchProcessor {
         float dx = rawX - lastRawX;
         float dy = rawY - lastRawY;
         
+        // Умножаем на резкость
         float boostedDx = dx * sharpness;
         float boostedDy = dy * sharpness;
         
