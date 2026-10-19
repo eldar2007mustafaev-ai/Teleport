@@ -85,10 +85,6 @@ public class FixSensService extends AccessibilityService {
         return new float[]{1.30f, 1.0f, 0.60f};
     }
     
-    public boolean isUsingShizuku() {
-        return false;
-    }
-    
     public void injectGesture(float fromX, float fromY, float toX, float toY, long durationMs) {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.N) return;
         if (!isActive) return;
