@@ -39,7 +39,7 @@ public class FixSensService extends AccessibilityService {
         mainHandler.post(() -> {
             String msg = useShizuku ? 
                 "✅ FixSens: Shizuku INJECT активен" : 
-                "️ FixSens: fallback (нужен Shizuku)";
+                "⚠️ FixSens: fallback (нужен Shizuku)";
             Toast.makeText(this, msg, Toast.LENGTH_LONG).show();
         });
     }
