@@ -1,5 +1,6 @@
 package com.teleport.sens;
 
+import android.content.pm.PackageManager;
 import android.os.IBinder;
 import android.os.Parcel;
 import android.util.Log;
@@ -21,7 +22,6 @@ public class ShizukuInputInjector {
         if (initialized) return available;
         
         try {
-            // Проверяем Shizuku
             if (!Shizuku.pingBinder()) {
                 Log.w(TAG, "Shizuku не запущен");
                 initialized = true;
@@ -29,15 +29,13 @@ public class ShizukuInputInjector {
                 return false;
             }
             
-            // Проверяем разрешение
-            if (Shizuku.checkSelfPermission() != android.content.pm.PackageManager.PERMISSION_GRANTED) {
+            if (Shizuku.checkSelfPermission() != PackageManager.PERMISSION_GRANTED) {
                 Log.w(TAG, "Нет разрешения Shizuku");
                 initialized = true;
                 available = false;
                 return false;
             }
             
-            // Получаем binder
             IBinder shizukuBinder = Shizuku.getBinder();
             if (shizukuBinder == null) {
                 Log.e(TAG, "Shizuku binder = null");
@@ -46,7 +44,6 @@ public class ShizukuInputInjector {
                 return false;
             }
             
-            // Получаем input service
             IBinder inputBinder = getInputService(shizukuBinder);
             if (inputBinder == null) {
                 Log.e(TAG, "input service = null");
@@ -55,12 +52,10 @@ public class ShizukuInputInjector {
                 return false;
             }
             
-            // Получаем IInputManager
             Class<?> stubClass = Class.forName("android.hardware.input.IInputManager$Stub");
             Method asInterface = stubClass.getMethod("asInterface", IBinder.class);
             inputManager = asInterface.invoke(null, inputBinder);
             
-            // Получаем метод injectInputEvent
             Class<?> iimClass = Class.forName("android.hardware.input.IInputManager");
             injectMethod = iimClass.getMethod("injectInputEvent", InputEvent.class, int.class);
             
@@ -118,6 +113,6 @@ public class ShizukuInputInjector {
     public static String getStatus() {
         if (!initialized) return "Не инициализирован";
         if (available) return "✅ Shizuku INJECT_EVENTS работает";
-        return " Shizuku недоступен";
+        return "⚠️ Shizuku недоступен";
     }
 }
