@@ -6,42 +6,39 @@ import android.util.Log;
 import android.view.InputEvent;
 import android.view.MotionEvent;
 
+import rikka.shizuku.Shizuku;
+
 import java.lang.reflect.Method;
 
 public class ShizukuInputInjector {
-    
     private static final String TAG = "ShizukuInjector";
     private static boolean initialized = false;
     private static boolean available = false;
     private static Object inputManager = null;
     private static Method injectMethod = null;
-    
+
     public static boolean init() {
         if (initialized) return available;
         
         try {
-            Class<?> shizukuClass = Class.forName("rikka.shizuku.Shizuku");
-            
-            Method pingBinder = shizukuClass.getMethod("pingBinder");
-            boolean isRunning = (Boolean) pingBinder.invoke(null);
-            if (!isRunning) {
+            // Проверяем Shizuku
+            if (!Shizuku.pingBinder()) {
                 Log.w(TAG, "Shizuku не запущен");
                 initialized = true;
                 available = false;
                 return false;
             }
             
-            Method checkPerm = shizukuClass.getMethod("checkSelfPermission");
-            int permResult = (Integer) checkPerm.invoke(null);
-            if (permResult != 0) {
+            // Проверяем разрешение
+            if (Shizuku.checkSelfPermission() != android.content.pm.PackageManager.PERMISSION_GRANTED) {
                 Log.w(TAG, "Нет разрешения Shizuku");
                 initialized = true;
                 available = false;
                 return false;
             }
             
-            Method getBinder = shizukuClass.getMethod("getBinder");
-            IBinder shizukuBinder = (IBinder) getBinder.invoke(null);
+            // Получаем binder
+            IBinder shizukuBinder = Shizuku.getBinder();
             if (shizukuBinder == null) {
                 Log.e(TAG, "Shizuku binder = null");
                 initialized = true;
@@ -49,6 +46,7 @@ public class ShizukuInputInjector {
                 return false;
             }
             
+            // Получаем input service
             IBinder inputBinder = getInputService(shizukuBinder);
             if (inputBinder == null) {
                 Log.e(TAG, "input service = null");
@@ -57,10 +55,12 @@ public class ShizukuInputInjector {
                 return false;
             }
             
+            // Получаем IInputManager
             Class<?> stubClass = Class.forName("android.hardware.input.IInputManager$Stub");
             Method asInterface = stubClass.getMethod("asInterface", IBinder.class);
             inputManager = asInterface.invoke(null, inputBinder);
             
+            // Получаем метод injectInputEvent
             Class<?> iimClass = Class.forName("android.hardware.input.IInputManager");
             injectMethod = iimClass.getMethod("injectInputEvent", InputEvent.class, int.class);
             
@@ -119,12 +119,5 @@ public class ShizukuInputInjector {
         if (!initialized) return "Не инициализирован";
         if (available) return "✅ Shizuku INJECT_EVENTS работает";
         return " Shizuku недоступен";
-    }
-    
-    public static void reset() {
-        initialized = false;
-        available = false;
-        inputManager = null;
-        injectMethod = null;
     }
 }
