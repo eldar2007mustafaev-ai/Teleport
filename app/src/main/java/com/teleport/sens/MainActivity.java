@@ -14,16 +14,13 @@ import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.Toast;
-
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
+import java.lang.reflect.Method;
 
-import rikka.shizuku.Shizuku;
-
-public class MainActivity extends Activity implements Shizuku.OnRequestPermissionResultListener {
+public class MainActivity extends Activity {
     private WebView webView;
     private static final String TAG = "Teleport";
-    private static final int SHIZUKU_PERMISSION_REQUEST_CODE = 1001;
     private boolean shizukuAvailable = false;
 
     @Override
@@ -44,8 +41,6 @@ public class MainActivity extends Activity implements Shizuku.OnRequestPermissio
         webView.setWebViewClient(new WebViewClient());
         webView.loadUrl("file:///android_asset/index.html");
         setContentView(webView);
-        
-        Shizuku.addRequestPermissionResultListener(this);
         checkShizuku();
     }
 
@@ -64,22 +59,25 @@ public class MainActivity extends Activity implements Shizuku.OnRequestPermissio
         }, 500);
     }
 
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
-        Shizuku.removeRequestPermissionResultListener(this);
-    }
-
+    // === ПРОВЕРКА SHIZUKU ЧЕРЕЗ РЕФЛЕКСИЮ (без импорта rikka.shizuku) ===
     private void checkShizuku() {
         try {
-            if (Shizuku.pingBinder()) {
-                int perm = Shizuku.checkSelfPermission();
+            Class<?> shizukuClass = Class.forName("rikka.shizuku.Shizuku");
+            Method pingBinder = shizukuClass.getMethod("pingBinder");
+            boolean running = (Boolean) pingBinder.invoke(null);
+            
+            if (running) {
+                Method checkPerm = shizukuClass.getMethod("checkSelfPermission");
+                int perm = (Integer) checkPerm.invoke(null);
                 shizukuAvailable = (perm == PackageManager.PERMISSION_GRANTED);
                 Log.i(TAG, "Shizuku: " + (shizukuAvailable ? "✅ активен" : "⚠️ нет разрешения"));
             } else {
                 shizukuAvailable = false;
                 Log.w(TAG, "Shizuku не запущен");
             }
+        } catch (ClassNotFoundException e) {
+            shizukuAvailable = false;
+            Log.w(TAG, "Shizuku библиотека не найдена в APK");
         } catch (Exception e) {
             shizukuAvailable = false;
             Log.e(TAG, "Shizuku ошибка: " + e.getMessage());
@@ -91,20 +89,6 @@ public class MainActivity extends Activity implements Shizuku.OnRequestPermissio
                 null
             );
         }, 300);
-    }
-
-    @Override
-    public void onRequestPermissionResult(int requestCode, int grantResult) {
-        if (requestCode == SHIZUKU_PERMISSION_REQUEST_CODE) {
-            if (grantResult == PackageManager.PERMISSION_GRANTED) {
-                shizukuAvailable = true;
-                Toast.makeText(this, "✅ Shizuku разрешение получено!", Toast.LENGTH_SHORT).show();
-            } else {
-                shizukuAvailable = false;
-                Toast.makeText(this, "⚠️ Разрешение Shizuku отклонено", Toast.LENGTH_SHORT).show();
-            }
-            checkShizuku();
-        }
     }
 
     public class AppController {
@@ -141,7 +125,7 @@ public class MainActivity extends Activity implements Shizuku.OnRequestPermissio
 
         @JavascriptInterface
         public String getShizukuStatus() {
-            return shizukuAvailable ? "✅ Shizuku активен" : "⚠️ Shizuku не активен";
+            return shizukuAvailable ? "✅ Shizuku активен" : "️ Shizuku не активен";
         }
 
         @JavascriptInterface
@@ -162,15 +146,26 @@ public class MainActivity extends Activity implements Shizuku.OnRequestPermissio
 
         @JavascriptInterface
         public void requestShizukuPermission() {
-            if (Shizuku.pingBinder()) {
-                if (Shizuku.checkSelfPermission() != PackageManager.PERMISSION_GRANTED) {
-                    Shizuku.requestPermission(SHIZUKU_PERMISSION_REQUEST_CODE);
-                    Toast.makeText(MainActivity.this, "Запрос разрешения Shizuku...", Toast.LENGTH_SHORT).show();
+            try {
+                Class<?> shizukuClass = Class.forName("rikka.shizuku.Shizuku");
+                Method pingBinder = shizukuClass.getMethod("pingBinder");
+                if ((Boolean) pingBinder.invoke(null)) {
+                    Method checkPerm = shizukuClass.getMethod("checkSelfPermission");
+                    int perm = (Integer) checkPerm.invoke(null);
+                    if (perm != PackageManager.PERMISSION_GRANTED) {
+                        Method requestPerm = shizukuClass.getMethod("requestPermission", int.class);
+                        requestPerm.invoke(null, 1001);
+                        Toast.makeText(MainActivity.this, "Запрос разрешения...", Toast.LENGTH_SHORT).show();
+                    } else {
+                        Toast.makeText(MainActivity.this, "✅ Разрешение уже есть!", Toast.LENGTH_SHORT).show();
+                    }
                 } else {
-                    Toast.makeText(MainActivity.this, "✅ Разрешение уже есть!", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(MainActivity.this, "⚠️ Shizuku не запущен", Toast.LENGTH_LONG).show();
                 }
-            } else {
-                Toast.makeText(MainActivity.this, "⚠️ Shizuku не запущен. Запусти его сначала.", Toast.LENGTH_LONG).show();
+            } catch (ClassNotFoundException e) {
+                Toast.makeText(MainActivity.this, "Shizuku библиотека не найдена", Toast.LENGTH_SHORT).show();
+            } catch (Exception e) {
+                Toast.makeText(MainActivity.this, "Ошибка: " + e.getMessage(), Toast.LENGTH_SHORT).show();
             }
         }
 
