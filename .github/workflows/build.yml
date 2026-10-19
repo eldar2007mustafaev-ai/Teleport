@@ -3,94 +3,51 @@ name: Build Teleport APK
 on:
   push:
     branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
 
 jobs:
   build:
     runs-on: ubuntu-latest
-
     steps:
-    - name: Checkout repository
-      uses: actions/checkout@v4
-
-    - name: Set up JDK 17
-      uses: actions/setup-java@v4
-      with:
-        distribution: 'temurin'
-        java-version: '17'
-
-    - name: Build APK Direct
-      run: |
-        mkdir -p app/src/main/res/mipmap-hdpi
-        mkdir -p app/src/main/java/com/teleport/sens
-        mkdir -p build/gen build/obj build/build_dex
-
-        if [ -f "gpt-image-2_A_sleek_futuristic_cyberpunk_app_icon_featuring_a_glowing_neon_letter_T_as_the_c-0.jpg" ]; then
-          cp "gpt-image-2_A_sleek_futuristic_cyberpunk_app_icon_featuring_a_glowing_neon_letter_T_as_the_c-0.jpg" app/src/main/res/mipmap-hdpi/ic_launcher.jpg
-        fi
-
-        # Автоматически копируем Java файлы из корня на их законное место для компиляции
-        if [ -f "MainActivity.java" ]; then
-          cp MainActivity.java app/src/main/java/com/teleport/sens/MainActivity.java
-        fi
-        if [ -f "OverlayService.java" ]; then
-          cp OverlayService.java app/src/main/java/com/teleport/sens/OverlayService.java
-        fi
-
-        cat << 'EOF' > app/src/main/AndroidManifest.xml
-        <?xml version="1.0" encoding="utf-8"?>
-        <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-            package="com.teleport.sens"
-            android:versionCode="1"
-            android:versionName="1.0">
-            <uses-permission android:name="android.permission.INTERNET" />
-            <uses-permission android:name="android.permission.QUERY_ALL_PACKAGES" />
-            <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
-            
-            <queries>
-                <package android:name="moe.shizuku.privileged.api" />
-            </queries>
-
-            <uses-sdk android:minSdkVersion="21" android:targetSdkVersion="33" />
-            <application
-                android:label="Teleport"
-                android:icon="@mipmap/ic_launcher">
-                <activity
-                    android:name=".MainActivity"
-                    android:exported="true"
-                    android:configChanges="orientation|screenSize">
-                    <intent-filter>
-                        <action android:name="android.intent.action.MAIN" />
-                        <category android:name="android.intent.category.LAUNCHER" />
-                    </intent-filter>
-                </activity>
-                <service
-                    android:name=".OverlayService"
-                    android:enabled="true"
-                    android:exported="false" />
-            </application>
-        </manifest>
-        EOF
-
-        SDK="$ANDROID_SDK_ROOT"
-        BUILD_TOOLS_DIR=$(find "$SDK/build-tools" -mindepth 1 -maxdepth 1 -type d | sort -V | tail -n 1)
-        PLATFORM_JAR=$(find "$SDK/platforms" -name "android.jar" | sort -V | tail -n 1)
-
-        "$BUILD_TOOLS_DIR/aapt2" compile --dir app/src/main/res -o build/res.zip
-        "$BUILD_TOOLS_DIR/aapt2" link -o build/base.apk -I "$PLATFORM_JAR" --manifest app/src/main/AndroidManifest.xml -A app/src/main/assets build/res.zip --java build/gen
-
-        javac -d build/obj -classpath "$PLATFORM_JAR" build/gen/com/teleport/sens/R.java app/src/main/java/com/teleport/sens/MainActivity.java app/src/main/java/com/teleport/sens/OverlayService.java
-        "$BUILD_TOOLS_DIR/d8" --output build/build_dex build/obj/com/teleport/sens/*.class --lib "$PLATFORM_JAR"
-
-        cd build/build_dex && zip -q -r ../base.apk classes.dex && cd ../..
-        
-        keytool -genkeypair -keystore debug.keystore -storepass android -alias androiddebugkey -keypass android -keyalg RSA -keysize 2048 -validity 10000 -dname "CN=Android Debug"
-        "$BUILD_TOOLS_DIR/apksigner" sign --ks debug.keystore --ks-pass pass:android build/base.apk
-
-        mkdir -p app/build/outputs/apk/debug/
-        cp build/base.apk app/build/outputs/apk/debug/app-debug.apk
-
-    - name: Upload Real APK
-      uses: actions/upload-artifact@v4
-      with:
-        name: Teleport-APK
-        path: app/build/outputs/apk/debug/app-debug.apk
+      - uses: actions/checkout@v4
+      
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+          cache: gradle
+      
+      - name: Create mipmap directory and icon
+        run: |
+          mkdir -p app/src/main/res/mipmap-hdpi
+          mkdir -p app/src/main/res/mipmap-mdpi
+          mkdir -p app/src/main/res/mipmap-xhdpi
+          mkdir -p app/src/main/res/mipmap-xxhdpi
+          mkdir -p app/src/main/res/mipmap-xxxhdpi
+          # Создаём минимальный PNG 48x48 (синий квадрат) через base64
+          ICON="iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAYAAABXAvmHAAAAKklEQVR4nO3BAQ0AAADCoPdPbQ43oAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAfgx1lAABcK1XxQAAAABJRU5ErkJggg=="
+          echo "$ICON" | base64 -d > app/src/main/res/mipmap-hdpi/ic_launcher.png
+          cp app/src/main/res/mipmap-hdpi/ic_launcher.png app/src/main/res/mipmap-mdpi/ic_launcher.png
+          cp app/src/main/res/mipmap-hdpi/ic_launcher.png app/src/main/res/mipmap-xhdpi/ic_launcher.png
+          cp app/src/main/res/mipmap-hdpi/ic_launcher.png app/src/main/res/mipmap-xxhdpi/ic_launcher.png
+          cp app/src/main/res/mipmap-hdpi/ic_launcher.png app/src/main/res/mipmap-xxxhdpi/ic_launcher.png
+          # Круглая иконка
+          cp app/src/main/res/mipmap-hdpi/ic_launcher.png app/src/main/res/mipmap-hdpi/ic_launcher_round.png
+          cp app/src/main/res/mipmap-hdpi/ic_launcher.png app/src/main/res/mipmap-mdpi/ic_launcher_round.png
+          cp app/src/main/res/mipmap-hdpi/ic_launcher.png app/src/main/res/mipmap-xhdpi/ic_launcher_round.png
+          cp app/src/main/res/mipmap-hdpi/ic_launcher.png app/src/main/res/mipmap-xxhdpi/ic_launcher_round.png
+          cp app/src/main/res/mipmap-hdpi/ic_launcher.png app/src/main/res/mipmap-xxxhdpi/ic_launcher_round.png
+      
+      - name: Build APK
+        run: |
+          chmod +x gradlew
+          ./gradlew assembleDebug
+      
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: Teleport-APK
+          path: app/build/outputs/apk/debug/app-debug.apk
