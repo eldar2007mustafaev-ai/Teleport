@@ -16,7 +16,6 @@ import android.widget.Toast;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
-import java.lang.reflect.Method;
 
 public class MainActivity extends Activity {
     private WebView webView;
@@ -52,17 +51,13 @@ public class MainActivity extends Activity {
                 "var hasPerm = AndroidBridge.hasOverlayPermission(); " +
                 "var modal = document.getElementById('permModal'); " +
                 "if(modal) { modal.style.display = hasPerm ? 'none' : 'flex'; } " +
-                "}", 
-                null
-            );
+                "}", null);
         }, 500);
     }
 
     public class AppController {
         @JavascriptInterface
-        public void executeCommand(String command) {
-            runCommand(command);
-        }
+        public void executeCommand(String command) { runCommand(command); }
 
         @JavascriptInterface
         public void showToast(String message) {
@@ -86,7 +81,7 @@ public class MainActivity extends Activity {
                 startService(serviceIntent);
             }
         }
-        
+
         @JavascriptInterface
         public boolean hasOverlayPermission() {
             return Settings.canDrawOverlays(MainActivity.this);
@@ -116,14 +111,10 @@ public class MainActivity extends Activity {
         @JavascriptInterface
         public void requestShizukuPermission() {
             try {
-                Class<?> shizukuClass = Class.forName("rikka.shizuku.Shizuku");
-                Method pingBinder = shizukuClass.getMethod("pingBinder");
-                if ((Boolean) pingBinder.invoke(null)) {
-                    Method requestPerm = shizukuClass.getMethod("requestPermission", int.class);
-                    requestPerm.invoke(null, 1001);
-                    Toast.makeText(MainActivity.this, "Запрос разрешения...", Toast.LENGTH_SHORT).show();
+                if (ShizukuInputInjector.isAvailable()) {
+                    Toast.makeText(MainActivity.this, "✅ Shizuku уже активен", Toast.LENGTH_SHORT).show();
                 } else {
-                    Toast.makeText(MainActivity.this, "Shizuku не запущен", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(MainActivity.this, "Открой Shizuku и дай разрешение", Toast.LENGTH_LONG).show();
                 }
             } catch (Exception e) {
                 Toast.makeText(MainActivity.this, "Shizuku не найден", Toast.LENGTH_SHORT).show();
@@ -138,7 +129,7 @@ public class MainActivity extends Activity {
         @JavascriptInterface
         public void copyAdbCommand() {
             String cmd = getAdbCommand();
-            android.content.ClipboardManager clipboard = 
+            android.content.ClipboardManager clipboard =
                 (android.content.ClipboardManager) getSystemService(CLIPBOARD_SERVICE);
             android.content.ClipData clip = android.content.ClipData.newPlainText("ADB", cmd);
             clipboard.setPrimaryClip(clip);
@@ -150,40 +141,43 @@ public class MainActivity extends Activity {
             FixSensService service = FixSensService.getInstance();
             return service != null && service.isServiceRunning();
         }
-        
+
         @JavascriptInterface
         public boolean isFixSensActive() {
             FixSensService service = FixSensService.getInstance();
             return service != null && service.isActive();
         }
-        
+
         @JavascriptInterface
         public void openAccessibilitySettings() {
             Intent intent = new Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS);
             startActivity(intent);
-            runOnUiThread(() -> Toast.makeText(MainActivity.this, 
-                "Найди Teleport и включи", Toast.LENGTH_LONG).show());
+            runOnUiThread(() -> Toast.makeText(MainActivity.this,
+                "Найди 'Teleport' и включи переключатель", Toast.LENGTH_LONG).show());
         }
-        
+
         @JavascriptInterface
         public void toggleFixSens(boolean enable) {
             FixSensService service = FixSensService.getInstance();
             if (service != null) {
                 service.setActive(enable);
                 String mode = service.isUsingShizuku() ? " (Shizuku INJECT ✅)" : " (fallback ️)";
-                runOnUiThread(() -> Toast.makeText(MainActivity.this, 
+                runOnUiThread(() -> Toast.makeText(MainActivity.this,
                     "FixSens: " + (enable ? "ВКЛ" : "ВЫКЛ") + mode, Toast.LENGTH_LONG).show());
             } else {
-                runOnUiThread(() -> Toast.makeText(MainActivity.this, 
-                    "Сервис не запущен", Toast.LENGTH_SHORT).show());
+                runOnUiThread(() -> Toast.makeText(MainActivity.this,
+                    "Сервис не запущен. Включи в Настройках → Специальные возможности", Toast.LENGTH_LONG).show());
             }
         }
-        
+
         @JavascriptInterface
         public void setFixSensParams(float sharpness, float noise, float straighten) {
             FixSensService service = FixSensService.getInstance();
             if (service != null) {
                 service.setProcessorParams(sharpness, noise, straighten);
+                runOnUiThread(() -> Toast.makeText(MainActivity.this,
+                    String.format("⚡ Параметры: %.2f · %.1f · %.2f", sharpness, noise, straighten),
+                    Toast.LENGTH_SHORT).show());
             }
         }
 
@@ -196,11 +190,9 @@ public class MainActivity extends Activity {
                 "settings put system pointer_speed 7",
                 "settings put system pointer_acceleration 0"
             };
-            for (String cmd : commands) {
-                runCommand(cmd);
-            }
-            runOnUiThread(() -> Toast.makeText(MainActivity.this, 
-                "⚡ TELEPORT MODE", Toast.LENGTH_SHORT).show());
+            for (String cmd : commands) { runCommand(cmd); }
+            runOnUiThread(() -> Toast.makeText(MainActivity.this,
+                "⚡ TELEPORT MODE активирован", Toast.LENGTH_SHORT).show());
         }
     }
 
@@ -211,9 +203,7 @@ public class MainActivity extends Activity {
                 BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
                 StringBuilder output = new StringBuilder();
                 String line;
-                while ((line = reader.readLine()) != null) {
-                    output.append(line);
-                }
+                while ((line = reader.readLine()) != null) { output.append(line); }
                 process.waitFor();
                 Log.d(TAG, "Команда: " + cmd);
             } catch (Exception e) {
