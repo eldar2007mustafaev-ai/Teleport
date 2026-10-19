@@ -29,7 +29,7 @@ public class FixSensService extends AccessibilityService {
         mainHandler = new Handler(Looper.getMainLooper());
         
         useShizuku = ShizukuInputInjector.init();
-        Log.i(TAG, "Shizuku: " + (useShizuku ? "✅ INJECT" : "️ fallback"));
+        Log.i(TAG, "Shizuku: " + (useShizuku ? "✅ INJECT" : "⚠️ fallback"));
     }
     
     @Override
@@ -39,7 +39,7 @@ public class FixSensService extends AccessibilityService {
         mainHandler.post(() -> {
             String msg = useShizuku ? 
                 "✅ FixSens: Shizuku INJECT активен" : 
-                "⚠️ FixSens: fallback (нужен Shizuku)";
+                "️ FixSens: fallback (нужен Shizuku)";
             Toast.makeText(this, msg, Toast.LENGTH_LONG).show();
         });
     }
