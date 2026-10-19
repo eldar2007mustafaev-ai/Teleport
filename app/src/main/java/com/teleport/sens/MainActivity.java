@@ -2,9 +2,12 @@ package com.teleport.sens;
 
 import android.app.Activity;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.IBinder;
+import android.os.Parcel;
 import android.provider.Settings;
 import android.util.Log;
 import android.view.View;
@@ -13,12 +16,15 @@ import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.Toast;
+
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
+import java.lang.reflect.Method;
 
 public class MainActivity extends Activity {
     private WebView webView;
     private static final String TAG = "Teleport";
+    private boolean shizukuAvailable = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -38,11 +44,14 @@ public class MainActivity extends Activity {
         webView.setWebViewClient(new WebViewClient());
         webView.loadUrl("file:///android_asset/index.html");
         setContentView(webView);
+        
+        checkShizuku();
     }
 
     @Override
     protected void onResume() {
         super.onResume();
+        checkShizuku();
         webView.postDelayed(() -> {
             boolean hasPermission = Settings.canDrawOverlays(MainActivity.this);
             webView.evaluateJavascript(
@@ -51,6 +60,34 @@ public class MainActivity extends Activity {
                 "var modal = document.getElementById('permModal'); " +
                 "if(modal) { modal.style.display = hasPerm ? 'none' : 'flex'; } " +
                 "}", null);
+        }, 500);
+    }
+
+    // === ПРОВЕРКА SHIZUKU ЧЕРЕЗ РЕФЛЕКСИЮ ===
+    private void checkShizuku() {
+        try {
+            Class<?> shizukuClass = Class.forName("rikka.shizuku.Shizuku");
+            Method pingBinder = shizukuClass.getMethod("pingBinder");
+            boolean running = (Boolean) pingBinder.invoke(null);
+            
+            if (running) {
+                Method checkPerm = shizukuClass.getMethod("checkSelfPermission");
+                int perm = (Integer) checkPerm.invoke(null);
+                shizukuAvailable = (perm == PackageManager.PERMISSION_GRANTED);
+            } else {
+                shizukuAvailable = false;
+            }
+        } catch (Exception e) {
+            shizukuAvailable = false;
+            Log.w(TAG, "Shizuku не найден: " + e.getMessage());
+        }
+        
+        webView.postDelayed(() -> {
+            String status = shizukuAvailable ? "✅ Shizuku активен" : "Shizuku не активен";
+            webView.evaluateJavascript(
+                "if(typeof updateShizukuStatus !== 'undefined') updateShizukuStatus('" + status + "', " + shizukuAvailable + ");",
+                null
+            );
         }, 500);
     }
 
@@ -87,10 +124,14 @@ public class MainActivity extends Activity {
         }
 
         @JavascriptInterface
-        public String getShizukuStatus() { return "Shizuku: заглушка"; }
+        public String getShizukuStatus() {
+            return shizukuAvailable ? "✅ Shizuku активен" : "Shizuku не активен";
+        }
 
         @JavascriptInterface
-        public boolean isShizukuAvailable() { return false; }
+        public boolean isShizukuAvailable() {
+            return shizukuAvailable;
+        }
 
         @JavascriptInterface
         public void openShizukuApp() {
@@ -105,7 +146,19 @@ public class MainActivity extends Activity {
 
         @JavascriptInterface
         public void requestShizukuPermission() {
-            Toast.makeText(MainActivity.this, "Shizuku интеграция в разработке", Toast.LENGTH_SHORT).show();
+            try {
+                Class<?> shizukuClass = Class.forName("rikka.shizuku.Shizuku");
+                Method pingBinder = shizukuClass.getMethod("pingBinder");
+                if ((Boolean) pingBinder.invoke(null)) {
+                    Method requestPerm = shizukuClass.getMethod("requestPermission", int.class);
+                    requestPerm.invoke(null, 1001);
+                    Toast.makeText(MainActivity.this, "Запрос разрешения...", Toast.LENGTH_SHORT).show();
+                } else {
+                    Toast.makeText(MainActivity.this, "Shizuku не запущен. Запусти его сначала.", Toast.LENGTH_LONG).show();
+                }
+            } catch (Exception e) {
+                Toast.makeText(MainActivity.this, "Shizuku не найден", Toast.LENGTH_SHORT).show();
+            }
         }
 
         @JavascriptInterface
@@ -139,12 +192,22 @@ public class MainActivity extends Activity {
 
         @JavascriptInterface
         public void toggleFixSens(boolean enable) {
+            if (!shizukuAvailable) {
+                runOnUiThread(() -> Toast.makeText(MainActivity.this,
+                    "⚠️ Сначала запусти Shizuku и дай разрешение!", Toast.LENGTH_LONG).show());
+                return;
+            }
             runOnUiThread(() -> Toast.makeText(MainActivity.this,
-                "FixSens: " + (enable ? "ВКЛ (заглушка)" : "ВЫКЛ"), Toast.LENGTH_SHORT).show());
+                "FixSens: " + (enable ? "ВКЛ ✅" : "ВЫКЛ"), Toast.LENGTH_SHORT).show());
         }
 
         @JavascriptInterface
         public void setFixSensParams(float sharpness, float noise, float straighten) {
+            if (!shizukuAvailable) {
+                runOnUiThread(() -> Toast.makeText(MainActivity.this,
+                    "⚠️ Shizuku не активен!", Toast.LENGTH_SHORT).show());
+                return;
+            }
             runOnUiThread(() -> Toast.makeText(MainActivity.this,
                 String.format(" Параметры: %.2f · %.1f · %.2f", sharpness, noise, straighten),
                 Toast.LENGTH_SHORT).show());
