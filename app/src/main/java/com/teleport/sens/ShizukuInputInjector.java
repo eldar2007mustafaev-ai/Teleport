@@ -7,6 +7,8 @@ import android.util.Log;
 import android.view.InputEvent;
 import android.view.MotionEvent;
 
+import rikka.shizuku.Shizuku;
+
 import java.lang.reflect.Method;
 
 public class ShizukuInputInjector {
@@ -20,27 +22,21 @@ public class ShizukuInputInjector {
         if (initialized) return available;
         
         try {
-            Class<?> shizukuClass = Class.forName("rikka.shizuku.Shizuku");
-            
-            Method pingBinder = shizukuClass.getMethod("pingBinder");
-            if (!(Boolean) pingBinder.invoke(null)) {
+            if (!Shizuku.pingBinder()) {
                 Log.w(TAG, "Shizuku не запущен");
                 initialized = true;
                 available = false;
                 return false;
             }
             
-            Method checkPerm = shizukuClass.getMethod("checkSelfPermission");
-            int perm = (Integer) checkPerm.invoke(null);
-            if (perm != PackageManager.PERMISSION_GRANTED) {
+            if (Shizuku.checkSelfPermission() != PackageManager.PERMISSION_GRANTED) {
                 Log.w(TAG, "Нет разрешения Shizuku");
                 initialized = true;
                 available = false;
                 return false;
             }
             
-            Method getBinder = shizukuClass.getMethod("getBinder");
-            IBinder shizukuBinder = (IBinder) getBinder.invoke(null);
+            IBinder shizukuBinder = Shizuku.getBinder();
             if (shizukuBinder == null) {
                 Log.e(TAG, "Shizuku binder = null");
                 initialized = true;
@@ -68,11 +64,6 @@ public class ShizukuInputInjector {
             Log.i(TAG, "✅ Shizuku INJECT_EVENTS готов!");
             return true;
             
-        } catch (ClassNotFoundException e) {
-            Log.w(TAG, "Shizuku библиотека не найдена в APK");
-            initialized = true;
-            available = false;
-            return false;
         } catch (Exception e) {
             Log.e(TAG, "Ошибка: " + e.getMessage(), e);
             initialized = true;
