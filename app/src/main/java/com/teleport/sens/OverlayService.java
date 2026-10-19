@@ -6,15 +6,14 @@ import android.os.IBinder;
 import android.util.Log;
 
 public class OverlayService extends Service {
-    
     private static final String TAG = "OverlayService";
-    
+
     @Override
     public void onCreate() {
         super.onCreate();
         Log.i(TAG, "OverlayService создан");
     }
-    
+
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         if (intent != null) {
@@ -23,12 +22,10 @@ public class OverlayService extends Service {
         }
         return START_STICKY;
     }
-    
+
     @Override
-    public IBinder onBind(Intent intent) {
-        return null;
-    }
-    
+    public IBinder onBind(Intent intent) { return null; }
+
     @Override
     public void onDestroy() {
         super.onDestroy();
