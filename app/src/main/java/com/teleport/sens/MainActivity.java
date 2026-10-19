@@ -14,7 +14,6 @@ import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.Toast;
-
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.lang.reflect.Method;
@@ -49,9 +48,17 @@ public class MainActivity extends Activity {
     protected void onResume() {
         super.onResume();
         checkShizuku();
+        webView.postDelayed(() -> {
+            boolean hasPermission = Settings.canDrawOverlays(MainActivity.this);
+            webView.evaluateJavascript(
+                "if(typeof AndroidBridge !== 'undefined') { " +
+                "var hasPerm = AndroidBridge.hasOverlayPermission(); " +
+                "var modal = document.getElementById('permModal'); " +
+                "if(modal) { modal.style.display = hasPerm ? 'none' : 'flex'; } " +
+                "}", null);
+        }, 500);
     }
 
-    // === ПРОВЕРКА SHIZUKU ЧЕРЕЗ РЕФЛЕКСИЮ ===
     private void checkShizuku() {
         try {
             Class<?> shizukuClass = Class.forName("rikka.shizuku.Shizuku");
@@ -206,7 +213,7 @@ public class MainActivity extends Activity {
                 FixSensService s = FixSensService.getInstance();
                 if (s != null) {
                     s.setActive(enable);
-                    String mode = s.isUsingShizuku() ? " (Shizuku INJECT ✅)" : " (fallback ⚠️)";
+                    String mode = s.isUsingShizuku() ? " (Shizuku INJECT ✅)" : " (fallback ️)";
                     runOnUiThread(() -> Toast.makeText(MainActivity.this,
                         "FixSens: " + (enable ? "ВКЛ" : "ВЫКЛ") + mode, Toast.LENGTH_LONG).show());
                 } else {
