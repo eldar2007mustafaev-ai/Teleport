@@ -195,7 +195,7 @@ public class MainActivity extends Activity {
                 runCommand(cmd);
             }
             runOnUiThread(() -> Toast.makeText(MainActivity.this, 
-                " TELEPORT MODE", Toast.LENGTH_SHORT).show());
+                "⚡ TELEPORT MODE", Toast.LENGTH_SHORT).show());
         }
     }
 
