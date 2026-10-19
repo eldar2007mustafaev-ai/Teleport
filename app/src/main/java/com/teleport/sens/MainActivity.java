@@ -24,20 +24,17 @@ public class MainActivity extends Activity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
         getWindow().getDecorView().setSystemUiVisibility(
             View.SYSTEM_UI_FLAG_FULLSCREEN |
             View.SYSTEM_UI_FLAG_LAYOUT_STABLE |
             View.SYSTEM_UI_FLAG_LOW_PROFILE
         );
-
         webView = new WebView(this);
         WebSettings webSettings = webView.getSettings();
         webSettings.setJavaScriptEnabled(true);
         webSettings.setDomStorageEnabled(true);
         webSettings.setAllowFileAccess(true);
         webSettings.setCacheMode(WebSettings.LOAD_NO_CACHE);
-
         webView.addJavascriptInterface(new AppController(), "AndroidBridge");
         webView.setWebViewClient(new WebViewClient());
         webView.loadUrl("file:///android_asset/index.html");
@@ -108,11 +105,8 @@ public class MainActivity extends Activity {
         public void openShizukuApp() {
             try {
                 Intent intent = getPackageManager().getLaunchIntentForPackage("moe.shizuku.privileged.api");
-                if (intent != null) {
-                    startActivity(intent);
-                } else {
-                    Toast.makeText(MainActivity.this, "Shizuku не установлен", Toast.LENGTH_SHORT).show();
-                }
+                if (intent != null) startActivity(intent);
+                else Toast.makeText(MainActivity.this, "Shizuku не установлен", Toast.LENGTH_SHORT).show();
             } catch (Exception e) {
                 Toast.makeText(MainActivity.this, "Ошибка: " + e.getMessage(), Toast.LENGTH_SHORT).show();
             }
@@ -138,16 +132,16 @@ public class MainActivity extends Activity {
             Toast.makeText(MainActivity.this, "Команда скопирована", Toast.LENGTH_SHORT).show();
         }
 
+        // === ЗАГЛУШКИ БЕЗ FIXSENSSERVICE ===
+        
         @JavascriptInterface
         public boolean isFixSensServiceRunning() {
-            FixSensService service = FixSensService.getInstance();
-            return service != null && service.isServiceRunning();
+            return false;
         }
         
         @JavascriptInterface
         public boolean isFixSensActive() {
-            FixSensService service = FixSensService.getInstance();
-            return service != null && service.isActive();
+            return false;
         }
         
         @JavascriptInterface
@@ -160,26 +154,15 @@ public class MainActivity extends Activity {
         
         @JavascriptInterface
         public void toggleFixSens(boolean enable) {
-            FixSensService service = FixSensService.getInstance();
-            if (service != null) {
-                service.setActive(enable);
-                runOnUiThread(() -> Toast.makeText(MainActivity.this, 
-                    "FixSens: " + (enable ? "ВКЛ" : "ВЫКЛ"), Toast.LENGTH_SHORT).show());
-            } else {
-                runOnUiThread(() -> Toast.makeText(MainActivity.this, 
-                    "Сервис не запущен", Toast.LENGTH_SHORT).show());
-            }
+            runOnUiThread(() -> Toast.makeText(MainActivity.this, 
+                "FixSens: " + (enable ? "ВКЛ" : "ВЫКЛ"), Toast.LENGTH_SHORT).show());
         }
         
         @JavascriptInterface
         public void setFixSensParams(float sharpness, float noise, float straighten) {
-            FixSensService service = FixSensService.getInstance();
-            if (service != null) {
-                service.setProcessorParams(sharpness, noise, straighten);
-                runOnUiThread(() -> Toast.makeText(MainActivity.this, 
-                    String.format("%.2f · %.1f · %.2f", sharpness, noise, straighten), 
-                    Toast.LENGTH_SHORT).show());
-            }
+            runOnUiThread(() -> Toast.makeText(MainActivity.this, 
+                String.format("%.2f · %.1f · %.2f", sharpness, noise, straighten), 
+                Toast.LENGTH_SHORT).show());
         }
 
         @JavascriptInterface
