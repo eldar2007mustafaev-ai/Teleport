@@ -14,13 +14,16 @@ import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.Toast;
+
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
-import java.lang.reflect.Method;
 
-public class MainActivity extends Activity {
+import rikka.shizuku.Shizuku;
+
+public class MainActivity extends Activity implements Shizuku.OnRequestPermissionResultListener {
     private WebView webView;
     private static final String TAG = "Teleport";
+    private static final int SHIZUKU_REQUEST_CODE = 1001;
     private boolean shizukuAvailable = false;
 
     @Override
@@ -41,6 +44,8 @@ public class MainActivity extends Activity {
         webView.setWebViewClient(new WebViewClient());
         webView.loadUrl("file:///android_asset/index.html");
         setContentView(webView);
+        
+        Shizuku.addRequestPermissionResultListener(this);
         checkShizuku();
     }
 
@@ -48,36 +53,24 @@ public class MainActivity extends Activity {
     protected void onResume() {
         super.onResume();
         checkShizuku();
-        webView.postDelayed(() -> {
-            boolean hasPermission = Settings.canDrawOverlays(MainActivity.this);
-            webView.evaluateJavascript(
-                "if(typeof AndroidBridge !== 'undefined') { " +
-                "var hasPerm = AndroidBridge.hasOverlayPermission(); " +
-                "var modal = document.getElementById('permModal'); " +
-                "if(modal) { modal.style.display = hasPerm ? 'none' : 'flex'; } " +
-                "}", null);
-        }, 500);
     }
 
-    // === ПРОВЕРКА SHIZUKU ЧЕРЕЗ РЕФЛЕКСИЮ (без импорта rikka.shizuku) ===
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        Shizuku.removeRequestPermissionResultListener(this);
+    }
+
     private void checkShizuku() {
         try {
-            Class<?> shizukuClass = Class.forName("rikka.shizuku.Shizuku");
-            Method pingBinder = shizukuClass.getMethod("pingBinder");
-            boolean running = (Boolean) pingBinder.invoke(null);
-            
-            if (running) {
-                Method checkPerm = shizukuClass.getMethod("checkSelfPermission");
-                int perm = (Integer) checkPerm.invoke(null);
+            if (Shizuku.pingBinder()) {
+                int perm = Shizuku.checkSelfPermission();
                 shizukuAvailable = (perm == PackageManager.PERMISSION_GRANTED);
-                Log.i(TAG, "Shizuku: " + (shizukuAvailable ? "✅ активен" : "⚠️ нет разрешения"));
+                Log.i(TAG, "Shizuku: " + (shizukuAvailable ? "✅ активен" : "️ нет разрешения"));
             } else {
                 shizukuAvailable = false;
                 Log.w(TAG, "Shizuku не запущен");
             }
-        } catch (ClassNotFoundException e) {
-            shizukuAvailable = false;
-            Log.w(TAG, "Shizuku библиотека не найдена в APK");
         } catch (Exception e) {
             shizukuAvailable = false;
             Log.e(TAG, "Shizuku ошибка: " + e.getMessage());
@@ -89,6 +82,17 @@ public class MainActivity extends Activity {
                 null
             );
         }, 300);
+    }
+
+    @Override
+    public void onRequestPermissionResult(int requestCode, int grantResult) {
+        if (requestCode == SHIZUKU_REQUEST_CODE) {
+            shizukuAvailable = (grantResult == PackageManager.PERMISSION_GRANTED);
+            Toast.makeText(this, 
+                shizukuAvailable ? "✅ Shizuku разрешение получено!" : "⚠️ Разрешение отклонено", 
+                Toast.LENGTH_SHORT).show();
+            checkShizuku();
+        }
     }
 
     public class AppController {
@@ -125,7 +129,7 @@ public class MainActivity extends Activity {
 
         @JavascriptInterface
         public String getShizukuStatus() {
-            return shizukuAvailable ? "✅ Shizuku активен" : "️ Shizuku не активен";
+            return shizukuAvailable ? "✅ Shizuku активен" : "⚠️ Shizuku не активен";
         }
 
         @JavascriptInterface
@@ -146,26 +150,15 @@ public class MainActivity extends Activity {
 
         @JavascriptInterface
         public void requestShizukuPermission() {
-            try {
-                Class<?> shizukuClass = Class.forName("rikka.shizuku.Shizuku");
-                Method pingBinder = shizukuClass.getMethod("pingBinder");
-                if ((Boolean) pingBinder.invoke(null)) {
-                    Method checkPerm = shizukuClass.getMethod("checkSelfPermission");
-                    int perm = (Integer) checkPerm.invoke(null);
-                    if (perm != PackageManager.PERMISSION_GRANTED) {
-                        Method requestPerm = shizukuClass.getMethod("requestPermission", int.class);
-                        requestPerm.invoke(null, 1001);
-                        Toast.makeText(MainActivity.this, "Запрос разрешения...", Toast.LENGTH_SHORT).show();
-                    } else {
-                        Toast.makeText(MainActivity.this, "✅ Разрешение уже есть!", Toast.LENGTH_SHORT).show();
-                    }
+            if (Shizuku.pingBinder()) {
+                if (Shizuku.checkSelfPermission() != PackageManager.PERMISSION_GRANTED) {
+                    Shizuku.requestPermission(SHIZUKU_REQUEST_CODE);
+                    Toast.makeText(MainActivity.this, "Запрос разрешения Shizuku...", Toast.LENGTH_SHORT).show();
                 } else {
-                    Toast.makeText(MainActivity.this, "⚠️ Shizuku не запущен", Toast.LENGTH_LONG).show();
+                    Toast.makeText(MainActivity.this, "✅ Разрешение уже есть!", Toast.LENGTH_SHORT).show();
                 }
-            } catch (ClassNotFoundException e) {
-                Toast.makeText(MainActivity.this, "Shizuku библиотека не найдена", Toast.LENGTH_SHORT).show();
-            } catch (Exception e) {
-                Toast.makeText(MainActivity.this, "Ошибка: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+            } else {
+                Toast.makeText(MainActivity.this, "⚠️ Shizuku не запущен", Toast.LENGTH_LONG).show();
             }
         }
 
@@ -185,10 +178,20 @@ public class MainActivity extends Activity {
         }
 
         @JavascriptInterface
-        public boolean isFixSensServiceRunning() { return false; }
+        public boolean isFixSensServiceRunning() {
+            try {
+                FixSensService s = FixSensService.getInstance();
+                return s != null && s.isServiceRunning();
+            } catch (Exception e) { return false; }
+        }
 
         @JavascriptInterface
-        public boolean isFixSensActive() { return false; }
+        public boolean isFixSensActive() {
+            try {
+                FixSensService s = FixSensService.getInstance();
+                return s != null && s.isActive();
+            } catch (Exception e) { return false; }
+        }
 
         @JavascriptInterface
         public void openAccessibilitySettings() {
@@ -200,25 +203,37 @@ public class MainActivity extends Activity {
 
         @JavascriptInterface
         public void toggleFixSens(boolean enable) {
-            if (!shizukuAvailable) {
+            try {
+                FixSensService s = FixSensService.getInstance();
+                if (s != null) {
+                    s.setActive(enable);
+                    String mode = s.isUsingShizuku() ? " (Shizuku INJECT ✅)" : " (fallback ⚠️)";
+                    runOnUiThread(() -> Toast.makeText(MainActivity.this,
+                        "FixSens: " + (enable ? "ВКЛ" : "ВЫКЛ") + mode, Toast.LENGTH_LONG).show());
+                } else {
+                    runOnUiThread(() -> Toast.makeText(MainActivity.this,
+                        "Сервис не запущен. Включи в Настройках → Специальные возможности", Toast.LENGTH_LONG).show());
+                }
+            } catch (Exception e) {
                 runOnUiThread(() -> Toast.makeText(MainActivity.this,
-                    "⚠️ Сначала запусти Shizuku и нажми 'Получить разрешение'!", Toast.LENGTH_LONG).show());
-                return;
+                    "Ошибка: " + e.getMessage(), Toast.LENGTH_SHORT).show());
             }
-            runOnUiThread(() -> Toast.makeText(MainActivity.this,
-                "FixSens: " + (enable ? "ВКЛ ✅" : "ВЫКЛ"), Toast.LENGTH_SHORT).show());
         }
 
         @JavascriptInterface
         public void setFixSensParams(float sharpness, float noise, float straighten) {
-            if (!shizukuAvailable) {
+            try {
+                FixSensService s = FixSensService.getInstance();
+                if (s != null) {
+                    s.setProcessorParams(sharpness, noise, straighten);
+                    runOnUiThread(() -> Toast.makeText(MainActivity.this,
+                        String.format("⚡ Параметры: %.2f · %.1f · %.2f", sharpness, noise, straighten),
+                        Toast.LENGTH_SHORT).show());
+                }
+            } catch (Exception e) {
                 runOnUiThread(() -> Toast.makeText(MainActivity.this,
-                    "⚠️ Shizuku не активен!", Toast.LENGTH_SHORT).show());
-                return;
+                    "Ошибка: " + e.getMessage(), Toast.LENGTH_SHORT).show());
             }
-            runOnUiThread(() -> Toast.makeText(MainActivity.this,
-                String.format("⚡ Параметры: %.2f · %.1f · %.2f", sharpness, noise, straighten),
-                Toast.LENGTH_SHORT).show());
         }
 
         @JavascriptInterface
