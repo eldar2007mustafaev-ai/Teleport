@@ -132,16 +132,26 @@ public class MainActivity extends Activity {
             Toast.makeText(MainActivity.this, "Команда скопирована", Toast.LENGTH_SHORT).show();
         }
 
-        // === ЗАГЛУШКИ БЕЗ FIXSENSSERVICE ===
+        // === FIXSENS — РЕАЛЬНОЕ ПОДКЛЮЧЕНИЕ ===
         
         @JavascriptInterface
         public boolean isFixSensServiceRunning() {
-            return false;
+            try {
+                FixSensService service = FixSensService.getInstance();
+                return service != null && service.isServiceRunning();
+            } catch (Exception e) {
+                return false;
+            }
         }
         
         @JavascriptInterface
         public boolean isFixSensActive() {
-            return false;
+            try {
+                FixSensService service = FixSensService.getInstance();
+                return service != null && service.isActive();
+            } catch (Exception e) {
+                return false;
+            }
         }
         
         @JavascriptInterface
@@ -149,20 +159,41 @@ public class MainActivity extends Activity {
             Intent intent = new Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS);
             startActivity(intent);
             runOnUiThread(() -> Toast.makeText(MainActivity.this, 
-                "Найди Teleport и включи", Toast.LENGTH_LONG).show());
+                "Найди 'Teleport' в списке и включи переключатель", Toast.LENGTH_LONG).show());
         }
         
         @JavascriptInterface
         public void toggleFixSens(boolean enable) {
-            runOnUiThread(() -> Toast.makeText(MainActivity.this, 
-                "FixSens: " + (enable ? "ВКЛ" : "ВЫКЛ"), Toast.LENGTH_SHORT).show());
+            try {
+                FixSensService service = FixSensService.getInstance();
+                if (service != null) {
+                    service.setActive(enable);
+                    runOnUiThread(() -> Toast.makeText(MainActivity.this, 
+                        "FixSens: " + (enable ? "✅ ВКЛ" : "️ ВЫКЛ"), Toast.LENGTH_SHORT).show());
+                } else {
+                    runOnUiThread(() -> Toast.makeText(MainActivity.this, 
+                        "️ Сервис не запущен. Включи в Настройках → Специальные возможности", Toast.LENGTH_LONG).show());
+                }
+            } catch (Exception e) {
+                runOnUiThread(() -> Toast.makeText(MainActivity.this, 
+                    "Ошибка: " + e.getMessage(), Toast.LENGTH_SHORT).show());
+            }
         }
         
         @JavascriptInterface
         public void setFixSensParams(float sharpness, float noise, float straighten) {
-            runOnUiThread(() -> Toast.makeText(MainActivity.this, 
-                String.format("%.2f · %.1f · %.2f", sharpness, noise, straighten), 
-                Toast.LENGTH_SHORT).show());
+            try {
+                FixSensService service = FixSensService.getInstance();
+                if (service != null) {
+                    service.setProcessorParams(sharpness, noise, straighten);
+                    runOnUiThread(() -> Toast.makeText(MainActivity.this, 
+                        String.format("⚡ Параметры: %.2f · %.1f · %.2f", sharpness, noise, straighten), 
+                        Toast.LENGTH_SHORT).show());
+                }
+            } catch (Exception e) {
+                runOnUiThread(() -> Toast.makeText(MainActivity.this, 
+                    "Ошибка: " + e.getMessage(), Toast.LENGTH_SHORT).show());
+            }
         }
 
         @JavascriptInterface
@@ -178,7 +209,7 @@ public class MainActivity extends Activity {
                 runCommand(cmd);
             }
             runOnUiThread(() -> Toast.makeText(MainActivity.this, 
-                "⚡ TELEPORT MODE", Toast.LENGTH_SHORT).show());
+                "⚡ TELEPORT MODE активирован", Toast.LENGTH_SHORT).show());
         }
     }
 
