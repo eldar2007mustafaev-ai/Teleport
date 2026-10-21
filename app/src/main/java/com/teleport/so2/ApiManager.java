@@ -11,8 +11,11 @@ import java.nio.charset.StandardCharsets;
 
 public class ApiManager {
 
-    public static final String SERVER_URL = "http://YOUR_VPS_IP:8080";
-    public static volatile boolean TEST_MODE = true;
+    // Реальный IP твоего VPS-сервера в Германии
+    public static final String SERVER_URL = "http://45.10.165.75:8080";
+    
+    // TEST_MODE выключен: теперь приложение проверяет ключи напрямую через базу бота на VPS!
+    public static volatile boolean TEST_MODE = false;
 
     public static String checkNickname(String nickname, String key) {
         if (TEST_MODE) {
@@ -24,7 +27,7 @@ public class ApiManager {
             body.put("key", key);
             return sendPostRequest(SERVER_URL + "/api/check_nickname", body.toString());
         } catch (Exception e) {
-            return "{\"status\": \"error\", \"message\": \"" + e.getMessage() + "\"}";
+            return "{\"status\": \"error\", \"message\": \"Ошибка сети: " + e.getMessage() + "\"}";
         }
     }
 
@@ -63,8 +66,8 @@ public class ApiManager {
             URL url = new URL(endpoint);
             conn = (HttpURLConnection) url.openConnection();
             conn.setRequestMethod("POST");
-            conn.setConnectTimeout(4500);
-            conn.setReadTimeout(4500);
+            conn.setConnectTimeout(6000);
+            conn.setReadTimeout(6000);
             conn.setRequestProperty("Content-Type", "application/json; charset=UTF-8");
             conn.setDoOutput(true);
 
@@ -73,7 +76,7 @@ public class ApiManager {
             }
 
             InputStream is = (conn.getResponseCode() >= 400) ? conn.getErrorStream() : conn.getInputStream();
-            if (is == null) return "{\"status\": \"error\", \"reason\": \"empty_response\"}";
+            if (is == null) return "{\"status\": \"error\", \"reason\": \"empty_response\", \"message\": \"Пустой ответ от сервера\"}";
 
             BufferedReader reader = new BufferedReader(new InputStreamReader(is, StandardCharsets.UTF_8));
             StringBuilder sb = new StringBuilder();
@@ -83,7 +86,7 @@ public class ApiManager {
             }
             return sb.toString();
         } catch (Exception e) {
-            return "{\"status\": \"error\", \"reason\": \"network_error\"}";
+            return "{\"status\": \"error\", \"reason\": \"network_error\", \"message\": \"Не удалось подключиться к серверу лицензий\"}";
         } finally {
             if (conn != null) conn.disconnect();
         }
@@ -95,8 +98,8 @@ public class ApiManager {
             URL url = new URL(endpoint);
             conn = (HttpURLConnection) url.openConnection();
             conn.setRequestMethod("GET");
-            conn.setConnectTimeout(4500);
-            conn.setReadTimeout(4500);
+            conn.setConnectTimeout(6000);
+            conn.setReadTimeout(6000);
 
             InputStream is = (conn.getResponseCode() >= 400) ? conn.getErrorStream() : conn.getInputStream();
             if (is == null) return "{\"status\": \"error\"}";
