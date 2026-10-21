@@ -1,13 +1,18 @@
 package com.teleport.so2;
 
 import android.annotation.SuppressLint;
+import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.Settings;
 import android.util.DisplayMetrics;
 import android.view.Display;
+import android.view.Window;
 import android.view.WindowManager;
 import android.webkit.JavascriptInterface;
 import android.webkit.WebSettings;
@@ -21,21 +26,33 @@ public class MainActivity extends AppCompatActivity {
     public static final String APP_VERSION = "1.0.0";
     public static final String TELEGRAM_BOT_URL = "https://t.me/so2_teleport_bot";
     public static final String TELEGRAM_CHANNEL_URL = "https://t.me/so2_teleport_updates";
+    private static final String PREF_NAME = "so2_teleport_profile_prefs";
 
     private WebView webView;
     private int nativeLongSide = 2400;
     private int nativeShortSide = 1080;
     private int nativeDpi = 440;
 
-    @SuppressLint("SetJavaScriptEnabled")
+    @SuppressLint({"SetJavaScriptEnabled", "ClickableViewAccessibility"})
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        // Сплошной тёмный фон #0a0e1a без прозрачности и без доступа к камере
+        Window window = getWindow();
+        if (window != null) {
+            window.setBackgroundDrawable(new ColorDrawable(Color.parseColor("#0A0E1A")));
+            window.setStatusBarColor(Color.parseColor("#0A0E1A"));
+            window.setNavigationBarColor(Color.parseColor("#0A0E1A"));
+        }
+
         captureDisplayMetrics();
-        ShizukuManager.startAutoStretchMonitor();
+        ShizukuManager.setStretchConfig("16:9", nativeShortSide, nativeLongSide, nativeDpi);
 
         webView = new WebView(this);
-        webView.setBackgroundColor(0xFF03050D);
+        webView.setBackgroundColor(Color.parseColor("#0A0E1A"));
+        webView.setFocusable(true);
+        webView.setFocusableInTouchMode(true);
         setContentView(webView);
 
         WebSettings ws = webView.getSettings();
@@ -44,6 +61,14 @@ public class MainActivity extends AppCompatActivity {
 
         webView.addJavascriptInterface(new AppJsBridge(), "AndroidBridge");
         webView.loadUrl("file:///android_asset/index.html");
+
+        // Если плавающая кнопка была включена ранее — восстанавливаем её при запуске
+        SharedPreferences prefs = getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE);
+        if (prefs.getBoolean(FloatingButtonService.KEY_FLOAT_ENABLED, false)) {
+            if (Settings.canDrawOverlays(this)) {
+                startService(new Intent(this, FloatingButtonService.class));
+            }
+        }
     }
 
     private void captureDisplayMetrics() {
@@ -74,7 +99,6 @@ public class MainActivity extends AppCompatActivity {
         super.onDestroy();
         ProfileManager.addTeleportCountToTotal(this, ShizukuManager.getSessionTeleports());
         ShizukuManager.stopTeleport();
-        ShizukuManager.stopAutoStretchMonitor();
     }
 
     private boolean isServerVersionNewer(String currentVer, String serverVer) {
@@ -100,10 +124,6 @@ public class MainActivity extends AppCompatActivity {
             return !ProfileManager.isOnboardingDone(MainActivity.this);
         }
 
-        /**
-         * Проверка ключа при каждом входе в приложение.
-         * Если ключ удалён из keys.json (в TEST_MODE) или заблокирован на сервере — возвращает blocked = true.
-         */
         @JavascriptInterface
         public String verifySavedLicenseOnStartup() {
             try {
@@ -139,9 +159,6 @@ public class MainActivity extends AppCompatActivity {
             }
         }
 
-        /**
-         * Проверка обновлений при запуске (GET /api/get_version).
-         */
         @JavascriptInterface
         public String checkVersionOnStartup() {
             try {
@@ -302,12 +319,51 @@ public class MainActivity extends AppCompatActivity {
         public String applyStretchRatio(String ratioCode) {
             int defLong = ProfileManager.getNativeLong(MainActivity.this, nativeLongSide);
             int defShort = ProfileManager.getNativeShort(MainActivity.this, nativeShortSide);
-            return ShizukuManager.setTargetStretchRatio(ratioCode, defShort, defLong);
+            return ShizukuManager.setStretchConfig(ratioCode, defShort, defLong, nativeDpi);
         }
 
         @JavascriptInterface
         public String resetDisplayToDefault() {
-            return ShizukuManager.resetScreenToDefault();
+            return ShizukuManager.resetStretch();
+        }
+
+        /**
+         * Управление плавающей кнопкой растяга (FloatingButtonService).
+         */
+        @JavascriptInterface
+        public String setFloatingStretchButton(boolean enabled) {
+            SharedPreferences prefs = getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE);
+            if (!enabled) {
+                prefs.edit().putBoolean(FloatingButtonService.KEY_FLOAT_ENABLED, false).apply();
+                runOnUiThread(() -> stopService(new Intent(MainActivity.this, FloatingButtonService.class)));
+                return "Плавающая кнопка растяга скрыта";
+            }
+
+            if (ShizukuManager.isShizukuReady()) {
+                ShizukuManager.execCommand("appops set " + getPackageName() + " SYSTEM_ALERT_WINDOW allow");
+            }
+            if (!Settings.canDrawOverlays(MainActivity.this)) {
+                Intent intent = new Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
+                        Uri.parse("package:" + getPackageName()));
+                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                startActivity(intent);
+                return "Разрешите отображение «Поверх других окон»";
+            }
+
+            int defLong = ProfileManager.getNativeLong(MainActivity.this, nativeLongSide);
+            int defShort = ProfileManager.getNativeShort(MainActivity.this, nativeShortSide);
+            ShizukuManager.setStretchConfig(ShizukuManager.getSelectedStretchRatio(), defShort, defLong, nativeDpi);
+
+            prefs.edit().putBoolean(FloatingButtonService.KEY_FLOAT_ENABLED, true).apply();
+            runOnUiThread(() -> startService(new Intent(MainActivity.this, FloatingButtonService.class)));
+            return "Плавающая кнопка 📐 включена! Нажмите её в Standoff 2 для растяга.";
+        }
+
+        @JavascriptInterface
+        public boolean isFloatingStretchButtonEnabled() {
+            SharedPreferences prefs = getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE);
+            return prefs.getBoolean(FloatingButtonService.KEY_FLOAT_ENABLED, false)
+                    && Settings.canDrawOverlays(MainActivity.this);
         }
 
         @JavascriptInterface
