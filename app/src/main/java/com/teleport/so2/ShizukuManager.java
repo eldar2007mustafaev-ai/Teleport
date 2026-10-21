@@ -1,5 +1,7 @@
 package com.teleport.so2;
 
+import android.content.Context;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.os.IBinder;
 import android.os.SystemClock;
@@ -25,13 +27,12 @@ public class ShizukuManager {
 
     // Константа асинхронной инъекции без задержки (0 мс)
     public static final int INJECT_INPUT_EVENT_MODE_ASYNC = 0;
+    private static final String PREF_NAME = "so2_teleport_profile_prefs";
 
     private static final AtomicBoolean running = new AtomicBoolean(false);
-    private static final AtomicBoolean stretchMonitorRunning = new AtomicBoolean(false);
     private static final AtomicInteger sessionTeleports = new AtomicInteger(0);
     private static volatile String lastError = "";
     private static Thread workerThread = null;
-    private static Thread stretchMonitorThread = null;
     private static Process activeProcess = null;
 
     // Параметры мгновенного микро-чанкового телепорта
@@ -42,11 +43,12 @@ public class ShizukuManager {
     private static volatile int screenWidth = 2400;
     private static volatile int screenHeight = 1080;
 
-    // Параметры автоматического растяга только для Standoff 2
-    private static volatile String selectedStretchRatio = "DEFAULT";
+    // Параметры растяга экрана для FloatingButtonService
+    private static volatile String selectedStretchRatio = "16:9";
     private static volatile int nativeShortSide = 1080;
     private static volatile int nativeLongSide = 2400;
-    private static volatile boolean isStretchCurrentlyApplied = false;
+    private static volatile int nativeDpi = 440;
+    private static volatile boolean stretchApplied = false;
 
     private static volatile int rawMaxX = 0;
     private static volatile int rawMaxY = 0;
@@ -58,6 +60,7 @@ public class ShizukuManager {
     public static int getSessionTeleports() { return sessionTeleports.get(); }
     public static void resetSessionTeleports() { sessionTeleports.set(0); }
     public static boolean isTeleportRunning() { return running.get(); }
+    public static boolean isStretchApplied() { return stretchApplied; }
 
     public static boolean isShizukuReady() {
         try {
@@ -153,6 +156,7 @@ public class ShizukuManager {
      * Использует MotionEvent.obtain() и обязательный recycle() для предотвращения утечек памяти.
      */
     public static void injectInstantTeleportSnap(int fromX, int fromY, int chunkX, int chunkY) {
+        if (!running.get()) return;
         try {
             if (!initShizukuInputManager()) return;
             long now = SystemClock.uptimeMillis();
@@ -179,7 +183,7 @@ public class ShizukuManager {
     public static void updateLiveConfig(int chunk, int threshold, int zonePct, int pollHz, int scrW, int scrH) {
         microChunkSize = Math.max(10, Math.min(50, chunk));
         thresholdPx = Math.max(6, Math.min(40, threshold));
-        aimZoneStartPct = Math.max(50, Math.min(85, zonePct));
+        aimZoneStartPct = 75;
         pollRateHz = Math.max(60, Math.min(240, pollHz));
         if (scrW > 0 && scrH > 0) {
             screenWidth = Math.max(scrW, scrH);
@@ -191,8 +195,13 @@ public class ShizukuManager {
      * Проверяет, находится ли пакет com.axlebolt.standoff2 в активном окне на экране.
      */
     public static boolean isStandoffForeground() {
-        String dump = execCommand("dumpsys activity activities | grep -E 'mResumedActivity|topResumedActivity'");
-        return dump != null && dump.contains("com.axlebolt.standoff2");
+        if (!isShizukuReady()) return false;
+        String dump = execCommand("dumpsys window | grep -E 'mCurrentFocus|mFocusedApp'");
+        if (dump != null && dump.contains("com.axlebolt.standoff2")) {
+            return true;
+        }
+        String actDump = execCommand("dumpsys activity activities | grep -E 'mResumedActivity|topResumedActivity'");
+        return actDump != null && actDump.contains("com.axlebolt.standoff2");
     }
 
     private static boolean isStandoffInMatch() {
@@ -214,7 +223,7 @@ public class ShizukuManager {
             return false;
         }
 
-        updateLiveConfig(chunk, threshold, zonePct, pollHz, scrW, scrH);
+        updateLiveConfig(chunk, threshold, 75, pollHz, scrW, scrH);
         running.set(true);
 
         workerThread = new Thread(() -> {
@@ -227,15 +236,18 @@ public class ShizukuManager {
                 int lastChunkX = -1, lastChunkY = -1;
                 long lastSnapTime = 0L;
                 long lastMatchCheckTime = 0L;
-                boolean inMatch = true;
+                boolean inMatch = false;
 
                 String line;
                 while (running.get() && (line = reader.readLine()) != null) {
+                    if (!running.get()) break;
+
                     long now = SystemClock.uptimeMillis();
-                    if (now - lastMatchCheckTime > 1500L) {
+                    if (now - lastMatchCheckTime > 1200L) {
                         inMatch = isStandoffInMatch();
                         lastMatchCheckTime = now;
                     }
+                    // Если сейчас открыто само приложение SO2 Teleport или меню, касания вообще не трогаем
                     if (!inMatch) continue;
 
                     if (line.contains("ABS_MT_POSITION_X")) {
@@ -248,8 +260,9 @@ public class ShizukuManager {
                         lastChunkX = -1;
                         lastChunkY = -1;
                     } else if (line.contains("SYN_REPORT")) {
-                        int rightZoneStartX = (screenWidth * aimZoneStartPct) / 100;
-                        if (curX >= rightZoneStartX && curY >= 0) {
+                        // Перехват ТОЛЬКО в правой зоне экрана (x > screenWidth * 0.75)
+                        int rightZoneLimitX = (int) (screenWidth * 0.75f);
+                        if (curX > rightZoneLimitX && curY >= 0) {
                             // Неизменная формула центра микро-чанка:
                             int chunkX = (curX / microChunkSize) * microChunkSize + (microChunkSize / 2);
                             int chunkY = (curY / microChunkSize) * microChunkSize + (microChunkSize / 2);
@@ -326,133 +339,57 @@ public class ShizukuManager {
     }
 
     /**
-     * Установка желаемого соотношения сторон.
-     * Применяется ТОЛЬКО когда открыт Standoff 2, и автоматически сбрасывается при выходе из игры.
+     * Сохраняет выбранное соотношение сторон в настройках для использования плавающей кнопкой.
      */
-    public static String setTargetStretchRatio(String ratioCode, int baseShortSide, int baseLongSide) {
-        if (!isShizukuReady()) return "Нет прав Shizuku";
+    public static String saveStretchConfig(Context context, String ratioCode, int baseShortSide, int baseLongSide, int baseDpi) {
         nativeShortSide = baseShortSide;
         nativeLongSide = baseLongSide;
+        nativeDpi = baseDpi;
+        selectedStretchRatio = (ratioCode != null && !ratioCode.isEmpty()) ? ratioCode : "16:9";
 
-        if (ratioCode == null || "DEFAULT".equalsIgnoreCase(ratioCode)) {
-            selectedStretchRatio = "DEFAULT";
-            if (isStretchCurrentlyApplied) {
-                execCommand("wm size reset");
-                isStretchCurrentlyApplied = false;
-            }
-            screenWidth = baseLongSide;
-            screenHeight = baseShortSide;
-            return "Экран сброшен по умолчанию";
-        }
+        SharedPreferences prefs = context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE);
+        prefs.edit()
+                .putString("stretch_ratio", selectedStretchRatio)
+                .putInt("native_short", baseShortSide)
+                .putInt("native_long", baseLongSide)
+                .putInt("native_dpi", baseDpi)
+                .apply();
 
-        selectedStretchRatio = ratioCode;
-        startAutoStretchMonitor();
-        return "Растяг " + ratioCode + " сохранён! Он включится автоматически при входе в Standoff 2 и сбросится при выходе.";
-    }
-
-    private static void applyStretchInternal(String ratioCode) {
-        int targetLong;
-        switch (ratioCode) {
-            case "4:3":
-                targetLong = Math.round(nativeShortSide * (4f / 3f));
-                break;
-            case "3:2":
-                targetLong = Math.round(nativeShortSide * 1.5f);
-                break;
-            case "16:10":
-                targetLong = Math.round(nativeShortSide * 1.6f);
-                break;
-            case "16:9":
-                targetLong = Math.round(nativeShortSide * (16f / 9f));
-                break;
-            default:
-                return;
-        }
-        if (targetLong % 2 != 0) targetLong++;
-        execCommand("wm size " + nativeShortSide + "x" + targetLong);
-        screenWidth = targetLong;
-        screenHeight = nativeShortSide;
-        isStretchCurrentlyApplied = true;
+        return "Формат " + selectedStretchRatio + " сохранён для плавающей кнопки 📐";
     }
 
     /**
-     * Фоновый мониторинг активного окна через Shizuku API:
-     * когда активен com.axlebolt.standoff2 — включает выбранный растяг;
-     * когда Standoff 2 свёрнут или закрыт — мгновенно делает wm size reset.
+     * Применяет wm size и wm density (вызывается из FloatingButtonService при нажатии кнопки в Standoff 2).
      */
-    public static synchronized void startAutoStretchMonitor() {
-        if (stretchMonitorRunning.get()) return;
-        stretchMonitorRunning.set(true);
-
-        stretchMonitorThread = new Thread(() -> {
-            while (stretchMonitorRunning.get()) {
-                try {
-                    if (isShizukuReady() && !"DEFAULT".equalsIgnoreCase(selectedStretchRatio)) {
-                        boolean so2Active = isStandoffForeground();
-                        if (so2Active && !isStretchCurrentlyApplied) {
-                            applyStretchInternal(selectedStretchRatio);
-                        } else if (!so2Active && isStretchCurrentlyApplied) {
-                            execCommand("wm size reset");
-                            screenWidth = nativeLongSide;
-                            screenHeight = nativeShortSide;
-                            isStretchCurrentlyApplied = false;
-                        }
-                    } else if (isStretchCurrentlyApplied && "DEFAULT".equalsIgnoreCase(selectedStretchRatio)) {
-                        execCommand("wm size reset");
-                        isStretchCurrentlyApplied = false;
-                    }
-                    Thread.sleep(1200L);
-                } catch (InterruptedException e) {
-                    break;
-                } catch (Throwable ignored) {}
-            }
-        }, "SO2-AutoStretch-Monitor");
-
-        stretchMonitorThread.setDaemon(true);
-        stretchMonitorThread.start();
-    }
-
-    public static synchronized void stopAutoStretchMonitor() {
-        stretchMonitorRunning.set(false);
-        if (isStretchCurrentlyApplied) {
-            execCommand("wm size reset");
-            isStretchCurrentlyApplied = false;
-        }
-        if (stretchMonitorThread != null) {
-            try { stretchMonitorThread.interrupt(); } catch (Throwable ignored) {}
-            stretchMonitorThread = null;
-        }
-    }
-
-    public static String resetScreenToDefault() {
+    public static String applyStretch(Context context) {
         if (!isShizukuReady()) return "Нет прав Shizuku";
-        selectedStretchRatio = "DEFAULT";
-        isStretchCurrentlyApplied = false;
-        execCommand("wm size reset");
-        screenWidth = nativeLongSide;
-        screenHeight = nativeShortSide;
-        return "Экран возвращён к заводским настройкам";
-    }
 
-    public static String runFpsBooster(boolean aggressive) {
-        if (!isShizukuReady()) return "Нет прав Shizuku";
-        if (aggressive) {
-            execCommand("am kill-all 2>/dev/null; cmd activity trim-memory RUNNING_CRITICAL 2>/dev/null; settings put global window_animation_scale 0.0; settings put global transition_animation_scale 0.0; settings put global animator_duration_scale 0.0");
-            return "Бустер FPS (Макс): фоновые процессы остановлены!";
-        } else {
-            execCommand("am kill-all 2>/dev/null; settings put global window_animation_scale 1.0; settings put global transition_animation_scale 1.0; settings put global animator_duration_scale 1.0");
-            return "Стандартный режим восстановлен";
+        SharedPreferences prefs = context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE);
+        String ratio = prefs.getString("stretch_ratio", selectedStretchRatio);
+        int shortSide = prefs.getInt("native_short", nativeShortSide);
+        int dpi = prefs.getInt("native_dpi", nativeDpi);
+
+        int targetLong;
+        int targetDpi = Math.max(280, Math.round(dpi * 0.9f));
+
+        switch (ratio) {
+            case "4:3":
+                targetLong = Math.round(shortSide * (4f / 3f));
+                break;
+            case "3:2":
+                targetLong = Math.round(shortSide * 1.5f);
+                break;
+            case "16:10":
+                targetLong = Math.round(shortSide * 1.6f);
+                break;
+            case "16:9":
+            default:
+                targetLong = Math.round(shortSide * (16f / 9f));
+                break;
         }
-    }
 
-    public static String cleanRamBeforeGame() {
-        if (!isShizukuReady()) return "Нет прав Shizuku";
-        execCommand("am kill-all 2>/dev/null; cmd activity trim-memory RUNNING_CRITICAL 2>/dev/null");
-        return "ОЗУ успешно очищена перед матчем!";
-    }
+        if (targetLong % 2 != 0) targetLong++;
 
-    public static void setDoNotDisturb(boolean enable) {
-        if (!isShizukuReady()) return;
-        execCommand(enable ? "cmd notification set_dnd priority 2>/dev/null" : "cmd notification set_dnd off 2>/dev/null");
-    }
-}
+        execCommand("wm size " + shortSide + "x" + targetLong + "; wm density " + targetDpi);
+        screenWidth = targetLong;
+        screen
