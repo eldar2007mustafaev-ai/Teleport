@@ -180,7 +180,6 @@ public class ShizukuManager {
     public static void updateLiveConfig(int chunk, int threshold, int zonePct, int pollHz, int scrW, int scrH) {
         microChunkSize = Math.max(10, Math.min(50, chunk));
         thresholdPx = Math.max(6, Math.min(40, threshold));
-        aimZoneStartPct = 75; // Строго правая зона экрана от 75%
         pollRateHz = Math.max(60, Math.min(240, pollHz));
         if (scrW > 0 && scrH > 0) {
             screenWidth = Math.max(scrW, scrH);
@@ -253,9 +252,11 @@ public class ShizukuManager {
                         lastChunkX = -1;
                         lastChunkY = -1;
                     } else if (line.contains("SYN_REPORT")) {
-                        // Перехват строго в правой зоне экрана (x > screenWidth * 0.75)
-                        int rightZoneStartX = (int) (screenWidth * 0.75f);
-                        if (curX > rightZoneStartX && curY >= 0) {
+                        // Нижний правый квадрат (1/4 экрана: правая половина по X и нижняя половина по Y)
+                        int rightZoneStartX = (int) (screenWidth * 0.50f);
+                        int bottomZoneStartY = (int) (screenHeight * 0.50f);
+
+                        if (curX > rightZoneStartX && curX <= screenWidth && curY > bottomZoneStartY && curY <= screenHeight) {
                             // Неизменная формула центра микро-чанка:
                             int chunkX = (curX / microChunkSize) * microChunkSize + (microChunkSize / 2);
                             int chunkY = (curY / microChunkSize) * microChunkSize + (microChunkSize / 2);
