@@ -1,0 +1,1145 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>SO2 Teleport</title>
+    <style>
+        :root {
+            --bg-amoled: #03050d;
+            --glass-bg: rgba(16, 22, 48, 0.62);
+            --glass-border: rgba(139, 92, 246, 0.35);
+            --neon-purple: #8B5CF6;
+            --neon-cyan: #00D4FF;
+            --neon-green: #00FF88;
+            --neon-pink: #FF2E93;
+            --text-main: #F8FAFC;
+            --text-muted: #94A3B8;
+        }
+
+        * {
+            box-sizing: border-box;
+            user-select: none;
+            -webkit-user-select: none;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            margin: 0;
+            min-height: 100vh;
+            background-color: var(--bg-amoled);
+            background-image:
+                radial-gradient(circle at 20% 10%, rgba(139, 92, 246, 0.22) 0%, transparent 45%),
+                radial-gradient(circle at 80% 80%, rgba(0, 212, 255, 0.18) 0%, transparent 50%);
+            color: var(--text-main);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            padding: 18px 16px 105px 16px;
+            overflow-x: hidden;
+        }
+
+        /* Неоновая вспышка при мгновенном срабатывании телепорта */
+        #teleportFlash {
+            position: fixed;
+            inset: 0;
+            pointer-events: none;
+            z-index: 999;
+            opacity: 0;
+            background: radial-gradient(circle, rgba(0, 212, 255, 0.28) 0%, rgba(139, 92, 246, 0.45) 100%);
+            box-shadow: inset 0 0 65px var(--neon-cyan);
+            transition: opacity 0.14s ease-out;
+        }
+
+        /* Нижняя панель навигации (Bottom Navigation Bar с иконками) */
+        .bottom-nav {
+            position: fixed;
+            bottom: 14px;
+            left: 16px;
+            right: 16px;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            background: rgba(10, 15, 34, 0.88);
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
+            border: 1px solid rgba(139, 92, 246, 0.38);
+            border-radius: 20px;
+            padding: 6px;
+            z-index: 400;
+            box-shadow: 0 12px 35px rgba(0, 0, 0, 0.8), 0 0 20px rgba(139, 92, 246, 0.25);
+        }
+
+        .bottom-nav-item {
+            padding: 9px 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
+            color: var(--text-muted);
+            border-radius: 14px;
+            cursor: pointer;
+            transition: all 0.25s ease;
+        }
+        .bottom-nav-item:active { transform: scale(0.95); }
+        .bottom-nav-item .nav-icon {
+            font-size: 18px;
+            line-height: 1;
+        }
+        .bottom-nav-item .nav-label {
+            font-size: 11.5px;
+            font-weight: 800;
+            letter-spacing: 0.7px;
+        }
+        .bottom-nav-item.active {
+            background: linear-gradient(135deg, rgba(139, 92, 246, 0.48), rgba(0, 212, 255, 0.35));
+            color: #FFFFFF;
+            border: 1px solid rgba(0, 212, 255, 0.5);
+            box-shadow: 0 0 18px rgba(139, 92, 246, 0.45);
+        }
+
+        .tab-pane { display: none; }
+        .tab-pane.active {
+            display: block;
+            animation: cardAppear 0.35s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+        }
+
+        @keyframes cardAppear {
+            from { opacity: 0; transform: translateY(14px) scale(0.98); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+
+        /* Неоновые Glassmorphism карточки */
+        .glass-card {
+            background: var(--glass-bg);
+            backdrop-filter: blur(22px);
+            -webkit-backdrop-filter: blur(22px);
+            border: 1px solid var(--glass-border);
+            border-radius: 20px;
+            padding: 16px;
+            margin-bottom: 14px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6), inset 0 1px 1px rgba(255, 255, 255, 0.12);
+            transition: transform 0.16s ease, border-color 0.25s ease, box-shadow 0.25s ease;
+        }
+        .glass-card.clickable { cursor: pointer; }
+        .glass-card.clickable:active { transform: scale(0.97); }
+        .glass-card.glow-cyan {
+            border-color: rgba(0, 212, 255, 0.45);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6), 0 0 20px rgba(0, 212, 255, 0.15);
+        }
+
+        .row-between {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-bottom: 14px;
+        }
+
+        .grid-4 {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 8px;
+        }
+
+        .card-title {
+            font-size: 15px;
+            font-weight: 800;
+            margin: 0 0 4px 0;
+            color: #FFFFFF;
+        }
+        .card-sub {
+            font-size: 12px;
+            color: var(--text-muted);
+            margin: 0;
+        }
+
+        .section-label {
+            font-size: 11px;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--neon-cyan);
+            margin: 16px 0 10px 4px;
+            text-shadow: 0 0 10px rgba(0, 212, 255, 0.4);
+        }
+
+        /* Статус-бейдж Shizuku */
+        .neon-badge {
+            padding: 7px 13px;
+            border-radius: 12px;
+            font-size: 11.5px;
+            font-weight: 800;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .neon-badge.active {
+            background: rgba(0, 255, 136, 0.14);
+            color: var(--neon-green);
+            border: 1px solid rgba(0, 255, 136, 0.5);
+            box-shadow: 0 0 15px rgba(0, 255, 136, 0.25);
+        }
+        .neon-badge.inactive {
+            background: rgba(255, 46, 147, 0.15);
+            color: var(--neon-pink);
+            border: 1px solid rgba(255, 46, 147, 0.5);
+            box-shadow: 0 0 15px rgba(255, 46, 147, 0.25);
+        }
+
+        /* Центральная неоновая сфера запуска */
+        .orb-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 24px 0;
+            position: relative;
+        }
+        .orb-ring {
+            width: 176px;
+            height: 176px;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(139, 92, 246, 0.35) 0%, rgba(0, 212, 255, 0.15) 60%, transparent 75%);
+            border: 2px solid rgba(0, 212, 255, 0.55);
+            box-shadow: 0 0 35px rgba(139, 92, 246, 0.6), inset 0 0 25px rgba(0, 212, 255, 0.45);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.25s ease;
+            position: relative;
+        }
+        .orb-ring:active { transform: scale(0.93); }
+        .orb-ring.running {
+            border-color: var(--neon-green);
+            background: radial-gradient(circle, rgba(0, 255, 136, 0.35) 0%, rgba(0, 212, 255, 0.2) 65%, transparent 80%);
+            box-shadow: 0 0 45px rgba(0, 255, 136, 0.65), inset 0 0 30px rgba(0, 255, 136, 0.45);
+        }
+        .orb-title {
+            font-size: 14px;
+            font-weight: 900;
+            letter-spacing: 0.8px;
+            text-align: center;
+            color: #FFFFFF;
+            text-shadow: 0 0 12px var(--neon-cyan);
+        }
+        .orb-sub {
+            font-size: 11px;
+            color: var(--neon-cyan);
+            margin-top: 5px;
+            font-weight: 700;
+        }
+
+        /* Неоновые кнопки */
+        .neon-btn {
+            width: 100%;
+            padding: 15px 18px;
+            border-radius: 16px;
+            border: 1px solid rgba(0, 212, 255, 0.55);
+            background: linear-gradient(135deg, rgba(139, 92, 246, 0.85) 0%, rgba(0, 212, 255, 0.75) 100%);
+            color: #FFFFFF;
+            font-size: 14px;
+            font-weight: 800;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            cursor: pointer;
+            margin-bottom: 10px;
+            box-shadow: 0 6px 22px rgba(139, 92, 246, 0.45);
+            transition: transform 0.14s ease, box-shadow 0.2s ease;
+        }
+        .neon-btn:active { transform: scale(0.96); }
+        .neon-btn.secondary {
+            background: rgba(20, 28, 60, 0.75);
+            border-color: rgba(139, 92, 246, 0.4);
+            box-shadow: 0 4px 14px rgba(0, 0, 0, 0.4);
+        }
+
+        /* Мини-кнопки выбора (4:3, 3:2, 16:10, 16:9, прицелы) */
+        .chip-btn {
+            padding: 11px 6px;
+            border-radius: 12px;
+            background: rgba(10, 15, 35, 0.85);
+            border: 1px solid rgba(139, 92, 246, 0.3);
+            color: var(--text-muted);
+            font-size: 12px;
+            font-weight: 800;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .chip-btn:active { transform: scale(0.94); }
+        .chip-btn.active {
+            background: linear-gradient(135deg, rgba(139, 92, 246, 0.5), rgba(0, 212, 255, 0.4));
+            color: #FFFFFF;
+            border-color: var(--neon-cyan);
+            box-shadow: 0 0 14px rgba(0, 212, 255, 0.4);
+        }
+
+        /* Переключатели (Toggle Switches) */
+        .switch {
+            position: relative;
+            width: 50px;
+            height: 27px;
+            background: rgba(15, 23, 42, 0.9);
+            border: 1px solid rgba(139, 92, 246, 0.4);
+            border-radius: 28px;
+            transition: all 0.25s ease;
+            flex-shrink: 0;
+        }
+        .switch::after {
+            content: '';
+            position: absolute;
+            top: 3px;
+            left: 3px;
+            width: 19px;
+            height: 19px;
+            background: #CBD5E1;
+            border-radius: 50%;
+            transition: transform 0.25s ease, background 0.25s ease;
+        }
+        .switch.on {
+            background: linear-gradient(90deg, var(--neon-purple), var(--neon-cyan));
+            border-color: var(--neon-cyan);
+            box-shadow: 0 0 14px rgba(0, 212, 255, 0.5);
+        }
+        .switch.on::after {
+            transform: translateX(22px);
+            background: #FFFFFF;
+        }
+
+        /* Превью растяга экрана */
+        .stretch-preview-box {
+            height: 110px;
+            background: rgba(6, 10, 26, 0.85);
+            border: 1px solid rgba(0, 212, 255, 0.25);
+            border-radius: 14px;
+            margin: 12px 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .stretch-frame {
+            border: 2px solid var(--neon-cyan);
+            border-radius: 10px;
+            background: rgba(0, 212, 255, 0.1);
+            box-shadow: 0 0 18px rgba(0, 212, 255, 0.3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            font-weight: 900;
+            color: #FFFFFF;
+            transition: width 0.3s ease, height 0.3s ease;
+            width: 150px;
+            height: 84px;
+        }
+
+        /* Превью кастомного прицела */
+        .crosshair-preview-box {
+            height: 105px;
+            background: radial-gradient(circle, rgba(0, 255, 136, 0.14) 0%, rgba(6, 10, 26, 0.9) 75%);
+            border: 1px solid rgba(0, 255, 136, 0.35);
+            border-radius: 14px;
+            margin: 12px 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* Модальные полноэкранные окна (Онбординг, Блокировка ключа, Обновление) */
+        .fullscreen-modal {
+            position: fixed;
+            inset: 0;
+            background: var(--bg-amoled);
+            background-image: radial-gradient(circle at 50% 20%, rgba(139, 92, 246, 0.3), transparent 60%);
+            z-index: 500;
+            padding: 20px;
+            display: none;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+        .fullscreen-modal.show { display: flex; }
+        .onb-box { width: 100%; max-width: 410px; text-align: center; }
+        .onb-step { display: none; text-align: center; }
+        .onb-step.active { display: block; animation: cardAppear 0.3s ease forwards; }
+
+        .neon-scanner {
+            position: relative;
+            width: 126px;
+            height: 126px;
+            margin: 18px auto;
+            border-radius: 50%;
+            border: 2px solid var(--neon-cyan);
+            box-shadow: 0 0 28px rgba(0, 212, 255, 0.45), inset 0 0 20px rgba(139, 92, 246, 0.4);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+        .neon-beam {
+            position: absolute;
+            width: 100%;
+            height: 4px;
+            background: linear-gradient(90deg, transparent, var(--neon-cyan), #FFFFFF, var(--neon-purple), transparent);
+            box-shadow: 0 0 18px var(--neon-cyan);
+            animation: beamScan 1.15s ease-in-out infinite alternate;
+        }
+        @keyframes beamScan {
+            0% { top: 6%; }
+            100% { top: 92%; }
+        }
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: rgba(255, 255, 255, 0.08);
+            border-radius: 8px;
+            overflow: hidden;
+            margin: 12px 0;
+        }
+        .progress-fill {
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(90deg, var(--neon-purple), var(--neon-cyan));
+            box-shadow: 0 0 12px var(--neon-cyan);
+            transition: width 0.15s ease;
+        }
+
+        .neon-input {
+            width: 100%;
+            padding: 14px;
+            border-radius: 14px;
+            background: rgba(8, 12, 28, 0.9);
+            border: 1px solid rgba(0, 212, 255, 0.4);
+            color: #FFFFFF;
+            font-size: 14px;
+            font-weight: 700;
+            text-align: center;
+            outline: none;
+            margin-bottom: 10px;
+            user-select: text;
+            -webkit-user-select: text;
+        }
+
+        /* Модальное окно проверки касаний */
+        #touchTestModal {
+            position: fixed;
+            inset: 0;
+            background: #03050d;
+            z-index: 600;
+            display: none;
+            flex-direction: column;
+        }
+        #touchTestModal.show { display: flex; }
+        #touchCanvas { flex: 1; width: 100%; touch-action: none; }
+    </style>
+</head>
+<body>
+
+    <!-- Неоновая вспышка при срабатывании телепорта -->
+    <div id="teleportFlash"></div>
+
+    <!-- ПОЛНОЭКРАННАЯ БЛОКИРОВКА ЕСЛИ КЛЮЧ ИСТЁК ИЛИ УДАЛЁН ИЗ keys.json -->
+    <div id="blockedModal" class="fullscreen-modal" style="z-index: 800;">
+        <div class="glass-card onb-box" style="border-color: var(--neon-pink); box-shadow: 0 0 35px rgba(255, 46, 147, 0.35);">
+            <div style="font-size: 46px; margin-bottom: 10px;">🚫</div>
+            <h2 style="margin: 0 0 10px 0; color: var(--neon-pink);">Ваш ключ истёк или заблокирован</h2>
+            <p style="font-size: 13px; color: var(--text-muted); line-height: 1.5; margin-bottom: 20px;">
+                Доступ к функциям SO2 Teleport приостановлен. Приобретите новый ключ или продлите подписку в официальном Telegram-боте.
+            </p>
+            <button class="neon-btn" onclick="openTelegramBot()">
+                💳 Продлить в Telegram
+            </button>
+            <button class="neon-btn secondary" style="margin-bottom:0;" onclick="reEnterNewKeyFromBlocked()">
+                🔑 Ввести новый ключ
+            </button>
+        </div>
+    </div>
+
+    <!-- ДИАЛОГ ОБНОВЛЕНИЯ ПРИЛОЖЕНИЯ -->
+    <div id="updateModal" class="fullscreen-modal" style="z-index: 750;">
+        <div class="glass-card glow-cyan onb-box">
+            <div style="font-size: 46px; margin-bottom: 10px;">🚀</div>
+            <h2 style="margin: 0 0 10px 0; color: var(--neon-cyan);">Вышел новый апдейт! Скачайте последнюю версию</h2>
+            <p id="updateVersionInfo" style="font-size: 13px; color: var(--text-muted); line-height: 1.5; margin-bottom: 20px;">
+                Доступна новая сборка SO2 Teleport с улучшенной стабильностью.
+            </p>
+            <button class="neon-btn" onclick="openUpdateChannel()">
+                📥 Скачать в Telegram-канале
+            </button>
+        </div>
+    </div>
+
+    <!-- ОНБОРДИНГ С НЕОНОВЫМ СКАНИРОВАНИЕМ -->
+    <div id="onbModal" class="fullscreen-modal">
+        <div class="glass-card glow-cyan onb-box">
+            <div id="step-1" class="onb-step active">
+                <h2 style="margin:0 0 8px 0; color:var(--neon-cyan);">SO2 TELEPORT</h2>
+                <p style="font-size:13px; color:var(--text-muted); line-height:1.5; margin-bottom:18px;">
+                    Мгновенный чанковый телепорт (0 мс), авто-растяг только в Standoff 2, кастомные прицелы и бустер FPS через Shizuku API.
+                </p>
+                <button class="neon-btn" onclick="goStep(2)">👆 Начать настройку</button>
+            </div>
+
+            <div id="step-2" class="onb-step">
+                <h3 style="margin:0 0 8px 0;">Доступ Shizuku</h3>
+                <p style="font-size:12.5px; color:var(--text-muted); line-height:1.45; margin-bottom:16px;">
+                    Нажмите кнопку ниже, чтобы разрешить доступ Shizuku. После выдачи прав экран переключится автоматически.
+                </p>
+                <button class="neon-btn" onclick="onbShizukuClick()">👆 Разрешить Shizuku</button>
+                <div id="shizukuWaitHint" style="font-size:12px; color:var(--neon-cyan); margin-top:8px;">
+                    Ожидание активации Shizuku...
+                </div>
+            </div>
+
+            <div id="step-3" class="onb-step">
+                <h3 style="margin:0 0 4px 0; color:var(--neon-cyan);">Сканирование устройства</h3>
+                <div class="neon-scanner">
+                    <div class="neon-beam"></div>
+                    <span id="scanPctText" style="font-weight:900; font-size:20px; color:#FFF;">0%</span>
+                </div>
+                <div class="progress-bar">
+                    <div id="scanBarFill" class="progress-fill"></div>
+                </div>
+                <p id="scanStageText" style="font-size:12px; color:var(--text-muted); margin:6px 0 0 0;">
+                    Определение модели, DPI, разрешения и герцовки...
+                </p>
+            </div>
+
+            <div id="step-4" class="onb-step">
+                <h3 style="margin:0 0 12px 0; color:var(--neon-green);">Параметры определены</h3>
+                <div class="glass-card" style="text-align:left; margin-bottom:14px;">
+                    <div class="row-between" style="margin-bottom:6px;"><span class="card-sub">Модель:</span><b id="scModel" style="font-size:13px;">-</b></div>
+                    <div class="row-between" style="margin-bottom:6px;"><span class="card-sub">Разрешение и DPI:</span><b id="scRes" style="font-size:13px;">-</b></div>
+                    <div class="row-between" style="margin-bottom:6px;"><span class="card-sub">Частота экрана:</span><b id="scHz" style="font-size:13px; color:var(--neon-cyan);">-</b></div>
+                    <div class="row-between"><span class="card-sub">Зона телепорта:</span><b style="font-size:13px; color:var(--neon-green);">Правая (от 75%)</b></div>
+                </div>
+                <button class="neon-btn" onclick="goStep(5)">👆 Далее к активации</button>
+            </div>
+
+            <div id="step-5" class="onb-step">
+                <h3 style="margin:0 0 6px 0; color:var(--neon-cyan);">Активация лицензии</h3>
+                <p style="font-size:12px; color:var(--text-muted); margin-bottom:14px;">
+                    Введите никнейм и ключ (привязывается к вашему Android ID):
+                </p>
+                <input type="text" id="inpNick" class="neon-input" placeholder="Ваш игровой никнейм" maxlength="20">
+                <input type="text" id="inpKey" class="neon-input" placeholder="Пример: TP-YRE-133700" maxlength="16" style="text-transform:uppercase;">
+                <div id="authErr" style="display:none; color:var(--neon-pink); font-size:12px; font-weight:700; margin-bottom:10px;"></div>
+                <button class="neon-btn" onclick="activateLicense()">👆 Проверить и войти</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ЭКРАН ПРОВЕРКИ КАСАНИЙ -->
+    <div id="touchTestModal">
+        <div class="glass-card" style="border-radius:0; margin:0; display:flex; justify-content:space-between; align-items:center;">
+            <div>
+                <div style="font-size:14px; font-weight:800;">Тест мгновенного телепорта (зона 75%+)</div>
+                <div id="touchInfoText" style="font-size:11px; color:var(--neon-cyan);">Проведите пальцем в правой части экрана</div>
+            </div>
+            <button class="neon-btn secondary" style="width:auto; margin:0; padding:8px 14px;" onclick="closeTouchTest()">Закрыть</button>
+        </div>
+        <canvas id="touchCanvas"></canvas>
+    </div>
+
+    <!-- ==================== ВКЛАДКА 1: ЗАПУСК ==================== -->
+    <div id="tab-launch" class="tab-pane active">
+
+        <!-- Статус Shizuku -->
+        <div class="glass-card clickable glow-cyan" onclick="onShizukuCardTap()">
+            <div class="row-between">
+                <div>
+                    <div class="card-title">Статус Shizuku</div>
+                    <p id="shizukuHint" class="card-sub">Shizuku подключен и готов к работе</p>
+                </div>
+                <div id="shizukuBadge" class="neon-badge inactive">
+                    <span>👆</span>
+                    <span id="shizukuStateText">НЕ АКТИВЕН</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Две карточки метрик -->
+        <div class="grid-2">
+            <div class="glass-card" style="margin-bottom:0;">
+                <span class="card-sub">Активный пресет</span>
+                <div id="lblActivePreset" style="font-size:16px; font-weight:900; color:var(--neon-cyan); margin-top:4px;">Макс резкая (30 пикс.)</div>
+                <span id="lblPresetChunk" style="font-size:11px; color:var(--neon-green);">Чанк: 30 пикс. (0 мс)</span>
+            </div>
+            <div class="glass-card" style="margin-bottom:0;">
+                <span class="card-sub">Прыжков за сессию</span>
+                <div id="lblSessionHits" style="font-size:17px; font-weight:900; color:#FFFFFF; margin-top:4px;">0</div>
+                <span style="font-size:11px; color:var(--neon-purple);">Правая зона (от 75%)</span>
+            </div>
+        </div>
+
+        <!-- Параметры экрана -->
+        <div class="glass-card">
+            <div class="row-between" style="margin-bottom:6px;">
+                <span class="card-sub">Параметры экрана:</span>
+                <b id="lblScreenInfo" style="font-size:12.5px; color:var(--neon-cyan);">-</b>
+            </div>
+            <div class="row-between">
+                <span class="card-sub">Привязка Android ID:</span>
+                <b id="lblAid" style="font-size:12px; color:var(--text-muted);">-</b>
+            </div>
+        </div>
+
+        <!-- Центральная неоновая сфера запуска телепорта -->
+        <div class="orb-container">
+            <div id="orbButton" class="orb-ring" onclick="toggleTeleportClick()">
+                <div id="orbTitle" class="orb-title">ЗАПУСТИТЬ<br>ТЕЛЕПОРТ</div>
+                <div id="orbSub" class="orb-sub">👆 НАЖМИТЕ</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ==================== ВКЛАДКА 2: НАСТРОЙКИ ==================== -->
+    <div id="tab-settings" class="tab-pane">
+
+        <!-- 1. ПРЕСЕТЫ РЕЖИМОВ (Названия "Макс резкая (30 пикс.)" и "Телепорт (44 пикс.)" поменяны местами) -->
+        <div class="section-label">Готовые пресеты режимов (0 мс)</div>
+
+        <div class="glass-card clickable" onclick="selectPreset('sensa')">
+            <div class="row-between">
+                <div>
+                    <div class="card-title">Сенса (18 пикс.)</div>
+                    <p class="card-sub">Ускоренный отклик и точный микро-довод</p>
+                </div>
+                <div id="sw-sensa" class="switch"></div>
+            </div>
+        </div>
+
+        <div class="glass-card clickable" onclick="selectPreset('teleport')">
+            <div class="row-between">
+                <div>
+                    <div class="card-title">Макс резкая (30 пикс.)</div>
+                    <p class="card-sub">Мгновенный чанковый прыжок в центр</p>
+                </div>
+                <div id="sw-teleport" class="switch on"></div>
+            </div>
+        </div>
+
+        <div class="glass-card clickable" onclick="selectPreset('sharp')">
+            <div class="row-between">
+                <div>
+                    <div class="card-title">Телепорт (44 пикс.)</div>
+                    <p class="card-sub">Мгновенная жесткая фиксация на цели</p>
+                </div>
+                <div id="sw-sharp" class="switch"></div>
+            </div>
+        </div>
+
+        <div class="glass-card clickable" onclick="selectPreset('smooth')">
+            <div class="row-between">
+                <div>
+                    <div class="card-title">Плавная (12 пикс.)</div>
+                    <p class="card-sub">Мягкая микро-стабилизация трекинга</p>
+                </div>
+                <div id="sw-smooth" class="switch"></div>
+            </div>
+        </div>
+
+        <!-- 2. АВТО-РАСТЯГ ЭКРАНА ТОЛЬКО В STANDOFF 2 (Без разрешения рендера и без DPI) -->
+        <div class="section-label">Авто-растяг экрана (только в Standoff 2)</div>
+        <div class="glass-card glow-cyan">
+            <div class="row-between">
+                <span class="card-title" style="margin:0;">Соотношение сторон</span>
+                <span id="stretchCurrentLbl" style="font-size:12px; color:var(--neon-cyan); font-weight:800;">16:9</span>
+            </div>
+            <p class="card-sub" style="margin-top:4px;">
+                Включается автоматически при входе в Standoff 2 и сбрасывается при выходе
+            </p>
+
+            <div class="stretch-preview-box">
+                <div id="stretchVisualFrame" class="stretch-frame">16:9</div>
+            </div>
+
+            <div class="grid-4" style="margin-bottom:12px;">
+                <div class="chip-btn" onclick="setStretch('4:3', 115, 86, this)">4:3</div>
+                <div class="chip-btn" onclick="setStretch('3:2', 128, 85, this)">3:2</div>
+                <div class="chip-btn" onclick="setStretch('16:10', 140, 86, this)">16:10</div>
+                <div class="chip-btn active" onclick="setStretch('16:9', 155, 86, this)">16:9</div>
+            </div>
+
+            <button class="neon-btn secondary" style="margin-bottom:0;" onclick="resetDisplay()">
+                🔄 Сбросить экран по умолчанию
+            </button>
+        </div>
+
+        <!-- 3. КАСТОМНЫЕ ПРИЦЕЛЫ -->
+        <div class="section-label">Кастомный прицел поверх игры</div>
+        <div class="glass-card">
+            <div class="row-between">
+                <span class="card-title" style="margin:0;">Свой прицел</span>
+                <span id="crosshairStateLbl" style="font-size:12px; color:var(--neon-green); font-weight:800;">ВЫКЛ</span>
+            </div>
+
+            <div class="crosshair-preview-box">
+                <svg id="crosshairSvg" width="64" height="64" viewBox="0 0 64 64">
+                    <line x1="8" y1="32" x2="24" y2="32" stroke="#00FF88" stroke-width="3" stroke-linecap="round"/>
+                    <line x1="40" y1="32" x2="56" y2="32" stroke="#00FF88" stroke-width="3" stroke-linecap="round"/>
+                    <line x1="32" y1="8" x2="32" y2="24" stroke="#00FF88" stroke-width="3" stroke-linecap="round"/>
+                    <line x1="32" y1="40" x2="32" y2="56" stroke="#00FF88" stroke-width="3" stroke-linecap="round"/>
+                </svg>
+            </div>
+
+            <div class="grid-4" style="margin-bottom:10px;">
+                <div class="chip-btn" onclick="pickCrosshair('cross', this)">Крест</div>
+                <div class="chip-btn" onclick="pickCrosshair('dot', this)">Точка</div>
+                <div class="chip-btn" onclick="pickCrosshair('tshape', this)">Т-образ</div>
+                <div class="chip-btn" onclick="pickCrosshair('corners', this)">Уголки</div>
+            </div>
+            <button class="neon-btn secondary" style="margin-bottom:0;" onclick="disableCrosshair()">
+                ❌ Выключить прицел
+            </button>
+        </div>
+
+        <!-- 4. БУСТЕР FPS И ОПТИМИЗАЦИЯ -->
+        <div class="section-label">Бустер FPS и система</div>
+
+        <div class="glass-card clickable" onclick="toggleSysSwitch('fps')">
+            <div class="row-between">
+                <div>
+                    <div class="card-title">Бустер FPS (90% меньше нагрузки)</div>
+                    <p class="card-sub">Отключение фоновых процессов и системных анимаций</p>
+                </div>
+                <div id="sw-sys-fps" class="switch"></div>
+            </div>
+        </div>
+
+        <div class="glass-card clickable" onclick="toggleSysSwitch('ram')">
+            <div class="row-between">
+                <div>
+                    <div class="card-title">Автоочистка RAM перед запуском</div>
+                    <p class="card-sub">Мгновенная выгрузка кэша из ОЗУ</p>
+                </div>
+                <div id="sw-sys-ram" class="switch"></div>
+            </div>
+        </div>
+
+        <div class="glass-card clickable" onclick="toggleSysSwitch('dnd')">
+            <div class="row-between">
+                <div>
+                    <div class="card-title">Блокировка уведомлений</div>
+                    <p class="card-sub">Защита от всплывающих сообщений во время матча</p>
+                </div>
+                <div id="sw-sys-dnd" class="switch"></div>
+            </div>
+        </div>
+
+        <!-- 5. ДИАГНОСТИКА -->
+        <div class="section-label">Калибровка и диагностика</div>
+        <button class="neon-btn secondary" onclick="rescanScreenClick()">👆 Определить экран заново</button>
+        <button class="neon-btn secondary" onclick="openTouchTest()">👆 Проверить касания (Тест чанков)</button>
+
+        <div id="settingsStatusMsg" style="display:none; text-align:center; font-size:12.5px; color:var(--neon-green); margin-top:10px; font-weight:700;"></div>
+    </div>
+
+    <!-- НИЖНЯЯ ПАНЕЛЬ НАВИГАЦИИ (Bottom Navigation Bar) -->
+    <div class="bottom-nav">
+        <div class="bottom-nav-item active" onclick="switchTab('launch', this)">
+            <span class="nav-icon">⚡</span>
+            <span class="nav-label">ЗАПУСК</span>
+        </div>
+        <div class="bottom-nav-item" onclick="switchTab('settings', this)">
+            <span class="nav-icon">⚙️</span>
+            <span class="nav-label">НАСТРОЙКИ</span>
+        </div>
+    </div>
+
+    <script>
+        let currentOnbStep = 1;
+        let currentChunkPx = 30;
+        let swState = { fps: false, ram: false, dnd: false };
+        let serverUpdateUrl = "https://t.me/so2_teleport_updates";
+
+        // Переименованные местами пресеты согласно пункту 4
+        const presetTitles = {
+            'sensa': 'Сенса (18 пикс.)',
+            'teleport': 'Макс резкая (30 пикс.)',
+            'sharp': 'Телепорт (44 пикс.)',
+            'smooth': 'Плавная (12 пикс.)'
+        };
+        const presetChunks = {
+            'sensa': 18,
+            'teleport': 30,
+            'sharp': 44,
+            'smooth': 12
+        };
+
+        window.onNativeTeleportSnap = function() {
+            const fl = document.getElementById('teleportFlash');
+            fl.style.opacity = '1';
+            setTimeout(() => { fl.style.opacity = '0'; }, 120);
+        };
+
+        function initApp() {
+            if (!window.AndroidBridge) return;
+            applyScanInfo(AndroidBridge.scanDevice());
+
+            // 1. Проверка обновлений (GET /api/get_version)
+            try {
+                const verInfo = JSON.parse(AndroidBridge.checkVersionOnStartup());
+                if (verInfo.update_required) {
+                    serverUpdateUrl = verInfo.link || "https://t.me/so2_teleport_updates";
+                    document.getElementById('updateVersionInfo').textContent =
+                        "Ваша версия: " + verInfo.current_version + " • Новая версия: " + verInfo.server_version;
+                    document.getElementById('updateModal').classList.add('show');
+                    return;
+                }
+            } catch (e) {}
+
+            // 2. Проверка онбординга или валидности активированного ключа
+            if (AndroidBridge.isOnboardingRequired()) {
+                document.getElementById('onbModal').classList.add('show');
+                goStep(1);
+            } else {
+                const verifyRaw = AndroidBridge.verifySavedLicenseOnStartup();
+                try {
+                    const verifyObj = JSON.parse(verifyRaw);
+                    if (verifyObj.blocked) {
+                        document.getElementById('blockedModal').classList.add('show');
+                        return;
+                    }
+                } catch (e) {}
+                refreshProfileUI();
+            }
+            pollState();
+        }
+
+        function openTelegramBot() {
+            if (window.AndroidBridge) {
+                AndroidBridge.openExternalLink("https://t.me/so2_teleport_bot");
+            }
+        }
+
+        function openUpdateChannel() {
+            if (window.AndroidBridge) {
+                AndroidBridge.openExternalLink(serverUpdateUrl);
+            }
+        }
+
+        function reEnterNewKeyFromBlocked() {
+            document.getElementById('blockedModal').classList.remove('show');
+            document.getElementById('onbModal').classList.add('show');
+            goStep(5);
+        }
+
+        function applyScanInfo(raw) {
+            try {
+                const d = JSON.parse(raw);
+                document.getElementById('scModel').textContent = d.device_name || "-";
+                document.getElementById('scRes').textContent = (d.resolution || "-") + " (" + (d.dpi || 440) + " DPI)";
+                document.getElementById('scHz').textContent = (d.refresh_rate || 120) + " Гц";
+                document.getElementById('lblScreenInfo').textContent =
+                    (d.resolution || "-") + " | " + (d.aspect_ratio || "16:9") + " | " + (d.refresh_rate || 120) + " Гц";
+            } catch (e) {}
+        }
+
+        function goStep(n) {
+            currentOnbStep = n;
+            for (let i = 1; i <= 5; i++) {
+                document.getElementById('step-' + i).classList.toggle('active', i === n);
+            }
+            if (n === 3) runScannerAnimation();
+        }
+
+        function onbShizukuClick() {
+            if (!window.AndroidBridge) return;
+            const res = AndroidBridge.handleShizukuCardClick();
+            if (res === "ACTIVE") goStep(3);
+        }
+
+        function runScannerAnimation() {
+            const fill = document.getElementById('scanBarFill');
+            const pctTxt = document.getElementById('scanPctText');
+            const stageTxt = document.getElementById('scanStageText');
+            let p = 0;
+
+            const timer = setInterval(() => {
+                p += 4;
+                if (p > 100) p = 100;
+                fill.style.width = p + '%';
+                pctTxt.textContent = p + '%';
+
+                if (p < 35) stageTxt.textContent = "Анализ матрицы экрана и плотности DPI...";
+                else if (p < 75) stageTxt.textContent = "Калибровка микро-чанков правой зоны (от 75%)...";
+                else stageTxt.textContent = "Проверка частоты обновления сенсора...";
+
+                if (p >= 100) {
+                    clearInterval(timer);
+                    if (window.AndroidBridge) applyScanInfo(AndroidBridge.scanDevice());
+                    setTimeout(() => goStep(4), 250);
+                }
+            }, 65);
+        }
+
+        function activateLicense() {
+            if (!window.AndroidBridge) return;
+            const nick = document.getElementById('inpNick').value;
+            const key = document.getElementById('inpKey').value;
+            const errEl = document.getElementById('authErr');
+
+            const resp = JSON.parse(AndroidBridge.authorizeAndActivate(nick, key));
+            if (resp.status === 'ok') {
+                errEl.style.display = 'none';
+                document.getElementById('onbModal').classList.remove('show');
+                document.getElementById('blockedModal').classList.remove('show');
+                refreshProfileUI();
+            } else {
+                errEl.style.display = 'block';
+                errEl.textContent = resp.message || 'Ошибка активации';
+            }
+        }
+
+        function switchTab(tabId, el) {
+            document.querySelectorAll('.tab-pane').forEach(c => c.classList.remove('active'));
+            document.getElementById('tab-' + tabId).classList.add('active');
+            document.querySelectorAll('.bottom-nav-item').forEach(t => t.classList.remove('active'));
+            el.classList.add('active');
+        }
+
+        function onShizukuCardTap() {
+            if (!window.AndroidBridge) return;
+            AndroidBridge.handleShizukuCardClick();
+            setTimeout(pollState, 300);
+        }
+
+        function selectPreset(presetId) {
+            ['sensa', 'teleport', 'sharp', 'smooth'].forEach(id => {
+                const sw = document.getElementById('sw-' + id);
+                if (sw) sw.classList.toggle('on', id === presetId);
+            });
+            currentChunkPx = presetChunks[presetId] || 30;
+            document.getElementById('lblActivePreset').textContent = presetTitles[presetId] || 'Макс резкая (30 пикс.)';
+            document.getElementById('lblPresetChunk').textContent = 'Чанк: ' + currentChunkPx + ' пикс. (0 мс)';
+
+            if (window.AndroidBridge) {
+                AndroidBridge.selectPreset(presetId);
+                showStatus('Выбран пресет: ' + (presetTitles[presetId] || presetId));
+            }
+        }
+
+        function setStretch(ratio, w, h, btn) {
+            const frame = document.getElementById('stretchVisualFrame');
+            frame.style.width = w + 'px';
+            frame.style.height = h + 'px';
+            frame.textContent = ratio;
+            document.getElementById('stretchCurrentLbl').textContent = ratio;
+
+            btn.parentElement.querySelectorAll('.chip-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+
+            if (window.AndroidBridge) {
+                showStatus(AndroidBridge.applyStretchRatio(ratio));
+            }
+        }
+
+        function resetDisplay() {
+            if (window.AndroidBridge) {
+                showStatus(AndroidBridge.resetDisplayToDefault());
+            }
+        }
+
+        function pickCrosshair(type, btn) {
+            btn.parentElement.querySelectorAll('.chip-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            document.getElementById('crosshairStateLbl').textContent = type.toUpperCase();
+
+            const svg = document.getElementById('crosshairSvg');
+            if (type === 'dot') {
+                svg.innerHTML = '<circle cx="32" cy="32" r="5" fill="#00FF88"/>';
+            } else if (type === 'tshape') {
+                svg.innerHTML =
+                    '<line x1="10" y1="32" x2="25" y2="32" stroke="#00FF88" stroke-width="3" stroke-linecap="round"/>' +
+                    '<line x1="39" y1="32" x2="54" y2="32" stroke="#00FF88" stroke-width="3" stroke-linecap="round"/>' +
+                    '<line x1="32" y1="39" x2="32" y2="54" stroke="#00FF88" stroke-width="3" stroke-linecap="round"/>';
+            } else if (type === 'corners') {
+                svg.innerHTML =
+                    '<path d="M14 24 V14 H24 M40 14 H50 V24 M14 40 V50 H24 M40 50 H50 V40" fill="none" stroke="#00FF88" stroke-width="3" stroke-linecap="round"/>';
+            } else {
+                svg.innerHTML =
+                    '<line x1="8" y1="32" x2="24" y2="32" stroke="#00FF88" stroke-width="3" stroke-linecap="round"/>' +
+                    '<line x1="40" y1="32" x2="56" y2="32" stroke="#00FF88" stroke-width="3" stroke-linecap="round"/>' +
+                    '<line x1="32" y1="8" x2="32" y2="24" stroke="#00FF88" stroke-width="3" stroke-linecap="round"/>' +
+                    '<line x1="32" y1="40" x2="32" y2="56" stroke="#00FF88" stroke-width="3" stroke-linecap="round"/>';
+            }
+
+            if (window.AndroidBridge) {
+                showStatus(AndroidBridge.setCrosshairType(type));
+            }
+        }
+
+        function disableCrosshair() {
+            document.getElementById('crosshairStateLbl').textContent = 'ВЫКЛ';
+            if (window.AndroidBridge) {
+                showStatus(AndroidBridge.setCrosshairType('off'));
+            }
+        }
+
+        function toggleSysSwitch(key) {
+            swState[key] = !swState[key];
+            document.getElementById('sw-sys-' + key).classList.toggle('on', swState[key]);
+            if (!window.AndroidBridge) return;
+
+            if (key === 'fps') {
+                showStatus(AndroidBridge.boostFps(swState.fps));
+            } else if (key === 'ram' && swState.ram) {
+                showStatus(AndroidBridge.cleanRam());
+            } else if (key === 'dnd') {
+                AndroidBridge.setDndMode(swState.dnd);
+                showStatus(swState.dnd ? 'Уведомления заблокированы' : 'Уведомления включены');
+            }
+        }
+
+        function toggleTeleportClick() {
+            if (!window.AndroidBridge) return;
+            if (!AndroidBridge.isShizukuReady()) {
+                AndroidBridge.handleShizukuCardClick();
+                return;
+            }
+            AndroidBridge.toggleTeleport();
+            window.onNativeTeleportSnap();
+            setTimeout(pollState, 150);
+        }
+
+        function rescanScreenClick() {
+            if (!window.AndroidBridge) return;
+            applyScanInfo(AndroidBridge.scanDevice());
+            showStatus('Экран и матрица откалиброваны заново!');
+        }
+
+        function showStatus(msg) {
+            const el = document.getElementById('settingsStatusMsg');
+            el.style.display = 'block';
+            el.textContent = msg;
+            setTimeout(() => { el.style.display = 'none'; }, 3200);
+        }
+
+        function refreshProfileUI() {
+            if (!window.AndroidBridge) return;
+            try {
+                const p = JSON.parse(AndroidBridge.getProfileData());
+                document.getElementById('lblAid').textContent = p.android_id || "-";
+                const preset = p.active_preset || 'teleport';
+                currentChunkPx = p.cfg_chunk || 30;
+                document.getElementById('lblActivePreset').textContent = presetTitles[preset] || 'Макс резкая (30 пикс.)';
+                document.getElementById('lblPresetChunk').textContent = 'Чанк: ' + currentChunkPx + ' пикс. (0 мс)';
+                ['sensa', 'teleport', 'sharp', 'smooth'].forEach(id => {
+                    const sw = document.getElementById('sw-' + id);
+                    if (sw) sw.classList.toggle('on', id === preset);
+                });
+            } catch (e) {}
+        }
+
+        function pollState() {
+            if (!window.AndroidBridge) return;
+            const shReady = AndroidBridge.isShizukuReady();
+            const tpRun = AndroidBridge.isTeleportRunning();
+            const hits = AndroidBridge.getSessionTeleports();
+
+            if (document.getElementById('onbModal').classList.contains('show') && currentOnbStep === 2 && shReady) {
+                goStep(3);
+            }
+
+            document.getElementById('lblSessionHits').textContent = hits;
+
+            const badge = document.getElementById('shizukuBadge');
+            const stateTxt = document.getElementById('shizukuStateText');
+            const hint = document.getElementById('shizukuHint');
+
+            if (shReady) {
+                badge.className = 'neon-badge active';
+                stateTxt.textContent = 'АКТИВЕН';
+                hint.textContent = 'Shizuku подключен и готов к работе';
+            } else {
+                badge.className = 'neon-badge inactive';
+                stateTxt.textContent = 'НЕ АКТИВЕН';
+                hint.textContent = 'Нажмите для выдачи прав или запуска Shizuku';
+            }
+
+            const orb = document.getElementById('orbButton');
+            const orbTitle = document.getElementById('orbTitle');
+            const orbSub = document.getElementById('orbSub');
+
+            if (tpRun) {
+                orb.classList.add('running');
+                orbTitle.innerHTML = 'ОСТАНОВИТЬ<br>ТЕЛЕПОРТ';
+                orbSub.textContent = '⚡ АКТИВЕН (0 МС)';
+            } else {
+                orb.classList.remove('running');
+                orbTitle.innerHTML = 'ЗАПУСТИТЬ<br>ТЕЛЕПОРТ';
+                orbSub.textContent = '👆 НАЖМИТЕ';
+            }
+        }
+
+        const canvas = document.getElementById('touchCanvas');
+        const ctx = canvas.getContext('2d');
+
+        function openTouchTest() {
+            document.getElementById('touchTestModal').classList.add('show');
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight - 65;
+            drawTouchGrid();
+        }
+
+        function closeTouchTest() {
+            document.getElementById('touchTestModal').classList.remove('show');
+        }
+
+        function drawTouchGrid(tx, ty, cx, cy) {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            const step = Math.max(10, Math.min(50, currentChunkPx));
+
+            ctx.strokeStyle = 'rgba(139, 92, 246, 0.18)';
+            ctx.lineWidth = 1;
+            for (let x = 0; x < canvas.width; x += step) {
+                ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, canvas.height); ctx.stroke();
+            }
+            for (let y = 0; y < canvas.height; y += step) {
+                ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(canvas.width, y); ctx.stroke();
+            }
+
+            const zoneX = canvas.width * 0.75;
+            ctx.strokeStyle = '#00D4FF';
+            ctx.lineWidth = 2;
+            ctx.beginPath(); ctx.moveTo(zoneX, 0); ctx.lineTo(zoneX, canvas.height); ctx.stroke();
+
+            if (tx !== undefined && ty !== undefined) {
+                ctx.fillStyle = '#8B5CF6';
+                ctx.beginPath(); ctx.arc(tx, ty, 9, 0, Math.PI * 2); ctx.fill();
+
+                ctx.strokeStyle = '#00FF88';
+                ctx.lineWidth = 3;
+                ctx.beginPath(); ctx.arc(cx, cy, 15, 0, Math.PI * 2); ctx.stroke();
+            }
+        }
+
+        canvas.addEventListener('touchmove', function(e) {
+            e.preventDefault();
+            if (!e.touches.length) return;
+            const rect = canvas.getBoundingClientRect();
+            const x = Math.round(e.touches[0].clientX - rect.left);
+            const y = Math.round(e.touches[0].clientY - rect.top);
+            const step = Math.max(10, Math.min(50, currentChunkPx));
+            const chunkX = Math.floor(x / step) * step + Math.floor(step / 2);
+            const chunkY = Math.floor(y / step) * step + Math.floor(step / 2);
+
+            document.getElementById('touchInfoText').textContent =
+                'X:' + x + ' Y:' + y + ' ➔ Чанк (0 мс): ' + chunkX + ', ' + chunkY;
+            drawTouchGrid(x, y, chunkX, chunkY);
+        }, { passive: false });
+
+        setInterval(pollState, 400);
+        window.onload = initApp;
+    </script>
+</body>
+</html>
