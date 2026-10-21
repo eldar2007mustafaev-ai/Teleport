@@ -2,12 +2,12 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>SO2 Teleport</title>
     <style>
         :root {
-            --bg-amoled: #03050d;
-            --glass-bg: rgba(16, 22, 48, 0.62);
+            --bg-dark: #0a0e1a;
+            --glass-bg: rgba(16, 22, 48, 0.72);
             --glass-border: rgba(139, 92, 246, 0.35);
             --neon-purple: #8B5CF6;
             --neon-cyan: #00D4FF;
@@ -24,17 +24,24 @@
             -webkit-tap-highlight-color: transparent;
         }
 
-        body {
+        html, body {
             margin: 0;
             min-height: 100vh;
-            background-color: var(--bg-amoled);
-            background-image:
-                radial-gradient(circle at 20% 10%, rgba(139, 92, 246, 0.22) 0%, transparent 45%),
-                radial-gradient(circle at 80% 80%, rgba(0, 212, 255, 0.18) 0%, transparent 50%);
+            background-color: #0a0e1a;
             color: var(--text-main);
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-            padding: 18px 16px 105px 16px;
             overflow-x: hidden;
+        }
+
+        body {
+            background-image:
+                radial-gradient(circle at 20% 10%, rgba(139, 92, 246, 0.18) 0%, transparent 45%),
+                radial-gradient(circle at 80% 80%, rgba(0, 212, 255, 0.14) 0%, transparent 50%);
+            /* Отступ сверху от выреза фронтальной камеры / статус-бара (52px + safe-area) */
+            padding-top: max(52px, calc(env(safe-area-inset-top, 24px) + 28px));
+            padding-left: 16px;
+            padding-right: 16px;
+            padding-bottom: 105px;
         }
 
         /* Неоновая вспышка при мгновенном срабатывании телепорта */
@@ -49,7 +56,7 @@
             transition: opacity 0.14s ease-out;
         }
 
-        /* Нижняя панель навигации (Bottom Navigation Bar с иконками) */
+        /* Нижняя панель навигации (Bottom Navigation Bar) */
         .bottom-nav {
             position: fixed;
             bottom: 14px;
@@ -57,7 +64,7 @@
             right: 16px;
             display: grid;
             grid-template-columns: 1fr 1fr;
-            background: rgba(10, 15, 34, 0.88);
+            background: rgba(10, 14, 26, 0.92);
             backdrop-filter: blur(24px);
             -webkit-backdrop-filter: blur(24px);
             border: 1px solid rgba(139, 92, 246, 0.38);
@@ -99,12 +106,12 @@
         .tab-pane { display: none; }
         .tab-pane.active {
             display: block;
-            animation: cardAppear 0.35s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+            animation: cardAppear 0.3s cubic-bezier(0.22, 1, 0.36, 1) forwards;
         }
 
         @keyframes cardAppear {
-            from { opacity: 0; transform: translateY(14px) scale(0.98); }
-            to { opacity: 1; transform: translateY(0) scale(1); }
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
         }
 
         /* Неоновые Glassmorphism карточки */
@@ -117,7 +124,7 @@
             padding: 16px;
             margin-bottom: 14px;
             box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6), inset 0 1px 1px rgba(255, 255, 255, 0.12);
-            transition: transform 0.16s ease, border-color 0.25s ease, box-shadow 0.25s ease;
+            transition: transform 0.14s ease, border-color 0.25s ease;
         }
         .glass-card.clickable { cursor: pointer; }
         .glass-card.clickable:active { transform: scale(0.97); }
@@ -353,14 +360,17 @@
             justify-content: center;
         }
 
-        /* Модальные полноэкранные окна (Онбординг, Блокировка ключа, Обновление) */
+        /* Модальные полноэкранные окна (Онбординг, Блокировка ключа, Обновление) с безопасным отступом от камеры */
         .fullscreen-modal {
             position: fixed;
             inset: 0;
-            background: var(--bg-amoled);
-            background-image: radial-gradient(circle at 50% 20%, rgba(139, 92, 246, 0.3), transparent 60%);
+            background-color: #0a0e1a;
+            background-image: radial-gradient(circle at 50% 20%, rgba(139, 92, 246, 0.25), transparent 60%);
             z-index: 500;
-            padding: 20px;
+            padding-top: max(52px, calc(env(safe-area-inset-top, 24px) + 28px));
+            padding-left: 20px;
+            padding-right: 20px;
+            padding-bottom: 24px;
             display: none;
             flex-direction: column;
             justify-content: center;
@@ -427,18 +437,6 @@
             user-select: text;
             -webkit-user-select: text;
         }
-
-        /* Модальное окно проверки касаний */
-        #touchTestModal {
-            position: fixed;
-            inset: 0;
-            background: #03050d;
-            z-index: 600;
-            display: none;
-            flex-direction: column;
-        }
-        #touchTestModal.show { display: flex; }
-        #touchCanvas { flex: 1; width: 100%; touch-action: none; }
     </style>
 </head>
 <body>
@@ -483,7 +481,7 @@
             <div id="step-1" class="onb-step active">
                 <h2 style="margin:0 0 8px 0; color:var(--neon-cyan);">SO2 TELEPORT</h2>
                 <p style="font-size:13px; color:var(--text-muted); line-height:1.5; margin-bottom:18px;">
-                    Мгновенный чанковый телепорт (0 мс), авто-растяг только в Standoff 2, кастомные прицелы и бустер FPS через Shizuku API.
+                    Мгновенный чанковый телепорт (0 мс), плавающая кнопка растяга для Standoff 2, кастомные прицелы и бустер FPS через Shizuku API.
                 </p>
                 <button class="neon-btn" onclick="goStep(2)">👆 Начать настройку</button>
             </div>
@@ -535,18 +533,6 @@
                 <button class="neon-btn" onclick="activateLicense()">👆 Проверить и войти</button>
             </div>
         </div>
-    </div>
-
-    <!-- ЭКРАН ПРОВЕРКИ КАСАНИЙ -->
-    <div id="touchTestModal">
-        <div class="glass-card" style="border-radius:0; margin:0; display:flex; justify-content:space-between; align-items:center;">
-            <div>
-                <div style="font-size:14px; font-weight:800;">Тест мгновенного телепорта (зона 75%+)</div>
-                <div id="touchInfoText" style="font-size:11px; color:var(--neon-cyan);">Проведите пальцем в правой части экрана</div>
-            </div>
-            <button class="neon-btn secondary" style="width:auto; margin:0; padding:8px 14px;" onclick="closeTouchTest()">Закрыть</button>
-        </div>
-        <canvas id="touchCanvas"></canvas>
     </div>
 
     <!-- ==================== ВКЛАДКА 1: ЗАПУСК ==================== -->
@@ -604,7 +590,7 @@
     <!-- ==================== ВКЛАДКА 2: НАСТРОЙКИ ==================== -->
     <div id="tab-settings" class="tab-pane">
 
-        <!-- 1. ПРЕСЕТЫ РЕЖИМОВ (Названия "Макс резкая (30 пикс.)" и "Телепорт (44 пикс.)" поменяны местами) -->
+        <!-- 1. ПРЕСЕТЫ РЕЖИМОВ -->
         <div class="section-label">Готовые пресеты режимов (0 мс)</div>
 
         <div class="glass-card clickable" onclick="selectPreset('sensa')">
@@ -647,15 +633,27 @@
             </div>
         </div>
 
-        <!-- 2. АВТО-РАСТЯГ ЭКРАНА ТОЛЬКО В STANDOFF 2 (Без разрешения рендера и без DPI) -->
-        <div class="section-label">Авто-растяг экрана (только в Standoff 2)</div>
-        <div class="glass-card glow-cyan">
+        <!-- 2. РАСТЯГ ЭКРАНА И ПЛАВАЮЩАЯ КНОПКА -->
+        <div class="section-label">Растяг экрана (Standoff 2)</div>
+
+        <!-- Переключатель плавающей кнопки растяга -->
+        <div class="glass-card clickable glow-cyan" onclick="toggleFloatingStretchBtn()">
+            <div class="row-between">
+                <div>
+                    <div class="card-title">Плавающая кнопка растяга 📐</div>
+                    <p class="card-sub">Висит поверх окон (срабатывает в Standoff 2, долгое нажатие — скрыть)</p>
+                </div>
+                <div id="sw-float-stretch" class="switch"></div>
+            </div>
+        </div>
+
+        <div class="glass-card">
             <div class="row-between">
                 <span class="card-title" style="margin:0;">Соотношение сторон</span>
                 <span id="stretchCurrentLbl" style="font-size:12px; color:var(--neon-cyan); font-weight:800;">16:9</span>
             </div>
             <p class="card-sub" style="margin-top:4px;">
-                Включается автоматически при входе в Standoff 2 и сбрасывается при выходе
+                Выберите пропорции для плавающей кнопки 📐
             </p>
 
             <div class="stretch-preview-box">
@@ -735,11 +733,6 @@
             </div>
         </div>
 
-        <!-- 5. ДИАГНОСТИКА -->
-        <div class="section-label">Калибровка и диагностика</div>
-        <button class="neon-btn secondary" onclick="rescanScreenClick()">👆 Определить экран заново</button>
-        <button class="neon-btn secondary" onclick="openTouchTest()">👆 Проверить касания (Тест чанков)</button>
-
         <div id="settingsStatusMsg" style="display:none; text-align:center; font-size:12.5px; color:var(--neon-green); margin-top:10px; font-weight:700;"></div>
     </div>
 
@@ -758,10 +751,10 @@
     <script>
         let currentOnbStep = 1;
         let currentChunkPx = 30;
+        let floatingStretchOn = false;
         let swState = { fps: false, ram: false, dnd: false };
         let serverUpdateUrl = "https://t.me/so2_teleport_updates";
 
-        // Переименованные местами пресеты согласно пункту 4
         const presetTitles = {
             'sensa': 'Сенса (18 пикс.)',
             'teleport': 'Макс резкая (30 пикс.)',
@@ -928,6 +921,15 @@
             }
         }
 
+        function toggleFloatingStretchBtn() {
+            if (!window.AndroidBridge) return;
+            floatingStretchOn = !floatingStretchOn;
+            const msg = AndroidBridge.setFloatingStretchButton(floatingStretchOn);
+            floatingStretchOn = AndroidBridge.isFloatingStretchButtonEnabled();
+            document.getElementById('sw-float-stretch').classList.toggle('on', floatingStretchOn);
+            showStatus(msg);
+        }
+
         function setStretch(ratio, w, h, btn) {
             const frame = document.getElementById('stretchVisualFrame');
             frame.style.width = w + 'px';
@@ -1011,12 +1013,6 @@
             setTimeout(pollState, 150);
         }
 
-        function rescanScreenClick() {
-            if (!window.AndroidBridge) return;
-            applyScanInfo(AndroidBridge.scanDevice());
-            showStatus('Экран и матрица откалиброваны заново!');
-        }
-
         function showStatus(msg) {
             const el = document.getElementById('settingsStatusMsg');
             el.style.display = 'block';
@@ -1045,6 +1041,10 @@
             const shReady = AndroidBridge.isShizukuReady();
             const tpRun = AndroidBridge.isTeleportRunning();
             const hits = AndroidBridge.getSessionTeleports();
+            floatingStretchOn = AndroidBridge.isFloatingStretchButtonEnabled();
+
+            const flSw = document.getElementById('sw-float-stretch');
+            if (flSw) flSw.classList.toggle('on', floatingStretchOn);
 
             if (document.getElementById('onbModal').classList.contains('show') && currentOnbStep === 2 && shReady) {
                 goStep(3);
@@ -1081,64 +1081,7 @@
             }
         }
 
-        const canvas = document.getElementById('touchCanvas');
-        const ctx = canvas.getContext('2d');
-
-        function openTouchTest() {
-            document.getElementById('touchTestModal').classList.add('show');
-            canvas.width = window.innerWidth;
-            canvas.height = window.innerHeight - 65;
-            drawTouchGrid();
-        }
-
-        function closeTouchTest() {
-            document.getElementById('touchTestModal').classList.remove('show');
-        }
-
-        function drawTouchGrid(tx, ty, cx, cy) {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            const step = Math.max(10, Math.min(50, currentChunkPx));
-
-            ctx.strokeStyle = 'rgba(139, 92, 246, 0.18)';
-            ctx.lineWidth = 1;
-            for (let x = 0; x < canvas.width; x += step) {
-                ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, canvas.height); ctx.stroke();
-            }
-            for (let y = 0; y < canvas.height; y += step) {
-                ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(canvas.width, y); ctx.stroke();
-            }
-
-            const zoneX = canvas.width * 0.75;
-            ctx.strokeStyle = '#00D4FF';
-            ctx.lineWidth = 2;
-            ctx.beginPath(); ctx.moveTo(zoneX, 0); ctx.lineTo(zoneX, canvas.height); ctx.stroke();
-
-            if (tx !== undefined && ty !== undefined) {
-                ctx.fillStyle = '#8B5CF6';
-                ctx.beginPath(); ctx.arc(tx, ty, 9, 0, Math.PI * 2); ctx.fill();
-
-                ctx.strokeStyle = '#00FF88';
-                ctx.lineWidth = 3;
-                ctx.beginPath(); ctx.arc(cx, cy, 15, 0, Math.PI * 2); ctx.stroke();
-            }
-        }
-
-        canvas.addEventListener('touchmove', function(e) {
-            e.preventDefault();
-            if (!e.touches.length) return;
-            const rect = canvas.getBoundingClientRect();
-            const x = Math.round(e.touches[0].clientX - rect.left);
-            const y = Math.round(e.touches[0].clientY - rect.top);
-            const step = Math.max(10, Math.min(50, currentChunkPx));
-            const chunkX = Math.floor(x / step) * step + Math.floor(step / 2);
-            const chunkY = Math.floor(y / step) * step + Math.floor(step / 2);
-
-            document.getElementById('touchInfoText').textContent =
-                'X:' + x + ' Y:' + y + ' ➔ Чанк (0 мс): ' + chunkX + ', ' + chunkY;
-            drawTouchGrid(x, y, chunkX, chunkY);
-        }, { passive: false });
-
-        setInterval(pollState, 400);
+        setInterval(pollState, 500);
         window.onload = initApp;
     </script>
 </body>
