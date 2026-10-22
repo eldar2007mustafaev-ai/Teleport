@@ -7,8 +7,8 @@
     <style>
         :root {
             --bg-dark: #0a0e1a;
-            --glass-bg: rgba(16, 22, 48, 0.72);
-            --glass-border: rgba(139, 92, 246, 0.35);
+            --glass-bg: rgba(16, 23, 46, 0.78);
+            --glass-border: rgba(139, 92, 246, 0.32);
             --neon-purple: #8B5CF6;
             --neon-cyan: #00D4FF;
             --neon-green: #00FF88;
@@ -35,28 +35,27 @@
 
         body {
             background-image:
-                radial-gradient(circle at 20% 10%, rgba(139, 92, 246, 0.18) 0%, transparent 45%),
-                radial-gradient(circle at 80% 80%, rgba(0, 212, 255, 0.14) 0%, transparent 50%);
-            /* Отступ сверху от выреза фронтальной камеры / статус-бара (52px + safe-area) */
+                radial-gradient(circle at 15% 10%, rgba(139, 92, 246, 0.20) 0%, transparent 45%),
+                radial-gradient(circle at 85% 85%, rgba(0, 212, 255, 0.16) 0%, transparent 50%);
             padding-top: max(52px, calc(env(safe-area-inset-top, 24px) + 28px));
             padding-left: 16px;
             padding-right: 16px;
-            padding-bottom: 105px;
+            padding-bottom: 112px;
         }
 
-        /* Неоновая вспышка при мгновенном срабатывании телепорта */
+        /* Неоновая вспышка при применении профиля */
         #teleportFlash {
             position: fixed;
             inset: 0;
             pointer-events: none;
             z-index: 999;
             opacity: 0;
-            background: radial-gradient(circle, rgba(0, 212, 255, 0.28) 0%, rgba(139, 92, 246, 0.45) 100%);
+            background: radial-gradient(circle, rgba(0, 212, 255, 0.22) 0%, rgba(139, 92, 246, 0.38) 100%);
             box-shadow: inset 0 0 65px var(--neon-cyan);
-            transition: opacity 0.14s ease-out;
+            transition: opacity 0.22s ease-out;
         }
 
-        /* Нижняя панель навигации (Bottom Navigation Bar) */
+        /* Нижняя панель навигации */
         .bottom-nav {
             position: fixed;
             bottom: 14px;
@@ -64,73 +63,91 @@
             right: 16px;
             display: grid;
             grid-template-columns: 1fr 1fr;
-            background: rgba(10, 14, 26, 0.92);
+            background: rgba(10, 14, 26, 0.94);
             backdrop-filter: blur(24px);
             -webkit-backdrop-filter: blur(24px);
             border: 1px solid rgba(139, 92, 246, 0.38);
-            border-radius: 20px;
+            border-radius: 22px;
             padding: 6px;
             z-index: 400;
-            box-shadow: 0 12px 35px rgba(0, 0, 0, 0.8), 0 0 20px rgba(139, 92, 246, 0.25);
+            box-shadow: 0 12px 35px rgba(0, 0, 0, 0.85), 0 0 22px rgba(139, 92, 246, 0.22);
         }
 
         .bottom-nav-item {
-            padding: 9px 0;
+            padding: 10px 0;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
             gap: 4px;
             color: var(--text-muted);
-            border-radius: 14px;
+            border-radius: 16px;
             cursor: pointer;
-            transition: all 0.25s ease;
+            transition: all 0.28s cubic-bezier(0.22, 1, 0.36, 1);
         }
-        .bottom-nav-item:active { transform: scale(0.95); }
-        .bottom-nav-item .nav-icon {
-            font-size: 18px;
-            line-height: 1;
-        }
+        .bottom-nav-item:active { transform: scale(0.94); }
+        .bottom-nav-item .nav-icon { font-size: 18px; line-height: 1; }
         .bottom-nav-item .nav-label {
             font-size: 11.5px;
             font-weight: 800;
             letter-spacing: 0.7px;
         }
         .bottom-nav-item.active {
-            background: linear-gradient(135deg, rgba(139, 92, 246, 0.48), rgba(0, 212, 255, 0.35));
+            background: linear-gradient(135deg, rgba(139, 92, 246, 0.52), rgba(0, 212, 255, 0.38));
             color: #FFFFFF;
-            border: 1px solid rgba(0, 212, 255, 0.5);
-            box-shadow: 0 0 18px rgba(139, 92, 246, 0.45);
+            border: 1px solid rgba(0, 212, 255, 0.55);
+            box-shadow: 0 0 20px rgba(139, 92, 246, 0.45);
         }
 
         .tab-pane { display: none; }
         .tab-pane.active {
             display: block;
-            animation: cardAppear 0.3s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+            animation: paneSlideIn 0.35s cubic-bezier(0.22, 1, 0.36, 1) forwards;
         }
 
-        @keyframes cardAppear {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
+        @keyframes paneSlideIn {
+            from { opacity: 0; transform: translateY(14px) scale(0.985); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
         }
 
-        /* Неоновые Glassmorphism карточки */
+        /* Карточки */
         .glass-card {
             background: var(--glass-bg);
             backdrop-filter: blur(22px);
             -webkit-backdrop-filter: blur(22px);
             border: 1px solid var(--glass-border);
             border-radius: 20px;
-            padding: 16px;
-            margin-bottom: 14px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6), inset 0 1px 1px rgba(255, 255, 255, 0.12);
-            transition: transform 0.14s ease, border-color 0.25s ease;
+            padding: 15px 16px;
+            margin-bottom: 12px;
+            box-shadow: 0 10px 28px rgba(0, 0, 0, 0.55), inset 0 1px 1px rgba(255, 255, 255, 0.10);
+            transition: transform 0.2s cubic-bezier(0.22, 1, 0.36, 1), border-color 0.25s ease, box-shadow 0.25s ease;
         }
         .glass-card.clickable { cursor: pointer; }
-        .glass-card.clickable:active { transform: scale(0.97); }
+        .glass-card.clickable:active { transform: scale(0.975); }
         .glass-card.glow-cyan {
             border-color: rgba(0, 212, 255, 0.45);
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6), 0 0 20px rgba(0, 212, 255, 0.15);
+            box-shadow: 0 10px 28px rgba(0, 0, 0, 0.6), 0 0 20px rgba(0, 212, 255, 0.14);
+        }
+
+        /* Выделение активной карточки пресета */
+        .preset-card {
+            position: relative;
+            overflow: hidden;
+        }
+        .preset-card.selected {
+            border-color: var(--neon-cyan);
+            background: linear-gradient(135deg, rgba(139, 92, 246, 0.24) 0%, rgba(0, 212, 255, 0.16) 100%);
+            box-shadow: 0 8px 26px rgba(0, 212, 255, 0.22), inset 0 0 16px rgba(0, 212, 255, 0.12);
+        }
+        .preset-card.selected::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 4px;
+            background: linear-gradient(180deg, var(--neon-cyan), var(--neon-green));
+            box-shadow: 0 0 12px var(--neon-cyan);
         }
 
         .row-between {
@@ -143,7 +160,7 @@
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 12px;
-            margin-bottom: 14px;
+            margin-bottom: 12px;
         }
 
         .grid-4 {
@@ -153,13 +170,13 @@
         }
 
         .card-title {
-            font-size: 15px;
+            font-size: 14.5px;
             font-weight: 800;
             margin: 0 0 4px 0;
             color: #FFFFFF;
         }
         .card-sub {
-            font-size: 12px;
+            font-size: 11.8px;
             color: var(--text-muted);
             margin: 0;
         }
@@ -168,13 +185,13 @@
             font-size: 11px;
             font-weight: 800;
             text-transform: uppercase;
-            letter-spacing: 1px;
+            letter-spacing: 1.1px;
             color: var(--neon-cyan);
             margin: 16px 0 10px 4px;
             text-shadow: 0 0 10px rgba(0, 212, 255, 0.4);
         }
 
-        /* Статус-бейдж Shizuku */
+        /* Бейдж статуса Shizuku */
         .neon-badge {
             padding: 7px 13px;
             border-radius: 12px;
@@ -183,6 +200,7 @@
             display: inline-flex;
             align-items: center;
             gap: 6px;
+            transition: all 0.3s ease;
         }
         .neon-badge.active {
             background: rgba(0, 255, 136, 0.14);
@@ -197,35 +215,60 @@
             box-shadow: 0 0 15px rgba(255, 46, 147, 0.25);
         }
 
-        /* Центральная неоновая сфера запуска */
+        /* Центральная сфера запуска с профессиональными пульсирующими кольцами */
         .orb-container {
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            padding: 24px 0;
+            padding: 20px 0 16px 0;
             position: relative;
         }
-        .orb-ring {
+        .orb-wrapper {
+            position: relative;
             width: 176px;
             height: 176px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .orb-pulse {
+            position: absolute;
+            inset: -8px;
             border-radius: 50%;
-            background: radial-gradient(circle, rgba(139, 92, 246, 0.35) 0%, rgba(0, 212, 255, 0.15) 60%, transparent 75%);
-            border: 2px solid rgba(0, 212, 255, 0.55);
-            box-shadow: 0 0 35px rgba(139, 92, 246, 0.6), inset 0 0 25px rgba(0, 212, 255, 0.45);
+            border: 1.5px solid rgba(0, 212, 255, 0.35);
+            animation: orbPulseAnim 2.4s cubic-bezier(0.22, 1, 0.36, 1) infinite;
+            pointer-events: none;
+        }
+        .orb-pulse.delay {
+            animation-delay: 1.2s;
+        }
+        @keyframes orbPulseAnim {
+            0% { transform: scale(0.92); opacity: 0.75; }
+            100% { transform: scale(1.22); opacity: 0; }
+        }
+
+        .orb-ring {
+            width: 162px;
+            height: 162px;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(139, 92, 246, 0.38) 0%, rgba(0, 212, 255, 0.16) 62%, rgba(10, 14, 26, 0.9) 100%);
+            border: 2px solid rgba(0, 212, 255, 0.6);
+            box-shadow: 0 0 35px rgba(139, 92, 246, 0.55), inset 0 0 25px rgba(0, 212, 255, 0.4);
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
             cursor: pointer;
-            transition: all 0.25s ease;
+            transition: all 0.3s cubic-bezier(0.22, 1, 0.36, 1);
             position: relative;
+            z-index: 2;
         }
-        .orb-ring:active { transform: scale(0.93); }
+        .orb-ring:active { transform: scale(0.92); }
         .orb-ring.running {
             border-color: var(--neon-green);
-            background: radial-gradient(circle, rgba(0, 255, 136, 0.35) 0%, rgba(0, 212, 255, 0.2) 65%, transparent 80%);
-            box-shadow: 0 0 45px rgba(0, 255, 136, 0.65), inset 0 0 30px rgba(0, 255, 136, 0.45);
+            background: radial-gradient(circle, rgba(0, 255, 136, 0.42) 0%, rgba(0, 212, 255, 0.22) 65%, rgba(10, 14, 26, 0.9) 100%);
+            box-shadow: 0 0 48px rgba(0, 255, 136, 0.65), inset 0 0 32px rgba(0, 255, 136, 0.45);
         }
         .orb-title {
             font-size: 14px;
@@ -238,11 +281,14 @@
         .orb-sub {
             font-size: 11px;
             color: var(--neon-cyan);
-            margin-top: 5px;
-            font-weight: 700;
+            margin-top: 6px;
+            font-weight: 800;
+        }
+        .orb-ring.running .orb-sub {
+            color: var(--neon-green);
         }
 
-        /* Неоновые кнопки */
+        /* Кнопки */
         .neon-btn {
             width: 100%;
             padding: 15px 18px;
@@ -259,7 +305,7 @@
             cursor: pointer;
             margin-bottom: 10px;
             box-shadow: 0 6px 22px rgba(139, 92, 246, 0.45);
-            transition: transform 0.14s ease, box-shadow 0.2s ease;
+            transition: transform 0.15s ease, box-shadow 0.2s ease;
         }
         .neon-btn:active { transform: scale(0.96); }
         .neon-btn.secondary {
@@ -268,7 +314,6 @@
             box-shadow: 0 4px 14px rgba(0, 0, 0, 0.4);
         }
 
-        /* Мини-кнопки выбора (4:3, 3:2, 16:10, 16:9, прицелы) */
         .chip-btn {
             padding: 11px 6px;
             border-radius: 12px;
@@ -279,7 +324,7 @@
             font-weight: 800;
             text-align: center;
             cursor: pointer;
-            transition: all 0.2s ease;
+            transition: all 0.22s ease;
         }
         .chip-btn:active { transform: scale(0.94); }
         .chip-btn.active {
@@ -289,7 +334,7 @@
             box-shadow: 0 0 14px rgba(0, 212, 255, 0.4);
         }
 
-        /* Переключатели (Toggle Switches) */
+        /* Переключатели */
         .switch {
             position: relative;
             width: 50px;
@@ -297,7 +342,7 @@
             background: rgba(15, 23, 42, 0.9);
             border: 1px solid rgba(139, 92, 246, 0.4);
             border-radius: 28px;
-            transition: all 0.25s ease;
+            transition: all 0.28s cubic-bezier(0.22, 1, 0.36, 1);
             flex-shrink: 0;
         }
         .switch::after {
@@ -309,7 +354,7 @@
             height: 19px;
             background: #CBD5E1;
             border-radius: 50%;
-            transition: transform 0.25s ease, background 0.25s ease;
+            transition: transform 0.28s cubic-bezier(0.22, 1, 0.36, 1), background 0.25s ease;
         }
         .switch.on {
             background: linear-gradient(90deg, var(--neon-purple), var(--neon-cyan));
@@ -321,7 +366,6 @@
             background: #FFFFFF;
         }
 
-        /* Превью растяга экрана */
         .stretch-preview-box {
             height: 110px;
             background: rgba(6, 10, 26, 0.85);
@@ -348,7 +392,6 @@
             height: 84px;
         }
 
-        /* Превью кастомного прицела */
         .crosshair-preview-box {
             height: 105px;
             background: radial-gradient(circle, rgba(0, 255, 136, 0.14) 0%, rgba(6, 10, 26, 0.9) 75%);
@@ -360,7 +403,6 @@
             justify-content: center;
         }
 
-        /* Модальные полноэкранные окна (Онбординг, Блокировка ключа, Обновление) с безопасным отступом от камеры */
         .fullscreen-modal {
             position: fixed;
             inset: 0;
@@ -379,7 +421,7 @@
         .fullscreen-modal.show { display: flex; }
         .onb-box { width: 100%; max-width: 410px; text-align: center; }
         .onb-step { display: none; text-align: center; }
-        .onb-step.active { display: block; animation: cardAppear 0.3s ease forwards; }
+        .onb-step.active { display: block; animation: paneSlideIn 0.3s ease forwards; }
 
         .neon-scanner {
             position: relative;
@@ -441,10 +483,9 @@
 </head>
 <body>
 
-    <!-- Неоновая вспышка при срабатывании телепорта -->
     <div id="teleportFlash"></div>
 
-    <!-- ПОЛНОЭКРАННАЯ БЛОКИРОВКА ЕСЛИ КЛЮЧ ИСТЁК ИЛИ УДАЛЁН ИЗ keys.json -->
+    <!-- ПОЛНОЭКРАННАЯ БЛОКИРОВКА КЛЮЧА -->
     <div id="blockedModal" class="fullscreen-modal" style="z-index: 800;">
         <div class="glass-card onb-box" style="border-color: var(--neon-pink); box-shadow: 0 0 35px rgba(255, 46, 147, 0.35);">
             <div style="font-size: 46px; margin-bottom: 10px;">🚫</div>
@@ -452,16 +493,12 @@
             <p style="font-size: 13px; color: var(--text-muted); line-height: 1.5; margin-bottom: 20px;">
                 Доступ к функциям SO2 Teleport приостановлен. Приобретите новый ключ или продлите подписку в официальном Telegram-боте.
             </p>
-            <button class="neon-btn" onclick="openTelegramBot()">
-                💳 Продлить в Telegram
-            </button>
-            <button class="neon-btn secondary" style="margin-bottom:0;" onclick="reEnterNewKeyFromBlocked()">
-                🔑 Ввести новый ключ
-            </button>
+            <button class="neon-btn" onclick="openTelegramBot()">💳 Продлить в Telegram</button>
+            <button class="neon-btn secondary" style="margin-bottom:0;" onclick="reEnterNewKeyFromBlocked()">🔑 Ввести новый ключ</button>
         </div>
     </div>
 
-    <!-- ДИАЛОГ ОБНОВЛЕНИЯ ПРИЛОЖЕНИЯ -->
+    <!-- ДИАЛОГ ОБНОВЛЕНИЯ -->
     <div id="updateModal" class="fullscreen-modal" style="z-index: 750;">
         <div class="glass-card glow-cyan onb-box">
             <div style="font-size: 46px; margin-bottom: 10px;">🚀</div>
@@ -469,19 +506,17 @@
             <p id="updateVersionInfo" style="font-size: 13px; color: var(--text-muted); line-height: 1.5; margin-bottom: 20px;">
                 Доступна новая сборка SO2 Teleport с улучшенной стабильностью.
             </p>
-            <button class="neon-btn" onclick="openUpdateChannel()">
-                📥 Скачать в Telegram-канале
-            </button>
+            <button class="neon-btn" onclick="openUpdateChannel()">📥 Скачать в Telegram-канале</button>
         </div>
     </div>
 
-    <!-- ОНБОРДИНГ С НЕОНОВЫМ СКАНИРОВАНИЕМ -->
+    <!-- ОНБОРДИНГ -->
     <div id="onbModal" class="fullscreen-modal">
         <div class="glass-card glow-cyan onb-box">
             <div id="step-1" class="onb-step active">
                 <h2 style="margin:0 0 8px 0; color:var(--neon-cyan);">SO2 TELEPORT</h2>
                 <p style="font-size:13px; color:var(--text-muted); line-height:1.5; margin-bottom:18px;">
-                    Мгновенный чанковый телепорт (0 мс), плавающая кнопка растяга для Standoff 2, кастомные прицелы и бустер FPS через Shizuku API.
+                    Системный телепорт сенсы через Shizuku (aShell без фантомных нажатий), плавающая кнопка растяга с корзиной и бустер FPS.
                 </p>
                 <button class="neon-btn" onclick="goStep(2)">👆 Начать настройку</button>
             </div>
@@ -517,7 +552,7 @@
                     <div class="row-between" style="margin-bottom:6px;"><span class="card-sub">Модель:</span><b id="scModel" style="font-size:13px;">-</b></div>
                     <div class="row-between" style="margin-bottom:6px;"><span class="card-sub">Разрешение и DPI:</span><b id="scRes" style="font-size:13px;">-</b></div>
                     <div class="row-between" style="margin-bottom:6px;"><span class="card-sub">Частота экрана:</span><b id="scHz" style="font-size:13px; color:var(--neon-cyan);">-</b></div>
-                    <div class="row-between"><span class="card-sub">Зона телепорта:</span><b style="font-size:13px; color:var(--neon-green);">Правая (от 75%)</b></div>
+                    <div class="row-between"><span class="card-sub">Движок сенсы:</span><b style="font-size:13px; color:var(--neon-green);">Shizuku aShell (Без перехвата)</b></div>
                 </div>
                 <button class="neon-btn" onclick="goStep(5)">👆 Далее к активации</button>
             </div>
@@ -535,18 +570,18 @@
         </div>
     </div>
 
-    <!-- ==================== ВКЛАДКА 1: ЗАПУСК ==================== -->
+    <!-- ==================== ВКЛАДКА 1: ЗАПУСК (ГЛАВНЫЙ ЭКРАН + ПРЕСЕТЫ) ==================== -->
     <div id="tab-launch" class="tab-pane active">
 
         <!-- Статус Shizuku -->
         <div class="glass-card clickable glow-cyan" onclick="onShizukuCardTap()">
             <div class="row-between">
                 <div>
-                    <div class="card-title">Статус Shizuku</div>
+                    <div class="card-title">Статус Shizuku Engine</div>
                     <p id="shizukuHint" class="card-sub">Shizuku подключен и готов к работе</p>
                 </div>
                 <div id="shizukuBadge" class="neon-badge inactive">
-                    <span>👆</span>
+                    <span>⚡</span>
                     <span id="shizukuStateText">НЕ АКТИВЕН</span>
                 </div>
             </div>
@@ -555,34 +590,81 @@
         <!-- Две карточки метрик -->
         <div class="grid-2">
             <div class="glass-card" style="margin-bottom:0;">
-                <span class="card-sub">Активный пресет</span>
-                <div id="lblActivePreset" style="font-size:16px; font-weight:900; color:var(--neon-cyan); margin-top:4px;">Макс резкая (30 пикс.)</div>
-                <span id="lblPresetChunk" style="font-size:11px; color:var(--neon-green);">Чанк: 30 пикс. (0 мс)</span>
+                <span class="card-sub">Выбранный конфиг</span>
+                <div id="lblActivePreset" style="font-size:15px; font-weight:900; color:var(--neon-cyan); margin-top:4px;">Макс резкая (30 пикс.)</div>
+                <span id="lblPresetChunk" style="font-size:11px; color:var(--neon-green);">aShell Mode • 0 мс</span>
             </div>
             <div class="glass-card" style="margin-bottom:0;">
-                <span class="card-sub">Прыжков за сессию</span>
-                <div id="lblSessionHits" style="font-size:17px; font-weight:900; color:#FFFFFF; margin-top:4px;">0</div>
-                <span style="font-size:11px; color:var(--neon-purple);">Правая зона (от 75%)</span>
+                <span class="card-sub">Режим ввода</span>
+                <div style="font-size:15px; font-weight:900; color:#FFFFFF; margin-top:4px;">Чистый тач</div>
+                <span style="font-size:11px; color:var(--neon-purple);">Без фантомных нажатий</span>
             </div>
         </div>
 
-        <!-- Параметры экрана -->
-        <div class="glass-card">
+        <!-- Центральная неоновая сфера запуска телепорта с пульсацией -->
+        <div class="orb-container">
+            <div class="orb-wrapper">
+                <div class="orb-pulse"></div>
+                <div class="orb-pulse delay"></div>
+                <div id="orbButton" class="orb-ring" onclick="toggleTeleportClick()">
+                    <div id="orbTitle" class="orb-title">ЗАПУСТИТЬ<br>ТЕЛЕПОРТ</div>
+                    <div id="orbSub" class="orb-sub">👆 НАЖМИТЕ</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ПРЕСЕТЫ СЕНСЫ НА ГЛАВНОМ ЭКРАНЕ -->
+        <div class="section-label">Конфигурации сенсы (aShell Shizuku)</div>
+
+        <div id="card-sensa" class="glass-card clickable preset-card" onclick="selectPreset('sensa')">
+            <div class="row-between">
+                <div>
+                    <div class="card-title">⚡ Сенса (18 пикс.)</div>
+                    <p class="card-sub">Ускоренный отклик тача и точная доводка</p>
+                </div>
+                <div id="sw-sensa" class="switch"></div>
+            </div>
+        </div>
+
+        <div id="card-teleport" class="glass-card clickable preset-card selected" onclick="selectPreset('teleport')">
+            <div class="row-between">
+                <div>
+                    <div class="card-title">🔥 Макс резкая (30 пикс.)</div>
+                    <p class="card-sub">Агрессивный отклик без задержки сенсора</p>
+                </div>
+                <div id="sw-teleport" class="switch on"></div>
+            </div>
+        </div>
+
+        <div id="card-sharp" class="glass-card clickable preset-card" onclick="selectPreset('sharp')">
+            <div class="row-between">
+                <div>
+                    <div class="card-title">🚀 Телепорт (44 пикс.)</div>
+                    <p class="card-sub">Максимальная скорость указателя и 0 тач-слоп</p>
+                </div>
+                <div id="sw-sharp" class="switch"></div>
+            </div>
+        </div>
+
+        <div id="card-smooth" class="glass-card clickable preset-card" onclick="selectPreset('smooth')">
+            <div class="row-between">
+                <div>
+                    <div class="card-title">🌊 Плавная (12 пикс.)</div>
+                    <p class="card-sub">Мягкая стабилизация для плавного зажима</p>
+                </div>
+                <div id="sw-smooth" class="switch"></div>
+            </div>
+        </div>
+
+        <!-- Инфо об экране и HWID -->
+        <div class="glass-card" style="margin-top: 6px;">
             <div class="row-between" style="margin-bottom:6px;">
                 <span class="card-sub">Параметры экрана:</span>
-                <b id="lblScreenInfo" style="font-size:12.5px; color:var(--neon-cyan);">-</b>
+                <b id="lblScreenInfo" style="font-size:12px; color:var(--neon-cyan);">-</b>
             </div>
             <div class="row-between">
                 <span class="card-sub">Привязка Android ID:</span>
                 <b id="lblAid" style="font-size:12px; color:var(--text-muted);">-</b>
-            </div>
-        </div>
-
-        <!-- Центральная неоновая сфера запуска телепорта -->
-        <div class="orb-container">
-            <div id="orbButton" class="orb-ring" onclick="toggleTeleportClick()">
-                <div id="orbTitle" class="orb-title">ЗАПУСТИТЬ<br>ТЕЛЕПОРТ</div>
-                <div id="orbSub" class="orb-sub">👆 НАЖМИТЕ</div>
             </div>
         </div>
     </div>
@@ -590,58 +672,14 @@
     <!-- ==================== ВКЛАДКА 2: НАСТРОЙКИ ==================== -->
     <div id="tab-settings" class="tab-pane">
 
-        <!-- 1. ПРЕСЕТЫ РЕЖИМОВ -->
-        <div class="section-label">Готовые пресеты режимов (0 мс)</div>
-
-        <div class="glass-card clickable" onclick="selectPreset('sensa')">
-            <div class="row-between">
-                <div>
-                    <div class="card-title">Сенса (18 пикс.)</div>
-                    <p class="card-sub">Ускоренный отклик и точный микро-довод</p>
-                </div>
-                <div id="sw-sensa" class="switch"></div>
-            </div>
-        </div>
-
-        <div class="glass-card clickable" onclick="selectPreset('teleport')">
-            <div class="row-between">
-                <div>
-                    <div class="card-title">Макс резкая (30 пикс.)</div>
-                    <p class="card-sub">Мгновенный чанковый прыжок в центр</p>
-                </div>
-                <div id="sw-teleport" class="switch on"></div>
-            </div>
-        </div>
-
-        <div class="glass-card clickable" onclick="selectPreset('sharp')">
-            <div class="row-between">
-                <div>
-                    <div class="card-title">Телепорт (44 пикс.)</div>
-                    <p class="card-sub">Мгновенная жесткая фиксация на цели</p>
-                </div>
-                <div id="sw-sharp" class="switch"></div>
-            </div>
-        </div>
-
-        <div class="glass-card clickable" onclick="selectPreset('smooth')">
-            <div class="row-between">
-                <div>
-                    <div class="card-title">Плавная (12 пикс.)</div>
-                    <p class="card-sub">Мягкая микро-стабилизация трекинга</p>
-                </div>
-                <div id="sw-smooth" class="switch"></div>
-            </div>
-        </div>
-
-        <!-- 2. РАСТЯГ ЭКРАНА И ПЛАВАЮЩАЯ КНОПКА -->
+        <!-- 1. РАСТЯГ ЭКРАНА И ПЛАВАЮЩАЯ КНОПКА С КОРЗИНОЙ -->
         <div class="section-label">Растяг экрана (Standoff 2)</div>
 
-        <!-- Переключатель плавающей кнопки растяга -->
         <div class="glass-card clickable glow-cyan" onclick="toggleFloatingStretchBtn()">
             <div class="row-between">
                 <div>
                     <div class="card-title">Плавающая кнопка растяга 📐</div>
-                    <p class="card-sub">Висит поверх окон (срабатывает в Standoff 2, долгое нажатие — скрыть)</p>
+                    <p class="card-sub">Потяните кнопку вниз экрана в корзину 🗑️, чтобы удалить её</p>
                 </div>
                 <div id="sw-float-stretch" class="switch"></div>
             </div>
@@ -672,7 +710,7 @@
             </button>
         </div>
 
-        <!-- 3. КАСТОМНЫЕ ПРИЦЕЛЫ -->
+        <!-- 2. КАСТОМНЫЕ ПРИЦЕЛЫ -->
         <div class="section-label">Кастомный прицел поверх игры</div>
         <div class="glass-card">
             <div class="row-between">
@@ -700,7 +738,7 @@
             </button>
         </div>
 
-        <!-- 4. БУСТЕР FPS И ОПТИМИЗАЦИЯ -->
+        <!-- 3. БУСТЕР FPS И СИСТЕМА -->
         <div class="section-label">Бустер FPS и система</div>
 
         <div class="glass-card clickable" onclick="toggleSysSwitch('fps')">
@@ -736,7 +774,7 @@
         <div id="settingsStatusMsg" style="display:none; text-align:center; font-size:12.5px; color:var(--neon-green); margin-top:10px; font-weight:700;"></div>
     </div>
 
-    <!-- НИЖНЯЯ ПАНЕЛЬ НАВИГАЦИИ (Bottom Navigation Bar) -->
+    <!-- НИЖНЯЯ НАВИГАЦИЯ -->
     <div class="bottom-nav">
         <div class="bottom-nav-item active" onclick="switchTab('launch', this)">
             <span class="nav-icon">⚡</span>
@@ -771,14 +809,13 @@
         window.onNativeTeleportSnap = function() {
             const fl = document.getElementById('teleportFlash');
             fl.style.opacity = '1';
-            setTimeout(() => { fl.style.opacity = '0'; }, 120);
+            setTimeout(() => { fl.style.opacity = '0'; }, 160);
         };
 
         function initApp() {
             if (!window.AndroidBridge) return;
             applyScanInfo(AndroidBridge.scanDevice());
 
-            // 1. Проверка обновлений (GET /api/get_version)
             try {
                 const verInfo = JSON.parse(AndroidBridge.checkVersionOnStartup());
                 if (verInfo.update_required) {
@@ -790,7 +827,6 @@
                 }
             } catch (e) {}
 
-            // 2. Проверка онбординга или валидности активированного ключа
             if (AndroidBridge.isOnboardingRequired()) {
                 document.getElementById('onbModal').classList.add('show');
                 goStep(1);
@@ -864,7 +900,7 @@
                 pctTxt.textContent = p + '%';
 
                 if (p < 35) stageTxt.textContent = "Анализ матрицы экрана и плотности DPI...";
-                else if (p < 75) stageTxt.textContent = "Калибровка микро-чанков правой зоны (от 75%)...";
+                else if (p < 75) stageTxt.textContent = "Подготовка системных параметров Shizuku aShell...";
                 else stageTxt.textContent = "Проверка частоты обновления сенсора...";
 
                 if (p >= 100) {
@@ -909,15 +945,17 @@
         function selectPreset(presetId) {
             ['sensa', 'teleport', 'sharp', 'smooth'].forEach(id => {
                 const sw = document.getElementById('sw-' + id);
+                const card = document.getElementById('card-' + id);
                 if (sw) sw.classList.toggle('on', id === presetId);
+                if (card) card.classList.toggle('selected', id === presetId);
             });
             currentChunkPx = presetChunks[presetId] || 30;
             document.getElementById('lblActivePreset').textContent = presetTitles[presetId] || 'Макс резкая (30 пикс.)';
-            document.getElementById('lblPresetChunk').textContent = 'Чанк: ' + currentChunkPx + ' пикс. (0 мс)';
+            document.getElementById('lblPresetChunk').textContent = 'aShell Mode • ' + currentChunkPx + ' пикс.';
 
             if (window.AndroidBridge) {
                 AndroidBridge.selectPreset(presetId);
-                showStatus('Выбран пресет: ' + (presetTitles[presetId] || presetId));
+                window.onNativeTeleportSnap();
             }
         }
 
@@ -1028,10 +1066,12 @@
                 const preset = p.active_preset || 'teleport';
                 currentChunkPx = p.cfg_chunk || 30;
                 document.getElementById('lblActivePreset').textContent = presetTitles[preset] || 'Макс резкая (30 пикс.)';
-                document.getElementById('lblPresetChunk').textContent = 'Чанк: ' + currentChunkPx + ' пикс. (0 мс)';
+                document.getElementById('lblPresetChunk').textContent = 'aShell Mode • ' + currentChunkPx + ' пикс.';
                 ['sensa', 'teleport', 'sharp', 'smooth'].forEach(id => {
                     const sw = document.getElementById('sw-' + id);
+                    const card = document.getElementById('card-' + id);
                     if (sw) sw.classList.toggle('on', id === preset);
+                    if (card) card.classList.toggle('selected', id === preset);
                 });
             } catch (e) {}
         }
@@ -1040,7 +1080,6 @@
             if (!window.AndroidBridge) return;
             const shReady = AndroidBridge.isShizukuReady();
             const tpRun = AndroidBridge.isTeleportRunning();
-            const hits = AndroidBridge.getSessionTeleports();
             floatingStretchOn = AndroidBridge.isFloatingStretchButtonEnabled();
 
             const flSw = document.getElementById('sw-float-stretch');
@@ -1050,8 +1089,6 @@
                 goStep(3);
             }
 
-            document.getElementById('lblSessionHits').textContent = hits;
-
             const badge = document.getElementById('shizukuBadge');
             const stateTxt = document.getElementById('shizukuStateText');
             const hint = document.getElementById('shizukuHint');
@@ -1059,7 +1096,7 @@
             if (shReady) {
                 badge.className = 'neon-badge active';
                 stateTxt.textContent = 'АКТИВЕН';
-                hint.textContent = 'Shizuku подключен и готов к работе';
+                hint.textContent = 'Shizuku подключен • Системный ввод готов';
             } else {
                 badge.className = 'neon-badge inactive';
                 stateTxt.textContent = 'НЕ АКТИВЕН';
@@ -1073,7 +1110,7 @@
             if (tpRun) {
                 orb.classList.add('running');
                 orbTitle.innerHTML = 'ОСТАНОВИТЬ<br>ТЕЛЕПОРТ';
-                orbSub.textContent = '⚡ АКТИВЕН (0 МС)';
+                orbSub.textContent = '⚡ АКТИВЕН (ASHELL)';
             } else {
                 orb.classList.remove('running');
                 orbTitle.innerHTML = 'ЗАПУСТИТЬ<br>ТЕЛЕПОРТ';
