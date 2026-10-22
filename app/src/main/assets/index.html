@@ -255,7 +255,7 @@
             100% { transform: rotate(360deg); }
         }
 
-        /* Овальная подпись статуса под орбом (как "• VYB is observing") */
+        /* Овальная подпись статуса под орбом */
         .status-capsule {
             margin-top: 14px;
             padding: 6px 16px;
@@ -324,7 +324,6 @@
             transform: scale(0.95);
         }
 
-        /* Светящийся неоновый блик на рамке карточки (как на фото VYB) */
         .vyb-card::before {
             content: '';
             position: absolute;
@@ -416,7 +415,6 @@
             transition: width 0.35s ease;
         }
 
-        /* Ползунок для карточки "Настраиваемая" и настроек (SeekBar) */
         .neon-seekbar {
             -webkit-appearance: none;
             appearance: none;
@@ -439,7 +437,7 @@
             cursor: pointer;
         }
 
-        /* ПЕРЕКЛЮЧАТЕЛЬ В СТИЛЕ ВИДЕО (Work / Sleep Glow Pill) */
+        /* ПЕРЕКЛЮЧАТЕЛЬ */
         .glow-toggle {
             position: relative;
             width: 68px;
@@ -474,7 +472,6 @@
             box-shadow: 0 0 18px #FBBF24, 0 0 0 6px rgba(251, 191, 36, 0.24);
         }
 
-        /* Увеверсальная широкая карточка для Настроек и Профиля */
         .wide-glass-card {
             background: var(--card-bg);
             backdrop-filter: blur(22px);
@@ -536,7 +533,7 @@
         }
         .action-btn:active { transform: scale(0.96); }
 
-        /* НИЖНЯЯ НАВИГАЦИЯ (BottomNavigationView В СТИЛЕ VYB) */
+        /* НИЖНЯЯ НАВИГАЦИЯ */
         .vyb-bottom-nav {
             position: fixed;
             bottom: 16px;
@@ -584,7 +581,6 @@
             text-shadow: 0 0 10px rgba(56, 249, 215, 0.6);
         }
 
-        /* Центральная круглая светящаяся кнопка сенсы в BottomNavigationView */
         .nav-center-orb-wrap {
             display: flex;
             justify-content: center;
@@ -617,7 +613,6 @@
             box-shadow: 0 0 32px rgba(56, 249, 215, 0.95), inset 0 0 18px #FFFFFF;
         }
 
-        /* Модальные окна авторизации / обновлений */
         .modal-overlay {
             position: fixed;
             inset: 0;
@@ -687,7 +682,6 @@
 </head>
 <body>
 
-    <!-- Полноэкранный видео-фон с капсулами + аппаратный Canvas-рендерер -->
     <div class="bg-layer">
         <video id="bgVideo" autoplay loop muted playsinline preload="auto">
             <source src="bg_capsules.mp4" type="video/mp4">
@@ -696,10 +690,9 @@
         <div class="bg-vignette"></div>
     </div>
 
-    <!-- Всплывающее уведомление -->
     <div id="toastBanner">Готово</div>
 
-    <!-- Модальное окно первичной активации ключа -->
+    <!-- Модальное окно активации -->
     <div id="authModal" class="modal-overlay">
         <div class="modal-card">
             <h2 style="font-size: 20px; margin-bottom: 6px;">Активация SO2 Teleport</h2>
@@ -710,6 +703,7 @@
             <input type="text" id="inpKey" class="vyb-input" placeholder="Ключ TP-XXX-NNNNNN" maxlength="16" style="text-transform: uppercase;">
             <div id="authError" style="display:none; color: var(--vyb-pink); font-size: 12px; font-weight: 700; margin-bottom: 10px;"></div>
             <div class="action-btn" onclick="submitLicense()">Активировать и войти</div>
+            <!-- ИСПРАВЛЕННАЯ ССЫЛКА НА ТВОЕГО БОТА -->
             <div class="action-btn" style="background: rgba(255,255,255,0.06); border-color: rgba(255,255,255,0.15);" onclick="openTelegramBot()">
                 Купить ключ в Telegram
             </div>
@@ -723,6 +717,7 @@
             <p style="font-size: 13px; color: var(--text-secondary); margin-bottom: 18px;">
                 Ваша 30-дневная лицензия завершилась. Продлите подписку в официальном боте.
             </p>
+            <!-- ИСПРАВЛЕННАЯ ССЫЛКА НА ТВОЕГО БОТА -->
             <div class="action-btn" onclick="openTelegramBot()">Продлить в Telegram</div>
             <div class="action-btn" style="background: rgba(255,255,255,0.06); border-color: rgba(255,255,255,0.15);" onclick="showReEnterKey()">
                 Ввести новый ключ
@@ -732,7 +727,6 @@
 
     <div class="app-shell">
 
-        <!-- Верхняя шапка -->
         <div class="top-header">
             <div class="brand-logo">SO2 TELEPORT</div>
             <div id="shizukuPill" class="shizuku-pill" onclick="requestShizukuNow()">
@@ -741,10 +735,8 @@
             </div>
         </div>
 
-        <!-- ==================== ЭКРАН 1: ЦЕНТРАЛЬНЫЙ (ОРБ + РЕЖИМЫ) ==================== -->
+        <!-- ЭКРАН 1: ГЛАВНЫЙ -->
         <div id="screen-home" class="screen-pane active">
-
-            <!-- Большой светящийся круг-орб сверху по центру (как на фото VYB) -->
             <div class="orb-section">
                 <div id="mainOrb" class="vyb-orb-wrapper" onclick="toggleMainTeleport()">
                     <div class="orb-aura"></div>
@@ -770,10 +762,7 @@
                 </div>
             </div>
 
-            <!-- Сетка 2x2 карточек режимов телепорта (как на фото VYB) -->
             <div class="vyb-grid">
-
-                <!-- 1. Макс резкая -->
                 <div id="card-teleport" class="vyb-card selected" onclick="selectModeCard('teleport', 38)">
                     <div>
                         <div class="card-top-row">
@@ -788,7 +777,6 @@
                     </div>
                 </div>
 
-                <!-- 2. Плавная -->
                 <div id="card-smooth" class="vyb-card" onclick="selectModeCard('smooth', 14)">
                     <div>
                         <div class="card-top-row">
@@ -803,7 +791,6 @@
                     </div>
                 </div>
 
-                <!-- 3. Средняя -->
                 <div id="card-sensa" class="vyb-card" onclick="selectModeCard('sensa', 24)">
                     <div>
                         <div class="card-top-row">
@@ -818,7 +805,6 @@
                     </div>
                 </div>
 
-                <!-- 4. Настраиваемая -->
                 <div id="card-sharp" class="vyb-card" onclick="selectModeCard('sharp', customSensVal)">
                     <div>
                         <div class="card-top-row">
@@ -836,15 +822,13 @@
                                oninput="onCustomSensSlide(this.value)">
                     </div>
                 </div>
-
             </div>
         </div>
 
-        <!-- ==================== ЭКРАН 2: НАСТРОЙКИ (СЛЕВА) ==================== -->
+        <!-- ЭКРАН 2: НАСТРОЙКИ -->
         <div id="screen-settings" class="screen-pane">
             <h2 style="font-size: 20px; margin: 8px 0 14px 0;">Настройки и прицел</h2>
 
-            <!-- Seekbar растяжки прицела + выбор типа прицела -->
             <div class="wide-glass-card">
                 <div class="row-between">
                     <div>
@@ -864,7 +848,6 @@
                 </div>
             </div>
 
-            <!-- Плавающая кнопка растяга с анимацией тумблера из видео -->
             <div class="wide-glass-card">
                 <div class="row-between">
                     <div>
@@ -886,7 +869,6 @@
                 <div class="action-btn" onclick="resetScreenNow()">Сбросить разрешение по умолчанию</div>
             </div>
 
-            <!-- Бустер FPS и блокировка уведомлений -->
             <div class="wide-glass-card">
                 <div class="row-between" style="margin-bottom: 14px;">
                     <div>
@@ -910,7 +892,7 @@
             </div>
         </div>
 
-        <!-- ==================== ЭКРАН 3: ПРОФИЛЬ (СПРАВА, БЕЗ ПОКАЗА КЛЮЧА) ==================== -->
+        <!-- ЭКРАН 3: ПРОФИЛЬ -->
         <div id="screen-profile" class="screen-pane">
             <h2 style="font-size: 20px; margin: 8px 0 14px 0;">Профиль игрока</h2>
 
@@ -947,12 +929,13 @@
                 </div>
             </div>
 
+            <!-- ИСПРАВЛЕННАЯ ССЫЛКА НА ТВОЕГО БОТА -->
             <div class="action-btn" onclick="openTelegramBot()">Продлить подписку в Telegram</div>
         </div>
 
     </div>
 
-    <!-- НИЖНЯЯ НАВИГАЦИЯ (BottomNavigationView: Слева Настройки, Центр Сенса, Справа Профиль) -->
+    <!-- НИЖНЯЯ НАВИГАЦИЯ -->
     <div class="vyb-bottom-nav">
         <div id="nav-settings" class="nav-side-btn" onclick="switchScreen('settings')">
             <svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round">
@@ -984,7 +967,6 @@
         let dndEnabled = false;
         let floatStretchEnabled = false;
 
-        /* 1. Аппаратный рендер парящих капсул и плюсиков (фолбэк и дополнение к bg_capsules.mp4) */
         (function initCapsuleCanvas() {
             const canvas = document.getElementById('bgCapsulesCanvas');
             const ctx = canvas.getContext('2d');
@@ -1073,7 +1055,6 @@
             document.getElementById('nav-profile').classList.toggle('active', target === 'profile');
         }
 
-        /* Нажатие на центральную кнопку в нижней навигации */
         function onCenterNavOrbClick() {
             if (currentScreen !== 'home') {
                 switchScreen('home');
@@ -1170,9 +1151,10 @@
             }
         }
 
+        /* ИСПРАВЛЕННАЯ ССЫЛКА НА ТВОЕГО ТЕЛЕГРАМ-БОТА */
         function openTelegramBot() {
             if (window.AndroidBridge) {
-                AndroidBridge.openExternalLink('https://t.me/so2_teleport_bot');
+                AndroidBridge.openExternalLink('https://t.me/SO2TeleportShop_bot');
             }
         }
 
@@ -1217,7 +1199,6 @@
                 document.getElementById('profAndroidId').textContent =
                     prof.android_id ? ('ID ••••' + String(prof.android_id).slice(-4)) : 'Привязано';
 
-                /* Вычисление оставшегося времени подписки (30 дней) БЕЗ показа самого ключа */
                 let startTs = parseInt(localStorage.getItem('so2_activated_ts') || '0', 10);
                 if (!startTs) {
                     startTs = Math.floor(Date.now() / 1000);
