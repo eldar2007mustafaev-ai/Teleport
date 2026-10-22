@@ -37,7 +37,6 @@
             -webkit-font-smoothing: antialiased;
         }
 
-        /* Полноэкранный видео-фон с капсулами (GPU-ускоренный) */
         .bg-layer {
             position: fixed;
             inset: 0;
@@ -72,7 +71,6 @@
             background: linear-gradient(180deg, rgba(6, 9, 19, 0.45) 0%, rgba(6, 9, 19, 0.72) 55%, rgba(6, 9, 19, 0.94) 100%);
         }
 
-        /* Основной контейнер поверх видео-фона */
         .app-shell {
             position: relative;
             z-index: 2;
@@ -84,7 +82,6 @@
             margin: 0 auto;
         }
 
-        /* Верхняя строка бренда и статуса Shizuku */
         .top-header {
             display: flex;
             justify-content: space-between;
@@ -130,7 +127,6 @@
             box-shadow: 0 0 10px var(--vyb-cyan);
         }
 
-        /* Переходы экранов */
         .screen-pane {
             display: none;
             will-change: transform, opacity;
@@ -145,7 +141,6 @@
             100% { opacity: 1; transform: translate3d(0, 0, 0) scale(1); }
         }
 
-        /* ВЕРХНИЙ ЦЕНТРАЛЬНЫЙ ОРБ (Стиль VYB) */
         .orb-section {
             display: flex;
             flex-direction: column;
@@ -164,11 +159,8 @@
             transform: translateZ(0);
             transition: transform 0.28s cubic-bezier(0.34, 1.56, 0.64, 1);
         }
-        .vyb-orb-wrapper:active {
-            transform: scale(0.91);
-        }
+        .vyb-orb-wrapper:active { transform: scale(0.91); }
 
-        /* Внешнее свечение орба */
         .orb-aura {
             position: absolute;
             inset: -14px;
@@ -178,7 +170,6 @@
             animation: orbPulse 3.6s ease-in-out infinite alternate;
         }
 
-        /* Стеклянные лепестки-слои внутри сферы как на фото VYB */
         .orb-sphere {
             position: relative;
             width: 162px;
@@ -223,7 +214,6 @@
             align-items: center;
             text-align: center;
         }
-
         .orb-center-glyph svg {
             width: 44px;
             height: 44px;
@@ -231,20 +221,15 @@
             transition: transform 0.35s ease;
         }
 
-        /* Активное состояние орба */
         .vyb-orb-wrapper.active .orb-aura {
             background: radial-gradient(circle, rgba(56, 249, 215, 0.62) 0%, rgba(79, 172, 254, 0.45) 52%, transparent 75%);
             animationDuration: 1.8s;
         }
         .vyb-orb-wrapper.active .orb-sphere {
             border-color: #38F9D7;
-            box-shadow:
-                inset 0 0 38px rgba(56, 249, 215, 0.85),
-                0 0 50px rgba(56, 249, 215, 0.5);
+            box-shadow: inset 0 0 38px rgba(56, 249, 215, 0.85), 0 0 50px rgba(56, 249, 215, 0.5);
         }
-        .vyb-orb-wrapper.active .orb-center-glyph svg {
-            transform: scale(1.12);
-        }
+        .vyb-orb-wrapper.active .orb-center-glyph svg { transform: scale(1.12); }
 
         @keyframes orbPulse {
             0% { transform: scale(0.94); opacity: 0.75; }
@@ -255,7 +240,6 @@
             100% { transform: rotate(360deg); }
         }
 
-        /* Овальная подпись статуса под орбом */
         .status-capsule {
             margin-top: 14px;
             padding: 6px 16px;
@@ -284,19 +268,10 @@
             margin-top: 12px;
             text-align: center;
         }
-        .hero-greeting h1 {
-            font-size: 21px;
-            font-weight: 700;
-            letter-spacing: -0.3px;
-            color: #FFFFFF;
-        }
-        .hero-greeting p {
-            font-size: 13px;
-            color: var(--text-secondary);
-            margin-top: 3px;
-        }
+        .hero-greeting h1 { font-size: 21px; font-weight: 700; color: #FFFFFF; }
+        .hero-greeting p { font-size: 13px; color: var(--text-secondary); margin-top: 3px; }
 
-        /* СЕТКА КАРТОЧЕК 2x2 В СТИЛЕ VYB */
+        /* СЕТКА КАРТОЧЕК С НОВОЙ КАРТОЧКОЙ TELEPORT */
         .vyb-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
@@ -320,8 +295,14 @@
             justify-content: space-between;
             min-height: 148px;
         }
-        .vyb-card:active {
-            transform: scale(0.95);
+        .vyb-card:active { transform: scale(0.95); }
+
+        /* Карточка Teleport на всю ширину снизу */
+        .vyb-card.full-width {
+            grid-column: span 2;
+            background: linear-gradient(135deg, rgba(56, 249, 215, 0.15) 0%, rgba(157, 80, 187, 0.18) 100%);
+            border-color: rgba(56, 249, 215, 0.4);
+            min-height: 130px;
         }
 
         .vyb-card::before {
@@ -342,9 +323,7 @@
             box-shadow: 0 10px 30px rgba(0, 0, 0, 0.55), 0 0 22px rgba(56, 249, 215, 0.22);
             background: rgba(24, 34, 62, 0.72);
         }
-        .vyb-card.selected::before {
-            opacity: 1;
-        }
+        .vyb-card.selected::before { opacity: 1; }
 
         .card-top-row {
             display: flex;
@@ -353,24 +332,12 @@
             gap: 6px;
         }
 
-        .vyb-card-title {
-            font-size: 16px;
-            font-weight: 700;
-            color: #FFFFFF;
-            line-height: 1.2;
-        }
-
+        .vyb-card-title { font-size: 16px; font-weight: 700; color: #FFFFFF; line-height: 1.2; }
         .vyb-check-circle {
-            width: 22px;
-            height: 22px;
-            border-radius: 50%;
+            width: 22px; height: 22px; border-radius: 50%;
             border: 1.5px solid rgba(255, 255, 255, 0.25);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 11px;
-            color: transparent;
-            flex-shrink: 0;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 11px; color: transparent; flex-shrink: 0;
             transition: all 0.25s ease;
         }
         .vyb-card.selected .vyb-check-circle {
@@ -380,90 +347,51 @@
             box-shadow: 0 0 10px rgba(56, 249, 215, 0.45);
         }
 
-        .vyb-card-desc {
-            font-size: 12px;
-            color: var(--text-secondary);
-            margin-top: 6px;
-            line-height: 1.35;
-        }
-
-        .vyb-card-footer {
-            margin-top: 12px;
-        }
+        .vyb-card-desc { font-size: 12px; color: var(--text-secondary); margin-top: 6px; line-height: 1.35; }
+        .vyb-card-footer { margin-top: 12px; }
 
         .vyb-metric {
-            font-size: 12px;
-            font-weight: 700;
-            color: #E2E8F0;
-            margin-bottom: 6px;
-            display: flex;
-            justify-content: space-between;
+            font-size: 12px; font-weight: 700; color: #E2E8F0;
+            margin-bottom: 6px; display: flex; justify-content: space-between;
         }
 
         .vyb-bar-track {
-            width: 100%;
-            height: 6px;
-            background: rgba(255, 255, 255, 0.09);
-            border-radius: 6px;
-            overflow: hidden;
+            width: 100%; height: 6px; background: rgba(255, 255, 255, 0.09);
+            border-radius: 6px; overflow: hidden;
         }
         .vyb-bar-fill {
-            height: 100%;
-            border-radius: 6px;
+            height: 100%; border-radius: 6px;
             background: linear-gradient(90deg, var(--vyb-cyan), var(--vyb-purple));
             box-shadow: 0 0 10px var(--vyb-cyan);
             transition: width 0.35s ease;
         }
 
         .neon-seekbar {
-            -webkit-appearance: none;
-            appearance: none;
-            width: 100%;
-            height: 6px;
-            border-radius: 6px;
-            background: rgba(255, 255, 255, 0.14);
-            outline: none;
-            margin-top: 6px;
+            -webkit-appearance: none; appearance: none;
+            width: 100%; height: 6px; border-radius: 6px;
+            background: rgba(255, 255, 255, 0.14); outline: none; margin-top: 6px;
         }
         .neon-seekbar::-webkit-slider-thumb {
-            -webkit-appearance: none;
-            appearance: none;
-            width: 20px;
-            height: 20px;
-            border-radius: 50%;
-            background: #FFFFFF;
-            border: 2px solid var(--vyb-cyan);
-            box-shadow: 0 0 12px var(--vyb-cyan);
-            cursor: pointer;
+            -webkit-appearance: none; appearance: none;
+            width: 20px; height: 20px; border-radius: 50%;
+            background: #FFFFFF; border: 2px solid var(--vyb-cyan);
+            box-shadow: 0 0 12px var(--vyb-cyan); cursor: pointer;
         }
 
-        /* ПЕРЕКЛЮЧАТЕЛЬ */
         .glow-toggle {
-            position: relative;
-            width: 68px;
-            height: 34px;
-            border-radius: 999px;
-            background: rgba(26, 20, 56, 0.85);
-            border: 1.5px solid rgba(157, 80, 187, 0.55);
+            position: relative; width: 68px; height: 34px; border-radius: 999px;
+            background: rgba(26, 20, 56, 0.85); border: 1.5px solid rgba(157, 80, 187, 0.55);
             box-shadow: 0 0 16px rgba(157, 80, 187, 0.25), inset 0 0 10px rgba(157, 80, 187, 0.3);
-            cursor: pointer;
-            transition: all 0.38s cubic-bezier(0.22, 1, 0.36, 1);
-            flex-shrink: 0;
+            cursor: pointer; transition: all 0.38s cubic-bezier(0.22, 1, 0.36, 1); flex-shrink: 0;
         }
         .glow-toggle-knob {
-            position: absolute;
-            top: 3px;
-            left: 3px;
-            width: 26px;
-            height: 26px;
-            border-radius: 50%;
+            position: absolute; top: 3px; left: 3px; width: 26px; height: 26px; border-radius: 50%;
             background: radial-gradient(circle, #FFFFFF 30%, #C084FC 100%);
             box-shadow: 0 0 14px #C084FC, 0 0 0 5px rgba(192, 132, 252, 0.18);
             transition: transform 0.38s cubic-bezier(0.34, 1.56, 0.64, 1), background 0.35s ease, box-shadow 0.35s ease;
         }
         .glow-toggle.on {
-            background: rgba(56, 42, 14, 0.85);
-            border-color: rgba(255, 190, 60, 0.8);
+            background: rgba(56, 42, 14, 0.85); border-color: rgba(255, 190, 60, 0.8);
             box-shadow: 0 0 22px rgba(255, 180, 40, 0.45), inset 0 0 12px rgba(255, 190, 60, 0.35);
         }
         .glow-toggle.on .glow-toggle-knob {
@@ -473,211 +401,98 @@
         }
 
         .wide-glass-card {
-            background: var(--card-bg);
-            backdrop-filter: blur(22px);
-            -webkit-backdrop-filter: blur(22px);
-            border: 1px solid var(--card-border);
-            border-radius: 22px;
-            padding: 16px;
-            margin-bottom: 13px;
-            box-shadow: 0 8px 26px rgba(0, 0, 0, 0.45);
+            background: var(--card-bg); backdrop-filter: blur(22px);
+            -webkit-backdrop-filter: blur(22px); border: 1px solid var(--card-border);
+            border-radius: 22px; padding: 16px; margin-bottom: 13px; box-shadow: 0 8px 26px rgba(0, 0, 0, 0.45);
         }
 
-        .row-between {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            gap: 12px;
-        }
+        .row-between { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
 
-        .chip-row {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 8px;
-            margin-top: 12px;
-        }
-
+        .chip-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-top: 12px; }
         .chip-item {
-            padding: 10px 4px;
-            border-radius: 12px;
-            background: rgba(255, 255, 255, 0.05);
-            border: 1px solid rgba(255, 255, 255, 0.12);
-            color: var(--text-secondary);
-            font-size: 12px;
-            font-weight: 700;
-            text-align: center;
-            cursor: pointer;
-            transition: all 0.22s ease;
+            padding: 10px 4px; border-radius: 12px; background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.12); color: var(--text-secondary);
+            font-size: 12px; font-weight: 700; text-align: center; cursor: pointer; transition: all 0.22s ease;
         }
         .chip-item:active { transform: scale(0.93); }
         .chip-item.active {
             background: linear-gradient(135deg, rgba(56, 249, 215, 0.25), rgba(157, 80, 187, 0.35));
-            border-color: var(--vyb-cyan);
-            color: #FFFFFF;
-            box-shadow: 0 0 14px rgba(56, 249, 215, 0.3);
+            border-color: var(--vyb-cyan); color: #FFFFFF; box-shadow: 0 0 14px rgba(56, 249, 215, 0.3);
         }
 
         .action-btn {
-            width: 100%;
-            padding: 14px;
-            border-radius: 16px;
+            width: 100%; padding: 14px; border-radius: 16px;
             border: 1px solid rgba(56, 249, 215, 0.5);
             background: linear-gradient(135deg, rgba(79, 172, 254, 0.35), rgba(157, 80, 187, 0.45));
-            color: #FFFFFF;
-            font-size: 13.5px;
-            font-weight: 700;
-            text-align: center;
-            cursor: pointer;
-            margin-top: 10px;
-            transition: transform 0.15s ease;
+            color: #FFFFFF; font-size: 13.5px; font-weight: 700; text-align: center;
+            cursor: pointer; margin-top: 10px; transition: transform 0.15s ease;
         }
         .action-btn:active { transform: scale(0.96); }
 
-        /* НИЖНЯЯ НАВИГАЦИЯ */
         .vyb-bottom-nav {
-            position: fixed;
-            bottom: 16px;
-            left: 18px;
-            right: 18px;
-            max-width: 444px;
-            margin: 0 auto;
-            height: 70px;
-            background: rgba(12, 16, 30, 0.88);
-            backdrop-filter: blur(26px);
-            -webkit-backdrop-filter: blur(26px);
-            border: 1px solid rgba(255, 255, 255, 0.12);
-            border-radius: 35px;
-            display: grid;
-            grid-template-columns: 1fr 90px 1fr;
-            align-items: center;
-            z-index: 400;
-            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.85);
+            position: fixed; bottom: 16px; left: 18px; right: 18px; max-width: 444px; margin: 0 auto;
+            height: 70px; background: rgba(12, 16, 30, 0.88); backdrop-filter: blur(26px);
+            -webkit-backdrop-filter: blur(26px); border: 1px solid rgba(255, 255, 255, 0.12);
+            border-radius: 35px; display: grid; grid-template-columns: 1fr 90px 1fr; align-items: center;
+            z-index: 400; box-shadow: 0 15px 40px rgba(0, 0, 0, 0.85);
         }
 
         .nav-side-btn {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            gap: 4px;
-            color: var(--text-secondary);
-            cursor: pointer;
-            transition: color 0.25s ease, transform 0.2s ease;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            gap: 4px; color: var(--text-secondary); cursor: pointer; transition: color 0.25s ease, transform 0.2s ease;
         }
         .nav-side-btn:active { transform: scale(0.92); }
-        .nav-side-btn svg {
-            width: 22px;
-            height: 22px;
-            stroke: currentColor;
-            fill: none;
-            stroke-width: 2;
-        }
-        .nav-side-btn span {
-            font-size: 11px;
-            font-weight: 600;
-        }
-        .nav-side-btn.active {
-            color: #FFFFFF;
-            text-shadow: 0 0 10px rgba(56, 249, 215, 0.6);
-        }
+        .nav-side-btn svg { width: 22px; height: 22px; stroke: currentColor; fill: none; stroke-width: 2; }
+        .nav-side-btn span { font-size: 11px; font-weight: 600; }
+        .nav-side-btn.active { color: #FFFFFF; text-shadow: 0 0 10px rgba(56, 249, 215, 0.6); }
 
-        .nav-center-orb-wrap {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            position: relative;
-            top: -10px;
-        }
+        .nav-center-orb-wrap { display: flex; justify-content: center; align-items: center; position: relative; top: -10px; }
         .nav-center-orb {
-            width: 64px;
-            height: 64px;
-            border-radius: 50%;
+            width: 64px; height: 64px; border-radius: 50%;
             background: radial-gradient(circle at 30% 30%, #A8EDEA 0%, #667EEA 55%, #764BA2 100%);
             border: 2px solid rgba(255, 255, 255, 0.65);
             box-shadow: 0 0 25px rgba(102, 126, 234, 0.75), inset 0 0 15px rgba(255, 255, 255, 0.6);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 13px;
-            font-weight: 900;
-            letter-spacing: 0.6px;
-            color: #060913;
-            cursor: pointer;
-            transition: all 0.28s cubic-bezier(0.34, 1.56, 0.64, 1);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 13px; font-weight: 900; letter-spacing: 0.6px; color: #060913;
+            cursor: pointer; transition: all 0.28s cubic-bezier(0.34, 1.56, 0.64, 1);
         }
-        .nav-center-orb:active {
-            transform: scale(0.88);
-        }
+        .nav-center-orb:active { transform: scale(0.88); }
         .nav-center-orb.sensa-on {
             background: radial-gradient(circle at 30% 30%, #FFFFFF 0%, #38F9D7 55%, #4FACFE 100%);
             box-shadow: 0 0 32px rgba(56, 249, 215, 0.95), inset 0 0 18px #FFFFFF;
         }
 
         .modal-overlay {
-            position: fixed;
-            inset: 0;
-            z-index: 900;
-            background: rgba(6, 9, 19, 0.94);
-            backdrop-filter: blur(22px);
-            -webkit-backdrop-filter: blur(22px);
-            display: none;
-            align-items: center;
-            justify-content: center;
-            padding: 22px;
+            position: fixed; inset: 0; z-index: 900; background: rgba(6, 9, 19, 0.94);
+            backdrop-filter: blur(22px); -webkit-backdrop-filter: blur(22px);
+            display: none; align-items: center; justify-content: center; padding: 22px;
         }
         .modal-overlay.show { display: flex; }
 
         .modal-card {
-            width: 100%;
-            max-width: 390px;
-            background: rgba(18, 24, 46, 0.88);
-            border: 1px solid rgba(56, 249, 215, 0.4);
-            border-radius: 26px;
-            padding: 24px 20px;
-            text-align: center;
-            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.8);
+            width: 100%; max-width: 390px; background: rgba(18, 24, 46, 0.88);
+            border: 1px solid rgba(56, 249, 215, 0.4); border-radius: 26px; padding: 24px 20px;
+            text-align: center; box-shadow: 0 20px 50px rgba(0, 0, 0, 0.8);
         }
 
         .vyb-input {
-            width: 100%;
-            padding: 14px 16px;
-            border-radius: 14px;
-            border: 1px solid rgba(255, 255, 255, 0.16);
-            background: rgba(8, 12, 24, 0.85);
-            color: #FFFFFF;
-            font-size: 14px;
-            font-weight: 600;
-            text-align: center;
-            outline: none;
-            margin-bottom: 10px;
-            user-select: text;
-            -webkit-user-select: text;
+            width: 100%; padding: 14px 16px; border-radius: 14px;
+            border: 1px solid rgba(255, 255, 255, 0.16); background: rgba(8, 12, 24, 0.85);
+            color: #FFFFFF; font-size: 14px; font-weight: 600; text-align: center; outline: none;
+            margin-bottom: 10px; user-select: text; -webkit-user-select: text;
         }
-        .vyb-input:focus {
-            border-color: var(--vyb-cyan);
-        }
+        .vyb-input:focus { border-color: var(--vyb-cyan); }
 
         #toastBanner {
-            position: fixed;
-            top: max(16px, env(safe-area-inset-top, 16px));
-            left: 50%;
-            transform: translateX(-50%) translateY(-80px);
-            background: rgba(16, 24, 48, 0.92);
-            border: 1px solid var(--vyb-cyan);
-            color: #FFFFFF;
-            padding: 10px 18px;
-            border-radius: 999px;
-            font-size: 12.5px;
-            font-weight: 700;
-            z-index: 1000;
+            position: fixed; top: max(16px, env(safe-area-inset-top, 16px)); left: 50%;
+            transform: translateX(-50%) translateY(-80px); background: rgba(16, 24, 48, 0.92);
+            border: 1px solid var(--vyb-cyan); color: #FFFFFF; padding: 10px 18px;
+            border-radius: 999px; font-size: 12.5px; font-weight: 700; z-index: 1000;
             box-shadow: 0 8px 25px rgba(0, 0, 0, 0.6);
             transition: transform 0.32s cubic-bezier(0.22, 1, 0.36, 1);
-            pointer-events: none;
-            white-space: nowrap;
+            pointer-events: none; white-space: nowrap;
         }
-        #toastBanner.visible {
-            transform: translateX(-50%) translateY(0);
-        }
+        #toastBanner.visible { transform: translateX(-50%) translateY(0); }
     </style>
 </head>
 <body>
@@ -692,7 +507,6 @@
 
     <div id="toastBanner">Готово</div>
 
-    <!-- Модальное окно активации -->
     <div id="authModal" class="modal-overlay">
         <div class="modal-card">
             <h2 style="font-size: 20px; margin-bottom: 6px;">Активация SO2 Teleport</h2>
@@ -703,21 +517,18 @@
             <input type="text" id="inpKey" class="vyb-input" placeholder="Ключ TP-XXX-NNNNNN" maxlength="16" style="text-transform: uppercase;">
             <div id="authError" style="display:none; color: var(--vyb-pink); font-size: 12px; font-weight: 700; margin-bottom: 10px;"></div>
             <div class="action-btn" onclick="submitLicense()">Активировать и войти</div>
-            <!-- ИСПРАВЛЕННАЯ ССЫЛКА НА ТВОЕГО БОТА -->
             <div class="action-btn" style="background: rgba(255,255,255,0.06); border-color: rgba(255,255,255,0.15);" onclick="openTelegramBot()">
                 Купить ключ в Telegram
             </div>
         </div>
     </div>
 
-    <!-- Модальное окно истёкшей подписки -->
     <div id="expiredModal" class="modal-overlay">
         <div class="modal-card" style="border-color: var(--vyb-pink);">
             <h2 style="font-size: 20px; color: var(--vyb-pink); margin-bottom: 8px;">Срок подписки истёк</h2>
             <p style="font-size: 13px; color: var(--text-secondary); margin-bottom: 18px;">
                 Ваша 30-дневная лицензия завершилась. Продлите подписку в официальном боте.
             </p>
-            <!-- ИСПРАВЛЕННАЯ ССЫЛКА НА ТВОЕГО БОТА -->
             <div class="action-btn" onclick="openTelegramBot()">Продлить в Telegram</div>
             <div class="action-btn" style="background: rgba(255,255,255,0.06); border-color: rgba(255,255,255,0.15);" onclick="showReEnterKey()">
                 Ввести новый ключ
@@ -735,7 +546,7 @@
             </div>
         </div>
 
-        <!-- ЭКРАН 1: ГЛАВНЫЙ -->
+        <!-- ГЛАВНЫЙ ЭКРАН С НОВЫМИ КАРТОЧКАМИ -->
         <div id="screen-home" class="screen-pane active">
             <div class="orb-section">
                 <div id="mainOrb" class="vyb-orb-wrapper" onclick="toggleMainTeleport()">
@@ -762,14 +573,17 @@
                 </div>
             </div>
 
+            <!-- СЕТКА КАРТОЧЕК -->
             <div class="vyb-grid">
-                <div id="card-teleport" class="vyb-card selected" onclick="selectModeCard('teleport', 38)">
+
+                <!-- 1. Ультра (бывшая Макс резкая) -->
+                <div id="card-ultra" class="vyb-card selected" onclick="selectModeCard('ultra', 38)">
                     <div>
                         <div class="card-top-row">
-                            <div class="vyb-card-title">Макс резкая</div>
+                            <div class="vyb-card-title">Ультра</div>
                             <div class="vyb-check-circle">✓</div>
                         </div>
-                        <div class="vyb-card-desc">Мгновенный флик на 90°–180° без сглаживания</div>
+                        <div class="vyb-card-desc">Максимальная скорость отклика без задержек</div>
                     </div>
                     <div class="vyb-card-footer">
                         <div class="vyb-metric"><span>Импульс</span><span>100%</span></div>
@@ -777,13 +591,14 @@
                     </div>
                 </div>
 
+                <!-- 2. Плавная -->
                 <div id="card-smooth" class="vyb-card" onclick="selectModeCard('smooth', 14)">
                     <div>
                         <div class="card-top-row">
                             <div class="vyb-card-title">Плавная</div>
                             <div class="vyb-check-circle">✓</div>
                         </div>
-                        <div class="vyb-card-desc">Стабильный трекинг головы на дальней дистанции</div>
+                        <div class="vyb-card-desc">Стабильный трекинг головы на дистанции</div>
                     </div>
                     <div class="vyb-card-footer">
                         <div class="vyb-metric"><span>Контроль</span><span>45%</span></div>
@@ -791,13 +606,14 @@
                     </div>
                 </div>
 
+                <!-- 3. Средняя -->
                 <div id="card-sensa" class="vyb-card" onclick="selectModeCard('sensa', 24)">
                     <div>
                         <div class="card-top-row">
                             <div class="vyb-card-title">Средняя</div>
                             <div class="vyb-check-circle">✓</div>
                         </div>
-                        <div class="vyb-card-desc">Универсальный баланс резкости и зажима</div>
+                        <div class="vyb-card-desc">Универсальный баланс под любой зажим</div>
                     </div>
                     <div class="vyb-card-footer">
                         <div class="vyb-metric"><span>Баланс</span><span>72%</span></div>
@@ -805,6 +621,7 @@
                     </div>
                 </div>
 
+                <!-- 4. Настраиваемая -->
                 <div id="card-sharp" class="vyb-card" onclick="selectModeCard('sharp', customSensVal)">
                     <div>
                         <div class="card-top-row">
@@ -822,13 +639,28 @@
                                oninput="onCustomSensSlide(this.value)">
                     </div>
                 </div>
+
+                <!-- 5. НОВАЯ КАРТОЧКА TELEPORT (НА ВСЮ ШИРИНУ СНИЗУ) -->
+                <div id="card-teleport" class="vyb-card full-width" onclick="selectModeCard('teleport', 50)">
+                    <div>
+                        <div class="card-top-row">
+                            <div class="vyb-card-title" style="color: var(--vyb-cyan);">⚡ TELEPORT (Моментальный перенос)</div>
+                            <div class="vyb-check-circle">✓</div>
+                        </div>
+                        <div class="vyb-card-desc">Абсолютный пик производительности: мгновенный флик с визуальным эффектом телепортации</div>
+                    </div>
+                    <div class="vyb-card-footer">
+                        <div class="vyb-metric"><span>Эффект телепорта</span><span>MAX</span></div>
+                        <div class="vyb-bar-track"><div class="vyb-bar-fill" style="width: 100%; background: linear-gradient(90deg, #38F9D7, #4FACFE);"></div></div>
+                    </div>
+                </div>
+
             </div>
         </div>
 
-        <!-- ЭКРАН 2: НАСТРОЙКИ -->
+        <!-- ЭКРАН НАСТРОЕК -->
         <div id="screen-settings" class="screen-pane">
             <h2 style="font-size: 20px; margin: 8px 0 14px 0;">Настройки и прицел</h2>
-
             <div class="wide-glass-card">
                 <div class="row-between">
                     <div>
@@ -839,7 +671,6 @@
                 </div>
                 <input type="range" id="crosshairSeek" min="10" max="100" value="50" class="neon-seekbar" style="margin-top: 12px;"
                        oninput="onCrosshairScaleChange(this.value)">
-
                 <div class="chip-row">
                     <div class="chip-item" onclick="setCrosshair('cross', this)">Крест</div>
                     <div class="chip-item" onclick="setCrosshair('dot', this)">Точка</div>
@@ -847,7 +678,6 @@
                     <div class="chip-item active" onclick="setCrosshair('off', this)">Выкл</div>
                 </div>
             </div>
-
             <div class="wide-glass-card">
                 <div class="row-between">
                     <div>
@@ -858,17 +688,14 @@
                         <div class="glow-toggle-knob"></div>
                     </div>
                 </div>
-
                 <div class="chip-row">
                     <div class="chip-item" onclick="pickAspect('4:3', this)">4:3</div>
                     <div class="chip-item" onclick="pickAspect('3:2', this)">3:2</div>
                     <div class="chip-item" onclick="pickAspect('16:10', this)">16:10</div>
                     <div class="chip-item active" onclick="pickAspect('16:9', this)">16:9</div>
                 </div>
-
                 <div class="action-btn" onclick="resetScreenNow()">Сбросить разрешение по умолчанию</div>
             </div>
-
             <div class="wide-glass-card">
                 <div class="row-between" style="margin-bottom: 14px;">
                     <div>
@@ -879,7 +706,6 @@
                         <div class="glow-toggle-knob"></div>
                     </div>
                 </div>
-
                 <div class="row-between">
                     <div>
                         <div class="vyb-card-title">Режим «Не беспокоить»</div>
@@ -892,10 +718,9 @@
             </div>
         </div>
 
-        <!-- ЭКРАН 3: ПРОФИЛЬ -->
+        <!-- ЭКРАН ПРОФИЛЯ -->
         <div id="screen-profile" class="screen-pane">
             <h2 style="font-size: 20px; margin: 8px 0 14px 0;">Профиль игрока</h2>
-
             <div class="wide-glass-card">
                 <div class="row-between" style="margin-bottom: 12px;">
                     <span style="font-size: 13px; color: var(--text-secondary);">Ваш логин:</span>
@@ -913,7 +738,6 @@
                     <div id="profSubBar" class="vyb-bar-fill" style="width: 100%;"></div>
                 </div>
             </div>
-
             <div class="wide-glass-card">
                 <div class="row-between" style="margin-bottom: 10px;">
                     <span style="font-size: 13px; color: var(--text-secondary);">Устройство:</span>
@@ -928,14 +752,11 @@
                     <b id="profAndroidId" style="font-size: 12px; color: var(--text-secondary);">Защищено</b>
                 </div>
             </div>
-
-            <!-- ИСПРАВЛЕННАЯ ССЫЛКА НА ТВОЕГО БОТА -->
             <div class="action-btn" onclick="openTelegramBot()">Продлить подписку в Telegram</div>
         </div>
 
     </div>
 
-    <!-- НИЖНЯЯ НАВИГАЦИЯ -->
     <div class="vyb-bottom-nav">
         <div id="nav-settings" class="nav-side-btn" onclick="switchScreen('settings')">
             <svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round">
@@ -1072,11 +893,11 @@
             }
             const nowRunning = AndroidBridge.toggleTeleport();
             syncUiState();
-            showToast(nowRunning ? '⚡ Резкая сенса активирована (0 мс)' : 'Сенса остановлена');
+            showToast(nowRunning ? '⚡ Режим Teleport активен (0 мс)' : 'Сенса остановлена');
         }
 
         function selectModeCard(presetId, chunkVal) {
-            ['teleport', 'smooth', 'sensa', 'sharp'].forEach(id => {
+            ['ultra', 'smooth', 'sensa', 'sharp', 'teleport'].forEach(id => {
                 const el = document.getElementById('card-' + id);
                 if (el) el.classList.toggle('selected', id === presetId);
             });
@@ -1151,7 +972,6 @@
             }
         }
 
-        /* ИСПРАВЛЕННАЯ ССЫЛКА НА ТВОЕГО ТЕЛЕГРАМ-БОТА */
         function openTelegramBot() {
             if (window.AndroidBridge) {
                 AndroidBridge.openExternalLink('https://t.me/SO2TeleportShop_bot');
@@ -1233,7 +1053,7 @@
 
             orb.classList.toggle('active', running);
             centerBtn.classList.toggle('sensa-on', running);
-            stText.textContent = running ? '• SENSA TELEPORT АКТИВЕН (0 МС)' : '• Нажмите на орб для запуска сенсы';
+            stText.textContent = running ? '• TELEPORT ACTIVE (0 МС)' : '• Нажмите для активации телепорта';
 
             document.getElementById('toggleFloatBtn').classList.toggle('on', floatStretchEnabled);
         }
