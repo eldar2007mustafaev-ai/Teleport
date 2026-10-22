@@ -14,14 +14,18 @@ public class ShizukuManager {
         void onTeleportSnap();
     }
 
+    public static final int INJECT_INPUT_EVENT_MODE_ASYNC = 0;
+
     private static final AtomicBoolean running = new AtomicBoolean(false);
     private static final AtomicInteger sessionTeleports = new AtomicInteger(0);
     private static volatile String lastError = "";
 
-    // Текущий размер чанка/пресета (18 - Сенса, 30 - Макс резкая, 44 - Телепорт, 12 - Плавная)
     private static volatile int microChunkSize = 30;
+    private static volatile int thresholdPx = 14;
+    private static volatile int pollRateHz = 240;
+    private static volatile int screenWidth = 2400;
+    private static volatile int screenHeight = 1080;
 
-    // Параметры растяга для плавающей кнопки (FloatingButtonService)
     private static volatile String selectedStretchRatio = "16:9";
     private static volatile int nativeShortSide = 1080;
     private static volatile int nativeLongSide = 2400;
@@ -85,122 +89,100 @@ public class ShizukuManager {
     }
 
     /**
-     * Применяет системные aShell / Shizuku твики сенсора и ввода без перехвата экрана.
-     * Полностью исключает фантомные нажатия.
+     * Прямая калибровка резкости сенсы через Shizuku shell без перехватчиков касаний.
      */
-    private static void applyAShellTeleportConfig(int chunk) {
+    private static void applyDirectSensCommands(int chunk) {
         int pointerSpeed;
-        int longPressTimeout;
-        int multiPressTimeout;
-        String scrollFriction;
-
-        if (chunk >= 40) {
-            // Пресет "Телепорт (44 пикс.)" — максимальная резкость и мгновенный отклик
+        int touchTimeout;
+        if (chunk >= 38) {
+            // Макс резкая
             pointerSpeed = 7;
-            longPressTimeout = 180;
-            multiPressTimeout = 120;
-            scrollFriction = "0.001";
-        } else if (chunk >= 25) {
-            // Пресет "Макс резкая (30 пикс.)" — агрессивный чанковый отклик
-            pointerSpeed = 7;
-            longPressTimeout = 200;
-            multiPressTimeout = 150;
-            scrollFriction = "0.003";
-        } else if (chunk >= 16) {
-            // Пресет "Сенса (18 пикс.)" — ускоренный спортивный отклик
+            touchTimeout = 150;
+        } else if (chunk >= 24) {
+            // Средняя / Настраиваемая
             pointerSpeed = 5;
-            longPressTimeout = 240;
-            multiPressTimeout = 180;
-            scrollFriction = "0.005";
+            touchTimeout = 180;
         } else {
-            // Пресет "Плавная (12 пикс.)" — стабильный мягкий трекинг
+            // Плавная
             pointerSpeed = 3;
-            longPressTimeout = 300;
-            multiPressTimeout = 220;
-            scrollFriction = "0.008";
+            touchTimeout = 220;
         }
 
-        StringBuilder cmd = new StringBuilder();
-        // Настройки скорости указателя и минимальных задержек тача через системные таблицы Android
-        cmd.append("settings put system pointer_speed ").append(pointerSpeed).append("; ");
-        cmd.append("settings put secure long_press_timeout ").append(longPressTimeout).append("; ");
-        cmd.append("settings put secure multi_press_timeout ").append(multiPressTimeout).append("; ");
-        cmd.append("settings put secure tap_duration_threshold 0.0; ");
-        cmd.append("settings put secure touch_blocking_period 0.0; ");
-
-        // Свойства SurfaceFlinger и InputDispatcher (как в aShell скриптах для мгновенного отклика)
-        cmd.append("setprop debug.sf.latch_unsignaled 1 2>/dev/null; ");
-        cmd.append("setprop debug.sf.disable_backpressure 1 2>/dev/null; ");
-        cmd.append("setprop debug.hwui.use_hint_manager true 2>/dev/null; ");
-        cmd.append("setprop view.scroll_friction ").append(scrollFriction).append(" 2>/dev/null; ");
-        cmd.append("cmd power set-fixed-performance-mode-enabled true 2>/dev/null; ");
-
-        execCommand(cmd.toString());
-        sessionTeleports.incrementAndGet();
+        String cmd = "settings put system pointer_speed " + pointerSpeed + "; "
+                + "settings put secure multi_press_timeout " + touchTimeout + "; "
+                + "settings put secure long_press_timeout " + touchTimeout + "; "
+                + "settings put global window_animation_scale 0.0; "
+                + "settings put global transition_animation_scale 0.0; "
+                + "settings put global animator_duration_scale 0.0; "
+                + "cmd power set-fixed-performance-mode-enabled true 2>/dev/null";
+        execCommand(cmd);
     }
 
-    /**
-     * Обновляет конфигурацию на лету при переключении пресетов.
-     */
-    public static void updateLiveConfig(int chunk, int threshold, int zonePct, int pollHz, int scrW, int scrH) {
-        microChunkSize = chunk;
+    public static void updateLiveConfig(int chunk) {
+        microChunkSize = Math.max(10, Math.min(50, chunk));
         if (running.get() && isShizukuReady()) {
-            new Thread(() -> applyAShellTeleportConfig(microChunkSize)).start();
+            new Thread(() -> applyDirectSensCommands(microChunkSize)).start();
         }
     }
 
-    /**
-     * Проверяет, активно ли приложение com.axlebolt.standoff2 на экране.
-     */
+    public static void updateLiveConfig(int chunk, int threshold, int zonePct, int pollHz, int scrW, int scrH) {
+        microChunkSize = Math.max(10, Math.min(50, chunk));
+        thresholdPx = Math.max(6, Math.min(40, threshold));
+        pollRateHz = Math.max(60, Math.min(240, pollHz));
+        if (scrW > 0 && scrH > 0) {
+            screenWidth = Math.max(scrW, scrH);
+            screenHeight = Math.min(scrW, scrH);
+        }
+        if (running.get() && isShizukuReady()) {
+            new Thread(() -> applyDirectSensCommands(microChunkSize)).start();
+        }
+    }
+
     public static boolean isStandoffForeground() {
         String dump = execCommand("dumpsys activity activities | grep -E 'mResumedActivity|topResumedActivity'");
         return dump != null && dump.contains("com.axlebolt.standoff2");
     }
 
-    /**
-     * Запускает режим телепорта сенсы через Shizuku (aShell-команды) без перехвата касаний.
-     */
+    public static synchronized boolean startTeleport(int chunk) {
+        if (!isShizukuReady()) {
+            requestPermission();
+            return false;
+        }
+        microChunkSize = Math.max(10, Math.min(50, chunk));
+        new Thread(() -> applyDirectSensCommands(microChunkSize)).start();
+        running.set(true);
+        sessionTeleports.incrementAndGet();
+        return true;
+    }
+
     public static synchronized boolean startTeleport(int chunk, int threshold, int zonePct, int pollHz,
                                                      int scrW, int scrH, TeleportCallback callback) {
         if (!isShizukuReady()) {
             requestPermission();
             return false;
         }
-
-        microChunkSize = chunk;
-        running.set(true);
-
+        updateLiveConfig(chunk, threshold, zonePct, pollHz, scrW, scrH);
         new Thread(() -> {
-            applyAShellTeleportConfig(microChunkSize);
-            if (callback != null) {
-                callback.onTeleportSnap();
-            }
-        }, "SO2-AShell-Teleport-Thread").start();
-
+            applyDirectSensCommands(microChunkSize);
+            if (callback != null) callback.onTeleportSnap();
+        }).start();
+        running.set(true);
+        sessionTeleports.incrementAndGet();
         return true;
     }
 
-    /**
-     * Останавливает режим телепорта и возвращает стандартные настройки тача Android.
-     */
     public static synchronized void stopTeleport() {
-        if (!running.getAndSet(false)) return;
-        if (!isShizukuReady()) return;
-
-        new Thread(() -> {
-            String resetCmd =
-                    "settings put system pointer_speed 0; " +
-                    "settings put secure long_press_timeout 400; " +
-                    "settings put secure multi_press_timeout 300; " +
-                    "setprop view.scroll_friction 0.015 2>/dev/null; " +
-                    "cmd power set-fixed-performance-mode-enabled false 2>/dev/null;";
-            execCommand(resetCmd);
-        }, "SO2-AShell-Reset-Thread").start();
+        running.set(false);
+        if (isShizukuReady()) {
+            new Thread(() -> execCommand(
+                    "settings put system pointer_speed 0; "
+                    + "settings put secure multi_press_timeout 300; "
+                    + "settings put secure long_press_timeout 400; "
+                    + "cmd power set-fixed-performance-mode-enabled false 2>/dev/null"
+            )).start();
+        }
     }
 
-    /**
-     * Сохраняет выбранное соотношение сторон и базовые параметры экрана для плавающей кнопки.
-     */
     public static String setStretchConfig(String ratioCode, int baseShortSide, int baseLongSide, int baseDpi) {
         if (baseShortSide > 0 && baseLongSide > 0) {
             nativeShortSide = Math.min(baseShortSide, baseLongSide);
@@ -212,12 +194,9 @@ public class ShizukuManager {
         if (ratioCode != null && !ratioCode.isEmpty()) {
             selectedStretchRatio = ratioCode;
         }
-        return "Выбран формат " + selectedStretchRatio + " для кнопки растяга";
+        return "Выбран формат " + selectedStretchRatio;
     }
 
-    /**
-     * Применяет wm size и wm density (вызывается из FloatingButtonService).
-     */
     public static String applyStretch() {
         if (!isShizukuReady()) return "Нет прав Shizuku";
         int targetLong;
@@ -240,18 +219,19 @@ public class ShizukuManager {
         int targetDpi = Math.max(240, Math.round(nativeDpi * 0.92f));
 
         execCommand("wm size " + nativeShortSide + "x" + targetLong + "; wm density " + targetDpi);
+        screenWidth = targetLong;
+        screenHeight = nativeShortSide;
         stretchActive = true;
-        return "Растяг " + selectedStretchRatio + " включён (" + nativeShortSide + "x" + targetLong + ")";
+        return "Растяг " + selectedStretchRatio + " включён";
     }
 
-    /**
-     * Сбрасывает разрешение и плотность через wm size reset и wm density reset.
-     */
     public static String resetStretch() {
         if (!isShizukuReady()) return "Нет прав Shizuku";
         execCommand("wm size reset; wm density reset");
+        screenWidth = nativeLongSide;
+        screenHeight = nativeShortSide;
         stretchActive = false;
-        return "Экран растянут (сброшен к родным параметрам)";
+        return "Экран сброшен по умолчанию";
     }
 
     public static String runFpsBooster(boolean aggressive) {
@@ -268,7 +248,7 @@ public class ShizukuManager {
     public static String cleanRamBeforeGame() {
         if (!isShizukuReady()) return "Нет прав Shizuku";
         execCommand("am kill-all 2>/dev/null; cmd activity trim-memory RUNNING_CRITICAL 2>/dev/null");
-        return "ОЗУ успешно очищена перед матчем!";
+        return "ОЗУ успешно очищена!";
     }
 
     public static void setDoNotDisturb(boolean enable) {
