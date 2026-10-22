@@ -38,7 +38,6 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        // Сплошной тёмный фон #0a0e1a без прозрачности и без доступа к камере
         Window window = getWindow();
         if (window != null) {
             window.setBackgroundDrawable(new ColorDrawable(Color.parseColor("#0A0E1A")));
@@ -62,7 +61,6 @@ public class MainActivity extends AppCompatActivity {
         webView.addJavascriptInterface(new AppJsBridge(), "AndroidBridge");
         webView.loadUrl("file:///android_asset/index.html");
 
-        // Если плавающая кнопка была включена ранее — восстанавливаем её при запуске
         SharedPreferences prefs = getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE);
         if (prefs.getBoolean(FloatingButtonService.KEY_FLOAT_ENABLED, false)) {
             if (Settings.canDrawOverlays(this)) {
@@ -277,12 +275,13 @@ public class MainActivity extends AppCompatActivity {
         @JavascriptInterface
         public void selectPreset(String presetId) {
             ProfileManager.savePreset(MainActivity.this, presetId);
+            int c = ProfileManager.getChunk(MainActivity.this);
+            int t = ProfileManager.getThreshold(MainActivity.this);
+            int z = ProfileManager.getZone(MainActivity.this);
+            int h = ProfileManager.getPollHz(MainActivity.this);
+            ShizukuManager.updateLiveConfig(c, t, z, h, nativeLongSide, nativeShortSide);
             if (ShizukuManager.isTeleportRunning()) {
-                int c = ProfileManager.getChunk(MainActivity.this);
-                int t = ProfileManager.getThreshold(MainActivity.this);
-                int z = ProfileManager.getZone(MainActivity.this);
-                int h = ProfileManager.getPollHz(MainActivity.this);
-                ShizukuManager.updateLiveConfig(c, t, z, h, nativeLongSide, nativeShortSide);
+                triggerWebViewTeleportFlash();
             }
         }
 
@@ -327,9 +326,6 @@ public class MainActivity extends AppCompatActivity {
             return ShizukuManager.resetStretch();
         }
 
-        /**
-         * Управление плавающей кнопкой растяга (FloatingButtonService).
-         */
         @JavascriptInterface
         public String setFloatingStretchButton(boolean enabled) {
             SharedPreferences prefs = getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE);
@@ -356,7 +352,7 @@ public class MainActivity extends AppCompatActivity {
 
             prefs.edit().putBoolean(FloatingButtonService.KEY_FLOAT_ENABLED, true).apply();
             runOnUiThread(() -> startService(new Intent(MainActivity.this, FloatingButtonService.class)));
-            return "Плавающая кнопка 📐 включена! Нажмите её в Standoff 2 для растяга.";
+            return "Плавающая кнопка 📐 включена! Потяните её вниз в корзину, чтобы скрыть.";
         }
 
         @JavascriptInterface
