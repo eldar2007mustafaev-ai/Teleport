@@ -12,6 +12,7 @@ import android.os.Bundle;
 import android.provider.Settings;
 import android.util.DisplayMetrics;
 import android.view.Display;
+import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
 import android.webkit.JavascriptInterface;
@@ -27,29 +28,54 @@ public class MainActivity extends AppCompatActivity {
     public static final String TELEGRAM_BOT_URL = "https://t.me/so2_teleport_bot";
     public static final String TELEGRAM_CHANNEL_URL = "https://t.me/so2_teleport_updates";
     private static final String PREF_NAME = "so2_teleport_profile_prefs";
+    private static final int SHIZUKU_PERMISSION_REQUEST_CODE = 1001;
 
     private WebView webView;
     private int nativeLongSide = 2400;
     private int nativeShortSide = 1080;
     private int nativeDpi = 440;
 
+    private final Shizuku.OnRequestPermissionResultListener shizukuPermListener =
+            (requestCode, grantResult) -> {
+                if (requestCode == SHIZUKU_PERMISSION_REQUEST_CODE && grantResult == PackageManager.PERMISSION_GRANTED) {
+                    runOnUiThread(() -> {
+                        if (webView != null) {
+                            webView.evaluateJavascript("window.syncUiState && window.syncUiState();", null);
+                        }
+                    });
+                }
+            };
+
     @SuppressLint({"SetJavaScriptEnabled", "ClickableViewAccessibility"})
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
+        // 1. МГНОВЕННЫЙ ЗАПРОС ПРАВ SHIZUKU В НАЧАЛЕ onCreate (ДО setContentView)
+        try {
+            Shizuku.addRequestPermissionResultListener(shizukuPermListener);
+            if (Shizuku.pingBinder()) {
+                if (Shizuku.checkSelfPermission() != PackageManager.PERMISSION_GRANTED) {
+                    Shizuku.requestPermission(SHIZUKU_PERMISSION_REQUEST_CODE);
+                }
+            }
+        } catch (Throwable ignored) {}
+
+        // 2. Сплошной тёмный фон окна без прозрачности и без обращения к камере
         Window window = getWindow();
         if (window != null) {
-            window.setBackgroundDrawable(new ColorDrawable(Color.parseColor("#0A0E1A")));
-            window.setStatusBarColor(Color.parseColor("#0A0E1A"));
-            window.setNavigationBarColor(Color.parseColor("#0A0E1A"));
+            window.setBackgroundDrawable(new ColorDrawable(Color.parseColor("#060913")));
+            window.setStatusBarColor(Color.parseColor("#060913"));
+            window.setNavigationBarColor(Color.parseColor("#060913"));
         }
 
         captureDisplayMetrics();
         ShizukuManager.setStretchConfig("16:9", nativeShortSide, nativeLongSide, nativeDpi);
 
+        // 3. Инициализация WebView с аппаратным ускорением GPU (для плавного видео-фона и анимаций)
         webView = new WebView(this);
-        webView.setBackgroundColor(Color.parseColor("#0A0E1A"));
+        webView.setBackgroundColor(Color.parseColor("#060913"));
+        webView.setLayerType(View.LAYER_TYPE_HARDWARE, null);
         webView.setFocusable(true);
         webView.setFocusableInTouchMode(true);
         setContentView(webView);
@@ -57,10 +83,14 @@ public class MainActivity extends AppCompatActivity {
         WebSettings ws = webView.getSettings();
         ws.setJavaScriptEnabled(true);
         ws.setDomStorageEnabled(true);
+        ws.setAllowFileAccess(true);
+        ws.setMediaPlaybackRequiresUserGesture(false);
+        ws.setCacheMode(WebSettings.LOAD_NO_CACHE);
 
         webView.addJavascriptInterface(new AppJsBridge(), "AndroidBridge");
         webView.loadUrl("file:///android_asset/index.html");
 
+        // 4. Восстановление плавающей кнопки растяга, если она была включена
         SharedPreferences prefs = getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE);
         if (prefs.getBoolean(FloatingButtonService.KEY_FLOAT_ENABLED, false)) {
             if (Settings.canDrawOverlays(this)) {
@@ -95,6 +125,9 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
+        try {
+            Shizuku.removeRequestPermissionResultListener(shizukuPermListener);
+        } catch (Throwable ignored) {}
         ProfileManager.addTeleportCountToTotal(this, ShizukuManager.getSessionTeleports());
         ShizukuManager.stopTeleport();
     }
@@ -212,7 +245,7 @@ public class MainActivity extends AppCompatActivity {
                     }
                 }
                 if (Shizuku.checkSelfPermission() != PackageManager.PERMISSION_GRANTED) {
-                    Shizuku.requestPermission(1001);
+                    Shizuku.requestPermission(SHIZUKU_PERMISSION_REQUEST_CODE);
                     return "REQUESTING_PERMISSION";
                 }
                 return "ACTIVE";
@@ -280,9 +313,6 @@ public class MainActivity extends AppCompatActivity {
             int z = ProfileManager.getZone(MainActivity.this);
             int h = ProfileManager.getPollHz(MainActivity.this);
             ShizukuManager.updateLiveConfig(c, t, z, h, nativeLongSide, nativeShortSide);
-            if (ShizukuManager.isTeleportRunning()) {
-                triggerWebViewTeleportFlash();
-            }
         }
 
         @JavascriptInterface
@@ -352,7 +382,7 @@ public class MainActivity extends AppCompatActivity {
 
             prefs.edit().putBoolean(FloatingButtonService.KEY_FLOAT_ENABLED, true).apply();
             runOnUiThread(() -> startService(new Intent(MainActivity.this, FloatingButtonService.class)));
-            return "Плавающая кнопка 📐 включена! Потяните её вниз в корзину, чтобы скрыть.";
+            return "Плавающая кнопка 📐 включена!";
         }
 
         @JavascriptInterface
