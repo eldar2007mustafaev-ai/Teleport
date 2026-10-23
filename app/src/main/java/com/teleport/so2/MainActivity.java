@@ -25,7 +25,7 @@ import rikka.shizuku.Shizuku;
 public class MainActivity extends AppCompatActivity {
 
     public static final String APP_VERSION = "1.0.0";
-    public static final String TELEGRAM_BOT_URL = "https://t.me/so2_teleport_bot"; // ⚠️ Не забудь поменять на своего бота!
+    public static final String TELEGRAM_BOT_URL = "https://t.me/so2_teleport_bot";
     public static final String TELEGRAM_CHANNEL_URL = "https://t.me/so2_teleport_updates";
     private static final String PREF_NAME = "so2_teleport_profile_prefs";
     private static final int SHIZUKU_PERMISSION_REQUEST_CODE = 1001;
@@ -145,7 +145,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     // ==========================================
-    // НОВЫЙ КОД: Вычисление дельты для телепорта
+    // Вспомогательный метод вычисления дельты
     // ==========================================
     public static float computeTeleportDelta(float rawDelta, float snapMultiplier) {
         if (Math.abs(rawDelta) < 0.15f) return 0f;
@@ -441,31 +441,27 @@ public class MainActivity extends AppCompatActivity {
         public void setTeleportSnapPower(int snapPercent) {
             SharedPreferences prefs = getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE);
             prefs.edit().putInt("tp_snap_power", snapPercent).apply();
-            
+
             if (!ShizukuManager.isShizukuReady()) return;
 
             // 1. Максимальная кривая ускорения указателя
             ShizukuManager.execCommand("settings put system pointer_speed 7");
 
-            // 2. Обнуление фильтрации микродвижений
+            // 2. Обнуление фильтрации микродвижений (чтобы даже короткий флик сразу тепал прицел)
             ShizukuManager.execCommand("settings put secure touch_blocking_period 0.0");
             ShizukuManager.execCommand("settings put system touch.pressure.scale 0.001");
             ShizukuManager.execCommand("setprop windowsmgr.max_events_per_sec 240");
             ShizukuManager.execCommand("setprop ro.min_pointer_dur 1");
 
-            // 3. Отключение буферизации кадров тача в SurfaceFlinger
+            // 3. Отключение буферизации кадров тача в SurfaceFlinger (0 мс задержка вектора)
             ShizukuManager.execCommand("setprop debug.sf.latch_unsignaled 1");
             ShizukuManager.execCommand("setprop debug.sf.high_fps_early_phase_offset_ns -4000000");
 
-            // 4. Квантование шага для движка TeleportEngine
-            try {
-                // ⚠️ ВАЖНО: Если у тебя в проекте нет класса TeleportEngine, 
-                // эта строка вызовет ошибку сборки. В таком случае просто удали её 
-                // или скажи мне, и я перенесу эту логику в ShizukuManager.
-                TeleportEngine.setStepQuantization(true, snapPercent / 100.0f);
-            } catch (Exception e) {
-                // Игнорируем, если класса TeleportEngine временно нет
-            }
+            // 4. Квантование шага для движка TeleportEngine (пропуск промежуточных сэмплов)
+            TeleportEngine.setStepQuantization(true, snapPercent / 100.0f);
+            
+            // 5. Визуальная вспышка при активации
+            triggerWebViewTeleportFlash();
         }
     }
 }
