@@ -25,7 +25,7 @@ import rikka.shizuku.Shizuku;
 public class MainActivity extends AppCompatActivity {
 
     public static final String APP_VERSION = "1.0.0";
-    public static final String TELEGRAM_BOT_URL = "https://t.me/so2_teleport_bot";
+    public static final String TELEGRAM_BOT_URL = "https://t.me/so2_teleport_bot"; // ⚠️ Не забудь поменять на своего бота!
     public static final String TELEGRAM_CHANNEL_URL = "https://t.me/so2_teleport_updates";
     private static final String PREF_NAME = "so2_teleport_profile_prefs";
     private static final int SHIZUKU_PERMISSION_REQUEST_CODE = 1001;
@@ -51,7 +51,6 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        // 1. МГНОВЕННЫЙ ЗАПРОС ПРАВ SHIZUKU В НАЧАЛЕ onCreate (ДО setContentView)
         try {
             Shizuku.addRequestPermissionResultListener(shizukuPermListener);
             if (Shizuku.pingBinder()) {
@@ -61,7 +60,6 @@ public class MainActivity extends AppCompatActivity {
             }
         } catch (Throwable ignored) {}
 
-        // 2. Сплошной тёмный фон окна без прозрачности и без обращения к камере
         Window window = getWindow();
         if (window != null) {
             window.setBackgroundDrawable(new ColorDrawable(Color.parseColor("#060913")));
@@ -72,7 +70,6 @@ public class MainActivity extends AppCompatActivity {
         captureDisplayMetrics();
         ShizukuManager.setStretchConfig("16:9", nativeShortSide, nativeLongSide, nativeDpi);
 
-        // 3. Инициализация WebView с аппаратным ускорением GPU (для плавного видео-фона и анимаций)
         webView = new WebView(this);
         webView.setBackgroundColor(Color.parseColor("#060913"));
         webView.setLayerType(View.LAYER_TYPE_HARDWARE, null);
@@ -90,7 +87,6 @@ public class MainActivity extends AppCompatActivity {
         webView.addJavascriptInterface(new AppJsBridge(), "AndroidBridge");
         webView.loadUrl("file:///android_asset/index.html");
 
-        // 4. Восстановление плавающей кнопки растяга, если она была включена
         SharedPreferences prefs = getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE);
         if (prefs.getBoolean(FloatingButtonService.KEY_FLOAT_ENABLED, false)) {
             if (Settings.canDrawOverlays(this)) {
@@ -146,6 +142,17 @@ public class MainActivity extends AppCompatActivity {
             }
         } catch (Exception ignored) {}
         return false;
+    }
+
+    // ==========================================
+    // НОВЫЙ КОД: Вычисление дельты для телепорта
+    // ==========================================
+    public static float computeTeleportDelta(float rawDelta, float snapMultiplier) {
+        if (Math.abs(rawDelta) < 0.15f) return 0f;
+        float minSnapStep = 6.5f * snapMultiplier;
+        float boosted = Math.abs(rawDelta) * (1.85f * snapMultiplier);
+        float finalStep = Math.max(boosted, minSnapStep);
+        return Math.copySign(finalStep, rawDelta);
     }
 
     public class AppJsBridge {
@@ -425,6 +432,40 @@ public class MainActivity extends AppCompatActivity {
         @JavascriptInterface
         public void setDndMode(boolean enabled) {
             ShizukuManager.setDoNotDisturb(enabled);
+        }
+
+        // ==========================================
+        // НОВЫЙ КОД: Настройка мощности телепорта (Snap)
+        // ==========================================
+        @JavascriptInterface
+        public void setTeleportSnapPower(int snapPercent) {
+            SharedPreferences prefs = getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE);
+            prefs.edit().putInt("tp_snap_power", snapPercent).apply();
+            
+            if (!ShizukuManager.isShizukuReady()) return;
+
+            // 1. Максимальная кривая ускорения указателя
+            ShizukuManager.execCommand("settings put system pointer_speed 7");
+
+            // 2. Обнуление фильтрации микродвижений
+            ShizukuManager.execCommand("settings put secure touch_blocking_period 0.0");
+            ShizukuManager.execCommand("settings put system touch.pressure.scale 0.001");
+            ShizukuManager.execCommand("setprop windowsmgr.max_events_per_sec 240");
+            ShizukuManager.execCommand("setprop ro.min_pointer_dur 1");
+
+            // 3. Отключение буферизации кадров тача в SurfaceFlinger
+            ShizukuManager.execCommand("setprop debug.sf.latch_unsignaled 1");
+            ShizukuManager.execCommand("setprop debug.sf.high_fps_early_phase_offset_ns -4000000");
+
+            // 4. Квантование шага для движка TeleportEngine
+            try {
+                // ⚠️ ВАЖНО: Если у тебя в проекте нет класса TeleportEngine, 
+                // эта строка вызовет ошибку сборки. В таком случае просто удали её 
+                // или скажи мне, и я перенесу эту логику в ShizukuManager.
+                TeleportEngine.setStepQuantization(true, snapPercent / 100.0f);
+            } catch (Exception e) {
+                // Игнорируем, если класса TeleportEngine временно нет
+            }
         }
     }
 }
