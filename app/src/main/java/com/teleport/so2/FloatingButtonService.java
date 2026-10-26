@@ -67,7 +67,6 @@ public class FloatingButtonService extends Service {
                 ? WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY
                 : WindowManager.LayoutParams.TYPE_PHONE;
 
-        // Добавлен FLAG_NOT_TOUCH_MODAL, чтобы не блокировать системные жесты снизу
         params = new WindowManager.LayoutParams(
                 size,
                 size,
@@ -79,7 +78,7 @@ public class FloatingButtonService extends Service {
         );
         params.gravity = Gravity.TOP | Gravity.START;
         params.x = 50;
-        params.y = 300;
+        params.y = 260;
 
         floatingBtn.setOnTouchListener(new View.OnTouchListener() {
             private int initialX, initialY;
@@ -117,6 +116,8 @@ public class FloatingButtonService extends Service {
                         showTrash(false);
                         DisplayMetrics dmUp = getResources().getDisplayMetrics();
                         if (params.y > dmUp.heightPixels - 300) {
+                            getSharedPreferences("so2_teleport_prefs", Context.MODE_PRIVATE)
+                                    .edit().putBoolean("float_btn_enabled", false).apply();
                             stopSelf();
                             return true;
                         }
@@ -220,16 +221,16 @@ public class FloatingButtonService extends Service {
         isStretchedNow = !isStretchedNow;
         if (isStretchedNow) {
             DisplayMetrics dm = getResources().getDisplayMetrics();
-            int shortSide = Math.min(dm.widthPixels, dm.heightPixels);
-            int targetLongSide = Math.round(shortSide * 4f / 3f);
-            if ("3:2".equals(ratio)) targetLongSide = Math.round(shortSide * 3f / 2f);
-            else if ("16:10".equals(ratio)) targetLongSide = Math.round(shortSide * 16f / 10f);
-            else if ("16:9".equals(ratio)) targetLongSide = Math.round(shortSide * 16f / 9f);
+            int highShortSide = Math.max(Math.min(dm.widthPixels, dm.heightPixels), 1920);
+            int targetLongSide = Math.round(highShortSide * 4f / 3f);
+            if ("3:2".equals(ratio)) targetLongSide = Math.round(highShortSide * 3f / 2f);
+            else if ("16:10".equals(ratio)) targetLongSide = Math.round(highShortSide * 16f / 10f);
+            else if ("16:9".equals(ratio)) targetLongSide = Math.round(highShortSide * 16f / 9f);
 
-            final String cmd = "wm size " + shortSide + "x" + targetLongSide;
+            final String cmd = "wm size " + highShortSide + "x" + targetLongSide;
             new Thread(() -> ShizukuManager.execCommand(cmd)).start();
             floatingBtn.setText("⚡");
-            Toast.makeText(this, "Растяг " + ratio + " активен", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "Растяг " + ratio + " + Ультра-сенса", Toast.LENGTH_SHORT).show();
         } else {
             new Thread(() -> ShizukuManager.execCommand("wm size reset")).start();
             floatingBtn.setText("📐");
