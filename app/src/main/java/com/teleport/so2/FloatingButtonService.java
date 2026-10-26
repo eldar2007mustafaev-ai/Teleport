@@ -21,8 +21,11 @@ import android.widget.Toast;
 public class FloatingButtonService extends Service {
     private WindowManager windowManager;
     private TextView floatingBtn;
+    private TextView trashView;
     private WindowManager.LayoutParams params;
+    private WindowManager.LayoutParams trashParams;
     private boolean isStretchedNow = false;
+    private boolean isTrashShown = false;
 
     @Override
     public IBinder onBind(Intent intent) {
@@ -37,6 +40,7 @@ public class FloatingButtonService extends Service {
         }
         if (floatingBtn == null) {
             createFloatingButton();
+            createTrashView();
         }
         updateStealthFlag();
         return START_STICKY;
@@ -45,17 +49,17 @@ public class FloatingButtonService extends Service {
     private void createFloatingButton() {
         windowManager = (WindowManager) getSystemService(WINDOW_SERVICE);
         float density = getResources().getDisplayMetrics().density;
-        int size = (int) (50 * density);
+        int size = (int) (48 * density);
 
         floatingBtn = new TextView(this);
         floatingBtn.setText("📐");
-        floatingBtn.setTextSize(19);
+        floatingBtn.setTextSize(18);
         floatingBtn.setGravity(Gravity.CENTER);
         floatingBtn.setTextColor(Color.WHITE);
 
         GradientDrawable bg = new GradientDrawable();
         bg.setShape(GradientDrawable.OVAL);
-        bg.setColor(Color.parseColor("#CC0B192C"));
+        bg.setColor(Color.parseColor("#E60B192C"));
         bg.setStroke((int) (2 * density), Color.parseColor("#38BDF8"));
         floatingBtn.setBackground(bg);
 
@@ -67,17 +71,18 @@ public class FloatingButtonService extends Service {
                 size,
                 size,
                 overlayType,
-                WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE,
+                WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE |
+                WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN |
+                WindowManager.LayoutParams.FLAG_WATCH_OUTSIDE_TOUCH,
                 PixelFormat.TRANSLUCENT
         );
         params.gravity = Gravity.TOP | Gravity.START;
-        params.x = 60;
-        params.y = 240;
+        params.x = 50;
+        params.y = 300;
 
         floatingBtn.setOnTouchListener(new View.OnTouchListener() {
             private int initialX, initialY;
             private float initialTouchX, initialTouchY;
-            private long touchStartTime;
 
             @Override
             public boolean onTouch(View v, MotionEvent event) {
@@ -87,21 +92,39 @@ public class FloatingButtonService extends Service {
                         initialY = params.y;
                         initialTouchX = event.getRawX();
                         initialTouchY = event.getRawY();
-                        touchStartTime = System.currentTimeMillis();
+                        showTrash(true);
                         return true;
 
                     case MotionEvent.ACTION_MOVE:
-                        params.x = initialX + (int) (event.getRawX() - initialTouchX);
-                        params.y = initialY + (int) (event.getRawY() - initialTouchY);
+                        int newX = initialX + (int) (event.getRawX() - initialTouchX);
+                        int newY = initialY + (int) (event.getRawY() - initialTouchY);
+                        params.x = newX;
+                        params.y = newY;
                         try {
                             windowManager.updateViewLayout(floatingBtn, params);
                         } catch (Exception ignored) {}
+
+                        // Проверка попадания в зону корзины (вниз экрана)
+                        DisplayMetrics dm = getResources().getDisplayMetrics();
+                        if (newY > dm.heightPixels - 300) {
+                            if (trashView != null) trashView.setBackgroundColor(Color.parseColor("#88FF3366"));
+                        } else {
+                            if (trashView != null) trashView.setBackground(getTrashDrawable());
+                        }
                         return true;
 
                     case MotionEvent.ACTION_UP:
+                        showTrash(false);
+                        DisplayMetrics dmUp = getResources().getDisplayMetrics();
+                        if (params.y > dmUp.heightPixels - 300) {
+                            // Удаляем кнопку и останавливаем сервис
+                            stopSelf();
+                            return true;
+                        }
+
                         long dx = (long) Math.abs(event.getRawX() - initialTouchX);
                         long dy = (long) Math.abs(event.getRawY() - initialTouchY);
-                        if (dx < 15 && dy < 15 && (System.currentTimeMillis() - touchStartTime) < 300) {
+                        if (dx < 12 && dy < 12) {
                             toggleStretchOnTap();
                         }
                         return true;
@@ -113,6 +136,63 @@ public class FloatingButtonService extends Service {
         try {
             windowManager.addView(floatingBtn, params);
         } catch (Exception ignored) {}
+    }
+
+    private void createTrashView() {
+        float density = getResources().getDisplayMetrics().density;
+        trashView = new TextView(this);
+        trashView.setText("🗑️ Убрать");
+        trashView.setTextSize(14);
+        trashView.setGravity(Gravity.CENTER);
+        trashView.setTextColor(Color.WHITE);
+        trashView.setBackground(getTrashDrawable());
+
+        int overlayType = Build.VERSION.SDK_INT >= Build.VERSION_CODES.O
+                ? WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY
+                : WindowManager.LayoutParams.TYPE_PHONE;
+
+        trashParams = new WindowManager.LayoutParams(
+                (int) (140 * density),
+                (int) (48 * density),
+                overlayType,
+                WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE |
+                WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN,
+                PixelFormat.TRANSLUCENT
+        );
+        trashParams.gravity = Gravity.BOTTOM | Gravity.CENTER_HORIZONTAL;
+        trashParams.y = 80;
+    }
+
+    private GradientDrawable getTrashDrawable() {
+        float density = getResources().getDisplayMetrics().density;
+        GradientDrawable bg = new GradientDrawable();
+        bg.setShape(GradientDrawable.RECTANGLE);
+        bg.setCornerRadius(24 * density);
+        bg.setColor(Color.parseColor("#CC040914"));
+        bg.setStroke((int) (1.5 * density), Color.parseColor("#FB7185"));
+        return bg;
+    }
+
+    private void showTrash(boolean show) {
+        if (trashView == null || windowManager == null) return;
+        try {
+            if (show && !isSharedPreferencesStealth()) {
+                if (!isTrashShown) {
+                    windowManager.addView(trashView, trashParams);
+                    isTrashShown = true;
+                }
+            } else {
+                if (isTrashShown) {
+                    windowManager.removeView(trashView);
+                    isTrashShown = false;
+                }
+            }
+        } catch (Exception ignored) {}
+    }
+
+    private boolean isSharedPreferencesStealth() {
+        SharedPreferences prefs = getSharedPreferences("so2_teleport_prefs", Context.MODE_PRIVATE);
+        return prefs.getBoolean("stealth_overlays", false);
     }
 
     private void updateStealthFlag() {
@@ -131,7 +211,7 @@ public class FloatingButtonService extends Service {
 
     private void toggleStretchOnTap() {
         if (!ShizukuManager.isPermissionGranted()) {
-            Toast.makeText(this, "Сначала включите Shizuku!", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "Включите Shizuku для растяга!", Toast.LENGTH_SHORT).show();
             return;
         }
         SharedPreferences prefs = getSharedPreferences("so2_teleport_prefs", Context.MODE_PRIVATE);
@@ -149,17 +229,18 @@ public class FloatingButtonService extends Service {
             final String cmd = "wm size " + shortSide + "x" + targetLongSide;
             new Thread(() -> ShizukuManager.execCommand(cmd)).start();
             floatingBtn.setText("⚡");
-            Toast.makeText(this, "Растяг " + ratio + " включен", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "Растяг " + ratio + " активен", Toast.LENGTH_SHORT).show();
         } else {
             new Thread(() -> ShizukuManager.execCommand("wm size reset")).start();
             floatingBtn.setText("📐");
-            Toast.makeText(this, "Обычный экран возвращен", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "Обычный экран", Toast.LENGTH_SHORT).show();
         }
     }
 
     @Override
     public void onDestroy() {
         super.onDestroy();
+        showTrash(false);
         if (floatingBtn != null && windowManager != null) {
             try {
                 windowManager.removeView(floatingBtn);
