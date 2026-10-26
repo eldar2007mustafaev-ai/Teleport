@@ -1,133 +1,124 @@
 package com.teleport.so2;
 
 import android.content.Context;
-import android.graphics.PixelFormat;
-import android.os.Build;
-import android.os.Handler;
-import android.os.Looper;
-import android.provider.Settings;
-import android.view.Gravity;
-import android.view.View;
-import android.view.WindowManager;
 
 public class TeleportEngine {
     private static boolean active = false;
-    private static boolean stepQuantizationEnabled = true;
-    private static float snapPowerMultiplier = 6.0f;
+    private static float snapPowerMultiplier = 4.0f;
     private static String currentPreset = "teleport";
 
-    // Параметры продвинутой сенсы (из меню настройки)
-    private static float sensX = 1.0f;
-    private static float sensY = 1.0f;
+    // СВОИ ЧИСЛА (все параметры с 1-го видео)
+    private static float sharpness = 1.00f;
+    private static float sensX = 1.00f;
+    private static float sensY = 1.00f;
     private static int noiseCutoff = 3;
     private static int deadZone = 1;
-    private static int stickiness = 4;
-    private static float smoothing = 0.80f;
-    private static float acceleration = 0.0f;
-
-    private static WindowManager windowManager;
-    private static View quantumPulseView;
-    private static WindowManager.LayoutParams pulseParams;
-    private static final Handler pulseHandler = new Handler(Looper.getMainLooper());
-    private static boolean pulseToggle = false;
-
-    private static final Runnable quantumRunnable = new Runnable() {
-        @Override
-        public void run() {
-            if (!active || quantumPulseView == null || windowManager == null) return;
-            try {
-                pulseToggle = !pulseToggle;
-                pulseParams.x = pulseToggle ? 1 : 0;
-                windowManager.updateViewLayout(quantumPulseView, pulseParams);
-            } catch (Exception ignored) {}
-
-            long intervalMs = Math.max(28L, Math.min(55L, (long) (160f / Math.max(1f, snapPowerMultiplier))));
-            pulseHandler.postDelayed(this, intervalMs);
-        }
-    };
+    private static int prediction = 0;
+    private static int axisStick = 4;
+    private static int stickDelay = 29;
+    private static int stickStrength = 1;
+    private static int chunks = 10; // Главный параметр телепорта ("Куски")
+    private static int bypassChunks = 0;
+    private static int chunkCap = 0;
+    private static int chunksFaster = 0;
+    private static int shotPause = 0;
+    private static float accel = 0.00f;
+    private static float accelCurve = 0.30f;
+    private static int edgeRange = 0;
+    private static float straightening = 0.80f;
+    private static int axisGrip = 4;
+    private static int gripCap = 4;
 
     public static void initOverlayPulse(Context context) {
-        if (windowManager != null) return;
-        try {
-            Context appCtx = context.getApplicationContext();
-            windowManager = (WindowManager) appCtx.getSystemService(Context.WINDOW_SERVICE);
-            quantumPulseView = new View(appCtx);
-
-            int overlayType = Build.VERSION.SDK_INT >= Build.VERSION_CODES.O
-                    ? WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY
-                    : WindowManager.LayoutParams.TYPE_PHONE;
-
-            pulseParams = new WindowManager.LayoutParams(
-                    1, 1, overlayType,
-                    WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE
-                            | WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE
-                            | WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL
-                            | WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS,
-                    PixelFormat.TRANSLUCENT
-            );
-            pulseParams.gravity = Gravity.TOP | Gravity.START;
-            pulseParams.x = 0;
-            pulseParams.y = 0;
-        } catch (Exception ignored) {}
+        // Оверлей-пульсатор отключен навсегда: он вызывал лаг кликов и залипание иконок
     }
 
-    private static void startQuantumPulse(Context context) {
-        if (context != null) initOverlayPulse(context);
-        pulseHandler.post(() -> {
-            try {
-                if (context != null && Settings.canDrawOverlays(context) && quantumPulseView != null && windowManager != null) {
-                    if (quantumPulseView.getParent() == null) {
-                        windowManager.addView(quantumPulseView, pulseParams);
-                    }
-                    pulseHandler.removeCallbacks(quantumRunnable);
-                    pulseHandler.post(quantumRunnable);
-                }
-            } catch (Exception ignored) {}
-        });
+    public static void setStepQuantization(boolean enabled, float multiplier) {
+        snapPowerMultiplier = Math.max(1.0f, multiplier);
     }
 
-    private static void stopQuantumPulse() {
-        pulseHandler.post(() -> {
-            pulseHandler.removeCallbacks(quantumRunnable);
-            try {
-                if (quantumPulseView != null && quantumPulseView.getParent() != null && windowManager != null) {
-                    windowManager.removeView(quantumPulseView);
-                }
-            } catch (Exception ignored) {}
-        });
-    }
-
-    public static void setAdvancedSensParams(float sx, float sy, int noise, int dz, int stick, float smooth, float accel) {
+    public static void setCustomNumbers(
+            float sharp, float sx, float sy,
+            int noise, int dz, int pred,
+            int aStick, int sDelay, int sStrength,
+            int ch, int byCh, int chCap, int chFast, int sPause,
+            float ac, float acCurve, int eRange, float straight, int aGrip, int gCap
+    ) {
+        sharpness = sharp;
         sensX = sx;
         sensY = sy;
         noiseCutoff = noise;
         deadZone = dz;
-        stickiness = stick;
-        smoothing = smooth;
-        acceleration = accel;
-    }
+        prediction = pred;
+        axisStick = aStick;
+        stickDelay = sDelay;
+        stickStrength = sStrength;
+        chunks = ch;
+        bypassChunks = byCh;
+        chunkCap = chCap;
+        chunksFaster = chFast;
+        shotPause = sPause;
+        accel = ac;
+        accelCurve = acCurve;
+        edgeRange = eRange;
+        straightening = straight;
+        axisGrip = aGrip;
+        gripCap = gCap;
 
-    public static void setStepQuantization(boolean enabled, float multiplier) {
-        stepQuantizationEnabled = enabled;
-        snapPowerMultiplier = Math.max(1.0f, multiplier);
+        if (active && ShizukuManager.isPermissionGranted()) {
+            applyLiveQuantization();
+        }
     }
 
     public static boolean isActive() {
         return active;
     }
 
+    /**
+     * Расчет дискретного прыжка ("Кусков" телепорта) без сглаживания
+     */
     public static float computeTeleportDelta(float rawDelta) {
         float abs = Math.abs(rawDelta);
-        if (abs < (deadZone * 0.001f + 0.001f)) return 0f;
-        if (abs < (noiseCutoff * 0.002f)) return 0f;
+        if (abs < (deadZone * 0.0012f)) return 0f;
+        if (abs < (noiseCutoff * 0.0015f)) return 0f;
 
-        float effectiveMultiplier = snapPowerMultiplier * ((rawDelta > 0 ? sensX : sensY));
-        float instantSnapStep = 45.0f * effectiveMultiplier;
-        float finalStep = Math.max(abs * (12.0f + acceleration * 5f) * effectiveMultiplier, instantSnapStep);
-        
-        // Применение выпрямления и сглаживания
-        finalStep = finalStep * (1.0f - (smoothing * 0.15f));
+        float axisMult = (rawDelta >= 0 ? sensX : sensY) * sharpness;
+        float chunkStep = Math.max(1, chunks) * 4.8f * snapPowerMultiplier * axisMult;
+        float accelBoost = 1.0f + (float) Math.pow(abs, Math.max(0.1f, accelCurve)) * accel * 3.5f;
+        float predicted = (abs * (14.0f + prediction * 1.8f) * snapPowerMultiplier * axisMult) * accelBoost;
+
+        float finalStep = Math.max(predicted, chunkStep);
+        if (chunkCap > 0) {
+            finalStep = Math.min(finalStep, chunkCap * 18.0f);
+        }
         return Math.copySign(finalStep, rawDelta);
+    }
+
+    private static void applyLiveQuantization() {
+        new Thread(() -> {
+            // Чем больше "Куски" (chunks) и мощность УЛЬТРА, тем жестче квантуются пакеты тача:
+            // вместо плавной воды камера прыгает мгновенными рывками (как на 2-м видео)
+            int calcEvents;
+            int calcMinDur;
+
+            if ("smooth".equals(currentPreset)) {
+                calcEvents = 180;
+                calcMinDur = 2;
+            } else {
+                int effectiveChunks = Math.max(1, chunks + (int)(snapPowerMultiplier * 1.5f));
+                calcEvents = Math.max(12, Math.min(90, 115 - (effectiveChunks * 5)));
+                calcMinDur = Math.max(8, Math.min(65, effectiveChunks * 3));
+            }
+
+            String cmd =
+                "setprop ro.input.resampling 0; " +
+                "setprop debug.input.resampling 0; " +
+                "setprop windowsmgr.max_events_per_sec " + calcEvents + "; " +
+                "setprop ro.min_pointer_dur " + calcMinDur + "; " +
+                "setprop view.scroll_friction 0.0";
+
+            ShizukuManager.execCommand(cmd);
+        }).start();
     }
 
     public static void startTeleport(int snapPercent, String presetId) {
@@ -137,31 +128,36 @@ public class TeleportEngine {
     public static void startTeleport(Context context, int snapPercent, String presetId) {
         active = true;
         currentPreset = presetId != null ? presetId : "teleport";
-        snapPowerMultiplier = Math.max(3.0f, snapPercent / 45.0f);
-
-        startQuantumPulse(context);
+        snapPowerMultiplier = Math.max(2.0f, snapPercent / 50.0f);
 
         if (!ShizukuManager.isPermissionGranted()) return;
 
         new Thread(() -> {
+            int effectiveChunks = Math.max(1, chunks + (int)(snapPowerMultiplier * 1.5f));
+            int calcEvents = "smooth".equals(currentPreset) ? 180 : Math.max(12, Math.min(85, 110 - (effectiveChunks * 5)));
+            int calcMinDur = "smooth".equals(currentPreset) ? 2 : Math.max(10, Math.min(65, effectiveChunks * 3));
+
             String cmd =
-                // Безопасные тайминги (гарантированно убирают залипание нижней полоски и Google Assistant)
+                // 1. Снимаем все баги с долгим нажатием, фантомными тапами и Google Assistant:
                 "settings put secure long_press_timeout 500; " +
                 "settings put secure multi_press_timeout 300; " +
                 "settings delete secure tap_duration_threshold; " +
                 "settings delete secure touch_blocking_period; " +
+                "settings put system pointer_location 0; " +
+                "settings put system show_touches 0; " +
+                // 2. Максимальная резкость курсора и отключение системного сглаживания (resampling 0):
                 "settings put system pointer_speed 7; " +
-                "cmd game mode performance com.axlebolt.standoff2; " +
-                "cmd game downscale disable com.axlebolt.standoff2; " +
                 "setprop ro.input.resampling 0; " +
                 "setprop debug.input.resampling 0; " +
-                "setprop windowsmgr.max_events_per_sec 12; " +
-                "setprop ro.min_pointer_dur 60; " +
-                "setprop touch.pressure.scale 0.0001; " +
+                // 3. Дискретные рывки (эффект мгновенного телепорта прицела на фликах):
+                "setprop windowsmgr.max_events_per_sec " + calcEvents + "; " +
+                "setprop ro.min_pointer_dur " + calcMinDur + "; " +
                 "setprop view.scroll_friction 0.0; " +
                 "setprop debug.sf.latch_unsignaled 1; " +
                 "setprop debug.sf.disable_backpressure 1; " +
-                "setprop debug.hwui.use_buffer_age false";
+                "setprop debug.hwui.use_buffer_age false; " +
+                "cmd game mode performance com.axlebolt.standoff2; " +
+                "cmd game downscale disable com.axlebolt.standoff2";
 
             ShizukuManager.execCommand(cmd);
         }).start();
@@ -169,7 +165,6 @@ public class TeleportEngine {
 
     public static void stopTeleport() {
         active = false;
-        stopQuantumPulse();
         if (!ShizukuManager.isPermissionGranted()) return;
 
         new Thread(() -> {
