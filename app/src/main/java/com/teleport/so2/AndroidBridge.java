@@ -35,6 +35,8 @@ public class AndroidBridge {
     public void handleShizukuCardClick() {
         if (!isShizukuReady()) {
             requestShizukuPermission();
+        } else if (activity instanceof MainActivity) {
+            ((MainActivity) activity).healBrokenTouchTimeouts();
         }
     }
 
@@ -42,11 +44,11 @@ public class AndroidBridge {
     public boolean toggleTeleport() {
         isRunning = !isRunning;
         prefs.edit().putBoolean("teleport_running", isRunning).apply();
-        int snap = prefs.getInt("tp_snap_power", 350);
+        int snap = prefs.getInt("tp_snap_power", 400);
         String preset = prefs.getString("selected_preset", "teleport");
 
         if (isRunning) {
-            TeleportEngine.startTeleport(snap, preset);
+            TeleportEngine.startTeleport(activity, snap, preset);
         } else {
             TeleportEngine.stopTeleport();
         }
@@ -61,11 +63,11 @@ public class AndroidBridge {
     @JavascriptInterface
     public void selectPreset(String presetId) {
         prefs.edit().putString("selected_preset", presetId).apply();
-        int snap = prefs.getInt("tp_snap_power", 350);
+        int snap = prefs.getInt("tp_snap_power", 400);
         if (isShizukuReady()) {
             isRunning = true;
             prefs.edit().putBoolean("teleport_running", true).apply();
-            TeleportEngine.startTeleport(snap, presetId);
+            TeleportEngine.startTeleport(activity, snap, presetId);
         }
     }
 
@@ -73,9 +75,11 @@ public class AndroidBridge {
     public void setTeleportSnapPower(int snapPercent) {
         prefs.edit().putInt("tp_snap_power", snapPercent).apply();
         String preset = prefs.getString("selected_preset", "teleport");
-        TeleportEngine.setStepQuantization(true, snapPercent / 100.0f);
+        TeleportEngine.setStepQuantization(true, snapPercent / 55.0f);
         if (isShizukuReady()) {
-            TeleportEngine.startTeleport(snapPercent, preset);
+            isRunning = true;
+            prefs.edit().putBoolean("teleport_running", true).apply();
+            TeleportEngine.startTeleport(activity, snapPercent, preset);
         }
     }
 
@@ -124,7 +128,7 @@ public class AndroidBridge {
         if (activity instanceof MainActivity) {
             ((MainActivity) activity).applyResolutionRatio(ratio);
         }
-        return "Растяг " + ratio + " применён!";
+        return "Растяг " + ratio + " (Высокая сенса) применён!";
     }
 
     @JavascriptInterface
@@ -155,22 +159,26 @@ public class AndroidBridge {
         new Thread(() -> {
             if (enabled) {
                 ShizukuManager.execCommand(
+                    "settings put secure long_press_timeout 500; " +
+                    "settings put secure multi_press_timeout 300; " +
+                    "settings delete secure tap_duration_threshold; " +
+                    "settings delete secure touch_blocking_period; " +
                     "settings put system pointer_speed 7; " +
-                    "settings put secure long_press_timeout 120; " +
-                    "settings put secure multi_press_timeout 100; " +
-                    "setprop windowsmgr.max_events_per_sec 320; " +
-                    "setprop ro.min_pointer_dur 1"
+                    "setprop ro.input.resampling 0; " +
+                    "setprop debug.input.resampling 0; " +
+                    "setprop touch.pressure.scale 0.0001; " +
+                    "setprop view.scroll_friction 0.0"
                 );
             } else {
                 ShizukuManager.execCommand(
                     "settings put system pointer_speed 0; " +
-                    "settings put secure long_press_timeout 400; " +
-                    "settings put secure multi_press_timeout 300"
+                    "setprop ro.input.resampling 1; " +
+                    "setprop debug.input.resampling 1"
                 );
             }
         }).start();
 
-        return enabled ? "Touch Boost 240 Гц активен" : "Touch Boost выключен";
+        return enabled ? "Touch Boost активен (без залипания жестов)" : "Touch Boost выключен";
     }
 
     @JavascriptInterface
@@ -203,7 +211,6 @@ public class AndroidBridge {
         new Thread(() -> {
             if (enabled) {
                 ShizukuManager.execCommand(
-                    "am kill-all; " +
                     "settings put global window_animation_scale 0.0; " +
                     "settings put global transition_animation_scale 0.0; " +
                     "settings put global animator_duration_scale 0.0; " +
@@ -229,9 +236,10 @@ public class AndroidBridge {
 
         new Thread(() -> {
             if (enabled) {
+                // Отключаем мыльный даунскейл, чтобы не резать чувствительность пикселей
                 ShizukuManager.execCommand(
                     "cmd game mode performance com.axlebolt.standoff2; " +
-                    "cmd game downscale 0.85 com.axlebolt.standoff2; " +
+                    "cmd game downscale disable com.axlebolt.standoff2; " +
                     "setprop debug.hwui.renderer skiagl; " +
                     "setprop debug.sf.hw 1"
                 );
@@ -242,7 +250,7 @@ public class AndroidBridge {
             }
         }).start();
 
-        return enabled ? "Оптимизация пикселей включена" : "Стандартный рендер";
+        return enabled ? "Оптимизация рендера включена" : "Стандартный рендер";
     }
 
     @JavascriptInterface
