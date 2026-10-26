@@ -17,6 +17,7 @@ public class MainActivity extends AppCompatActivity {
     private WebView webView;
     private CrosshairOverlay crosshairOverlay;
     private int nativeShortSide = 1080;
+    private int nativeLongSide = 2340;
 
     @SuppressLint("SetJavaScriptEnabled")
     @Override
@@ -26,8 +27,13 @@ public class MainActivity extends AppCompatActivity {
         DisplayMetrics dm = new DisplayMetrics();
         getWindowManager().getDefaultDisplay().getRealMetrics(dm);
         nativeShortSide = Math.min(dm.widthPixels, dm.heightPixels);
+        nativeLongSide = Math.max(dm.widthPixels, dm.heightPixels);
 
+        TeleportEngine.initOverlayPulse(this);
         crosshairOverlay = new CrosshairOverlay(this);
+
+        // Автоматически лечим залипание нижней полоски и вызов Google при запуске
+        healBrokenTouchTimeouts();
 
         webView = new WebView(this);
         setContentView(webView);
@@ -41,6 +47,18 @@ public class MainActivity extends AppCompatActivity {
 
         webView.addJavascriptInterface(new AndroidBridge(this), "AndroidBridge");
         webView.loadUrl("file:///android_asset/index.html");
+    }
+
+    public void healBrokenTouchTimeouts() {
+        if (!ShizukuManager.isPermissionGranted()) return;
+        new Thread(() -> {
+            ShizukuManager.execCommand(
+                "settings put secure long_press_timeout 500; " +
+                "settings put secure multi_press_timeout 300; " +
+                "settings delete secure tap_duration_threshold; " +
+                "settings delete secure touch_blocking_period"
+            );
+        }).start();
     }
 
     public boolean checkAndRequestOverlayPermission() {
@@ -97,20 +115,22 @@ public class MainActivity extends AppCompatActivity {
             return;
         }
 
-        int shortSide = nativeShortSide > 0 ? nativeShortSide : 1080;
+        // Используем повышенную пиксельную базу (1920 по короткой стороне),
+        // чтобы в Standoff 2 было в 2 раза больше пикселей на миллиметр свайпа = взрывная сенса!
+        int highShortSide = Math.max(nativeShortSide, 1920);
         int targetLongSide;
 
         if ("4:3".equals(ratio)) {
-            targetLongSide = Math.round(shortSide * 4f / 3f);
+            targetLongSide = Math.round(highShortSide * 4f / 3f); // 1920x2560
         } else if ("3:2".equals(ratio)) {
-            targetLongSide = Math.round(shortSide * 3f / 2f);
+            targetLongSide = Math.round(highShortSide * 3f / 2f); // 1920x2880
         } else if ("16:10".equals(ratio)) {
-            targetLongSide = Math.round(shortSide * 16f / 10f);
+            targetLongSide = Math.round(highShortSide * 16f / 10f); // 1920x3072
         } else {
-            targetLongSide = Math.round(shortSide * 16f / 9f);
+            targetLongSide = Math.round(highShortSide * 16f / 9f); // 1920x3412
         }
 
-        final String cmd = "wm size " + shortSide + "x" + targetLongSide;
+        final String cmd = "wm size " + highShortSide + "x" + targetLongSide;
         new Thread(() -> ShizukuManager.execCommand(cmd)).start();
     }
 
