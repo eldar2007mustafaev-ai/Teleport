@@ -9,117 +9,98 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 
 public class ApiManager {
+    // Укажи здесь IP-адрес твоего сервера (или домен)
+    private static final String BASE_URL = "http://YOUR_SERVER_IP:8080";
 
-    // ⚠️ ВАЖНО: Замени на реальный IP или домен твоего сервера (где запущен bot.py на порту 8080)
-    // Пример: "http://192.168.1.100:8080" или "https://api.yourdomain.com"
-    public static final String SERVER_URL = "http://45.10.165.75:8080";
-    public static final boolean TEST_MODE = false; // Оставь false для работы с реальным сервером
+    public static String sendPostRequest(String endpoint, JSONObject jsonBody) {
+        try {
+            URL url = new URL(BASE_URL + endpoint);
+            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+            conn.setRequestMethod("POST");
+            conn.setRequestProperty("Content-Type", "application/json; utf-8");
+            conn.setRequestProperty("Accept", "application/json");
+            conn.setDoOutput(true);
+            conn.setConnectTimeout(5000);
+            conn.setReadTimeout(5000);
 
-    // ==========================================
-    // Методы, которые вызывает AndroidBridge (от Gemini)
-    // ==========================================
+            try (OutputStream os = conn.getOutputStream()) {
+                byte[] input = jsonBody.toString().getBytes("utf-8");
+                os.write(input, 0, input.length);
+            }
+
+            int code = conn.getResponseCode();
+            StringBuilder response = new StringBuilder();
+            try (BufferedReader br = new BufferedReader(new InputStreamReader(
+                    code >= 400 ? conn.getErrorStream() : conn.getInputStream(), "utf-8"))) {
+                String responseLine;
+                while ((responseLine = br.readLine()) != null) {
+                    response.append(responseLine.trim());
+                }
+            }
+            return response.toString();
+        } catch (Exception e) {
+            Log.e("ApiManager", "Network error: " + e.getMessage());
+            return "{\"status\":\"error\",\"message\":\"" + e.getMessage() + "\"}";
+        }
+    }
+
+    public static String getServerVersion() {
+        return "1.0.0";
+    }
+
+    public static String checkNickname(String nickname) {
+        try {
+            JSONObject json = new JSONObject();
+            json.put("nickname", nickname);
+            return sendPostRequest("/check_nick", json);
+        } catch (Exception e) {
+            return "{\"status\":\"error\"}";
+        }
+    }
+
+    public static String checkNickname(String nickname, String key) {
+        return checkNickname(nickname);
+    }
+
+    public static String activateKey(String nickname, String key, String androidId) {
+        return activateLicense(key, androidId, nickname);
+    }
 
     public static String activateLicense(String key, String androidId, String nickname) {
         try {
-            URL url = new URL(SERVER_URL + "/activate");
-            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-            conn.setRequestMethod("POST");
-            conn.setRequestProperty("Content-Type", "application/json");
-            conn.setConnectTimeout(5000);
-            conn.setReadTimeout(5000);
-            conn.setDoOutput(true);
-
             JSONObject json = new JSONObject();
             json.put("key", key);
             json.put("android_id", androidId);
             json.put("nickname", nickname);
-
-            OutputStream os = conn.getOutputStream();
-            os.write(json.toString().getBytes());
-            os.close();
-
-            BufferedReader reader = new BufferedReader(new InputStreamReader(conn.getInputStream()));
-            StringBuilder sb = new StringBuilder();
-            String line;
-            while ((line = reader.readLine()) != null) {
-                sb.append(line);
-            }
-            reader.close();
-            return sb.toString();
+            return sendPostRequest("/activate", json);
         } catch (Exception e) {
-            Log.e("ApiManager", "activateLicense error: " + e.getMessage());
-            return "{\"status\":\"error\",\"message\":\"Ошибка сети: " + e.getMessage() + "\"}";
+            return "{\"status\":\"error\",\"message\":\"JSON error\"}";
         }
     }
 
     public static String verifyLicense(String key, String androidId) {
         try {
-            URL url = new URL(SERVER_URL + "/verify");
-            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-            conn.setRequestMethod("POST");
-            conn.setRequestProperty("Content-Type", "application/json");
-            conn.setConnectTimeout(5000);
-            conn.setReadTimeout(5000);
-            conn.setDoOutput(true);
-
             JSONObject json = new JSONObject();
             json.put("key", key);
             json.put("android_id", androidId);
-
-            OutputStream os = conn.getOutputStream();
-            os.write(json.toString().getBytes());
-            os.close();
-
-            BufferedReader reader = new BufferedReader(new InputStreamReader(conn.getInputStream()));
-            StringBuilder sb = new StringBuilder();
-            String line;
-            while ((line = reader.readLine()) != null) {
-                sb.append(line);
-            }
-            reader.close();
-            return sb.toString();
+            return sendPostRequest("/verify", json);
         } catch (Exception e) {
-            Log.e("ApiManager", "verifyLicense error: " + e.getMessage());
-            return "{\"status\":\"error\",\"blocked\":true,\"message\":\"Ошибка сети\"}";
+            return "{\"status\":\"error\",\"blocked\":true}";
         }
+    }
+
+    public static void saveCloudPreset(String key, String presetJson) {
+        new Thread(() -> {
+            try {
+                JSONObject json = new JSONObject();
+                json.put("key", key);
+                json.put("preset_json", presetJson);
+                sendPostRequest("/sync_preset", json);
+            } catch (Exception ignored) {}
+        }).start();
     }
 
     public static void saveCloudPreset(String key, String androidId, String presetJson) {
-        try {
-            URL url = new URL(SERVER_URL + "/sync_preset");
-            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-            conn.setRequestMethod("POST");
-            conn.setRequestProperty("Content-Type", "application/json");
-            conn.setConnectTimeout(5000);
-            conn.setReadTimeout(5000);
-            conn.setDoOutput(true);
-
-            JSONObject json = new JSONObject();
-            json.put("key", key);
-            json.put("android_id", androidId);
-            json.put("preset_json", presetJson);
-
-            OutputStream os = conn.getOutputStream();
-            os.write(json.toString().getBytes());
-            os.close();
-
-            // Читаем ответ, чтобы соединение закрылось корректно
-            BufferedReader reader = new BufferedReader(new InputStreamReader(conn.getInputStream()));
-            StringBuilder sb = new StringBuilder();
-            String line;
-            while ((line = reader.readLine()) != null) {
-                sb.append(line);
-            }
-            reader.close();
-        } catch (Exception e) {
-            Log.e("ApiManager", "saveCloudPreset error: " + e.getMessage());
-        }
-    }
-
-    // ==========================================
-    // Заглушки для совместимости (если вдруг вызываются где-то еще)
-    // ==========================================
-    public static String checkKeyStatus(String key) {
-        return "{\"status\":\"ok\"}";
+        saveCloudPreset(key, presetJson);
     }
 }
