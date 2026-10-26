@@ -40,12 +40,12 @@ public class ApiManager {
             return response.toString();
         } catch (Exception e) {
             Log.e("ApiManager", "Network error: " + e.getMessage());
-            return "{\"status\":\"error\",\"message\":\"" + e.getMessage() + "\"}";
+            return "{\"status\":\"error\",\"ok\":false,\"message\":\"Сервер недоступен или нет сети\"}";
         }
     }
 
     public static String getServerVersion() {
-        return "2.0.0";
+        return "2.1.0";
     }
 
     public static String checkNickname(String nickname) {
@@ -54,7 +54,7 @@ public class ApiManager {
             json.put("nickname", nickname);
             return sendPostRequest("/check_nick", json);
         } catch (Exception e) {
-            return "{\"status\":\"error\"}";
+            return "{\"status\":\"error\",\"ok\":false}";
         }
     }
 
@@ -67,25 +67,31 @@ public class ApiManager {
     }
 
     public static String activateLicense(String key, String androidId, String nickname) {
+        if (key == null || key.trim().length() < 6 || nickname == null || nickname.trim().isEmpty()) {
+            return "{\"status\":\"error\",\"ok\":false,\"message\":\"Введите логин и корректный ключ!\"}";
+        }
         try {
             JSONObject json = new JSONObject();
-            json.put("key", key);
+            json.put("key", key.trim().toUpperCase());
             json.put("android_id", androidId);
-            json.put("nickname", nickname);
+            json.put("nickname", nickname.trim());
             return sendPostRequest("/activate", json);
         } catch (Exception e) {
-            return "{\"status\":\"error\",\"message\":\"JSON error\"}";
+            return "{\"status\":\"error\",\"ok\":false,\"message\":\"Ошибка проверки ключа\"}";
         }
     }
 
     public static String verifyLicense(String key, String androidId) {
+        if (key == null || key.trim().length() < 6) {
+            return "{\"status\":\"need_auth\",\"ok\":false,\"blocked\":false}";
+        }
         try {
             JSONObject json = new JSONObject();
-            json.put("key", key);
+            json.put("key", key.trim().toUpperCase());
             json.put("android_id", androidId);
             return sendPostRequest("/verify", json);
         } catch (Exception e) {
-            return "{\"status\":\"ok\",\"blocked\":false}";
+            return "{\"status\":\"error\",\"ok\":false,\"blocked\":false}";
         }
     }
 
