@@ -6,102 +6,175 @@ import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.PixelFormat;
 import android.os.Build;
+import android.provider.Settings;
 import android.view.Gravity;
 import android.view.View;
 import android.view.WindowManager;
 
 public class CrosshairOverlay {
+    private final Context context;
+    private final WindowManager windowManager;
+    private CrosshairView crosshairView;
+    private WindowManager.LayoutParams params;
 
-    private static View overlayView = null;
-    private static String currentShape = "cross";
+    private String shape = "off";
+    private int scalePercent = 50;
+    private int opacityPercent = 100;
+    private int colorValue = Color.parseColor("#38BDF8");
+    private boolean stealthMode = false;
+    private boolean isShowing = false;
 
-    public static void show(Context context, String shape) {
-        currentShape = shape != null ? shape : "cross";
-        WindowManager wm = (WindowManager) context.getApplicationContext().getSystemService(Context.WINDOW_SERVICE);
-        if (wm == null) return;
+    public CrosshairOverlay(Context context) {
+        this.context = context;
+        this.windowManager = (WindowManager) context.getSystemService(Context.WINDOW_SERVICE);
+    }
 
-        if (overlayView != null) {
-            overlayView.invalidate();
-            return;
-        }
-
-        overlayView = new View(context.getApplicationContext()) {
-            private final Paint paint = new Paint(Paint.ANTI_ALIAS_FLAG);
-
-            @Override
-            protected void onDraw(Canvas canvas) {
-                super.onDraw(canvas);
-                float cx = getWidth() / 2f;
-                float cy = getHeight() / 2f;
-
-                paint.setColor(Color.parseColor("#00FF88"));
-                paint.setStrokeWidth(5f);
-                paint.setStyle(Paint.Style.STROKE);
-                paint.setShadowLayer(10f, 0f, 0f, Color.parseColor("#00D4FF"));
-
-                switch (currentShape) {
-                    case "dot":
-                        paint.setStyle(Paint.Style.FILL);
-                        canvas.drawCircle(cx, cy, 7f, paint);
-                        break;
-                    case "tshape":
-                        canvas.drawLine(cx - 24f, cy, cx - 6f, cy, paint);
-                        canvas.drawLine(cx + 6f, cy, cx + 24f, cy, paint);
-                        canvas.drawLine(cx, cy + 6f, cx, cy + 24f, paint);
-                        break;
-                    case "corners":
-                        float s = 20f;
-                        float l = 9f;
-                        canvas.drawLine(cx - s, cy - s, cx - s + l, cy - s, paint);
-                        canvas.drawLine(cx - s, cy - s, cx - s, cy - s + l, paint);
-                        canvas.drawLine(cx + s, cy - s, cx + s - l, cy - s, paint);
-                        canvas.drawLine(cx + s, cy - s, cx + s, cy - s + l, paint);
-                        canvas.drawLine(cx - s, cy + s, cx - s + l, cy + s, paint);
-                        canvas.drawLine(cx - s, cy + s, cx - s, cy + s - l, paint);
-                        canvas.drawLine(cx + s, cy + s, cx + s - l, cy + s, paint);
-                        canvas.drawLine(cx + s, cy + s, cx + s, cy + s - l, paint);
-                        break;
-                    case "cross":
-                    default:
-                        canvas.drawLine(cx - 24f, cy, cx - 6f, cy, paint);
-                        canvas.drawLine(cx + 6f, cy, cx + 24f, cy, paint);
-                        canvas.drawLine(cx, cy - 24f, cx, cy - 6f, paint);
-                        canvas.drawLine(cx, cy + 6f, cx, cy + 24f, paint);
-                        break;
-                }
-            }
-        };
-
-        int layoutFlag = (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O)
-                ? WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY
-                : WindowManager.LayoutParams.TYPE_PHONE;
-
-        WindowManager.LayoutParams params = new WindowManager.LayoutParams(
-                140,
-                140,
-                layoutFlag,
-                WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE
-                        | WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE
-                        | WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN,
-                PixelFormat.TRANSLUCENT
-        );
-        params.gravity = Gravity.CENTER;
-
-        try {
-            wm.addView(overlayView, params);
-        } catch (Throwable ignored) {
-            overlayView = null;
+    public void setShape(String newShape) {
+        this.shape = newShape != null ? newShape : "off";
+        if ("off".equalsIgnoreCase(this.shape)) {
+            hide();
+        } else {
+            show();
+            refresh();
         }
     }
 
-    public static void hide(Context context) {
-        if (overlayView == null) return;
-        WindowManager wm = (WindowManager) context.getApplicationContext().getSystemService(Context.WINDOW_SERVICE);
-        if (wm != null) {
+    public void setScale(int scale) {
+        this.scalePercent = Math.max(10, Math.min(100, scale));
+        refresh();
+    }
+
+    public void setOpacity(int opacity) {
+        this.opacityPercent = Math.max(20, Math.min(100, opacity));
+        refresh();
+    }
+
+    public void setColorHex(String hex) {
+        try {
+            this.colorValue = Color.parseColor(hex);
+            refresh();
+        } catch (Exception ignored) {}
+    }
+
+    public void setStealthMode(boolean stealth) {
+        this.stealthMode = stealth;
+        if (isShowing && params != null && crosshairView != null) {
             try {
-                wm.removeView(overlayView);
-            } catch (Throwable ignored) {}
+                if (stealth) {
+                    params.flags |= WindowManager.LayoutParams.FLAG_SECURE;
+                } else {
+                    params.flags &= ~WindowManager.LayoutParams.FLAG_SECURE;
+                }
+                windowManager.updateViewLayout(crosshairView, params);
+            } catch (Exception ignored) {}
         }
-        overlayView = null;
+    }
+
+    public void show() {
+        if (!Settings.canDrawOverlays(context)) return;
+        if (isShowing) {
+            refresh();
+            return;
+        }
+        try {
+            if (crosshairView == null) {
+                crosshairView = new CrosshairView(context);
+            }
+            int overlayType = Build.VERSION.SDK_INT >= Build.VERSION_CODES.O
+                    ? WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY
+                    : WindowManager.LayoutParams.TYPE_PHONE;
+
+            int flags = WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE
+                    | WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE
+                    | WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN;
+
+            if (stealthMode) {
+                flags |= WindowManager.LayoutParams.FLAG_SECURE;
+            }
+
+            int sizePx = (int) (120 * context.getResources().getDisplayMetrics().density);
+            params = new WindowManager.LayoutParams(
+                    sizePx,
+                    sizePx,
+                    overlayType,
+                    flags,
+                    PixelFormat.TRANSLUCENT
+            );
+            params.gravity = Gravity.CENTER;
+
+            windowManager.addView(crosshairView, params);
+            isShowing = true;
+            crosshairView.invalidate();
+        } catch (Exception ignored) {}
+    }
+
+    public void hide() {
+        if (!isShowing || crosshairView == null) return;
+        try {
+            windowManager.removeView(crosshairView);
+        } catch (Exception ignored) {}
+        isShowing = false;
+    }
+
+    public void refresh() {
+        if (crosshairView != null && isShowing) {
+            crosshairView.invalidate();
+        }
+    }
+
+    private class CrosshairView extends View {
+        private final Paint paint = new Paint(Paint.ANTI_ALIAS_FLAG);
+        private final Paint strokeOutline = new Paint(Paint.ANTI_ALIAS_FLAG);
+
+        public CrosshairView(Context ctx) {
+            super(ctx);
+            strokeOutline.setColor(Color.BLACK);
+            strokeOutline.setStyle(Paint.Style.STROKE);
+        }
+
+        @Override
+        protected void onDraw(Canvas canvas) {
+            super.onDraw(canvas);
+            if ("off".equalsIgnoreCase(shape)) return;
+
+            float density = getResources().getDisplayMetrics().density;
+            float cx = getWidth() / 2f;
+            float cy = getHeight() / 2f;
+
+            float len = (5f + (scalePercent / 100f) * 16f) * density;
+            float gap = (2f + (scalePercent / 100f) * 6f) * density;
+            float thickness = 2.2f * density;
+
+            int alpha = Math.round((opacityPercent / 100f) * 255f);
+            paint.setColor(colorValue);
+            paint.setAlpha(alpha);
+            paint.setStrokeWidth(thickness);
+
+            strokeOutline.setAlpha(Math.min(200, alpha));
+            strokeOutline.setStrokeWidth(thickness + 1.5f * density);
+
+            if ("dot".equalsIgnoreCase(shape)) {
+                paint.setStyle(Paint.Style.FILL);
+                float r = Math.max(2.5f * density, len * 0.25f);
+                canvas.drawCircle(cx, cy, r + 1f, strokeOutline);
+                canvas.drawCircle(cx, cy, r, paint);
+            } else if ("tshape".equalsIgnoreCase(shape)) {
+                paint.setStyle(Paint.Style.STROKE);
+                canvas.drawLine(cx - len, cy, cx - gap, cy, paint);
+                canvas.drawLine(cx + gap, cy, cx + len, cy, paint);
+                canvas.drawLine(cx, cy + gap, cx, cy + len, paint);
+            } else if ("box".equalsIgnoreCase(shape)) {
+                paint.setStyle(Paint.Style.STROKE);
+                float half = len * 0.7f;
+                canvas.drawRect(cx - half, cy - half, cx + half, cy + half, paint);
+            } else {
+                // Крест (cross)
+                paint.setStyle(Paint.Style.STROKE);
+                canvas.drawLine(cx - len, cy, cx - gap, cy, paint);
+                canvas.drawLine(cx + gap, cy, cx + len, cy, paint);
+                canvas.drawLine(cx, cy - len, cx, cy - gap, paint);
+                canvas.drawLine(cx, cy + gap, cx, cy + len, paint);
+            }
+        }
     }
 }
