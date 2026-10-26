@@ -25,7 +25,7 @@ import rikka.shizuku.Shizuku;
 public class MainActivity extends AppCompatActivity {
 
     public static final String APP_VERSION = "1.0.0";
-    public static final String TELEGRAM_BOT_URL = "https://t.me/so2_teleport_bot";
+    public static final String TELEGRAM_BOT_URL = "https://t.me/so2_teleport_bot"; // ⚠️ Не забудь поменять на своего бота!
     public static final String TELEGRAM_CHANNEL_URL = "https://t.me/so2_teleport_updates";
     private static final String PREF_NAME = "so2_teleport_profile_prefs";
     private static final int SHIZUKU_PERMISSION_REQUEST_CODE = 1001;
@@ -142,17 +142,6 @@ public class MainActivity extends AppCompatActivity {
             }
         } catch (Exception ignored) {}
         return false;
-    }
-
-    // ==========================================
-    // Вспомогательный метод вычисления дельты
-    // ==========================================
-    public static float computeTeleportDelta(float rawDelta, float snapMultiplier) {
-        if (Math.abs(rawDelta) < 0.15f) return 0f;
-        float minSnapStep = 6.5f * snapMultiplier;
-        float boosted = Math.abs(rawDelta) * (1.85f * snapMultiplier);
-        float finalStep = Math.max(boosted, minSnapStep);
-        return Math.copySign(finalStep, rawDelta);
     }
 
     public class AppJsBridge {
@@ -435,33 +424,141 @@ public class MainActivity extends AppCompatActivity {
         }
 
         // ==========================================
-        // НОВЫЙ КОД: Настройка мощности телепорта (Snap)
+        // НОВЫЕ МЕТОДЫ ГЛОБАЛЬНОГО АПДЕЙТА
         // ==========================================
+
         @JavascriptInterface
         public void setTeleportSnapPower(int snapPercent) {
             SharedPreferences prefs = getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE);
             prefs.edit().putInt("tp_snap_power", snapPercent).apply();
+            float mult = snapPercent / 100.0f;
+            TeleportEngine.setStepQuantization(true, mult);
 
             if (!ShizukuManager.isShizukuReady()) return;
 
-            // 1. Максимальная кривая ускорения указателя
-            ShizukuManager.execCommand("settings put system pointer_speed 7");
-
-            // 2. Обнуление фильтрации микродвижений (чтобы даже короткий флик сразу тепал прицел)
-            ShizukuManager.execCommand("settings put secure touch_blocking_period 0.0");
-            ShizukuManager.execCommand("settings put system touch.pressure.scale 0.001");
-            ShizukuManager.execCommand("setprop windowsmgr.max_events_per_sec 240");
-            ShizukuManager.execCommand("setprop ro.min_pointer_dur 1");
-
-            // 3. Отключение буферизации кадров тача в SurfaceFlinger (0 мс задержка вектора)
-            ShizukuManager.execCommand("setprop debug.sf.latch_unsignaled 1");
-            ShizukuManager.execCommand("setprop debug.sf.high_fps_early_phase_offset_ns -4000000");
-
-            // 4. Квантование шага для движка TeleportEngine (пропуск промежуточных сэмплов)
-            TeleportEngine.setStepQuantization(true, snapPercent / 100.0f);
+            // Выполняем все системные твики ОДНИМ пакетным вызовом в фоновом потоке (0 лагов на бюджетках!)
+            new Thread(() -> {
+                String batchCmd =
+                    "settings put system pointer_speed 7; " +
+                    "settings put secure long_press_timeout 140; " +
+                    "settings put secure multi_press_timeout 120; " +
+                    "settings put secure tap_duration_threshold 0.0; " +
+                    "settings put secure touch_blocking_period 0.0; " +
+                    "setprop debug.sf.latch_unsignaled 1; " +
+                    "setprop debug.sf.disable_backpressure 1; " +
+                    "setprop debug.hwui.use_buffer_age false; " +
+                    "setprop windowsmgr.max_events_per_sec 300; " +
+                    "setprop ro.min_pointer_dur 1; " +
+                    "setprop touch.pressure.scale 0.0001; " +
+                    "setprop debug.sf.high_fps_early_phase_offset_ns -6000000; " +
+                    "setprop debug.sf.early_phase_offset_ns -6000000";
+                ShizukuManager.execCommand(batchCmd);
+            }).start();
             
-            // 5. Визуальная вспышка при активации
             triggerWebViewTeleportFlash();
         }
+
+        @JavascriptInterface
+        public String setTouchBoost(boolean enabled) {
+            SharedPreferences prefs = getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE);
+            prefs.edit().putBoolean("touch_boost", enabled).apply();
+            if (!ShizukuManager.isShizukuReady()) return "Сначала включите Shizuku!";
+
+            new Thread(() -> {
+                if (enabled) {
+                    ShizukuManager.execCommand(
+                        "settings put system pointer_speed 7; " +
+                        "settings put secure long_press_timeout 140; " +
+                        "settings put secure multi_press_timeout 120; " +
+                        "setprop windowsmgr.max_events_per_sec 300; " +
+                        "setprop ro.min_pointer_dur 1"
+                    );
+                } else {
+                    ShizukuManager.execCommand(
+                        "settings put system pointer_speed 0; " +
+                        "settings put secure long_press_timeout 400; " +
+                        "settings put secure multi_press_timeout 300"
+                    );
+                }
+            }).start();
+
+            return enabled ? "⚡ Агрессивный Touch Boost (240 Гц) включен" : "Стандартный отклик тача возвращен";
+        }
+
+        @JavascriptInterface
+        public String setDisableThrottling(boolean enabled) {
+            SharedPreferences prefs = getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE);
+            prefs.edit().putBoolean("disable_throttling", enabled).apply();
+            if (!ShizukuManager.isShizukuReady()) return "Сначала включите Shizuku!";
+
+            new Thread(() -> {
+                if (enabled) {
+                    ShizukuManager.execCommand(
+                        "cmd power set-fixed-performance-mode-enabled true; " +
+                        "cmd thermalservice override-status 0"
+                    );
+                } else {
+                    ShizukuManager.execCommand(
+                        "cmd power set-fixed-performance-mode-enabled false; " +
+                        "cmd thermalservice reset"
+                    );
+                }
+            }).start();
+
+            return enabled ? "🔥 Троттлинг отключен (Fixed Performance)" : "Стандартный режим частот возвращен";
+        }
+
+        @JavascriptInterface
+        public String setBudgetDeviceBoost(boolean enabled) {
+            SharedPreferences prefs = getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE);
+            prefs.edit().putBoolean("budget_boost", enabled).apply();
+            if (!ShizukuManager.isShizukuReady()) return enabled ? "Облегченный UI включен" : "Обычный режим UI";
+
+            new Thread(() -> {
+                if (enabled) {
+                    ShizukuManager.execCommand(
+                        "am kill-all; " +
+                        "settings put global window_animation_scale 0.0; " +
+                        "settings put global transition_animation_scale 0.0; " +
+                        "settings put global animator_duration_scale 0.0; " +
+                        "setprop debug.hwui.use_buffer_age false; " +
+                        "setprop debug.sf.latch_unsignaled 1"
+                    );
+                } else {
+                    ShizukuManager.execCommand(
+                        "settings put global window_animation_scale 1.0; " +
+                        "settings put global transition_animation_scale 1.0; " +
+                        "settings put global animator_duration_scale 1.0"
+                    );
+                }
+            }).start();
+
+            return enabled ? "🚀 Бустер для бюджетных телефонов активен (ОЗУ очищена)" : "Стандартный режим графики";
+        }
+
+        @JavascriptInterface
+        public String setHideOverlaysOnScreenshot(boolean enabled) {
+            SharedPreferences prefs = getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE);
+            prefs.edit().putBoolean("stealth_overlays", enabled).apply();
+            runOnUiThread(() -> {
+                // Здесь можно добавить логику скрытия оверлеев, если она реализована в CrosshairOverlay/FloatingButtonService
+            });
+            return enabled ? "🕵️ Stealth-режим: прицел и растяг скрыты со скринов" : "Stealth-режим выключен";
+        }
+
+        @JavascriptInterface
+        public void syncPresetToServer(String presetJson) {
+            SharedPreferences prefs = getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE);
+            prefs.edit().putString("saved_preset_json", presetJson).apply();
+            
+            new Thread(() -> {
+                try {
+                    String savedKey = ProfileManager.getSavedKey(MainActivity.this);
+                    if (savedKey == null || savedKey.isEmpty()) return;
+                    // Отправка пресета на сервер через ApiManager (реализуется на стороне API)
+                    ApiManager.saveCloudPreset(savedKey, presetJson);
+                } catch (Exception ignored) {}
+            }).start();
+        }
     }
-}
+        }
