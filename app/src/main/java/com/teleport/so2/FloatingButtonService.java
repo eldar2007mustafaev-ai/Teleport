@@ -67,13 +67,14 @@ public class FloatingButtonService extends Service {
                 ? WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY
                 : WindowManager.LayoutParams.TYPE_PHONE;
 
+        // Добавлен FLAG_NOT_TOUCH_MODAL, чтобы не блокировать системные жесты снизу
         params = new WindowManager.LayoutParams(
                 size,
                 size,
                 overlayType,
                 WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE |
-                WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN |
-                WindowManager.LayoutParams.FLAG_WATCH_OUTSIDE_TOUCH,
+                WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL |
+                WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN,
                 PixelFormat.TRANSLUCENT
         );
         params.gravity = Gravity.TOP | Gravity.START;
@@ -104,7 +105,6 @@ public class FloatingButtonService extends Service {
                             windowManager.updateViewLayout(floatingBtn, params);
                         } catch (Exception ignored) {}
 
-                        // Проверка попадания в зону корзины (вниз экрана)
                         DisplayMetrics dm = getResources().getDisplayMetrics();
                         if (newY > dm.heightPixels - 300) {
                             if (trashView != null) trashView.setBackgroundColor(Color.parseColor("#88FF3366"));
@@ -117,7 +117,6 @@ public class FloatingButtonService extends Service {
                         showTrash(false);
                         DisplayMetrics dmUp = getResources().getDisplayMetrics();
                         if (params.y > dmUp.heightPixels - 300) {
-                            // Удаляем кнопку и останавливаем сервис
                             stopSelf();
                             return true;
                         }
@@ -156,6 +155,7 @@ public class FloatingButtonService extends Service {
                 (int) (48 * density),
                 overlayType,
                 WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE |
+                WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL |
                 WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN,
                 PixelFormat.TRANSLUCENT
         );
