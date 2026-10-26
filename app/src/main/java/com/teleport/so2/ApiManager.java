@@ -10,7 +10,10 @@ import java.net.URL;
 
 public class ApiManager {
     // Впиши сюда IP твоего сервера
-    private static final String BASE_URL = "http://YOUR_SERVER_IP:8080";
+    public static final String BASE_URL = "http://YOUR_SERVER_IP:8080";
+    
+    // Переменная, которую запрашивает ProfileManager.java на строке 159:
+    public static boolean TEST_MODE = false;
 
     public static String sendPostRequest(String endpoint, JSONObject jsonBody) {
         try {
