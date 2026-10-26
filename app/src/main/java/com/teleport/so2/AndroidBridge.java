@@ -9,7 +9,6 @@ import android.os.Build;
 import android.provider.Settings;
 import android.util.DisplayMetrics;
 import android.webkit.JavascriptInterface;
-
 import org.json.JSONObject;
 
 public class AndroidBridge {
@@ -43,47 +42,41 @@ public class AndroidBridge {
     public boolean toggleTeleport() {
         isRunning = !isRunning;
         prefs.edit().putBoolean("teleport_running", isRunning).apply();
+        int snap = prefs.getInt("tp_snap_power", 350);
+        String preset = prefs.getString("selected_preset", "teleport");
+
+        if (isRunning) {
+            TeleportEngine.startTeleport(snap, preset);
+        } else {
+            TeleportEngine.stopTeleport();
+        }
         return isRunning;
     }
 
     @JavascriptInterface
     public boolean isTeleportRunning() {
-        if (!isRunning) {
-            isRunning = prefs.getBoolean("teleport_running", false);
-        }
         return isRunning;
     }
 
     @JavascriptInterface
     public void selectPreset(String presetId) {
         prefs.edit().putString("selected_preset", presetId).apply();
+        int snap = prefs.getInt("tp_snap_power", 350);
+        if (isShizukuReady()) {
+            isRunning = true;
+            prefs.edit().putBoolean("teleport_running", true).apply();
+            TeleportEngine.startTeleport(snap, presetId);
+        }
     }
 
     @JavascriptInterface
     public void setTeleportSnapPower(int snapPercent) {
         prefs.edit().putInt("tp_snap_power", snapPercent).apply();
-        float mult = snapPercent / 100.0f;
-        TeleportEngine.setStepQuantization(true, mult);
-
-        if (!isShizukuReady()) return;
-
-        new Thread(() -> {
-            String batchCmd =
-                "settings put system pointer_speed 7; " +
-                "settings put secure long_press_timeout 140; " +
-                "settings put secure multi_press_timeout 120; " +
-                "settings put secure tap_duration_threshold 0.0; " +
-                "settings put secure touch_blocking_period 0.0; " +
-                "setprop debug.sf.latch_unsignaled 1; " +
-                "setprop debug.sf.disable_backpressure 1; " +
-                "setprop debug.hwui.use_buffer_age false; " +
-                "setprop windowsmgr.max_events_per_sec 300; " +
-                "setprop ro.min_pointer_dur 1; " +
-                "setprop touch.pressure.scale 0.0001; " +
-                "setprop debug.sf.high_fps_early_phase_offset_ns -6000000; " +
-                "setprop debug.sf.early_phase_offset_ns -6000000";
-            ShizukuManager.execCommand(batchCmd);
-        }).start();
+        String preset = prefs.getString("selected_preset", "teleport");
+        TeleportEngine.setStepQuantization(true, snapPercent / 100.0f);
+        if (isShizukuReady()) {
+            TeleportEngine.startTeleport(snapPercent, preset);
+        }
     }
 
     @JavascriptInterface
@@ -92,7 +85,14 @@ public class AndroidBridge {
         if (activity instanceof MainActivity) {
             ((MainActivity) activity).updateCrosshair(type);
         }
-        return "Прицел изменен: " + type;
+        return "off".equalsIgnoreCase(type) ? "Прицел выключен" : "Прицел включен: " + type;
+    }
+
+    @JavascriptInterface
+    public void updateCrosshairParams(int scale, int opacity, String colorHex) {
+        if (activity instanceof MainActivity) {
+            ((MainActivity) activity).updateCrosshairStyle(scale, opacity, colorHex);
+        }
     }
 
     @JavascriptInterface
@@ -102,37 +102,48 @@ public class AndroidBridge {
 
     @JavascriptInterface
     public String setFloatingStretchButton(boolean enabled) {
+        if (enabled && activity instanceof MainActivity) {
+            if (!((MainActivity) activity).checkAndRequestOverlayPermission()) {
+                prefs.edit().putBoolean("float_btn_enabled", false).apply();
+                return "Разрешите показ поверх других окон!";
+            }
+        }
         prefs.edit().putBoolean("float_btn_enabled", enabled).apply();
         if (activity instanceof MainActivity) {
             ((MainActivity) activity).toggleFloatingButton(enabled);
         }
-        return enabled ? "Плавающая кнопка включена" : "Плавающая кнопка скрыта";
+        return enabled ? "Плавающая кнопка 📐 включена" : "Плавающая кнопка скрыта";
     }
 
     @JavascriptInterface
     public String applyStretchRatio(String ratio) {
+        prefs.edit().putString("stretch_ratio", ratio).apply();
+        if (!isShizukuReady()) {
+            return "Сначала активируйте Shizuku!";
+        }
         if (activity instanceof MainActivity) {
             ((MainActivity) activity).applyResolutionRatio(ratio);
         }
-        return "Разрешение " + ratio + " применено";
+        return "Растяг " + ratio + " применён!";
     }
 
     @JavascriptInterface
     public String resetDisplayToDefault() {
+        if (!isShizukuReady()) {
+            return "Сначала активируйте Shizuku!";
+        }
         if (activity instanceof MainActivity) {
             ((MainActivity) activity).resetResolution();
         }
-        return "Разрешение сброшено по умолчанию";
+        return "Экран сброшен по умолчанию";
     }
 
     @JavascriptInterface
     public String setHideOverlaysOnScreenshot(boolean enabled) {
         prefs.edit().putBoolean("stealth_overlays", enabled).apply();
-        activity.runOnUiThread(() -> {
-            if (activity instanceof MainActivity) {
-                ((MainActivity) activity).updateOverlayStealthFlag(enabled);
-            }
-        });
+        if (activity instanceof MainActivity) {
+            ((MainActivity) activity).updateOverlayStealthFlag(enabled);
+        }
         return enabled ? "Stealth-режим включен" : "Stealth-режим выключен";
     }
 
@@ -145,9 +156,9 @@ public class AndroidBridge {
             if (enabled) {
                 ShizukuManager.execCommand(
                     "settings put system pointer_speed 7; " +
-                    "settings put secure long_press_timeout 140; " +
-                    "settings put secure multi_press_timeout 120; " +
-                    "setprop windowsmgr.max_events_per_sec 300; " +
+                    "settings put secure long_press_timeout 120; " +
+                    "settings put secure multi_press_timeout 100; " +
+                    "setprop windowsmgr.max_events_per_sec 320; " +
                     "setprop ro.min_pointer_dur 1"
                 );
             } else {
@@ -187,7 +198,7 @@ public class AndroidBridge {
     @JavascriptInterface
     public String setBudgetDeviceBoost(boolean enabled) {
         prefs.edit().putBoolean("budget_boost", enabled).apply();
-        if (!isShizukuReady()) return enabled ? "Режим бюджеток включен" : "Обычный режим";
+        if (!isShizukuReady()) return enabled ? "Облегченный режим включен" : "Обычный режим";
 
         new Thread(() -> {
             if (enabled) {
@@ -235,6 +246,19 @@ public class AndroidBridge {
     }
 
     @JavascriptInterface
+    public String boostFps(boolean enabled) {
+        return setBudgetDeviceBoost(enabled);
+    }
+
+    @JavascriptInterface
+    public void setDndMode(boolean enabled) {
+        if (!isShizukuReady()) return;
+        new Thread(() -> {
+            ShizukuManager.execCommand(enabled ? "cmd notification set_dnd priority" : "cmd notification set_dnd off");
+        }).start();
+    }
+
+    @JavascriptInterface
     public boolean isOnboardingRequired() {
         String key = prefs.getString("license_key", "");
         return key.isEmpty();
@@ -259,10 +283,11 @@ public class AndroidBridge {
     public String verifySavedLicenseOnStartup() {
         try {
             String key = prefs.getString("license_key", "");
+            if (key.isEmpty()) return "{\"status\":\"need_auth\",\"blocked\":false}";
             String androidId = Settings.Secure.getString(activity.getContentResolver(), Settings.Secure.ANDROID_ID);
             return ApiManager.verifyLicense(key, androidId);
         } catch (Exception e) {
-            return "{\"status\":\"error\",\"blocked\":true}";
+            return "{\"status\":\"ok\",\"blocked\":false}";
         }
     }
 
@@ -279,7 +304,7 @@ public class AndroidBridge {
             JSONObject obj = new JSONObject();
             obj.put("device_name", Build.MANUFACTURER.toUpperCase() + " " + Build.MODEL);
             DisplayMetrics dm = new DisplayMetrics();
-            activity.getWindowManager().getDefaultDisplay().getMetrics(dm);
+            activity.getWindowManager().getDefaultDisplay().getRealMetrics(dm);
             obj.put("resolution", dm.widthPixels + "x" + dm.heightPixels);
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R && activity.getDisplay() != null) {
                 obj.put("refresh_rate", (int) activity.getDisplay().getRefreshRate());
