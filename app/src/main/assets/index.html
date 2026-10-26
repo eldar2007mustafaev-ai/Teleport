@@ -1439,21 +1439,47 @@
             document.getElementById('toggleFloatBtn').classList.toggle('on', floatStretchEnabled);
         }
 
-        window.onload = function() {
+                window.onload = function() {
             restoreSavedState();
-            if (!window.AndroidBridge) return;
-            try {
-                const check = JSON.parse(AndroidBridge.verifySavedLicenseOnStartup());
-                if (check.status === 'expired') {
-                    document.getElementById('expiredModal').classList.add('show');
-                } else if (AndroidBridge.isOnboardingRequired()) {
-                    document.getElementById('authModal').classList.add('show');
+            
+            // Жесткая проверка авторизации при первом запуске
+            let needsAuth = false;
+            const savedKey = localStorage.getItem('so2_saved_key');
+            
+            if (!savedKey) {
+                needsAuth = true;
+            }
+
+            if (window.AndroidBridge) {
+                try {
+                    if (AndroidBridge.isOnboardingRequired()) {
+                        needsAuth = true;
+                    } else {
+                        const verifyRes = JSON.parse(AndroidBridge.verifySavedLicenseOnStartup());
+                        if (verifyRes.status === 'expired' || verifyRes.status === 'blocked' || verifyRes.blocked === true) {
+                            document.getElementById('expiredModal').classList.add('show');
+                            needsAuth = false; // Показываем окно истекшей подписки вместо обычного входа
+                        } else if (verifyRes.status !== 'ok' && !verifyRes.ok) {
+                            needsAuth = true;
+                        }
+                    }
+                } catch (e) {
+                    if (!savedKey) needsAuth = true;
                 }
-            } catch (e) {}
+            } else {
+                // Если запущено в обычном браузере для отладки
+                if (!savedKey) needsAuth = true;
+            }
+
+            if (needsAuth) {
+                document.getElementById('authModal').classList.add('show');
+            }
+
             loadProfileAndDevice();
             syncUiState();
             setInterval(syncUiState, 700);
         };
+
     </script>
 </body>
 </html>
