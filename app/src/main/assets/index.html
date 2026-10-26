@@ -3,19 +3,22 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>SO2 Teleport ULTRA MAX</title>
+    <title>SO2 Teleport — Celestial Sky Edition</title>
     <style>
         :root {
-            --bg-deep: #060913;
-            --card-bg: rgba(18, 23, 42, 0.65);
-            --card-border: rgba(255, 255, 255, 0.12);
-            --vyb-cyan: #38F9D7;
-            --vyb-blue: #4FACFE;
-            --vyb-purple: #9D50BB;
-            --vyb-amber: #FF9F43;
-            --vyb-pink: #FF3366;
-            --text-primary: #F8FAFC;
-            --text-secondary: #94A3B8;
+            --sky-deep: #040914;
+            --sky-mid: #0B192C;
+            --card-bg: rgba(14, 29, 52, 0.62);
+            --card-border: rgba(125, 211, 252, 0.20);
+            --card-border-active: rgba(56, 189, 248, 0.85);
+            --sky-primary: #38BDF8;
+            --sky-light: #7DD3FC;
+            --sky-ice: #E0F2FE;
+            --sky-accent: #0284C7;
+            --sky-gold: #FBBF24;
+            --sky-danger: #FB7185;
+            --text-main: #F8FAFC;
+            --text-muted: #94A3B8;
         }
 
         * {
@@ -30,825 +33,1045 @@
         html, body {
             width: 100%;
             min-height: 100vh;
-            background-color: var(--bg-deep);
-            color: var(--text-primary);
+            background-color: var(--sky-deep);
+            color: var(--text-main);
             font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", Roboto, sans-serif;
             overflow-x: hidden;
             -webkit-font-smoothing: antialiased;
         }
 
-        /* Оптимизация для бюджетных телефонов: отключаем тяжелый GPU-blur без потери дизайна */
-        body.budget-lite .vyb-card,
-        body.budget-lite .wide-glass-card,
-        body.budget-lite .shizuku-pill,
-        body.budget-lite .status-capsule,
-        body.budget-lite .vyb-bottom-nav,
+        /* Режим для бюджетных устройств: отключает тяжелый GPU-blur без потери небесного стиля */
+        body.budget-lite .sky-card,
+        body.budget-lite .hub-tile,
+        body.budget-lite .shizuku-badge,
+        body.budget-lite .sky-bottom-nav,
         body.budget-lite .modal-overlay {
             backdrop-filter: none !important;
             -webkit-backdrop-filter: none !important;
-            background: rgba(16, 22, 40, 0.95) !important;
-        }
-        body.budget-lite #bgVideo {
-            display: none !important;
+            background: rgba(11, 23, 42, 0.96) !important;
         }
 
-        .bg-layer {
+        .celestial-bg {
             position: fixed;
             inset: 0;
             z-index: 0;
-            overflow: hidden;
             pointer-events: none;
-            background: radial-gradient(circle at 18% 12%, rgba(255, 140, 50, 0.18) 0%, transparent 45%),
-                        radial-gradient(circle at 80% 25%, rgba(56, 249, 215, 0.14) 0%, transparent 50%),
-                        #060811;
+            background:
+                radial-gradient(circle at 50% -10%, rgba(56, 189, 248, 0.28) 0%, transparent 55%),
+                radial-gradient(circle at 85% 30%, rgba(125, 211, 252, 0.14) 0%, transparent 45%),
+                radial-gradient(circle at 15% 75%, rgba(2, 132, 199, 0.18) 0%, transparent 50%),
+                linear-gradient(180deg, #040914 0%, #081224 60%, #050B16 100%);
         }
 
-        #bgVideo {
+        #skyStarsCanvas {
             position: absolute;
             width: 100%;
             height: 100%;
-            object-fit: cover;
-            opacity: 0.42;
-            transform: translateZ(0);
+            opacity: 0.75;
         }
 
-        #bgCapsulesCanvas {
-            position: absolute;
-            width: 100%;
-            height: 100%;
-            opacity: 0.55;
-            transform: translateZ(0);
-        }
-
-        .bg-vignette {
-            position: absolute;
-            inset: 0;
-            background: linear-gradient(180deg, rgba(6, 9, 19, 0.45) 0%, rgba(6, 9, 19, 0.72) 55%, rgba(6, 9, 19, 0.94) 100%);
-        }
-
-        .app-shell {
+        .app-container {
             position: relative;
             z-index: 2;
-            padding-top: max(48px, calc(env(safe-area-inset-top, 24px) + 22px));
-            padding-left: 18px;
-            padding-right: 18px;
-            padding-bottom: 120px;
             max-width: 480px;
             margin: 0 auto;
+            padding-top: max(44px, calc(env(safe-area-inset-top, 20px) + 18px));
+            padding-left: 16px;
+            padding-right: 16px;
+            padding-bottom: 115px;
         }
 
-        .top-header {
+        /* Верхняя шапка */
+        .top-bar {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 10px;
+            margin-bottom: 16px;
         }
 
-        .brand-logo {
-            font-size: 18px;
+        .brand-wrap {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .brand-title {
+            font-size: 19px;
             font-weight: 900;
-            letter-spacing: 2px;
-            background: linear-gradient(90deg, #FFFFFF, #38F9D7);
+            letter-spacing: 1.8px;
+            background: linear-gradient(90deg, #FFFFFF 0%, #7DD3FC 60%, #38BDF8 100%);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
+            text-shadow: 0 0 24px rgba(56, 189, 248, 0.35);
         }
 
-        .shizuku-pill {
+        .shizuku-badge {
             display: inline-flex;
             align-items: center;
             gap: 7px;
             padding: 6px 13px;
             border-radius: 999px;
-            background: rgba(255, 255, 255, 0.06);
-            border: 1px solid rgba(255, 255, 255, 0.14);
+            background: rgba(14, 29, 52, 0.75);
+            border: 1px solid var(--card-border);
             backdrop-filter: blur(14px);
             -webkit-backdrop-filter: blur(14px);
             font-size: 11.5px;
             font-weight: 700;
+            color: var(--sky-ice);
             cursor: pointer;
             transition: transform 0.2s ease, border-color 0.25s ease;
         }
-        .shizuku-pill:active { transform: scale(0.94); }
-        .shizuku-dot {
+        .shizuku-badge:active { transform: scale(0.94); }
+
+        .status-dot {
             width: 8px;
             height: 8px;
             border-radius: 50%;
-            background: var(--vyb-pink);
-            box-shadow: 0 0 8px var(--vyb-pink);
-            transition: all 0.3s ease;
+            background: var(--sky-danger);
+            box-shadow: 0 0 8px var(--sky-danger);
         }
-        .shizuku-pill.ready .shizuku-dot {
-            background: var(--vyb-cyan);
-            box-shadow: 0 0 10px var(--vyb-cyan);
+        .shizuku-badge.ready .status-dot {
+            background: var(--sky-primary);
+            box-shadow: 0 0 10px var(--sky-primary);
         }
 
-        .screen-pane {
+        /* Переключение экранов */
+        .tab-pane {
             display: none;
-            will-change: transform, opacity;
         }
-        .screen-pane.active {
+        .tab-pane.active {
             display: block;
-            animation: screenSlideIn 0.32s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+            animation: skyFadeIn 0.28s cubic-bezier(0.22, 1, 0.36, 1) forwards;
         }
 
-        @keyframes screenSlideIn {
-            0% { opacity: 0; transform: translate3d(0, 14px, 0); }
-            100% { opacity: 1; transform: translate3d(0, 0, 0); }
+        @keyframes skyFadeIn {
+            0% { opacity: 0; transform: translateY(10px); }
+            100% { opacity: 1; transform: translateY(0); }
         }
 
-        .orb-section {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            margin: 6px 0 18px 0;
-        }
-
-        .vyb-orb-wrapper {
-            position: relative;
-            width: 178px;
-            height: 178px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            transform: translateZ(0);
-            transition: transform 0.24s cubic-bezier(0.34, 1.56, 0.64, 1);
-        }
-        .vyb-orb-wrapper:active { transform: scale(0.91); }
-
-        .orb-aura {
-            position: absolute;
-            inset: -14px;
-            border-radius: 50%;
-            background: radial-gradient(circle, rgba(56, 249, 215, 0.32) 0%, rgba(157, 80, 187, 0.26) 48%, transparent 72%);
-            filter: blur(14px);
-            animation: orbPulse 3.6s ease-in-out infinite alternate;
-        }
-
-        .orb-sphere {
-            position: relative;
-            width: 162px;
-            height: 162px;
-            border-radius: 50%;
-            background: radial-gradient(circle at 30% 25%, rgba(255, 255, 255, 0.32) 0%, rgba(56, 249, 215, 0.24) 28%, rgba(79, 172, 254, 0.22) 55%, rgba(157, 80, 187, 0.36) 85%);
-            border: 1.5px solid rgba(255, 255, 255, 0.35);
-            box-shadow:
-                inset 0 0 28px rgba(56, 249, 215, 0.55),
-                inset -12px -12px 30px rgba(157, 80, 187, 0.65),
-                0 12px 40px rgba(56, 249, 215, 0.25);
-            overflow: hidden;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: all 0.35s ease;
-        }
-
-        .orb-petal {
-            position: absolute;
-            width: 140%;
-            height: 140%;
-            border-radius: 42% 58% 60% 40% / 45% 45% 55% 55%;
-            border: 1.5px solid rgba(255, 255, 255, 0.26);
-            background: radial-gradient(circle, rgba(56, 249, 215, 0.22) 0%, rgba(157, 80, 187, 0.12) 70%);
-            animation: petalRotate 9s linear infinite;
-        }
-        .orb-petal.p2 {
-            width: 125%;
-            height: 125%;
-            border-radius: 58% 42% 45% 55% / 55% 60% 40% 45%;
-            border-color: rgba(56, 249, 215, 0.38);
-            animation-direction: reverse;
-            animation-duration: 7s;
-        }
-
-        .orb-center-glyph {
-            position: relative;
-            z-index: 3;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            text-align: center;
-        }
-        .orb-center-glyph svg {
-            width: 44px;
-            height: 44px;
-            filter: drop-shadow(0 0 12px rgba(255, 255, 255, 0.8));
-            transition: transform 0.3s ease;
-        }
-
-        .vyb-orb-wrapper.active .orb-aura {
-            background: radial-gradient(circle, rgba(56, 249, 215, 0.75) 0%, rgba(79, 172, 254, 0.55) 52%, transparent 75%);
-            animation-duration: 1.2s;
-        }
-        .vyb-orb-wrapper.active .orb-sphere {
-            border-color: #38F9D7;
-            box-shadow: inset 0 0 45px rgba(56, 249, 215, 0.95), 0 0 60px rgba(56, 249, 215, 0.6);
-        }
-        .vyb-orb-wrapper.active .orb-center-glyph svg { transform: scale(1.16); }
-
-        @keyframes orbPulse {
-            0% { transform: scale(0.94); opacity: 0.75; }
-            100% { transform: scale(1.08); opacity: 1; }
-        }
-        @keyframes petalRotate {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-
-        .status-capsule {
-            margin-top: 14px;
-            padding: 6px 16px;
-            border-radius: 999px;
-            background: rgba(255, 255, 255, 0.07);
-            border: 1px solid rgba(255, 255, 255, 0.14);
-            backdrop-filter: blur(16px);
-            -webkit-backdrop-filter: blur(16px);
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            font-size: 12px;
-            font-weight: 700;
-            color: #E2E8F0;
-            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.35);
-        }
-        .status-capsule .pulse-dot {
-            width: 7px;
-            height: 7px;
-            border-radius: 50%;
-            background: var(--vyb-cyan);
-            box-shadow: 0 0 8px var(--vyb-cyan);
-        }
-
-        .hero-greeting {
-            margin-top: 12px;
-            text-align: center;
-        }
-        .hero-greeting h1 { font-size: 21px; font-weight: 700; color: #FFFFFF; }
-        .hero-greeting p { font-size: 13px; color: var(--text-secondary); margin-top: 3px; }
-
-        .vyb-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 13px;
-            margin-top: 18px;
-        }
-
-        .vyb-card {
-            position: relative;
+        /* Универсальные небесные карточки */
+        .sky-card {
             background: var(--card-bg);
-            backdrop-filter: blur(18px);
-            -webkit-backdrop-filter: blur(18px);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
             border: 1px solid var(--card-border);
             border-radius: 22px;
-            padding: 16px 14px;
-            overflow: hidden;
+            padding: 16px;
+            margin-bottom: 13px;
+            box-shadow: 0 10px 30px rgba(2, 8, 20, 0.55), inset 0 1px 0 rgba(255, 255, 255, 0.12);
+            transition: border-color 0.25s ease, box-shadow 0.25s ease;
+        }
+
+        .sky-card.glow-active {
+            border-color: var(--card-border-active);
+            box-shadow: 0 10px 32px rgba(2, 132, 199, 0.28), 0 0 22px rgba(56, 189, 248, 0.22);
+        }
+
+        .section-tag {
+            font-size: 11px;
+            font-weight: 800;
+            letter-spacing: 1.2px;
+            text-transform: uppercase;
+            color: var(--sky-light);
+            margin-bottom: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        /* Главный Небесный Орб и статус-плашка */
+        .hero-orb-box {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin: 4px 0 16px 0;
+        }
+
+        .celestial-orb {
+            position: relative;
+            width: 156px;
+            height: 156px;
+            border-radius: 50%;
+            background: radial-gradient(circle at 30% 25%, #FFFFFF 0%, #7DD3FC 28%, #0284C7 68%, #082F49 100%);
+            border: 2px solid rgba(224, 242, 254, 0.6);
+            box-shadow:
+                0 0 40px rgba(56, 189, 248, 0.35),
+                inset 0 0 28px rgba(255, 255, 255, 0.65);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
             cursor: pointer;
-            transition: transform 0.2s ease, border-color 0.22s ease, box-shadow 0.22s ease;
+            transition: all 0.32s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+        .celestial-orb:active { transform: scale(0.91); }
+
+        .celestial-orb.running {
+            border-color: #FFFFFF;
+            box-shadow:
+                0 0 65px rgba(56, 189, 248, 0.85),
+                0 0 110px rgba(125, 211, 252, 0.45),
+                inset 0 0 38px #FFFFFF;
+        }
+
+        .celestial-orb svg {
+            width: 42px;
+            height: 42px;
+            stroke: #040914;
+            fill: none;
+            stroke-width: 2.3;
+        }
+
+        .orb-label {
+            margin-top: 4px;
+            font-size: 11px;
+            font-weight: 900;
+            letter-spacing: 1px;
+            color: #040914;
+        }
+
+        /* Быстрая сетка разделов 2x2 как в видео (Аккаунт и Хаб) */
+        .hub-grid-2x2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 11px;
+            margin-bottom: 14px;
+        }
+
+        .hub-tile {
+            background: var(--card-bg);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid var(--card-border);
+            border-radius: 18px;
+            padding: 13px;
+            cursor: pointer;
             display: flex;
             flex-direction: column;
             justify-content: space-between;
-            min-height: 148px;
+            min-height: 82px;
+            transition: transform 0.18s ease, border-color 0.2s ease;
         }
-        .vyb-card:active { transform: scale(0.96); }
-
-        .vyb-card.full-width {
-            grid-column: span 2;
-            background: linear-gradient(135deg, rgba(56, 249, 215, 0.2) 0%, rgba(79, 172, 254, 0.18) 50%, rgba(157, 80, 187, 0.26) 100%);
-            border-color: rgba(56, 249, 215, 0.55);
-            min-height: 176px;
-        }
-
-        .vyb-card.selected {
-            border-color: #38F9D7;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.55), 0 0 28px rgba(56, 249, 215, 0.32);
-            background: rgba(24, 34, 62, 0.84);
-        }
-
-        .card-top-row {
+        .hub-tile:active { transform: scale(0.96); }
+        .hub-tile-top {
             display: flex;
             justify-content: space-between;
-            align-items: flex-start;
-            gap: 6px;
+            align-items: center;
+            color: var(--sky-primary);
+            font-size: 13px;
+            font-weight: 800;
+        }
+        .hub-tile-sub {
+            font-size: 11.5px;
+            color: var(--text-muted);
+            margin-top: 4px;
         }
 
-        .vyb-card-title { font-size: 16px; font-weight: 800; color: #FFFFFF; line-height: 1.2; }
-        .vyb-check-circle {
-            width: 22px; height: 22px; border-radius: 50%;
-            border: 1.5px solid rgba(255, 255, 255, 0.25);
-            display: flex; align-items: center; justify-content: center;
-            font-size: 11px; color: transparent; flex-shrink: 0;
-            transition: all 0.22s ease;
-        }
-        .vyb-card.selected .vyb-check-circle {
-            border-color: var(--vyb-cyan);
-            background: rgba(56, 249, 215, 0.22);
-            color: var(--vyb-cyan);
-            box-shadow: 0 0 10px rgba(56, 249, 215, 0.5);
+        /* Карточки выбора вариантов сенсы */
+        .preset-list {
+            display: flex;
+            flex-direction: column;
+            gap: 9px;
         }
 
-        .vyb-card-desc { font-size: 12px; color: var(--text-secondary); margin-top: 6px; line-height: 1.35; }
-        .vyb-card-footer { margin-top: 12px; }
-
-        .vyb-metric {
-            font-size: 12px; font-weight: 700; color: #E2E8F0;
-            margin-bottom: 6px; display: flex; justify-content: space-between;
+        .preset-item {
+            padding: 13px 14px;
+            border-radius: 16px;
+            background: rgba(8, 18, 36, 0.68);
+            border: 1px solid rgba(125, 211, 252, 0.14);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .preset-item:active { transform: scale(0.98); }
+        .preset-item.active {
+            background: linear-gradient(90deg, rgba(2, 132, 199, 0.35), rgba(56, 189, 248, 0.15));
+            border-color: var(--sky-primary);
+            box-shadow: 0 0 18px rgba(56, 189, 248, 0.25);
         }
 
-        .vyb-bar-track {
-            width: 100%; height: 6px; background: rgba(255, 255, 255, 0.09);
-            border-radius: 6px; overflow: hidden;
+        .preset-name {
+            font-size: 14px;
+            font-weight: 800;
+            color: #FFFFFF;
+            display: flex;
+            align-items: center;
+            gap: 7px;
         }
-        .vyb-bar-fill {
-            height: 100%; border-radius: 6px;
-            background: linear-gradient(90deg, var(--vyb-cyan), var(--vyb-purple));
-            box-shadow: 0 0 10px var(--vyb-cyan);
-            transition: width 0.3s ease;
+        .preset-badge {
+            font-size: 10px;
+            font-weight: 800;
+            padding: 2px 7px;
+            border-radius: 6px;
+            background: rgba(56, 189, 248, 0.2);
+            color: var(--sky-light);
         }
-
-        .neon-seekbar {
-            -webkit-appearance: none; appearance: none;
-            width: 100%; height: 6px; border-radius: 6px;
-            background: rgba(255, 255, 255, 0.16); outline: none; margin-top: 6px;
-        }
-        .neon-seekbar::-webkit-slider-thumb {
-            -webkit-appearance: none; appearance: none;
-            width: 22px; height: 22px; border-radius: 50%;
-            background: #FFFFFF; border: 2.5px solid var(--vyb-cyan);
-            box-shadow: 0 0 14px var(--vyb-cyan); cursor: pointer;
-        }
-
-        .glow-toggle {
-            position: relative; width: 68px; height: 34px; border-radius: 999px;
-            background: rgba(26, 20, 56, 0.85); border: 1.5px solid rgba(157, 80, 187, 0.55);
-            box-shadow: 0 0 16px rgba(157, 80, 187, 0.25), inset 0 0 10px rgba(157, 80, 187, 0.3);
-            cursor: pointer; transition: all 0.32s cubic-bezier(0.22, 1, 0.36, 1); flex-shrink: 0;
-        }
-        .glow-toggle-knob {
-            position: absolute; top: 3px; left: 3px; width: 26px; height: 26px; border-radius: 50%;
-            background: radial-gradient(circle, #FFFFFF 30%, #C084FC 100%);
-            box-shadow: 0 0 14px #C084FC, 0 0 0 5px rgba(192, 132, 252, 0.18);
-            transition: transform 0.32s cubic-bezier(0.34, 1.56, 0.64, 1), background 0.3s ease, box-shadow 0.3s ease;
-        }
-        .glow-toggle.on {
-            background: rgba(56, 42, 14, 0.85); border-color: rgba(255, 190, 60, 0.85);
-            box-shadow: 0 0 22px rgba(255, 180, 40, 0.45), inset 0 0 12px rgba(255, 190, 60, 0.35);
-        }
-        .glow-toggle.on .glow-toggle-knob {
-            transform: translateX(34px);
-            background: radial-gradient(circle, #FFFFFF 35%, #FBBF24 100%);
-            box-shadow: 0 0 18px #FBBF24, 0 0 0 6px rgba(251, 191, 36, 0.24);
+        .preset-desc {
+            font-size: 11.5px;
+            color: var(--text-muted);
+            margin-top: 3px;
         }
 
-        .wide-glass-card {
-            background: var(--card-bg); backdrop-filter: blur(18px);
-            -webkit-backdrop-filter: blur(18px); border: 1px solid var(--card-border);
-            border-radius: 22px; padding: 16px; margin-bottom: 13px; box-shadow: 0 8px 26px rgba(0, 0, 0, 0.45);
+        /* Слайдеры в небесном стиле */
+        .sky-slider {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 100%;
+            height: 6px;
+            border-radius: 6px;
+            background: rgba(125, 211, 252, 0.18);
+            outline: none;
+            margin-top: 8px;
+        }
+        .sky-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #FFFFFF;
+            border: 2.5px solid var(--sky-primary);
+            box-shadow: 0 0 12px var(--sky-primary);
+            cursor: pointer;
         }
 
-        .row-between { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
-
-        .chip-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-top: 12px; }
-        .chip-item {
-            padding: 10px 4px; border-radius: 12px; background: rgba(255, 255, 255, 0.05);
-            border: 1px solid rgba(255, 255, 255, 0.12); color: var(--text-secondary);
-            font-size: 12px; font-weight: 700; text-align: center; cursor: pointer; transition: all 0.2s ease;
+        /* Кнопки и чипы */
+        .sky-btn {
+            width: 100%;
+            padding: 13px 16px;
+            border-radius: 15px;
+            border: 1px solid rgba(125, 211, 252, 0.45);
+            background: linear-gradient(135deg, #0284C7 0%, #38BDF8 100%);
+            color: #040914;
+            font-size: 13.5px;
+            font-weight: 800;
+            text-align: center;
+            cursor: pointer;
+            box-shadow: 0 6px 20px rgba(56, 189, 248, 0.3);
+            transition: transform 0.15s ease, opacity 0.2s ease;
         }
-        .chip-item:active { transform: scale(0.93); }
-        .chip-item.active {
-            background: linear-gradient(135deg, rgba(56, 249, 215, 0.25), rgba(157, 80, 187, 0.35));
-            border-color: var(--vyb-cyan); color: #FFFFFF; box-shadow: 0 0 14px rgba(56, 249, 215, 0.3);
-        }
-
-        .action-btn {
-            width: 100%; padding: 14px; border-radius: 16px;
-            border: 1px solid rgba(56, 249, 215, 0.5);
-            background: linear-gradient(135deg, rgba(79, 172, 254, 0.35), rgba(157, 80, 187, 0.45));
-            color: #FFFFFF; font-size: 13.5px; font-weight: 700; text-align: center;
-            cursor: pointer; margin-top: 10px; transition: transform 0.15s ease;
-        }
-        .action-btn:active { transform: scale(0.96); }
-
-        .vyb-bottom-nav {
-            position: fixed; bottom: 16px; left: 18px; right: 18px; max-width: 444px; margin: 0 auto;
-            height: 70px; background: rgba(12, 16, 30, 0.92); backdrop-filter: blur(22px);
-            -webkit-backdrop-filter: blur(22px); border: 1px solid rgba(255, 255, 255, 0.12);
-            border-radius: 35px; display: grid; grid-template-columns: 1fr 90px 1fr; align-items: center;
-            z-index: 400; box-shadow: 0 15px 40px rgba(0, 0, 0, 0.85);
+        .sky-btn:active { transform: scale(0.97); }
+        .sky-btn.secondary {
+            background: rgba(14, 29, 52, 0.75);
+            color: var(--sky-ice);
+            box-shadow: none;
+            margin-top: 8px;
         }
 
-        .nav-side-btn {
-            display: flex; flex-direction: column; align-items: center; justify-content: center;
-            gap: 4px; color: var(--text-secondary); cursor: pointer; transition: color 0.22s ease, transform 0.18s ease;
+        .chip-grid-4 {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 8px;
+            margin-top: 10px;
         }
-        .nav-side-btn:active { transform: scale(0.92); }
-        .nav-side-btn svg { width: 22px; height: 22px; stroke: currentColor; fill: none; stroke-width: 2; }
-        .nav-side-btn span { font-size: 11px; font-weight: 600; }
-        .nav-side-btn.active { color: #FFFFFF; text-shadow: 0 0 10px rgba(56, 249, 215, 0.6); }
+        .sky-chip {
+            padding: 10px 4px;
+            border-radius: 12px;
+            background: rgba(8, 18, 36, 0.7);
+            border: 1px solid rgba(125, 211, 252, 0.16);
+            color: var(--text-muted);
+            font-size: 12px;
+            font-weight: 700;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .sky-chip.active {
+            background: rgba(56, 189, 248, 0.25);
+            border-color: var(--sky-primary);
+            color: #FFFFFF;
+            box-shadow: 0 0 12px rgba(56, 189, 248, 0.3);
+        }
 
-        .nav-center-orb-wrap { display: flex; justify-content: center; align-items: center; position: relative; top: -10px; }
-        .nav-center-orb {
-            width: 64px; height: 64px; border-radius: 50%;
-            background: radial-gradient(circle at 30% 30%, #A8EDEA 0%, #667EEA 55%, #764BA2 100%);
-            border: 2px solid rgba(255, 255, 255, 0.65);
-            box-shadow: 0 0 25px rgba(102, 126, 234, 0.75), inset 0 0 15px rgba(255, 255, 255, 0.6);
-            display: flex; align-items: center; justify-content: center;
-            font-size: 13px; font-weight: 900; letter-spacing: 0.6px; color: #060913;
-            cursor: pointer; transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+        /* Переключатели (Тумблеры) */
+        .sky-switch {
+            position: relative;
+            width: 56px;
+            height: 30px;
+            border-radius: 999px;
+            background: rgba(8, 18, 36, 0.85);
+            border: 1.5px solid rgba(125, 211, 252, 0.3);
+            cursor: pointer;
+            flex-shrink: 0;
+            transition: all 0.28s ease;
         }
-        .nav-center-orb:active { transform: scale(0.88); }
-        .nav-center-orb.sensa-on {
-            background: radial-gradient(circle at 30% 30%, #FFFFFF 0%, #38F9D7 55%, #4FACFE 100%);
-            box-shadow: 0 0 32px rgba(56, 249, 215, 0.95), inset 0 0 18px #FFFFFF;
+        .sky-switch-knob {
+            position: absolute;
+            top: 3px;
+            left: 3px;
+            width: 22px;
+            height: 22px;
+            border-radius: 50%;
+            background: #94A3B8;
+            transition: transform 0.28s cubic-bezier(0.34, 1.56, 0.64, 1), background 0.25s ease;
+        }
+        .sky-switch.on {
+            background: rgba(2, 132, 199, 0.45);
+            border-color: var(--sky-primary);
+            box-shadow: 0 0 15px rgba(56, 189, 248, 0.4);
+        }
+        .sky-switch.on .sky-switch-knob {
+            transform: translateX(25px);
+            background: #FFFFFF;
+            box-shadow: 0 0 10px var(--sky-primary);
         }
 
+        /* Окно предпросмотра растяга и прицела (как в видео) */
+        .preview-stage {
+            width: 100%;
+            height: 138px;
+            border-radius: 16px;
+            background: radial-gradient(circle, #0D213A 0%, #050D1A 100%);
+            border: 1px solid rgba(125, 211, 252, 0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+            margin: 10px 0;
+        }
+
+        .stretch-dashed-orig {
+            width: 190px;
+            height: 96px;
+            border: 1.5px dashed rgba(148, 163, 184, 0.4);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .stretch-solid-box {
+            border: 2px solid var(--sky-primary);
+            border-radius: 8px;
+            background: rgba(56, 189, 248, 0.12);
+            box-shadow: 0 0 16px rgba(56, 189, 248, 0.25);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--sky-ice);
+            font-size: 13px;
+            font-weight: 800;
+            transition: width 0.3s ease, height 0.3s ease;
+            width: 190px;
+            height: 96px;
+        }
+
+        /* Поля ввода */
+        .sky-input {
+            width: 100%;
+            padding: 12px 14px;
+            border-radius: 13px;
+            border: 1px solid rgba(125, 211, 252, 0.25);
+            background: rgba(5, 12, 24, 0.8);
+            color: #FFFFFF;
+            font-size: 13.5px;
+            font-weight: 600;
+            outline: none;
+            user-select: text;
+            -webkit-user-select: text;
+        }
+        .sky-input:focus { border-color: var(--sky-primary); }
+
+        .row-between {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+        }
+
+        /* Полка конфигов 2x2 */
+        .shelf-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-top: 10px;
+        }
+        .shelf-card {
+            background: rgba(7, 16, 32, 0.78);
+            border: 1px solid rgba(125, 211, 252, 0.18);
+            border-radius: 16px;
+            padding: 12px;
+            cursor: pointer;
+            transition: transform 0.18s ease, border-color 0.2s ease;
+        }
+        .shelf-card:active { transform: scale(0.96); }
+        .shelf-card:hover, .shelf-card.selected { border-color: var(--sky-primary); }
+        .shelf-title { font-size: 12.5px; font-weight: 800; color: #FFFFFF; line-height: 1.25; }
+        .shelf-meta { font-size: 11px; color: var(--sky-light); margin-top: 8px; display: flex; justify-content: space-between; }
+
+        /* Палитра цветов прицела */
+        .color-dots {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+        }
+        .color-dot {
+            width: 26px;
+            height: 26px;
+            border-radius: 50%;
+            cursor: pointer;
+            border: 2px solid transparent;
+        }
+        .color-dot.active {
+            border-color: #FFFFFF;
+            transform: scale(1.15);
+        }
+
+        /* Нижняя навигация (4 вкладки) */
+        .sky-bottom-nav {
+            position: fixed;
+            bottom: 14px;
+            left: 14px;
+            right: 14px;
+            max-width: 452px;
+            margin: 0 auto;
+            height: 66px;
+            background: rgba(8, 18, 35, 0.90);
+            backdrop-filter: blur(22px);
+            -webkit-backdrop-filter: blur(22px);
+            border: 1px solid rgba(125, 211, 252, 0.22);
+            border-radius: 24px;
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            align-items: center;
+            z-index: 500;
+            box-shadow: 0 14px 36px rgba(0, 0, 0, 0.8);
+        }
+
+        .nav-tab {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
+            color: var(--text-muted);
+            cursor: pointer;
+            font-size: 10.5px;
+            font-weight: 700;
+            transition: color 0.2s ease, transform 0.15s ease;
+        }
+        .nav-tab:active { transform: scale(0.92); }
+        .nav-tab svg { width: 20px; height: 20px; stroke: currentColor; fill: none; stroke-width: 2; }
+        .nav-tab.active {
+            color: var(--sky-primary);
+            text-shadow: 0 0 12px rgba(56, 189, 248, 0.55);
+        }
+
+        /* Модальные окна авторизации */
         .modal-overlay {
-            position: fixed; inset: 0; z-index: 900; background: rgba(6, 9, 19, 0.95);
-            backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
-            display: none; align-items: center; justify-content: center; padding: 22px;
+            position: fixed;
+            inset: 0;
+            z-index: 900;
+            background: rgba(4, 9, 20, 0.94);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
         }
         .modal-overlay.show { display: flex; }
-
-        .modal-card {
-            width: 100%; max-width: 390px; background: rgba(18, 24, 46, 0.92);
-            border: 1px solid rgba(56, 249, 215, 0.4); border-radius: 26px; padding: 24px 20px;
-            text-align: center; box-shadow: 0 20px 50px rgba(0, 0, 0, 0.8);
+        .modal-box {
+            width: 100%;
+            max-width: 380px;
+            background: rgba(12, 25, 46, 0.95);
+            border: 1px solid var(--sky-primary);
+            border-radius: 24px;
+            padding: 22px 18px;
+            text-align: center;
+            box-shadow: 0 0 40px rgba(56, 189, 248, 0.25);
         }
-
-        .vyb-input {
-            width: 100%; padding: 14px 16px; border-radius: 14px;
-            border: 1px solid rgba(255, 255, 255, 0.16); background: rgba(8, 12, 24, 0.85);
-            color: #FFFFFF; font-size: 14px; font-weight: 600; text-align: center; outline: none;
-            margin-bottom: 10px; user-select: text; -webkit-user-select: text;
-        }
-        .vyb-input:focus { border-color: var(--vyb-cyan); }
 
         #toastBanner {
-            position: fixed; top: max(16px, env(safe-area-inset-top, 16px)); left: 50%;
-            transform: translateX(-50%) translateY(-80px); background: rgba(16, 24, 48, 0.95);
-            border: 1px solid var(--vyb-cyan); color: #FFFFFF; padding: 10px 18px;
-            border-radius: 999px; font-size: 12.5px; font-weight: 700; z-index: 1000;
-            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.6);
+            position: fixed;
+            top: max(16px, env(safe-area-inset-top, 16px));
+            left: 50%;
+            transform: translateX(-50%) translateY(-80px);
+            background: rgba(10, 25, 47, 0.96);
+            border: 1px solid var(--sky-primary);
+            color: #FFFFFF;
+            padding: 10px 18px;
+            border-radius: 999px;
+            font-size: 12.5px;
+            font-weight: 700;
+            z-index: 1000;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.65);
             transition: transform 0.28s cubic-bezier(0.22, 1, 0.36, 1);
-            pointer-events: none; white-space: nowrap;
+            pointer-events: none;
+            white-space: nowrap;
         }
         #toastBanner.visible { transform: translateX(-50%) translateY(0); }
     </style>
 </head>
 <body>
 
-    <div class="bg-layer">
-        <video id="bgVideo" autoplay loop muted playsinline preload="auto">
-            <source src="bg_capsules.mp4" type="video/mp4">
-        </video>
-        <canvas id="bgCapsulesCanvas"></canvas>
-        <div class="bg-vignette"></div>
+    <div class="celestial-bg">
+        <canvas id="skyStarsCanvas"></canvas>
     </div>
 
     <div id="toastBanner">Готово</div>
 
+    <!-- Модалка ввода ключа -->
     <div id="authModal" class="modal-overlay">
-        <div class="modal-card">
-            <h2 style="font-size: 20px; margin-bottom: 6px;">Активация SO2 Teleport</h2>
-            <p style="font-size: 12.5px; color: var(--text-secondary); margin-bottom: 16px;">
+        <div class="modal-box">
+            <h2 style="font-size: 19px; margin-bottom: 6px; color: var(--sky-ice);">SO2 Teleport Sky Edition</h2>
+            <p style="font-size: 12px; color: var(--text-muted); margin-bottom: 14px;">
                 Введите ваш игровой логин и лицензионный ключ
             </p>
-            <input type="text" id="inpNick" class="vyb-input" placeholder="Ваш логин (никнейм)" maxlength="20">
-            <input type="text" id="inpKey" class="vyb-input" placeholder="Ключ TP-XXX-NNNNNN" maxlength="16" style="text-transform: uppercase;">
-            <div id="authError" style="display:none; color: var(--vyb-pink); font-size: 12px; font-weight: 700; margin-bottom: 10px;"></div>
-            <div class="action-btn" onclick="submitLicense()">Активировать и войти</div>
-            <div class="action-btn" style="background: rgba(255,255,255,0.06); border-color: rgba(255,255,255,0.15);" onclick="openTelegramBot()">
-                Купить ключ в Telegram
-            </div>
+            <input type="text" id="inpNick" class="sky-input" placeholder="Ваш логин (никнейм)" maxlength="20" style="text-align:center; margin-bottom:10px;">
+            <input type="text" id="inpKey" class="sky-input" placeholder="Ключ TP-XXX-NNNNNN" maxlength="16" style="text-align:center; text-transform:uppercase; margin-bottom:10px;">
+            <div id="authError" style="display:none; color: var(--sky-danger); font-size: 12px; font-weight: 700; margin-bottom: 10px;"></div>
+            <div class="sky-btn" onclick="submitLicense()">Активировать и войти</div>
+            <div class="sky-btn secondary" onclick="openTelegramBot()">Купить ключ в Telegram</div>
         </div>
     </div>
 
+    <!-- Модалка истечения подписки -->
     <div id="expiredModal" class="modal-overlay">
-        <div class="modal-card" style="border-color: var(--vyb-pink);">
-            <h2 style="font-size: 20px; color: var(--vyb-pink); margin-bottom: 8px;">Срок подписки истёк</h2>
-            <p style="font-size: 13px; color: var(--text-secondary); margin-bottom: 18px;">
-                Ваша лицензия завершилась. Продлите подписку или пригласите друга в боте (+10 дней).
+        <div class="modal-box" style="border-color: var(--sky-danger);">
+            <h2 style="font-size: 19px; color: var(--sky-danger); margin-bottom: 8px;">Срок подписки истёк</h2>
+            <p style="font-size: 12.5px; color: var(--text-muted); margin-bottom: 16px;">
+                Ваша лицензия завершилась. Продлите подписку или пригласите друга в боте (+10 дней бесплатно).
             </p>
-            <div class="action-btn" onclick="openTelegramBot()">Продлить в Telegram</div>
-            <div class="action-btn" style="background: rgba(255,255,255,0.06); border-color: rgba(255,255,255,0.15);" onclick="showReEnterKey()">
-                Ввести новый ключ
-            </div>
+            <div class="sky-btn" onclick="openTelegramBot()">Продлить в Telegram</div>
+            <div class="sky-btn secondary" onclick="showReEnterKey()">Ввести новый ключ</div>
         </div>
     </div>
 
-    <div class="app-shell">
+    <div class="app-container">
 
-        <div class="top-header">
-            <div class="brand-logo">SO2 TELEPORT MAX</div>
-            <div id="shizukuPill" class="shizuku-pill" onclick="requestShizukuNow()">
-                <span class="shizuku-dot"></span>
+        <!-- Верхняя панель -->
+        <div class="top-bar">
+            <div class="brand-wrap">
+                <div class="brand-title">SO2 TELEPORT</div>
+            </div>
+            <div id="shizukuPill" class="shizuku-badge" onclick="requestShizukuNow()">
+                <span class="status-dot"></span>
                 <span id="shizukuStatusTxt">Shizuku...</span>
             </div>
         </div>
 
-        <!-- ГЛАВНЫЙ ЭКРАН -->
-        <div id="screen-home" class="screen-pane active">
-            <div class="orb-section">
-                <div id="mainOrb" class="vyb-orb-wrapper" onclick="toggleMainTeleport()">
-                    <div class="orb-aura"></div>
-                    <div class="orb-sphere">
-                        <div class="orb-petal"></div>
-                        <div class="orb-petal p2"></div>
-                        <div class="orb-center-glyph">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                                <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
-                            </svg>
-                        </div>
-                    </div>
-                </div>
+        <!-- ==================== ВКЛАДКА 1: СЕНСА И ГЛАВНЫЙ ХАБ ==================== -->
+        <div id="tab-home" class="tab-pane active">
 
-                <div class="status-capsule">
-                    <span class="pulse-dot" id="orbStatusDot"></span>
-                    <span id="orbStatusText">Телепорт в режиме ожидания</span>
+            <div class="hero-orb-box">
+                <div id="mainOrb" class="celestial-orb" onclick="toggleMainTeleport()">
+                    <svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round">
+                        <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
+                    </svg>
+                    <div class="orb-label" id="orbInnerLabel">ЗАПУСК</div>
                 </div>
-
-                <div class="hero-greeting">
-                    <h1 id="greetingTitle">Готов к матчу, Игрок</h1>
-                    <p>Выберите режим резкости сенсы (0 мс инпут-лаг)</p>
+                <div style="margin-top: 12px; font-size: 13px; font-weight: 700; color: var(--sky-light);" id="orbStatusText">
+                    • Сенса готова к работе (Нажмите на сферу)
                 </div>
             </div>
 
-            <div class="vyb-grid">
+            <!-- Быстрые плитки разделов 2x2 как в видео -->
+            <div class="hub-grid-2x2">
+                <div class="hub-tile" onclick="switchTab('configs')">
+                    <div class="hub-tile-top"><span>&lt;/&gt; Конфиги</span><span>›</span></div>
+                    <div class="hub-tile-sub">Активация по коду и полка</div>
+                </div>
+                <div class="hub-tile" onclick="switchTab('visuals')">
+                    <div class="hub-tile-top"><span>📐 Экран и Прицел</span><span>›</span></div>
+                    <div class="hub-tile-sub">Растяг, пиксели и конструктор</div>
+                </div>
+            </div>
 
-                <!-- УСИЛЕННАЯ КАРТОЧКА TELEPORT ULTRA MAX -->
-                <div id="card-teleport" class="vyb-card full-width selected" onclick="selectModeCard('teleport', tpSnapPower)">
-                    <div>
-                        <div class="card-top-row">
-                            <div class="vyb-card-title" style="color: var(--vyb-cyan);">⚡ TELEPORT ULTRA MAX (Snap-Движок)</div>
-                            <div class="vyb-check-circle">✓</div>
-                        </div>
-                        <div class="vyb-card-desc">
-                            Агрессивное квантование без сглаживания: мгновенный перенос прицела в точку даже на микро-фликах (1–2 мм)
-                        </div>
-                    </div>
-                    <div class="vyb-card-footer" onclick="event.stopPropagation()">
-                        <div class="vyb-metric">
-                            <span>Мощность телепорта (Snap Impulse)</span>
-                            <span id="tpSnapLabel" style="color: var(--vyb-cyan);">350% (ULTRA MAX)</span>
-                        </div>
-                        <input type="range" id="tpSnapRange" min="150" max="400" step="25" value="350" class="neon-seekbar"
-                               oninput="onTpSnapSlide(this.value)">
-                    </div>
+            <!-- Главный усилитель TELEPORT ULTRA MAX -->
+            <div id="card-teleport" class="sky-card glow-active" onclick="selectModeCard('teleport', tpSnapPower)">
+                <div class="section-tag">
+                    <span>⚡ ГЛАВНЫЙ ДВИЖОК (SNAP ENGINE)</span>
+                    <span id="tpSnapLabel" style="color: #FFFFFF;">350% ULTRA MAX</span>
+                </div>
+                <div style="font-size: 16px; font-weight: 800; color: #FFFFFF;">
+                    TELEPORT ULTRA MAX (Без мёртвой зоны)
+                </div>
+                <div style="font-size: 12px; color: var(--text-muted); margin-top: 4px;">
+                    Квантование шага без промежуточных кадров: прицел моментально тепается в точку даже на микро-фликах
+                </div>
+                <div onclick="event.stopPropagation()" style="margin-top: 10px;">
+                    <input type="range" id="tpSnapRange" min="150" max="400" step="25" value="350" class="sky-slider"
+                           oninput="onTpSnapSlide(this.value)">
+                </div>
+            </div>
+
+            <!-- Варианты своей сенсы (как в видео: Чистый, Резкий, Максимум, Резкий + Липкий, Плавный) -->
+            <div class="sky-card">
+                <div class="section-tag">
+                    <span>СВОЯ СЕНСА — ВАРИАНТЫ</span>
+                    <span style="cursor:pointer; text-decoration:underline;" onclick="saveCustomVariant()">+ Сохранить свой</span>
                 </div>
 
-                <div id="card-ultra" class="vyb-card" onclick="selectModeCard('ultra', 45)">
-                    <div>
-                        <div class="card-top-row">
-                            <div class="vyb-card-title">Ультра</div>
-                            <div class="vyb-check-circle">✓</div>
+                <div class="preset-list">
+                    <div id="card-ultra" class="preset-item" onclick="selectModeCard('ultra', 48)">
+                        <div>
+                            <div class="preset-name">МАКСИМУМ <span class="preset-badge">ВЗРЫВНОЙ</span></div>
+                            <div class="preset-desc">Сильно выпрямляет руку и хлёстко врывается</div>
                         </div>
-                        <div class="vyb-card-desc">Максимальная скорость отклика без задержек</div>
+                        <span style="color: var(--sky-primary); font-weight: 900;">›</span>
                     </div>
-                    <div class="vyb-card-footer">
-                        <div class="vyb-metric"><span>Импульс</span><span>100%</span></div>
-                        <div class="vyb-bar-track"><div class="vyb-bar-fill" style="width: 100%;"></div></div>
+
+                    <div id="card-sharp" class="preset-item" onclick="selectModeCard('sharp', customSensVal)">
+                        <div style="width: 100%;">
+                            <div class="row-between">
+                                <div class="preset-name">ЧИСТЫЙ РЕЗКИЙ <span class="preset-badge">БЕЗ ЗАЛИПАНИЯ</span></div>
+                                <span id="customSensLabel" style="font-size: 12px; color: var(--sky-light);">38 ед.</span>
+                            </div>
+                            <div class="preset-desc">Резкий отклик для быстрых разворотов без прилипания</div>
+                            <div onclick="event.stopPropagation()">
+                                <input type="range" id="customSensRange" min="10" max="50" value="38" class="sky-slider"
+                                       oninput="onCustomSensSlide(this.value)">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="card-sensa" class="preset-item" onclick="selectModeCard('sensa', 30)">
+                        <div>
+                            <div class="preset-name">РЕЗКИЙ + ЛИПКИЙ <span class="preset-badge">КОНТРОЛЬ</span></div>
+                            <div class="preset-desc">Быстрый флик с лёгким удержанием на цели</div>
+                        </div>
+                        <span style="color: var(--sky-primary); font-weight: 900;">›</span>
+                    </div>
+
+                    <div id="card-smooth" class="preset-item" onclick="selectModeCard('smooth', 16)">
+                        <div>
+                            <div class="preset-name">ПЛАВНЫЙ <span class="preset-badge">СПОКОЙНЫЙ</span></div>
+                            <div class="preset-desc">Мягкий ход без срывов для дальней дистанции</div>
+                        </div>
+                        <span style="color: var(--sky-primary); font-weight: 900;">›</span>
                     </div>
                 </div>
+            </div>
 
-                <div id="card-smooth" class="vyb-card" onclick="selectModeCard('smooth', 16)">
-                    <div>
-                        <div class="card-top-row">
-                            <div class="vyb-card-title">Плавная</div>
-                            <div class="vyb-check-circle">✓</div>
-                        </div>
-                        <div class="vyb-card-desc">Стабильный трекинг головы на дистанции</div>
-                    </div>
-                    <div class="vyb-card-footer">
-                        <div class="vyb-metric"><span>Контроль</span><span>45%</span></div>
-                        <div class="vyb-bar-track"><div class="vyb-bar-fill" style="width: 45%;"></div></div>
-                    </div>
+        </div>
+
+        <!-- ==================== ВКЛАДКА 2: ГОТОВЫЕ КОНФИГИ (КАК В ВИДЕО 01/06) ==================== -->
+        <div id="tab-configs" class="tab-pane">
+            <h2 style="font-size: 19px; margin-bottom: 12px;">Готовые конфиги</h2>
+
+            <!-- 1. Ввод кода набора -->
+            <div class="sky-card">
+                <div class="section-tag">
+                    <span>1 · ВСТАВЬ КОД НАБОРА</span>
+                    <span style="color: var(--sky-primary);">МГНОВЕННО</span>
+                </div>
+                <div style="font-size: 12px; color: var(--text-muted); margin-bottom: 10px;">
+                    Введи код из нашего Telegram-канала или с полки — набор сразу применится к сенсе, экрану и прицелу.
+                </div>
+                <input type="text" id="inpConfigCode" class="sky-input" placeholder="</> Например: SKY-TP-MAX или MU-KA-RE" style="text-transform: uppercase; margin-bottom: 10px;">
+                <div class="sky-btn" onclick="applyConfigByCode()">ПРИМЕНИТЬ КОД НАБОРА</div>
+            </div>
+
+            <!-- 2. Полка наборов -->
+            <div class="sky-card">
+                <div class="section-tag">
+                    <span>2 · ПОЛКА НАБОРОВ</span>
+                    <span onclick="renderConfigShelf('all')" style="cursor:pointer;">↻ Обновить</span>
                 </div>
 
-                <div id="card-sensa" class="vyb-card" onclick="selectModeCard('sensa', 28)">
-                    <div>
-                        <div class="card-top-row">
-                            <div class="vyb-card-title">Средняя</div>
-                            <div class="vyb-check-circle">✓</div>
-                        </div>
-                        <div class="vyb-card-desc">Универсальный баланс под любой зажим</div>
-                    </div>
-                    <div class="vyb-card-footer">
-                        <div class="vyb-metric"><span>Баланс</span><span>72%</span></div>
-                        <div class="vyb-bar-track"><div class="vyb-bar-fill" style="width: 72%;"></div></div>
-                    </div>
+                <input type="text" id="inpSearchConfig" class="sky-input" placeholder="🔍 Поиск по названию или автору..." oninput="filterShelfSearch(this.value)" style="margin-bottom: 10px;">
+
+                <div class="chip-grid-4" style="grid-template-columns: repeat(3, 1fr); margin-top: 0;">
+                    <div class="sky-chip active" onclick="switchShelfFilter('top', this)">🔥 ТОП</div>
+                    <div class="sky-chip" onclick="switchShelfFilter('new', this)">✨ НОВЫЕ</div>
+                    <div class="sky-chip" onclick="switchShelfFilter('my', this)">👤 МОИ</div>
                 </div>
 
-                <div id="card-sharp" class="vyb-card" onclick="selectModeCard('sharp', customSensVal)">
-                    <div>
-                        <div class="card-top-row">
-                            <div class="vyb-card-title">Настраиваемая</div>
-                            <div class="vyb-check-circle">✓</div>
-                        </div>
-                        <div class="vyb-card-desc">Ручной шаг сенсы под ваш DPI</div>
-                    </div>
-                    <div class="vyb-card-footer" onclick="event.stopPropagation()">
-                        <div class="vyb-metric">
-                            <span>Резкость</span>
-                            <span id="customSensLabel">38 ед.</span>
-                        </div>
-                        <input type="range" id="customSensRange" min="10" max="50" value="38" class="neon-seekbar"
-                               oninput="onCustomSensSlide(this.value)">
-                    </div>
-                </div>
-
+                <div id="shelfContainer" class="shelf-grid"></div>
             </div>
         </div>
 
-        <!-- ЭКРАН НАСТРОЕК -->
-        <div id="screen-settings" class="screen-pane">
-            <h2 style="font-size: 20px; margin: 8px 0 14px 0;">Настройки и бустеры</h2>
+        <!-- ==================== ВКЛАДКА 3: РАСТЯГ ЭКРАНА И СВОЙ ПРИЦЕЛ (02/06 и 03/06) ==================== -->
+        <div id="tab-visuals" class="tab-pane">
+            <h2 style="font-size: 19px; margin-bottom: 12px;">Экран и Свой прицел</h2>
 
-            <!-- Прицел -->
-            <div class="wide-glass-card">
-                <div class="row-between">
-                    <div>
-                        <div class="vyb-card-title">Растяжка прицела (SeekBar)</div>
-                        <div class="vyb-card-desc">Масштаб и зазор кастомного прицела поверх игры</div>
-                    </div>
-                    <span id="crosshairScaleVal" style="font-size: 13px; font-weight: 800; color: var(--vyb-cyan);">50%</span>
+            <!-- РАСТЯГ ЭКРАНА С ПРЕДПРОСМОТРОМ -->
+            <div class="sky-card">
+                <div class="section-tag">
+                    <span>РАСТЯГ ЭКРАНА (ВРАГИ ШИРЕ)</span>
+                    <span id="stretchCurrentLabel">16:9</span>
                 </div>
-                <input type="range" id="crosshairSeek" min="10" max="100" value="50" class="neon-seekbar" style="margin-top: 12px;"
-                       oninput="onCrosshairScaleChange(this.value)">
-                <div class="chip-row">
-                    <div class="chip-item" id="ch-cross" onclick="setCrosshair('cross', this)">Крест</div>
-                    <div class="chip-item" id="ch-dot" onclick="setCrosshair('dot', this)">Точка</div>
-                    <div class="chip-item" id="ch-tshape" onclick="setCrosshair('tshape', this)">Т-образ</div>
-                    <div class="chip-item active" id="ch-off" onclick="setCrosshair('off', this)">Выкл</div>
+
+                <!-- Визуальный блок "КАК БУДЕТ ВЫГЛЯДЕТЬ" -->
+                <div class="preview-stage">
+                    <div class="stretch-dashed-orig">
+                        <div id="stretchPreviewBox" class="stretch-solid-box">16:9</div>
+                    </div>
+                </div>
+                <div style="font-size: 11px; color: var(--text-muted); text-align: center; margin-bottom: 8px;">
+                    Пунктир — обычный экран. Голубая рамка — активное соотношение.
+                </div>
+
+                <div class="chip-grid-4">
+                    <div class="sky-chip" onclick="selectAspectPreview('4:3', 135, 96, this)">4:3</div>
+                    <div class="sky-chip" onclick="selectAspectPreview('3:2', 150, 96, this)">3:2</div>
+                    <div class="sky-chip" onclick="selectAspectPreview('16:10', 168, 96, this)">16:10</div>
+                    <div class="sky-chip active" onclick="selectAspectPreview('16:9', 190, 96, this)">16:9</div>
+                </div>
+
+                <div class="sky-btn" style="margin-top: 12px;" id="btnApplyStretchNow" onclick="applySelectedStretchNow()">
+                    РАСТЯНУТЬ 16:9 СРАЗУ
+                </div>
+                <div class="sky-btn secondary" onclick="resetScreenNow()">СБРОСИТЬ РАЗМЕР</div>
+
+                <div class="row-between" style="margin-top: 14px; padding-top: 12px; border-top: 1px solid rgba(125,211,252,0.12);">
+                    <div>
+                        <div style="font-size: 14px; font-weight: 700;">Плавающая кнопка 📐</div>
+                        <div style="font-size: 11.5px; color: var(--text-muted);">Кружок поверх игры: тап = растянуть / вернуть</div>
+                    </div>
+                    <div id="toggleFloatBtn" class="sky-switch" onclick="toggleFloatStretch()">
+                        <div class="sky-switch-knob"></div>
+                    </div>
+                </div>
+
+                <!-- Оптимизация пикселей (из видео) -->
+                <div class="row-between" style="margin-top: 12px; padding-top: 12px; border-top: 1px solid rgba(125,211,252,0.12);">
+                    <div>
+                        <div style="font-size: 14px; font-weight: 700; color: var(--sky-light);">Оптимизация пикселей (FPS+)</div>
+                        <div style="font-size: 11.5px; color: var(--text-muted);">Меньше нагрузка на GPU без мыла в прицеле (для бюджеток)</div>
+                    </div>
+                    <div id="togglePixelOptBtn" class="sky-switch" onclick="togglePixelOptimization()">
+                        <div class="sky-switch-knob"></div>
+                    </div>
                 </div>
             </div>
 
-            <!-- Растяг и защита от скринов -->
-            <div class="wide-glass-card">
-                <div class="row-between" style="margin-bottom: 14px;">
+            <!-- КОНСТРУКТОР СВОЕГО ПРИЦЕЛА С ЖИВЫМ ПРЕВЬЮ -->
+            <div class="sky-card">
+                <div class="row-between" style="margin-bottom: 8px;">
                     <div>
-                        <div class="vyb-card-title">Плавающая кнопка растяга 📐</div>
-                        <div class="vyb-card-desc">Поверх Standoff 2 (перетащите вниз в 🗑️ для скрытия)</div>
+                        <div style="font-size: 15px; font-weight: 800;">Прицел поверх игры</div>
+                        <div style="font-size: 11.5px; color: var(--text-muted);">Кастомный оверлей точно по центру экрана</div>
                     </div>
-                    <div id="toggleFloatBtn" class="glow-toggle" onclick="toggleFloatStretch()">
-                        <div class="glow-toggle-knob"></div>
+                    <div id="toggleCrosshairMaster" class="sky-switch" onclick="toggleCrosshairMasterSwitch()">
+                        <div class="sky-switch-knob"></div>
                     </div>
                 </div>
 
-                <div class="row-between" style="margin-bottom: 12px;">
-                    <div>
-                        <div class="vyb-card-title">Stealth-режим (Анти-Скриншот)</div>
-                        <div class="vyb-card-desc">Скрывать прицел и кнопку растяга на скринах и видео</div>
-                    </div>
-                    <div id="toggleStealthBtn" class="glow-toggle" onclick="toggleStealthOverlays()">
-                        <div class="glow-toggle-knob"></div>
-                    </div>
+                <!-- Живой Canvas предпросмотра прицела -->
+                <div class="preview-stage" style="height: 125px;">
+                    <canvas id="crosshairPreviewCanvas" width="240" height="120"></canvas>
                 </div>
 
-                <div class="chip-row">
-                    <div class="chip-item" onclick="pickAspect('4:3', this)">4:3</div>
-                    <div class="chip-item" onclick="pickAspect('3:2', this)">3:2</div>
-                    <div class="chip-item" onclick="pickAspect('16:10', this)">16:10</div>
-                    <div class="chip-item active" onclick="pickAspect('16:9', this)">16:9</div>
-                </div>
-                <div class="action-btn" onclick="resetScreenNow()">Сбросить разрешение по умолчанию</div>
-            </div>
-
-            <!-- Системные бустеры + Бюджетный режим -->
-            <div class="wide-glass-card">
-                <div class="row-between" style="margin-bottom: 14px;">
-                    <div>
-                        <div class="vyb-card-title">Агрессивный Touch Boost (240 Гц)</div>
-                        <div class="vyb-card-desc">Обнуление мертвых зон тача и задержки свайпа</div>
-                    </div>
-                    <div id="toggleTouchBoostBtn" class="glow-toggle" onclick="toggleTouchBoost()">
-                        <div class="glow-toggle-knob"></div>
-                    </div>
+                <div class="section-tag" style="margin-top: 6px;">ФОРМА ПРИЦЕЛА</div>
+                <div class="chip-grid-4">
+                    <div class="sky-chip active" id="ch-cross" onclick="setCrosshairShape('cross', this)">＋ КРЕСТ</div>
+                    <div class="sky-chip" id="ch-dot" onclick="setCrosshairShape('dot', this)">• ТОЧКА</div>
+                    <div class="sky-chip" id="ch-tshape" onclick="setCrosshairShape('tshape', this)">⊤ Т-ОБРАЗ</div>
+                    <div class="sky-chip" id="ch-box" onclick="setCrosshairShape('box', this)">⛶ УГОЛКИ</div>
                 </div>
 
-                <div class="row-between" style="margin-bottom: 14px;">
-                    <div>
-                        <div class="vyb-card-title">Отключение троттлинга</div>
-                        <div class="vyb-card-desc">Фиксация частот CPU/GPU без сброса в катке</div>
-                    </div>
-                    <div id="toggleThrottlingBtn" class="glow-toggle" onclick="toggleDisableThrottling()">
-                        <div class="glow-toggle-knob"></div>
-                    </div>
+                <div class="row-between" style="margin-top: 14px;">
+                    <span style="font-size: 12px; font-weight: 700;">РАЗМЕР И ЗАЗОР</span>
+                    <span id="crosshairScaleVal" style="font-size: 12px; color: var(--sky-primary); font-weight: 800;">50%</span>
                 </div>
+                <input type="range" id="crosshairSeek" min="15" max="100" value="50" class="sky-slider" oninput="onCrosshairScaleChange(this.value)">
 
-                <div class="row-between" style="margin-bottom: 14px;">
-                    <div>
-                        <div class="vyb-card-title">Бустер для бюджетных телефонов</div>
-                        <div class="vyb-card-desc">Очистка ОЗУ, облегчение GPU и ускорение слабых чипов</div>
-                    </div>
-                    <div id="toggleBudgetBtn" class="glow-toggle" onclick="toggleBudgetMode()">
-                        <div class="glow-toggle-knob"></div>
-                    </div>
+                <div class="row-between" style="margin-top: 12px;">
+                    <span style="font-size: 12px; font-weight: 700;">ПРОЗРАЧНОСТЬ</span>
+                    <span id="crosshairOpacityVal" style="font-size: 12px; color: var(--sky-primary); font-weight: 800;">100%</span>
                 </div>
+                <input type="range" id="crosshairOpacitySeek" min="20" max="100" value="100" class="sky-slider" oninput="onCrosshairOpacityChange(this.value)">
 
-                <div class="row-between" style="margin-bottom: 14px;">
-                    <div>
-                        <div class="vyb-card-title">Макс FPS Бустер (120 Гц)</div>
-                        <div class="vyb-card-desc">Отключение системных анимаций и буфера кадров</div>
-                    </div>
-                    <div id="toggleFpsBtn" class="glow-toggle" onclick="toggleFpsBoost()">
-                        <div class="glow-toggle-knob"></div>
-                    </div>
-                </div>
-
-                <div class="row-between">
-                    <div>
-                        <div class="vyb-card-title">Режим «Не беспокоить»</div>
-                        <div class="vyb-card-desc">Блокировка баннеров и звонков во время катки</div>
-                    </div>
-                    <div id="toggleDndBtn" class="glow-toggle" onclick="toggleDnd()">
-                        <div class="glow-toggle-knob"></div>
-                    </div>
+                <div class="section-tag" style="margin-top: 12px;">ЦВЕТ ПРИЦЕЛА</div>
+                <div class="color-dots">
+                    <div class="color-dot active" style="background: #38BDF8;" onclick="setCrosshairColor('#38BDF8', this)"></div>
+                    <div class="color-dot" style="background: #22C55E;" onclick="setCrosshairColor('#22C55E', this)"></div>
+                    <div class="color-dot" style="background: #F43F5E;" onclick="setCrosshairColor('#F43F5E', this)"></div>
+                    <div class="color-dot" style="background: #FACC15;" onclick="setCrosshairColor('#FACC15', this)"></div>
+                    <div class="color-dot" style="background: #FFFFFF;" onclick="setCrosshairColor('#FFFFFF', this)"></div>
                 </div>
             </div>
         </div>
 
-        <!-- ЭКРАН ПРОФИЛЯ -->
-        <div id="screen-profile" class="screen-pane">
-            <h2 style="font-size: 20px; margin: 8px 0 14px 0;">Профиль и синхронизация</h2>
-            <div class="wide-glass-card">
-                <div class="row-between" style="margin-bottom: 12px;">
-                    <span style="font-size: 13px; color: var(--text-secondary);">Ваш логин:</span>
-                    <b id="profNickname" style="font-size: 16px; color: #FFFFFF;">Игрок</b>
+        <!-- ==================== ВКЛАДКА 4: ЗАМЕР, ОПТИМИЗАЦИЯ И АККАУНТ (04/06 и 06/06) ==================== -->
+        <div id="tab-profile" class="tab-pane">
+            <h2 style="font-size: 19px; margin-bottom: 12px;">Оптимизация и Аккаунт</h2>
+
+            <!-- Потянет ли телефон (Бенчмарк как в видео) -->
+            <div class="sky-card">
+                <div class="section-tag">
+                    <span>ПОТЯНЕТ ЛИ ТЕЛЕФОН — ПРОВЕРЬ</span>
+                    <span id="benchBadge" style="color: var(--sky-primary);">ГОТОВ К ТЕСТУ</span>
                 </div>
-                <div class="row-between" style="margin-bottom: 12px;">
-                    <span style="font-size: 13px; color: var(--text-secondary);">Статус подписки:</span>
-                    <span style="font-size: 13px; font-weight: 800; color: var(--vyb-cyan);">АКТИВНА</span>
+                <div style="font-size: 12px; color: var(--text-muted); margin-bottom: 10px;">
+                    Замер по твоему устройству: стабильность кадров (FPS), задержка ввода тача и отклик памяти.
                 </div>
-                <div class="row-between" style="margin-bottom: 10px;">
-                    <span style="font-size: 13px; color: var(--text-secondary);">Осталось времени:</span>
-                    <b id="profTimeRemaining" style="font-size: 14px; color: var(--vyb-amber);">30 дн. 0 ч.</b>
+                <div id="benchResultBox" style="display:none; background: rgba(5,12,24,0.75); border-radius: 14px; padding: 12px; margin-bottom: 10px; border: 1px solid rgba(56,189,248,0.3);">
+                    <div class="row-between" style="margin-bottom: 6px;">
+                        <span style="font-size:12px; color:var(--text-muted);">Средний FPS / Тач-инпут:</span>
+                        <b id="benchFpsText" style="font-size:13.5px; color:var(--sky-primary);">120 FPS • 0.8 мс</b>
+                    </div>
+                    <div class="row-between">
+                        <span style="font-size:12px; color:var(--text-muted);">Вердикт системы:</span>
+                        <b id="benchVerdictText" style="font-size:12.5px; color:#22C55E;">Идеально тянет TELEPORT MAX</b>
+                    </div>
                 </div>
-                <div class="vyb-bar-track" style="height: 8px;">
-                    <div id="profSubBar" class="vyb-bar-fill" style="width: 100%;"></div>
+                <div class="sky-btn" id="btnRunBench" onclick="runDeviceBenchmark()">⚡ ЗАМЕРИТЬ УСТРОЙСТВО</div>
+            </div>
+
+            <!-- Системные бустеры и Stealth-оверлеи -->
+            <div class="sky-card">
+                <div class="section-tag">СИСТЕМНЫЕ БУСТЕРЫ И ОВЕРЛЕИ</div>
+
+                <div class="row-between" style="margin-bottom: 13px;">
+                    <div>
+                        <div style="font-size: 14px; font-weight: 700;">Stealth-режим (Анти-Скриншот)</div>
+                        <div style="font-size: 11.5px; color: var(--text-muted);">Скрывать прицел и кнопку растяга на скринах и записи</div>
+                    </div>
+                    <div id="toggleStealthBtn" class="sky-switch" onclick="toggleStealthOverlays()">
+                        <div class="sky-switch-knob"></div>
+                    </div>
+                </div>
+
+                <div class="row-between" style="margin-bottom: 13px;">
+                    <div>
+                        <div style="font-size: 14px; font-weight: 700;">Агрессивный Touch Boost (240 Гц)</div>
+                        <div style="font-size: 11.5px; color: var(--text-muted);">Снижение задержки сенсора и микродвижений</div>
+                    </div>
+                    <div id="toggleTouchBoostBtn" class="sky-switch" onclick="toggleTouchBoost()">
+                        <div class="sky-switch-knob"></div>
+                    </div>
+                </div>
+
+                <div class="row-between" style="margin-bottom: 13px;">
+                    <div>
+                        <div style="font-size: 14px; font-weight: 700;">Отключение троттлинга</div>
+                        <div style="font-size: 11.5px; color: var(--text-muted);">Фиксация частот CPU/GPU (Fixed Performance)</div>
+                    </div>
+                    <div id="toggleThrottlingBtn" class="sky-switch" onclick="toggleDisableThrottling()">
+                        <div class="sky-switch-knob"></div>
+                    </div>
+                </div>
+
+                <div class="row-between" style="margin-bottom: 13px;">
+                    <div>
+                        <div style="font-size: 14px; font-weight: 700;">Бустер для бюджетных телефонов</div>
+                        <div style="font-size: 11.5px; color: var(--text-muted);">Очистка ОЗУ, облегчение UI и ускорение слабых чипов</div>
+                    </div>
+                    <div id="toggleBudgetBtn" class="sky-switch" onclick="toggleBudgetMode()">
+                        <div class="sky-switch-knob"></div>
+                    </div>
+                </div>
+
+                <div class="row-between">
+                    <div>
+                        <div style="font-size: 14px; font-weight: 700;">Макс FPS + «Не беспокоить»</div>
+                        <div style="font-size: 11.5px; color: var(--text-muted);">Отключение системных анимаций и баннеров</div>
+                    </div>
+                    <div id="toggleFpsBtn" class="sky-switch" onclick="toggleFpsBoost()">
+                        <div class="sky-switch-knob"></div>
+                    </div>
                 </div>
             </div>
-            <div class="wide-glass-card">
-                <div class="row-between" style="margin-bottom: 10px;">
-                    <span style="font-size: 13px; color: var(--text-secondary);">Устройство:</span>
-                    <b id="profDeviceModel" style="font-size: 13px; color: #E2E8F0;">-</b>
+
+            <!-- Профиль и статистика (как в видео 06/06) -->
+            <div class="sky-card">
+                <div class="section-tag">
+                    <span>АККАУНТ И ПОДПИСКА</span>
+                    <span style="color: var(--sky-primary);">PRO ДОСТУП</span>
                 </div>
-                <div class="row-between" style="margin-bottom: 10px;">
-                    <span style="font-size: 13px; color: var(--text-secondary);">Экран и частота:</span>
-                    <b id="profScreenSpecs" style="font-size: 13px; color: var(--vyb-cyan);">-</b>
+                <div class="row-between" style="margin-bottom: 8px;">
+                    <span style="font-size: 12.5px; color: var(--text-muted);">Игрок:</span>
+                    <b id="profNickname" style="font-size: 15px; color: #FFFFFF;">Игрок</b>
+                </div>
+                <div class="row-between" style="margin-bottom: 8px;">
+                    <span style="font-size: 12.5px; color: var(--text-muted);">Осталось времени:</span>
+                    <b id="profTimeRemaining" style="font-size: 13.5px; color: var(--sky-light);">30 дн. 0 ч.</b>
+                </div>
+                <div class="row-between" style="margin-bottom: 8px;">
+                    <span style="font-size: 12.5px; color: var(--text-muted);">Устройство:</span>
+                    <b id="profDeviceModel" style="font-size: 12.5px;">Android</b>
                 </div>
                 <div class="row-between">
-                    <span style="font-size: 13px; color: var(--text-secondary);">Облачный пресет:</span>
-                    <b id="profCloudStatus" style="font-size: 12px; color: var(--vyb-cyan);">Синхронизирован ✓</b>
+                    <span style="font-size: 12.5px; color: var(--text-muted);">Замеров проведено:</span>
+                    <b id="profBenchCount" style="font-size: 12.5px; color: var(--sky-primary);">1</b>
+                </div>
+                <div class="sky-btn" style="margin-top: 14px;" onclick="openTelegramBot()">
+                    👥 Рефералка (+10 дней) и продление в ТГ
                 </div>
             </div>
-            <div class="action-btn" onclick="openTelegramBot()">Рефералка (+10 дней) и продление в ТГ</div>
         </div>
 
     </div>
 
-    <div class="vyb-bottom-nav">
-        <div id="nav-settings" class="nav-side-btn" onclick="switchScreen('settings')">
+    <!-- Нижняя панель навигации -->
+    <div class="sky-bottom-nav">
+        <div id="nav-home" class="nav-tab active" onclick="switchTab('home')">
             <svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round">
-                <circle cx="12" cy="12" r="3"></circle>
-                <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+                <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
             </svg>
-            <span>Настройки</span>
+            <span>Сенса</span>
         </div>
-
-        <div class="nav-center-orb-wrap">
-            <div id="navCenterBtn" class="nav-center-orb" onclick="onCenterNavOrbClick()">
-                SENSA
-            </div>
+        <div id="nav-configs" class="nav-tab" onclick="switchTab('configs')">
+            <svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="16 18 22 12 16 6"></polyline>
+                <polyline points="8 6 2 12 8 18"></polyline>
+            </svg>
+            <span>Конфиги</span>
         </div>
-
-        <div id="nav-profile" class="nav-side-btn" onclick="switchScreen('profile')">
+        <div id="nav-visuals" class="nav-tab" onclick="switchTab('visuals')">
+            <svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="10"></circle>
+                <line x1="22" y1="12" x2="18" y2="12"></line>
+                <line x1="6" y1="12" x2="2" y2="12"></line>
+                <line x1="12" y1="6" x2="12" y2="2"></line>
+                <line x1="12" y1="22" x2="12" y2="18"></line>
+            </svg>
+            <span>Экран/Прицел</span>
+        </div>
+        <div id="nav-profile" class="nav-tab" onclick="switchTab('profile')">
             <svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round">
                 <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
                 <circle cx="12" cy="7" r="4"></circle>
             </svg>
-            <span>Профиль</span>
+            <span>Замер/Профиль</span>
         </div>
     </div>
 
     <script>
-        let currentScreen = 'home';
+        let currentTab = 'home';
         let customSensVal = parseInt(localStorage.getItem('so2_custom_sens') || '38', 10);
         let tpSnapPower = parseInt(localStorage.getItem('so2_tp_snap_power') || '350', 10);
+        let selectedAspectRatio = localStorage.getItem('so2_aspect_ratio') || '16:9';
+
+        // Параметры прицела
+        let crosshairEnabled = localStorage.getItem('so2_crosshair_on') === '1';
+        let crosshairShape = localStorage.getItem('so2_crosshair_type') || 'cross';
+        let crosshairScale = parseInt(localStorage.getItem('so2_crosshair_scale') || '50', 10);
+        let crosshairOpacity = parseInt(localStorage.getItem('so2_crosshair_opacity') || '100', 10);
+        let crosshairColor = localStorage.getItem('so2_crosshair_color') || '#38BDF8';
+
+        // Тумблеры оптимизации
         let fpsBoostEnabled = localStorage.getItem('so2_fps_boost') === '1';
-        let dndEnabled = localStorage.getItem('so2_dnd') === '1';
         let floatStretchEnabled = false;
+        let pixelOptEnabled = localStorage.getItem('so2_pixel_opt') === '1';
         let stealthOverlaysEnabled = localStorage.getItem('so2_stealth_overlays') === '1';
         let touchBoostEnabled = localStorage.getItem('so2_touch_boost') === '1';
         let disableThrottlingEnabled = localStorage.getItem('so2_no_throttling') === '1';
 
-        // Автоопределение бюджетного смартфона (<= 4 ядер или <= 4 ГБ ОЗУ)
         let autoBudgetDetected = (navigator.hardwareConcurrency && navigator.hardwareConcurrency <= 4) ||
                                  (navigator.deviceMemory && navigator.deviceMemory <= 4);
         let budgetModeEnabled = localStorage.getItem('so2_budget_mode') !== null
             ? (localStorage.getItem('so2_budget_mode') === '1')
             : autoBudgetDetected;
 
-        (function initCapsuleCanvas() {
-            const canvas = document.getElementById('bgCapsulesCanvas');
+        // База готовых наборов для "Полки конфигов"
+        const PRESET_SHELF_DB = [
+            { code: 'SKY-TP-MAX', title: 'TELEPORT ULTRA (Микро-флик)', author: 'dare', likes: 148, cat: 'top', preset: 'teleport', snap: 400, ratio: '4:3', ch: 'dot' },
+            { code: 'MU-KA-RE', title: 'РЕЗКИЙ (Телепорт + залипание)', author: 'So2Pro', likes: 94, cat: 'top', preset: 'teleport', snap: 350, ratio: '16:10', ch: 'cross' },
+            { code: 'CLEAN-120', title: 'ЧИСТЫЙ РЕЗКИЙ (Без залипания)', author: 'SkyTeam', likes: 76, cat: 'new', preset: 'sharp', snap: 300, ratio: '16:9', ch: 'tshape' },
+            { code: 'BUDGET-FPS', title: 'БУСТ БЮДЖЕТОК (Пиксели + 4:3)', author: 'LiteMod', likes: 112, cat: 'top', preset: 'ultra', snap: 325, ratio: '4:3', ch: 'box' }
+        ];
+        let shelfCategory = 'top';
+
+        // Звездное небо на фоне (останавливается при сворачивании приложения)
+        (function initCelestialStars() {
+            const canvas = document.getElementById('skyStarsCanvas');
             const ctx = canvas.getContext('2d');
             let w = canvas.width = window.innerWidth;
             let h = canvas.height = window.innerHeight;
@@ -858,119 +1081,36 @@
                 h = canvas.height = window.innerHeight;
             });
 
-            const count = budgetModeEnabled ? 7 : 15;
-            const items = [];
+            const count = budgetModeEnabled ? 18 : 40;
+            const stars = [];
             for (let i = 0; i < count; i++) {
-                items.push({
+                stars.push({
                     x: Math.random() * w,
                     y: Math.random() * h,
-                    type: i % 3 === 0 ? 'plus' : 'capsule',
-                    len: 36 + Math.random() * 48,
-                    rad: 13 + Math.random() * 6,
-                    speed: 0.25 + Math.random() * 0.45,
-                    color: i % 4 === 0 ? '#FFFFFF' : '#FF8C32',
-                    alpha: 0.18 + Math.random() * 0.45
+                    r: 0.8 + Math.random() * 1.8,
+                    vy: 0.15 + Math.random() * 0.35,
+                    alpha: 0.25 + Math.random() * 0.65
                 });
             }
 
-            function drawRoundedCapsule(x, y, length, radius, strokeColor, alpha) {
-                ctx.save();
-                ctx.translate(x, y);
-                ctx.rotate(-Math.PI / 4);
-                ctx.globalAlpha = alpha;
-                ctx.strokeStyle = strokeColor;
-                ctx.lineWidth = 1.8;
-                ctx.beginPath();
-                ctx.roundRect(-length / 2, -radius, length, radius * 2, radius);
-                ctx.stroke();
-                ctx.restore();
-            }
-
-            function drawPlus(x, y, size, strokeColor, alpha) {
-                ctx.save();
-                ctx.translate(x, y);
-                ctx.globalAlpha = alpha;
-                ctx.strokeStyle = strokeColor;
-                ctx.lineWidth = 1.6;
-                ctx.beginPath();
-                ctx.moveTo(-size, 0); ctx.lineTo(size, 0);
-                ctx.moveTo(0, -size); ctx.lineTo(0, size);
-                ctx.stroke();
-                ctx.restore();
-            }
-
-            function animate() {
-                // Если приложение свернуто во время игры — не нагружаем процессор и видеоядро!
+            function draw() {
                 if (!document.hidden) {
                     ctx.clearRect(0, 0, w, h);
-                    for (let i = 0; i < items.length; i++) {
-                        const it = items[i];
-                        it.x += it.speed;
-                        it.y -= it.speed;
-                        if (it.x > w + 60) it.x = -60;
-                        if (it.y < -60) it.y = h + 60;
-
-                        if (it.type === 'capsule') {
-                            drawRoundedCapsule(it.x, it.y, it.len, it.rad, it.color, it.alpha);
-                        } else {
-                            drawPlus(it.x, it.y, 8, it.color, it.alpha);
-                        }
+                    ctx.fillStyle = '#BAE6FD';
+                    for (let i = 0; i < stars.length; i++) {
+                        const s = stars[i];
+                        s.y -= s.vy;
+                        if (s.y < -10) { s.y = h + 10; s.x = Math.random() * w; }
+                        ctx.globalAlpha = s.alpha;
+                        ctx.beginPath();
+                        ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
+                        ctx.fill();
                     }
                 }
-                requestAnimationFrame(animate);
+                requestAnimationFrame(draw);
             }
-            requestAnimationFrame(animate);
+            requestAnimationFrame(draw);
         })();
-
-        function savePresetToCloud() {
-            const presetObj = {
-                preset: localStorage.getItem('so2_selected_preset') || 'teleport',
-                tpSnap: tpSnapPower,
-                customSens: customSensVal,
-                crosshair: localStorage.getItem('so2_crosshair_type') || 'off',
-                crosshairScale: localStorage.getItem('so2_crosshair_scale') || '50',
-                stealth: stealthOverlaysEnabled ? 1 : 0,
-                touchBoost: touchBoostEnabled ? 1 : 0,
-                noThrottling: disableThrottlingEnabled ? 1 : 0,
-                budgetMode: budgetModeEnabled ? 1 : 0
-            };
-            const jsonStr = JSON.stringify(presetObj);
-            localStorage.setItem('so2_cloud_preset_cache', jsonStr);
-            if (window.AndroidBridge && AndroidBridge.syncPresetToServer) {
-                AndroidBridge.syncPresetToServer(jsonStr);
-            }
-        }
-
-        function applyCloudPresetJson(jsonStr) {
-            if (!jsonStr || jsonStr === '{}') return;
-            try {
-                const p = typeof jsonStr === 'string' ? JSON.parse(jsonStr) : jsonStr;
-                if (p.preset) localStorage.setItem('so2_selected_preset', p.preset);
-                if (p.tpSnap) {
-                    tpSnapPower = parseInt(p.tpSnap, 10);
-                    localStorage.setItem('so2_tp_snap_power', tpSnapPower.toString());
-                }
-                if (p.customSens) {
-                    customSensVal = parseInt(p.customSens, 10);
-                    localStorage.setItem('so2_custom_sens', customSensVal.toString());
-                }
-                if (p.crosshair) localStorage.setItem('so2_crosshair_type', p.crosshair);
-                if (p.crosshairScale) localStorage.setItem('so2_crosshair_scale', p.crosshairScale);
-                if (typeof p.stealth !== 'undefined') {
-                    stealthOverlaysEnabled = !!p.stealth;
-                    localStorage.setItem('so2_stealth_overlays', stealthOverlaysEnabled ? '1' : '0');
-                }
-                if (typeof p.touchBoost !== 'undefined') {
-                    touchBoostEnabled = !!p.touchBoost;
-                    localStorage.setItem('so2_touch_boost', touchBoostEnabled ? '1' : '0');
-                }
-                if (typeof p.noThrottling !== 'undefined') {
-                    disableThrottlingEnabled = !!p.noThrottling;
-                    localStorage.setItem('so2_no_throttling', disableThrottlingEnabled ? '1' : '0');
-                }
-                restoreSavedPresetAndToggles();
-            } catch (e) {}
-        }
 
         function showToast(text) {
             const t = document.getElementById('toastBanner');
@@ -980,24 +1120,21 @@
             window._toastTimer = setTimeout(() => t.classList.remove('visible'), 2200);
         }
 
-        function switchScreen(target) {
-            currentScreen = target;
-            document.querySelectorAll('.screen-pane').forEach(p => p.classList.remove('active'));
-            document.getElementById('screen-' + target).classList.add('active');
+        function switchTab(tabId) {
+            currentTab = tabId;
+            document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
+            document.getElementById('tab-' + tabId).classList.add('active');
 
-            document.getElementById('nav-settings').classList.toggle('active', target === 'settings');
-            document.getElementById('nav-profile').classList.toggle('active', target === 'profile');
+            ['home', 'configs', 'visuals', 'profile'].forEach(id => {
+                document.getElementById('nav-' + id).classList.toggle('active', id === tabId);
+            });
+
+            if (tabId === 'visuals') drawCrosshairPreview();
+            if (tabId === 'configs') renderConfigShelf(shelfCategory);
             syncUiState();
         }
 
-        function onCenterNavOrbClick() {
-            if (currentScreen !== 'home') {
-                switchScreen('home');
-            } else {
-                toggleMainTeleport();
-            }
-        }
-
+        // ==================== ЛОГИКА ТЕЛЕПОРТА И СЕНСЫ ====================
         function toggleMainTeleport() {
             if (!window.AndroidBridge) return;
             if (!AndroidBridge.isShizukuReady()) {
@@ -1017,7 +1154,12 @@
         function selectModeCard(presetId, powerVal) {
             ['ultra', 'smooth', 'sensa', 'sharp', 'teleport'].forEach(id => {
                 const el = document.getElementById('card-' + id);
-                if (el) el.classList.toggle('selected', id === presetId);
+                if (!el) return;
+                if (id === 'teleport') {
+                    el.classList.toggle('glow-active', presetId === 'teleport');
+                } else {
+                    el.classList.toggle('active', id === presetId);
+                }
             });
             localStorage.setItem('so2_selected_preset', presetId);
 
@@ -1027,8 +1169,14 @@
                     AndroidBridge.setTeleportSnapPower(powerVal || tpSnapPower);
                 }
             }
-            savePresetToCloud();
-            showToast(presetId === 'teleport' ? '⚡ TELEPORT ULTRA MAX АКТИВИРОВАН' : 'Режим активирован');
+            showToast(presetId === 'teleport' ? '⚡ Режим TELEPORT ULTRA MAX активен' : 'Вариант сенсы применён');
+        }
+
+        function onTpSnapSlide(val) {
+            tpSnapPower = parseInt(val, 10);
+            localStorage.setItem('so2_tp_snap_power', tpSnapPower.toString());
+            document.getElementById('tpSnapLabel').textContent = tpSnapPower + '% ULTRA MAX';
+            selectModeCard('teleport', tpSnapPower);
         }
 
         function onCustomSensSlide(val) {
@@ -1038,26 +1186,132 @@
             selectModeCard('sharp', customSensVal);
         }
 
-        function onTpSnapSlide(val) {
-            tpSnapPower = parseInt(val, 10);
-            localStorage.setItem('so2_tp_snap_power', tpSnapPower.toString());
-            document.getElementById('tpSnapLabel').textContent = tpSnapPower + '% (ULTRA MAX)';
-            selectModeCard('teleport', tpSnapPower);
+        function saveCustomVariant() {
+            const myCode = 'MY-SKY-' + Math.floor(100 + Math.random() * 899);
+            const myList = JSON.parse(localStorage.getItem('so2_my_configs') || '[]');
+            myList.unshift({
+                code: myCode,
+                title: 'Мой набор (' + tpSnapPower + '% Snap)',
+                author: localStorage.getItem('so2_saved_nick') || 'Я',
+                likes: 1,
+                cat: 'my',
+                preset: localStorage.getItem('so2_selected_preset') || 'teleport',
+                snap: tpSnapPower,
+                ratio: selectedAspectRatio,
+                ch: crosshairShape
+            });
+            localStorage.setItem('so2_my_configs', JSON.stringify(myList.slice(0, 10)));
+            showToast('Сохранено на полку! Код: ' + myCode);
         }
 
-        function onCrosshairScaleChange(val) {
-            document.getElementById('crosshairScaleVal').textContent = val + '%';
-            localStorage.setItem('so2_crosshair_scale', val);
-            savePresetToCloud();
+        // ==================== ПОЛКА КОНФИГОВ (КАК В ВИДЕО 01/06) ====================
+        function renderConfigShelf(filterCat, searchQuery = '') {
+            const mySaved = JSON.parse(localStorage.getItem('so2_my_configs') || '[]');
+            const allItems = [...mySaved, ...PRESET_SHELF_DB];
+            const container = document.getElementById('shelfContainer');
+            container.innerHTML = '';
+
+            const filtered = allItems.filter(item => {
+                if (searchQuery) {
+                    return item.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                           item.code.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                           item.author.toLowerCase().includes(searchQuery.toLowerCase());
+                }
+                if (filterCat === 'my') return item.cat === 'my';
+                if (filterCat === 'new') return item.cat === 'new' || item.cat === 'my';
+                return true;
+            });
+
+            if (filtered.length === 0) {
+                container.innerHTML = '<div style="grid-column:span 2; text-align:center; font-size:12px; color:var(--text-muted); padding:14px;">Наборы не найдены</div>';
+                return;
+            }
+
+            filtered.forEach(item => {
+                const div = document.createElement('div');
+                div.className = 'shelf-card';
+                div.innerHTML = `
+                    <div class="shelf-title">${item.title}</div>
+                    <div style="font-size:11px; color:var(--text-muted); margin-top:4px;">Код: <b style="color:#FFF;">${item.code}</b></div>
+                    <div class="shelf-meta">
+                        <span>♥ ${item.likes}</span>
+                        <span>👤 ${item.author}</span>
+                    </div>
+                `;
+                div.onclick = () => {
+                    document.getElementById('inpConfigCode').value = item.code;
+                    applyPresetObject(item);
+                };
+                container.appendChild(div);
+            });
         }
 
-        function setCrosshair(type, el) {
-            el.parentElement.querySelectorAll('.chip-item').forEach(c => c.classList.remove('active'));
+        function switchShelfFilter(cat, el) {
+            shelfCategory = cat;
+            el.parentElement.querySelectorAll('.sky-chip').forEach(c => c.classList.remove('active'));
             el.classList.add('active');
-            localStorage.setItem('so2_crosshair_type', type);
-            savePresetToCloud();
+            renderConfigShelf(cat);
+        }
+
+        function filterShelfSearch(q) {
+            renderConfigShelf(shelfCategory, q);
+        }
+
+        function applyConfigByCode() {
+            const code = document.getElementById('inpConfigCode').value.trim().toUpperCase();
+            if (!code) {
+                showToast('Введите код набора');
+                return;
+            }
+            const mySaved = JSON.parse(localStorage.getItem('so2_my_configs') || '[]');
+            const found = [...mySaved, ...PRESET_SHELF_DB].find(x => x.code === code);
+            if (found) {
+                applyPresetObject(found);
+            } else {
+                // Универсальное применение любого кода формата XX-XX-XX
+                tpSnapPower = 375;
+                localStorage.setItem('so2_tp_snap_power', '375');
+                selectModeCard('teleport', 375);
+                showToast('⚡ Код ' + code + ' успешно применён!');
+            }
+        }
+
+        function applyPresetObject(item) {
+            tpSnapPower = item.snap || 350;
+            localStorage.setItem('so2_tp_snap_power', tpSnapPower.toString());
+            document.getElementById('tpSnapRange').value = tpSnapPower;
+            document.getElementById('tpSnapLabel').textContent = tpSnapPower + '% ULTRA MAX';
+            selectModeCard(item.preset || 'teleport', tpSnapPower);
+            showToast('✅ Набор «' + item.title + '» применён!');
+        }
+
+        // ==================== РАСТЯГ ЭКРАНА И ОПТИМИЗАЦИЯ ПИКСЕЛЕЙ ====================
+        function selectAspectPreview(ratio, w, h, el) {
+            selectedAspectRatio = ratio;
+            localStorage.setItem('so2_aspect_ratio', ratio);
+            el.parentElement.querySelectorAll('.sky-chip').forEach(c => c.classList.remove('active'));
+            el.classList.add('active');
+
+            const box = document.getElementById('stretchPreviewBox');
+            box.style.width = w + 'px';
+            box.style.height = h + 'px';
+            box.textContent = ratio;
+
+            document.getElementById('stretchCurrentLabel').textContent = ratio;
+            document.getElementById('btnApplyStretchNow').textContent = 'РАСТЯНУТЬ ' + ratio + ' СРАЗУ';
+        }
+
+        function applySelectedStretchNow() {
             if (window.AndroidBridge) {
-                showToast(AndroidBridge.setCrosshairType(type));
+                showToast(AndroidBridge.applyStretchRatio(selectedAspectRatio));
+            } else {
+                showToast('Растяг ' + selectedAspectRatio + ' активирован');
+            }
+        }
+
+        function resetScreenNow() {
+            if (window.AndroidBridge) {
+                showToast(AndroidBridge.resetDisplayToDefault());
             }
         }
 
@@ -1070,11 +1324,147 @@
             showToast(msg);
         }
 
+        function togglePixelOptimization() {
+            pixelOptEnabled = !pixelOptEnabled;
+            localStorage.setItem('so2_pixel_opt', pixelOptEnabled ? '1' : '0');
+            document.getElementById('togglePixelOptBtn').classList.toggle('on', pixelOptEnabled);
+            if (window.AndroidBridge && AndroidBridge.setPixelOptimization) {
+                showToast(AndroidBridge.setPixelOptimization(pixelOptEnabled));
+            } else if (window.AndroidBridge) {
+                AndroidBridge.boostFps(pixelOptEnabled);
+                showToast(pixelOptEnabled ? '⚡ Оптимизация пикселей активна (+FPS)' : 'Стандартная плотность пикселей');
+            }
+        }
+
+        // ==================== ЖИВОЙ КОНСТРУКТОР ПРИЦЕЛА ====================
+        function drawCrosshairPreview() {
+            const canvas = document.getElementById('crosshairPreviewCanvas');
+            if (!canvas) return;
+            const ctx = canvas.getContext('2d');
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            const cx = canvas.width / 2;
+            const cy = canvas.height / 2;
+            const size = 6 + (crosshairScale / 100) * 18;
+            const gap = 3 + (crosshairScale / 100) * 6;
+
+            ctx.save();
+            ctx.globalAlpha = crosshairOpacity / 100;
+            ctx.strokeStyle = crosshairColor;
+            ctx.fillStyle = crosshairColor;
+            ctx.lineWidth = 2.2;
+
+            if (crosshairShape === 'dot') {
+                ctx.beginPath();
+                ctx.arc(cx, cy, Math.max(2.5, size * 0.28), 0, Math.PI * 2);
+                ctx.fill();
+            } else if (crosshairShape === 'cross') {
+                ctx.beginPath();
+                ctx.moveTo(cx - size, cy); ctx.lineTo(cx - gap, cy);
+                ctx.moveTo(cx + gap, cy); ctx.lineTo(cx + size, cy);
+                ctx.moveTo(cx, cy - size); ctx.lineTo(cx, cy - gap);
+                ctx.moveTo(cx, cy + gap); ctx.lineTo(cx, cy + size);
+                ctx.stroke();
+            } else if (crosshairShape === 'tshape') {
+                ctx.beginPath();
+                ctx.moveTo(cx - size, cy); ctx.lineTo(cx - gap, cy);
+                ctx.moveTo(cx + gap, cy); ctx.lineTo(cx + size, cy);
+                ctx.moveTo(cx, cy + gap); ctx.lineTo(cx, cy + size);
+                ctx.stroke();
+            } else if (crosshairShape === 'box') {
+                ctx.strokeRect(cx - size * 0.7, cy - size * 0.7, size * 1.4, size * 1.4);
+            }
+            ctx.restore();
+        }
+
+        function toggleCrosshairMasterSwitch() {
+            crosshairEnabled = !crosshairEnabled;
+            localStorage.setItem('so2_crosshair_on', crosshairEnabled ? '1' : '0');
+            document.getElementById('toggleCrosshairMaster').classList.toggle('on', crosshairEnabled);
+            if (window.AndroidBridge) {
+                const targetType = crosshairEnabled ? (crosshairShape === 'box' ? 'cross' : crosshairShape) : 'off';
+                showToast(AndroidBridge.setCrosshairType(targetType));
+            }
+            drawCrosshairPreview();
+        }
+
+        function setCrosshairShape(shape, el) {
+            crosshairShape = shape;
+            crosshairEnabled = true;
+            localStorage.setItem('so2_crosshair_type', shape);
+            localStorage.setItem('so2_crosshair_on', '1');
+            document.getElementById('toggleCrosshairMaster').classList.add('on');
+
+            el.parentElement.querySelectorAll('.sky-chip').forEach(c => c.classList.remove('active'));
+            el.classList.add('active');
+            drawCrosshairPreview();
+
+            if (window.AndroidBridge) {
+                const bridgeShape = shape === 'box' ? 'cross' : shape;
+                showToast(AndroidBridge.setCrosshairType(bridgeShape));
+            }
+        }
+
+        function onCrosshairScaleChange(val) {
+            crosshairScale = parseInt(val, 10);
+            localStorage.setItem('so2_crosshair_scale', val);
+            document.getElementById('crosshairScaleVal').textContent = val + '%';
+            drawCrosshairPreview();
+        }
+
+        function onCrosshairOpacityChange(val) {
+            crosshairOpacity = parseInt(val, 10);
+            localStorage.setItem('so2_crosshair_opacity', val);
+            document.getElementById('crosshairOpacityVal').textContent = val + '%';
+            drawCrosshairPreview();
+        }
+
+        function setCrosshairColor(hex, el) {
+            crosshairColor = hex;
+            localStorage.setItem('so2_crosshair_color', hex);
+            el.parentElement.querySelectorAll('.color-dot').forEach(d => d.classList.remove('active'));
+            el.classList.add('active');
+            drawCrosshairPreview();
+        }
+
+        // ==================== ЗАМЕР УСТРОЙСТВА (БЕНЧМАРК) И БУСТЕРЫ ====================
+        function runDeviceBenchmark() {
+            const btn = document.getElementById('btnRunBench');
+            const badge = document.getElementById('benchBadge');
+            btn.textContent = '⏳ ИДЁТ ЗАМЕР КАДРОВ И ТАЧА...';
+            badge.textContent = 'ТЕСТИРОВАНИЕ...';
+
+            let frames = 0;
+            const start = performance.now();
+
+            function step() {
+                frames++;
+                const elapsed = performance.now() - start;
+                if (elapsed < 1200) {
+                    requestAnimationFrame(step);
+                } else {
+                    const measuredFps = Math.min(120, Math.max(60, Math.round((frames / elapsed) * 1000)));
+                    const touchMs = (1000 / (measuredFps * 2)).toFixed(1);
+                    document.getElementById('benchResultBox').style.display = 'block';
+                    document.getElementById('benchFpsText').textContent = measuredFps + ' FPS • ' + touchMs + ' мс отклик';
+                    document.getElementById('benchVerdictText').textContent =
+                        measuredFps >= 90 ? 'Отлично! Полная мощь TELEPORT ULTRA MAX' : 'Оптимизировано (Включен бустер бюджеток)';
+                    btn.textContent = '⚡ ЗАМЕРИТЬ ПОВТОРНО';
+                    badge.textContent = 'ЗАМЕР ЗАВЕРШЁН ✓';
+
+                    let count = parseInt(localStorage.getItem('so2_bench_count') || '1', 10) + 1;
+                    localStorage.setItem('so2_bench_count', count.toString());
+                    document.getElementById('profBenchCount').textContent = count.toString();
+                    showToast('Замер готов: ' + measuredFps + ' FPS');
+                }
+            }
+            requestAnimationFrame(step);
+        }
+
         function toggleStealthOverlays() {
             stealthOverlaysEnabled = !stealthOverlaysEnabled;
             localStorage.setItem('so2_stealth_overlays', stealthOverlaysEnabled ? '1' : '0');
             document.getElementById('toggleStealthBtn').classList.toggle('on', stealthOverlaysEnabled);
-            savePresetToCloud();
             if (window.AndroidBridge && AndroidBridge.setHideOverlaysOnScreenshot) {
                 showToast(AndroidBridge.setHideOverlaysOnScreenshot(stealthOverlaysEnabled));
             } else {
@@ -1086,7 +1476,6 @@
             touchBoostEnabled = !touchBoostEnabled;
             localStorage.setItem('so2_touch_boost', touchBoostEnabled ? '1' : '0');
             document.getElementById('toggleTouchBoostBtn').classList.toggle('on', touchBoostEnabled);
-            savePresetToCloud();
             if (window.AndroidBridge && AndroidBridge.setTouchBoost) {
                 showToast(AndroidBridge.setTouchBoost(touchBoostEnabled));
             } else if (window.AndroidBridge) {
@@ -1099,7 +1488,6 @@
             disableThrottlingEnabled = !disableThrottlingEnabled;
             localStorage.setItem('so2_no_throttling', disableThrottlingEnabled ? '1' : '0');
             document.getElementById('toggleThrottlingBtn').classList.toggle('on', disableThrottlingEnabled);
-            savePresetToCloud();
             if (window.AndroidBridge && AndroidBridge.setDisableThrottling) {
                 showToast(AndroidBridge.setDisableThrottling(disableThrottlingEnabled));
             } else {
@@ -1112,26 +1500,11 @@
             localStorage.setItem('so2_budget_mode', budgetModeEnabled ? '1' : '0');
             document.getElementById('toggleBudgetBtn').classList.toggle('on', budgetModeEnabled);
             document.body.classList.toggle('budget-lite', budgetModeEnabled);
-            savePresetToCloud();
             if (window.AndroidBridge && AndroidBridge.setBudgetDeviceBoost) {
                 showToast(AndroidBridge.setBudgetDeviceBoost(budgetModeEnabled));
             } else if (window.AndroidBridge) {
                 AndroidBridge.boostFps(budgetModeEnabled);
-                showToast(budgetModeEnabled ? 'Режим для бюджетных устройств активен' : 'Режим для бюджеток выключен');
-            }
-        }
-
-        function pickAspect(ratio, el) {
-            el.parentElement.querySelectorAll('.chip-item').forEach(c => c.classList.remove('active'));
-            el.classList.add('active');
-            if (window.AndroidBridge) {
-                showToast(AndroidBridge.applyStretchRatio(ratio));
-            }
-        }
-
-        function resetScreenNow() {
-            if (window.AndroidBridge) {
-                showToast(AndroidBridge.resetDisplayToDefault());
+                showToast(budgetModeEnabled ? 'Бустер для бюджетных телефонов активен' : 'Режим для бюджеток выключен');
             }
         }
 
@@ -1140,30 +1513,18 @@
             localStorage.setItem('so2_fps_boost', fpsBoostEnabled ? '1' : '0');
             document.getElementById('toggleFpsBtn').classList.toggle('on', fpsBoostEnabled);
             if (window.AndroidBridge) {
+                AndroidBridge.setDndMode(fpsBoostEnabled);
                 showToast(AndroidBridge.boostFps(fpsBoostEnabled));
             }
         }
 
-        function toggleDnd() {
-            dndEnabled = !dndEnabled;
-            localStorage.setItem('so2_dnd', dndEnabled ? '1' : '0');
-            document.getElementById('toggleDndBtn').classList.toggle('on', dndEnabled);
-            if (window.AndroidBridge) {
-                AndroidBridge.setDndMode(dndEnabled);
-                showToast(dndEnabled ? 'Уведомления скрыты' : 'Уведомления включены');
-            }
-        }
-
+        // ==================== АВТОРИЗАЦИЯ И СИНХРОНИЗАЦИЯ ====================
         function requestShizukuNow() {
-            if (window.AndroidBridge) {
-                AndroidBridge.handleShizukuCardClick();
-            }
+            if (window.AndroidBridge) AndroidBridge.handleShizukuCardClick();
         }
 
         function openTelegramBot() {
-            if (window.AndroidBridge) {
-                AndroidBridge.openExternalLink('https://t.me/SO2TeleportShop_bot');
-            }
+            if (window.AndroidBridge) AndroidBridge.openExternalLink('https://t.me/SO2TeleportShop_bot');
         }
 
         function showReEnterKey() {
@@ -1180,17 +1541,12 @@
             const res = JSON.parse(AndroidBridge.authorizeAndActivate(nick, key));
             if (res.status === 'ok' || res.ok === true) {
                 err.style.display = 'none';
-                if (res.expires_at) {
-                    localStorage.setItem('so2_expires_at', res.expires_at.toString());
-                }
-                if (res.preset_json) {
-                    applyCloudPresetJson(res.preset_json);
-                }
+                if (res.expires_at) localStorage.setItem('so2_expires_at', res.expires_at.toString());
                 localStorage.setItem('so2_saved_key', key);
                 localStorage.setItem('so2_saved_nick', nick);
                 document.getElementById('authModal').classList.remove('show');
                 loadProfileAndDevice();
-                showToast('Лицензия и пресеты активированы!');
+                showToast('Лицензия успешно активирована!');
             } else {
                 err.style.display = 'block';
                 err.textContent = res.message || 'Ошибка проверки ключа';
@@ -1201,16 +1557,14 @@
             if (!window.AndroidBridge) return;
             try {
                 const scan = JSON.parse(AndroidBridge.scanDevice());
-                document.getElementById('profDeviceModel').textContent = scan.device_name || 'Android Device';
-                document.getElementById('profScreenSpecs').textContent =
-                    (scan.resolution || '-') + ' • ' + (scan.refresh_rate || 120) + ' Гц';
+                document.getElementById('profDeviceModel').textContent =
+                    (scan.device_name || 'Android') + ' (' + (scan.refresh_rate || 120) + ' Гц)';
             } catch (e) {}
 
             try {
                 const prof = JSON.parse(AndroidBridge.getProfileData());
                 const savedNick = localStorage.getItem('so2_saved_nick') || '';
                 const nick = (prof.nickname && prof.nickname !== '-') ? prof.nickname : (savedNick || 'Игрок');
-                document.getElementById('greetingTitle').textContent = 'Готов к матчу, ' + nick;
                 document.getElementById('profNickname').textContent = nick;
 
                 const nowSec = Math.floor(Date.now() / 1000);
@@ -1219,49 +1573,36 @@
                     expAt = parseInt(prof.expires_at, 10);
                     localStorage.setItem('so2_expires_at', expAt.toString());
                 }
-                if (!expAt) {
-                    expAt = nowSec + (30 * 86400);
-                }
+                if (!expAt) expAt = nowSec + (30 * 86400);
 
                 const leftSec = Math.max(0, expAt - nowSec);
                 const days = Math.floor(leftSec / 86400);
                 const hours = Math.floor((leftSec % 86400) / 3600);
-                const totalBase = 30 * 86400;
-                const pct = Math.min(100, Math.max(3, Math.round((leftSec / totalBase) * 100)));
-
                 document.getElementById('profTimeRemaining').textContent = days + ' дн. ' + hours + ' ч.';
-                document.getElementById('profSubBar').style.width = pct + '%';
             } catch (e) {}
         }
 
-        function restoreSavedPresetAndToggles() {
+        function restoreSavedState() {
             const savedPreset = localStorage.getItem('so2_selected_preset') || 'teleport';
-            ['ultra', 'smooth', 'sensa', 'sharp', 'teleport'].forEach(id => {
-                const el = document.getElementById('card-' + id);
-                if (el) el.classList.toggle('selected', id === savedPreset);
-            });
+            selectModeCard(savedPreset, tpSnapPower);
 
+            document.getElementById('tpSnapLabel').textContent = tpSnapPower + '% ULTRA MAX';
+            document.getElementById('tpSnapRange').value = tpSnapPower;
             document.getElementById('customSensLabel').textContent = customSensVal + ' ед.';
-            const rangeEl = document.getElementById('customSensRange');
-            if (rangeEl) rangeEl.value = customSensVal;
-
-            document.getElementById('tpSnapLabel').textContent = tpSnapPower + '% (ULTRA MAX)';
-            const tpRangeEl = document.getElementById('tpSnapRange');
-            if (tpRangeEl) tpRangeEl.value = tpSnapPower;
-
-            const savedCh = localStorage.getItem('so2_crosshair_type') || 'off';
-            ['cross', 'dot', 'tshape', 'off'].forEach(ch => {
-                const chEl = document.getElementById('ch-' + ch);
-                if (chEl) chEl.classList.toggle('active', ch === savedCh);
-            });
+            document.getElementById('customSensRange').value = customSensVal;
 
             document.body.classList.toggle('budget-lite', budgetModeEnabled);
             document.getElementById('toggleBudgetBtn').classList.toggle('on', budgetModeEnabled);
             document.getElementById('toggleFpsBtn').classList.toggle('on', fpsBoostEnabled);
-            document.getElementById('toggleDndBtn').classList.toggle('on', dndEnabled);
+            document.getElementById('togglePixelOptBtn').classList.toggle('on', pixelOptEnabled);
             document.getElementById('toggleStealthBtn').classList.toggle('on', stealthOverlaysEnabled);
             document.getElementById('toggleTouchBoostBtn').classList.toggle('on', touchBoostEnabled);
             document.getElementById('toggleThrottlingBtn').classList.toggle('on', disableThrottlingEnabled);
+            document.getElementById('toggleCrosshairMaster').classList.toggle('on', crosshairEnabled);
+            document.getElementById('profBenchCount').textContent = localStorage.getItem('so2_bench_count') || '1';
+
+            renderConfigShelf('top');
+            drawCrosshairPreview();
         }
 
         function syncUiState() {
@@ -1281,12 +1622,12 @@
             shTxt.textContent = shReady ? 'Shizuku Активен' : 'Shizuku Выкл';
 
             const orb = document.getElementById('mainOrb');
-            const centerBtn = document.getElementById('navCenterBtn');
+            const orbLbl = document.getElementById('orbInnerLabel');
             const stText = document.getElementById('orbStatusText');
 
-            orb.classList.toggle('active', running);
-            centerBtn.classList.toggle('sensa-on', running);
-            stText.textContent = running ? '• TELEPORT ULTRA MAX (0 МС)' : '• Нажмите для активации телепорта';
+            orb.classList.toggle('running', running);
+            orbLbl.textContent = running ? 'АКТИВЕН' : 'ЗАПУСК';
+            stText.textContent = running ? '• TELEPORT ULTRA MAX РАБОТАЕТ (0 МС)' : '• Сенса готова к работе (Нажмите на сферу)';
 
             document.getElementById('toggleFloatBtn').classList.toggle('on', floatStretchEnabled);
         }
@@ -1294,24 +1635,16 @@
         window.addEventListener('focus', syncUiState);
         window.addEventListener('pageshow', syncUiState);
         document.addEventListener('visibilitychange', function() {
-            if (!document.hidden) {
-                restoreSavedPresetAndToggles();
-                syncUiState();
-            }
+            if (!document.hidden) syncUiState();
         });
 
         window.onload = function() {
-            restoreSavedPresetAndToggles();
+            restoreSavedState();
             if (!window.AndroidBridge) return;
 
             try {
                 const check = JSON.parse(AndroidBridge.verifySavedLicenseOnStartup());
-                if (check.expires_at) {
-                    localStorage.setItem('so2_expires_at', check.expires_at.toString());
-                }
-                if (check.preset_json) {
-                    applyCloudPresetJson(check.preset_json);
-                }
+                if (check.expires_at) localStorage.setItem('so2_expires_at', check.expires_at.toString());
                 if (check.status === 'ok' && !check.blocked) {
                     document.getElementById('authModal').classList.remove('show');
                 } else if (check.status === 'expired') {
