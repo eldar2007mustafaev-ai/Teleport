@@ -84,8 +84,33 @@ public class AndroidBridge {
     }
 
     @JavascriptInterface
-    public void setAdvancedSens(float sx, float sy, int noise, int dz, int stick, float smooth, float accel) {
-        TeleportEngine.setAdvancedSensParams(sx, sy, noise, dz, stick, smooth, accel);
+    public void saveCustomNumbersJson(String jsonStr) {
+        try {
+            prefs.edit().putString("custom_numbers_json", jsonStr).apply();
+            JSONObject o = new JSONObject(jsonStr);
+            TeleportEngine.setCustomNumbers(
+                    (float) o.optDouble("sharpness", 1.0),
+                    (float) o.optDouble("sensX", 1.0),
+                    (float) o.optDouble("sensY", 1.0),
+                    o.optInt("noiseCutoff", 3),
+                    o.optInt("deadZone", 1),
+                    o.optInt("prediction", 0),
+                    o.optInt("axisStick", 4),
+                    o.optInt("stickDelay", 29),
+                    o.optInt("stickStrength", 1),
+                    o.optInt("chunks", 10),
+                    o.optInt("bypassChunks", 0),
+                    o.optInt("chunkCap", 0),
+                    o.optInt("chunksFaster", 0),
+                    o.optInt("shotPause", 0),
+                    (float) o.optDouble("accel", 0.0),
+                    (float) o.optDouble("accelCurve", 0.30),
+                    o.optInt("edgeRange", 0),
+                    (float) o.optDouble("straightening", 0.80),
+                    o.optInt("axisGrip", 4),
+                    o.optInt("gripCap", 4)
+            );
+        } catch (Exception ignored) {}
     }
 
     @JavascriptInterface
@@ -133,7 +158,7 @@ public class AndroidBridge {
         if (activity instanceof MainActivity) {
             ((MainActivity) activity).applyResolutionRatio(ratio);
         }
-        return "Растяг " + ratio + " (Высокая сенса) применён!";
+        return "Растяг " + ratio + " + Ультра-телепорт применён!";
     }
 
     @JavascriptInterface
@@ -171,7 +196,6 @@ public class AndroidBridge {
                     "settings put system pointer_speed 7; " +
                     "setprop ro.input.resampling 0; " +
                     "setprop debug.input.resampling 0; " +
-                    "setprop touch.pressure.scale 0.0001; " +
                     "setprop view.scroll_friction 0.0"
                 );
             } else {
@@ -183,7 +207,7 @@ public class AndroidBridge {
             }
         }).start();
 
-        return enabled ? "Touch Boost активен (без залипания жестов)" : "Touch Boost выключен";
+        return enabled ? "Touch Boost активен (без фантомных нажатий)" : "Touch Boost выключен";
     }
 
     @JavascriptInterface
@@ -273,21 +297,28 @@ public class AndroidBridge {
     @JavascriptInterface
     public boolean isOnboardingRequired() {
         String key = prefs.getString("license_key", "");
-        return key.isEmpty();
+        String nick = prefs.getString("nickname", "");
+        return key == null || key.trim().length() < 6 || nick == null || nick.trim().isEmpty();
     }
 
     @JavascriptInterface
     public String authorizeAndActivate(String nickname, String key) {
         try {
+            if (nickname == null || nickname.trim().isEmpty() || key == null || key.trim().length() < 6) {
+                return "{\"status\":\"error\",\"ok\":false,\"message\":\"Введите и логин, и лицензионный ключ!\"}";
+            }
+            String cleanNick = nickname.trim();
+            String cleanKey = key.trim().toUpperCase();
             String androidId = Settings.Secure.getString(activity.getContentResolver(), Settings.Secure.ANDROID_ID);
-            String res = ApiManager.activateLicense(key, androidId, nickname);
+            String res = ApiManager.activateLicense(cleanKey, androidId, cleanNick);
             JSONObject json = new JSONObject(res);
-            if (json.optBoolean("ok", false) || "ok".equals(json.optString("status"))) {
-                prefs.edit().putString("license_key", key).putString("nickname", nickname).apply();
+            boolean isOk = json.optBoolean("ok", false) || "ok".equalsIgnoreCase(json.optString("status"));
+            if (isOk) {
+                prefs.edit().putString("license_key", cleanKey).putString("nickname", cleanNick).apply();
             }
             return res;
         } catch (Exception e) {
-            return "{\"status\":\"error\",\"message\":\"" + e.getMessage() + "\"}";
+            return "{\"status\":\"error\",\"ok\":false,\"message\":\"Ошибка проверки ключа на сервере\"}";
         }
     }
 
@@ -295,11 +326,13 @@ public class AndroidBridge {
     public String verifySavedLicenseOnStartup() {
         try {
             String key = prefs.getString("license_key", "");
-            if (key.isEmpty()) return "{\"status\":\"need_auth\",\"blocked\":false}";
+            if (key == null || key.trim().length() < 6) {
+                return "{\"status\":\"need_auth\",\"ok\":false,\"blocked\":false}";
+            }
             String androidId = Settings.Secure.getString(activity.getContentResolver(), Settings.Secure.ANDROID_ID);
             return ApiManager.verifyLicense(key, androidId);
         } catch (Exception e) {
-            return "{\"status\":\"ok\",\"blocked\":false}";
+            return "{\"status\":\"need_auth\",\"ok\":false,\"blocked\":false}";
         }
     }
 
