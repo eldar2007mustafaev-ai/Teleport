@@ -8,9 +8,9 @@
         :root {
             --sky-deep: #040914;
             --sky-mid: #0B192C;
-            --card-bg: rgba(14, 29, 52, 0.62);
-            --card-border: rgba(125, 211, 252, 0.20);
-            --card-border-active: rgba(56, 189, 248, 0.85);
+            --card-bg: rgba(14, 29, 52, 0.68);
+            --card-border: rgba(125, 211, 252, 0.22);
+            --card-border-active: rgba(56, 189, 248, 0.88);
             --sky-primary: #38BDF8;
             --sky-light: #7DD3FC;
             --sky-ice: #E0F2FE;
@@ -43,7 +43,8 @@
         body.budget-lite .hub-tile,
         body.budget-lite .shizuku-badge,
         body.budget-lite .sky-bottom-nav,
-        body.budget-lite .modal-overlay {
+        body.budget-lite .modal-overlay,
+        body.budget-lite .top-mode-switch {
             backdrop-filter: none !important;
             -webkit-backdrop-filter: none !important;
             background: rgba(11, 23, 42, 0.96) !important;
@@ -76,14 +77,14 @@
             padding-top: max(44px, calc(env(safe-area-inset-top, 20px) + 18px));
             padding-left: 16px;
             padding-right: 16px;
-            padding-bottom: 115px;
+            padding-bottom: 118px;
         }
 
         .top-bar {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 16px;
+            margin-bottom: 14px;
         }
 
         .brand-title {
@@ -122,14 +123,53 @@
             box-shadow: 0 0 10px var(--sky-primary);
         }
 
+        /* Верхний переключатель ЗАПУСК / НАСТРОЙКИ как на видео, но в цветах Sky Edition */
+        .top-mode-switch {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 6px;
+            padding: 5px;
+            border-radius: 999px;
+            background: rgba(10, 22, 42, 0.85);
+            border: 1px solid rgba(125, 211, 252, 0.22);
+            backdrop-filter: blur(16px);
+            margin-bottom: 16px;
+        }
+        .top-mode-btn {
+            padding: 11px 10px;
+            border-radius: 999px;
+            text-align: center;
+            font-size: 12.5px;
+            font-weight: 800;
+            letter-spacing: 0.8px;
+            color: var(--text-muted);
+            cursor: pointer;
+            transition: all 0.22s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 7px;
+        }
+        .top-mode-btn.active {
+            background: linear-gradient(135deg, #0284C7 0%, #38BDF8 100%);
+            color: #040914;
+            box-shadow: 0 0 22px rgba(56, 189, 248, 0.55);
+        }
+
         .tab-pane { display: none; }
         .tab-pane.active {
             display: block;
-            animation: skyFadeIn 0.25s ease forwards;
+            animation: skyFadeIn 0.22s ease forwards;
+        }
+
+        .sub-pane { display: none; }
+        .sub-pane.active {
+            display: block;
+            animation: skyFadeIn 0.22s ease forwards;
         }
 
         @keyframes skyFadeIn {
-            0% { opacity: 0; transform: translateY(8px); }
+            0% { opacity: 0; transform: translateY(6px); }
             100% { opacity: 1; transform: translateY(0); }
         }
 
@@ -270,6 +310,98 @@
             margin-top: 3px;
         }
 
+        /* Стили для экрана "СВОИ ЧИСЛА" (как на 1-м видео, но в цветах Sky Edition) */
+        .cn-group-title {
+            font-size: 13px;
+            font-weight: 900;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            color: var(--sky-primary);
+            margin-top: 18px;
+            margin-bottom: 3px;
+        }
+        .cn-group-sub {
+            font-size: 12px;
+            color: var(--text-muted);
+            margin-bottom: 14px;
+        }
+        .cn-param-block {
+            margin-bottom: 16px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid rgba(125, 211, 252, 0.10);
+        }
+        .cn-param-block:last-child {
+            border-bottom: none;
+            margin-bottom: 4px;
+            padding-bottom: 0;
+        }
+        .cn-row-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 6px;
+        }
+        .cn-param-name {
+            font-size: 14.5px;
+            font-weight: 800;
+            color: #FFFFFF;
+        }
+        .cn-val-pill {
+            background: rgba(2, 132, 199, 0.28);
+            border: 1px solid rgba(56, 189, 248, 0.45);
+            color: var(--sky-light);
+            font-size: 12.5px;
+            font-weight: 800;
+            padding: 3px 10px;
+            border-radius: 8px;
+            min-width: 44px;
+            text-align: center;
+        }
+        .cn-param-hint {
+            font-size: 11.5px;
+            font-style: italic;
+            color: var(--text-muted);
+            margin-top: 6px;
+        }
+        .cn-btn-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin: 14px 0 10px 0;
+        }
+        .cn-pill-btn {
+            padding: 12px 10px;
+            border-radius: 999px;
+            background: rgba(14, 29, 52, 0.85);
+            border: 1px solid rgba(125, 211, 252, 0.28);
+            color: var(--sky-ice);
+            font-size: 13px;
+            font-weight: 800;
+            text-align: center;
+            cursor: pointer;
+        }
+        .cn-pill-btn:active {
+            transform: scale(0.97);
+            border-color: var(--sky-primary);
+        }
+        .cn-wide-pill {
+            width: 100%;
+            padding: 14px 16px;
+            border-radius: 999px;
+            background: rgba(12, 26, 48, 0.9);
+            border: 1px solid rgba(56, 189, 248, 0.35);
+            color: #FFFFFF;
+            font-size: 14px;
+            font-weight: 800;
+            text-align: center;
+            cursor: pointer;
+            margin-top: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
         .sky-slider {
             -webkit-appearance: none;
             appearance: none;
@@ -278,7 +410,7 @@
             border-radius: 6px;
             background: rgba(125, 211, 252, 0.18);
             outline: none;
-            margin-top: 8px;
+            margin-top: 6px;
         }
         .sky-slider::-webkit-slider-thumb {
             -webkit-appearance: none;
@@ -484,7 +616,7 @@
             position: fixed;
             inset: 0;
             z-index: 900;
-            background: rgba(4, 9, 20, 0.94);
+            background: rgba(4, 9, 20, 0.95);
             display: none;
             align-items: center;
             justify-content: center;
@@ -494,7 +626,7 @@
         .modal-box {
             width: 100%;
             max-width: 380px;
-            background: rgba(12, 25, 46, 0.95);
+            background: rgba(12, 25, 46, 0.96);
             border: 1px solid var(--sky-primary);
             border-radius: 24px;
             padding: 22px 18px;
@@ -529,6 +661,7 @@
 
     <div id="toastBanner">Готово</div>
 
+    <!-- ЖЕСТКОЕ ОКНО АВТОРИЗАЦИИ ПРИ ПЕРВОМ ВХОДЕ -->
     <div id="authModal" class="modal-overlay">
         <div class="modal-box">
             <h2 style="font-size: 19px; margin-bottom: 6px; color: var(--sky-ice);">SO2 Teleport Sky Edition</h2>
@@ -536,7 +669,7 @@
                 Введите ваш игровой логин и лицензионный ключ
             </p>
             <input type="text" id="inpNick" class="sky-input" placeholder="Ваш логин (никнейм)" maxlength="20" style="text-align:center; margin-bottom:10px;">
-            <input type="text" id="inpKey" class="sky-input" placeholder="Ключ TP-XXX-NNNNNN" maxlength="16" style="text-align:center; text-transform:uppercase; margin-bottom:10px;">
+            <input type="text" id="inpKey" class="sky-input" placeholder="Ключ TP-XXX-NNNNNN" maxlength="20" style="text-align:center; text-transform:uppercase; margin-bottom:10px;">
             <div id="authError" style="display:none; color: var(--sky-danger); font-size: 12px; font-weight: 700; margin-bottom: 10px;"></div>
             <div class="sky-btn" onclick="submitLicense()">Активировать и войти</div>
             <div class="sky-btn secondary" onclick="openTelegramBot()">Купить ключ в Telegram</div>
@@ -554,6 +687,34 @@
         </div>
     </div>
 
+    <!-- МОДАЛКА: КАК НАСТРОИТЬ -->
+    <div id="guideModal" class="modal-overlay" onclick="this.classList.remove('show')">
+        <div class="modal-box" onclick="event.stopPropagation()">
+            <h3 style="color: var(--sky-primary); margin-bottom: 8px;">Как настроить телепорт</h3>
+            <p style="font-size: 12.5px; color: var(--text-muted); line-height: 1.45; text-align: left; margin-bottom: 14px;">
+                • <b>Куски (10–25)</b> — главный параметр телепорта: чем выше, тем резче прицел прыгает рывками на фликах.<br><br>
+                • <b>Резкость и Влево-вправо</b> — ускоряют разворот на 90° и 180°.<br><br>
+                • <b>Прилипание к осям</b> — помогает держать прицел строго на уровне головы.
+            </p>
+            <div class="sky-btn" onclick="document.getElementById('guideModal').classList.remove('show')">Понятно</div>
+        </div>
+    </div>
+
+    <!-- МОДАЛКА: ПРОВЕРИТЬ КАСАНИЯ И КАЛИБРОВКА РАМКИ -->
+    <div id="touchTestModal" class="modal-overlay">
+        <div class="modal-box" style="max-width: 420px;">
+            <h3 id="touchModalTitle" style="color: var(--sky-ice); margin-bottom: 6px;">Проверка касаний и фликов</h3>
+            <p id="touchModalSub" style="font-size: 11.5px; color: var(--text-muted); margin-bottom: 10px;">
+                Проведи пальцем по рамке — проверь мгновенный отклик без задержки
+            </p>
+            <canvas id="touchTestCanvas" width="320" height="220" style="width:100%; height:220px; background:#050D1A; border:1.5px solid var(--sky-primary); border-radius:16px; touch-action:none;"></canvas>
+            <div id="touchTestStats" style="font-size: 12px; color: var(--sky-light); font-weight: 700; margin: 10px 0;">
+                Ожидание касания...
+            </div>
+            <div class="sky-btn" onclick="closeTouchTestModal()">Готово</div>
+        </div>
+    </div>
+
     <div class="app-container">
 
         <div class="top-bar">
@@ -564,95 +725,328 @@
             </div>
         </div>
 
-        <!-- ВКЛАДКА 1: СЕНСА -->
+        <!-- ВКЛАДКА 1: СЕНСА (ПЕРЕКЛЮЧАТЕЛЬ ЗАПУСК / НАСТРОЙКИ КАК НА ВИДЕО 1) -->
         <div id="tab-home" class="tab-pane active">
-            <div class="hero-orb-box">
-                <div id="mainOrb" class="celestial-orb" onclick="toggleMainTeleport()">
-                    <svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round">
-                        <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
-                    </svg>
-                    <div class="orb-label" id="orbInnerLabel">ЗАПУСК</div>
+
+            <div class="top-mode-switch">
+                <div id="subBtnLaunch" class="top-mode-btn active" onclick="switchHomeSubMode('launch')">
+                    <span>▶</span><span>ЗАПУСК</span>
                 </div>
-                <div style="margin-top: 12px; font-size: 13px; font-weight: 700; color: var(--sky-light);" id="orbStatusText">
-                    • Сенса готова к работе (Нажмите на сферу)
+                <div id="subBtnSettings" class="top-mode-btn" onclick="switchHomeSubMode('custom')">
+                    <span>☷</span><span>НАСТРОЙКИ</span>
                 </div>
             </div>
 
-            <div class="hub-grid-2x2">
-                <div class="hub-tile" onclick="switchTab('configs')">
-                    <div class="hub-tile-top"><span>&lt;/&gt; Конфиги</span><span>›</span></div>
-                    <div class="hub-tile-sub">Активация по коду и полка</div>
-                </div>
-                <div class="hub-tile" onclick="switchTab('visuals')">
-                    <div class="hub-tile-top"><span>📐 Экран и Прицел</span><span>›</span></div>
-                    <div class="hub-tile-sub">Растяг, пиксели и прицел</div>
-                </div>
-            </div>
-
-            <!-- ГЛАВНЫЙ РЕЖИМ УЛЬТРА -->
-            <div id="card-teleport" class="sky-card glow-active" onclick="selectModeCard('teleport', tpSnapPower)">
-                <div class="section-tag">
-                    <span>⚡ ГЛАВНЫЙ РЕЖИМ (SNAP ENGINE)</span>
-                    <span id="tpSnapLabel" style="color: #FFFFFF;">350% УЛЬТРА</span>
-                </div>
-                <div style="font-size: 16px; font-weight: 800; color: #FFFFFF;">
-                    УЛЬТРА (Мгновенный телепорт)
-                </div>
-                <div style="font-size: 12px; color: var(--text-muted); margin-top: 4px;">
-                    Квантование шага без мёртвой зоны: прицел моментально переносится в цель на микро-фликах
-                </div>
-                <div onclick="event.stopPropagation()" style="margin-top: 10px;">
-                    <input type="range" id="tpSnapRange" min="150" max="400" step="25" value="350" class="sky-slider"
-                           oninput="onTpSnapSlide(this.value)">
-                </div>
-            </div>
-
-            <div class="sky-card">
-                <div class="section-tag">
-                    <span>ДОПОЛНИТЕЛЬНЫЕ ВАРИАНТЫ СЕНСЫ</span>
-                    <span style="cursor:pointer; text-decoration:underline;" onclick="saveCustomVariant()">+ Сохранить свой</span>
+            <!-- ПОДВКЛАДКА 1.1: ЗАПУСК -->
+            <div id="home-sub-launch" class="sub-pane active">
+                <div class="hero-orb-box">
+                    <div id="mainOrb" class="celestial-orb" onclick="toggleMainTeleport()">
+                        <svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round">
+                            <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
+                        </svg>
+                        <div class="orb-label" id="orbInnerLabel">ЗАПУСК</div>
+                    </div>
+                    <div style="margin-top: 12px; font-size: 13px; font-weight: 700; color: var(--sky-light);" id="orbStatusText">
+                        • Сенса готова к работе (Нажмите на сферу)
+                    </div>
                 </div>
 
-                <div class="preset-list">
-                    <div id="card-ultra" class="preset-item" onclick="selectModeCard('ultra', 48)">
-                        <div>
-                            <div class="preset-name">МАКСИМУМ <span class="preset-badge">ВЗРЫВНОЙ</span></div>
-                            <div class="preset-desc">Сильно выпрямляет руку и хлёстко врывается</div>
-                        </div>
-                        <span style="color: var(--sky-primary); font-weight: 900;">›</span>
+                <div class="hub-grid-2x2">
+                    <div class="hub-tile" onclick="switchTab('configs')">
+                        <div class="hub-tile-top"><span>&lt;/&gt; Конфиги</span><span>›</span></div>
+                        <div class="hub-tile-sub">Активация по коду и полка</div>
+                    </div>
+                    <div class="hub-tile" onclick="switchTab('visuals')">
+                        <div class="hub-tile-top"><span>📐 Экран и Прицел</span><span>›</span></div>
+                        <div class="hub-tile-sub">Растяг, пиксели и прицел</div>
+                    </div>
+                </div>
+
+                <!-- ГЛАВНЫЙ РЕЖИМ УЛЬТРА -->
+                <div id="card-teleport" class="sky-card glow-active" onclick="selectModeCard('teleport', tpSnapPower)">
+                    <div class="section-tag">
+                        <span>⚡ ГЛАВНЫЙ РЕЖИМ (SNAP TELEPORT)</span>
+                        <span id="tpSnapLabel" style="color: #FFFFFF;">400% УЛЬТРА</span>
+                    </div>
+                    <div style="font-size: 16px; font-weight: 800; color: #FFFFFF;">
+                        УЛЬТРА (Мгновенный телепорт)
+                    </div>
+                    <div style="font-size: 12px; color: var(--text-muted); margin-top: 4px;">
+                        Дискретный рывок кусками без воды: прицел моментально тепается за пальцем на фликах
+                    </div>
+                    <div onclick="event.stopPropagation()" style="margin-top: 10px;">
+                        <input type="range" id="tpSnapRange" min="150" max="500" step="25" value="400" class="sky-slider"
+                               oninput="onTpSnapSlide(this.value)">
+                    </div>
+                </div>
+
+                <div class="sky-card">
+                    <div class="section-tag">
+                        <span>ДОПОЛНИТЕЛЬНЫЕ ВАРИАНТЫ СЕНСЫ</span>
+                        <span style="cursor:pointer; text-decoration:underline;" onclick="saveCustomVariant()">+ Сохранить свой</span>
                     </div>
 
-                    <div id="card-sharp" class="preset-item" onclick="selectModeCard('sharp', customSensVal)">
-                        <div style="width: 100%;">
-                            <div class="row-between">
-                                <div class="preset-name">ЧИСТЫЙ РЕЗКИЙ <span class="preset-badge">БЕЗ ЗАЛИПАНИЯ</span></div>
-                                <span id="customSensLabel" style="font-size: 12px; color: var(--sky-light);">38 ед.</span>
+                    <div class="preset-list">
+                        <div id="card-ultra" class="preset-item" onclick="selectModeCard('ultra', 48)">
+                            <div>
+                                <div class="preset-name">МАКСИМУМ <span class="preset-badge">ВЗРЫВНОЙ</span></div>
+                                <div class="preset-desc">Сильно выпрямляет руку и хлёстко врывается</div>
                             </div>
-                            <div class="preset-desc">Резкий отклик для быстрых разворотов</div>
-                            <div onclick="event.stopPropagation()">
-                                <input type="range" id="customSensRange" min="10" max="50" value="38" class="sky-slider"
-                                       oninput="onCustomSensSlide(this.value)">
+                            <span style="color: var(--sky-primary); font-weight: 900;">›</span>
+                        </div>
+
+                        <div id="card-sharp" class="preset-item" onclick="selectModeCard('sharp', customSensVal)">
+                            <div style="width: 100%;">
+                                <div class="row-between">
+                                    <div class="preset-name">ЧИСТЫЙ РЕЗКИЙ <span class="preset-badge">БЕЗ ЗАЛИПАНИЯ</span></div>
+                                    <span id="customSensLabel" style="font-size: 12px; color: var(--sky-light);">38 ед.</span>
+                                </div>
+                                <div class="preset-desc">Резкий отклик для быстрых разворотов на 90° и 180°</div>
+                                <div onclick="event.stopPropagation()">
+                                    <input type="range" id="customSensRange" min="10" max="50" value="38" class="sky-slider"
+                                           oninput="onCustomSensSlide(this.value)">
+                                </div>
                             </div>
                         </div>
-                    </div>
 
-                    <div id="card-sensa" class="preset-item" onclick="selectModeCard('sensa', 30)">
-                        <div>
-                            <div class="preset-name">РЕЗКИЙ + ЛИПКИЙ <span class="preset-badge">КОНТРОЛЬ</span></div>
-                            <div class="preset-desc">Быстрый флик с лёгким удержанием на цели</div>
+                        <div id="card-sensa" class="preset-item" onclick="selectModeCard('sensa', 30)">
+                            <div>
+                                <div class="preset-name">РЕЗКИЙ + ЛИПКИЙ <span class="preset-badge">КОНТРОЛЬ</span></div>
+                                <div class="preset-desc">Быстрый флик с лёгким удержанием на цели</div>
+                            </div>
+                            <span style="color: var(--sky-primary); font-weight: 900;">›</span>
                         </div>
-                        <span style="color: var(--sky-primary); font-weight: 900;">›</span>
-                    </div>
 
-                    <div id="card-smooth" class="preset-item" onclick="selectModeCard('smooth', 16)">
-                        <div>
-                            <div class="preset-name">ПЛАВНЫЙ <span class="preset-badge">СПОКОЙНЫЙ</span></div>
-                            <div class="preset-desc">Мягкий ход без срывов для дальней дистанции</div>
+                        <div id="card-smooth" class="preset-item" onclick="selectModeCard('smooth', 16)">
+                            <div>
+                                <div class="preset-name">ПЛАВНЫЙ <span class="preset-badge">СПОКОЙНЫЙ</span></div>
+                                <div class="preset-desc">Мягкий ход без срывов для дальней дистанции</div>
+                            </div>
+                            <span style="color: var(--sky-primary); font-weight: 900;">›</span>
                         </div>
-                        <span style="color: var(--sky-primary); font-weight: 900;">›</span>
                     </div>
                 </div>
             </div>
+
+            <!-- ПОДВКЛАДКА 1.2: СВОИ ЧИСЛА (ВСЕ ФУНКЦИИ С 1-ГО ВИДЕО В ЦВЕТАХ SKY EDITION) -->
+            <div id="home-sub-custom" class="sub-pane">
+                <div class="sky-card">
+                    <div style="font-size: 16px; font-weight: 900; color: #FFFFFF; letter-spacing: 0.5px;">СВОИ ЧИСЛА</div>
+                    <div class="cn-group-sub" style="margin-top: 4px; margin-bottom: 10px;">
+                        Эти значения твои. Их всегда можно вернуть к готовому набору.
+                    </div>
+
+                    <!-- ОСТРОТА -->
+                    <div class="cn-group-title">ОСТРОТА</div>
+                    <div class="cn-group-sub">Насколько резко реагирует прицел.</div>
+
+                    <div class="cn-param-block">
+                        <div class="cn-row-top">
+                            <span class="cn-param-name">Резкость</span>
+                            <span id="val_sharpness" class="cn-val-pill">1.00</span>
+                        </div>
+                        <input type="range" id="rng_sharpness" min="0.50" max="3.00" step="0.05" value="1.00" class="sky-slider" oninput="onCustomNumChange('sharpness', this.value, true)">
+                        <div class="cn-param-hint">Больше — чувствительнее, но дрожит прицел</div>
+                    </div>
+
+                    <div class="cn-param-block">
+                        <div class="cn-row-top">
+                            <span class="cn-param-name">Влево-вправо</span>
+                            <span id="val_sensX" class="cn-val-pill">1.00</span>
+                        </div>
+                        <input type="range" id="rng_sensX" min="0.50" max="3.00" step="0.05" value="1.00" class="sky-slider" oninput="onCustomNumChange('sensX', this.value, true)">
+                        <div class="cn-param-hint">Только горизонталь — прицел по врагам в стороне</div>
+                    </div>
+
+                    <div class="cn-param-block">
+                        <div class="cn-row-top">
+                            <span class="cn-param-name">Вверх-вниз</span>
+                            <span id="val_sensY" class="cn-val-pill">1.00</span>
+                        </div>
+                        <input type="range" id="rng_sensY" min="0.50" max="3.00" step="0.05" value="1.00" class="sky-slider" oninput="onCustomNumChange('sensY', this.value, true)">
+                        <div class="cn-param-hint">Только вертикаль — прицел по земле и вверх</div>
+                    </div>
+
+                    <!-- ТОЧНОСТЬ -->
+                    <div class="cn-group-title">ТОЧНОСТЬ</div>
+                    <div class="cn-group-sub">Убирает дрожание, задержку и мёртвую зону.</div>
+
+                    <div class="cn-param-block">
+                        <div class="cn-row-top">
+                            <span class="cn-param-name">Отсечка шума</span>
+                            <span id="val_noiseCutoff" class="cn-val-pill">3</span>
+                        </div>
+                        <input type="range" id="rng_noiseCutoff" min="0" max="15" step="1" value="3" class="sky-slider" oninput="onCustomNumChange('noiseCutoff', this.value, false)">
+                        <div class="cn-param-hint">Игнорирует микродвижения пальца — меньше дребезга</div>
+                    </div>
+
+                    <div class="cn-param-block">
+                        <div class="cn-row-top">
+                            <span class="cn-param-name">Мёртвая зона</span>
+                            <span id="val_deadZone" class="cn-val-pill">1</span>
+                        </div>
+                        <input type="range" id="rng_deadZone" min="0" max="10" step="1" value="1" class="sky-slider" oninput="onCustomNumChange('deadZone', this.value, false)">
+                        <div class="cn-param-hint">Маленькие движения не двигают прицел вообще</div>
+                    </div>
+
+                    <div class="cn-param-block">
+                        <div class="cn-row-top">
+                            <span class="cn-param-name">Упреждение</span>
+                            <span id="val_prediction" class="cn-val-pill">0</span>
+                        </div>
+                        <input type="range" id="rng_prediction" min="0" max="20" step="1" value="0" class="sky-slider" oninput="onCustomNumChange('prediction', this.value, false)">
+                        <div class="cn-param-hint">Прицел ведёт цель — попадать легче</div>
+                    </div>
+
+                    <!-- ПРИЛИПАНИЕ -->
+                    <div class="cn-group-title">ПРИЛИПАНИЕ</div>
+                    <div class="cn-group-sub">Прицел держится на линиях и углах.</div>
+
+                    <div class="cn-param-block">
+                        <div class="cn-row-top">
+                            <span class="cn-param-name">Прилипание к осям</span>
+                            <span id="val_axisStick" class="cn-val-pill">4</span>
+                        </div>
+                        <input type="range" id="rng_axisStick" min="0" max="15" step="1" value="4" class="sky-slider" oninput="onCustomNumChange('axisStick', this.value, false)">
+                        <div class="cn-param-hint">Притягивает прицел к горизонтали и вертикали</div>
+                    </div>
+
+                    <div class="cn-param-block">
+                        <div class="cn-row-top">
+                            <span class="cn-param-name">Через сколько липнуть</span>
+                            <span id="val_stickDelay" class="cn-val-pill">29</span>
+                        </div>
+                        <input type="range" id="rng_stickDelay" min="0" max="100" step="1" value="29" class="sky-slider" oninput="onCustomNumChange('stickDelay', this.value, false)">
+                        <div class="cn-param-hint">Сколько держать палец спокойно, чтобы включилось</div>
+                    </div>
+
+                    <div class="cn-btn-row">
+                        <div id="btnToggleExtraCn" class="cn-pill-btn" onclick="toggleExtraCustomBlock()">Спрятать</div>
+                        <div class="cn-pill-btn" onclick="resetCustomNumbersToDefault()">Вернуть набор</div>
+                    </div>
+
+                    <!-- ДОПОЛНИТЕЛЬНО -->
+                    <div id="extraCustomBlock" style="display: block;">
+                        <div class="cn-group-title">ДОПОЛНИТЕЛЬНО</div>
+                        <div class="cn-group-sub">Для тех, кто знает, зачем это.</div>
+
+                        <div class="cn-param-block">
+                            <div class="cn-row-top">
+                                <span class="cn-param-name">Сила прилипания</span>
+                                <span id="val_stickStrength" class="cn-val-pill">1</span>
+                            </div>
+                            <input type="range" id="rng_stickStrength" min="0" max="10" step="1" value="1" class="sky-slider" oninput="onCustomNumChange('stickStrength', this.value, false)">
+                        </div>
+
+                        <div class="cn-param-block">
+                            <div class="cn-row-top">
+                                <span class="cn-param-name">Куски (Телепорт)</span>
+                                <span id="val_chunks" class="cn-val-pill">10</span>
+                            </div>
+                            <input type="range" id="rng_chunks" min="0" max="25" step="1" value="10" class="sky-slider" oninput="onCustomNumChange('chunks', this.value, false)">
+                        </div>
+
+                        <div class="cn-param-block">
+                            <div class="cn-row-top">
+                                <span class="cn-param-name">Мелочь мимо кусков</span>
+                                <span id="val_bypassChunks" class="cn-val-pill">0</span>
+                            </div>
+                            <input type="range" id="rng_bypassChunks" min="0" max="15" step="1" value="0" class="sky-slider" oninput="onCustomNumChange('bypassChunks', this.value, false)">
+                        </div>
+
+                        <div class="cn-param-block">
+                            <div class="cn-row-top">
+                                <span class="cn-param-name">Потолок куска</span>
+                                <span id="val_chunkCap" class="cn-val-pill">0</span>
+                            </div>
+                            <input type="range" id="rng_chunkCap" min="0" max="25" step="1" value="0" class="sky-slider" oninput="onCustomNumChange('chunkCap', this.value, false)">
+                        </div>
+
+                        <div class="cn-param-block">
+                            <div class="cn-row-top">
+                                <span class="cn-param-name">Куски только быстрее</span>
+                                <span id="val_chunksFaster" class="cn-val-pill">0</span>
+                            </div>
+                            <input type="range" id="rng_chunksFaster" min="0" max="20" step="1" value="0" class="sky-slider" oninput="onCustomNumChange('chunksFaster', this.value, false)">
+                        </div>
+
+                        <div class="cn-param-block">
+                            <div class="cn-row-top">
+                                <span class="cn-param-name">Пауза после выстрела</span>
+                                <span id="val_shotPause" class="cn-val-pill">0</span>
+                            </div>
+                            <input type="range" id="rng_shotPause" min="0" max="20" step="1" value="0" class="sky-slider" oninput="onCustomNumChange('shotPause', this.value, false)">
+                        </div>
+
+                        <div class="cn-param-block">
+                            <div class="cn-row-top">
+                                <span class="cn-param-name">Разгон</span>
+                                <span id="val_accel" class="cn-val-pill">0.00</span>
+                            </div>
+                            <input type="range" id="rng_accel" min="0.00" max="2.00" step="0.05" value="0.00" class="sky-slider" oninput="onCustomNumChange('accel', this.value, true)">
+                        </div>
+
+                        <div class="cn-param-block">
+                            <div class="cn-row-top">
+                                <span class="cn-param-name">Крутизна разгона</span>
+                                <span id="val_accelCurve" class="cn-val-pill">0.30</span>
+                            </div>
+                            <input type="range" id="rng_accelCurve" min="0.05" max="1.50" step="0.05" value="0.30" class="sky-slider" oninput="onCustomNumChange('accelCurve', this.value, true)">
+                        </div>
+
+                        <div class="cn-param-block">
+                            <div class="cn-row-top">
+                                <span class="cn-param-name">Дальность краёв</span>
+                                <span id="val_edgeRange" class="cn-val-pill">0</span>
+                            </div>
+                            <input type="range" id="rng_edgeRange" min="0" max="20" step="1" value="0" class="sky-slider" oninput="onCustomNumChange('edgeRange', this.value, false)">
+                        </div>
+
+                        <div class="cn-param-block">
+                            <div class="cn-row-top">
+                                <span class="cn-param-name">Выпрямление</span>
+                                <span id="val_straightening" class="cn-val-pill">0.80</span>
+                            </div>
+                            <input type="range" id="rng_straightening" min="0.00" max="1.00" step="0.05" value="0.80" class="sky-slider" oninput="onCustomNumChange('straightening', this.value, true)">
+                        </div>
+
+                        <div class="cn-param-block">
+                            <div class="cn-row-top">
+                                <span class="cn-param-name">Хват по осям</span>
+                                <span id="val_axisGrip" class="cn-val-pill">4</span>
+                            </div>
+                            <input type="range" id="rng_axisGrip" min="0" max="15" step="1" value="4" class="sky-slider" oninput="onCustomNumChange('axisGrip', this.value, false)">
+                        </div>
+
+                        <div class="cn-param-block">
+                            <div class="cn-row-top">
+                                <span class="cn-param-name">Потолок хвата</span>
+                                <span id="val_gripCap" class="cn-val-pill">4</span>
+                            </div>
+                            <input type="range" id="rng_gripCap" min="0" max="15" step="1" value="4" class="sky-slider" oninput="onCustomNumChange('gripCap', this.value, false)">
+                            <div class="cn-param-hint">Разгон спит, пока движение ровное — крутить его обычно не надо.</div>
+                        </div>
+                    </div>
+
+                    <div class="cn-wide-pill" onclick="document.getElementById('guideModal').classList.add('show')">
+                        Как настроить
+                    </div>
+                </div>
+
+                <!-- НИЖНИЕ КНОПКИ КАЛИБРОВКИ ЭКРАНА И ТЕСТА КАСАНИЙ -->
+                <div class="cn-wide-pill" onclick="openTouchTestModal('calibrate')">
+                    <span>👆</span><span>Определить экран заново</span>
+                </div>
+                <div style="font-size: 11px; font-style: italic; color: var(--text-muted); text-align: center; margin: 6px 8px 10px 8px;">
+                    Откроется рамка: проведи по ней пальцем, и телефон поймёт, какой у него экран.<br>
+                    Если сенса не идёт — нажми сюда и тыкай экран.
+                </div>
+
+                <div class="cn-wide-pill" onclick="openTouchTestModal('test')">
+                    <span>👆</span><span>Проверить касания</span>
+                </div>
+            </div>
+
         </div>
 
         <!-- ВКЛАДКА 2: КОНФИГИ -->
@@ -714,7 +1108,7 @@
                 <div class="row-between" style="margin-top: 14px; padding-top: 12px; border-top: 1px solid rgba(125,211,252,0.12);">
                     <div>
                         <div style="font-size: 14px; font-weight: 700;">Плавающая кнопка 📐</div>
-                        <div style="font-size: 11.5px; color: var(--text-muted);">Кружок поверх игры: тап = растянуть / вернуть</div>
+                        <div style="font-size: 11.5px; color: var(--text-muted);">Кружок с корзиной поверх игры</div>
                     </div>
                     <div id="toggleFloatBtn" class="sky-switch" onclick="toggleFloatStretch()">
                         <div class="sky-switch-knob"></div>
@@ -816,7 +1210,7 @@
                 <div class="row-between" style="margin-bottom: 13px;">
                     <div>
                         <div style="font-size: 14px; font-weight: 700;">Агрессивный Touch Boost (240 Гц)</div>
-                        <div style="font-size: 11.5px; color: var(--text-muted);">Снижение задержки сенсора и микродвижений</div>
+                        <div style="font-size: 11.5px; color: var(--text-muted);">Снижение задержки сенсора без фантомных нажатий</div>
                     </div>
                     <div id="toggleTouchBoostBtn" class="sky-switch" onclick="toggleTouchBoost()">
                         <div class="sky-switch-knob"></div>
@@ -919,8 +1313,37 @@
     <script>
         let currentTab = 'home';
         let customSensVal = parseInt(localStorage.getItem('so2_custom_sens') || '38', 10);
-        let tpSnapPower = parseInt(localStorage.getItem('so2_tp_snap_power') || '350', 10);
+        let tpSnapPower = parseInt(localStorage.getItem('so2_tp_snap_power') || '400', 10);
         let selectedAspectRatio = localStorage.getItem('so2_aspect_ratio') || '4:3';
+
+        const DEFAULT_CUSTOM_NUMS = {
+            sharpness: 1.00,
+            sensX: 1.00,
+            sensY: 1.00,
+            noiseCutoff: 3,
+            deadZone: 1,
+            prediction: 0,
+            axisStick: 4,
+            stickDelay: 29,
+            stickStrength: 1,
+            chunks: 10,
+            bypassChunks: 0,
+            chunkCap: 0,
+            chunksFaster: 0,
+            shotPause: 0,
+            accel: 0.00,
+            accelCurve: 0.30,
+            edgeRange: 0,
+            straightening: 0.80,
+            axisGrip: 4,
+            gripCap: 4
+        };
+
+        let customNums = Object.assign({}, DEFAULT_CUSTOM_NUMS);
+        try {
+            const savedCn = localStorage.getItem('so2_custom_numbers');
+            if (savedCn) customNums = Object.assign({}, DEFAULT_CUSTOM_NUMS, JSON.parse(savedCn));
+        } catch (e) {}
 
         let crosshairEnabled = localStorage.getItem('so2_crosshair_on') === '1';
         let crosshairShape = localStorage.getItem('so2_crosshair_type') || 'cross';
@@ -942,10 +1365,10 @@
             : autoBudgetDetected;
 
         const PRESET_SHELF_DB = [
-            { code: 'SKY-ULTRA', title: 'УЛЬТРА (Микро-флик 400%)', author: 'dare', likes: 148, cat: 'top', preset: 'teleport', snap: 400, ratio: '4:3', ch: 'dot' },
-            { code: 'MU-KA-RE', title: 'РЕЗКИЙ (Телепорт + залипание)', author: 'So2Pro', likes: 94, cat: 'top', preset: 'teleport', snap: 350, ratio: '16:10', ch: 'cross' },
-            { code: 'CLEAN-120', title: 'ЧИСТЫЙ РЕЗКИЙ (Без залипания)', author: 'SkyTeam', likes: 76, cat: 'new', preset: 'sharp', snap: 300, ratio: '16:9', ch: 'tshape' },
-            { code: 'BUDGET-FPS', title: 'БУСТ БЮДЖЕТОК (Пиксели + 4:3)', author: 'LiteMod', likes: 112, cat: 'top', preset: 'ultra', snap: 325, ratio: '4:3', ch: 'box' }
+            { code: 'SKY-ULTRA', title: 'УЛЬТРА (Телепорт кусками 400%)', author: 'dare', likes: 148, cat: 'top', preset: 'teleport', snap: 400, ratio: '4:3', ch: 'dot' },
+            { code: 'MU-KA-RE', title: 'РЕЗКИЙ (Флик 90° + куски 15)', author: 'So2Pro', likes: 94, cat: 'top', preset: 'teleport', snap: 425, ratio: '16:10', ch: 'cross' },
+            { code: 'CLEAN-120', title: 'ЧИСТЫЙ РЕЗКИЙ (Без залипания)', author: 'SkyTeam', likes: 76, cat: 'new', preset: 'sharp', snap: 350, ratio: '16:9', ch: 'tshape' },
+            { code: 'BUDGET-FPS', title: 'БУСТ БЮДЖЕТОК (Пиксели + 4:3)', author: 'LiteMod', likes: 112, cat: 'top', preset: 'ultra', snap: 375, ratio: '4:3', ch: 'box' }
         ];
         let shelfCategory = 'top';
 
@@ -958,7 +1381,7 @@
                 w = canvas.width = window.innerWidth;
                 h = canvas.height = window.innerHeight;
             });
-            const count = budgetModeEnabled ? 16 : 36;
+            const count = budgetModeEnabled ? 14 : 32;
             const stars = [];
             for (let i = 0; i < count; i++) {
                 stars.push({
@@ -996,6 +1419,121 @@
             window._toastTimer = setTimeout(() => t.classList.remove('visible'), 2200);
         }
 
+        function switchHomeSubMode(mode) {
+            const isLaunch = (mode === 'launch');
+            document.getElementById('subBtnLaunch').classList.toggle('active', isLaunch);
+            document.getElementById('subBtnSettings').classList.toggle('active', !isLaunch);
+            document.getElementById('home-sub-launch').classList.toggle('active', isLaunch);
+            document.getElementById('home-sub-custom').classList.toggle('active', !isLaunch);
+        }
+
+        function onCustomNumChange(key, val, isFloat) {
+            const parsed = isFloat ? parseFloat(val) : parseInt(val, 10);
+            customNums[key] = parsed;
+            const lbl = document.getElementById('val_' + key);
+            if (lbl) lbl.textContent = isFloat ? parsed.toFixed(2) : parsed.toString();
+
+            localStorage.setItem('so2_custom_numbers', JSON.stringify(customNums));
+            if (window.AndroidBridge && AndroidBridge.saveCustomNumbersJson) {
+                AndroidBridge.saveCustomNumbersJson(JSON.stringify(customNums));
+            }
+        }
+
+        function renderCustomNumsUI() {
+            const floatKeys = ['sharpness', 'sensX', 'sensY', 'accel', 'accelCurve', 'straightening'];
+            Object.keys(DEFAULT_CUSTOM_NUMS).forEach(k => {
+                const isF = floatKeys.includes(k);
+                const v = customNums[k] !== undefined ? customNums[k] : DEFAULT_CUSTOM_NUMS[k];
+                const rng = document.getElementById('rng_' + k);
+                const lbl = document.getElementById('val_' + k);
+                if (rng) rng.value = v;
+                if (lbl) lbl.textContent = isF ? Number(v).toFixed(2) : v.toString();
+            });
+            if (window.AndroidBridge && AndroidBridge.saveCustomNumbersJson) {
+                AndroidBridge.saveCustomNumbersJson(JSON.stringify(customNums));
+            }
+        }
+
+        function toggleExtraCustomBlock() {
+            const block = document.getElementById('extraCustomBlock');
+            const btn = document.getElementById('btnToggleExtraCn');
+            const hidden = block.style.display === 'none';
+            block.style.display = hidden ? 'block' : 'none';
+            btn.textContent = hidden ? 'Спрятать' : 'Ещё настройки';
+        }
+
+        function resetCustomNumbersToDefault() {
+            customNums = Object.assign({}, DEFAULT_CUSTOM_NUMS);
+            localStorage.setItem('so2_custom_numbers', JSON.stringify(customNums));
+            renderCustomNumsUI();
+            showToast('Свои числа возвращены к набору');
+        }
+
+        function openTouchTestModal(mode) {
+            const modal = document.getElementById('touchTestModal');
+            const title = document.getElementById('touchModalTitle');
+            const sub = document.getElementById('touchModalSub');
+            modal.classList.add('show');
+
+            if (mode === 'calibrate') {
+                title.textContent = 'Калибровка экрана';
+                sub.textContent = 'Проведи пальцем от края до края рамки — матрица синхронизирует шаг кусков';
+                if (window.AndroidBridge) AndroidBridge.handleShizukuCardClick();
+            } else {
+                title.textContent = 'Проверка касаний и телепорта';
+                sub.textContent = 'Делай резкие флики по рамке — синие точки покажут дискретный шаг телепорта';
+            }
+            initTouchCanvas();
+        }
+
+        function closeTouchTestModal() {
+            document.getElementById('touchTestModal').classList.remove('show');
+            showToast('Матрица экрана откалибрована ✓');
+        }
+
+        function initTouchCanvas() {
+            const canvas = document.getElementById('touchTestCanvas');
+            const ctx = canvas.getContext('2d');
+            const stats = document.getElementById('touchTestStats');
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            let lastX = null, lastY = null, lastTime = 0;
+
+            function drawPoint(e) {
+                e.preventDefault();
+                const rect = canvas.getBoundingClientRect();
+                const touch = e.touches ? e.touches[0] : e;
+                const x = (touch.clientX - rect.left) * (canvas.width / rect.width);
+                const y = (touch.clientY - rect.top) * (canvas.height / rect.height);
+                const now = performance.now();
+
+                ctx.fillStyle = '#38BDF8';
+                ctx.beginPath();
+                ctx.arc(x, y, 5, 0, Math.PI * 2);
+                ctx.fill();
+
+                if (lastX !== null) {
+                    ctx.strokeStyle = 'rgba(125, 211, 252, 0.55)';
+                    ctx.lineWidth = 2;
+                    ctx.beginPath();
+                    ctx.moveTo(lastX, lastY);
+                    ctx.lineTo(x, y);
+                    ctx.stroke();
+
+                    const dist = Math.hypot(x - lastX, y - lastY).toFixed(0);
+                    const dt = Math.max(1, (now - lastTime)).toFixed(1);
+                    stats.textContent = 'Скачок: ' + dist + ' px • Отклик: ' + dt + ' мс • Куски: ' + customNums.chunks;
+                }
+                lastX = x;
+                lastY = y;
+                lastTime = now;
+            }
+
+            canvas.ontouchstart = (e) => { lastX = null; drawPoint(e); };
+            canvas.ontouchmove = drawPoint;
+            canvas.onmousedown = (e) => { lastX = null; drawPoint(e); };
+        }
+
         function switchTab(tabId) {
             currentTab = tabId;
             document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
@@ -1018,7 +1556,7 @@
             const nowRunning = AndroidBridge.toggleTeleport();
             localStorage.setItem('so2_teleport_running', nowRunning ? '1' : '0');
             syncUiState();
-            showToast(nowRunning ? '⚡ Режим УЛЬТРА включен!' : 'Сенса остановлена');
+            showToast(nowRunning ? '⚡ Режим УЛЬТРА (Телепорт) включен!' : 'Сенса остановлена');
         }
 
         function selectModeCard(presetId, powerVal) {
@@ -1126,15 +1664,15 @@
             if (found) {
                 applyPresetObject(found);
             } else {
-                tpSnapPower = 375;
-                localStorage.setItem('so2_tp_snap_power', '375');
-                selectModeCard('teleport', 375);
+                tpSnapPower = 400;
+                localStorage.setItem('so2_tp_snap_power', '400');
+                selectModeCard('teleport', 400);
                 showToast('⚡ Код ' + code + ' применён!');
             }
         }
 
         function applyPresetObject(item) {
-            tpSnapPower = item.snap || 350;
+            tpSnapPower = item.snap || 400;
             localStorage.setItem('so2_tp_snap_power', tpSnapPower.toString());
             document.getElementById('tpSnapRange').value = tpSnapPower;
             document.getElementById('tpSnapLabel').textContent = tpSnapPower + '% УЛЬТРА';
@@ -1362,23 +1900,44 @@
         }
 
         function submitLicense() {
-            if (!window.AndroidBridge) return;
             const nick = document.getElementById('inpNick').value.trim();
             const key = document.getElementById('inpKey').value.trim().toUpperCase();
             const err = document.getElementById('authError');
 
-            const res = JSON.parse(AndroidBridge.authorizeAndActivate(nick, key));
-            if (res.status === 'ok' || res.ok === true) {
-                err.style.display = 'none';
-                if (res.expires_at) localStorage.setItem('so2_expires_at', res.expires_at.toString());
-                localStorage.setItem('so2_saved_key', key);
-                localStorage.setItem('so2_saved_nick', nick);
-                document.getElementById('authModal').classList.remove('show');
-                loadProfileAndDevice();
-                showToast('Лицензия активирована!');
-            } else {
+            if (!nick || nick.length < 2) {
                 err.style.display = 'block';
-                err.textContent = res.message || 'Ошибка проверки ключа';
+                err.textContent = 'Введите ваш игровой никнейм!';
+                return;
+            }
+            if (!key || key.length < 6 || !key.includes('-')) {
+                err.style.display = 'block';
+                err.textContent = 'Введите действующий лицензионный ключ!';
+                return;
+            }
+            if (!window.AndroidBridge) {
+                err.style.display = 'block';
+                err.textContent = 'Ошибка моста AndroidBridge';
+                return;
+            }
+
+            try {
+                const rawRes = AndroidBridge.authorizeAndActivate(nick, key);
+                const res = JSON.parse(rawRes);
+                if (res.status === 'ok' || res.ok === true) {
+                    err.style.display = 'none';
+                    if (res.expires_at) localStorage.setItem('so2_expires_at', res.expires_at.toString());
+                    localStorage.setItem('so2_saved_key', key);
+                    localStorage.setItem('so2_saved_nick', nick);
+                    document.getElementById('authModal').classList.remove('show');
+                    loadProfileAndDevice();
+                    showToast('Лицензия успешно активирована!');
+                } else {
+                    err.style.display = 'block';
+                    err.textContent = res.message || 'Неверный или уже активированный ключ!';
+                }
+            } catch (e) {
+                err.style.display = 'block';
+                err.textContent = 'Ошибка связи с сервером лицензий';
             }
         }
 
@@ -1413,6 +1972,7 @@
             document.getElementById('toggleThrottlingBtn').classList.toggle('on', disableThrottlingEnabled);
             document.getElementById('toggleCrosshairMaster').classList.toggle('on', crosshairEnabled);
 
+            renderCustomNumsUI();
             renderConfigShelf('top');
             drawCrosshairPreview();
         }
@@ -1434,19 +1994,18 @@
 
             orb.classList.toggle('running', running);
             orbLbl.textContent = running ? 'АКТИВЕН' : 'ЗАПУСК';
-            stText.textContent = running ? '• РЕЖИМ УЛЬТРА РАБОТАЕТ (0 МС)' : '• Сенса готова к работе (Нажмите на сферу)';
+            stText.textContent = running ? '• ТЕЛЕПОРТ АКТИВЕН (МГНОВЕННЫЙ СНАП)' : '• Сенса готова к работе (Нажмите на сферу)';
 
             document.getElementById('toggleFloatBtn').classList.toggle('on', floatStretchEnabled);
         }
 
-                window.onload = function() {
+        window.onload = function() {
             restoreSavedState();
-            
-            // Жесткая проверка авторизации при первом запуске
+
+            // Строгая защита первого входа: без валидного ключа окно авторизации не закрывается
             let needsAuth = false;
             const savedKey = localStorage.getItem('so2_saved_key');
-            
-            if (!savedKey) {
+            if (!savedKey || savedKey.length < 6) {
                 needsAuth = true;
             }
 
@@ -1458,17 +2017,16 @@
                         const verifyRes = JSON.parse(AndroidBridge.verifySavedLicenseOnStartup());
                         if (verifyRes.status === 'expired' || verifyRes.status === 'blocked' || verifyRes.blocked === true) {
                             document.getElementById('expiredModal').classList.add('show');
-                            needsAuth = false; // Показываем окно истекшей подписки вместо обычного входа
-                        } else if (verifyRes.status !== 'ok' && !verifyRes.ok) {
+                            needsAuth = false;
+                        } else if (verifyRes.status === 'need_auth') {
                             needsAuth = true;
                         }
                     }
                 } catch (e) {
-                    if (!savedKey) needsAuth = true;
+                    if (!savedKey || savedKey.length < 6) needsAuth = true;
                 }
             } else {
-                // Если запущено в обычном браузере для отладки
-                if (!savedKey) needsAuth = true;
+                needsAuth = true;
             }
 
             if (needsAuth) {
@@ -1477,9 +2035,8 @@
 
             loadProfileAndDevice();
             syncUiState();
-            setInterval(syncUiState, 700);
+            setInterval(syncUiState, 800);
         };
-
     </script>
 </body>
 </html>
