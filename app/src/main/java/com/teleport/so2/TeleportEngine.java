@@ -1,30 +1,20 @@
-public class TeleportEngine {
-    private static boolean stepQuantizationEnabled = true;
-    private static float snapPowerMultiplier = 3.5f; // 350% ULTRA MAX по умолчанию
+package com.teleport.so2;
 
+public class TeleportEngine {
+    
+    private static boolean stepQuantizationEnabled = false;
+    private static float snapPowerMultiplier = 1.0f;
+    
     public static void setStepQuantization(boolean enabled, float multiplier) {
         stepQuantizationEnabled = enabled;
-        snapPowerMultiplier = Math.max(1.0f, multiplier);
+        snapPowerMultiplier = Math.max(0.5f, Math.min(4.0f, multiplier));
     }
-
-    /**
-     * Вычисляет агрессивный телепорт-импульс даже на самых маленьких микро-фликах.
-     */
-    public static float computeTeleportDelta(float rawDelta) {
-        float abs = Math.abs(rawDelta);
-        if (abs < 0.04f) return 0f;
-
-        if (!stepQuantizationEnabled) {
-            return rawDelta * snapPowerMultiplier;
-        }
-
-        // Жесткий стартовый рывок для микро-фликов (убирает вязкость тача на всех телефонах):
-        float minSnapStep = 11.5f * snapPowerMultiplier;
-
-        // Нелинейный разгон для средних и длинных фликов без промежуточного сглаживания:
-        float nonLinearBoost = (float) Math.pow(abs, 1.38f) * (3.2f * snapPowerMultiplier);
-
-        float finalStep = Math.max(nonLinearBoost, minSnapStep);
+    
+    public static float computeTeleportDelta(float rawDelta, float snapMultiplier) {
+        if (Math.abs(rawDelta) < 0.15f) return 0f;
+        float minSnapStep = 6.5f * snapMultiplier;
+        float boosted = Math.abs(rawDelta) * (1.85f * snapMultiplier);
+        float finalStep = Math.max(boosted, minSnapStep);
         return Math.copySign(finalStep, rawDelta);
     }
 }
