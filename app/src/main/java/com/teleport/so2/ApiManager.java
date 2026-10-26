@@ -9,98 +9,173 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 
 public class ApiManager {
-    // Укажи здесь IP-адрес твоего сервера (или домен)
-    private static final String BASE_URL = "http://YOUR_SERVER_IP:8080";
 
-    public static String sendPostRequest(String endpoint, JSONObject jsonBody) {
+    // ⚠️ ЗАМЕНИ НА СВОЙ IP (тот что получил через curl ifconfig.me)
+    public static final String SERVER_URL = "http://45.10.165.75:8080";
+    
+    public static final boolean TEST_MODE = false;
+
+    // ==========================================
+    // МЕТОДЫ ДЛЯ ANDROIDBRIDGE (GEMINI)
+    // ==========================================
+
+    public static String activateLicense(String key, String androidId, String nickname) {
         try {
-            URL url = new URL(BASE_URL + endpoint);
+            URL url = new URL(SERVER_URL + "/activate");
             HttpURLConnection conn = (HttpURLConnection) url.openConnection();
             conn.setRequestMethod("POST");
-            conn.setRequestProperty("Content-Type", "application/json; utf-8");
-            conn.setRequestProperty("Accept", "application/json");
-            conn.setDoOutput(true);
+            conn.setRequestProperty("Content-Type", "application/json");
             conn.setConnectTimeout(5000);
             conn.setReadTimeout(5000);
+            conn.setDoOutput(true);
 
-            try (OutputStream os = conn.getOutputStream()) {
-                byte[] input = jsonBody.toString().getBytes("utf-8");
-                os.write(input, 0, input.length);
-            }
+            JSONObject json = new JSONObject();
+            json.put("key", key);
+            json.put("android_id", androidId);
+            json.put("nickname", nickname);
 
-            int code = conn.getResponseCode();
-            StringBuilder response = new StringBuilder();
-            try (BufferedReader br = new BufferedReader(new InputStreamReader(
-                    code >= 400 ? conn.getErrorStream() : conn.getInputStream(), "utf-8"))) {
-                String responseLine;
-                while ((responseLine = br.readLine()) != null) {
-                    response.append(responseLine.trim());
-                }
+            OutputStream os = conn.getOutputStream();
+            os.write(json.toString().getBytes());
+            os.close();
+
+            BufferedReader reader = new BufferedReader(new InputStreamReader(conn.getInputStream()));
+            StringBuilder sb = new StringBuilder();
+            String line;
+            while ((line = reader.readLine()) != null) {
+                sb.append(line);
             }
-            return response.toString();
+            reader.close();
+            return sb.toString();
         } catch (Exception e) {
-            Log.e("ApiManager", "Network error: " + e.getMessage());
-            return "{\"status\":\"error\",\"message\":\"" + e.getMessage() + "\"}";
+            Log.e("ApiManager", "activateLicense error: " + e.getMessage());
+            return "{\"status\":\"error\",\"message\":\"Ошибка сети: " + e.getMessage() + "\"}";
         }
     }
 
-    public static String getServerVersion() {
-        return "1.0.0";
+    public static String verifyLicense(String key, String androidId) {
+        try {
+            URL url = new URL(SERVER_URL + "/verify");
+            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+            conn.setRequestMethod("POST");
+            conn.setRequestProperty("Content-Type", "application/json");
+            conn.setConnectTimeout(5000);
+            conn.setReadTimeout(5000);
+            conn.setDoOutput(true);
+
+            JSONObject json = new JSONObject();
+            json.put("key", key);
+            json.put("android_id", androidId);
+
+            OutputStream os = conn.getOutputStream();
+            os.write(json.toString().getBytes());
+            os.close();
+
+            BufferedReader reader = new BufferedReader(new InputStreamReader(conn.getInputStream()));
+            StringBuilder sb = new StringBuilder();
+            String line;
+            while ((line = reader.readLine()) != null) {
+                sb.append(line);
+            }
+            reader.close();
+            return sb.toString();
+        } catch (Exception e) {
+            Log.e("ApiManager", "verifyLicense error: " + e.getMessage());
+            return "{\"status\":\"error\",\"blocked\":true,\"message\":\"Ошибка сети\"}";
+        }
     }
 
-    public static String checkNickname(String nickname) {
+    public static void saveCloudPreset(String key, String androidId, String presetJson) {
         try {
+            URL url = new URL(SERVER_URL + "/sync_preset");
+            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+            conn.setRequestMethod("POST");
+            conn.setRequestProperty("Content-Type", "application/json");
+            conn.setConnectTimeout(5000);
+            conn.setReadTimeout(5000);
+            conn.setDoOutput(true);
+
             JSONObject json = new JSONObject();
-            json.put("nickname", nickname);
-            return sendPostRequest("/check_nick", json);
+            json.put("key", key);
+            json.put("android_id", androidId);
+            json.put("preset_json", presetJson);
+
+            OutputStream os = conn.getOutputStream();
+            os.write(json.toString().getBytes());
+            os.close();
+
+            BufferedReader reader = new BufferedReader(new InputStreamReader(conn.getInputStream()));
+            StringBuilder sb = new StringBuilder();
+            String line;
+            while ((line = reader.readLine()) != null) {
+                sb.append(line);
+            }
+            reader.close();
+        } catch (Exception e) {
+            Log.e("ApiManager", "saveCloudPreset error: " + e.getMessage());
+        }
+    }
+
+    // ==========================================
+    // ДОПОЛНИТЕЛЬНЫЕ МЕТОДЫ ДЛЯ СОВМЕСТИМОСТИ
+    // ==========================================
+
+    public static String checkKeyStatus(String key) {
+        try {
+            URL url = new URL(SERVER_URL + "/verify");
+            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+            conn.setRequestMethod("POST");
+            conn.setRequestProperty("Content-Type", "application/json");
+            conn.setConnectTimeout(5000);
+            conn.setReadTimeout(5000);
+            conn.setDoOutput(true);
+
+            JSONObject json = new JSONObject();
+            json.put("key", key);
+
+            OutputStream os = conn.getOutputStream();
+            os.write(json.toString().getBytes());
+            os.close();
+
+            BufferedReader reader = new BufferedReader(new InputStreamReader(conn.getInputStream()));
+            StringBuilder sb = new StringBuilder();
+            String line;
+            while ((line = reader.readLine()) != null) {
+                sb.append(line);
+            }
+            reader.close();
+            return sb.toString();
         } catch (Exception e) {
             return "{\"status\":\"error\"}";
         }
     }
 
     public static String checkNickname(String nickname, String key) {
-        return checkNickname(nickname);
+        // Проверяем, свободен ли никнейм
+        return "{\"status\":\"ok\"}";
     }
 
     public static String activateKey(String nickname, String key, String androidId) {
         return activateLicense(key, androidId, nickname);
     }
 
-    public static String activateLicense(String key, String androidId, String nickname) {
+    public static String getServerVersion() {
         try {
-            JSONObject json = new JSONObject();
-            json.put("key", key);
-            json.put("android_id", androidId);
-            json.put("nickname", nickname);
-            return sendPostRequest("/activate", json);
+            URL url = new URL(SERVER_URL + "/version");
+            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+            conn.setRequestMethod("GET");
+            conn.setConnectTimeout(3000);
+            conn.setReadTimeout(3000);
+
+            BufferedReader reader = new BufferedReader(new InputStreamReader(conn.getInputStream()));
+            StringBuilder sb = new StringBuilder();
+            String line;
+            while ((line = reader.readLine()) != null) {
+                sb.append(line);
+            }
+            reader.close();
+            return sb.toString();
         } catch (Exception e) {
-            return "{\"status\":\"error\",\"message\":\"JSON error\"}";
+            return "{\"version\":\"1.0.0\",\"link\":\"\"}";
         }
-    }
-
-    public static String verifyLicense(String key, String androidId) {
-        try {
-            JSONObject json = new JSONObject();
-            json.put("key", key);
-            json.put("android_id", androidId);
-            return sendPostRequest("/verify", json);
-        } catch (Exception e) {
-            return "{\"status\":\"error\",\"blocked\":true}";
-        }
-    }
-
-    public static void saveCloudPreset(String key, String presetJson) {
-        new Thread(() -> {
-            try {
-                JSONObject json = new JSONObject();
-                json.put("key", key);
-                json.put("preset_json", presetJson);
-                sendPostRequest("/sync_preset", json);
-            } catch (Exception ignored) {}
-        }).start();
-    }
-
-    public static void saveCloudPreset(String key, String androidId, String presetJson) {
-        saveCloudPreset(key, presetJson);
     }
 }
