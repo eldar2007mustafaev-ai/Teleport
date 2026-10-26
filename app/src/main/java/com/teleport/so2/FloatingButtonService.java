@@ -211,7 +211,12 @@ public class FloatingButtonService extends Service {
         new Thread(() -> {
             if (!ShizukuManager.isStandoffForeground()) return;
             final boolean nextState = !ShizukuManager.isStretchActive();
-            final String msg = nextState ? ShizukuManager.applyStretch() : ShizukuManager.resetStretch();
+            if (nextState) {
+    ShizukuManager.applyStretch();
+} else {
+    ShizukuManager.resetStretch();
+}
+final String msg = nextState ? "Растяжка применена" : "Растяжка сброшена";
             mainHandler.post(() -> {
                 updateButtonStyle(nextState);
                 Toast.makeText(getApplicationContext(), msg, Toast.LENGTH_SHORT).show();
