@@ -67,6 +67,8 @@ public class FloatingButtonService extends Service {
                 ? WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY
                 : WindowManager.LayoutParams.TYPE_PHONE;
 
+        // Строго без FLAG_WATCH_OUTSIDE_TOUCH и с FLAG_NOT_TOUCH_MODAL,
+        // чтобы оверлей вообще не трогал чужие нажатия и системные жесты
         params = new WindowManager.LayoutParams(
                 size,
                 size,
@@ -156,6 +158,7 @@ public class FloatingButtonService extends Service {
                 (int) (48 * density),
                 overlayType,
                 WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE |
+                WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE |
                 WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL |
                 WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN,
                 PixelFormat.TRANSLUCENT
@@ -230,7 +233,7 @@ public class FloatingButtonService extends Service {
             final String cmd = "wm size " + highShortSide + "x" + targetLongSide;
             new Thread(() -> ShizukuManager.execCommand(cmd)).start();
             floatingBtn.setText("⚡");
-            Toast.makeText(this, "Растяг " + ratio + " + Ультра-сенса", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "Растяг " + ratio + " + Ультра-телепорт", Toast.LENGTH_SHORT).show();
         } else {
             new Thread(() -> ShizukuManager.execCommand("wm size reset")).start();
             floatingBtn.setText("📐");
