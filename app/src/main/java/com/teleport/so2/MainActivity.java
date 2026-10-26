@@ -1,142 +1,144 @@
 package com.teleport.so2;
 
 import android.annotation.SuppressLint;
-import android.content.Context;
 import android.content.Intent;
-import android.content.SharedPreferences;
-import android.content.pm.PackageManager;
-import android.graphics.Color;
-import android.graphics.drawable.ColorDrawable;
+import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.provider.Settings;
-import android.view.View;
-import android.view.Window;
+import android.util.DisplayMetrics;
 import android.view.WindowManager;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
+import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
-import rikka.shizuku.Shizuku;
 
 public class MainActivity extends AppCompatActivity {
-
-    public static final String APP_VERSION = "1.0.0";
-    public static final String TELEGRAM_BOT_URL = "https://t.me/so2_teleport_bot";
-    private static final String PREF_NAME = "so2_teleport_prefs";
-    private static final int SHIZUKU_PERMISSION_REQUEST_CODE = 1001;
-
     private WebView webView;
+    private CrosshairOverlay crosshairOverlay;
+    private int nativeShortSide = 1080;
 
-    private final Shizuku.OnRequestPermissionResultListener shizukuPermListener =
-            (requestCode, grantResult) -> {
-                if (requestCode == SHIZUKU_PERMISSION_REQUEST_CODE && grantResult == PackageManager.PERMISSION_GRANTED) {
-                    runOnUiThread(() -> {
-                        if (webView != null) {
-                            webView.evaluateJavascript("window.syncUiState && window.syncUiState();", null);
-                        }
-                    });
-                }
-            };
-
-    @SuppressLint({"SetJavaScriptEnabled", "ClickableViewAccessibility"})
+    @SuppressLint("SetJavaScriptEnabled")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        // 1. Запрос прав Shizuku при старте
-        try {
-            Shizuku.addRequestPermissionResultListener(shizukuPermListener);
-            if (Shizuku.pingBinder()) {
-                if (Shizuku.checkSelfPermission() != PackageManager.PERMISSION_GRANTED) {
-                    Shizuku.requestPermission(SHIZUKU_PERMISSION_REQUEST_CODE);
-                }
-            }
-        } catch (Throwable ignored) {}
+        DisplayMetrics dm = new DisplayMetrics();
+        getWindowManager().getDefaultDisplay().getRealMetrics(dm);
+        nativeShortSide = Math.min(dm.widthPixels, dm.heightPixels);
 
-        // 2. Тёмная тема окна
-        Window window = getWindow();
-        if (window != null) {
-            window.setBackgroundDrawable(new ColorDrawable(Color.parseColor("#060913")));
-            window.setStatusBarColor(Color.parseColor("#060913"));
-            window.setNavigationBarColor(Color.parseColor("#060913"));
-        }
+        crosshairOverlay = new CrosshairOverlay(this);
 
-        // 3. Инициализация WebView
         webView = new WebView(this);
-        webView.setBackgroundColor(Color.parseColor("#060913"));
-        webView.setLayerType(View.LAYER_TYPE_HARDWARE, null);
-        webView.setFocusable(true);
-        webView.setFocusableInTouchMode(true);
         setContentView(webView);
 
         WebSettings settings = webView.getSettings();
         settings.setJavaScriptEnabled(true);
         settings.setDomStorageEnabled(true);
-        settings.setAllowFileAccess(true);
-        settings.setMediaPlaybackRequiresUserGesture(false);
-        settings.setCacheMode(WebSettings.LOAD_NO_CACHE);
+        settings.setDatabaseEnabled(true);
+        settings.setLoadsImagesAutomatically(true);
+        settings.setMixedContentMode(WebSettings.MIXED_CONTENT_ALWAYS_ALLOW);
 
-        // 4. Подключаем AndroidBridge (тот самый отдельный файл!)
         webView.addJavascriptInterface(new AndroidBridge(this), "AndroidBridge");
         webView.loadUrl("file:///android_asset/index.html");
+    }
 
-        // 5. Восстанавливаем плавающую кнопку, если была включена
-        SharedPreferences prefs = getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE);
-        if (prefs.getBoolean("float_btn_enabled", false)) {
-            if (Settings.canDrawOverlays(this)) {
-                startService(new Intent(this, FloatingButtonService.class));
-            }
+    public boolean checkAndRequestOverlayPermission() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && !Settings.canDrawOverlays(this)) {
+            Toast.makeText(this, "Выдайте разрешение «Поверх других окон»", Toast.LENGTH_LONG).show();
+            Intent intent = new Intent(
+                    Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
+                    Uri.parse("package:" + getPackageName())
+            );
+            startActivity(intent);
+            return false;
         }
+        return true;
+    }
+
+    public void updateCrosshair(String type) {
+        runOnUiThread(() -> {
+            if (!"off".equalsIgnoreCase(type) && !checkAndRequestOverlayPermission()) {
+                return;
+            }
+            if (crosshairOverlay != null) {
+                crosshairOverlay.setShape(type);
+            }
+        });
+    }
+
+    public void updateCrosshairStyle(int scale, int opacity, String colorHex) {
+        runOnUiThread(() -> {
+            if (crosshairOverlay != null) {
+                crosshairOverlay.setScale(scale);
+                crosshairOverlay.setOpacity(opacity);
+                crosshairOverlay.setColorHex(colorHex);
+            }
+        });
+    }
+
+    public void toggleFloatingButton(boolean enabled) {
+        runOnUiThread(() -> {
+            if (enabled && !checkAndRequestOverlayPermission()) {
+                return;
+            }
+            Intent serviceIntent = new Intent(this, FloatingButtonService.class);
+            if (enabled) {
+                startService(serviceIntent);
+            } else {
+                stopService(serviceIntent);
+            }
+        });
+    }
+
+    public void applyResolutionRatio(String ratio) {
+        if (!ShizukuManager.isPermissionGranted()) {
+            runOnUiThread(() -> Toast.makeText(this, "Сначала активируйте Shizuku!", Toast.LENGTH_SHORT).show());
+            return;
+        }
+
+        int shortSide = nativeShortSide > 0 ? nativeShortSide : 1080;
+        int targetLongSide;
+
+        if ("4:3".equals(ratio)) {
+            targetLongSide = Math.round(shortSide * 4f / 3f);
+        } else if ("3:2".equals(ratio)) {
+            targetLongSide = Math.round(shortSide * 3f / 2f);
+        } else if ("16:10".equals(ratio)) {
+            targetLongSide = Math.round(shortSide * 16f / 10f);
+        } else {
+            targetLongSide = Math.round(shortSide * 16f / 9f);
+        }
+
+        final String cmd = "wm size " + shortSide + "x" + targetLongSide;
+        new Thread(() -> ShizukuManager.execCommand(cmd)).start();
+    }
+
+    public void resetResolution() {
+        if (!ShizukuManager.isPermissionGranted()) return;
+        new Thread(() -> ShizukuManager.execCommand("wm size reset")).start();
+    }
+
+    public void updateOverlayStealthFlag(boolean stealth) {
+        runOnUiThread(() -> {
+            try {
+                if (stealth) {
+                    getWindow().addFlags(WindowManager.LayoutParams.FLAG_SECURE);
+                } else {
+                    getWindow().clearFlags(WindowManager.LayoutParams.FLAG_SECURE);
+                }
+                if (crosshairOverlay != null) {
+                    crosshairOverlay.setStealthMode(stealth);
+                }
+            } catch (Exception ignored) {}
+        });
     }
 
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        try {
-            Shizuku.removeRequestPermissionResultListener(shizukuPermListener);
-        } catch (Throwable ignored) {}
-        ShizukuManager.stopTeleport();
         if (webView != null) {
             webView.destroy();
         }
-    }
-
-    // =========================================================================
-    // МЕТОДЫ, КОТОРЫЕ ВЫЗЫВАЕТ AndroidBridge
-    // =========================================================================
-
-    public void updateCrosshair(String type) {
-        if ("off".equalsIgnoreCase(type)) {
-            runOnUiThread(() -> CrosshairOverlay.hide(this));
-        } else {
-            runOnUiThread(() -> CrosshairOverlay.show(this, type));
-        }
-    }
-
-    public void toggleFloatingButton(boolean enabled) {
-        if (enabled) {
-            if (Settings.canDrawOverlays(this)) {
-                startService(new Intent(this, FloatingButtonService.class));
-            }
-        } else {
-            stopService(new Intent(this, FloatingButtonService.class));
-        }
-    }
-
-    public void applyResolutionRatio(String ratio) {
-        ShizukuManager.setStretchConfig(ratio, 1080, 2400, 440);
-    }
-
-    public void resetResolution() {
-        ShizukuManager.resetStretch();
-    }
-
-    public void updateOverlayStealthFlag(boolean stealth) {
-        runOnUiThread(() -> {
-            if (stealth) {
-                getWindow().addFlags(WindowManager.LayoutParams.FLAG_SECURE);
-            } else {
-                getWindow().clearFlags(WindowManager.LayoutParams.FLAG_SECURE);
-            }
-        });
     }
 }
