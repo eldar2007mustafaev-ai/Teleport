@@ -29,10 +29,10 @@ public class MainActivity extends AppCompatActivity {
         nativeShortSide = Math.min(dm.widthPixels, dm.heightPixels);
         nativeLongSide = Math.max(dm.widthPixels, dm.heightPixels);
 
-        TeleportEngine.initOverlayPulse(this);
         crosshairOverlay = new CrosshairOverlay(this);
 
-        // Автоматически лечим залипание нижней полоски и вызов Google при запуске
+        // Автоматически восстанавливаем нормальные системные таймауты при входе,
+        // чтобы убрать залипание нижней полоски, долгие клики и вызов Google Assistant
         healBrokenTouchTimeouts();
 
         webView = new WebView(this);
@@ -56,7 +56,9 @@ public class MainActivity extends AppCompatActivity {
                 "settings put secure long_press_timeout 500; " +
                 "settings put secure multi_press_timeout 300; " +
                 "settings delete secure tap_duration_threshold; " +
-                "settings delete secure touch_blocking_period"
+                "settings delete secure touch_blocking_period; " +
+                "settings put system pointer_location 0; " +
+                "settings put system show_touches 0"
             );
         }).start();
     }
@@ -115,8 +117,8 @@ public class MainActivity extends AppCompatActivity {
             return;
         }
 
-        // Используем повышенную пиксельную базу (1920 по короткой стороне),
-        // чтобы в Standoff 2 было в 2 раза больше пикселей на миллиметр свайпа = взрывная сенса!
+        // Высокая плотность пиксельной сетки (1920 по короткой стороне):
+        // увеличивает число пикселей на миллиметр свайпа для мгновенного разворота камеры
         int highShortSide = Math.max(nativeShortSide, 1920);
         int targetLongSide;
 
