@@ -75,12 +75,17 @@ public class AndroidBridge {
     public void setTeleportSnapPower(int snapPercent) {
         prefs.edit().putInt("tp_snap_power", snapPercent).apply();
         String preset = prefs.getString("selected_preset", "teleport");
-        TeleportEngine.setStepQuantization(true, snapPercent / 55.0f);
+        TeleportEngine.setStepQuantization(true, snapPercent / 45.0f);
         if (isShizukuReady()) {
             isRunning = true;
             prefs.edit().putBoolean("teleport_running", true).apply();
             TeleportEngine.startTeleport(activity, snapPercent, preset);
         }
+    }
+
+    @JavascriptInterface
+    public void setAdvancedSens(float sx, float sy, int noise, int dz, int stick, float smooth, float accel) {
+        TeleportEngine.setAdvancedSensParams(sx, sy, noise, dz, stick, smooth, accel);
     }
 
     @JavascriptInterface
@@ -236,7 +241,6 @@ public class AndroidBridge {
 
         new Thread(() -> {
             if (enabled) {
-                // Отключаем мыльный даунскейл, чтобы не резать чувствительность пикселей
                 ShizukuManager.execCommand(
                     "cmd game mode performance com.axlebolt.standoff2; " +
                     "cmd game downscale disable com.axlebolt.standoff2; " +
