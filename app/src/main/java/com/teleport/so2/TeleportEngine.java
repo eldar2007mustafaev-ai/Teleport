@@ -1,26 +1,30 @@
-package com.teleport.so2;
-
 public class TeleportEngine {
-    
-    /**
-     * Вычисляет дельту для телепорта с минимальным квантованным прыжком
-     */
-    public static float computeTeleportDelta(float rawDelta, float snapMultiplier) {
-        if (Math.abs(rawDelta) < 0.15f) return 0f;
-        
-        // Минимальный квантованный прыжок даже на маленьком флике:
-        float minSnapStep = 6.5f * snapMultiplier;
-        float boosted = Math.abs(rawDelta) * (1.85f * snapMultiplier);
-        float finalStep = Math.max(boosted, minSnapStep);
-        
-        return Math.copySign(finalStep, rawDelta);
-    }
-    
-    /**
-     * Включает/выключает квантование шага
-     */
+    private static boolean stepQuantizationEnabled = true;
+    private static float snapPowerMultiplier = 3.5f; // 350% ULTRA MAX по умолчанию
+
     public static void setStepQuantization(boolean enabled, float multiplier) {
-        // Здесь можно добавить дополнительную логику при необходимости
-        // Пока просто сохраняем параметры
+        stepQuantizationEnabled = enabled;
+        snapPowerMultiplier = Math.max(1.0f, multiplier);
+    }
+
+    /**
+     * Вычисляет агрессивный телепорт-импульс даже на самых маленьких микро-фликах.
+     */
+    public static float computeTeleportDelta(float rawDelta) {
+        float abs = Math.abs(rawDelta);
+        if (abs < 0.04f) return 0f;
+
+        if (!stepQuantizationEnabled) {
+            return rawDelta * snapPowerMultiplier;
+        }
+
+        // Жесткий стартовый рывок для микро-фликов (убирает вязкость тача на всех телефонах):
+        float minSnapStep = 11.5f * snapPowerMultiplier;
+
+        // Нелинейный разгон для средних и длинных фликов без промежуточного сглаживания:
+        float nonLinearBoost = (float) Math.pow(abs, 1.38f) * (3.2f * snapPowerMultiplier);
+
+        float finalStep = Math.max(nonLinearBoost, minSnapStep);
+        return Math.copySign(finalStep, rawDelta);
     }
 }
