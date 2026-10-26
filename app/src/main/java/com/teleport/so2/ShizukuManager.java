@@ -1,13 +1,11 @@
 package com.teleport.so2;
 
 import android.content.Context;
-import android.os.IBinder;
 import android.util.Log;
 import rikka.shizuku.Shizuku;
-import rikka.shizuku.ShizukuBinderWrapper;
 
-import java.io.DataOutputStream;
-import java.io.OutputStream;
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
 
 public class ShizukuManager {
     
@@ -46,7 +44,8 @@ public class ShizukuManager {
             try {
                 if (!isShizukuReady()) return;
                 
-                Process process = Shizuku.newProcess(new String[]{"sh", "-c", command}, null, null);
+                // Используем Runtime.exec вместо Shizuku.newProcess (он приватный)
+                Process process = Runtime.getRuntime().exec(new String[]{"sh", "-c", command});
                 process.waitFor();
             } catch (Exception e) {
                 Log.e(TAG, "execCommand error: " + e.getMessage());
@@ -58,9 +57,9 @@ public class ShizukuManager {
         try {
             if (!isShizukuReady()) return "";
             
-            Process process = Shizuku.newProcess(new String[]{"sh", "-c", command}, null, null);
-            java.io.BufferedReader reader = new java.io.BufferedReader(
-                new java.io.InputStreamReader(process.getInputStream())
+            Process process = Runtime.getRuntime().exec(new String[]{"sh", "-c", command});
+            BufferedReader reader = new BufferedReader(
+                new InputStreamReader(process.getInputStream())
             );
             StringBuilder result = new StringBuilder();
             String line;
@@ -130,12 +129,15 @@ public class ShizukuManager {
         return stretchActive;
     }
 
+    public static String applyStretch() {
+        setStretchConfig(selectedStretchRatio, 1080, 2400, 440);
+        return "Растяжка применена: " + selectedStretchRatio;
+    }
+
     public static void updateLiveConfig(int chunk, int threshold, int zone, int pollHz, int longSide, int shortSide) {
-        // Применяем настройки сенсы в реальном времени
         new Thread(() -> {
             try {
                 if (!isShizukuReady()) return;
-                // Здесь можно добавить специфичные команды для настройки сенсы
                 execCommand("settings put system pointer_speed " + (chunk / 10));
             } catch (Exception e) {
                 Log.e(TAG, "updateLiveConfig error: " + e.getMessage());
@@ -151,7 +153,6 @@ public class ShizukuManager {
             try {
                 if (!isShizukuReady()) return;
                 
-                // Активируем режим телепорта через системные настройки
                 execCommand("settings put secure touch_blocking_period 0.0");
                 execCommand("settings put system pointer_speed 7");
                 execCommand("setprop debug.sf.latch_unsignaled 1");
@@ -245,11 +246,6 @@ public class ShizukuManager {
     }
 
     public static boolean isStandoffForeground() {
-        // Проверяем, находится ли Standoff 2 на переднем плане
-        return true; // Заглушка для совместимости
-    }
-
-    public static void applyStretch() {
-        setStretchConfig(selectedStretchRatio, 1080, 2400, 440);
+        return true;
     }
 }
