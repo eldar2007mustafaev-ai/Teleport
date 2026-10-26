@@ -1,117 +1,81 @@
 package com.teleport.so2;
 
+import android.util.Log;
 import org.json.JSONObject;
 import java.io.BufferedReader;
-import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.nio.charset.StandardCharsets;
 
 public class ApiManager {
+    // ВНИМАНИЕ: Замени "YOUR_SERVER_IP" на IP-адрес твоего сервера (или домен)
+    private static final String BASE_URL = "http://YOUR_SERVER_IP:8080";
 
-    public static final String SERVER_URL = "http://45.10.165.75:8080";
-    public static volatile boolean TEST_MODE = false;
-
-    public static String checkNickname(String nickname, String key) {
-        if (TEST_MODE) {
-            return "{\"status\": \"ok\", \"mode\": \"test\"}";
-        }
+    public static String sendPostRequest(String endpoint, JSONObject jsonBody) {
         try {
-            JSONObject body = new JSONObject();
-            body.put("nickname", nickname);
-            body.put("key", key);
-            return sendPostRequest(SERVER_URL + "/api/check_nickname", body.toString());
-        } catch (Exception e) {
-            return "{\"status\": \"error\", \"message\": \"Ошибка сети: " + e.getMessage() + "\"}";
-        }
-    }
-
-    public static String activateKey(String nickname, String key, String androidId) {
-        if (TEST_MODE) {
-            return "{\"status\": \"ok\", \"mode\": \"test\"}";
-        }
-        try {
-            JSONObject body = new JSONObject();
-            body.put("nickname", nickname);
-            body.put("key", key);
-            body.put("android_id", androidId);
-            return sendPostRequest(SERVER_URL + "/api/activate_key", body.toString());
-        } catch (Exception e) {
-            return "{\"status\": \"error\", \"reason\": \"" + e.getMessage() + "\"}";
-        }
-    }
-
-    public static String checkKeyStatus(String key) {
-        if (TEST_MODE) {
-            return "{\"status\": \"active\", \"mode\": \"test\"}";
-        }
-        return sendGetRequest(SERVER_URL + "/api/check_key/" + key.trim().toUpperCase());
-    }
-
-    public static String getServerVersion() {
-        if (TEST_MODE) {
-            return "{\"version\": \"1.0.0\", \"link\": \"https://t.me/so2_teleport_updates\"}";
-        }
-        return sendGetRequest(SERVER_URL + "/api/get_version");
-    }
-
-    private static String sendPostRequest(String endpoint, String jsonBody) {
-        HttpURLConnection conn = null;
-        try {
-            URL url = new URL(endpoint);
-            conn = (HttpURLConnection) url.openConnection();
+            URL url = new URL(BASE_URL + endpoint);
+            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
             conn.setRequestMethod("POST");
+            conn.setRequestProperty("Content-Type", "application/json; utf-8");
+            conn.setRequestProperty("Accept", "application/json");
+            conn.setDoOutput(true);
             conn.setConnectTimeout(5000);
             conn.setReadTimeout(5000);
-            conn.setRequestProperty("Content-Type", "application/json; charset=UTF-8");
-            conn.setDoOutput(true);
 
             try (OutputStream os = conn.getOutputStream()) {
-                os.write(jsonBody.getBytes(StandardCharsets.UTF_8));
+                byte[] input = jsonBody.toString().getBytes("utf-8");
+                os.write(input, 0, input.length);
             }
 
-            InputStream is = (conn.getResponseCode() >= 400) ? conn.getErrorStream() : conn.getInputStream();
-            if (is == null) return "{\"status\": \"error\", \"message\": \"Пустой ответ от сервера\"}";
-
-            BufferedReader reader = new BufferedReader(new InputStreamReader(is, StandardCharsets.UTF_8));
-            StringBuilder sb = new StringBuilder();
-            String line;
-            while ((line = reader.readLine()) != null) {
-                sb.append(line);
+            int code = conn.getResponseCode();
+            StringBuilder response = new StringBuilder();
+            try (BufferedReader br = new BufferedReader(new InputStreamReader(
+                    code >= 400 ? conn.getErrorStream() : conn.getInputStream(), "utf-8"))) {
+                String responseLine;
+                while ((responseLine = br.readLine()) != null) {
+                    response.append(responseLine.trim());
+                }
             }
-            return sb.toString();
+            return response.toString();
         } catch (Exception e) {
-            return "{\"status\": \"error\", \"message\": \"Нет соединения с сервером лицензий\"}";
-        } finally {
-            if (conn != null) conn.disconnect();
+            Log.e("ApiManager", "Network error: " + e.getMessage());
+            return "{\"status\":\"error\",\"message\":\"" + e.getMessage() + "\"}";
         }
     }
 
-    private static String sendGetRequest(String endpoint) {
-        HttpURLConnection conn = null;
+    public static String activateLicense(String key, String androidId, String nickname) {
         try {
-            URL url = new URL(endpoint);
-            conn = (HttpURLConnection) url.openConnection();
-            conn.setRequestMethod("GET");
-            conn.setConnectTimeout(5000);
-            conn.setReadTimeout(5000);
-
-            InputStream is = (conn.getResponseCode() >= 400) ? conn.getErrorStream() : conn.getInputStream();
-            if (is == null) return "{\"status\": \"error\"}";
-
-            BufferedReader reader = new BufferedReader(new InputStreamReader(is, StandardCharsets.UTF_8));
-            StringBuilder sb = new StringBuilder();
-            String line;
-            while ((line = reader.readLine()) != null) {
-                sb.append(line);
-            }
-            return sb.toString();
+            JSONObject json = new JSONObject();
+            json.put("key", key);
+            json.put("android_id", androidId);
+            json.put("nickname", nickname);
+            return sendPostRequest("/activate", json);
         } catch (Exception e) {
-            return "{\"status\": \"error\", \"reason\": \"network_error\"}";
-        } finally {
-            if (conn != null) conn.disconnect();
+            return "{\"status\":\"error\",\"message\":\"JSON error\"}";
         }
+    }
+
+    public static String verifyLicense(String key, String androidId) {
+        try {
+            JSONObject json = new JSONObject();
+            json.put("key", key);
+            json.put("android_id", androidId);
+            return sendPostRequest("/verify", json);
+        } catch (Exception e) {
+            return "{\"status\":\"error\",\"blocked\":true}";
+        }
+    }
+
+    public static void saveCloudPreset(String key, String androidId, String presetJson) {
+        new Thread(() -> {
+            try {
+                JSONObject json = new JSONObject();
+                json.put("key", key);
+                json.put("android_id", androidId);
+                json.put("preset_json", presetJson);
+                sendPostRequest("/sync_preset", json);
+            } catch (Exception ignored) {}
+        }).start();
     }
 }
