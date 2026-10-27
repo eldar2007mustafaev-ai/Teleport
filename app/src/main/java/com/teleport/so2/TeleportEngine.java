@@ -6,43 +6,43 @@ public class TeleportEngine {
     private static boolean active = false;
     private static float snapPowerMultiplier = 5.0f;
     private static String currentPreset = "teleport";
-    private static float screenCalibFactor = 1.35f;
+    private static float screenCalibFactor = 1.45f;
 
-    // Параметры "СВОИ ЧИСЛА" (по умолчанию сразу заряжены на жёсткий телепорт кусками)
-    private static float sharpness = 2.50f;
-    private static float sensX = 2.50f;
-    private static float sensY = 2.20f;
+    // Боевые значения по умолчанию для мгновенного телепорта от малейшего движения пальца
+    private static float sharpness = 3.00f;
+    private static float sensX = 3.00f;
+    private static float sensY = 3.00f;
     private static int noiseCutoff = 0;
     private static int deadZone = 0;
     private static int prediction = 0;
     private static int axisStick = 3;
-    private static int stickDelay = 15;
+    private static int stickDelay = 0;
     private static int stickStrength = 1;
-    private static int chunks = 22; // Главный параметр телепорта ("Куски")
+    private static int chunks = 25;
     private static int bypassChunks = 0;
     private static int chunkCap = 0;
     private static int chunksFaster = 0;
     private static int shotPause = 0;
     private static float accel = 0.00f;
-    private static float accelCurve = 0.30f;
+    private static float accelCurve = 0.05f;
     private static int edgeRange = 0;
     private static float straightening = 0.85f;
     private static int axisGrip = 4;
     private static int gripCap = 4;
 
     public static void initOverlayPulse(Context context) {
-        // Оверлей не используется, чтобы не вызывать задержку клика и залипание жестов
+        // Без фантомных оверлеев
     }
 
     public static void setCalibrationFactor(float factor) {
-        screenCalibFactor = Math.max(1.0f, Math.min(3.5f, factor));
+        screenCalibFactor = Math.max(1.1f, Math.min(3.5f, factor));
         if (active && ShizukuManager.isPermissionGranted()) {
             applyLiveQuantization();
         }
     }
 
     public static void setStepQuantization(boolean enabled, float multiplier) {
-        snapPowerMultiplier = Math.max(1.5f, multiplier);
+        snapPowerMultiplier = Math.max(2.0f, multiplier);
         if (active && ShizukuManager.isPermissionGranted()) {
             applyLiveQuantization();
         }
@@ -85,68 +85,76 @@ public class TeleportEngine {
         return active;
     }
 
-    /**
-     * Формула агрессивного квантования ("Кусков"):
-     * превращает любой микро-сдвиг пальца в мгновенный дискретный скачок
-     */
     public static float computeTeleportDelta(float rawDelta) {
         float abs = Math.abs(rawDelta);
-        if (deadZone > 0 && abs < (deadZone * 0.0008f)) return 0f;
-        if (noiseCutoff > 0 && abs < (noiseCutoff * 0.0010f)) return 0f;
+        if (deadZone > 0 && abs < (deadZone * 0.0005f)) return 0f;
+        if (noiseCutoff > 0 && abs < (noiseCutoff * 0.0007f)) return 0f;
 
         float axisMult = (rawDelta >= 0 ? sensX : sensY) * sharpness * screenCalibFactor;
-        float chunkStep = Math.max(1, chunks) * 9.5f * snapPowerMultiplier * axisMult;
-        float rawBoost = abs * (22.0f + prediction * 2.5f) * snapPowerMultiplier * axisMult;
+        float chunkStep = Math.max(1, chunks) * 14.0f * snapPowerMultiplier * axisMult;
+        float rawBoost = abs * (28.0f + prediction * 3.0f) * snapPowerMultiplier * axisMult;
 
-        float finalStep = Math.max(rawBoost, chunkStep);
+        float finalStep = (chunksFaster == 0) ? Math.max(rawBoost, chunkStep) : rawBoost;
         if (chunkCap > 0) {
-            finalStep = Math.min(finalStep, chunkCap * 25.0f);
+            finalStep = Math.min(finalStep, chunkCap * 30.0f);
         }
         return Math.copySign(finalStep, rawDelta);
     }
 
     private static String buildQuantizedShizukuCommand() {
-        // Экстремальное квантование пакетов сенсора ("Куски"):
-        // Чем выше Куски (chunks), тем реже, но крупнее система выстреливает дельту координат в игру.
-        // При chunks = 20..25 частота пакетов сжимается до 6..10 Гц с огромным шагом —
-        // в Standoff 2 камера буквально телепортируется рывками от малейшего движения пальца.
-        int effectiveChunks = Math.max(1, Math.round((chunks + snapPowerMultiplier * 1.8f) * (screenCalibFactor * 0.85f)));
+        // Если выбран пресет "smooth" (Ультра Плавная) или Куски == 0 -> ставим 240 Гц поток
+        boolean isSmoothMode = "smooth".equals(currentPreset) || chunks <= 1;
 
         int quantizedEventsPerSec;
         int minPointerDurMs;
-        int vsyncPhaseOffset;
+        int pointerSpeedVal;
+        int touchSlopPx;
 
-        if ("smooth".equals(currentPreset)) {
-            quantizedEventsPerSec = 180;
-            minPointerDurMs = 2;
-            vsyncPhaseOffset = 0;
+        if (isSmoothMode) {
+            quantizedEventsPerSec = 240;
+            minPointerDurMs = 1;
+            pointerSpeedVal = 2;
+            touchSlopPx = 8;
+        } else if ("awp".equals(currentPreset)) {
+            // Для авиков: хлёсткий флик кусками + чёткий стоп после выстрела
+            quantizedEventsPerSec = 10;
+            minPointerDurMs = Math.max(35, shotPause * 5 + 30);
+            pointerSpeedVal = 7;
+            touchSlopPx = 1;
         } else {
-            quantizedEventsPerSec = Math.max(6, Math.min(45, 62 - (effectiveChunks * 2)));
-            minPointerDurMs = Math.max(18, Math.min(95, effectiveChunks * 3));
-            vsyncPhaseOffset = 1000000;
+            // Жёсткий ТЕЛЕПОРТ от малейшего движения пальца:
+            // сжимаем частоту пакетов тача до 5..8 Гц, чтобы каждый микро-сдвиг пальца
+            // копился и выстреливал в Standoff 2 мгновенной ступенькой (телепортом)
+            int effectiveChunks = Math.max(10, Math.round(chunks * (sharpness / 2.2f)));
+            quantizedEventsPerSec = Math.max(5, Math.min(18, 36 - effectiveChunks));
+            minPointerDurMs = Math.max(45, Math.min(115, effectiveChunks * 3));
+            pointerSpeedVal = 7;
+            touchSlopPx = 1;
         }
 
         return
-            // 1. Защита от фантомных нажатий, залипания шторки/полоски и Google Assistant:
+            // 1. Защита от залипания тача и шторки:
             "settings put secure long_press_timeout 500; " +
             "settings put secure multi_press_timeout 300; " +
             "settings delete secure tap_duration_threshold; " +
             "settings delete secure touch_blocking_period; " +
             "settings put system pointer_location 0; " +
             "settings put system show_touches 0; " +
-            // 2. Максимальный множитель скорости вектора и отключение сглаживания:
-            "settings put system pointer_speed 7; " +
+            // 2. Убираем системный порог страгивания пальца, чтобы тепалось от 1 миллиметра:
+            "settings put system pointer_speed " + pointerSpeedVal + "; " +
             "setprop debug.input.resampling 0; " +
             "setprop persist.sys.input.resampling 0; " +
-            "setprop debug.sf.early_phase_offset_ns " + vsyncPhaseOffset + "; " +
-            "setprop debug.sf.early_gl_phase_offset_ns " + vsyncPhaseOffset + "; " +
-            // 3. Квантование кусков (дискретные скачки прицела при микро-фликах):
+            "setprop ro.input.resampling 0; " +
+            "setprop view.touch_slop " + touchSlopPx + "; " +
+            // 3. Жёсткое квантование пакетов ("Куски"):
             "setprop windowsmgr.max_events_per_sec " + quantizedEventsPerSec + "; " +
             "setprop ro.min_pointer_dur " + minPointerDurMs + "; " +
+            "setprop debug.sf.early_phase_offset_ns 1500000; " +
+            "setprop debug.sf.early_gl_phase_offset_ns 1500000; " +
             "setprop view.scroll_friction 0.0; " +
             "setprop view.minimum_fling_velocity 1; " +
-            "setprop view.maximum_fling_velocity 32000; " +
-            // 4. Отключение буферизации кадров SurfaceFlinger (мгновенный кадр после рывка):
+            "setprop view.maximum_fling_velocity 40000; " +
+            // 4. Отключение буферизации кадров для резкого визуального снапа:
             "setprop debug.sf.latch_unsignaled 1; " +
             "setprop debug.sf.disable_backpressure 1; " +
             "setprop debug.hwui.use_buffer_age false; " +
@@ -168,7 +176,7 @@ public class TeleportEngine {
     public static void startTeleport(Context context, int snapPercent, String presetId) {
         active = true;
         currentPreset = presetId != null ? presetId : "teleport";
-        snapPowerMultiplier = Math.max(2.5f, snapPercent / 40.0f);
+        snapPowerMultiplier = Math.max(3.0f, snapPercent / 35.0f);
 
         if (!ShizukuManager.isPermissionGranted()) return;
 
