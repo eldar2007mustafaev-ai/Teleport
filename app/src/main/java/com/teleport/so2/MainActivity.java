@@ -240,7 +240,7 @@ public class MainActivity extends Activity {
                     ? WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY
                     : WindowManager.LayoutParams.TYPE_PHONE;
 
-            // 1. Отдельное окно корзины снизу экрана (появляется только при перемещении кнопки)
+            // 1. Окно корзины с динамическим определением размеров экрана
             trashDropView = new FrameLayout(this);
             trashBoxView = new TextView(this);
             trashBoxView.setText("🗑 Перетащите сюда, чтобы удалить");
@@ -264,15 +264,15 @@ public class MainActivity extends Activity {
 
             trashParams = new WindowManager.LayoutParams(
                     WindowManager.LayoutParams.MATCH_PARENT,
-                    220,
+                    350, // Увеличенная высота для захвата в Standoff 2
                     overlayType,
                     WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE | WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN,
                     PixelFormat.TRANSLUCENT
             );
             trashParams.gravity = Gravity.BOTTOM | Gravity.CENTER_HORIZONTAL;
-            trashParams.y = 20;
+            trashParams.y = 10;
 
-            // 2. Отдельная компактная плавающая кнопка 📐 (не перекрывает остальной экран)
+            // 2. Плавающая кнопка 📐
             FrameLayout bubbleContainer = new FrameLayout(this);
             floatingTxtView = new TextView(this);
             updateFloatingBubbleAppearance();
@@ -297,8 +297,9 @@ public class MainActivity extends Activity {
 
                 @Override
                 public boolean onTouch(View v, MotionEvent event) {
-                    DisplayMetrics dm = getResources().getDisplayMetrics();
-                    int screenH = dm.heightPixels;
+                    DisplayMetrics dm = new DisplayMetrics();
+                    windowManager.getDefaultDisplay().getRealMetrics(dm);
+                    int currentScreenH = dm.heightPixels; // Динамическая высота под текущее разрешение (включая растяг Standoff 2)
 
                     switch (event.getActionMasked()) {
                         case MotionEvent.ACTION_DOWN:
@@ -324,7 +325,8 @@ public class MainActivity extends Activity {
                                 windowManager.updateViewLayout(floatingBtnView, floatBtnParams);
                             } catch (Exception ignored) {}
 
-                            boolean inTrash = event.getRawY() > (screenH - 260);
+                            // Динамическая проверка нижней зоны удаления (по текущей высоте экрана игры)
+                            boolean inTrash = (event.getRawY() > (currentScreenH - 320));
                             if (trashBoxView != null) {
                                 GradientDrawable bg = (GradientDrawable) trashBoxView.getBackground();
                                 bg.setColor(Color.parseColor(inTrash ? "#FFBE123C" : "#E60F172A"));
@@ -335,7 +337,7 @@ public class MainActivity extends Activity {
 
                         case MotionEvent.ACTION_UP:
                         case MotionEvent.ACTION_CANCEL:
-                            boolean dropInTrash = event.getRawY() > (screenH - 260);
+                            boolean dropInTrash = (event.getRawY() > (currentScreenH - 320));
                             if (trashDropView != null) {
                                 trashDropView.setVisibility(View.GONE);
                             }
