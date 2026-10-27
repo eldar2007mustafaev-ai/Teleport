@@ -47,6 +47,7 @@ public class AndroidBridge {
 
     @JavascriptInterface
     public void completeScreenCalibration(float factor) {
+        if (!ApiManager.isSessionVerified()) return;
         prefs.edit()
                 .putBoolean("screen_calibrated_v2", true)
                 .putFloat("screen_calib_factor", factor)
@@ -63,6 +64,10 @@ public class AndroidBridge {
 
     @JavascriptInterface
     public boolean toggleTeleport() {
+        if (!ApiManager.isSessionVerified()) {
+            isRunning = false;
+            return false;
+        }
         isRunning = !isRunning;
         prefs.edit().putBoolean("teleport_running", isRunning).apply();
         int snap = prefs.getInt("tp_snap_power", 500);
@@ -80,11 +85,12 @@ public class AndroidBridge {
 
     @JavascriptInterface
     public boolean isTeleportRunning() {
-        return isRunning;
+        return isRunning && ApiManager.isSessionVerified();
     }
 
     @JavascriptInterface
     public void selectPreset(String presetId) {
+        if (!ApiManager.isSessionVerified()) return;
         prefs.edit().putString("selected_preset", presetId).apply();
         int snap = prefs.getInt("tp_snap_power", 500);
         if (isShizukuReady()) {
@@ -96,6 +102,7 @@ public class AndroidBridge {
 
     @JavascriptInterface
     public void setTeleportSnapPower(int snapPercent) {
+        if (!ApiManager.isSessionVerified()) return;
         prefs.edit().putInt("tp_snap_power", snapPercent).apply();
         String preset = prefs.getString("selected_preset", "teleport");
         TeleportEngine.setStepQuantization(true, snapPercent / 35.0f);
@@ -181,6 +188,9 @@ public class AndroidBridge {
 
     @JavascriptInterface
     public String applyStretchRatio(String ratio) {
+        if (!ApiManager.isSessionVerified()) {
+            return "Сначала активируйте лицензионный ключ!";
+        }
         String clean = (ratio == null || ratio.trim().isEmpty()) ? "16:9" : ratio.trim();
         prefs.edit().putString("stretch_ratio", clean).apply();
         if (!isShizukuReady()) {
