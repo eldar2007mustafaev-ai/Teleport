@@ -4,7 +4,6 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.content.pm.ActivityInfo;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
@@ -55,10 +54,7 @@ public class MainActivity extends Activity {
         super.onCreate(savedInstanceState);
         requestWindowFeature(Window.FEATURE_NO_TITLE);
 
-        // Жёстко фиксируем альбомную ориентацию, чтобы игра не переворачивалась при автоповороте
-        try {
-            setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
-        } catch (Exception ignored) {}
+        // Убран принудительный SCREEN_ORIENTATION_LANDSCAPE, чтобы меню открывалось нормально
 
         windowManager = (WindowManager) getSystemService(WINDOW_SERVICE);
         healBrokenTouchTimeouts();
@@ -265,14 +261,12 @@ public class MainActivity extends Activity {
                     FrameLayout.LayoutParams.WRAP_CONTENT,
                     Gravity.CENTER
             ));
-            // Делаем корзину кликабельной и видимой при перетаскивании
             trashDropView.setVisibility(View.GONE);
 
             trashParams = new WindowManager.LayoutParams(
                     WindowManager.LayoutParams.MATCH_PARENT,
                     220,
                     overlayType,
-                    // Исправление: убран флаг FLAG_NOT_TOUCHABLE, чтобы корзина детектировала палец
                     WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE | WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN,
                     PixelFormat.TRANSLUCENT
             );
@@ -330,7 +324,6 @@ public class MainActivity extends Activity {
                                 windowManager.updateViewLayout(floatingBtnView, floatBtnParams);
                             } catch (Exception ignored) {}
 
-                            // Проверяем попадание пальца в зону нижней корзины
                             boolean inTrash = event.getRawY() > (screenH - 260);
                             if (trashBoxView != null) {
                                 GradientDrawable bg = (GradientDrawable) trashBoxView.getBackground();
