@@ -16,7 +16,6 @@ import android.provider.Settings;
 import android.util.DisplayMetrics;
 import android.view.Gravity;
 import android.view.MotionEvent;
-import android.view.Surface;
 import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
@@ -56,7 +55,6 @@ public class MainActivity extends Activity {
         requestWindowFeature(Window.FEATURE_NO_TITLE);
 
         windowManager = (WindowManager) getSystemService(WINDOW_SERVICE);
-        ShizukuManager.init();
         healBrokenTouchTimeouts();
 
         SharedPreferences prefs = getSharedPreferences("so2_teleport_prefs", Context.MODE_PRIVATE);
@@ -400,11 +398,6 @@ public class MainActivity extends Activity {
         }
     }
 
-    /**
-     * Надежный фикс растяга (включая 16:9) с первого раза без перезаходов в Standoff 2:
-     * сохраняет нативное физическое разрешение экрана в SharedPreferences, чтобы не путать оси
-     * при повторных переключениях в альбомном (Landscape) режиме игры.
-     */
     public void applyResolutionRatio(String ratio) {
         if (!ShizukuManager.isPermissionGranted()) return;
 
@@ -415,7 +408,6 @@ public class MainActivity extends Activity {
         DisplayMetrics dm = new DisplayMetrics();
         windowManager.getDefaultDisplay().getRealMetrics(dm);
 
-        // Запоминаем физическое разрешение матрицы при первом запуске
         int savedBaseShort = prefs.getInt("native_short_px", 0);
         int savedBaseLong = prefs.getInt("native_long_px", 0);
         if (savedBaseShort <= 0 || savedBaseLong <= 0) {
@@ -430,8 +422,6 @@ public class MainActivity extends Activity {
         final int baseShort = savedBaseShort;
         int targetLong;
 
-        // Для 16:9 в Standoff 2 делаем сочный кастомный 16:9 стретч (чтобы на экранах 20:9 модельки
-        // сразу становились шире, а не оставались узкими, и включались с 1-го нажатия)
         if ("4:3".equals(cleanRatio)) {
             targetLong = Math.round(baseShort * 4f / 3f);
         } else if ("3:2".equals(cleanRatio)) {
@@ -439,11 +429,9 @@ public class MainActivity extends Activity {
         } else if ("16:10".equals(cleanRatio)) {
             targetLong = Math.round(baseShort * 16f / 10f);
         } else {
-            // "16:9" — точный киберспортивный 16:9 поверх стандартного вытянутого экрана 20:9
             targetLong = Math.round(baseShort * 16f / 9f);
         }
 
-        // Выравниваем по чётным пикселям для GPU
         if ((targetLong & 1) == 1) targetLong++;
         final int finalLong = targetLong;
 
@@ -456,9 +444,6 @@ public class MainActivity extends Activity {
         TeleportEngine.startTeleport(this, snap, preset);
 
         new Thread(() -> {
-            // В Android `wm size` ВСЕГДА принимает (ПортретнаяШирина x ПортретнаяВысота).
-            // Дополнительно отключаем ориентационный рескейл рамки и фиксируем игровой режим,
-            // чтобы Standoff 2 мгновенно подхватывал 16:9 или 4:3 с первого же нажатия без перезахода!
             String cmd =
                 "cmd window set-ignore-orientation-request true; " +
                 "settings put global window_animation_scale 0.0; " +
