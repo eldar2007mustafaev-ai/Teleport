@@ -67,7 +67,7 @@ public class AndroidBridge {
         prefs.edit().putBoolean("teleport_running", isRunning).apply();
         int snap = prefs.getInt("tp_snap_power", 500);
         String preset = prefs.getString("selected_preset", "teleport");
-        float calib = prefs.getFloat("screen_calib_factor", 1.35f);
+        float calib = prefs.getFloat("screen_calib_factor", 1.45f);
         TeleportEngine.setCalibrationFactor(calib);
 
         if (isRunning) {
@@ -98,7 +98,7 @@ public class AndroidBridge {
     public void setTeleportSnapPower(int snapPercent) {
         prefs.edit().putInt("tp_snap_power", snapPercent).apply();
         String preset = prefs.getString("selected_preset", "teleport");
-        TeleportEngine.setStepQuantization(true, snapPercent / 40.0f);
+        TeleportEngine.setStepQuantization(true, snapPercent / 35.0f);
         if (isShizukuReady()) {
             isRunning = true;
             prefs.edit().putBoolean("teleport_running", true).apply();
@@ -112,22 +112,22 @@ public class AndroidBridge {
             prefs.edit().putString("custom_numbers_json", jsonStr).apply();
             JSONObject o = new JSONObject(jsonStr);
             TeleportEngine.setCustomNumbers(
-                    (float) o.optDouble("sharpness", 2.50),
-                    (float) o.optDouble("sensX", 2.50),
-                    (float) o.optDouble("sensY", 2.20),
+                    (float) o.optDouble("sharpness", 3.00),
+                    (float) o.optDouble("sensX", 3.00),
+                    (float) o.optDouble("sensY", 3.00),
                     o.optInt("noiseCutoff", 0),
                     o.optInt("deadZone", 0),
                     o.optInt("prediction", 0),
                     o.optInt("axisStick", 3),
-                    o.optInt("stickDelay", 15),
+                    o.optInt("stickDelay", 0),
                     o.optInt("stickStrength", 1),
-                    o.optInt("chunks", 22),
+                    o.optInt("chunks", 25),
                     o.optInt("bypassChunks", 0),
                     o.optInt("chunkCap", 0),
                     o.optInt("chunksFaster", 0),
                     o.optInt("shotPause", 0),
-                    (float) o.optDouble("accel", 0.0),
-                    (float) o.optDouble("accelCurve", 0.30),
+                    (float) o.optDouble("accel", 0.00),
+                    (float) o.optDouble("accelCurve", 0.05),
                     o.optInt("edgeRange", 0),
                     (float) o.optDouble("straightening", 0.85),
                     o.optInt("axisGrip", 4),
@@ -173,15 +173,23 @@ public class AndroidBridge {
     }
 
     @JavascriptInterface
+    public void setSelectedStretchRatioOnly(String ratio) {
+        if (ratio != null && !ratio.trim().isEmpty()) {
+            prefs.edit().putString("stretch_ratio", ratio.trim()).apply();
+        }
+    }
+
+    @JavascriptInterface
     public String applyStretchRatio(String ratio) {
-        prefs.edit().putString("stretch_ratio", ratio).apply();
+        String clean = (ratio == null || ratio.trim().isEmpty()) ? "16:9" : ratio.trim();
+        prefs.edit().putString("stretch_ratio", clean).apply();
         if (!isShizukuReady()) {
             return "Сначала активируйте Shizuku!";
         }
         if (activity instanceof MainActivity) {
-            ((MainActivity) activity).applyResolutionRatio(ratio);
+            ((MainActivity) activity).applyResolutionRatio(clean);
         }
-        return "Растяг " + ratio + " + Ультра-телепорт применён!";
+        return "Растяг " + clean + " + Телепорт применён с 1-го раза!";
     }
 
     @JavascriptInterface
@@ -228,7 +236,7 @@ public class AndroidBridge {
             }
         }).start();
 
-        return enabled ? "Touch Boost активен (без фантомных нажатий)" : "Touch Boost выключен";
+        return enabled ? "Touch Boost активен" : "Touch Boost выключен";
     }
 
     @JavascriptInterface
