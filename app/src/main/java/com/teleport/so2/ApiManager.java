@@ -12,14 +12,16 @@ import java.security.MessageDigest;
 
 public class ApiManager {
 
-    // Укажи здесь свой рабочий URL сервера/бота проверки лицензий
+    // Обязательная переменная для совместимости с ProfileManager.java
+    public static final boolean TEST_MODE = false;
+
+    // Укажи здесь URL своего бота/сервера, если он у тебя свой
     private static final String API_BASE_URL = "https://your-teleport-server.com/api";
 
-    // Поднимай это число с каждым новым билдом, если хочешь отрубить предыдущие версии
+    // Номер новой версии (все версии ниже 400 отрубаются)
     public static final int CLIENT_BUILD_VERSION = 400;
     private static final String CLIENT_SALT = "SO2_SKY_V400_PRIVATE_SALT_2026";
 
-    // Флаг железной блокировки: пока он false, TeleportEngine не выполнит ни одной команды
     private static volatile boolean sessionVerified = false;
 
     public static boolean isSessionVerified() {
@@ -89,7 +91,6 @@ public class ApiManager {
             String raw = postJson(API_BASE_URL + "/verify", payload.toString());
             JSONObject res = new JSONObject(raw);
 
-            // Если сервер сообщает, что минимальная поддерживаемая сборка выше текущей -> рубим доступ
             int serverMinBuild = res.optInt("min_build", CLIENT_BUILD_VERSION);
             String status = res.optString("status", "");
 
@@ -112,7 +113,6 @@ public class ApiManager {
             }
             return raw;
         } catch (Exception e) {
-            // При отсутствии ответа сервера не даём запустить в обход проверки
             sessionVerified = false;
             return "{\"status\":\"need_auth\",\"ok\":false,\"blocked\":false}";
         }
