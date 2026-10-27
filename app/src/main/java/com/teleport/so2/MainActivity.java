@@ -237,10 +237,8 @@ public class MainActivity extends Activity {
                     ? WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY
                     : WindowManager.LayoutParams.TYPE_PHONE;
 
-            // Создаем единый контейнер на весь экран, который ловит и кнопку, и нижнюю зону удаления
             FrameLayout container = new FrameLayout(this);
 
-            // Текстовая плашка "ведро" снизу экрана
             TextView trashBox = new TextView(this);
             trashBox.setText("🗑 Перетащите сюда, чтобы удалить");
             trashBox.setTextColor(Color.WHITE);
@@ -251,7 +249,7 @@ public class MainActivity extends Activity {
             GradientDrawable trashBg = new GradientDrawable();
             trashBg.setColor(Color.parseColor("#E60F172A"));
             trashBg.setCornerRadius(999f);
-            trashBg.setStroke(3.5f, Color.parseColor("#FB7185"));
+            trashBg.setStroke(4, Color.parseColor("#FB7185")); // Исправлено на целое число (4 пикселя)
             trashBox.setBackground(trashBg);
             trashBox.setVisibility(View.GONE);
 
@@ -263,7 +261,6 @@ public class MainActivity extends Activity {
             trashLp.bottomMargin = 40;
             container.addView(trashBox, trashLp);
 
-            // Сама плавающая кнопка 📐
             floatingTxtView = new TextView(this);
             updateFloatingBubbleAppearance();
 
@@ -276,13 +273,11 @@ public class MainActivity extends Activity {
                     WindowManager.LayoutParams.MATCH_PARENT,
                     WindowManager.LayoutParams.MATCH_PARENT,
                     overlayType,
-                    // Окно на весь экран, пропускающее клики мимо кнопки, но перехватывающее перетаскивание
                     WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE | WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN,
                     PixelFormat.TRANSLUCENT
             );
             floatBtnParams.gravity = Gravity.TOP | Gravity.START;
 
-            // Начальные координаты кнопки
             btnLp.leftMargin = 40;
             btnLp.topMargin = 280;
 
@@ -300,7 +295,6 @@ public class MainActivity extends Activity {
 
                     switch (event.getActionMasked()) {
                         case MotionEvent.ACTION_DOWN:
-                            // Проверяем, попал ли палец именно по круглой кнопке
                             int btnLeft = lp.leftMargin;
                             int btnTop = lp.topMargin;
                             int btnRight = btnLeft + floatingTxtView.getWidth();
@@ -308,7 +302,7 @@ public class MainActivity extends Activity {
 
                             if (event.getRawX() < btnLeft || event.getRawX() > btnRight ||
                                     event.getRawY() < btnTop || event.getRawY() > btnBottom) {
-                                return false; // Клик мимо кнопки — пропускаем в игру
+                                return false;
                             }
 
                             downX = event.getRawX();
@@ -333,7 +327,6 @@ public class MainActivity extends Activity {
                             lp.topMargin = Math.max(10, Math.min(screenH - 180, startMarginY + dy));
                             floatingTxtView.setLayoutParams(lp);
 
-                            // Если кнопка в нижней части экрана — подсвечиваем ведро красным
                             boolean inTrash = (lp.topMargin > screenH - 320);
                             GradientDrawable bg = (GradientDrawable) trashBox.getBackground();
                             bg.setColor(Color.parseColor(inTrash ? "#FFBE123C" : "#E60F172A"));
