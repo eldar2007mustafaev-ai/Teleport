@@ -41,11 +41,34 @@ public class AndroidBridge {
     }
 
     @JavascriptInterface
+    public boolean isCalibrationRequired() {
+        return !prefs.getBoolean("screen_calibrated_v2", false);
+    }
+
+    @JavascriptInterface
+    public void completeScreenCalibration(float factor) {
+        prefs.edit()
+                .putBoolean("screen_calibrated_v2", true)
+                .putFloat("screen_calib_factor", factor)
+                .putBoolean("teleport_running", true)
+                .apply();
+        TeleportEngine.setCalibrationFactor(factor);
+        int snap = prefs.getInt("tp_snap_power", 500);
+        String preset = prefs.getString("selected_preset", "teleport");
+        if (isShizukuReady()) {
+            isRunning = true;
+            TeleportEngine.startTeleport(activity, snap, preset);
+        }
+    }
+
+    @JavascriptInterface
     public boolean toggleTeleport() {
         isRunning = !isRunning;
         prefs.edit().putBoolean("teleport_running", isRunning).apply();
-        int snap = prefs.getInt("tp_snap_power", 400);
+        int snap = prefs.getInt("tp_snap_power", 500);
         String preset = prefs.getString("selected_preset", "teleport");
+        float calib = prefs.getFloat("screen_calib_factor", 1.35f);
+        TeleportEngine.setCalibrationFactor(calib);
 
         if (isRunning) {
             TeleportEngine.startTeleport(activity, snap, preset);
@@ -63,7 +86,7 @@ public class AndroidBridge {
     @JavascriptInterface
     public void selectPreset(String presetId) {
         prefs.edit().putString("selected_preset", presetId).apply();
-        int snap = prefs.getInt("tp_snap_power", 400);
+        int snap = prefs.getInt("tp_snap_power", 500);
         if (isShizukuReady()) {
             isRunning = true;
             prefs.edit().putBoolean("teleport_running", true).apply();
@@ -75,7 +98,7 @@ public class AndroidBridge {
     public void setTeleportSnapPower(int snapPercent) {
         prefs.edit().putInt("tp_snap_power", snapPercent).apply();
         String preset = prefs.getString("selected_preset", "teleport");
-        TeleportEngine.setStepQuantization(true, snapPercent / 45.0f);
+        TeleportEngine.setStepQuantization(true, snapPercent / 40.0f);
         if (isShizukuReady()) {
             isRunning = true;
             prefs.edit().putBoolean("teleport_running", true).apply();
@@ -89,16 +112,16 @@ public class AndroidBridge {
             prefs.edit().putString("custom_numbers_json", jsonStr).apply();
             JSONObject o = new JSONObject(jsonStr);
             TeleportEngine.setCustomNumbers(
-                    (float) o.optDouble("sharpness", 1.0),
-                    (float) o.optDouble("sensX", 1.0),
-                    (float) o.optDouble("sensY", 1.0),
-                    o.optInt("noiseCutoff", 3),
-                    o.optInt("deadZone", 1),
+                    (float) o.optDouble("sharpness", 2.50),
+                    (float) o.optDouble("sensX", 2.50),
+                    (float) o.optDouble("sensY", 2.20),
+                    o.optInt("noiseCutoff", 0),
+                    o.optInt("deadZone", 0),
                     o.optInt("prediction", 0),
-                    o.optInt("axisStick", 4),
-                    o.optInt("stickDelay", 29),
+                    o.optInt("axisStick", 3),
+                    o.optInt("stickDelay", 15),
                     o.optInt("stickStrength", 1),
-                    o.optInt("chunks", 10),
+                    o.optInt("chunks", 22),
                     o.optInt("bypassChunks", 0),
                     o.optInt("chunkCap", 0),
                     o.optInt("chunksFaster", 0),
@@ -106,7 +129,7 @@ public class AndroidBridge {
                     (float) o.optDouble("accel", 0.0),
                     (float) o.optDouble("accelCurve", 0.30),
                     o.optInt("edgeRange", 0),
-                    (float) o.optDouble("straightening", 0.80),
+                    (float) o.optDouble("straightening", 0.85),
                     o.optInt("axisGrip", 4),
                     o.optInt("gripCap", 4)
             );
@@ -194,14 +217,12 @@ public class AndroidBridge {
                     "settings delete secure tap_duration_threshold; " +
                     "settings delete secure touch_blocking_period; " +
                     "settings put system pointer_speed 7; " +
-                    "setprop ro.input.resampling 0; " +
                     "setprop debug.input.resampling 0; " +
                     "setprop view.scroll_friction 0.0"
                 );
             } else {
                 ShizukuManager.execCommand(
                     "settings put system pointer_speed 0; " +
-                    "setprop ro.input.resampling 1; " +
                     "setprop debug.input.resampling 1"
                 );
             }
