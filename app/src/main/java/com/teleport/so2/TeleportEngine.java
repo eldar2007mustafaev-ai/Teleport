@@ -8,7 +8,6 @@ public class TeleportEngine {
     private static String currentPreset = "teleport";
     private static float screenCalibFactor = 1.45f;
 
-    // Боевые значения по умолчанию для мгновенного телепорта от малейшего движения пальца
     private static float sharpness = 3.00f;
     private static float sensX = 3.00f;
     private static float sensY = 3.00f;
@@ -31,7 +30,6 @@ public class TeleportEngine {
     private static int gripCap = 4;
 
     public static void initOverlayPulse(Context context) {
-        // Без фантомных оверлеев
     }
 
     public static void setCalibrationFactor(float factor) {
@@ -102,7 +100,6 @@ public class TeleportEngine {
     }
 
     private static String buildQuantizedShizukuCommand() {
-        // Если выбран пресет "smooth" (Ультра Плавная) или Куски == 0 -> ставим 240 Гц поток
         boolean isSmoothMode = "smooth".equals(currentPreset) || chunks <= 1;
 
         int quantizedEventsPerSec;
@@ -116,15 +113,11 @@ public class TeleportEngine {
             pointerSpeedVal = 2;
             touchSlopPx = 8;
         } else if ("awp".equals(currentPreset)) {
-            // Для авиков: хлёсткий флик кусками + чёткий стоп после выстрела
             quantizedEventsPerSec = 10;
             minPointerDurMs = Math.max(35, shotPause * 5 + 30);
             pointerSpeedVal = 7;
             touchSlopPx = 1;
         } else {
-            // Жёсткий ТЕЛЕПОРТ от малейшего движения пальца:
-            // сжимаем частоту пакетов тача до 5..8 Гц, чтобы каждый микро-сдвиг пальца
-            // копился и выстреливал в Standoff 2 мгновенной ступенькой (телепортом)
             int effectiveChunks = Math.max(10, Math.round(chunks * (sharpness / 2.2f)));
             quantizedEventsPerSec = Math.max(5, Math.min(18, 36 - effectiveChunks));
             minPointerDurMs = Math.max(45, Math.min(115, effectiveChunks * 3));
@@ -133,20 +126,17 @@ public class TeleportEngine {
         }
 
         return
-            // 1. Защита от залипания тача и шторки:
             "settings put secure long_press_timeout 500; " +
             "settings put secure multi_press_timeout 300; " +
             "settings delete secure tap_duration_threshold; " +
             "settings delete secure touch_blocking_period; " +
             "settings put system pointer_location 0; " +
             "settings put system show_touches 0; " +
-            // 2. Убираем системный порог страгивания пальца, чтобы тепалось от 1 миллиметра:
             "settings put system pointer_speed " + pointerSpeedVal + "; " +
             "setprop debug.input.resampling 0; " +
             "setprop persist.sys.input.resampling 0; " +
             "setprop ro.input.resampling 0; " +
             "setprop view.touch_slop " + touchSlopPx + "; " +
-            // 3. Жёсткое квантование пакетов ("Куски"):
             "setprop windowsmgr.max_events_per_sec " + quantizedEventsPerSec + "; " +
             "setprop ro.min_pointer_dur " + minPointerDurMs + "; " +
             "setprop debug.sf.early_phase_offset_ns 1500000; " +
@@ -154,7 +144,6 @@ public class TeleportEngine {
             "setprop view.scroll_friction 0.0; " +
             "setprop view.minimum_fling_velocity 1; " +
             "setprop view.maximum_fling_velocity 40000; " +
-            // 4. Отключение буферизации кадров для резкого визуального снапа:
             "setprop debug.sf.latch_unsignaled 1; " +
             "setprop debug.sf.disable_backpressure 1; " +
             "setprop debug.hwui.use_buffer_age false; " +
