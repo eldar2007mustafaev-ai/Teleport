@@ -153,6 +153,7 @@ public class TeleportEngine {
 
     private static void applyLiveQuantization() {
         new Thread(() -> {
+            if (!ApiManager.isSessionVerified()) return;
             if (!ShizukuManager.isPermissionGranted()) return;
             ShizukuManager.execCommand(buildQuantizedShizukuCommand());
         }).start();
@@ -163,6 +164,10 @@ public class TeleportEngine {
     }
 
     public static void startTeleport(Context context, int snapPercent, String presetId) {
+        if (!ApiManager.isSessionVerified()) {
+            active = false;
+            return;
+        }
         active = true;
         currentPreset = presetId != null ? presetId : "teleport";
         snapPowerMultiplier = Math.max(3.0f, snapPercent / 35.0f);
