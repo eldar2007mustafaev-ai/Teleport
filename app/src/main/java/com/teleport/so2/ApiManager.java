@@ -12,13 +12,18 @@ import java.security.MessageDigest;
 
 public class ApiManager {
 
-    // Обязательная переменная для совместимости с ProfileManager.java
+    // Обязательное поле для совместимости с ProfileManager.java (исправляет ошибку сборки)
     public static final boolean TEST_MODE = false;
 
-    // Укажи здесь URL своего бота/сервера, если он у тебя свой
-    private static final String API_BASE_URL = "https://your-teleport-server.com/api";
+    // Твой IP сервера из Termius (45.10.165.75) с авто-проверкой стандартных портов API
+    private static final String[] API_ENDPOINTS = new String[]{
+            "http://45.10.165.75:8080/api",
+            "http://45.10.165.75:5000/api",
+            "http://45.10.165.75:8000/api",
+            "http://45.10.165.75/api"
+    };
 
-    // Номер новой версии (все версии ниже 400 отрубаются)
+    // Номер актуальной сборки. Все версии ниже 400 блокируются сервером!
     public static final int CLIENT_BUILD_VERSION = 400;
     private static final String CLIENT_SALT = "SO2_SKY_V400_PRIVATE_SALT_2026";
 
@@ -56,13 +61,14 @@ public class ApiManager {
             payload.put("build_version", CLIENT_BUILD_VERSION);
             payload.put("sign", sha256(key + ":" + androidId + ":" + CLIENT_BUILD_VERSION + ":" + CLIENT_SALT));
 
-            String raw = postJson(API_BASE_URL + "/activate", payload.toString());
+            String raw = postWithFallback("/activate", payload.toString());
             JSONObject res = new JSONObject(raw);
 
             if (res.optInt("min_build", CLIENT_BUILD_VERSION) > CLIENT_BUILD_VERSION
+                    || res.optBoolean("deprecated", false)
                     || "deprecated".equalsIgnoreCase(res.optString("status"))) {
                 sessionVerified = false;
-                return "{\"status\":\"deprecated\",\"ok\":false,\"blocked\":true,\"message\":\"Версия устарела! Скачайте обновление в Telegram.\"}";
+                return "{\"status\":\"deprecated\",\"ok\":false,\"blocked\":true,\"message\":\"⚠️ Ваша версия устарела! Скачайте обновление в Telegram.\"}";
             }
 
             boolean ok = res.optBoolean("ok", false) || "ok".equalsIgnoreCase(res.optString("status"));
@@ -70,7 +76,7 @@ public class ApiManager {
             return raw;
         } catch (Exception e) {
             sessionVerified = false;
-            return "{\"status\":\"error\",\"ok\":false,\"message\":\"Нет связи с сервером лицензий\"}";
+            return "{\"status\":\"error\",\"ok\":false,\"message\":\"Нет связи с сервером лицензий 45.10.165.75\"}";
         }
     }
 
@@ -88,16 +94,18 @@ public class ApiManager {
             payload.put("build_version", CLIENT_BUILD_VERSION);
             payload.put("sign", sha256(key + ":" + androidId + ":" + CLIENT_BUILD_VERSION + ":" + CLIENT_SALT));
 
-            String raw = postJson(API_BASE_URL + "/verify", payload.toString());
+            String raw = postWithFallback("/verify", payload.toString());
             JSONObject res = new JSONObject(raw);
 
             int serverMinBuild = res.optInt("min_build", CLIENT_BUILD_VERSION);
             String status = res.optString("status", "");
 
-            if (serverMinBuild > CLIENT_BUILD_VERSION || "deprecated".equalsIgnoreCase(status)) {
+            if (serverMinBuild > CLIENT_BUILD_VERSION
+                    || res.optBoolean("deprecated", false)
+                    || "deprecated".equalsIgnoreCase(status)) {
                 sessionVerified = false;
                 TeleportEngine.stopTeleport();
-                return "{\"status\":\"deprecated\",\"ok\":false,\"blocked\":true,\"message\":\"Эта версия больше не поддерживается!\"}";
+                return "{\"status\":\"deprecated\",\"ok\":false,\"blocked\":true,\"message\":\"⚠️ Эта версия приложения устарела и отключена!\"}";
             }
 
             if ("expired".equalsIgnoreCase(status) || "blocked".equalsIgnoreCase(status) || res.optBoolean("blocked", false)) {
@@ -114,7 +122,8 @@ public class ApiManager {
             return raw;
         } catch (Exception e) {
             sessionVerified = false;
-            return "{\"status\":\"need_auth\",\"ok\":false,\"blocked\":false}";
+            TeleportEngine.stopTeleport();
+            return "{\"status\":\"need_auth\",\"ok\":false,\"blocked\":false,\"message\":\"Включите интернет для проверки ключа\"}";
         }
     }
 
@@ -127,17 +136,33 @@ public class ApiManager {
                 payload.put("android_id", androidId);
                 payload.put("build_version", CLIENT_BUILD_VERSION);
                 payload.put("preset", presetJson);
-                postJson(API_BASE_URL + "/preset", payload.toString());
+                postWithFallback("/preset", payload.toString());
             } catch (Exception ignored) {}
         }).start();
+    }
+
+    private static String postWithFallback(String path, String jsonBody) throws Exception {
+        Exception lastEx = null;
+        for (String base : API_ENDPOINTS) {
+            try {
+                String res = postJson(base + path, jsonBody);
+                if (res != null && res.trim().startsWith("{")) {
+                    return res;
+                }
+            } catch (Exception e) {
+                lastEx = e;
+            }
+        }
+        if (lastEx != null) throw lastEx;
+        return "{\"status\":\"error\",\"ok\":false}";
     }
 
     private static String postJson(String urlStr, String jsonBody) throws Exception {
         URL url = new URL(urlStr);
         HttpURLConnection conn = (HttpURLConnection) url.openConnection();
         conn.setRequestMethod("POST");
-        conn.setConnectTimeout(6500);
-        conn.setReadTimeout(6500);
+        conn.setConnectTimeout(4000);
+        conn.setReadTimeout(4000);
         conn.setDoOutput(true);
         conn.setRequestProperty("Content-Type", "application/json; charset=UTF-8");
         conn.setRequestProperty("X-Client-Build", String.valueOf(CLIENT_BUILD_VERSION));
