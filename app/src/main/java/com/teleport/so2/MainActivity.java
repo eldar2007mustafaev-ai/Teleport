@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.ActivityInfo;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
@@ -53,6 +54,11 @@ public class MainActivity extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         requestWindowFeature(Window.FEATURE_NO_TITLE);
+
+        // Жёстко фиксируем альбомную ориентацию, чтобы игра не переворачивалась при автоповороте
+        try {
+            setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
+        } catch (Exception ignored) {}
 
         windowManager = (WindowManager) getSystemService(WINDOW_SERVICE);
         healBrokenTouchTimeouts();
@@ -242,14 +248,14 @@ public class MainActivity extends Activity {
 
             trashDropView = new FrameLayout(this);
             trashBoxView = new TextView(this);
-            trashBoxView.setText("🗑 Убрать кнопку");
+            trashBoxView.setText("🗑 Перетащите сюда, чтобы удалить");
             trashBoxView.setTextColor(Color.WHITE);
             trashBoxView.setTextSize(13f);
             trashBoxView.setGravity(Gravity.CENTER);
-            trashBoxView.setPadding(36, 18, 36, 18);
+            trashBoxView.setPadding(40, 20, 40, 20);
 
             GradientDrawable trashBg = new GradientDrawable();
-            trashBg.setColor(Color.parseColor("#CC0F172A"));
+            trashBg.setColor(Color.parseColor("#E60F172A"));
             trashBg.setCornerRadius(999f);
             trashBg.setStroke(3, Color.parseColor("#FB7185"));
             trashBoxView.setBackground(trashBg);
@@ -259,17 +265,19 @@ public class MainActivity extends Activity {
                     FrameLayout.LayoutParams.WRAP_CONTENT,
                     Gravity.CENTER
             ));
+            // Делаем корзину кликабельной и видимой при перетаскивании
             trashDropView.setVisibility(View.GONE);
 
             trashParams = new WindowManager.LayoutParams(
                     WindowManager.LayoutParams.MATCH_PARENT,
-                    190,
+                    220,
                     overlayType,
-                    getStealthOverlayFlags(true),
+                    // Исправление: убран флаг FLAG_NOT_TOUCHABLE, чтобы корзина детектировала палец
+                    WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE | WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN,
                     PixelFormat.TRANSLUCENT
             );
             trashParams.gravity = Gravity.BOTTOM | Gravity.CENTER_HORIZONTAL;
-            trashParams.y = 40;
+            trashParams.y = 20;
 
             FrameLayout bubbleContainer = new FrameLayout(this);
             floatingTxtView = new TextView(this);
@@ -310,7 +318,7 @@ public class MainActivity extends Activity {
                         case MotionEvent.ACTION_MOVE:
                             int dx = (int) (event.getRawX() - touchX);
                             int dy = (int) (event.getRawY() - touchY);
-                            if (Math.abs(dx) > 10 || Math.abs(dy) > 10) {
+                            if (Math.abs(dx) > 8 || Math.abs(dy) > 8) {
                                 moved = true;
                                 if (trashDropView != null && trashDropView.getVisibility() != View.VISIBLE) {
                                     trashDropView.setVisibility(View.VISIBLE);
@@ -322,23 +330,27 @@ public class MainActivity extends Activity {
                                 windowManager.updateViewLayout(floatingBtnView, floatBtnParams);
                             } catch (Exception ignored) {}
 
-                            boolean inTrash = event.getRawY() > (screenH - 240);
+                            // Проверяем попадание пальца в зону нижней корзины
+                            boolean inTrash = event.getRawY() > (screenH - 260);
                             if (trashBoxView != null) {
                                 GradientDrawable bg = (GradientDrawable) trashBoxView.getBackground();
-                                bg.setColor(Color.parseColor(inTrash ? "#EEBE123C" : "#CC0F172A"));
+                                bg.setColor(Color.parseColor(inTrash ? "#FFBE123C" : "#E60F172A"));
+                                trashBoxView.setScaleX(inTrash ? 1.08f : 1.0f);
+                                trashBoxView.setScaleY(inTrash ? 1.08f : 1.0f);
                             }
                             return true;
 
                         case MotionEvent.ACTION_UP:
                         case MotionEvent.ACTION_CANCEL:
+                            boolean dropInTrash = event.getRawY() > (screenH - 260);
                             if (trashDropView != null) {
                                 trashDropView.setVisibility(View.GONE);
                             }
-                            if (moved && event.getRawY() > (screenH - 240)) {
+                            if (moved && dropInTrash) {
                                 getSharedPreferences("so2_teleport_prefs", Context.MODE_PRIVATE)
                                         .edit().putBoolean("float_btn_enabled", false).apply();
                                 removeFloatingButton();
-                                Toast.makeText(MainActivity.this, "Кнопка 📐 скрыта", Toast.LENGTH_SHORT).show();
+                                Toast.makeText(MainActivity.this, "Кнопка 📐 удалена", Toast.LENGTH_SHORT).show();
                                 return true;
                             }
                             if (!moved) {
