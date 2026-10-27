@@ -41,10 +41,7 @@ public class MainActivity extends Activity {
 
     private View floatingBtnView;
     private TextView floatingTxtView;
-    private View trashDropView;
-    private TextView trashBoxView;
     private WindowManager.LayoutParams floatBtnParams;
-    private WindowManager.LayoutParams trashParams;
 
     private boolean isStretchedActive = false;
     private boolean stealthModeEnabled = false;
@@ -53,8 +50,6 @@ public class MainActivity extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         requestWindowFeature(Window.FEATURE_NO_TITLE);
-
-        // Убран принудительный SCREEN_ORIENTATION_LANDSCAPE, чтобы меню открывалось нормально
 
         windowManager = (WindowManager) getSystemService(WINDOW_SERVICE);
         healBrokenTouchTimeouts();
@@ -242,103 +237,115 @@ public class MainActivity extends Activity {
                     ? WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY
                     : WindowManager.LayoutParams.TYPE_PHONE;
 
-            trashDropView = new FrameLayout(this);
-            trashBoxView = new TextView(this);
-            trashBoxView.setText("🗑 Перетащите сюда, чтобы удалить");
-            trashBoxView.setTextColor(Color.WHITE);
-            trashBoxView.setTextSize(13f);
-            trashBoxView.setGravity(Gravity.CENTER);
-            trashBoxView.setPadding(40, 20, 40, 20);
+            // Создаем единый контейнер на весь экран, который ловит и кнопку, и нижнюю зону удаления
+            FrameLayout container = new FrameLayout(this);
+
+            // Текстовая плашка "ведро" снизу экрана
+            TextView trashBox = new TextView(this);
+            trashBox.setText("🗑 Перетащите сюда, чтобы удалить");
+            trashBox.setTextColor(Color.WHITE);
+            trashBox.setTextSize(13.5f);
+            trashBox.setGravity(Gravity.CENTER);
+            trashBox.setPadding(50, 24, 50, 24);
 
             GradientDrawable trashBg = new GradientDrawable();
             trashBg.setColor(Color.parseColor("#E60F172A"));
             trashBg.setCornerRadius(999f);
-            trashBg.setStroke(3, Color.parseColor("#FB7185"));
-            trashBoxView.setBackground(trashBg);
+            trashBg.setStroke(3.5f, Color.parseColor("#FB7185"));
+            trashBox.setBackground(trashBg);
+            trashBox.setVisibility(View.GONE);
 
-            ((FrameLayout) trashDropView).addView(trashBoxView, new FrameLayout.LayoutParams(
+            FrameLayout.LayoutParams trashLp = new FrameLayout.LayoutParams(
                     FrameLayout.LayoutParams.WRAP_CONTENT,
                     FrameLayout.LayoutParams.WRAP_CONTENT,
-                    Gravity.CENTER
-            ));
-            trashDropView.setVisibility(View.GONE);
-
-            trashParams = new WindowManager.LayoutParams(
-                    WindowManager.LayoutParams.MATCH_PARENT,
-                    220,
-                    overlayType,
-                    WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE | WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN,
-                    PixelFormat.TRANSLUCENT
+                    Gravity.BOTTOM | Gravity.CENTER_HORIZONTAL
             );
-            trashParams.gravity = Gravity.BOTTOM | Gravity.CENTER_HORIZONTAL;
-            trashParams.y = 20;
+            trashLp.bottomMargin = 40;
+            container.addView(trashBox, trashLp);
 
-            FrameLayout bubbleContainer = new FrameLayout(this);
+            // Сама плавающая кнопка 📐
             floatingTxtView = new TextView(this);
             updateFloatingBubbleAppearance();
 
-            bubbleContainer.addView(floatingTxtView, new FrameLayout.LayoutParams(134, 134, Gravity.CENTER));
-            floatingBtnView = bubbleContainer;
+            FrameLayout.LayoutParams btnLp = new FrameLayout.LayoutParams(146, 146);
+            container.addView(floatingTxtView, btnLp);
+
+            floatingBtnView = container;
 
             floatBtnParams = new WindowManager.LayoutParams(
-                    146, 146,
+                    WindowManager.LayoutParams.MATCH_PARENT,
+                    WindowManager.LayoutParams.MATCH_PARENT,
                     overlayType,
-                    getStealthOverlayFlags(false),
+                    // Окно на весь экран, пропускающее клики мимо кнопки, но перехватывающее перетаскивание
+                    WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE | WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN,
                     PixelFormat.TRANSLUCENT
             );
             floatBtnParams.gravity = Gravity.TOP | Gravity.START;
-            floatBtnParams.x = 40;
-            floatBtnParams.y = 280;
+
+            // Начальные координаты кнопки
+            btnLp.leftMargin = 40;
+            btnLp.topMargin = 280;
 
             floatingBtnView.setOnTouchListener(new View.OnTouchListener() {
-                private int initX, initY;
-                private float touchX, touchY;
+                private float downX, downY;
+                private int startMarginX, startMarginY;
                 private boolean moved = false;
 
                 @Override
                 public boolean onTouch(View v, MotionEvent event) {
+                    FrameLayout.LayoutParams lp = (FrameLayout.LayoutParams) floatingTxtView.getLayoutParams();
                     DisplayMetrics dm = getResources().getDisplayMetrics();
+                    int screenW = dm.widthPixels;
                     int screenH = dm.heightPixels;
 
                     switch (event.getActionMasked()) {
                         case MotionEvent.ACTION_DOWN:
-                            initX = floatBtnParams.x;
-                            initY = floatBtnParams.y;
-                            touchX = event.getRawX();
-                            touchY = event.getRawY();
+                            // Проверяем, попал ли палец именно по круглой кнопке
+                            int btnLeft = lp.leftMargin;
+                            int btnTop = lp.topMargin;
+                            int btnRight = btnLeft + floatingTxtView.getWidth();
+                            int btnBottom = btnTop + floatingTxtView.getHeight();
+
+                            if (event.getRawX() < btnLeft || event.getRawX() > btnRight ||
+                                    event.getRawY() < btnTop || event.getRawY() > btnBottom) {
+                                return false; // Клик мимо кнопки — пропускаем в игру
+                            }
+
+                            downX = event.getRawX();
+                            downY = event.getRawY();
+                            startMarginX = lp.leftMargin;
+                            startMarginY = lp.topMargin;
                             moved = false;
                             return true;
 
                         case MotionEvent.ACTION_MOVE:
-                            int dx = (int) (event.getRawX() - touchX);
-                            int dy = (int) (event.getRawY() - touchY);
-                            if (Math.abs(dx) > 8 || Math.abs(dy) > 8) {
+                            int dx = (int) (event.getRawX() - downX);
+                            int dy = (int) (event.getRawY() - downY);
+
+                            if (Math.abs(dx) > 6 || Math.abs(dy) > 6) {
                                 moved = true;
-                                if (trashDropView != null && trashDropView.getVisibility() != View.VISIBLE) {
-                                    trashDropView.setVisibility(View.VISIBLE);
+                                if (trashBox.getVisibility() != View.VISIBLE) {
+                                    trashBox.setVisibility(View.VISIBLE);
                                 }
                             }
-                            floatBtnParams.x = initX + dx;
-                            floatBtnParams.y = initY + dy;
-                            try {
-                                windowManager.updateViewLayout(floatingBtnView, floatBtnParams);
-                            } catch (Exception ignored) {}
 
-                            boolean inTrash = event.getRawY() > (screenH - 260);
-                            if (trashBoxView != null) {
-                                GradientDrawable bg = (GradientDrawable) trashBoxView.getBackground();
-                                bg.setColor(Color.parseColor(inTrash ? "#FFBE123C" : "#E60F172A"));
-                                trashBoxView.setScaleX(inTrash ? 1.08f : 1.0f);
-                                trashBoxView.setScaleY(inTrash ? 1.08f : 1.0f);
-                            }
+                            lp.leftMargin = Math.max(10, Math.min(screenW - 160, startMarginX + dx));
+                            lp.topMargin = Math.max(10, Math.min(screenH - 180, startMarginY + dy));
+                            floatingTxtView.setLayoutParams(lp);
+
+                            // Если кнопка в нижней части экрана — подсвечиваем ведро красным
+                            boolean inTrash = (lp.topMargin > screenH - 320);
+                            GradientDrawable bg = (GradientDrawable) trashBox.getBackground();
+                            bg.setColor(Color.parseColor(inTrash ? "#FFBE123C" : "#E60F172A"));
+                            trashBox.setScaleX(inTrash ? 1.12f : 1.0f);
+                            trashBox.setScaleY(inTrash ? 1.12f : 1.0f);
                             return true;
 
                         case MotionEvent.ACTION_UP:
                         case MotionEvent.ACTION_CANCEL:
-                            boolean dropInTrash = event.getRawY() > (screenH - 260);
-                            if (trashDropView != null) {
-                                trashDropView.setVisibility(View.GONE);
-                            }
+                            trashBox.setVisibility(View.GONE);
+                            boolean dropInTrash = (lp.topMargin > screenH - 320);
+
                             if (moved && dropInTrash) {
                                 getSharedPreferences("so2_teleport_prefs", Context.MODE_PRIVATE)
                                         .edit().putBoolean("float_btn_enabled", false).apply();
@@ -364,7 +371,6 @@ public class MainActivity extends Activity {
             });
 
             try {
-                windowManager.addView(trashDropView, trashParams);
                 windowManager.addView(floatingBtnView, floatBtnParams);
             } catch (Exception ignored) {}
         });
@@ -396,10 +402,6 @@ public class MainActivity extends Activity {
         if (floatingBtnView != null) {
             try { windowManager.removeView(floatingBtnView); } catch (Exception ignored) {}
             floatingBtnView = null;
-        }
-        if (trashDropView != null) {
-            try { windowManager.removeView(trashDropView); } catch (Exception ignored) {}
-            trashDropView = null;
         }
     }
 
