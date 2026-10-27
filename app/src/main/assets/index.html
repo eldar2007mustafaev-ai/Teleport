@@ -123,7 +123,6 @@
             box-shadow: 0 0 10px var(--sky-primary);
         }
 
-        /* Верхний переключатель ЗАПУСК / НАСТРОЙКИ как на видео, но в цветах Sky Edition */
         .top-mode-switch {
             display: grid;
             grid-template-columns: 1fr 1fr;
@@ -310,7 +309,6 @@
             margin-top: 3px;
         }
 
-        /* Стили для экрана "СВОИ ЧИСЛА" (как на 1-м видео, но в цветах Sky Edition) */
         .cn-group-title {
             font-size: 13px;
             font-weight: 900;
@@ -434,11 +432,32 @@
             font-weight: 800;
             text-align: center;
             cursor: pointer;
+            transition: opacity 0.2s ease, transform 0.15s ease;
+        }
+        .sky-btn.disabled {
+            opacity: 0.38;
+            pointer-events: none;
         }
         .sky-btn.secondary {
             background: rgba(14, 29, 52, 0.75);
             color: var(--sky-ice);
             margin-top: 8px;
+        }
+
+        .calib-progress-wrap {
+            width: 100%;
+            height: 8px;
+            background: rgba(8, 18, 36, 0.9);
+            border-radius: 999px;
+            overflow: hidden;
+            margin: 10px 0 6px 0;
+            border: 1px solid rgba(56, 189, 248, 0.25);
+        }
+        .calib-progress-bar {
+            width: 0%;
+            height: 100%;
+            background: linear-gradient(90deg, #0284C7, #38BDF8, #7DD3FC);
+            transition: width 0.1s linear;
         }
 
         .chip-grid-4 {
@@ -661,7 +680,7 @@
 
     <div id="toastBanner">Готово</div>
 
-    <!-- ЖЕСТКОЕ ОКНО АВТОРИЗАЦИИ ПРИ ПЕРВОМ ВХОДЕ -->
+    <!-- ШАГ 1: ЖЕСТКОЕ ОКНО АВТОРИЗАЦИИ ПРИ ПЕРВОМ ВХОДЕ -->
     <div id="authModal" class="modal-overlay">
         <div class="modal-box">
             <h2 style="font-size: 19px; margin-bottom: 6px; color: var(--sky-ice);">SO2 Teleport Sky Edition</h2>
@@ -671,7 +690,7 @@
             <input type="text" id="inpNick" class="sky-input" placeholder="Ваш логин (никнейм)" maxlength="20" style="text-align:center; margin-bottom:10px;">
             <input type="text" id="inpKey" class="sky-input" placeholder="Ключ TP-XXX-NNNNNN" maxlength="20" style="text-align:center; text-transform:uppercase; margin-bottom:10px;">
             <div id="authError" style="display:none; color: var(--sky-danger); font-size: 12px; font-weight: 700; margin-bottom: 10px;"></div>
-            <div class="sky-btn" onclick="submitLicense()">Активировать и войти</div>
+            <div class="sky-btn" onclick="submitLicense()">Активировать и перейти к калибровке</div>
             <div class="sky-btn secondary" onclick="openTelegramBot()">Купить ключ в Telegram</div>
         </div>
     </div>
@@ -690,28 +709,35 @@
     <!-- МОДАЛКА: КАК НАСТРОИТЬ -->
     <div id="guideModal" class="modal-overlay" onclick="this.classList.remove('show')">
         <div class="modal-box" onclick="event.stopPropagation()">
-            <h3 style="color: var(--sky-primary); margin-bottom: 8px;">Как настроить телепорт</h3>
+            <h3 style="color: var(--sky-primary); margin-bottom: 8px;">Как работает жёсткий телепорт</h3>
             <p style="font-size: 12.5px; color: var(--text-muted); line-height: 1.45; text-align: left; margin-bottom: 14px;">
-                • <b>Куски (10–25)</b> — главный параметр телепорта: чем выше, тем резче прицел прыгает рывками на фликах.<br><br>
-                • <b>Резкость и Влево-вправо</b> — ускоряют разворот на 90° и 180°.<br><br>
-                • <b>Прилипание к осям</b> — помогает держать прицел строго на уровне головы.
+                • <b>Куски (20–25)</b> — разбивают свайп на мгновенные скачки. Прицел перепрыгивает в сторону врага от малейшего движения пальца.<br><br>
+                • <b>Пауза после выстрела (0)</b> и <b>Разгон (0.00)</b> — должны быть на нуле, чтобы ничего не тормозило рывок.<br><br>
+                • <b>Резкость (2.50–3.00)</b> — усиливает амплитуду каждого куска.
             </p>
             <div class="sky-btn" onclick="document.getElementById('guideModal').classList.remove('show')">Понятно</div>
         </div>
     </div>
 
-    <!-- МОДАЛКА: ПРОВЕРИТЬ КАСАНИЯ И КАЛИБРОВКА РАМКИ -->
+    <!-- ШАГ 2: ОБЯЗАТЕЛЬНАЯ МОДАЛКА КАЛИБРОВКИ ЭКРАНА И ПРОВЕРКИ КАСАНИЙ -->
     <div id="touchTestModal" class="modal-overlay">
         <div class="modal-box" style="max-width: 420px;">
-            <h3 id="touchModalTitle" style="color: var(--sky-ice); margin-bottom: 6px;">Проверка касаний и фликов</h3>
+            <h3 id="touchModalTitle" style="color: var(--sky-ice); margin-bottom: 4px;">Обязательная калибровка экрана</h3>
             <p id="touchModalSub" style="font-size: 11.5px; color: var(--text-muted); margin-bottom: 10px;">
-                Проведи пальцем по рамке — проверь мгновенный отклик без задержки
+                Делай резкие флики пальцем по рамке до 100%, чтобы захватить матрицу тачскрина и включить Куски
             </p>
-            <canvas id="touchTestCanvas" width="320" height="220" style="width:100%; height:220px; background:#050D1A; border:1.5px solid var(--sky-primary); border-radius:16px; touch-action:none;"></canvas>
-            <div id="touchTestStats" style="font-size: 12px; color: var(--sky-light); font-weight: 700; margin: 10px 0;">
-                Ожидание касания...
+            <canvas id="touchTestCanvas" width="320" height="210" style="width:100%; height:210px; background:#050D1A; border:1.5px solid var(--sky-primary); border-radius:16px; touch-action:none;"></canvas>
+
+            <div class="calib-progress-wrap">
+                <div id="calibProgressBar" class="calib-progress-bar"></div>
             </div>
-            <div class="sky-btn" onclick="closeTouchTestModal()">Готово</div>
+
+            <div id="touchTestStats" style="font-size: 12px; color: var(--sky-light); font-weight: 700; margin: 8px 0 12px 0;">
+                Проведи пальцем по рамке (0%)...
+            </div>
+            <div id="btnFinishCalib" class="sky-btn disabled" onclick="closeTouchTestModal()">
+                ДАЛЕЕ — ВКЛЮЧИТЬ ТЕЛЕПОРТ
+            </div>
         </div>
     </div>
 
@@ -725,7 +751,7 @@
             </div>
         </div>
 
-        <!-- ВКЛАДКА 1: СЕНСА (ПЕРЕКЛЮЧАТЕЛЬ ЗАПУСК / НАСТРОЙКИ КАК НА ВИДЕО 1) -->
+        <!-- ВКЛАДКА 1: СЕНСА -->
         <div id="tab-home" class="tab-pane active">
 
             <div class="top-mode-switch">
@@ -766,16 +792,16 @@
                 <div id="card-teleport" class="sky-card glow-active" onclick="selectModeCard('teleport', tpSnapPower)">
                     <div class="section-tag">
                         <span>⚡ ГЛАВНЫЙ РЕЖИМ (SNAP TELEPORT)</span>
-                        <span id="tpSnapLabel" style="color: #FFFFFF;">400% УЛЬТРА</span>
+                        <span id="tpSnapLabel" style="color: #FFFFFF;">500% УЛЬТРА</span>
                     </div>
                     <div style="font-size: 16px; font-weight: 800; color: #FFFFFF;">
-                        УЛЬТРА (Мгновенный телепорт)
+                        УЛЬТРА (Мгновенный телепорт кусками)
                     </div>
                     <div style="font-size: 12px; color: var(--text-muted); margin-top: 4px;">
-                        Дискретный рывок кусками без воды: прицел моментально тепается за пальцем на фликах
+                        Агрессивное квантование пакетов тача: прицел моментально перескакивает за пальцем от малейшего флика
                     </div>
                     <div onclick="event.stopPropagation()" style="margin-top: 10px;">
-                        <input type="range" id="tpSnapRange" min="150" max="500" step="25" value="400" class="sky-slider"
+                        <input type="range" id="tpSnapRange" min="150" max="500" step="25" value="500" class="sky-slider"
                                oninput="onTpSnapSlide(this.value)">
                     </div>
                 </div>
@@ -799,11 +825,11 @@
                             <div style="width: 100%;">
                                 <div class="row-between">
                                     <div class="preset-name">ЧИСТЫЙ РЕЗКИЙ <span class="preset-badge">БЕЗ ЗАЛИПАНИЯ</span></div>
-                                    <span id="customSensLabel" style="font-size: 12px; color: var(--sky-light);">38 ед.</span>
+                                    <span id="customSensLabel" style="font-size: 12px; color: var(--sky-light);">45 ед.</span>
                                 </div>
                                 <div class="preset-desc">Резкий отклик для быстрых разворотов на 90° и 180°</div>
                                 <div onclick="event.stopPropagation()">
-                                    <input type="range" id="customSensRange" min="10" max="50" value="38" class="sky-slider"
+                                    <input type="range" id="customSensRange" min="10" max="50" value="45" class="sky-slider"
                                            oninput="onCustomSensSlide(this.value)">
                                 </div>
                             </div>
@@ -828,12 +854,12 @@
                 </div>
             </div>
 
-            <!-- ПОДВКЛАДКА 1.2: СВОИ ЧИСЛА (ВСЕ ФУНКЦИИ С 1-ГО ВИДЕО В ЦВЕТАХ SKY EDITION) -->
+            <!-- ПОДВКЛАДКА 1.2: СВОИ ЧИСЛА -->
             <div id="home-sub-custom" class="sub-pane">
                 <div class="sky-card">
                     <div style="font-size: 16px; font-weight: 900; color: #FFFFFF; letter-spacing: 0.5px;">СВОИ ЧИСЛА</div>
                     <div class="cn-group-sub" style="margin-top: 4px; margin-bottom: 10px;">
-                        Эти значения твои. Их всегда можно вернуть к готовому набору.
+                        Эти значения твои. Их всегда можно вернуть к готовому боевому набору.
                     </div>
 
                     <!-- ОСТРОТА -->
@@ -843,27 +869,27 @@
                     <div class="cn-param-block">
                         <div class="cn-row-top">
                             <span class="cn-param-name">Резкость</span>
-                            <span id="val_sharpness" class="cn-val-pill">1.00</span>
+                            <span id="val_sharpness" class="cn-val-pill">2.50</span>
                         </div>
-                        <input type="range" id="rng_sharpness" min="0.50" max="3.00" step="0.05" value="1.00" class="sky-slider" oninput="onCustomNumChange('sharpness', this.value, true)">
+                        <input type="range" id="rng_sharpness" min="0.50" max="3.00" step="0.05" value="2.50" class="sky-slider" oninput="onCustomNumChange('sharpness', this.value, true)">
                         <div class="cn-param-hint">Больше — чувствительнее, но дрожит прицел</div>
                     </div>
 
                     <div class="cn-param-block">
                         <div class="cn-row-top">
                             <span class="cn-param-name">Влево-вправо</span>
-                            <span id="val_sensX" class="cn-val-pill">1.00</span>
+                            <span id="val_sensX" class="cn-val-pill">2.50</span>
                         </div>
-                        <input type="range" id="rng_sensX" min="0.50" max="3.00" step="0.05" value="1.00" class="sky-slider" oninput="onCustomNumChange('sensX', this.value, true)">
+                        <input type="range" id="rng_sensX" min="0.50" max="3.00" step="0.05" value="2.50" class="sky-slider" oninput="onCustomNumChange('sensX', this.value, true)">
                         <div class="cn-param-hint">Только горизонталь — прицел по врагам в стороне</div>
                     </div>
 
                     <div class="cn-param-block">
                         <div class="cn-row-top">
                             <span class="cn-param-name">Вверх-вниз</span>
-                            <span id="val_sensY" class="cn-val-pill">1.00</span>
+                            <span id="val_sensY" class="cn-val-pill">2.20</span>
                         </div>
-                        <input type="range" id="rng_sensY" min="0.50" max="3.00" step="0.05" value="1.00" class="sky-slider" oninput="onCustomNumChange('sensY', this.value, true)">
+                        <input type="range" id="rng_sensY" min="0.50" max="3.00" step="0.05" value="2.20" class="sky-slider" oninput="onCustomNumChange('sensY', this.value, true)">
                         <div class="cn-param-hint">Только вертикаль — прицел по земле и вверх</div>
                     </div>
 
@@ -874,18 +900,18 @@
                     <div class="cn-param-block">
                         <div class="cn-row-top">
                             <span class="cn-param-name">Отсечка шума</span>
-                            <span id="val_noiseCutoff" class="cn-val-pill">3</span>
+                            <span id="val_noiseCutoff" class="cn-val-pill">0</span>
                         </div>
-                        <input type="range" id="rng_noiseCutoff" min="0" max="15" step="1" value="3" class="sky-slider" oninput="onCustomNumChange('noiseCutoff', this.value, false)">
+                        <input type="range" id="rng_noiseCutoff" min="0" max="15" step="1" value="0" class="sky-slider" oninput="onCustomNumChange('noiseCutoff', this.value, false)">
                         <div class="cn-param-hint">Игнорирует микродвижения пальца — меньше дребезга</div>
                     </div>
 
                     <div class="cn-param-block">
                         <div class="cn-row-top">
                             <span class="cn-param-name">Мёртвая зона</span>
-                            <span id="val_deadZone" class="cn-val-pill">1</span>
+                            <span id="val_deadZone" class="cn-val-pill">0</span>
                         </div>
-                        <input type="range" id="rng_deadZone" min="0" max="10" step="1" value="1" class="sky-slider" oninput="onCustomNumChange('deadZone', this.value, false)">
+                        <input type="range" id="rng_deadZone" min="0" max="10" step="1" value="0" class="sky-slider" oninput="onCustomNumChange('deadZone', this.value, false)">
                         <div class="cn-param-hint">Маленькие движения не двигают прицел вообще</div>
                     </div>
 
@@ -905,18 +931,18 @@
                     <div class="cn-param-block">
                         <div class="cn-row-top">
                             <span class="cn-param-name">Прилипание к осям</span>
-                            <span id="val_axisStick" class="cn-val-pill">4</span>
+                            <span id="val_axisStick" class="cn-val-pill">3</span>
                         </div>
-                        <input type="range" id="rng_axisStick" min="0" max="15" step="1" value="4" class="sky-slider" oninput="onCustomNumChange('axisStick', this.value, false)">
+                        <input type="range" id="rng_axisStick" min="0" max="15" step="1" value="3" class="sky-slider" oninput="onCustomNumChange('axisStick', this.value, false)">
                         <div class="cn-param-hint">Притягивает прицел к горизонтали и вертикали</div>
                     </div>
 
                     <div class="cn-param-block">
                         <div class="cn-row-top">
                             <span class="cn-param-name">Через сколько липнуть</span>
-                            <span id="val_stickDelay" class="cn-val-pill">29</span>
+                            <span id="val_stickDelay" class="cn-val-pill">15</span>
                         </div>
-                        <input type="range" id="rng_stickDelay" min="0" max="100" step="1" value="29" class="sky-slider" oninput="onCustomNumChange('stickDelay', this.value, false)">
+                        <input type="range" id="rng_stickDelay" min="0" max="100" step="1" value="15" class="sky-slider" oninput="onCustomNumChange('stickDelay', this.value, false)">
                         <div class="cn-param-hint">Сколько держать палец спокойно, чтобы включилось</div>
                     </div>
 
@@ -941,9 +967,9 @@
                         <div class="cn-param-block">
                             <div class="cn-row-top">
                                 <span class="cn-param-name">Куски (Телепорт)</span>
-                                <span id="val_chunks" class="cn-val-pill">10</span>
+                                <span id="val_chunks" class="cn-val-pill">22</span>
                             </div>
-                            <input type="range" id="rng_chunks" min="0" max="25" step="1" value="10" class="sky-slider" oninput="onCustomNumChange('chunks', this.value, false)">
+                            <input type="range" id="rng_chunks" min="0" max="25" step="1" value="22" class="sky-slider" oninput="onCustomNumChange('chunks', this.value, false)">
                         </div>
 
                         <div class="cn-param-block">
@@ -1005,9 +1031,9 @@
                         <div class="cn-param-block">
                             <div class="cn-row-top">
                                 <span class="cn-param-name">Выпрямление</span>
-                                <span id="val_straightening" class="cn-val-pill">0.80</span>
+                                <span id="val_straightening" class="cn-val-pill">0.85</span>
                             </div>
-                            <input type="range" id="rng_straightening" min="0.00" max="1.00" step="0.05" value="0.80" class="sky-slider" oninput="onCustomNumChange('straightening', this.value, true)">
+                            <input type="range" id="rng_straightening" min="0.00" max="1.00" step="0.05" value="0.85" class="sky-slider" oninput="onCustomNumChange('straightening', this.value, true)">
                         </div>
 
                         <div class="cn-param-block">
@@ -1034,7 +1060,7 @@
                 </div>
 
                 <!-- НИЖНИЕ КНОПКИ КАЛИБРОВКИ ЭКРАНА И ТЕСТА КАСАНИЙ -->
-                <div class="cn-wide-pill" onclick="openTouchTestModal('calibrate')">
+                <div class="cn-wide-pill" onclick="openTouchTestModal('calibrate', false)">
                     <span>👆</span><span>Определить экран заново</span>
                 </div>
                 <div style="font-size: 11px; font-style: italic; color: var(--text-muted); text-align: center; margin: 6px 8px 10px 8px;">
@@ -1042,7 +1068,7 @@
                     Если сенса не идёт — нажми сюда и тыкай экран.
                 </div>
 
-                <div class="cn-wide-pill" onclick="openTouchTestModal('test')">
+                <div class="cn-wide-pill" onclick="openTouchTestModal('test', false)">
                     <span>👆</span><span>Проверить касания</span>
                 </div>
             </div>
@@ -1312,21 +1338,23 @@
 
     <script>
         let currentTab = 'home';
-        let customSensVal = parseInt(localStorage.getItem('so2_custom_sens') || '38', 10);
-        let tpSnapPower = parseInt(localStorage.getItem('so2_tp_snap_power') || '400', 10);
+        let customSensVal = parseInt(localStorage.getItem('so2_custom_sens') || '45', 10);
+        let tpSnapPower = parseInt(localStorage.getItem('so2_tp_snap_power') || '500', 10);
         let selectedAspectRatio = localStorage.getItem('so2_aspect_ratio') || '4:3';
+        let measuredCalibFactor = parseFloat(localStorage.getItem('so2_calib_factor') || '1.45');
 
+        // Дефолтный набор сразу настроен на максимальный мгновенный телепорт кусками (без паузы после выстрела!)
         const DEFAULT_CUSTOM_NUMS = {
-            sharpness: 1.00,
-            sensX: 1.00,
-            sensY: 1.00,
-            noiseCutoff: 3,
-            deadZone: 1,
+            sharpness: 2.50,
+            sensX: 2.50,
+            sensY: 2.20,
+            noiseCutoff: 0,
+            deadZone: 0,
             prediction: 0,
-            axisStick: 4,
-            stickDelay: 29,
+            axisStick: 3,
+            stickDelay: 15,
             stickStrength: 1,
-            chunks: 10,
+            chunks: 22,
             bypassChunks: 0,
             chunkCap: 0,
             chunksFaster: 0,
@@ -1334,14 +1362,14 @@
             accel: 0.00,
             accelCurve: 0.30,
             edgeRange: 0,
-            straightening: 0.80,
+            straightening: 0.85,
             axisGrip: 4,
             gripCap: 4
         };
 
         let customNums = Object.assign({}, DEFAULT_CUSTOM_NUMS);
         try {
-            const savedCn = localStorage.getItem('so2_custom_numbers');
+            const savedCn = localStorage.getItem('so2_custom_numbers_v2');
             if (savedCn) customNums = Object.assign({}, DEFAULT_CUSTOM_NUMS, JSON.parse(savedCn));
         } catch (e) {}
 
@@ -1365,10 +1393,10 @@
             : autoBudgetDetected;
 
         const PRESET_SHELF_DB = [
-            { code: 'SKY-ULTRA', title: 'УЛЬТРА (Телепорт кусками 400%)', author: 'dare', likes: 148, cat: 'top', preset: 'teleport', snap: 400, ratio: '4:3', ch: 'dot' },
-            { code: 'MU-KA-RE', title: 'РЕЗКИЙ (Флик 90° + куски 15)', author: 'So2Pro', likes: 94, cat: 'top', preset: 'teleport', snap: 425, ratio: '16:10', ch: 'cross' },
-            { code: 'CLEAN-120', title: 'ЧИСТЫЙ РЕЗКИЙ (Без залипания)', author: 'SkyTeam', likes: 76, cat: 'new', preset: 'sharp', snap: 350, ratio: '16:9', ch: 'tshape' },
-            { code: 'BUDGET-FPS', title: 'БУСТ БЮДЖЕТОК (Пиксели + 4:3)', author: 'LiteMod', likes: 112, cat: 'top', preset: 'ultra', snap: 375, ratio: '4:3', ch: 'box' }
+            { code: 'SKY-ULTRA', title: 'УЛЬТРА (Телепорт кусками 500%)', author: 'dare', likes: 194, cat: 'top', preset: 'teleport', snap: 500, ratio: '4:3', ch: 'dot' },
+            { code: 'MU-KA-RE', title: 'РЕЗКИЙ (Флик 90° + куски 25)', author: 'So2Pro', likes: 132, cat: 'top', preset: 'teleport', snap: 475, ratio: '16:10', ch: 'cross' },
+            { code: 'CLEAN-120', title: 'ЧИСТЫЙ РЕЗКИЙ (Без залипания)', author: 'SkyTeam', likes: 88, cat: 'new', preset: 'sharp', snap: 425, ratio: '16:9', ch: 'tshape' },
+            { code: 'BUDGET-FPS', title: 'БУСТ БЮДЖЕТОК (Пиксели + 4:3)', author: 'LiteMod', likes: 119, cat: 'top', preset: 'ultra', snap: 450, ratio: '4:3', ch: 'box' }
         ];
         let shelfCategory = 'top';
 
@@ -1433,7 +1461,7 @@
             const lbl = document.getElementById('val_' + key);
             if (lbl) lbl.textContent = isFloat ? parsed.toFixed(2) : parsed.toString();
 
-            localStorage.setItem('so2_custom_numbers', JSON.stringify(customNums));
+            localStorage.setItem('so2_custom_numbers_v2', JSON.stringify(customNums));
             if (window.AndroidBridge && AndroidBridge.saveCustomNumbersJson) {
                 AndroidBridge.saveCustomNumbersJson(JSON.stringify(customNums));
             }
@@ -1464,40 +1492,68 @@
 
         function resetCustomNumbersToDefault() {
             customNums = Object.assign({}, DEFAULT_CUSTOM_NUMS);
-            localStorage.setItem('so2_custom_numbers', JSON.stringify(customNums));
+            localStorage.setItem('so2_custom_numbers_v2', JSON.stringify(customNums));
             renderCustomNumsUI();
-            showToast('Свои числа возвращены к набору');
+            showToast('Боевой набор телепорта восстановлен!');
         }
 
-        function openTouchTestModal(mode) {
+        function openTouchTestModal(mode, isMandatoryOnboarding) {
             const modal = document.getElementById('touchTestModal');
             const title = document.getElementById('touchModalTitle');
             const sub = document.getElementById('touchModalSub');
+            const btn = document.getElementById('btnFinishCalib');
             modal.classList.add('show');
 
-            if (mode === 'calibrate') {
-                title.textContent = 'Калибровка экрана';
-                sub.textContent = 'Проведи пальцем от края до края рамки — матрица синхронизирует шаг кусков';
+            if (mode === 'calibrate' || isMandatoryOnboarding) {
+                title.textContent = isMandatoryOnboarding ? 'Шаг 2: Обязательная калибровка' : 'Калибровка матрицы экрана';
+                sub.textContent = 'Делай резкие флики пальцем по рамке до 100%, чтобы синхронизировать Куски телепорта';
+                btn.textContent = 'ДАЛЕЕ — ВКЛЮЧИТЬ ТЕЛЕПОРТ';
+                btn.classList.add('disabled');
                 if (window.AndroidBridge) AndroidBridge.handleShizukuCardClick();
             } else {
-                title.textContent = 'Проверка касаний и телепорта';
+                title.textContent = 'Проверка касаний и кусков';
                 sub.textContent = 'Делай резкие флики по рамке — синие точки покажут дискретный шаг телепорта';
+                btn.textContent = 'ГОТОВО';
+                btn.classList.remove('disabled');
             }
-            initTouchCanvas();
+            initTouchCanvas(mode === 'calibrate' || isMandatoryOnboarding);
         }
 
         function closeTouchTestModal() {
+            const btn = document.getElementById('btnFinishCalib');
+            if (btn.classList.contains('disabled')) return;
+
+            localStorage.setItem('so2_screen_calibrated_v2', '1');
+            localStorage.setItem('so2_calib_factor', measuredCalibFactor.toFixed(2));
+
+            if (window.AndroidBridge) {
+                if (AndroidBridge.saveCustomNumbersJson) {
+                    AndroidBridge.saveCustomNumbersJson(JSON.stringify(customNums));
+                }
+                if (AndroidBridge.completeScreenCalibration) {
+                    AndroidBridge.completeScreenCalibration(measuredCalibFactor);
+                }
+            }
+
             document.getElementById('touchTestModal').classList.remove('show');
-            showToast('Матрица экрана откалибрована ✓');
+            syncUiState();
+            showToast('⚡ Экран откалиброван! Телепорт кусками активен');
         }
 
-        function initTouchCanvas() {
+        function initTouchCanvas(requireFullProgress) {
             const canvas = document.getElementById('touchTestCanvas');
             const ctx = canvas.getContext('2d');
             const stats = document.getElementById('touchTestStats');
+            const bar = document.getElementById('calibProgressBar');
+            const btn = document.getElementById('btnFinishCalib');
+
             ctx.clearRect(0, 0, canvas.width, canvas.height);
+            bar.style.width = requireFullProgress ? '0%' : '100%';
 
             let lastX = null, lastY = null, lastTime = 0;
+            let totalDistance = 0;
+            let maxInstantVelocity = 0;
+            const targetDistance = 950; // Сколько пикселей нужно нафликать для 100% калибровки
 
             function drawPoint(e) {
                 e.preventDefault();
@@ -1509,20 +1565,35 @@
 
                 ctx.fillStyle = '#38BDF8';
                 ctx.beginPath();
-                ctx.arc(x, y, 5, 0, Math.PI * 2);
+                ctx.arc(x, y, 5.5, 0, Math.PI * 2);
                 ctx.fill();
 
                 if (lastX !== null) {
-                    ctx.strokeStyle = 'rgba(125, 211, 252, 0.55)';
-                    ctx.lineWidth = 2;
+                    ctx.strokeStyle = 'rgba(125, 211, 252, 0.7)';
+                    ctx.lineWidth = 2.2;
                     ctx.beginPath();
                     ctx.moveTo(lastX, lastY);
                     ctx.lineTo(x, y);
                     ctx.stroke();
 
-                    const dist = Math.hypot(x - lastX, y - lastY).toFixed(0);
-                    const dt = Math.max(1, (now - lastTime)).toFixed(1);
-                    stats.textContent = 'Скачок: ' + dist + ' px • Отклик: ' + dt + ' мс • Куски: ' + customNums.chunks;
+                    const dist = Math.hypot(x - lastX, y - lastY);
+                    const dt = Math.max(1, (now - lastTime));
+                    const vel = dist / dt;
+                    if (vel > maxInstantVelocity) maxInstantVelocity = vel;
+
+                    totalDistance += dist;
+                    const progress = Math.min(100, Math.round((totalDistance / targetDistance) * 100));
+                    bar.style.width = progress + '%';
+
+                    // Вычисляем индивидуальный множитель матрицы под резкость пальца
+                    measuredCalibFactor = Math.max(1.30, Math.min(2.40, 1.25 + (maxInstantVelocity * 0.18)));
+
+                    if (progress >= 100) {
+                        btn.classList.remove('disabled');
+                        stats.textContent = '✅ Калибровка 100% • Куски: ' + customNums.chunks + ' • Нажми «ДАЛЕЕ»';
+                    } else {
+                        stats.textContent = 'Калибровка: ' + progress + '% • Рывок: ' + dist.toFixed(0) + ' px';
+                    }
                 }
                 lastX = x;
                 lastY = y;
@@ -1553,10 +1624,13 @@
                 showToast('Разрешите доступ в окне Shizuku');
                 return;
             }
+            if (AndroidBridge.saveCustomNumbersJson) {
+                AndroidBridge.saveCustomNumbersJson(JSON.stringify(customNums));
+            }
             const nowRunning = AndroidBridge.toggleTeleport();
             localStorage.setItem('so2_teleport_running', nowRunning ? '1' : '0');
             syncUiState();
-            showToast(nowRunning ? '⚡ Режим УЛЬТРА (Телепорт) включен!' : 'Сенса остановлена');
+            showToast(nowRunning ? '⚡ Режим УЛЬТРА (Куски) включен!' : 'Сенса остановлена');
         }
 
         function selectModeCard(presetId, powerVal) {
@@ -1572,6 +1646,9 @@
             localStorage.setItem('so2_selected_preset', presetId);
 
             if (window.AndroidBridge) {
+                if (AndroidBridge.saveCustomNumbersJson) {
+                    AndroidBridge.saveCustomNumbersJson(JSON.stringify(customNums));
+                }
                 AndroidBridge.selectPreset(presetId);
                 if (presetId === 'teleport') {
                     AndroidBridge.setTeleportSnapPower(powerVal || tpSnapPower);
@@ -1664,15 +1741,15 @@
             if (found) {
                 applyPresetObject(found);
             } else {
-                tpSnapPower = 400;
-                localStorage.setItem('so2_tp_snap_power', '400');
-                selectModeCard('teleport', 400);
+                tpSnapPower = 500;
+                localStorage.setItem('so2_tp_snap_power', '500');
+                selectModeCard('teleport', 500);
                 showToast('⚡ Код ' + code + ' применён!');
             }
         }
 
         function applyPresetObject(item) {
-            tpSnapPower = item.snap || 400;
+            tpSnapPower = item.snap || 500;
             localStorage.setItem('so2_tp_snap_power', tpSnapPower.toString());
             document.getElementById('tpSnapRange').value = tpSnapPower;
             document.getElementById('tpSnapLabel').textContent = tpSnapPower + '% УЛЬТРА';
@@ -1899,6 +1976,17 @@
             document.getElementById('authModal').classList.add('show');
         }
 
+        function checkMandatoryCalibration() {
+            const calibratedLocal = localStorage.getItem('so2_screen_calibrated_v2') === '1';
+            let calibratedNative = true;
+            if (window.AndroidBridge && AndroidBridge.isCalibrationRequired) {
+                calibratedNative = !AndroidBridge.isCalibrationRequired();
+            }
+            if (!calibratedLocal || !calibratedNative) {
+                openTouchTestModal('calibrate', true);
+            }
+        }
+
         function submitLicense() {
             const nick = document.getElementById('inpNick').value.trim();
             const key = document.getElementById('inpKey').value.trim().toUpperCase();
@@ -1930,7 +2018,8 @@
                     localStorage.setItem('so2_saved_nick', nick);
                     document.getElementById('authModal').classList.remove('show');
                     loadProfileAndDevice();
-                    showToast('Лицензия успешно активирована!');
+                    // Сразу после активации ключа запускаем обязательную калибровку экрана!
+                    openTouchTestModal('calibrate', true);
                 } else {
                     err.style.display = 'block';
                     err.textContent = res.message || 'Неверный или уже активированный ключ!';
@@ -1994,7 +2083,7 @@
 
             orb.classList.toggle('running', running);
             orbLbl.textContent = running ? 'АКТИВЕН' : 'ЗАПУСК';
-            stText.textContent = running ? '• ТЕЛЕПОРТ АКТИВЕН (МГНОВЕННЫЙ СНАП)' : '• Сенса готова к работе (Нажмите на сферу)';
+            stText.textContent = running ? '• ТЕЛЕПОРТ КУСКАМИ АКТИВЕН (МГНОВЕННЫЙ СНАП)' : '• Сенса готова к работе (Нажмите на сферу)';
 
             document.getElementById('toggleFloatBtn').classList.toggle('on', floatStretchEnabled);
         }
@@ -2002,7 +2091,6 @@
         window.onload = function() {
             restoreSavedState();
 
-            // Строгая защита первого входа: без валидного ключа окно авторизации не закрывается
             let needsAuth = false;
             const savedKey = localStorage.getItem('so2_saved_key');
             if (!savedKey || savedKey.length < 6) {
@@ -2031,6 +2119,9 @@
 
             if (needsAuth) {
                 document.getElementById('authModal').classList.add('show');
+            } else {
+                // Если ключ уже есть, но обязательная калибровка ещё не пройдена — открываем её сразу!
+                checkMandatoryCalibration();
             }
 
             loadProfileAndDevice();
