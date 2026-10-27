@@ -268,7 +268,6 @@
             margin-top: 4px;
         }
 
-        /* КВАДРАТИКИ БЫСТРЫХ ПРЕСЕТОВ (ТЕЛЕПОРТ / УЛЬТРА ПЛАВНАЯ / ДЛЯ АВИКОВ) */
         .preset-squares-grid {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
@@ -708,6 +707,18 @@
         </div>
     </div>
 
+    <!-- ЖЁСТКАЯ БЛОКИРОВКА СТАРЫХ ВЕРСИЙ -->
+    <div id="deprecatedModal" class="modal-overlay">
+        <div class="modal-box" style="border-color: var(--sky-danger);">
+            <h2 style="font-size: 19px; color: var(--sky-danger); margin-bottom: 8px;">⚠️ Версия устарела</h2>
+            <p style="font-size: 12.5px; color: var(--text-muted); margin-bottom: 16px; line-height: 1.45;">
+                Эта сборка приложения отключена и больше не поддерживается.<br>
+                Скачайте актуальное обновление и активируйте ключ в нашем Telegram-боте.
+            </p>
+            <div class="sky-btn" onclick="openTelegramBot()">Скачать новую версию в Telegram</div>
+        </div>
+    </div>
+
     <!-- МОДАЛКА: КАК НАСТРОИТЬ -->
     <div id="guideModal" class="modal-overlay" onclick="this.classList.remove('show')">
         <div class="modal-box" onclick="event.stopPropagation()">
@@ -790,7 +801,7 @@
                     </div>
                 </div>
 
-                <!-- БЫСТРЫЕ КВАДРАТИКИ РЕЖИМОВ И НА ГЛАВНОЙ -->
+                <!-- БЫСТРЫЕ КВАДРАТИКИ РЕЖИМОВ -->
                 <div class="sky-card">
                     <div class="section-tag">
                         <span>БЫСТРЫЙ ВЫБОР РЕЖИМА И ПОЛЗУНКОВ</span>
@@ -1061,7 +1072,6 @@
                     </div>
                 </div>
 
-                <!-- НИЖНИЕ КНОПКИ КАЛИБРОВКИ ЭКРАНА И ТЕСТА КАСАНИЙ -->
                 <div class="cn-wide-pill" onclick="openTouchTestModal('calibrate', false)">
                     <span>👆</span><span>Определить экран заново</span>
                 </div>
@@ -1086,7 +1096,7 @@
                     <span>1 · ВСТАВЬ КОД НАБОРА</span>
                     <span style="color: var(--sky-primary);">МГНОВЕННО</span>
                 </div>
-                <input type="text" id="inpConfigCode" class="sky-input" placeholder="</> Например: SKY-ULTRA или MU-KA-RE" style="text-transform: uppercase; margin-bottom: 10px;">
+                <input type="text" id="inpConfigCode" class="sky-input" placeholder="</> Например: SKY-ULTRA или AWP-GOD" style="text-transform: uppercase; margin-bottom: 10px;">
                 <div class="sky-btn" onclick="applyConfigByCode()">ПРИМЕНИТЬ КОД НАБОРА</div>
             </div>
 
@@ -1341,14 +1351,11 @@
     <script>
         let currentTab = 'home';
         let tpSnapPower = parseInt(localStorage.getItem('so2_tp_snap_power') || '500', 10);
-        // По умолчанию ставим 16:9, как ты просил!
         let selectedAspectRatio = localStorage.getItem('so2_aspect_ratio') || '16:9';
         let measuredCalibFactor = parseFloat(localStorage.getItem('so2_calib_factor') || '1.45');
         let activeSquarePreset = localStorage.getItem('so2_active_sq_preset') || 'teleport';
 
-        // 3 ГОТОВЫХ НАБОРА ПОЛЗУНКОВ ПОД КВАДРАТИКИ:
         const SQUARE_PRESETS = {
-            // 1. ТЕЛЕПОРТ — тепается от малейшего движения пальца (Куски 25, Куски только быстрее 0, Потолок 0)
             teleport: {
                 sharpness: 3.00,
                 sensX: 3.00,
@@ -1371,7 +1378,6 @@
                 axisGrip: 4,
                 gripCap: 4
             },
-            // 2. УЛЬТРА ПЛАВНАЯ — мягкий трекинг без рывков для идеального зажима
             smooth: {
                 sharpness: 1.35,
                 sensX: 1.40,
@@ -1394,7 +1400,6 @@
                 axisGrip: 6,
                 gripCap: 6
             },
-            // 3. ДЛЯ АВИКОВ — хлёсткий флик кусками + стоп-кадр после выстрела для AWM / M40
             awp: {
                 sharpness: 2.85,
                 sensX: 3.00,
@@ -1507,7 +1512,6 @@
             document.getElementById('home-sub-custom').classList.toggle('active', !isLaunch);
         }
 
-        // Клик по одному из 3 квадратиков ("ТЕЛЕПОРТ", "УЛЬТРА ПЛАВНАЯ", "ДЛЯ АВИКОВ")
         function applySquarePreset(presetKey) {
             const target = SQUARE_PRESETS[presetKey] || SQUARE_PRESETS.teleport;
             activeSquarePreset = presetKey;
@@ -1832,7 +1836,6 @@
             document.getElementById('stretchCurrentLabel').textContent = ratio;
             document.getElementById('btnApplyStretchNow').textContent = 'ПРИМЕНИТЬ ' + ratio + ' СРАЗУ';
 
-            // Сразу передаём выбранный формат (например, 16:9) в нативный мост для плавающей кнопки 📐!
             if (window.AndroidBridge && AndroidBridge.setSelectedStretchRatioOnly) {
                 AndroidBridge.setSelectedStretchRatioOnly(ratio);
             }
@@ -1852,7 +1855,6 @@
 
         function toggleFloatStretch() {
             if (!window.AndroidBridge) return;
-            // Перед включением плавающей кнопки жёстко синхронизируем выбранный формат (16:9 / 4:3)
             if (AndroidBridge.setSelectedStretchRatioOnly) {
                 AndroidBridge.setSelectedStretchRatioOnly(selectedAspectRatio);
             }
@@ -2081,6 +2083,11 @@
             try {
                 const rawRes = AndroidBridge.authorizeAndActivate(nick, key);
                 const res = JSON.parse(rawRes);
+                if (res.status === 'deprecated') {
+                    document.getElementById('authModal').classList.remove('show');
+                    document.getElementById('deprecatedModal').classList.add('show');
+                    return;
+                }
                 if (res.status === 'ok' || res.ok === true) {
                     err.style.display = 'none';
                     if (res.expires_at) localStorage.setItem('so2_expires_at', res.expires_at.toString());
@@ -2128,7 +2135,6 @@
             document.getElementById('toggleThrottlingBtn').classList.toggle('on', disableThrottlingEnabled);
             document.getElementById('toggleCrosshairMaster').classList.toggle('on', crosshairEnabled);
 
-            // Восстанавливаем выбранный формат растяга (по умолчанию 16:9)
             const ratioWidths = { '4:3': 135, '3:2': 150, '16:10': 168, '16:9': 190 };
             const chipEl = document.querySelector(`#aspectRatioChips .sky-chip[data-ratio="${selectedAspectRatio}"]`);
             selectAspectPreview(selectedAspectRatio, ratioWidths[selectedAspectRatio] || 190, 96, chipEl);
@@ -2176,10 +2182,15 @@
                         needsAuth = true;
                     } else {
                         const verifyRes = JSON.parse(AndroidBridge.verifySavedLicenseOnStartup());
+                        if (verifyRes.status === 'deprecated') {
+                            document.getElementById('deprecatedModal').classList.add('show');
+                            return;
+                        }
                         if (verifyRes.status === 'expired' || verifyRes.status === 'blocked' || verifyRes.blocked === true) {
                             document.getElementById('expiredModal').classList.add('show');
-                            needsAuth = false;
-                        } else if (verifyRes.status === 'need_auth') {
+                            return;
+                        }
+                        if (verifyRes.status === 'need_auth') {
                             needsAuth = true;
                         }
                     }
