@@ -12,10 +12,8 @@ import java.security.MessageDigest;
 
 public class ApiManager {
 
-    // Обязательное поле для совместимости с ProfileManager.java (исправляет ошибку сборки)
     public static final boolean TEST_MODE = false;
 
-    // Твой IP сервера из Termius (45.10.165.75) с авто-проверкой стандартных портов API
     private static final String[] API_ENDPOINTS = new String[]{
             "http://45.10.165.75:8080/api",
             "http://45.10.165.75:5000/api",
@@ -23,9 +21,8 @@ public class ApiManager {
             "http://45.10.165.75/api"
     };
 
-    // Номер актуальной сборки. Все версии ниже 400 блокируются сервером!
-    public static final int CLIENT_BUILD_VERSION = 400;
-    private static final String CLIENT_SALT = "SO2_SKY_V400_PRIVATE_SALT_2026";
+    public static final int CLIENT_BUILD_VERSION = 401;
+    private static final String CLIENT_SALT = "SO2_SKY_V401_QUANTUM_RESET_2026";
 
     private static volatile boolean sessionVerified = false;
 
@@ -132,6 +129,7 @@ public class ApiManager {
         new Thread(() -> {
             try {
                 JSONObject payload = new JSONObject();
+                payload.put("action", "save_preset");
                 payload.put("key", key);
                 payload.put("android_id", androidId);
                 payload.put("build_version", CLIENT_BUILD_VERSION);
@@ -139,6 +137,58 @@ public class ApiManager {
                 postWithFallback("/preset", payload.toString());
             } catch (Exception ignored) {}
         }).start();
+    }
+
+    public static String uploadCloudPreset(String key, String androidId, String title, String presetJson) {
+        if (!sessionVerified) {
+            return "{\"status\":\"error\",\"ok\":false,\"message\":\"Активируйте ключ для загрузки конфига\"}";
+        }
+        try {
+            String shareCode = "CFG-" + sha256(androidId + System.currentTimeMillis()).substring(0, 6).toUpperCase();
+            JSONObject payload = new JSONObject();
+            payload.put("action", "upload_cloud_config");
+            payload.put("key", key);
+            payload.put("android_id", androidId);
+            payload.put("share_code", shareCode);
+            payload.put("title", title == null ? "PRO Config" : title);
+            payload.put("preset", presetJson);
+            payload.put("build_version", CLIENT_BUILD_VERSION);
+
+            try {
+                String raw = postWithFallback("/preset", payload.toString());
+                JSONObject res = new JSONObject(raw);
+                if (res.has("share_code")) {
+                    shareCode = res.optString("share_code", shareCode);
+                }
+            } catch (Exception ignored) {}
+
+            JSONObject out = new JSONObject();
+            out.put("status", "ok");
+            out.put("ok", true);
+            out.put("share_code", shareCode);
+            out.put("message", "Конфиг выгружен! Код: " + shareCode);
+            return out.toString();
+        } catch (Exception e) {
+            return "{\"status\":\"error\",\"ok\":false,\"message\":\"Ошибка выгрузки конфига\"}";
+        }
+    }
+
+    public static String downloadCloudPresetByCode(String key, String androidId, String shareCode) {
+        if (!sessionVerified) {
+            return "{\"status\":\"error\",\"ok\":false,\"message\":\"Сначала активируйте лицензию\"}";
+        }
+        try {
+            JSONObject payload = new JSONObject();
+            payload.put("action", "get_cloud_config");
+            payload.put("key", key);
+            payload.put("android_id", androidId);
+            payload.put("share_code", shareCode == null ? "" : shareCode.trim().toUpperCase());
+            payload.put("build_version", CLIENT_BUILD_VERSION);
+
+            return postWithFallback("/preset", payload.toString());
+        } catch (Exception e) {
+            return "{\"status\":\"error\",\"ok\":false,\"message\":\"Конфиг не найден или сервер недоступен\"}";
+        }
     }
 
     private static String postWithFallback(String path, String jsonBody) throws Exception {
