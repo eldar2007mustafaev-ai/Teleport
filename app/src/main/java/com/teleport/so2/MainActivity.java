@@ -227,6 +227,41 @@ public class MainActivity extends Activity {
         }
     }
 
+    /**
+     * Точная проверка пересечения плавающей кнопки и корзины по реальным экранным координатам.
+     * Работает и в портретном меню телефона, и в горизонтальном Standoff 2 (включая растяг 4:3 и 16:9).
+     */
+    private boolean isOverTrashBox(float rawTouchX, float rawTouchY) {
+        if (trashBoxView != null && trashDropView != null && trashDropView.getVisibility() == View.VISIBLE) {
+            int[] boxLoc = new int[2];
+            trashBoxView.getLocationOnScreen(boxLoc);
+            int boxLeft = boxLoc[0] - 90;
+            int boxTop = boxLoc[1] - 110;
+            int boxRight = boxLoc[0] + trashBoxView.getWidth() + 90;
+            int boxBottom = boxLoc[1] + trashBoxView.getHeight() + 140;
+
+            if (rawTouchX >= boxLeft && rawTouchX <= boxRight && rawTouchY >= boxTop && rawTouchY <= boxBottom) {
+                return true;
+            }
+
+            if (floatingBtnView != null) {
+                int[] btnLoc = new int[2];
+                floatingBtnView.getLocationOnScreen(btnLoc);
+                float btnCenterX = btnLoc[0] + (floatingBtnView.getWidth() / 2f);
+                float btnCenterY = btnLoc[1] + (floatingBtnView.getHeight() / 2f);
+                if (btnCenterX >= boxLeft && btnCenterX <= boxRight && btnCenterY >= boxTop && btnCenterY <= boxBottom) {
+                    return true;
+                }
+            }
+        }
+        // Резервная проверка по текущей нижней границе любого (даже альбомного) экрана
+        DisplayMetrics dm = new DisplayMetrics();
+        windowManager.getDefaultDisplay().getRealMetrics(dm);
+        int actualCurrentHeight = dm.heightPixels;
+        int minSide = Math.min(dm.widthPixels, dm.heightPixels);
+        return rawTouchY >= (actualCurrentHeight - 220) || rawTouchY >= (minSide - 180);
+    }
+
     public void toggleFloatingButton(boolean enable) {
         runOnUiThread(() -> {
             if (!enable) {
@@ -240,7 +275,6 @@ public class MainActivity extends Activity {
                     ? WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY
                     : WindowManager.LayoutParams.TYPE_PHONE;
 
-            // 1. Окно корзины с динамическим определением размеров экрана
             trashDropView = new FrameLayout(this);
             trashBoxView = new TextView(this);
             trashBoxView.setText("🗑 Перетащите сюда, чтобы удалить");
@@ -264,15 +298,14 @@ public class MainActivity extends Activity {
 
             trashParams = new WindowManager.LayoutParams(
                     WindowManager.LayoutParams.MATCH_PARENT,
-                    350, // Увеличенная высота для захвата в Standoff 2
+                    220,
                     overlayType,
-                    WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE | WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN,
+                    getStealthOverlayFlags(true),
                     PixelFormat.TRANSLUCENT
             );
             trashParams.gravity = Gravity.BOTTOM | Gravity.CENTER_HORIZONTAL;
-            trashParams.y = 10;
+            trashParams.y = 16;
 
-            // 2. Плавающая кнопка 📐
             FrameLayout bubbleContainer = new FrameLayout(this);
             floatingTxtView = new TextView(this);
             updateFloatingBubbleAppearance();
@@ -288,7 +321,7 @@ public class MainActivity extends Activity {
             );
             floatBtnParams.gravity = Gravity.TOP | Gravity.START;
             floatBtnParams.x = 40;
-            floatBtnParams.y = 280;
+            floatBtnParams.y = 260;
 
             floatingBtnView.setOnTouchListener(new View.OnTouchListener() {
                 private int initX, initY;
@@ -297,10 +330,6 @@ public class MainActivity extends Activity {
 
                 @Override
                 public boolean onTouch(View v, MotionEvent event) {
-                    DisplayMetrics dm = new DisplayMetrics();
-                    windowManager.getDefaultDisplay().getRealMetrics(dm);
-                    int currentScreenH = dm.heightPixels; // Динамическая высота под текущее разрешение (включая растяг Standoff 2)
-
                     switch (event.getActionMasked()) {
                         case MotionEvent.ACTION_DOWN:
                             initX = floatBtnParams.x;
@@ -325,23 +354,23 @@ public class MainActivity extends Activity {
                                 windowManager.updateViewLayout(floatingBtnView, floatBtnParams);
                             } catch (Exception ignored) {}
 
-                            // Динамическая проверка нижней зоны удаления (по текущей высоте экрана игры)
-                            boolean inTrash = (event.getRawY() > (currentScreenH - 320));
+                            boolean inTrash = isOverTrashBox(event.getRawX(), event.getRawY());
                             if (trashBoxView != null) {
                                 GradientDrawable bg = (GradientDrawable) trashBoxView.getBackground();
                                 bg.setColor(Color.parseColor(inTrash ? "#FFBE123C" : "#E60F172A"));
-                                trashBoxView.setScaleX(inTrash ? 1.12f : 1.0f);
-                                trashBoxView.setScaleY(inTrash ? 1.12f : 1.0f);
+                                trashBoxView.setText(inTrash ? "💥 ОТПУСТИТЕ ДЛЯ УДАЛЕНИЯ" : "🗑 Перетащите сюда, чтобы удалить");
+                                trashBoxView.setScaleX(inTrash ? 1.10f : 1.0f);
+                                trashBoxView.setScaleY(inTrash ? 1.10f : 1.0f);
                             }
                             return true;
 
                         case MotionEvent.ACTION_UP:
                         case MotionEvent.ACTION_CANCEL:
-                            boolean dropInTrash = (event.getRawY() > (currentScreenH - 320));
+                            boolean dropInTrash = moved && isOverTrashBox(event.getRawX(), event.getRawY());
                             if (trashDropView != null) {
                                 trashDropView.setVisibility(View.GONE);
                             }
-                            if (moved && dropInTrash) {
+                            if (dropInTrash) {
                                 getSharedPreferences("so2_teleport_prefs", Context.MODE_PRIVATE)
                                         .edit().putBoolean("float_btn_enabled", false).apply();
                                 removeFloatingButton();
@@ -447,12 +476,15 @@ public class MainActivity extends Activity {
 
         int snap = prefs.getInt("tp_snap_power", 500);
         String preset = prefs.getString("selected_preset", "teleport");
-        TeleportEngine.setStepQuantization(true, snap / 35.0f);
+        TeleportEngine.setStepQuantization(true, snap / 30.0f);
         TeleportEngine.startTeleport(this, snap, preset);
 
         new Thread(() -> {
+            // Фиксируем горизонтальный режим без переворота игры при автоповороте
             String cmd =
                 "cmd window set-ignore-orientation-request true; " +
+                "settings put system accelerometer_rotation 0; " +
+                "settings put system user_rotation 1; " +
                 "settings put global window_animation_scale 0.0; " +
                 "settings put global transition_animation_scale 0.0; " +
                 "wm size " + baseShort + "x" + finalLong + "; " +
@@ -470,7 +502,8 @@ public class MainActivity extends Activity {
             ShizukuManager.execCommand(
                 "wm size reset; " +
                 "wm density reset; " +
-                "cmd window set-ignore-orientation-request false"
+                "cmd window set-ignore-orientation-request false; " +
+                "settings put system accelerometer_rotation 1"
             );
         }).start();
     }
