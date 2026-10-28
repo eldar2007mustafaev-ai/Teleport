@@ -39,6 +39,10 @@ public class MainActivity extends Activity {
     private int crosshairOpacity = 100;
     private int crosshairColor = Color.parseColor("#38BDF8");
 
+    // Dynamic Dot Crosshair (Build 401)
+    private boolean dynamicCrosshairEnabled = true;
+    private float dynamicPulseRadius = 0f;
+
     private View floatingBtnView;
     private TextView floatingTxtView;
     private View trashDropView;
@@ -59,6 +63,7 @@ public class MainActivity extends Activity {
 
         SharedPreferences prefs = getSharedPreferences("so2_teleport_prefs", Context.MODE_PRIVATE);
         stealthModeEnabled = prefs.getBoolean("stealth_overlays", false);
+        dynamicCrosshairEnabled = prefs.getBoolean("dynamic_crosshair", true);
 
         webView = new WebView(this);
         WebSettings ws = webView.getSettings();
@@ -137,6 +142,26 @@ public class MainActivity extends Activity {
         });
     }
 
+    public void setDynamicCrosshairMode(boolean enabled) {
+        this.dynamicCrosshairEnabled = enabled;
+        getSharedPreferences("so2_teleport_prefs", Context.MODE_PRIVATE)
+                .edit().putBoolean("dynamic_crosshair", enabled).apply();
+        triggerCrosshairPulse();
+    }
+
+    public void triggerCrosshairPulse() {
+        runOnUiThread(() -> {
+            if (crosshairView != null) {
+                dynamicPulseRadius = 12f;
+                crosshairView.invalidate();
+                crosshairView.postDelayed(() -> {
+                    dynamicPulseRadius = 0f;
+                    if (crosshairView != null) crosshairView.invalidate();
+                }, 180);
+            }
+        });
+    }
+
     public void updateCrosshairStyle(int scale, int opacity, String colorHex) {
         this.crosshairScale = Math.max(10, Math.min(100, scale));
         this.crosshairOpacity = Math.max(15, Math.min(100, opacity));
@@ -162,6 +187,7 @@ public class MainActivity extends Activity {
             if (crosshairView == null) {
                 crosshairView = new View(this) {
                     private final Paint paint = new Paint(Paint.ANTI_ALIAS_FLAG);
+                    private final Paint ringPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
 
                     @Override
                     protected void onDraw(Canvas canvas) {
@@ -172,13 +198,36 @@ public class MainActivity extends Activity {
                         float size = 8f + (crosshairScale / 100f) * 28f;
                         float gap = 4f + (crosshairScale / 100f) * 10f;
 
-                        paint.setColor(crosshairColor);
+                        // Dynamic Dot Crosshair: меняет оттенок при активном Квантовом Телепорте / AWP-Lock
+                        int activeColor = crosshairColor;
+                        if (dynamicCrosshairEnabled && TeleportEngine.isActive()) {
+                            if (TeleportEngine.isSmartAwpLockEnabled()) {
+                                activeColor = Color.parseColor("#F43F5E"); // Неоново-алый для AWP-Lock
+                            } else if (TeleportEngine.isAntiRecoilEnabled()) {
+                                activeColor = Color.parseColor("#10B981"); // Изумрудный при активном Anti-Recoil
+                            } else {
+                                activeColor = Color.parseColor("#38BDF8"); // Квантовый голубой импульс
+                            }
+                        }
+
+                        paint.setColor(activeColor);
                         paint.setAlpha((int) (255 * (crosshairOpacity / 100f)));
                         paint.setStrokeWidth(3.2f);
 
-                        if ("dot".equalsIgnoreCase(currentCrosshairType)) {
+                        // Отрисовка динамического импульсного кольца
+                        if (dynamicCrosshairEnabled && (TeleportEngine.isActive() || dynamicPulseRadius > 0f)) {
+                            ringPaint.setStyle(Paint.Style.STROKE);
+                            ringPaint.setStrokeWidth(2.0f);
+                            ringPaint.setColor(activeColor);
+                            ringPaint.setAlpha(130);
+                            float r = Math.max(5.5f, size * 0.42f) + dynamicPulseRadius;
+                            canvas.drawCircle(cx, cy, r, ringPaint);
+                        }
+
+                        if ("dot".equalsIgnoreCase(currentCrosshairType) || "dynamic".equalsIgnoreCase(currentCrosshairType)) {
                             paint.setStyle(Paint.Style.FILL);
-                            canvas.drawCircle(cx, cy, Math.max(3.5f, size * 0.26f), paint);
+                            float dotRad = Math.max(3.8f, size * 0.28f);
+                            canvas.drawCircle(cx, cy, dotRad, paint);
                         } else if ("tshape".equalsIgnoreCase(currentCrosshairType)) {
                             paint.setStyle(Paint.Style.STROKE);
                             canvas.drawLine(cx - size, cy, cx - gap, cy, paint);
@@ -227,10 +276,6 @@ public class MainActivity extends Activity {
         }
     }
 
-    /**
-     * Точная проверка пересечения плавающей кнопки и корзины по реальным экранным координатам.
-     * Работает и в портретном меню телефона, и в горизонтальном Standoff 2 (включая растяг 4:3 и 16:9).
-     */
     private boolean isOverTrashBox(float rawTouchX, float rawTouchY) {
         if (trashBoxView != null && trashDropView != null && trashDropView.getVisibility() == View.VISIBLE) {
             int[] boxLoc = new int[2];
@@ -254,7 +299,6 @@ public class MainActivity extends Activity {
                 }
             }
         }
-        // Резервная проверка по текущей нижней границе любого (даже альбомного) экрана
         DisplayMetrics dm = new DisplayMetrics();
         windowManager.getDefaultDisplay().getRealMetrics(dm);
         int actualCurrentHeight = dm.heightPixels;
@@ -382,9 +426,11 @@ public class MainActivity extends Activity {
                                 String ratio = prefs.getString("stretch_ratio", "16:9");
                                 if (!isStretchedActive) {
                                     applyResolutionRatio(ratio);
-                                    Toast.makeText(MainActivity.this, "Растяг " + ratio + " + Телепорт ВКЛ!", Toast.LENGTH_SHORT).show();
+                                    triggerCrosshairPulse();
+                                    Toast.makeText(MainActivity.this, "Растяг " + ratio + " + Квантовый Телепорт ВКЛ!", Toast.LENGTH_SHORT).show();
                                 } else {
                                     resetResolution();
+                                    triggerCrosshairPulse();
                                     Toast.makeText(MainActivity.this, "Стандартный экран возвращён", Toast.LENGTH_SHORT).show();
                                 }
                             }
@@ -476,11 +522,10 @@ public class MainActivity extends Activity {
 
         int snap = prefs.getInt("tp_snap_power", 500);
         String preset = prefs.getString("selected_preset", "teleport");
-        TeleportEngine.setStepQuantization(true, snap / 30.0f);
+        TeleportEngine.setStepQuantization(true, snap / 25.0f);
         TeleportEngine.startTeleport(this, snap, preset);
 
         new Thread(() -> {
-            // Фиксируем горизонтальный режим без переворота игры при автоповороте
             String cmd =
                 "cmd window set-ignore-orientation-request true; " +
                 "settings put system accelerometer_rotation 0; " +
