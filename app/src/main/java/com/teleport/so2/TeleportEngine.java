@@ -4,9 +4,9 @@ import android.content.Context;
 
 public class TeleportEngine {
     private static boolean active = false;
-    private static float snapPowerMultiplier = 5.0f;
+    private static float snapPowerMultiplier = 6.5f;
     private static String currentPreset = "teleport";
-    private static float screenCalibFactor = 1.45f;
+    private static float screenCalibFactor = 1.65f;
 
     private static float sharpness = 3.00f;
     private static float sensX = 3.00f;
@@ -33,14 +33,14 @@ public class TeleportEngine {
     }
 
     public static void setCalibrationFactor(float factor) {
-        screenCalibFactor = Math.max(1.1f, Math.min(3.5f, factor));
+        screenCalibFactor = Math.max(1.25f, Math.min(4.0f, factor));
         if (active && ShizukuManager.isPermissionGranted()) {
             applyLiveQuantization();
         }
     }
 
     public static void setStepQuantization(boolean enabled, float multiplier) {
-        snapPowerMultiplier = Math.max(2.0f, multiplier);
+        snapPowerMultiplier = Math.max(3.0f, multiplier);
         if (active && ShizukuManager.isPermissionGranted()) {
             applyLiveQuantization();
         }
@@ -85,16 +85,16 @@ public class TeleportEngine {
 
     public static float computeTeleportDelta(float rawDelta) {
         float abs = Math.abs(rawDelta);
-        if (deadZone > 0 && abs < (deadZone * 0.0005f)) return 0f;
-        if (noiseCutoff > 0 && abs < (noiseCutoff * 0.0007f)) return 0f;
+        if (deadZone > 0 && abs < (deadZone * 0.0004f)) return 0f;
+        if (noiseCutoff > 0 && abs < (noiseCutoff * 0.0005f)) return 0f;
 
         float axisMult = (rawDelta >= 0 ? sensX : sensY) * sharpness * screenCalibFactor;
-        float chunkStep = Math.max(1, chunks) * 14.0f * snapPowerMultiplier * axisMult;
-        float rawBoost = abs * (28.0f + prediction * 3.0f) * snapPowerMultiplier * axisMult;
+        float chunkStep = Math.max(1, chunks) * 22.0f * snapPowerMultiplier * axisMult;
+        float rawBoost = abs * (42.0f + prediction * 4.0f) * snapPowerMultiplier * axisMult;
 
         float finalStep = (chunksFaster == 0) ? Math.max(rawBoost, chunkStep) : rawBoost;
         if (chunkCap > 0) {
-            finalStep = Math.min(finalStep, chunkCap * 30.0f);
+            finalStep = Math.min(finalStep, chunkCap * 35.0f);
         }
         return Math.copySign(finalStep, rawDelta);
     }
@@ -113,16 +113,19 @@ public class TeleportEngine {
             pointerSpeedVal = 2;
             touchSlopPx = 8;
         } else if ("awp".equals(currentPreset)) {
-            quantizedEventsPerSec = 10;
-            minPointerDurMs = Math.max(35, shotPause * 5 + 30);
+            quantizedEventsPerSec = 7;
+            minPointerDurMs = Math.max(55, shotPause * 6 + 45);
             pointerSpeedVal = 7;
-            touchSlopPx = 1;
+            touchSlopPx = 0;
         } else {
-            int effectiveChunks = Math.max(10, Math.round(chunks * (sharpness / 2.2f)));
-            quantizedEventsPerSec = Math.max(5, Math.min(18, 36 - effectiveChunks));
-            minPointerDurMs = Math.max(45, Math.min(115, effectiveChunks * 3));
+            // ЭКСТРЕМАЛЬНЫЙ БАФФ ТЕЛЕПОРТА ("КУСКИ"):
+            // Сжимаем поток событий до 4..6 Гц и поднимаем длительность склейки куска до 135 мс.
+            // Любой микро-сдвиг пальца накапливается и выстреливает в игру резким прыжком!
+            int effectiveChunks = Math.max(15, Math.round(chunks * (sharpness / 1.8f)));
+            quantizedEventsPerSec = Math.max(4, Math.min(10, 32 - effectiveChunks));
+            minPointerDurMs = Math.max(85, Math.min(145, effectiveChunks * 4));
             pointerSpeedVal = 7;
-            touchSlopPx = 1;
+            touchSlopPx = 0;
         }
 
         return
@@ -139,11 +142,11 @@ public class TeleportEngine {
             "setprop view.touch_slop " + touchSlopPx + "; " +
             "setprop windowsmgr.max_events_per_sec " + quantizedEventsPerSec + "; " +
             "setprop ro.min_pointer_dur " + minPointerDurMs + "; " +
-            "setprop debug.sf.early_phase_offset_ns 1500000; " +
-            "setprop debug.sf.early_gl_phase_offset_ns 1500000; " +
+            "setprop debug.sf.early_phase_offset_ns 2000000; " +
+            "setprop debug.sf.early_gl_phase_offset_ns 2000000; " +
             "setprop view.scroll_friction 0.0; " +
             "setprop view.minimum_fling_velocity 1; " +
-            "setprop view.maximum_fling_velocity 40000; " +
+            "setprop view.maximum_fling_velocity 64000; " +
             "setprop debug.sf.latch_unsignaled 1; " +
             "setprop debug.sf.disable_backpressure 1; " +
             "setprop debug.hwui.use_buffer_age false; " +
@@ -170,7 +173,7 @@ public class TeleportEngine {
         }
         active = true;
         currentPreset = presetId != null ? presetId : "teleport";
-        snapPowerMultiplier = Math.max(3.0f, snapPercent / 35.0f);
+        snapPowerMultiplier = Math.max(4.0f, snapPercent / 28.0f);
 
         if (!ShizukuManager.isPermissionGranted()) return;
 
