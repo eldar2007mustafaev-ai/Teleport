@@ -59,6 +59,9 @@ public class AndroidBridge {
         if (isShizukuReady()) {
             isRunning = true;
             TeleportEngine.startTeleport(activity, snap, preset);
+            if (activity instanceof MainActivity) {
+                ((MainActivity) activity).triggerCrosshairPulse();
+            }
         }
     }
 
@@ -72,13 +75,16 @@ public class AndroidBridge {
         prefs.edit().putBoolean("teleport_running", isRunning).apply();
         int snap = prefs.getInt("tp_snap_power", 500);
         String preset = prefs.getString("selected_preset", "teleport");
-        float calib = prefs.getFloat("screen_calib_factor", 1.45f);
+        float calib = prefs.getFloat("screen_calib_factor", 1.65f);
         TeleportEngine.setCalibrationFactor(calib);
 
         if (isRunning) {
             TeleportEngine.startTeleport(activity, snap, preset);
         } else {
             TeleportEngine.stopTeleport();
+        }
+        if (activity instanceof MainActivity) {
+            ((MainActivity) activity).triggerCrosshairPulse();
         }
         return isRunning;
     }
@@ -93,10 +99,16 @@ public class AndroidBridge {
         if (!ApiManager.isSessionVerified()) return;
         prefs.edit().putString("selected_preset", presetId).apply();
         int snap = prefs.getInt("tp_snap_power", 500);
+        if ("awp".equalsIgnoreCase(presetId)) {
+            TeleportEngine.setSmartAwpLock(true);
+        }
         if (isShizukuReady()) {
             isRunning = true;
             prefs.edit().putBoolean("teleport_running", true).apply();
             TeleportEngine.startTeleport(activity, snap, presetId);
+            if (activity instanceof MainActivity) {
+                ((MainActivity) activity).triggerCrosshairPulse();
+            }
         }
     }
 
@@ -105,13 +117,87 @@ public class AndroidBridge {
         if (!ApiManager.isSessionVerified()) return;
         prefs.edit().putInt("tp_snap_power", snapPercent).apply();
         String preset = prefs.getString("selected_preset", "teleport");
-        TeleportEngine.setStepQuantization(true, snapPercent / 35.0f);
+        TeleportEngine.setStepQuantization(true, snapPercent / 25.0f);
         if (isShizukuReady()) {
             isRunning = true;
             prefs.edit().putBoolean("teleport_running", true).apply();
             TeleportEngine.startTeleport(activity, snapPercent, preset);
+            if (activity instanceof MainActivity) {
+                ((MainActivity) activity).triggerCrosshairPulse();
+            }
         }
     }
+
+    // === НОВЫЕ МОДУЛИ BUILD 401 ===
+
+    @JavascriptInterface
+    public String setSmartAwpLock(boolean enabled) {
+        if (!ApiManager.isSessionVerified()) return "Сначала активируйте ключ!";
+        prefs.edit().putBoolean("smart_awp_lock", enabled).apply();
+        TeleportEngine.setSmartAwpLock(enabled);
+        if (activity instanceof MainActivity) {
+            ((MainActivity) activity).triggerCrosshairPulse();
+        }
+        return enabled ? "Smart AWP-Lock: ВКЛ (Стоп-флик активен)" : "Smart AWP-Lock: ВЫКЛ";
+    }
+
+    @JavascriptInterface
+    public String setAntiRecoil(boolean enabled, int strength) {
+        if (!ApiManager.isSessionVerified()) return "Сначала активируйте ключ!";
+        prefs.edit()
+                .putBoolean("anti_recoil_enabled", enabled)
+                .putInt("anti_recoil_strength", strength)
+                .apply();
+        TeleportEngine.setAntiRecoilQuantization(enabled, strength);
+        if (activity instanceof MainActivity) {
+            ((MainActivity) activity).triggerCrosshairPulse();
+        }
+        return enabled ? "Anti-Recoil Quantization (" + strength + "%): ВКЛ" : "Anti-Recoil: ВЫКЛ";
+    }
+
+    @JavascriptInterface
+    public String setHzThermalGuard(boolean enabled) {
+        prefs.edit().putBoolean("hz_thermal_guard", enabled).apply();
+        if (!isShizukuReady()) return "Включите Shizuku!";
+        TeleportEngine.setHzThermalGuard(enabled);
+        return enabled ? "Hz / FPS Lock (120 Гц) + Thermal Guard: ВКЛ" : "Стандартный режим частот";
+    }
+
+    @JavascriptInterface
+    public String setDynamicCrosshair(boolean enabled) {
+        prefs.edit().putBoolean("dynamic_crosshair", enabled).apply();
+        if (activity instanceof MainActivity) {
+            ((MainActivity) activity).setDynamicCrosshairMode(enabled);
+        }
+        return enabled ? "Dynamic Dot Crosshair: ВКЛ" : "Динамическая индикация выключена";
+    }
+
+    @JavascriptInterface
+    public String uploadCloudConfig(String title, String presetJson) {
+        String key = prefs.getString("license_key", "");
+        String androidId = Settings.Secure.getString(activity.getContentResolver(), Settings.Secure.ANDROID_ID);
+        prefs.edit().putString("custom_numbers_json", presetJson).apply();
+        return ApiManager.uploadCloudPreset(key, androidId, title, presetJson);
+    }
+
+    @JavascriptInterface
+    public String downloadCloudConfig(String shareCode) {
+        String key = prefs.getString("license_key", "");
+        String androidId = Settings.Secure.getString(activity.getContentResolver(), Settings.Secure.ANDROID_ID);
+        String res = ApiManager.downloadCloudPresetByCode(key, androidId, shareCode);
+        try {
+            JSONObject obj = new JSONObject(res);
+            if (obj.has("preset")) {
+                String presetStr = obj.optString("preset", "");
+                if (!presetStr.isEmpty()) {
+                    saveCustomNumbersJson(presetStr);
+                }
+            }
+        } catch (Exception ignored) {}
+        return res;
+    }
+
+    // ==============================
 
     @JavascriptInterface
     public void saveCustomNumbersJson(String jsonStr) {
@@ -251,24 +337,7 @@ public class AndroidBridge {
 
     @JavascriptInterface
     public String setDisableThrottling(boolean enabled) {
-        prefs.edit().putBoolean("disable_throttling", enabled).apply();
-        if (!isShizukuReady()) return "Включите Shizuku!";
-
-        new Thread(() -> {
-            if (enabled) {
-                ShizukuManager.execCommand(
-                    "cmd power set-fixed-performance-mode-enabled true; " +
-                    "cmd thermalservice override-status 0"
-                );
-            } else {
-                ShizukuManager.execCommand(
-                    "cmd power set-fixed-performance-mode-enabled false; " +
-                    "cmd thermalservice reset"
-                );
-            }
-        }).start();
-
-        return enabled ? "Троттлинг отключен" : "Стандартный режим частот";
+        return setHzThermalGuard(enabled);
     }
 
     @JavascriptInterface
