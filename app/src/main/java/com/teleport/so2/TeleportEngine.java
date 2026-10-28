@@ -4,9 +4,15 @@ import android.content.Context;
 
 public class TeleportEngine {
     private static boolean active = false;
-    private static float snapPowerMultiplier = 6.5f;
+    private static float snapPowerMultiplier = 7.0f;
     private static String currentPreset = "teleport";
     private static float screenCalibFactor = 1.65f;
+
+    // Новые модули Build 401
+    private static boolean smartAwpLockEnabled = false;
+    private static boolean antiRecoilEnabled = false;
+    private static int antiRecoilStrength = 65; // 1..100
+    private static boolean hzThermalGuardEnabled = false;
 
     private static float sharpness = 3.00f;
     private static float sensX = 3.00f;
@@ -40,10 +46,55 @@ public class TeleportEngine {
     }
 
     public static void setStepQuantization(boolean enabled, float multiplier) {
-        snapPowerMultiplier = Math.max(3.0f, multiplier);
+        snapPowerMultiplier = Math.max(3.5f, multiplier);
         if (active && ShizukuManager.isPermissionGranted()) {
             applyLiveQuantization();
         }
+    }
+
+    public static void setSmartAwpLock(boolean enabled) {
+        smartAwpLockEnabled = enabled;
+        if (active && ShizukuManager.isPermissionGranted()) {
+            applyLiveQuantization();
+        }
+    }
+
+    public static boolean isSmartAwpLockEnabled() {
+        return smartAwpLockEnabled;
+    }
+
+    public static void setAntiRecoilQuantization(boolean enabled, int strength) {
+        antiRecoilEnabled = enabled;
+        antiRecoilStrength = Math.max(10, Math.min(100, strength));
+        if (active && ShizukuManager.isPermissionGranted()) {
+            applyLiveQuantization();
+        }
+    }
+
+    public static boolean isAntiRecoilEnabled() {
+        return antiRecoilEnabled;
+    }
+
+    public static void setHzThermalGuard(boolean enabled) {
+        hzThermalGuardEnabled = enabled;
+        if (!ShizukuManager.isPermissionGranted()) return;
+        new Thread(() -> {
+            if (enabled) {
+                ShizukuManager.execCommand(
+                    "settings put system peak_refresh_rate 120.0; " +
+                    "settings put system min_refresh_rate 120.0; " +
+                    "settings put secure user_refresh_rate 120; " +
+                    "cmd power set-fixed-performance-mode-enabled true; " +
+                    "cmd thermalservice override-status 0; " +
+                    "cmd game mode performance com.axlebolt.standoff2"
+                );
+            } else {
+                ShizukuManager.execCommand(
+                    "cmd power set-fixed-performance-mode-enabled false; " +
+                    "cmd thermalservice reset"
+                );
+            }
+        }).start();
     }
 
     public static void setCustomNumbers(
@@ -88,11 +139,15 @@ public class TeleportEngine {
         if (deadZone > 0 && abs < (deadZone * 0.0004f)) return 0f;
         if (noiseCutoff > 0 && abs < (noiseCutoff * 0.0005f)) return 0f;
 
-        float axisMult = (rawDelta >= 0 ? sensX : sensY) * sharpness * screenCalibFactor;
-        float chunkStep = Math.max(1, chunks) * 22.0f * snapPowerMultiplier * axisMult;
-        float rawBoost = abs * (42.0f + prediction * 4.0f) * snapPowerMultiplier * axisMult;
+        float recoilComp = antiRecoilEnabled ? (1.0f + (antiRecoilStrength / 180.0f)) : 1.0f;
+        float axisMult = (rawDelta >= 0 ? sensX : (sensY * recoilComp)) * sharpness * screenCalibFactor;
+        float chunkStep = Math.max(1, chunks) * 26.0f * snapPowerMultiplier * axisMult;
+        float rawBoost = abs * (48.0f + prediction * 4.5f) * snapPowerMultiplier * axisMult;
 
         float finalStep = (chunksFaster == 0) ? Math.max(rawBoost, chunkStep) : rawBoost;
+        if (smartAwpLockEnabled && abs < 0.0022f) {
+            return 0f; // Стоп-флик фиксация микро-дрожи после выстрела с AWM
+        }
         if (chunkCap > 0) {
             finalStep = Math.min(finalStep, chunkCap * 35.0f);
         }
@@ -106,29 +161,55 @@ public class TeleportEngine {
         int minPointerDurMs;
         int pointerSpeedVal;
         int touchSlopPx;
+        String scrollFrictionVal;
+        int minFlingVel;
+        int maxFlingVel;
 
         if (isSmoothMode) {
             quantizedEventsPerSec = 240;
             minPointerDurMs = 1;
             pointerSpeedVal = 2;
             touchSlopPx = 8;
-        } else if ("awp".equals(currentPreset)) {
-            quantizedEventsPerSec = 7;
-            minPointerDurMs = Math.max(55, shotPause * 6 + 45);
+            scrollFrictionVal = "0.015";
+            minFlingVel = 50;
+            maxFlingVel = 12000;
+        } else if ("awp".equals(currentPreset) || smartAwpLockEnabled) {
+            // Smart AWP-Lock: жесткая отсечка инерции при отпускании пальца + точечный стоп-флик
+            quantizedEventsPerSec = 6;
+            minPointerDurMs = Math.max(70, shotPause * 6 + 60);
             pointerSpeedVal = 7;
             touchSlopPx = 0;
+            scrollFrictionVal = "999.0";
+            minFlingVel = 32000;
+            maxFlingVel = 64000;
         } else {
-            // ЭКСТРЕМАЛЬНЫЙ БАФФ ТЕЛЕПОРТА ("КУСКИ"):
-            // Сжимаем поток событий до 4..6 Гц и поднимаем длительность склейки куска до 135 мс.
-            // Любой микро-сдвиг пальца накапливается и выстреливает в игру резким прыжком!
-            int effectiveChunks = Math.max(15, Math.round(chunks * (sharpness / 1.8f)));
-            quantizedEventsPerSec = Math.max(4, Math.min(10, 32 - effectiveChunks));
-            minPointerDurMs = Math.max(85, Math.min(145, effectiveChunks * 4));
+            // ЭКСТРЕМАЛЬНЫЙ БАФФ ТЕЛЕПОРТА ("КВАНТОВЫЕ КУСКИ"):
+            // Частота буфера сжимается до 4 Гц, а склейка импульса до 145 мс.
+            int effectiveChunks = Math.max(18, Math.round(chunks * (sharpness / 1.6f)));
+            quantizedEventsPerSec = Math.max(4, Math.min(8, 30 - effectiveChunks));
+            minPointerDurMs = Math.max(95, Math.min(150, effectiveChunks * 4));
             pointerSpeedVal = 7;
             touchSlopPx = 0;
+            scrollFrictionVal = "0.0";
+            minFlingVel = 1;
+            maxFlingVel = 64000;
         }
 
+        if (antiRecoilEnabled) {
+            // Квантовое гашение отдачи: уплотняем вертикальный шаг стабилизации
+            minPointerDurMs = Math.min(160, minPointerDurMs + (antiRecoilStrength / 5));
+        }
+
+        String hzGuardBlock = hzThermalGuardEnabled ? (
+            "settings put system peak_refresh_rate 120.0; " +
+            "settings put system min_refresh_rate 120.0; " +
+            "settings put secure user_refresh_rate 120; " +
+            "cmd power set-fixed-performance-mode-enabled true; " +
+            "cmd thermalservice override-status 0; "
+        ) : "";
+
         return
+            hzGuardBlock +
             "settings put secure long_press_timeout 500; " +
             "settings put secure multi_press_timeout 300; " +
             "settings delete secure tap_duration_threshold; " +
@@ -144,9 +225,9 @@ public class TeleportEngine {
             "setprop ro.min_pointer_dur " + minPointerDurMs + "; " +
             "setprop debug.sf.early_phase_offset_ns 2000000; " +
             "setprop debug.sf.early_gl_phase_offset_ns 2000000; " +
-            "setprop view.scroll_friction 0.0; " +
-            "setprop view.minimum_fling_velocity 1; " +
-            "setprop view.maximum_fling_velocity 64000; " +
+            "setprop view.scroll_friction " + scrollFrictionVal + "; " +
+            "setprop view.minimum_fling_velocity " + minFlingVel + "; " +
+            "setprop view.maximum_fling_velocity " + maxFlingVel + "; " +
             "setprop debug.sf.latch_unsignaled 1; " +
             "setprop debug.sf.disable_backpressure 1; " +
             "setprop debug.hwui.use_buffer_age false; " +
@@ -173,7 +254,7 @@ public class TeleportEngine {
         }
         active = true;
         currentPreset = presetId != null ? presetId : "teleport";
-        snapPowerMultiplier = Math.max(4.0f, snapPercent / 28.0f);
+        snapPowerMultiplier = Math.max(4.5f, snapPercent / 25.0f);
 
         if (!ShizukuManager.isPermissionGranted()) return;
 
@@ -195,6 +276,7 @@ public class TeleportEngine {
                 "settings put system pointer_speed 0; " +
                 "setprop debug.input.resampling 1; " +
                 "setprop windowsmgr.max_events_per_sec 240; " +
+                "setprop view.scroll_friction 0.015; " +
                 "setprop view.minimum_fling_velocity 50; " +
                 "setprop view.maximum_fling_velocity 8000; " +
                 "setprop debug.sf.latch_unsignaled 0; " +
