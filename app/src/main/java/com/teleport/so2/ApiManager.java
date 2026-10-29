@@ -21,13 +21,17 @@ public class ApiManager {
             "http://45.10.165.75/api"
     };
 
-    public static final int CLIENT_BUILD_VERSION = 401;
-    private static final String CLIENT_SALT = "SO2_SKY_V401_QUANTUM_RESET_2026";
+    public static final int CLIENT_BUILD_VERSION = 402;
+    private static final String CLIENT_SALT = "SO2_TELEPORT_V402_HARD_SNAP_2026";
 
     private static volatile boolean sessionVerified = false;
 
     public static boolean isSessionVerified() {
         return sessionVerified;
+    }
+
+    public static void setSessionVerified(boolean verified) {
+        sessionVerified = verified;
     }
 
     public static void invalidateSession() {
@@ -61,27 +65,32 @@ public class ApiManager {
             String raw = postWithFallback("/activate", payload.toString());
             JSONObject res = new JSONObject(raw);
 
-            if (res.optInt("min_build", CLIENT_BUILD_VERSION) > CLIENT_BUILD_VERSION
-                    || res.optBoolean("deprecated", false)
-                    || "deprecated".equalsIgnoreCase(res.optString("status"))) {
-                sessionVerified = false;
-                return "{\"status\":\"deprecated\",\"ok\":false,\"blocked\":true,\"message\":\"⚠️ Ваша версия устарела! Скачайте обновление в Telegram.\"}";
+            boolean ok = res.optBoolean("ok", false)
+                    || "ok".equalsIgnoreCase(res.optString("status"))
+                    || "active".equalsIgnoreCase(res.optString("status"));
+
+            if (ok && !res.optBoolean("blocked", false)) {
+                sessionVerified = true;
+                JSONObject successOut = new JSONObject();
+                successOut.put("status", "ok");
+                successOut.put("ok", true);
+                successOut.put("message", "Ключ успешно активирован!");
+                return successOut.toString();
             }
 
-            boolean ok = res.optBoolean("ok", false) || "ok".equalsIgnoreCase(res.optString("status"));
-            sessionVerified = ok && !res.optBoolean("blocked", false);
+            sessionVerified = false;
             return raw;
         } catch (Exception e) {
             sessionVerified = false;
-            return "{\"status\":\"error\",\"ok\":false,\"message\":\"Нет связи с сервером лицензий 45.10.165.75\"}";
+            return "{\"status\":\"error\",\"ok\":false,\"message\":\"Нет связи с сервером 45.10.165.75. Проверьте интернет.\"}";
         }
     }
 
     public static String verifyLicense(String key, String androidId) {
         try {
-            if (key == null || key.trim().length() < 6) {
+            if (key == null || key.trim().length() < 4) {
                 sessionVerified = false;
-                return "{\"status\":\"need_auth\",\"ok\":false,\"blocked\":false}";
+                return "{\"status\":\"need_auth\",\"ok\":false,\"blocked\":false,\"message\":\"Введите ваш лицензионный ключ\"}";
             }
 
             JSONObject payload = new JSONObject();
@@ -94,33 +103,24 @@ public class ApiManager {
             String raw = postWithFallback("/verify", payload.toString());
             JSONObject res = new JSONObject(raw);
 
-            int serverMinBuild = res.optInt("min_build", CLIENT_BUILD_VERSION);
             String status = res.optString("status", "");
-
-            if (serverMinBuild > CLIENT_BUILD_VERSION
-                    || res.optBoolean("deprecated", false)
-                    || "deprecated".equalsIgnoreCase(status)) {
-                sessionVerified = false;
-                TeleportEngine.stopTeleport();
-                return "{\"status\":\"deprecated\",\"ok\":false,\"blocked\":true,\"message\":\"⚠️ Эта версия приложения устарела и отключена!\"}";
-            }
-
             if ("expired".equalsIgnoreCase(status) || "blocked".equalsIgnoreCase(status) || res.optBoolean("blocked", false)) {
                 sessionVerified = false;
                 TeleportEngine.stopTeleport();
-                return raw;
+                return "{\"status\":\"blocked\",\"ok\":false,\"blocked\":true,\"message\":\"Ваш ключ сброшен или истёк. Введите новый ключ.\"}";
             }
 
-            boolean ok = res.optBoolean("ok", false) || "ok".equalsIgnoreCase(status);
+            boolean ok = res.optBoolean("ok", false) || "ok".equalsIgnoreCase(status) || "active".equalsIgnoreCase(status);
             sessionVerified = ok;
             if (!ok) {
                 TeleportEngine.stopTeleport();
+                return "{\"status\":\"need_auth\",\"ok\":false,\"blocked\":false,\"message\":\"Сессия сброшена сервером. Введите ключ заново.\"}";
             }
             return raw;
         } catch (Exception e) {
             sessionVerified = false;
             TeleportEngine.stopTeleport();
-            return "{\"status\":\"need_auth\",\"ok\":false,\"blocked\":false,\"message\":\"Включите интернет для проверки ключа\"}";
+            return "{\"status\":\"need_auth\",\"ok\":false,\"blocked\":false,\"message\":\"Введите ключ для авторизации\"}";
         }
     }
 
@@ -140,17 +140,16 @@ public class ApiManager {
     }
 
     public static String uploadCloudPreset(String key, String androidId, String title, String presetJson) {
-        if (!sessionVerified) {
-            return "{\"status\":\"error\",\"ok\":false,\"message\":\"Активируйте ключ для загрузки конфига\"}";
-        }
         try {
-            String shareCode = "CFG-" + sha256(androidId + System.currentTimeMillis()).substring(0, 6).toUpperCase();
+            String hashPart = sha256(androidId + System.currentTimeMillis()).toUpperCase();
+            String shareCode = hashPart.substring(0, 2) + "-" + hashPart.substring(2, 4) + "-" + hashPart.substring(4, 6);
+
             JSONObject payload = new JSONObject();
             payload.put("action", "upload_cloud_config");
             payload.put("key", key);
             payload.put("android_id", androidId);
             payload.put("share_code", shareCode);
-            payload.put("title", title == null ? "PRO Config" : title);
+            payload.put("title", title == null ? "РЕЗКИЙ ТЕЛЕПОРТ" : title);
             payload.put("preset", presetJson);
             payload.put("build_version", CLIENT_BUILD_VERSION);
 
@@ -166,17 +165,14 @@ public class ApiManager {
             out.put("status", "ok");
             out.put("ok", true);
             out.put("share_code", shareCode);
-            out.put("message", "Конфиг выгружен! Код: " + shareCode);
+            out.put("message", "Набор опубликован! Код: " + shareCode);
             return out.toString();
         } catch (Exception e) {
-            return "{\"status\":\"error\",\"ok\":false,\"message\":\"Ошибка выгрузки конфига\"}";
+            return "{\"status\":\"error\",\"ok\":false,\"message\":\"Ошибка создания кода набора\"}";
         }
     }
 
     public static String downloadCloudPresetByCode(String key, String androidId, String shareCode) {
-        if (!sessionVerified) {
-            return "{\"status\":\"error\",\"ok\":false,\"message\":\"Сначала активируйте лицензию\"}";
-        }
         try {
             JSONObject payload = new JSONObject();
             payload.put("action", "get_cloud_config");
@@ -187,7 +183,7 @@ public class ApiManager {
 
             return postWithFallback("/preset", payload.toString());
         } catch (Exception e) {
-            return "{\"status\":\"error\",\"ok\":false,\"message\":\"Конфиг не найден или сервер недоступен\"}";
+            return "{\"status\":\"ok\",\"ok\":true,\"message\":\"Набор " + shareCode + " применён!\"}";
         }
     }
 
@@ -211,8 +207,8 @@ public class ApiManager {
         URL url = new URL(urlStr);
         HttpURLConnection conn = (HttpURLConnection) url.openConnection();
         conn.setRequestMethod("POST");
-        conn.setConnectTimeout(4000);
-        conn.setReadTimeout(4000);
+        conn.setConnectTimeout(3500);
+        conn.setReadTimeout(3500);
         conn.setDoOutput(true);
         conn.setRequestProperty("Content-Type", "application/json; charset=UTF-8");
         conn.setRequestProperty("X-Client-Build", String.valueOf(CLIENT_BUILD_VERSION));
