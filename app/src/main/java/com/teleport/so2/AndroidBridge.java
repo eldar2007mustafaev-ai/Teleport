@@ -75,7 +75,7 @@ public class AndroidBridge {
         prefs.edit().putBoolean("teleport_running", isRunning).apply();
         int snap = prefs.getInt("tp_snap_power", 500);
         String preset = prefs.getString("selected_preset", "teleport");
-        float calib = prefs.getFloat("screen_calib_factor", 1.65f);
+        float calib = prefs.getFloat("screen_calib_factor", 2.10f);
         TeleportEngine.setCalibrationFactor(calib);
 
         if (isRunning) {
@@ -117,7 +117,7 @@ public class AndroidBridge {
         if (!ApiManager.isSessionVerified()) return;
         prefs.edit().putInt("tp_snap_power", snapPercent).apply();
         String preset = prefs.getString("selected_preset", "teleport");
-        TeleportEngine.setStepQuantization(true, snapPercent / 25.0f);
+        TeleportEngine.setStepQuantization(true, snapPercent / 18.0f);
         if (isShizukuReady()) {
             isRunning = true;
             prefs.edit().putBoolean("teleport_running", true).apply();
@@ -128,7 +128,26 @@ public class AndroidBridge {
         }
     }
 
-    // === НОВЫЕ МОДУЛИ BUILD 401 ===
+    // === НОВЫЕ МЕТОДЫ OVERDRIVE EDITION (BUILD 401+) ===
+
+    @JavascriptInterface
+    public String setOverdriveMode(boolean enabled) {
+        if (!ApiManager.isSessionVerified()) return "Сначала активируйте ключ!";
+        prefs.edit().putBoolean("overdrive_unleashed", enabled).apply();
+        TeleportEngine.setOverdriveUnleashed(enabled);
+        if (activity instanceof MainActivity) {
+            ((MainActivity) activity).triggerCrosshairPulse();
+        }
+        return enabled ? "OVERDRIVE 1000%: Чанки 50 + Буфер 2 Гц ВКЛ!" : "Стандартный режим телепорта";
+    }
+
+    @JavascriptInterface
+    public String setVectorStraightening(boolean enabled) {
+        if (!ApiManager.isSessionVerified()) return "Сначала активируйте ключ!";
+        prefs.edit().putBoolean("vector_straight", enabled).apply();
+        TeleportEngine.setVectorStraightening(enabled);
+        return enabled ? "Выпрямление траектории (Горизонт-магнит): ВКЛ" : "Выпрямление: ВЫКЛ";
+    }
 
     @JavascriptInterface
     public String setSmartAwpLock(boolean enabled) {
@@ -197,34 +216,32 @@ public class AndroidBridge {
         return res;
     }
 
-    // ==============================
-
     @JavascriptInterface
     public void saveCustomNumbersJson(String jsonStr) {
         try {
             prefs.edit().putString("custom_numbers_json", jsonStr).apply();
             JSONObject o = new JSONObject(jsonStr);
             TeleportEngine.setCustomNumbers(
-                    (float) o.optDouble("sharpness", 3.00),
-                    (float) o.optDouble("sensX", 3.00),
-                    (float) o.optDouble("sensY", 3.00),
+                    (float) o.optDouble("sharpness", 5.00),
+                    (float) o.optDouble("sensX", 5.00),
+                    (float) o.optDouble("sensY", 4.80),
                     o.optInt("noiseCutoff", 0),
                     o.optInt("deadZone", 0),
-                    o.optInt("prediction", 0),
-                    o.optInt("axisStick", 3),
+                    o.optInt("prediction", 10),
+                    o.optInt("axisStick", 5),
                     o.optInt("stickDelay", 0),
-                    o.optInt("stickStrength", 1),
-                    o.optInt("chunks", 25),
+                    o.optInt("stickStrength", 4),
+                    o.optInt("chunks", 50),
                     o.optInt("bypassChunks", 0),
                     o.optInt("chunkCap", 0),
                     o.optInt("chunksFaster", 0),
                     o.optInt("shotPause", 0),
-                    (float) o.optDouble("accel", 0.00),
-                    (float) o.optDouble("accelCurve", 0.05),
+                    (float) o.optDouble("accel", 0.45),
+                    (float) o.optDouble("accelCurve", 0.01),
                     o.optInt("edgeRange", 0),
-                    (float) o.optDouble("straightening", 0.85),
-                    o.optInt("axisGrip", 4),
-                    o.optInt("gripCap", 4)
+                    (float) o.optDouble("straightening", 0.98),
+                    o.optInt("axisGrip", 6),
+                    o.optInt("gripCap", 0)
             );
         } catch (Exception ignored) {}
     }
@@ -285,7 +302,7 @@ public class AndroidBridge {
         if (activity instanceof MainActivity) {
             ((MainActivity) activity).applyResolutionRatio(clean);
         }
-        return "Растяг " + clean + " + Телепорт применён с 1-го раза!";
+        return "Растяг " + clean + " + Квантовый Телепорт применён!";
     }
 
     @JavascriptInterface
@@ -309,100 +326,6 @@ public class AndroidBridge {
     }
 
     @JavascriptInterface
-    public String setTouchBoost(boolean enabled) {
-        prefs.edit().putBoolean("touch_boost", enabled).apply();
-        if (!isShizukuReady()) return "Включите Shizuku!";
-
-        new Thread(() -> {
-            if (enabled) {
-                ShizukuManager.execCommand(
-                    "settings put secure long_press_timeout 500; " +
-                    "settings put secure multi_press_timeout 300; " +
-                    "settings delete secure tap_duration_threshold; " +
-                    "settings delete secure touch_blocking_period; " +
-                    "settings put system pointer_speed 7; " +
-                    "setprop debug.input.resampling 0; " +
-                    "setprop view.scroll_friction 0.0"
-                );
-            } else {
-                ShizukuManager.execCommand(
-                    "settings put system pointer_speed 0; " +
-                    "setprop debug.input.resampling 1"
-                );
-            }
-        }).start();
-
-        return enabled ? "Touch Boost активен" : "Touch Boost выключен";
-    }
-
-    @JavascriptInterface
-    public String setDisableThrottling(boolean enabled) {
-        return setHzThermalGuard(enabled);
-    }
-
-    @JavascriptInterface
-    public String setBudgetDeviceBoost(boolean enabled) {
-        prefs.edit().putBoolean("budget_boost", enabled).apply();
-        if (!isShizukuReady()) return enabled ? "Облегченный режим включен" : "Обычный режим";
-
-        new Thread(() -> {
-            if (enabled) {
-                ShizukuManager.execCommand(
-                    "settings put global window_animation_scale 0.0; " +
-                    "settings put global transition_animation_scale 0.0; " +
-                    "settings put global animator_duration_scale 0.0; " +
-                    "setprop debug.hwui.use_buffer_age false; " +
-                    "setprop debug.sf.latch_unsignaled 1"
-                );
-            } else {
-                ShizukuManager.execCommand(
-                    "settings put global window_animation_scale 1.0; " +
-                    "settings put global transition_animation_scale 1.0; " +
-                    "settings put global animator_duration_scale 1.0"
-                );
-            }
-        }).start();
-
-        return enabled ? "Бустер для бюджеток активен" : "Стандартная графика";
-    }
-
-    @JavascriptInterface
-    public String setPixelOptimization(boolean enabled) {
-        prefs.edit().putBoolean("pixel_opt", enabled).apply();
-        if (!isShizukuReady()) return "Включите Shizuku!";
-
-        new Thread(() -> {
-            if (enabled) {
-                ShizukuManager.execCommand(
-                    "cmd game mode performance com.axlebolt.standoff2; " +
-                    "cmd game downscale disable com.axlebolt.standoff2; " +
-                    "setprop debug.hwui.renderer skiagl; " +
-                    "setprop debug.sf.hw 1"
-                );
-            } else {
-                ShizukuManager.execCommand(
-                    "cmd game downscale disable com.axlebolt.standoff2"
-                );
-            }
-        }).start();
-
-        return enabled ? "Оптимизация рендера включена" : "Стандартный рендер";
-    }
-
-    @JavascriptInterface
-    public String boostFps(boolean enabled) {
-        return setBudgetDeviceBoost(enabled);
-    }
-
-    @JavascriptInterface
-    public void setDndMode(boolean enabled) {
-        if (!isShizukuReady()) return;
-        new Thread(() -> {
-            ShizukuManager.execCommand(enabled ? "cmd notification set_dnd priority" : "cmd notification set_dnd off");
-        }).start();
-    }
-
-    @JavascriptInterface
     public boolean isOnboardingRequired() {
         String key = prefs.getString("license_key", "");
         String nick = prefs.getString("nickname", "");
@@ -413,7 +336,7 @@ public class AndroidBridge {
     public String authorizeAndActivate(String nickname, String key) {
         try {
             if (nickname == null || nickname.trim().isEmpty() || key == null || key.trim().length() < 6) {
-                return "{\"status\":\"error\",\"ok\":false,\"message\":\"Введите и логин, и лицензионный ключ!\"}";
+                return "{\"status\":\"error\",\"ok\":false,\"message\":\"Введите и никнейм, и лицензионный ключ!\"}";
             }
             String cleanNick = nickname.trim();
             String cleanKey = key.trim().toUpperCase();
@@ -445,13 +368,6 @@ public class AndroidBridge {
     }
 
     @JavascriptInterface
-    public void syncPresetToServer(String presetJson) {
-        String key = prefs.getString("license_key", "");
-        String androidId = Settings.Secure.getString(activity.getContentResolver(), Settings.Secure.ANDROID_ID);
-        ApiManager.saveCloudPreset(key, androidId, presetJson);
-    }
-
-    @JavascriptInterface
     public String scanDevice() {
         try {
             JSONObject obj = new JSONObject();
@@ -460,7 +376,7 @@ public class AndroidBridge {
             activity.getWindowManager().getDefaultDisplay().getRealMetrics(dm);
             obj.put("resolution", dm.widthPixels + "x" + dm.heightPixels);
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R && activity.getDisplay() != null) {
-                obj.put("refresh_rate", (int) activity.getDisplay().getRefreshRate());
+                obj.put("refresh_refresh", (int) activity.getDisplay().getRefreshRate());
             } else {
                 obj.put("refresh_rate", 120);
             }
