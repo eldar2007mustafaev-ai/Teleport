@@ -2561,5 +2561,296 @@
 </script>
 <!-- ==================== КОНЕЦ РАСШИРЕНИЯ BUILD 401 ==================== -->
 
+<!-- ==================== РАСШИРЕНИЕ BUILD 401 OVERDRIVE + UX ==================== -->
+<style>
+  .v401-injected-card {
+    background: rgba(11, 22, 41, 0.92);
+    border: 1px solid rgba(56, 189, 248, 0.28);
+    border-radius: 18px;
+    padding: 15px;
+    margin: 12px 0;
+    box-shadow: 0 8px 28px rgba(0, 0, 0, 0.45);
+  }
+  .v401-overdrive-banner {
+    background: linear-gradient(135deg, rgba(2, 132, 199, 0.28) 0%, rgba(15, 23, 42, 0.95) 100%);
+    border: 1.5px solid #38bdf8;
+    border-radius: 18px;
+    padding: 14px;
+    margin: 10px 0 14px 0;
+    box-shadow: 0 0 24px rgba(56, 189, 248, 0.25);
+  }
+  .v401-steps-bar {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 6px;
+    margin-bottom: 12px;
+  }
+  .v401-step-pill {
+    background: rgba(4, 11, 23, 0.85);
+    border: 1px solid rgba(56, 189, 248, 0.2);
+    border-radius: 11px;
+    padding: 8px 6px;
+    text-align: center;
+    font-size: 10.5px;
+    font-weight: 800;
+    color: #94a3b8;
+  }
+  .v401-step-pill.done {
+    border-color: #10b981;
+    color: #10b981;
+    background: rgba(16, 185, 129, 0.1);
+  }
+  .v401-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 11.5px;
+    font-weight: 800;
+    color: #94a3b8;
+    letter-spacing: 0.7px;
+    margin-bottom: 10px;
+    text-transform: uppercase;
+  }
+  .v401-badge {
+    background: rgba(56, 189, 248, 0.18);
+    color: #38bdf8;
+    border: 1px solid rgba(56, 189, 248, 0.4);
+    padding: 3px 9px;
+    border-radius: 999px;
+    font-size: 10px;
+    font-weight: 900;
+  }
+  .v401-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 11px 0;
+    border-bottom: 1px solid rgba(56, 189, 248, 0.08);
+  }
+  .v401-row:last-child { border-bottom: none; }
+  .v401-title { font-size: 13.5px; font-weight: 800; color: #f1f5f9; }
+  .v401-sub { font-size: 11px; color: #64748b; margin-top: 3px; line-height: 1.3; padding-right: 10px; }
+  .v401-switch { position: relative; width: 46px; height: 26px; flex-shrink: 0; }
+  .v401-switch input { opacity: 0; width: 0; height: 0; }
+  .v401-slider {
+    position: absolute; inset: 0; background-color: #1e293b;
+    border-radius: 34px; transition: 0.2s; cursor: pointer;
+  }
+  .v401-slider:before {
+    position: absolute; content: ""; height: 20px; width: 20px;
+    left: 3px; bottom: 3px; background-color: #fff; border-radius: 50%; transition: 0.2s;
+  }
+  .v401-switch input:checked + .v401-slider {
+    background-color: #0ea5e9; box-shadow: 0 0 12px rgba(14, 165, 233, 0.6);
+  }
+  .v401-switch input:checked + .v401-slider:before { transform: translateX(20px); }
+  .v401-inp {
+    width: 100%; background: #040b17; border: 1px solid rgba(56, 189, 248, 0.26);
+    color: #fff; padding: 12px 14px; border-radius: 12px; font-size: 13.5px; margin-bottom: 9px; outline: none;
+  }
+  .v401-btn {
+    width: 100%; background: linear-gradient(90deg, #0284c7, #38bdf8); color: #031529;
+    font-weight: 900; font-size: 13px; padding: 13px; border: none; border-radius: 12px; cursor: pointer; margin-bottom: 8px;
+  }
+  #v401ChunkCanvas {
+    width: 100%; height: 110px; background: radial-gradient(circle, #081930 0%, #030914 100%);
+    border: 1px dashed rgba(56, 189, 248, 0.35); border-radius: 14px; margin-top: 8px; touch-action: none;
+  }
+  #v401HardLockModal {
+    position: fixed; inset: 0; background: rgba(4, 9, 20, 0.98); backdrop-filter: blur(14px);
+    z-index: 999999; display: none; align-items: center; justify-content: center; padding: 20px;
+  }
+  .v401-lock-box {
+    width: 100%; max-width: 370px; background: linear-gradient(180deg, #0b172a 0%, #071020 100%);
+    border: 1px solid rgba(56, 189, 248, 0.35); border-radius: 22px; padding: 24px 20px; text-align: center;
+  }
+</style>
+
+<div id="v401HardLockModal">
+  <div class="v401-lock-box">
+    <div style="font-size:19px;font-weight:900;color:#7dd3fc;margin-bottom:6px;">SO2 TELEPORT V401</div>
+    <div id="v401LockMsg" style="font-size:12.5px;color:#94a3b8;margin-bottom:16px;line-height:1.4;">
+      Введите ваш никнейм и актуальный лицензионный ключ из Telegram-бота.
+    </div>
+    <input id="v401NickInp" class="v401-inp" type="text" placeholder="Ваш игровой никнейм" />
+    <input id="v401KeyInp" class="v401-inp" type="text" placeholder="Ключ (TP-XXX-000000)" />
+    <button class="v401-btn" onclick="v401ActivateNow()">АКТИВИРОВАТЬ КЛЮЧ</button>
+  </div>
+</div>
+
+<div id="v401MasterContainer" style="margin-top: 8px; margin-bottom: 90px;">
+  <div class="v401-overdrive-banner">
+    <div class="v401-head" style="margin-bottom:8px;">
+      <span style="color:#7dd3fc;">СТАТУС ГОТОВНОСТИ (OVERDRIVE)</span>
+      <span class="v401-badge">CHUNKS 50</span>
+    </div>
+    <div class="v401-steps-bar">
+      <div id="stPill1" class="v401-step-pill done">1. Ключ OK</div>
+      <div id="stPill2" class="v401-step-pill">2. Shizuku</div>
+      <div id="stPill3" class="v401-step-pill done">3. Овердрайв</div>
+    </div>
+    <button class="v401-btn" style="margin-bottom:6px;box-shadow:0 0 20px rgba(56,189,248,0.4);" onclick="v401ApplyMaxAllInOne()">
+      ВКЛЮЧИТЬ ВСЕ НА МАКСИМУМ (КУСКИ 50 + 2 ГЦ)
+    </button>
+  </div>
+
+  <div class="v401-injected-card">
+    <div class="v401-head">
+      <span>ТЕСТЕР ТЕЛЕПОРТА КУСКАМИ (ПРОВЕДИ ПАЛЬЦЕМ)</span>
+      <span id="v401LiveDeltaTxt" style="color:#38bdf8;">ШАГ: +48 PX</span>
+    </div>
+    <canvas id="v401ChunkCanvas" width="340" height="110"></canvas>
+  </div>
+
+  <div class="v401-injected-card">
+    <div class="v401-head">
+      <span>ХАРДКОРНЫЕ МОДУЛИ РЕЗКОСТИ</span>
+      <span class="v401-badge">ULTRA</span>
+    </div>
+    <div class="v401-row">
+      <div>
+        <div class="v401-title">OVERDRIVE 1000% (Гипер-Куски 2 Гц)</div>
+        <div class="v401-sub">Снимает лимит чанков (50) и зажимает буфер тача до 2 Гц для мгновенного скачка прицела</div>
+      </div>
+      <label class="v401-switch">
+        <input id="v401SwOverdrive" type="checkbox" checked onchange="v401ToggleOverdrive(this.checked)">
+        <span class="v401-slider"></span>
+      </label>
+    </div>
+    <div class="v401-row">
+      <div>
+        <div class="v401-title">Выпрямление траектории (Горизонт-магнит)</div>
+        <div class="v401-sub">Убирает вертикальную микро-дрожь — куски летят строго по линии головы</div>
+      </div>
+      <label class="v401-switch">
+        <input id="v401SwStraight" type="checkbox" checked onchange="v401ToggleStraight(this.checked)">
+        <span class="v401-slider"></span>
+      </label>
+    </div>
+  </div>
+</div>
+
+<script>
+  function v401Notify(msg) {
+    if (typeof showToast === "function") showToast(msg);
+  }
+
+  function v401ApplyMaxAllInOne() {
+    if (!window.AndroidBridge) return;
+    const maxNumbers = JSON.stringify({
+      sharpness: 5.0, sensX: 5.0, sensY: 4.8, chunks: 50, straightening: 0.98
+    });
+    localStorage.setItem("custom_numbers_json", maxNumbers);
+    if (AndroidBridge.saveCustomNumbersJson) AndroidBridge.saveCustomNumbersJson(maxNumbers);
+    if (AndroidBridge.setOverdriveMode) AndroidBridge.setOverdriveMode(true);
+    if (AndroidBridge.setVectorStraightening) AndroidBridge.setVectorStraightening(true);
+    if (AndroidBridge.setTeleportSnapPower) AndroidBridge.setTeleportSnapPower(500);
+    if (AndroidBridge.setHzThermalGuard) AndroidBridge.setHzThermalGuard(true);
+    if (AndroidBridge.setFloatingStretchButton) AndroidBridge.setFloatingStretchButton(true);
+
+    document.getElementById("v401SwOverdrive").checked = true;
+    document.getElementById("v401SwStraight").checked = true;
+    v401Notify("МАКСИМАЛЬНЫЙ ТЕЛЕПОРТ (КУСКИ 50 + 2 ГЦ) АКТИВИРОВАН!");
+  }
+
+  function v401ToggleOverdrive(enabled) {
+    if (window.AndroidBridge && AndroidBridge.setOverdriveMode) {
+      v401Notify(AndroidBridge.setOverdriveMode(enabled));
+    }
+  }
+
+  function v401ToggleStraight(enabled) {
+    if (window.AndroidBridge && AndroidBridge.setVectorStraightening) {
+      v401Notify(AndroidBridge.setVectorStraightening(enabled));
+    }
+  }
+
+  function v401InitChunkVisualizer() {
+    const canvas = document.getElementById("v401ChunkCanvas");
+    if (!canvas) return;
+    const ctx = canvas.getContext("2d");
+    let dotX = canvas.width / 2;
+    let dotY = canvas.height / 2;
+
+    function drawRadar() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.strokeStyle = "rgba(56, 189, 248, 0.14)";
+      ctx.lineWidth = 1;
+      for (let x = 0; x < canvas.width; x += 48) {
+        ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, canvas.height); ctx.stroke();
+      }
+      for (let y = 0; y < canvas.height; y += 36) {
+        ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(canvas.width, y); ctx.stroke();
+      }
+      ctx.fillStyle = "#38bdf8";
+      ctx.beginPath();
+      ctx.arc(dotX, dotY, 8, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.strokeStyle = "#ffffff";
+      ctx.lineWidth = 2;
+      ctx.stroke();
+    }
+
+    canvas.addEventListener("touchmove", (e) => {
+      e.preventDefault();
+      const rect = canvas.getBoundingClientRect();
+      const rawX = e.touches[0].clientX - rect.left;
+      const rawY = e.touches[0].clientY - rect.top;
+      const stepSize = 48; // Размер шага куска
+
+      dotX = Math.max(12, Math.min(canvas.width - 12, Math.round(rawX / stepSize) * stepSize));
+      dotY = canvas.height / 2; // Фиксация по вертикали (выпрямление)
+
+      document.getElementById("v401LiveDeltaTxt").innerText = "КУСОК: " + stepSize + " PX";
+      drawRadar();
+    }, { passive: false });
+
+    drawRadar();
+  }
+
+  function v401VerifyStartupSession() {
+    if (window.AndroidBridge && AndroidBridge.isShizukuReady) {
+      const shizOk = AndroidBridge.isShizukuReady();
+      const p2 = document.getElementById("stPill2");
+      if (p2) {
+        p2.classList.toggle("done", shizOk);
+        p2.innerText = shizOk ? "2. Shizuku OK" : "2. Вкл Shizuku";
+      }
+    }
+    if (!window.AndroidBridge || !AndroidBridge.verifySavedLicenseOnStartup) return;
+    try {
+      const raw = AndroidBridge.verifySavedLicenseOnStartup();
+      const res = JSON.parse(raw);
+      if (!res.ok || res.blocked || res.status === "need_auth" || res.status === "deprecated" || res.status === "expired") {
+        document.getElementById("v401HardLockModal").style.display = "flex";
+        if (res.message) document.getElementById("v401LockMsg").innerText = res.message;
+      } else {
+        document.getElementById("v401HardLockModal").style.display = "none";
+      }
+    } catch (e) {
+      document.getElementById("v401HardLockModal").style.display = "flex";
+    }
+  }
+
+  function v401ActivateNow() {
+    if (!window.AndroidBridge || !AndroidBridge.authorizeAndActivate) return;
+    const nick = document.getElementById("v401NickInp").value.trim();
+    const key = document.getElementById("v401KeyInp").value.trim();
+    const raw = AndroidBridge.authorizeAndActivate(nick, key);
+    try {
+      const res = JSON.parse(raw);
+      if (res.ok || res.status === "ok") {
+        document.getElementById("v401HardLockModal").style.display = "none";
+        v401Notify("Ключ активирован!");
+      }
+    } catch (e) {}
+  }
+
+  window.addEventListener("DOMContentLoaded", () => {
+    v401InitChunkVisualizer();
+    setTimeout(v401VerifyStartupSession, 350);
+  });
+</script>
+
 </body>
 </html>
