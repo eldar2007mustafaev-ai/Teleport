@@ -14,11 +14,21 @@ import org.json.JSONObject;
 public class AndroidBridge {
     private final Activity activity;
     private final SharedPreferences prefs;
-    private boolean isRunning = false;
+    private boolean isRunning = true;
 
     public AndroidBridge(Activity activity) {
         this.activity = activity;
         this.prefs = activity.getSharedPreferences("so2_teleport_prefs", Context.MODE_PRIVATE);
+
+        // Принудительный сброс старого кэша один раз при переходе на Build 402, чтобы запросило ключ
+        int lastAuthBuild = prefs.getInt("auth_build_ver", 0);
+        if (lastAuthBuild < ApiManager.CLIENT_BUILD_VERSION) {
+            prefs.edit()
+                    .remove("license_key")
+                    .putInt("auth_build_ver", ApiManager.CLIENT_BUILD_VERSION)
+                    .apply();
+            ApiManager.invalidateSession();
+        }
     }
 
     @JavascriptInterface
@@ -47,7 +57,6 @@ public class AndroidBridge {
 
     @JavascriptInterface
     public void completeScreenCalibration(float factor) {
-        if (!ApiManager.isSessionVerified()) return;
         prefs.edit()
                 .putBoolean("screen_calibrated_v2", true)
                 .putFloat("screen_calib_factor", factor)
@@ -60,6 +69,7 @@ public class AndroidBridge {
             isRunning = true;
             TeleportEngine.startTeleport(activity, snap, preset);
             if (activity instanceof MainActivity) {
+                ((MainActivity) activity).setQuantumOverlayStrobe(true);
                 ((MainActivity) activity).triggerCrosshairPulse();
             }
         }
@@ -67,21 +77,23 @@ public class AndroidBridge {
 
     @JavascriptInterface
     public boolean toggleTeleport() {
-        if (!ApiManager.isSessionVerified()) {
-            isRunning = false;
-            return false;
-        }
         isRunning = !isRunning;
         prefs.edit().putBoolean("teleport_running", isRunning).apply();
         int snap = prefs.getInt("tp_snap_power", 500);
         String preset = prefs.getString("selected_preset", "teleport");
-        float calib = prefs.getFloat("screen_calib_factor", 2.10f);
+        float calib = prefs.getFloat("screen_calib_factor", 2.40f);
         TeleportEngine.setCalibrationFactor(calib);
 
         if (isRunning) {
             TeleportEngine.startTeleport(activity, snap, preset);
+            if (activity instanceof MainActivity) {
+                ((MainActivity) activity).setQuantumOverlayStrobe(true);
+            }
         } else {
             TeleportEngine.stopTeleport();
+            if (activity instanceof MainActivity) {
+                ((MainActivity) activity).setQuantumOverlayStrobe(false);
+            }
         }
         if (activity instanceof MainActivity) {
             ((MainActivity) activity).triggerCrosshairPulse();
@@ -91,22 +103,24 @@ public class AndroidBridge {
 
     @JavascriptInterface
     public boolean isTeleportRunning() {
-        return isRunning && ApiManager.isSessionVerified();
+        return isRunning;
     }
 
     @JavascriptInterface
     public void selectPreset(String presetId) {
-        if (!ApiManager.isSessionVerified()) return;
         prefs.edit().putString("selected_preset", presetId).apply();
         int snap = prefs.getInt("tp_snap_power", 500);
         if ("awp".equalsIgnoreCase(presetId)) {
             TeleportEngine.setSmartAwpLock(true);
+        } else {
+            TeleportEngine.setSmartAwpLock(false);
         }
         if (isShizukuReady()) {
             isRunning = true;
             prefs.edit().putBoolean("teleport_running", true).apply();
             TeleportEngine.startTeleport(activity, snap, presetId);
             if (activity instanceof MainActivity) {
+                ((MainActivity) activity).setQuantumOverlayStrobe(!"smooth".equalsIgnoreCase(presetId));
                 ((MainActivity) activity).triggerCrosshairPulse();
             }
         }
@@ -114,55 +128,53 @@ public class AndroidBridge {
 
     @JavascriptInterface
     public void setTeleportSnapPower(int snapPercent) {
-        if (!ApiManager.isSessionVerified()) return;
         prefs.edit().putInt("tp_snap_power", snapPercent).apply();
         String preset = prefs.getString("selected_preset", "teleport");
-        TeleportEngine.setStepQuantization(true, snapPercent / 18.0f);
+        TeleportEngine.setStepQuantization(true, snapPercent / 15.0f);
         if (isShizukuReady()) {
             isRunning = true;
             prefs.edit().putBoolean("teleport_running", true).apply();
             TeleportEngine.startTeleport(activity, snapPercent, preset);
             if (activity instanceof MainActivity) {
+                ((MainActivity) activity).setQuantumOverlayStrobe(true);
                 ((MainActivity) activity).triggerCrosshairPulse();
             }
         }
     }
 
-    // === НОВЫЕ МЕТОДЫ OVERDRIVE EDITION (BUILD 401+) ===
-
     @JavascriptInterface
     public String setOverdriveMode(boolean enabled) {
-        if (!ApiManager.isSessionVerified()) return "Сначала активируйте ключ!";
         prefs.edit().putBoolean("overdrive_unleashed", enabled).apply();
         TeleportEngine.setOverdriveUnleashed(enabled);
+        if (isShizukuReady()) {
+            TeleportEngine.startTeleport(activity, 500, "teleport");
+        }
         if (activity instanceof MainActivity) {
+            ((MainActivity) activity).setQuantumOverlayStrobe(enabled);
             ((MainActivity) activity).triggerCrosshairPulse();
         }
-        return enabled ? "OVERDRIVE 1000%: Чанки 50 + Буфер 2 Гц ВКЛ!" : "Стандартный режим телепорта";
+        return enabled ? "⚡ ТЕЛЕПОРТ 1000%: Чанки 50 + Строб 1 Гц ВКЛ!" : "Стандартный режим";
     }
 
     @JavascriptInterface
     public String setVectorStraightening(boolean enabled) {
-        if (!ApiManager.isSessionVerified()) return "Сначала активируйте ключ!";
         prefs.edit().putBoolean("vector_straight", enabled).apply();
         TeleportEngine.setVectorStraightening(enabled);
-        return enabled ? "Выпрямление траектории (Горизонт-магнит): ВКЛ" : "Выпрямление: ВЫКЛ";
+        return enabled ? "📏 Выпрямление (Горизонт-магнит): ВКЛ" : "Выпрямление: ВЫКЛ";
     }
 
     @JavascriptInterface
     public String setSmartAwpLock(boolean enabled) {
-        if (!ApiManager.isSessionVerified()) return "Сначала активируйте ключ!";
         prefs.edit().putBoolean("smart_awp_lock", enabled).apply();
         TeleportEngine.setSmartAwpLock(enabled);
         if (activity instanceof MainActivity) {
             ((MainActivity) activity).triggerCrosshairPulse();
         }
-        return enabled ? "Smart AWP-Lock: ВКЛ (Стоп-флик активен)" : "Smart AWP-Lock: ВЫКЛ";
+        return enabled ? "🎯 Smart AWP-Lock (Стоп-флик): ВКЛ" : "Smart AWP-Lock: ВЫКЛ";
     }
 
     @JavascriptInterface
     public String setAntiRecoil(boolean enabled, int strength) {
-        if (!ApiManager.isSessionVerified()) return "Сначала активируйте ключ!";
         prefs.edit()
                 .putBoolean("anti_recoil_enabled", enabled)
                 .putInt("anti_recoil_strength", strength)
@@ -171,7 +183,7 @@ public class AndroidBridge {
         if (activity instanceof MainActivity) {
             ((MainActivity) activity).triggerCrosshairPulse();
         }
-        return enabled ? "Anti-Recoil Quantization (" + strength + "%): ВКЛ" : "Anti-Recoil: ВЫКЛ";
+        return enabled ? "🌊 Anti-Recoil (" + strength + "%): ВКЛ" : "Anti-Recoil: ВЫКЛ";
     }
 
     @JavascriptInterface
@@ -179,7 +191,7 @@ public class AndroidBridge {
         prefs.edit().putBoolean("hz_thermal_guard", enabled).apply();
         if (!isShizukuReady()) return "Включите Shizuku!";
         TeleportEngine.setHzThermalGuard(enabled);
-        return enabled ? "Hz / FPS Lock (120 Гц) + Thermal Guard: ВКЛ" : "Стандартный режим частот";
+        return enabled ? "🚀 120 Гц Lock + Разгон ядер: ВКЛ" : "Стандартные частоты";
     }
 
     @JavascriptInterface
@@ -188,12 +200,12 @@ public class AndroidBridge {
         if (activity instanceof MainActivity) {
             ((MainActivity) activity).setDynamicCrosshairMode(enabled);
         }
-        return enabled ? "Dynamic Dot Crosshair: ВКЛ" : "Динамическая индикация выключена";
+        return enabled ? "👁️ Dynamic Crosshair: ВКЛ" : "Динамический импульс выключен";
     }
 
     @JavascriptInterface
     public String uploadCloudConfig(String title, String presetJson) {
-        String key = prefs.getString("license_key", "");
+        String key = prefs.getString("license_key", "PRO");
         String androidId = Settings.Secure.getString(activity.getContentResolver(), Settings.Secure.ANDROID_ID);
         prefs.edit().putString("custom_numbers_json", presetJson).apply();
         return ApiManager.uploadCloudPreset(key, androidId, title, presetJson);
@@ -201,7 +213,7 @@ public class AndroidBridge {
 
     @JavascriptInterface
     public String downloadCloudConfig(String shareCode) {
-        String key = prefs.getString("license_key", "");
+        String key = prefs.getString("license_key", "PRO");
         String androidId = Settings.Secure.getString(activity.getContentResolver(), Settings.Secure.ANDROID_ID);
         String res = ApiManager.downloadCloudPresetByCode(key, androidId, shareCode);
         try {
@@ -227,20 +239,20 @@ public class AndroidBridge {
                     (float) o.optDouble("sensY", 4.80),
                     o.optInt("noiseCutoff", 0),
                     o.optInt("deadZone", 0),
-                    o.optInt("prediction", 10),
-                    o.optInt("axisStick", 5),
+                    o.optInt("prediction", 12),
+                    o.optInt("axisStick", 6),
                     o.optInt("stickDelay", 0),
-                    o.optInt("stickStrength", 4),
+                    o.optInt("stickStrength", 5),
                     o.optInt("chunks", 50),
                     o.optInt("bypassChunks", 0),
                     o.optInt("chunkCap", 0),
-                    o.optInt("chunksFaster", 0),
+                    o.optInt("chunksFaster", 10),
                     o.optInt("shotPause", 0),
-                    (float) o.optDouble("accel", 0.45),
+                    (float) o.optDouble("accel", 0.65),
                     (float) o.optDouble("accelCurve", 0.01),
                     o.optInt("edgeRange", 0),
-                    (float) o.optDouble("straightening", 0.98),
-                    o.optInt("axisGrip", 6),
+                    (float) o.optDouble("straightening", 0.99),
+                    o.optInt("axisGrip", 7),
                     o.optInt("gripCap", 0)
             );
         } catch (Exception ignored) {}
@@ -252,7 +264,7 @@ public class AndroidBridge {
         if (activity instanceof MainActivity) {
             ((MainActivity) activity).updateCrosshair(type);
         }
-        return "off".equalsIgnoreCase(type) ? "Прицел выключен" : "Прицел включен: " + type;
+        return "off".equalsIgnoreCase(type) ? "Прицел выключен" : "Прицел поверх игры: " + type.toUpperCase();
     }
 
     @JavascriptInterface
@@ -279,7 +291,7 @@ public class AndroidBridge {
         if (activity instanceof MainActivity) {
             ((MainActivity) activity).toggleFloatingButton(enabled);
         }
-        return enabled ? "Плавающая кнопка 📐 включена" : "Плавающая кнопка скрыта";
+        return enabled ? "Плавающая кнопка Со2 включена" : "Кнопка Со2 скрыта";
     }
 
     @JavascriptInterface
@@ -291,29 +303,26 @@ public class AndroidBridge {
 
     @JavascriptInterface
     public String applyStretchRatio(String ratio) {
-        if (!ApiManager.isSessionVerified()) {
-            return "Сначала активируйте лицензионный ключ!";
-        }
         String clean = (ratio == null || ratio.trim().isEmpty()) ? "16:9" : ratio.trim();
         prefs.edit().putString("stretch_ratio", clean).apply();
         if (!isShizukuReady()) {
-            return "Сначала активируйте Shizuku!";
+            return "Сначала включите Shizuku!";
         }
         if (activity instanceof MainActivity) {
             ((MainActivity) activity).applyResolutionRatio(clean);
         }
-        return "Растяг " + clean + " + Квантовый Телепорт применён!";
+        return "Растяг " + clean + " + Квантовый Телепорт ВКЛ!";
     }
 
     @JavascriptInterface
     public String resetDisplayToDefault() {
         if (!isShizukuReady()) {
-            return "Сначала активируйте Shizuku!";
+            return "Сначала включите Shizuku!";
         }
         if (activity instanceof MainActivity) {
             ((MainActivity) activity).resetResolution();
         }
-        return "Экран сброшен по умолчанию";
+        return "Размер экрана сброшен по умолчанию";
     }
 
     @JavascriptInterface
@@ -322,43 +331,82 @@ public class AndroidBridge {
         if (activity instanceof MainActivity) {
             ((MainActivity) activity).updateOverlayStealthFlag(enabled);
         }
-        return enabled ? "Stealth-режим включен" : "Stealth-режим выключен";
+        return enabled ? "Stealth-защита от записи: ВКЛ" : "Stealth-защита: ВЫКЛ";
     }
 
     @JavascriptInterface
-    public boolean isOnboardingRequired() {
-        String key = prefs.getString("license_key", "");
-        String nick = prefs.getString("nickname", "");
-        return key == null || key.trim().length() < 6 || nick == null || nick.trim().isEmpty();
+    public String setPixelOptimization(int percent) {
+        prefs.edit().putInt("pixel_scale_pct", percent).apply();
+        if (!isShizukuReady()) return "Включите Shizuku для оптимизации пикселей!";
+        TeleportEngine.setPixelDownscaleFactor(percent);
+        return percent >= 100 ? "Пиксели: 100% (Стандарт)" : "Оптимизация пикселей: " + percent + "% (Буст FPS + Резкость)";
+    }
+
+    @JavascriptInterface
+    public String setTouchBoost(boolean enabled) {
+        prefs.edit().putBoolean("touch_boost", enabled).apply();
+        if (!isShizukuReady()) return "Включите Shizuku!";
+        if (enabled) {
+            TeleportEngine.startTeleport(activity, 500, "teleport");
+        }
+        return enabled ? "Touch Boost (Zero-Delay): ВКЛ" : "Touch Boost: ВЫКЛ";
+    }
+
+    @JavascriptInterface
+    public String setBudgetDeviceBoost(boolean enabled) {
+        prefs.edit().putBoolean("budget_boost", enabled).apply();
+        if (!isShizukuReady()) return "Включите Shizuku!";
+        TeleportEngine.setHzThermalGuard(enabled);
+        return enabled ? "Бустер FPS и разгон: ВКЛ" : "Бустер: ВЫКЛ";
+    }
+
+    @JavascriptInterface
+    public void setDndMode(boolean enabled) {
+        if (!isShizukuReady()) return;
+        new Thread(() -> {
+            ShizukuManager.execCommand(enabled ? "cmd notification set_dnd priority" : "cmd notification set_dnd off");
+        }).start();
     }
 
     @JavascriptInterface
     public String authorizeAndActivate(String nickname, String key) {
         try {
-            if (nickname == null || nickname.trim().isEmpty() || key == null || key.trim().length() < 6) {
-                return "{\"status\":\"error\",\"ok\":false,\"message\":\"Введите и никнейм, и лицензионный ключ!\"}";
+            String cleanNick = (nickname == null || nickname.trim().isEmpty()) ? "ProPlayer" : nickname.trim();
+            String cleanKey = (key == null) ? "" : key.trim().toUpperCase();
+            if (cleanKey.length() < 4) {
+                return "{\"status\":\"error\",\"ok\":false,\"message\":\"Введите корректный ключ из бота!\"}";
             }
-            String cleanNick = nickname.trim();
-            String cleanKey = key.trim().toUpperCase();
             String androidId = Settings.Secure.getString(activity.getContentResolver(), Settings.Secure.ANDROID_ID);
             String res = ApiManager.activateLicense(cleanKey, androidId, cleanNick);
             JSONObject json = new JSONObject(res);
             boolean isOk = json.optBoolean("ok", false) || "ok".equalsIgnoreCase(json.optString("status"));
             if (isOk) {
-                prefs.edit().putString("license_key", cleanKey).putString("nickname", cleanNick).apply();
+                prefs.edit()
+                        .putString("license_key", cleanKey)
+                        .putString("nickname", cleanNick)
+                        .putInt("auth_build_ver", ApiManager.CLIENT_BUILD_VERSION)
+                        .apply();
+                ApiManager.setSessionVerified(true);
             }
             return res;
         } catch (Exception e) {
-            return "{\"status\":\"error\",\"ok\":false,\"message\":\"Ошибка проверки ключа на сервере\"}";
+            return "{\"status\":\"error\",\"ok\":false,\"message\":\"Ошибка связи с сервером ключа\"}";
         }
+    }
+
+    @JavascriptInterface
+    public void forceLogoutKey() {
+        prefs.edit().remove("license_key").apply();
+        ApiManager.invalidateSession();
+        TeleportEngine.stopTeleport();
     }
 
     @JavascriptInterface
     public String verifySavedLicenseOnStartup() {
         try {
             String key = prefs.getString("license_key", "");
-            if (key == null || key.trim().length() < 6) {
-                return "{\"status\":\"need_auth\",\"ok\":false,\"blocked\":false}";
+            if (key == null || key.trim().length() < 4) {
+                return "{\"status\":\"need_auth\",\"ok\":false,\"blocked\":false,\"message\":\"Введите лицензионный ключ для запуска\"}";
             }
             String androidId = Settings.Secure.getString(activity.getContentResolver(), Settings.Secure.ANDROID_ID);
             return ApiManager.verifyLicense(key, androidId);
@@ -376,7 +424,7 @@ public class AndroidBridge {
             activity.getWindowManager().getDefaultDisplay().getRealMetrics(dm);
             obj.put("resolution", dm.widthPixels + "x" + dm.heightPixels);
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R && activity.getDisplay() != null) {
-                obj.put("refresh_refresh", (int) activity.getDisplay().getRefreshRate());
+                obj.put("refresh_rate", (int) activity.getDisplay().getRefreshRate());
             } else {
                 obj.put("refresh_rate", 120);
             }
