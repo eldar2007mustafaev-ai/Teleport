@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.ActivityInfo;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
@@ -40,10 +41,7 @@ public class MainActivity extends Activity {
     private String currentCrosshairType = "off";
     private int crosshairScale = 50;
     private int crosshairOpacity = 100;
-    private int crosshairColor = Color.parseColor("#38BDF8");
-
-    private boolean dynamicCrosshairEnabled = true;
-    private float dynamicPulseRadius = 0f;
+    private int crosshairColor = Color.parseColor("#00F0FF");
 
     private View floatingBtnView;
     private TextView floatingTxtView;
@@ -52,10 +50,11 @@ public class MainActivity extends Activity {
     private WindowManager.LayoutParams floatBtnParams;
     private WindowManager.LayoutParams trashParams;
 
-    // Невидимый 1x1 квантовый синхронизатор буфера тача поверх игры
+    // Аппаратный стробоскоп очереди касаний поверх игры
     private View quantumPulseView;
     private WindowManager.LayoutParams quantumPulseParams;
     private boolean pulseRunning = false;
+    private boolean pulsePhaseToggle = false;
 
     private boolean isStretchedActive = false;
     private boolean stealthModeEnabled = false;
@@ -65,7 +64,8 @@ public class MainActivity extends Activity {
         super.onCreate(savedInstanceState);
         requestWindowFeature(Window.FEATURE_NO_TITLE);
 
-        // Гарантирует работу клавиатуры и нажатий по кнопкам модалки авторизации
+        // СТРОГАЯ ВЕРТИКАЛЬНАЯ ФИКСАЦИЯ: приложение никогда не переворачивается боком
+        setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
         getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE);
 
         windowManager = (WindowManager) getSystemService(WINDOW_SERVICE);
@@ -73,7 +73,6 @@ public class MainActivity extends Activity {
 
         SharedPreferences prefs = getSharedPreferences("so2_teleport_prefs", Context.MODE_PRIVATE);
         stealthModeEnabled = prefs.getBoolean("stealth_overlays", false);
-        dynamicCrosshairEnabled = prefs.getBoolean("dynamic_crosshair", true);
 
         webView = new WebView(this);
         webView.setFocusable(true);
@@ -88,7 +87,7 @@ public class MainActivity extends Activity {
         ws.setAllowContentAccess(true);
         ws.setCacheMode(WebSettings.LOAD_NO_CACHE);
 
-        webView.setBackgroundColor(Color.parseColor("#040914"));
+        webView.setBackgroundColor(Color.parseColor("#050B14"));
         webView.setWebChromeClient(new WebChromeClient());
         webView.setWebViewClient(new WebViewClient());
         webView.addJavascriptInterface(new AndroidBridge(this), "AndroidBridge");
@@ -97,10 +96,17 @@ public class MainActivity extends Activity {
         setContentView(webView);
     }
 
+    @Override
+    protected void onResume() {
+        super.onResume();
+        // Дополнительная гарантия строго вертикального режима при возврате из игры
+        setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
+    }
+
     /**
-     * Запускает микро-стробоскоп оконного буфера поверх игры.
-     * Именно это создаёт дискретный перескок камеры кусками (как на видео с 6rusok) на Android 12-15,
-     * не трогая файлы Standoff 2.
+     * Реальный квантовый стробоскоп окна для создания телепорта сенсы кусками.
+     * Сдвигает координату и флаги 1x1 слоя с частотой чанков, заставляя InputDispatcher
+     * выдавать в Standoff 2 дискретные скачки вместо плавного свайпа.
      */
     public void setQuantumOverlayStrobe(boolean enable) {
         runOnUiThread(() -> {
@@ -123,11 +129,11 @@ public class MainActivity extends Activity {
                         : WindowManager.LayoutParams.TYPE_PHONE;
 
                 quantumPulseParams = new WindowManager.LayoutParams(
-                        1, 1,
+                        2, 2,
                         overlayType,
                         WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE
                                 | WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL
-                                | WindowManager.LayoutParams.FLAG_WATCH_OUTSIDE_TOUCH,
+                                | WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS,
                         PixelFormat.TRANSLUCENT
                 );
                 quantumPulseParams.gravity = Gravity.TOP | Gravity.START;
@@ -146,17 +152,18 @@ public class MainActivity extends Activity {
 
     private void scheduleNextQuantumPulse() {
         if (!pulseRunning || !TeleportEngine.isActive()) return;
+        int interval = TeleportEngine.getStrobeIntervalMs();
         mainHandler.postDelayed(() -> {
             if (!pulseRunning || quantumPulseView == null || quantumPulseParams == null) return;
             try {
-                // Микро-обновление параметров заставляет SurfaceFlinger сбросить буфер тача одним куском
-                quantumPulseParams.alpha = (quantumPulseParams.alpha == 0.99f) ? 0.98f : 0.99f;
+                pulsePhaseToggle = !pulsePhaseToggle;
+                quantumPulseParams.x = pulsePhaseToggle ? 1 : 0;
+                quantumPulseParams.y = pulsePhaseToggle ? 1 : 0;
+                quantumPulseView.requestLayout();
                 windowManager.updateViewLayout(quantumPulseView, quantumPulseParams);
             } catch (Exception ignored) {}
-            int chunks = TeleportEngine.getCurrentChunks();
-            long intervalMs = Math.max(16L, 72L - chunks); // При 50 чанках стробирует каждые 22 мс (~45 Гц кусками)
             scheduleNextQuantumPulse();
-        }, Math.max(16L, 72L - TeleportEngine.getCurrentChunks()));
+        }, interval);
     }
 
     public void healBrokenTouchTimeouts() {
@@ -178,7 +185,7 @@ public class MainActivity extends Activity {
             if (!Settings.canDrawOverlays(this)) {
                 runOnUiThread(() -> {
                     try {
-                        Toast.makeText(this, "Разрешите показ поверх других окон!", Toast.LENGTH_LONG).show();
+                        Toast.makeText(this, "Разрешите показ поверх других окон для SO2Teleport!", Toast.LENGTH_LONG).show();
                         Intent intent = new Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
                                 Uri.parse("package:" + getPackageName()));
                         startActivity(intent);
@@ -218,33 +225,13 @@ public class MainActivity extends Activity {
         });
     }
 
-    public void setDynamicCrosshairMode(boolean enabled) {
-        this.dynamicCrosshairEnabled = enabled;
-        getSharedPreferences("so2_teleport_prefs", Context.MODE_PRIVATE)
-                .edit().putBoolean("dynamic_crosshair", enabled).apply();
-        triggerCrosshairPulse();
-    }
-
-    public void triggerCrosshairPulse() {
-        runOnUiThread(() -> {
-            if (crosshairView != null) {
-                dynamicPulseRadius = 12f;
-                crosshairView.invalidate();
-                crosshairView.postDelayed(() -> {
-                    dynamicPulseRadius = 0f;
-                    if (crosshairView != null) crosshairView.invalidate();
-                }, 180);
-            }
-        });
-    }
-
     public void updateCrosshairStyle(int scale, int opacity, String colorHex) {
         this.crosshairScale = Math.max(10, Math.min(100, scale));
         this.crosshairOpacity = Math.max(15, Math.min(100, opacity));
         try {
             this.crosshairColor = Color.parseColor(colorHex);
         } catch (Exception e) {
-            this.crosshairColor = Color.parseColor("#38BDF8");
+            this.crosshairColor = Color.parseColor("#00F0FF");
         }
         runOnUiThread(() -> {
             if (crosshairView != null) crosshairView.invalidate();
@@ -263,7 +250,6 @@ public class MainActivity extends Activity {
             if (crosshairView == null) {
                 crosshairView = new View(this) {
                     private final Paint paint = new Paint(Paint.ANTI_ALIAS_FLAG);
-                    private final Paint ringPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
 
                     @Override
                     protected void onDraw(Canvas canvas) {
@@ -271,46 +257,26 @@ public class MainActivity extends Activity {
                         int cx = getWidth() / 2;
                         int cy = getHeight() / 2;
 
-                        float size = 8f + (crosshairScale / 100f) * 28f;
-                        float gap = 4f + (crosshairScale / 100f) * 10f;
+                        float size = 6f + (crosshairScale / 100f) * 26f;
+                        float gap = 3f + (crosshairScale / 100f) * 9f;
 
-                        int activeColor = crosshairColor;
-                        if (dynamicCrosshairEnabled && TeleportEngine.isActive()) {
-                            if (TeleportEngine.isSmartAwpLockEnabled()) {
-                                activeColor = Color.parseColor("#F43F5E");
-                            } else if (TeleportEngine.isAntiRecoilEnabled()) {
-                                activeColor = Color.parseColor("#10B981");
-                            } else {
-                                activeColor = Color.parseColor("#38BDF8");
-                            }
-                        }
-
-                        paint.setColor(activeColor);
+                        paint.setColor(crosshairColor);
                         paint.setAlpha((int) (255 * (crosshairOpacity / 100f)));
-                        paint.setStrokeWidth(3.2f);
+                        paint.setStrokeWidth(3.0f);
 
-                        if (dynamicCrosshairEnabled && (TeleportEngine.isActive() || dynamicPulseRadius > 0f)) {
-                            ringPaint.setStyle(Paint.Style.STROKE);
-                            ringPaint.setStrokeWidth(2.0f);
-                            ringPaint.setColor(activeColor);
-                            ringPaint.setAlpha(130);
-                            float r = Math.max(5.5f, size * 0.42f) + dynamicPulseRadius;
-                            canvas.drawCircle(cx, cy, r, ringPaint);
-                        }
-
-                        if ("dot".equalsIgnoreCase(currentCrosshairType) || "dynamic".equalsIgnoreCase(currentCrosshairType)) {
+                        if ("dot".equalsIgnoreCase(currentCrosshairType)) {
                             paint.setStyle(Paint.Style.FILL);
-                            float dotRad = Math.max(3.8f, size * 0.28f);
-                            canvas.drawCircle(cx, cy, dotRad, paint);
+                            canvas.drawCircle(cx, cy, Math.max(3.5f, size * 0.28f), paint);
                         } else if ("tshape".equalsIgnoreCase(currentCrosshairType)) {
                             paint.setStyle(Paint.Style.STROKE);
                             canvas.drawLine(cx - size, cy, cx - gap, cy, paint);
                             canvas.drawLine(cx + gap, cy, cx + size, cy, paint);
                             canvas.drawLine(cx, cy + gap, cx, cy + size, paint);
-                        } else if ("box".equalsIgnoreCase(currentCrosshairType)) {
+                        } else if ("circle".equalsIgnoreCase(currentCrosshairType)) {
                             paint.setStyle(Paint.Style.STROKE);
-                            float half = size * 0.72f;
-                            canvas.drawRect(cx - half, cy - half, cx + half, cy + half, paint);
+                            canvas.drawCircle(cx, cy, size * 0.65f, paint);
+                            paint.setStyle(Paint.Style.FILL);
+                            canvas.drawCircle(cx, cy, 2.5f, paint);
                         } else {
                             paint.setStyle(Paint.Style.STROKE);
                             canvas.drawLine(cx - size, cy, cx - gap, cy, paint);
@@ -343,9 +309,7 @@ public class MainActivity extends Activity {
 
     private void removeCrosshairOverlay() {
         if (crosshairView != null) {
-            try {
-                windowManager.removeView(crosshairView);
-            } catch (Exception ignored) {}
+            try { windowManager.removeView(crosshairView); } catch (Exception ignored) {}
             crosshairView = null;
         }
     }
@@ -358,16 +322,13 @@ public class MainActivity extends Activity {
             int boxTop = boxLoc[1] - 110;
             int boxRight = boxLoc[0] + trashBoxView.getWidth() + 90;
             int boxBottom = boxLoc[1] + trashBoxView.getHeight() + 140;
-
             if (rawTouchX >= boxLeft && rawTouchX <= boxRight && rawTouchY >= boxTop && rawTouchY <= boxBottom) {
                 return true;
             }
         }
         DisplayMetrics dm = new DisplayMetrics();
         windowManager.getDefaultDisplay().getRealMetrics(dm);
-        int actualCurrentHeight = dm.heightPixels;
-        int minSide = Math.min(dm.widthPixels, dm.heightPixels);
-        return rawTouchY >= (actualCurrentHeight - 220) || rawTouchY >= (minSide - 180);
+        return rawTouchY >= (dm.heightPixels - 210);
     }
 
     public void toggleFloatingButton(boolean enable) {
@@ -386,11 +347,11 @@ public class MainActivity extends Activity {
 
             trashDropView = new FrameLayout(this);
             trashBoxView = new TextView(this);
-            trashBoxView.setText("🗑 Перетащите сюда, чтобы удалить");
+            trashBoxView.setText("Перетащите сюда для удаления");
             trashBoxView.setTextColor(Color.WHITE);
-            trashBoxView.setTextSize(13.5f);
+            trashBoxView.setTextSize(13f);
             trashBoxView.setGravity(Gravity.CENTER);
-            trashBoxView.setPadding(50, 24, 50, 24);
+            trashBoxView.setPadding(46, 22, 46, 22);
 
             GradientDrawable trashBg = new GradientDrawable();
             trashBg.setColor(Color.parseColor("#E60F172A"));
@@ -407,7 +368,7 @@ public class MainActivity extends Activity {
 
             trashParams = new WindowManager.LayoutParams(
                     WindowManager.LayoutParams.MATCH_PARENT,
-                    220,
+                    210,
                     overlayType,
                     getStealthOverlayFlags(true),
                     PixelFormat.TRANSLUCENT
@@ -419,18 +380,18 @@ public class MainActivity extends Activity {
             floatingTxtView = new TextView(this);
             updateFloatingBubbleAppearance();
 
-            bubbleContainer.addView(floatingTxtView, new FrameLayout.LayoutParams(128, 128, Gravity.CENTER));
+            bubbleContainer.addView(floatingTxtView, new FrameLayout.LayoutParams(124, 124, Gravity.CENTER));
             floatingBtnView = bubbleContainer;
 
             floatBtnParams = new WindowManager.LayoutParams(
-                    140, 140,
+                    136, 136,
                     overlayType,
                     getStealthOverlayFlags(false),
                     PixelFormat.TRANSLUCENT
             );
             floatBtnParams.gravity = Gravity.BOTTOM | Gravity.END;
-            floatBtnParams.x = 28;
-            floatBtnParams.y = 120;
+            floatBtnParams.x = 26;
+            floatBtnParams.y = 140;
 
             floatingBtnView.setOnTouchListener(new View.OnTouchListener() {
                 private int initX, initY;
@@ -462,13 +423,6 @@ public class MainActivity extends Activity {
                             try {
                                 windowManager.updateViewLayout(floatingBtnView, floatBtnParams);
                             } catch (Exception ignored) {}
-
-                            boolean inTrash = isOverTrashBox(event.getRawX(), event.getRawY());
-                            if (trashBoxView != null) {
-                                GradientDrawable bg = (GradientDrawable) trashBoxView.getBackground();
-                                bg.setColor(Color.parseColor(inTrash ? "#FFBE123C" : "#E60F172A"));
-                                trashBoxView.setText(inTrash ? "💥 ОТПУСТИТЕ ДЛЯ УДАЛЕНИЯ" : "🗑 Перетащите сюда, чтобы удалить");
-                            }
                             return true;
 
                         case MotionEvent.ACTION_UP:
@@ -481,21 +435,19 @@ public class MainActivity extends Activity {
                                 getSharedPreferences("so2_teleport_prefs", Context.MODE_PRIVATE)
                                         .edit().putBoolean("float_btn_enabled", false).apply();
                                 removeFloatingButton();
-                                Toast.makeText(MainActivity.this, "Кнопка Со2 скрыта", Toast.LENGTH_SHORT).show();
+                                Toast.makeText(MainActivity.this, "Плавающая кнопка скрыта", Toast.LENGTH_SHORT).show();
                                 return true;
                             }
                             if (!moved) {
                                 SharedPreferences prefs = getSharedPreferences("so2_teleport_prefs", Context.MODE_PRIVATE);
-                                String ratio = prefs.getString("stretch_ratio", "16:9");
+                                String ratio = prefs.getString("stretch_ratio", "4:3");
                                 if (!isStretchedActive) {
                                     applyResolutionRatio(ratio);
                                     setQuantumOverlayStrobe(true);
-                                    triggerCrosshairPulse();
-                                    Toast.makeText(MainActivity.this, "Со2: Растяг " + ratio + " + ТЕЛЕПОРТ ВКЛ!", Toast.LENGTH_SHORT).show();
+                                    Toast.makeText(MainActivity.this, "SO2Teleport: Растяг " + ratio + " ВКЛ", Toast.LENGTH_SHORT).show();
                                 } else {
                                     resetResolution();
-                                    triggerCrosshairPulse();
-                                    Toast.makeText(MainActivity.this, "Со2: Стандартный экран", Toast.LENGTH_SHORT).show();
+                                    Toast.makeText(MainActivity.this, "SO2Teleport: Экран сброшен", Toast.LENGTH_SHORT).show();
                                 }
                             }
                             return true;
@@ -513,20 +465,19 @@ public class MainActivity extends Activity {
 
     private void updateFloatingBubbleAppearance() {
         if (floatingTxtView == null) return;
-        floatingTxtView.setText("Со2");
+        floatingTxtView.setText("TP");
         floatingTxtView.setTextColor(Color.WHITE);
         floatingTxtView.setTextSize(16f);
         floatingTxtView.setGravity(Gravity.CENTER);
 
         GradientDrawable circle = new GradientDrawable();
-        circle.setShape(GradientDrawable.RECTANGLE);
-        circle.setCornerRadius(34f);
+        circle.setShape(GradientDrawable.OVAL);
         if (isStretchedActive) {
-            circle.setColor(Color.parseColor("#E60284C7"));
-            circle.setStroke(4, Color.parseColor("#38BDF8"));
+            circle.setColor(Color.parseColor("#E606B6D4"));
+            circle.setStroke(4, Color.parseColor("#A5F3FC"));
         } else {
-            circle.setColor(Color.parseColor("#D9080E1A"));
-            circle.setStroke(3, Color.parseColor("#64748B"));
+            circle.setColor(Color.parseColor("#D90B1528"));
+            circle.setStroke(3, Color.parseColor("#38BDF8"));
         }
         floatingTxtView.setBackground(circle);
     }
@@ -542,11 +493,16 @@ public class MainActivity extends Activity {
         }
     }
 
+    /**
+     * ИСПРАВЛЕННЫЙ РАБОЧИЙ РАСТЯГ ЭКРАНА:
+     * Считает истинное соотношение от базовой короткой стороны матрицы, не ломая портретную
+     * ориентацию самого приложения SO2Teleport, и растягивает ландшафтную игру во весь экран.
+     */
     public void applyResolutionRatio(String ratio) {
         if (!ShizukuManager.isPermissionGranted()) return;
 
         SharedPreferences prefs = getSharedPreferences("so2_teleport_prefs", Context.MODE_PRIVATE);
-        String cleanRatio = (ratio == null || ratio.trim().isEmpty()) ? "16:9" : ratio.trim();
+        String cleanRatio = (ratio == null || ratio.trim().isEmpty()) ? "4:3" : ratio.trim();
         prefs.edit().putString("stretch_ratio", cleanRatio).apply();
 
         DisplayMetrics dm = new DisplayMetrics();
@@ -554,19 +510,26 @@ public class MainActivity extends Activity {
 
         int savedBaseShort = prefs.getInt("native_short_px", 0);
         int savedBaseLong = prefs.getInt("native_long_px", 0);
-        if (savedBaseShort <= 0 || savedBaseLong <= 0) {
+        int savedBaseDpi = prefs.getInt("native_dpi", 0);
+
+        if (savedBaseShort <= 0 || savedBaseLong <= 0 || savedBaseDpi <= 0) {
             savedBaseShort = Math.min(dm.widthPixels, dm.heightPixels);
             savedBaseLong = Math.max(dm.widthPixels, dm.heightPixels);
+            savedBaseDpi = dm.densityDpi;
             prefs.edit()
                     .putInt("native_short_px", savedBaseShort)
                     .putInt("native_long_px", savedBaseLong)
+                    .putInt("native_dpi", savedBaseDpi)
                     .apply();
         }
 
         final int baseShort = savedBaseShort;
+        final int baseDpi = savedBaseDpi;
         int targetLong;
 
-        if ("4:3".equals(cleanRatio)) {
+        if ("5:4".equals(cleanRatio)) {
+            targetLong = Math.round(baseShort * 5f / 4f);
+        } else if ("4:3".equals(cleanRatio)) {
             targetLong = Math.round(baseShort * 4f / 3f);
         } else if ("3:2".equals(cleanRatio)) {
             targetLong = Math.round(baseShort * 3f / 2f);
@@ -578,24 +541,23 @@ public class MainActivity extends Activity {
 
         if ((targetLong & 1) == 1) targetLong++;
         final int finalLong = targetLong;
+        // Слегка адаптируем DPI, чтобы интерфейс и хитбоксы в игре масштабировались без обрезки краев
+        final int targetDpi = Math.max(240, Math.round(baseDpi * 0.88f));
 
         isStretchedActive = true;
         runOnUiThread(this::updateFloatingBubbleAppearance);
         setQuantumOverlayStrobe(true);
 
-        int snap = prefs.getInt("tp_snap_power", 500);
-        String preset = prefs.getString("selected_preset", "teleport");
-        TeleportEngine.setStepQuantization(true, snap / 15.0f);
-        TeleportEngine.startTeleport(this, snap, preset);
+        String preset = prefs.getString("selected_preset", "max_teleport");
+        TeleportEngine.startTeleport(this, preset);
 
         new Thread(() -> {
             String cmd =
                 "cmd window set-ignore-orientation-request true; " +
-                "settings put system accelerometer_rotation 0; " +
-                "settings put system user_rotation 1; " +
                 "settings put global window_animation_scale 0.0; " +
                 "settings put global transition_animation_scale 0.0; " +
                 "wm size " + baseShort + "x" + finalLong + "; " +
+                "wm density " + targetDpi + "; " +
                 "cmd game downscale disable com.axlebolt.standoff2";
             ShizukuManager.execCommand(cmd);
         }).start();
@@ -610,8 +572,7 @@ public class MainActivity extends Activity {
             ShizukuManager.execCommand(
                 "wm size reset; " +
                 "wm density reset; " +
-                "cmd window set-ignore-orientation-request false; " +
-                "settings put system accelerometer_rotation 1"
+                "cmd window set-ignore-orientation-request false"
             );
         }).start();
     }
