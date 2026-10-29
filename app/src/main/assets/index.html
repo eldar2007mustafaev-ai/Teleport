@@ -2,22 +2,23 @@
 <html lang="ru">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 <title>SO2Teleport</title>
 <style>
   :root {
-    --bg-dark: #050b14;
-    --bg-card: rgba(11, 22, 38, 0.92);
-    --bg-inner: rgba(6, 13, 24, 0.95);
-    --border-dim: rgba(0, 240, 255, 0.18);
-    --border-neon: #00f0ff;
-    --cyan: #00f0ff;
-    --cyan-glow: rgba(0, 240, 255, 0.45);
+    --bg-dark: #070312;
+    --bg-card: rgba(18, 10, 36, 0.78);
+    --bg-inner: rgba(11, 5, 24, 0.88);
+    --border-dim: rgba(168, 85, 247, 0.28);
+    --border-neon: #c084fc;
+    --purple: #a855f7;
+    --purple-bright: #d946ef;
+    --purple-glow: rgba(168, 85, 247, 0.45);
     --green: #10b981;
     --red: #f43f5e;
-    --txt-main: #f8fafc;
-    --txt-muted: #64748b;
-    --txt-soft: #94a3b8;
+    --txt-main: #faf5ff;
+    --txt-muted: #7e6b9b;
+    --txt-soft: #c4b5fd;
   }
 
   * {
@@ -34,19 +35,93 @@
   }
 
   html, body {
-    background: radial-gradient(circle at 50% 8%, #0c2640 0%, #050b14 68%);
+    background-color: var(--bg-dark);
     color: var(--txt-main);
     min-height: 100vh;
     overflow-x: hidden;
   }
 
+  /* ОПУСКАЕМ КОНТЕНТ НИЖЕ ЧАСОВ, КАМЕРЫ И БАТАРЕИ */
   body {
-    padding: 14px 14px 40px 14px;
+    padding: calc(env(safe-area-inset-top, 38px) + 28px) 14px 48px 14px;
+    position: relative;
+  }
+
+  /* ==================== ЖИВОЙ АНИМИРОВАННЫЙ ФИОЛЕТОВЫЙ ФОН ==================== */
+  .live-bg {
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    overflow: hidden;
+    pointer-events: none;
+    background: radial-gradient(circle at 50% 10%, #1e0b3b 0%, #070312 72%);
+  }
+
+  .live-grid {
+    position: absolute;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(168, 85, 247, 0.06) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(168, 85, 247, 0.06) 1px, transparent 1px);
+    background-size: 34px 34px;
+    mask-image: radial-gradient(circle at 50% 35%, black 30%, transparent 85%);
+    -webkit-mask-image: radial-gradient(circle at 50% 35%, black 30%, transparent 85%);
+  }
+
+  .glow-orb {
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(55px);
+    opacity: 0.55;
+    animation: floatOrb 9s ease-in-out infinite alternate;
+  }
+
+  .glow-orb.orb-1 {
+    width: 240px;
+    height: 240px;
+    background: radial-gradient(circle, #a855f7 0%, transparent 70%);
+    top: -40px;
+    left: -50px;
+  }
+
+  .glow-orb.orb-2 {
+    width: 270px;
+    height: 270px;
+    background: radial-gradient(circle, #d946ef 0%, transparent 70%);
+    top: 32%;
+    right: -80px;
+    animation-duration: 12s;
+    animation-delay: -3s;
+  }
+
+  .glow-orb.orb-3 {
+    width: 220px;
+    height: 220px;
+    background: radial-gradient(circle, #7c3aed 0%, transparent 70%);
+    bottom: -30px;
+    left: 15%;
+    animation-duration: 10s;
+    animation-delay: -5s;
+  }
+
+  @keyframes floatOrb {
+    0% { transform: translate(0, 0) scale(1); }
+    50% { transform: translate(22px, -28px) scale(1.12); }
+    100% { transform: translate(-18px, 24px) scale(0.94); }
+  }
+
+  #bgParticlesCanvas {
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
   }
 
   .container {
     max-width: 460px;
     margin: 0 auto;
+    position: relative;
+    z-index: 2;
   }
 
   /* ==================== КАСКАДНЫЕ АНИМАЦИИ ПАДЕНИЯ СВЕРХУ ==================== */
@@ -61,15 +136,15 @@
     }
   }
 
-  @keyframes pulseRing {
+  @keyframes pulsePurpleRing {
     0% {
-      box-shadow: 0 0 0 0 rgba(0, 240, 255, 0.55), 0 0 38px rgba(0, 240, 255, 0.55);
+      box-shadow: 0 0 0 0 rgba(192, 132, 252, 0.6), 0 0 42px rgba(168, 85, 247, 0.7);
     }
     70% {
-      box-shadow: 0 0 0 18px rgba(0, 240, 255, 0), 0 0 48px rgba(0, 240, 255, 0.75);
+      box-shadow: 0 0 0 20px rgba(192, 132, 252, 0), 0 0 56px rgba(217, 70, 239, 0.9);
     }
     100% {
-      box-shadow: 0 0 0 0 rgba(0, 240, 255, 0), 0 0 38px rgba(0, 240, 255, 0.55);
+      box-shadow: 0 0 0 0 rgba(192, 132, 252, 0), 0 0 42px rgba(168, 85, 247, 0.7);
     }
   }
 
@@ -89,7 +164,8 @@
   #welcomeAuthOverlay {
     position: fixed;
     inset: 0;
-    background: radial-gradient(circle at 50% 25%, #0d2844 0%, #03070e 75%);
+    background: radial-gradient(circle at 50% 25%, rgba(46, 16, 101, 0.96) 0%, rgba(7, 3, 18, 0.98) 75%);
+    backdrop-filter: blur(16px);
     z-index: 999999;
     display: none;
     align-items: center;
@@ -100,26 +176,27 @@
   .welcome-box {
     width: 100%;
     max-width: 380px;
-    background: rgba(9, 20, 36, 0.96);
+    background: rgba(19, 9, 39, 0.94);
     border: 1.5px solid var(--border-neon);
     border-radius: 24px;
     padding: 26px 20px;
     text-align: center;
-    box-shadow: 0 0 45px rgba(0, 240, 255, 0.22);
+    box-shadow: 0 0 45px rgba(168, 85, 247, 0.35), inset 0 0 22px rgba(168, 85, 247, 0.12);
     animation: dropFromTop 0.5s cubic-bezier(0.22, 1, 0.36, 1) forwards;
   }
 
   .welcome-badge {
     display: inline-block;
-    background: rgba(0, 240, 255, 0.14);
-    border: 1px solid rgba(0, 240, 255, 0.4);
-    color: var(--cyan);
+    background: rgba(168, 85, 247, 0.18);
+    border: 1px solid rgba(192, 132, 252, 0.5);
+    color: #e9d5ff;
     font-size: 10.5px;
     font-weight: 900;
     letter-spacing: 1.2px;
     padding: 4px 12px;
     border-radius: 999px;
     margin-bottom: 10px;
+    box-shadow: 0 0 14px rgba(168, 85, 247, 0.35);
   }
 
   .welcome-title {
@@ -128,6 +205,7 @@
     color: #ffffff;
     margin-bottom: 6px;
     letter-spacing: 0.4px;
+    text-shadow: 0 0 16px rgba(192, 132, 252, 0.5);
   }
 
   .welcome-sub {
@@ -139,8 +217,8 @@
 
   .inp-field {
     width: 100%;
-    background: #040a12;
-    border: 1px solid rgba(0, 240, 255, 0.3);
+    background: #090416;
+    border: 1px solid rgba(168, 85, 247, 0.38);
     color: #ffffff;
     padding: 13px 15px;
     border-radius: 14px;
@@ -151,23 +229,24 @@
   }
 
   .inp-field:focus {
-    border-color: var(--cyan);
-    box-shadow: 0 0 14px rgba(0, 240, 255, 0.28);
+    border-color: var(--border-neon);
+    box-shadow: 0 0 16px rgba(168, 85, 247, 0.4);
   }
 
   .primary-btn {
     width: 100%;
-    background: linear-gradient(90deg, #0284c7 0%, #00f0ff 100%);
-    color: #021019;
+    background: linear-gradient(90deg, #7c3aed 0%, #a855f7 50%, #d946ef 100%);
+    color: #ffffff;
     font-weight: 900;
     font-size: 14px;
     padding: 14px;
-    border: none;
+    border: 1px solid rgba(243, 232, 255, 0.4);
     border-radius: 14px;
     cursor: pointer;
-    box-shadow: 0 4px 20px rgba(0, 240, 255, 0.35);
+    box-shadow: 0 4px 24px rgba(168, 85, 247, 0.45);
     margin-bottom: 8px;
     transition: transform 0.15s;
+    text-shadow: 0 1px 4px rgba(0, 0, 0, 0.35);
   }
 
   .primary-btn:active {
@@ -176,14 +255,15 @@
 
   .secondary-btn {
     width: 100%;
-    background: rgba(15, 29, 48, 0.9);
-    border: 1px solid rgba(0, 240, 255, 0.25);
-    color: #e2e8f0;
+    background: rgba(24, 12, 48, 0.9);
+    border: 1px solid rgba(168, 85, 247, 0.35);
+    color: #e9d5ff;
     font-weight: 800;
     font-size: 13px;
     padding: 12px;
     border-radius: 14px;
     cursor: pointer;
+    box-shadow: 0 0 14px rgba(168, 85, 247, 0.12);
   }
 
   /* ==================== ВЕРХНЯЯ ПАНЕЛЬ И SHIZUKU СПРАВА ВВЕРХУ ==================== */
@@ -192,7 +272,7 @@
     justify-content: space-between;
     align-items: center;
     gap: 10px;
-    margin-bottom: 16px;
+    margin-bottom: 18px;
   }
 
   .logo-block {
@@ -201,22 +281,22 @@
   }
 
   .logo-name {
-    font-size: 20px;
+    font-size: 21px;
     font-weight: 900;
-    letter-spacing: 1px;
+    letter-spacing: 0.8px;
     color: #ffffff;
-    text-shadow: 0 0 14px rgba(0, 240, 255, 0.45);
+    text-shadow: 0 0 18px rgba(192, 132, 252, 0.75);
   }
 
   .logo-tag {
     font-size: 10.5px;
-    color: var(--cyan);
+    color: #d8b4fe;
     font-weight: 800;
-    letter-spacing: 0.6px;
+    letter-spacing: 0.7px;
   }
 
   .shizuku-top-card {
-    background: rgba(10, 24, 42, 0.95);
+    background: rgba(22, 11, 44, 0.92);
     border: 1.5px solid rgba(244, 63, 94, 0.55);
     border-radius: 16px;
     padding: 8px 12px;
@@ -226,11 +306,12 @@
     cursor: pointer;
     transition: 0.2s;
     max-width: 215px;
+    box-shadow: 0 0 16px rgba(244, 63, 94, 0.2);
   }
 
   .shizuku-top-card.ready {
-    border-color: rgba(16, 185, 129, 0.65);
-    box-shadow: 0 0 16px rgba(16, 185, 129, 0.2);
+    border-color: rgba(192, 132, 252, 0.7);
+    box-shadow: 0 0 20px rgba(168, 85, 247, 0.35), inset 0 0 12px rgba(168, 85, 247, 0.15);
   }
 
   .shizuku-top-card:active {
@@ -247,8 +328,8 @@
   }
 
   .shizuku-top-card.ready .shiz-led {
-    background: var(--green);
-    box-shadow: 0 0 10px var(--green);
+    background: #c084fc;
+    box-shadow: 0 0 12px #d946ef;
   }
 
   .shiz-title {
@@ -267,7 +348,7 @@
   }
 
   .shizuku-top-card.ready .shiz-sub {
-    color: #6ee7b7;
+    color: #e9d5ff;
   }
 
   /* ==================== БОЛЬШАЯ КРУГЛАЯ КНОПКА ЗАПУСКА ==================== */
@@ -275,12 +356,12 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    margin: 6px 0 20px 0;
+    margin: 8px 0 22px 0;
   }
 
   .big-power-circle {
-    width: 172px;
-    height: 172px;
+    width: 174px;
+    height: 174px;
     border-radius: 50%;
     display: flex;
     flex-direction: column;
@@ -293,16 +374,16 @@
 
   /* СОСТОЯНИЕ: ВЫКЛЮЧЕНО */
   .big-power-circle.off-state {
-    background: radial-gradient(circle at 50% 35%, #162235 0%, #09111e 80%);
-    border: 3px solid rgba(244, 63, 94, 0.45);
-    box-shadow: 0 0 25px rgba(244, 63, 94, 0.15), inset 0 0 18px rgba(0, 0, 0, 0.8);
+    background: radial-gradient(circle at 50% 35%, #231242 0%, #0d061c 80%);
+    border: 3px solid rgba(168, 85, 247, 0.35);
+    box-shadow: 0 0 28px rgba(168, 85, 247, 0.18), inset 0 0 20px rgba(0, 0, 0, 0.85);
   }
 
-  /* СОСТОЯНИЕ: АКТИВНО */
+  /* СОСТОЯНИЕ: АКТИВНО (ЯРКИЙ ФИОЛЕТОВО-ПУРПУРНЫЙ НЕОН) */
   .big-power-circle.on-state {
-    background: radial-gradient(circle at 35% 25%, #a5f3fc 0%, #00f0ff 45%, #0284c7 85%, #062c49 100%);
-    border: 4px solid #e0f2fe;
-    animation: pulseRing 2s infinite;
+    background: radial-gradient(circle at 35% 25%, #f5d0fe 0%, #c084fc 38%, #9333ea 78%, #3b0764 100%);
+    border: 4px solid #fae8ff;
+    animation: pulsePurpleRing 2s infinite;
   }
 
   .big-power-circle:active {
@@ -317,11 +398,13 @@
   }
 
   .big-power-circle.off-state .power-icon-svg {
-    color: #f43f5e;
+    color: #c084fc;
+    text-shadow: 0 0 12px rgba(192, 132, 252, 0.5);
   }
 
   .big-power-circle.on-state .power-icon-svg {
-    color: #02131f;
+    color: #ffffff;
+    text-shadow: 0 0 14px rgba(255, 255, 255, 0.8);
   }
 
   .power-main-label {
@@ -331,44 +414,48 @@
   }
 
   .big-power-circle.off-state .power-main-label {
-    color: #cbd5e1;
+    color: #d8b4fe;
   }
 
   .big-power-circle.on-state .power-main-label {
-    color: #02131f;
+    color: #ffffff;
+    text-shadow: 0 1px 6px rgba(0, 0, 0, 0.45);
   }
 
   .power-status-pill {
-    margin-top: 12px;
-    padding: 5px 14px;
+    margin-top: 13px;
+    padding: 6px 15px;
     border-radius: 999px;
-    font-size: 11.5px;
+    font-size: 11px;
     font-weight: 900;
     letter-spacing: 0.6px;
   }
 
   .power-status-pill.off {
-    background: rgba(244, 63, 94, 0.14);
-    border: 1px solid rgba(244, 63, 94, 0.4);
-    color: #fda4af;
+    background: rgba(168, 85, 247, 0.12);
+    border: 1px solid rgba(168, 85, 247, 0.35);
+    color: #d8b4fe;
   }
 
   .power-status-pill.on {
-    background: rgba(16, 185, 129, 0.16);
-    border: 1px solid rgba(16, 185, 129, 0.5);
-    color: #6ee7b7;
+    background: rgba(217, 70, 239, 0.2);
+    border: 1px solid #e879f9;
+    color: #fae8ff;
+    box-shadow: 0 0 16px rgba(217, 70, 239, 0.35);
   }
 
-  /* ==================== СЕТКА 6 КАРТОЧЕК НА ГЛАВНОМ ЭКРАНЕ ==================== */
+  /* ==================== СЕТКА 6 КАРТОЧЕК С ФИОЛЕТОВЫМ СВЕЧЕНИЕМ ==================== */
   .cards-grid-6 {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 11px;
+    gap: 12px;
   }
 
   .hub-card {
     background: var(--bg-card);
-    border: 1px solid var(--border-dim);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(192, 132, 252, 0.32);
     border-radius: 20px;
     padding: 16px 14px;
     cursor: pointer;
@@ -376,13 +463,14 @@
     display: flex;
     flex-direction: column;
     justify-content: space-between;
-    min-height: 112px;
+    min-height: 114px;
+    box-shadow: 0 6px 24px rgba(124, 58, 237, 0.16), inset 0 0 16px rgba(168, 85, 247, 0.08);
   }
 
   .hub-card:active {
     transform: scale(0.96);
-    border-color: var(--cyan);
-    box-shadow: 0 0 20px rgba(0, 240, 255, 0.25);
+    border-color: #e879f9;
+    box-shadow: 0 0 24px rgba(217, 70, 239, 0.45), inset 0 0 18px rgba(217, 70, 239, 0.2);
   }
 
   .hub-card-top {
@@ -392,24 +480,28 @@
     margin-bottom: 8px;
   }
 
+  /* КВАДРАТИКИ ИКОНОК С ЛЁГКИМ ФИОЛЕТОВЫМ СВЕЧЕНИЕМ */
   .hub-icon {
-    width: 36px;
-    height: 36px;
-    border-radius: 11px;
-    background: rgba(0, 240, 255, 0.12);
-    border: 1px solid rgba(0, 240, 255, 0.3);
+    width: 38px;
+    height: 38px;
+    border-radius: 12px;
+    background: linear-gradient(135deg, rgba(168, 85, 247, 0.28) 0%, rgba(217, 70, 239, 0.18) 100%);
+    border: 1px solid rgba(216, 180, 254, 0.55);
+    box-shadow: 0 0 16px rgba(168, 85, 247, 0.45), inset 0 0 8px rgba(255, 255, 255, 0.2);
     display: flex;
     align-items: center;
     justify-content: center;
     font-size: 17px;
     font-weight: 900;
-    color: var(--cyan);
+    color: #f3e8ff;
+    text-shadow: 0 0 8px #d946ef;
   }
 
   .hub-arrow {
     font-size: 18px;
-    color: var(--txt-muted);
+    color: #c084fc;
     font-weight: 900;
+    text-shadow: 0 0 8px rgba(192, 132, 252, 0.6);
   }
 
   .hub-title {
@@ -440,10 +532,12 @@
     gap: 10px;
     margin-bottom: 14px;
     cursor: pointer;
-    background: rgba(11, 22, 38, 0.9);
-    border: 1px solid var(--border-dim);
-    padding: 11px 14px;
+    background: rgba(22, 11, 44, 0.88);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(192, 132, 252, 0.35);
+    padding: 12px 15px;
     border-radius: 16px;
+    box-shadow: 0 0 18px rgba(168, 85, 247, 0.2);
   }
 
   .back-bar:active {
@@ -453,7 +547,8 @@
   .back-btn-ico {
     font-size: 18px;
     font-weight: 900;
-    color: var(--cyan);
+    color: #e879f9;
+    text-shadow: 0 0 10px #d946ef;
   }
 
   .back-title {
@@ -464,10 +559,13 @@
 
   .section-box {
     background: var(--bg-card);
-    border: 1px solid var(--border-dim);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(192, 132, 252, 0.3);
     border-radius: 20px;
     padding: 15px;
-    margin-bottom: 12px;
+    margin-bottom: 13px;
+    box-shadow: 0 6px 24px rgba(124, 58, 237, 0.14), inset 0 0 14px rgba(168, 85, 247, 0.06);
   }
 
   .sec-label {
@@ -476,17 +574,18 @@
     align-items: center;
     font-size: 11.5px;
     font-weight: 900;
-    color: var(--cyan);
+    color: #d8b4fe;
     letter-spacing: 0.7px;
     text-transform: uppercase;
     margin-bottom: 11px;
+    text-shadow: 0 0 10px rgba(192, 132, 252, 0.4);
   }
 
   /* ГОТОВЫЕ РЕЖИМЫ ВНУТРИ КАРТОЧКИ СЕНСЫ */
   .preset-card {
     background: var(--bg-inner);
-    border: 1.5px solid rgba(0, 240, 255, 0.14);
-    border-radius: 15px;
+    border: 1.5px solid rgba(168, 85, 247, 0.2);
+    border-radius: 16px;
     padding: 13px 14px;
     margin-bottom: 9px;
     cursor: pointer;
@@ -497,9 +596,9 @@
   }
 
   .preset-card.selected {
-    background: rgba(6, 42, 66, 0.92);
-    border-color: var(--cyan);
-    box-shadow: 0 0 16px rgba(0, 240, 255, 0.22);
+    background: linear-gradient(135deg, rgba(59, 7, 100, 0.85) 0%, rgba(30, 10, 60, 0.92) 100%);
+    border-color: #e879f9;
+    box-shadow: 0 0 20px rgba(192, 132, 252, 0.35), inset 0 0 12px rgba(217, 70, 239, 0.15);
   }
 
   .pr-name {
@@ -516,22 +615,23 @@
   }
 
   .pr-badge {
-    background: rgba(0, 240, 255, 0.16);
-    border: 1px solid rgba(0, 240, 255, 0.4);
-    color: var(--cyan);
+    background: rgba(168, 85, 247, 0.22);
+    border: 1px solid rgba(216, 180, 254, 0.5);
+    color: #f3e8ff;
     font-size: 10px;
     font-weight: 900;
-    padding: 4px 9px;
+    padding: 4px 10px;
     border-radius: 999px;
     flex-shrink: 0;
     margin-left: 8px;
+    box-shadow: 0 0 10px rgba(168, 85, 247, 0.3);
   }
 
-  /* ПОЛЗУНКИ С ПОНЯТНЫМ ОБЪЯСНЕНИЕМ */
+  /* ПОЛЗУНКИ С ФИОЛЕТОВЫМ НЕОНОМ */
   .slider-item {
     margin-bottom: 15px;
     padding-bottom: 12px;
-    border-bottom: 1px solid rgba(0, 240, 255, 0.08);
+    border-bottom: 1px solid rgba(168, 85, 247, 0.12);
   }
 
   .slider-item:last-child {
@@ -550,17 +650,18 @@
   .sl-title {
     font-size: 13.5px;
     font-weight: 900;
-    color: #f1f5f9;
+    color: #faf5ff;
   }
 
   .sl-value {
-    background: rgba(0, 240, 255, 0.18);
-    border: 1px solid rgba(0, 240, 255, 0.4);
-    color: var(--cyan);
+    background: rgba(168, 85, 247, 0.24);
+    border: 1px solid rgba(216, 180, 254, 0.55);
+    color: #f3e8ff;
     font-size: 11.5px;
     font-weight: 900;
     padding: 2px 9px;
     border-radius: 8px;
+    box-shadow: 0 0 10px rgba(168, 85, 247, 0.35);
   }
 
   .sl-explain {
@@ -575,7 +676,8 @@
     appearance: none;
     width: 100%;
     height: 6px;
-    background: #0d1d31;
+    background: #190b33;
+    border: 1px solid rgba(168, 85, 247, 0.25);
     border-radius: 999px;
     outline: none;
   }
@@ -583,12 +685,12 @@
   input[type="range"]::-webkit-slider-thumb {
     -webkit-appearance: none;
     appearance: none;
-    width: 21px;
-    height: 21px;
+    width: 22px;
+    height: 22px;
     border-radius: 50%;
-    background: var(--cyan);
+    background: #d946ef;
     border: 3px solid #ffffff;
-    box-shadow: 0 0 12px var(--cyan);
+    box-shadow: 0 0 14px #d946ef, 0 0 6px #a855f7;
     cursor: pointer;
   }
 
@@ -609,30 +711,32 @@
 
   .opt-btn {
     background: var(--bg-inner);
-    border: 1px solid rgba(0, 240, 255, 0.2);
-    color: #cbd5e1;
+    border: 1px solid rgba(168, 85, 247, 0.28);
+    color: #e9d5ff;
     padding: 11px 4px;
     border-radius: 12px;
     font-size: 12px;
     font-weight: 900;
     text-align: center;
     cursor: pointer;
+    box-shadow: 0 0 10px rgba(168, 85, 247, 0.1);
   }
 
   .opt-btn.active {
-    background: rgba(0, 240, 255, 0.24);
-    border: 1.5px solid var(--cyan);
+    background: rgba(168, 85, 247, 0.34);
+    border: 1.5px solid #e879f9;
     color: #ffffff;
-    box-shadow: 0 0 12px rgba(0, 240, 255, 0.25);
+    box-shadow: 0 0 16px rgba(217, 70, 239, 0.45);
   }
 
   .preview-box {
     width: 100%;
-    background: #040a13;
-    border: 1px dashed rgba(0, 240, 255, 0.35);
+    background: #090416;
+    border: 1px dashed rgba(192, 132, 252, 0.45);
     border-radius: 14px;
     display: block;
     margin-bottom: 10px;
+    box-shadow: inset 0 0 18px rgba(168, 85, 247, 0.12);
   }
 
   /* ТУМБЛЕРЫ */
@@ -641,7 +745,7 @@
     justify-content: space-between;
     align-items: center;
     padding: 11px 0;
-    border-bottom: 1px solid rgba(0, 240, 255, 0.08);
+    border-bottom: 1px solid rgba(168, 85, 247, 0.12);
     gap: 10px;
   }
 
@@ -665,7 +769,8 @@
   .sw-track {
     position: absolute;
     inset: 0;
-    background: #162438;
+    background: #1e103a;
+    border: 1px solid rgba(168, 85, 247, 0.3);
     border-radius: 999px;
     transition: 0.2s;
     cursor: pointer;
@@ -677,40 +782,50 @@
     width: 20px;
     height: 20px;
     left: 3px;
-    bottom: 3px;
+    bottom: 2px;
     background: #ffffff;
     border-radius: 50%;
     transition: 0.2s;
   }
 
   .sw-box input:checked + .sw-track {
-    background: #00b4d8;
-    box-shadow: 0 0 12px rgba(0, 240, 255, 0.5);
+    background: linear-gradient(90deg, #9333ea, #d946ef);
+    border-color: #f5d0fe;
+    box-shadow: 0 0 14px rgba(217, 70, 239, 0.55);
   }
 
   .sw-box input:checked + .sw-track::before {
-    transform: translateX(22px);
+    transform: translateX(21px);
   }
 
   #toastPopup {
     position: fixed;
-    top: 16px;
+    top: calc(env(safe-area-inset-top, 38px) + 12px);
     left: 50%;
     transform: translateX(-50%);
-    background: #0284c7;
-    border: 1px solid #a5f3fc;
+    background: linear-gradient(90deg, #7c3aed, #c026d3);
+    border: 1px solid #f5d0fe;
     color: #ffffff;
-    padding: 9px 18px;
+    padding: 10px 18px;
     border-radius: 999px;
     font-size: 12px;
     font-weight: 900;
     z-index: 2000000;
     display: none;
-    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.55);
+    box-shadow: 0 6px 24px rgba(168, 85, 247, 0.6);
   }
 </style>
 </head>
 <body>
+
+<!-- ЖИВОЙ АНИМИРОВАННЫЙ НЕОНОВЫЙ ФОН -->
+<div class="live-bg">
+  <div class="live-grid"></div>
+  <div class="glow-orb orb-1"></div>
+  <div class="glow-orb orb-2"></div>
+  <div class="glow-orb orb-3"></div>
+</div>
+<canvas id="bgParticlesCanvas"></canvas>
 
 <div id="toastPopup"></div>
 
@@ -734,7 +849,7 @@
 </div>
 
 <div class="container">
-  <!-- ВЕРХНЯЯ ПАНЕЛЬ: БРЕНД СЛЕВА + SHIZUKU СПРАВА ВВЕРХУ -->
+  <!-- ВЕРХНЯЯ ПАНЕЛЬ (ОПУЩЕНА НИЖЕ ЧАСОВ И БАТАРЕИ) -->
   <div class="top-bar cascade-item d-1">
     <div class="logo-block">
       <div class="logo-name">SO2Teleport</div>
@@ -763,7 +878,7 @@
       </div>
     </div>
 
-    <!-- 6 КАРТОЧЕК МЕНЮ СНИЗУ -->
+    <!-- 6 КАРТОЧЕК МЕНЮ С ФИОЛЕТОВЫМ СВЕЧЕНИЕМ -->
     <div class="cards-grid-6">
       <div class="hub-card cascade-item d-2" onclick="openCardPage('page-sens')">
         <div class="hub-card-top">
@@ -960,12 +1075,12 @@
 
     <div class="section-box cascade-item d-2">
       <div class="sec-label"><span>ДАННЫЕ АККАУНТА SO2TELEPORT</span><span>PRO</span></div>
-      <div style="font-size:13.5px;line-height:2.0;color:#e2e8f0;margin-bottom:14px;">
-        <div>Ваш логин: <b id="profNick" style="color:var(--cyan);">Игрок</b></div>
+      <div style="font-size:13.5px;line-height:2.0;color:#f3e8ff;margin-bottom:14px;">
+        <div>Ваш логин: <b id="profNick" style="color:#e879f9;">Игрок</b></div>
         <div>Статус подписки: <b style="color:var(--green);">АКТИВНА</b></div>
         <div>Модель устройства: <b id="profModel">Android</b></div>
-        <div>Экран и частота: <b id="profRes">1080x2400</b> (<b id="profHz" style="color:var(--cyan);">120</b> Гц)</div>
-        <div>HWID устройства: <span id="profHwid" style="font-size:11.5px;color:var(--txt-muted);">...</span></div>
+        <div>Экран и частота: <b id="profRes">1080x2400</b> (<b id="profHz" style="color:#c084fc;">120</b> Гц)</div>
+        <div>HWID устройства: <span id="profHwid" style="font-size:11.5px;color:var(--txt-soft);">...</span></div>
       </div>
       <button type="button" class="secondary-btn" style="border-color:rgba(244,63,94,0.5);color:#fda4af;" onclick="logoutCurrentKey()">
         Сменить логин или лицензионный ключ
@@ -1103,10 +1218,10 @@
 
       <div class="sec-label" style="margin-top:12px;"><span>ЦВЕТ ПРИЦЕЛА</span></div>
       <div class="opts-row-4">
+        <div class="opt-btn" style="color:#d946ef;border-color:#d946ef;" onclick="selectCrossColor('#D946EF')">ФИОЛЕТ</div>
         <div class="opt-btn" style="color:#00f0ff;border-color:#00f0ff;" onclick="selectCrossColor('#00F0FF')">ГОЛУБОЙ</div>
         <div class="opt-btn" style="color:#10b981;border-color:#10b981;" onclick="selectCrossColor('#10B981')">ЗЕЛЁНЫЙ</div>
         <div class="opt-btn" style="color:#f43f5e;border-color:#f43f5e;" onclick="selectCrossColor('#F43F5E')">КРАСНЫЙ</div>
-        <div class="opt-btn" style="color:#facc15;border-color:#facc15;" onclick="selectCrossColor('#FACC15')">ЖЁЛТЫЙ</div>
       </div>
 
       <div class="slider-item" style="margin-top:12px;">
@@ -1190,7 +1305,54 @@
   let isTeleportOn = false;
   let currentRatio = "4:3";
   let currentCrossShape = "off";
-  let currentCrossColor = "#00F0FF";
+  let currentCrossColor = "#D946EF";
+
+  /* ==================== ЖИВЫЕ ФИОЛЕТОВЫЕ ЧАСТИЦЫ НА ФОНЕ ==================== */
+  function initLiveParticles() {
+    const canvas = document.getElementById("bgParticlesCanvas");
+    if (!canvas) return;
+    const ctx = canvas.getContext("2d");
+    let w = (canvas.width = window.innerWidth);
+    let h = (canvas.height = window.innerHeight);
+
+    const particles = [];
+    for (let i = 0; i < 28; i++) {
+      particles.push({
+        x: Math.random() * w,
+        y: Math.random() * h,
+        r: 1.2 + Math.random() * 2.2,
+        vx: (Math.random() - 0.5) * 0.35,
+        vy: -0.25 - Math.random() * 0.45,
+        alpha: 0.25 + Math.random() * 0.55
+      });
+    }
+
+    window.addEventListener("resize", () => {
+      w = canvas.width = window.innerWidth;
+      h = canvas.height = window.innerHeight;
+    });
+
+    function tick() {
+      ctx.clearRect(0, 0, w, h);
+      for (let i = 0; i < particles.length; i++) {
+        const p = particles[i];
+        p.x += p.vx;
+        p.y += p.vy;
+        if (p.y < -10) { p.y = h + 10; p.x = Math.random() * w; }
+        if (p.x < -10) p.x = w + 10;
+        if (p.x > w + 10) p.x = -10;
+
+        ctx.beginPath();
+        ctx.fillStyle = `rgba(216, 180, 254, ${p.alpha})`;
+        ctx.shadowBlur = 10;
+        ctx.shadowColor = "#d946ef";
+        ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+        ctx.fill();
+      }
+      requestAnimationFrame(tick);
+    }
+    tick();
+  }
 
   function showToast(msg) {
     if (!msg) return;
@@ -1262,7 +1424,7 @@
     }
 
     statusEl.innerText = "Проверка ключа на сервере SO2Teleport...";
-    statusEl.style.color = "#00f0ff";
+    statusEl.style.color = "#e879f9";
 
     setTimeout(() => {
       if (!window.AndroidBridge || !AndroidBridge.authorizeAndActivate) {
@@ -1457,12 +1619,12 @@
     const ctx = c.getContext("2d");
     ctx.clearRect(0, 0, c.width, c.height);
 
-    ctx.strokeStyle = "rgba(148, 163, 184, 0.35)";
+    ctx.strokeStyle = "rgba(192, 132, 252, 0.35)";
     ctx.setLineDash([5, 5]);
     ctx.strokeRect(22, 12, c.width - 44, c.height - 24);
 
     ctx.setLineDash([]);
-    ctx.strokeStyle = "#00f0ff";
+    ctx.strokeStyle = "#d946ef";
     ctx.lineWidth = 2;
     let factor = 0.72;
     if (currentRatio === "5:4") factor = 0.66;
@@ -1475,7 +1637,7 @@
     const x0 = 22 + (fullW - innerW) / 2;
     ctx.strokeRect(x0, 12, innerW, c.height - 24);
 
-    ctx.fillStyle = "#00f0ff";
+    ctx.fillStyle = "#e879f9";
     ctx.font = "bold 12px sans-serif";
     ctx.textAlign = "center";
     ctx.fillText("ФОРМАТ " + currentRatio, c.width / 2, c.height / 2 + 4);
@@ -1620,6 +1782,7 @@
   }
 
   window.onload = function() {
+    initLiveParticles();
     drawStretchPreview();
     drawCrossPreview();
     loadProfileInfo();
