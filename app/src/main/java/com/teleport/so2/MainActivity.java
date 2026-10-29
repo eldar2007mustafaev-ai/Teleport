@@ -12,6 +12,8 @@ import android.graphics.drawable.GradientDrawable;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.provider.Settings;
 import android.util.DisplayMetrics;
 import android.view.Gravity;
@@ -31,6 +33,7 @@ public class MainActivity extends Activity {
 
     private WebView webView;
     private WindowManager windowManager;
+    private final Handler mainHandler = new Handler(Looper.getMainLooper());
 
     private View crosshairView;
     private WindowManager.LayoutParams crosshairParams;
@@ -39,7 +42,6 @@ public class MainActivity extends Activity {
     private int crosshairOpacity = 100;
     private int crosshairColor = Color.parseColor("#38BDF8");
 
-    // Dynamic Dot Crosshair (Build 401)
     private boolean dynamicCrosshairEnabled = true;
     private float dynamicPulseRadius = 0f;
 
@@ -50,6 +52,11 @@ public class MainActivity extends Activity {
     private WindowManager.LayoutParams floatBtnParams;
     private WindowManager.LayoutParams trashParams;
 
+    // Невидимый 1x1 квантовый синхронизатор буфера тача поверх игры
+    private View quantumPulseView;
+    private WindowManager.LayoutParams quantumPulseParams;
+    private boolean pulseRunning = false;
+
     private boolean isStretchedActive = false;
     private boolean stealthModeEnabled = false;
 
@@ -57,6 +64,9 @@ public class MainActivity extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         requestWindowFeature(Window.FEATURE_NO_TITLE);
+
+        // Гарантирует работу клавиатуры и нажатий по кнопкам модалки авторизации
+        getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE);
 
         windowManager = (WindowManager) getSystemService(WINDOW_SERVICE);
         healBrokenTouchTimeouts();
@@ -66,13 +76,17 @@ public class MainActivity extends Activity {
         dynamicCrosshairEnabled = prefs.getBoolean("dynamic_crosshair", true);
 
         webView = new WebView(this);
+        webView.setFocusable(true);
+        webView.setFocusableInTouchMode(true);
+        webView.requestFocus(View.FOCUS_DOWN);
+
         WebSettings ws = webView.getSettings();
         ws.setJavaScriptEnabled(true);
         ws.setDomStorageEnabled(true);
         ws.setDatabaseEnabled(true);
         ws.setAllowFileAccess(true);
         ws.setAllowContentAccess(true);
-        ws.setCacheMode(WebSettings.LOAD_DEFAULT);
+        ws.setCacheMode(WebSettings.LOAD_NO_CACHE);
 
         webView.setBackgroundColor(Color.parseColor("#040914"));
         webView.setWebChromeClient(new WebChromeClient());
@@ -83,12 +97,74 @@ public class MainActivity extends Activity {
         setContentView(webView);
     }
 
+    /**
+     * Запускает микро-стробоскоп оконного буфера поверх игры.
+     * Именно это создаёт дискретный перескок камеры кусками (как на видео с 6rusok) на Android 12-15,
+     * не трогая файлы Standoff 2.
+     */
+    public void setQuantumOverlayStrobe(boolean enable) {
+        runOnUiThread(() -> {
+            if (!enable) {
+                pulseRunning = false;
+                if (quantumPulseView != null) {
+                    try { windowManager.removeView(quantumPulseView); } catch (Exception ignored) {}
+                    quantumPulseView = null;
+                }
+                return;
+            }
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && !Settings.canDrawOverlays(this)) {
+                return;
+            }
+            if (quantumPulseView == null) {
+                quantumPulseView = new View(this);
+                quantumPulseView.setBackgroundColor(Color.TRANSPARENT);
+                int overlayType = Build.VERSION.SDK_INT >= Build.VERSION_CODES.O
+                        ? WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY
+                        : WindowManager.LayoutParams.TYPE_PHONE;
+
+                quantumPulseParams = new WindowManager.LayoutParams(
+                        1, 1,
+                        overlayType,
+                        WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE
+                                | WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL
+                                | WindowManager.LayoutParams.FLAG_WATCH_OUTSIDE_TOUCH,
+                        PixelFormat.TRANSLUCENT
+                );
+                quantumPulseParams.gravity = Gravity.TOP | Gravity.START;
+                quantumPulseParams.x = 0;
+                quantumPulseParams.y = 0;
+                try {
+                    windowManager.addView(quantumPulseView, quantumPulseParams);
+                } catch (Exception ignored) {}
+            }
+            if (!pulseRunning) {
+                pulseRunning = true;
+                scheduleNextQuantumPulse();
+            }
+        });
+    }
+
+    private void scheduleNextQuantumPulse() {
+        if (!pulseRunning || !TeleportEngine.isActive()) return;
+        mainHandler.postDelayed(() -> {
+            if (!pulseRunning || quantumPulseView == null || quantumPulseParams == null) return;
+            try {
+                // Микро-обновление параметров заставляет SurfaceFlinger сбросить буфер тача одним куском
+                quantumPulseParams.alpha = (quantumPulseParams.alpha == 0.99f) ? 0.98f : 0.99f;
+                windowManager.updateViewLayout(quantumPulseView, quantumPulseParams);
+            } catch (Exception ignored) {}
+            int chunks = TeleportEngine.getCurrentChunks();
+            long intervalMs = Math.max(16L, 72L - chunks); // При 50 чанках стробирует каждые 22 мс (~45 Гц кусками)
+            scheduleNextQuantumPulse();
+        }, Math.max(16L, 72L - TeleportEngine.getCurrentChunks()));
+    }
+
     public void healBrokenTouchTimeouts() {
         if (!ShizukuManager.isPermissionGranted()) return;
         new Thread(() -> {
             ShizukuManager.execCommand(
-                "settings put secure long_press_timeout 500; " +
-                "settings put secure multi_press_timeout 300; " +
+                "settings put secure long_press_timeout 400; " +
+                "settings put secure multi_press_timeout 250; " +
                 "settings delete secure tap_duration_threshold; " +
                 "settings delete secure touch_blocking_period; " +
                 "settings put system pointer_location 0; " +
@@ -198,15 +274,14 @@ public class MainActivity extends Activity {
                         float size = 8f + (crosshairScale / 100f) * 28f;
                         float gap = 4f + (crosshairScale / 100f) * 10f;
 
-                        // Dynamic Dot Crosshair: меняет оттенок при активном Квантовом Телепорте / AWP-Lock
                         int activeColor = crosshairColor;
                         if (dynamicCrosshairEnabled && TeleportEngine.isActive()) {
                             if (TeleportEngine.isSmartAwpLockEnabled()) {
-                                activeColor = Color.parseColor("#F43F5E"); // Неоново-алый для AWP-Lock
+                                activeColor = Color.parseColor("#F43F5E");
                             } else if (TeleportEngine.isAntiRecoilEnabled()) {
-                                activeColor = Color.parseColor("#10B981"); // Изумрудный при активном Anti-Recoil
+                                activeColor = Color.parseColor("#10B981");
                             } else {
-                                activeColor = Color.parseColor("#38BDF8"); // Квантовый голубой импульс
+                                activeColor = Color.parseColor("#38BDF8");
                             }
                         }
 
@@ -214,7 +289,6 @@ public class MainActivity extends Activity {
                         paint.setAlpha((int) (255 * (crosshairOpacity / 100f)));
                         paint.setStrokeWidth(3.2f);
 
-                        // Отрисовка динамического импульсного кольца
                         if (dynamicCrosshairEnabled && (TeleportEngine.isActive() || dynamicPulseRadius > 0f)) {
                             ringPaint.setStyle(Paint.Style.STROKE);
                             ringPaint.setStrokeWidth(2.0f);
@@ -288,16 +362,6 @@ public class MainActivity extends Activity {
             if (rawTouchX >= boxLeft && rawTouchX <= boxRight && rawTouchY >= boxTop && rawTouchY <= boxBottom) {
                 return true;
             }
-
-            if (floatingBtnView != null) {
-                int[] btnLoc = new int[2];
-                floatingBtnView.getLocationOnScreen(btnLoc);
-                float btnCenterX = btnLoc[0] + (floatingBtnView.getWidth() / 2f);
-                float btnCenterY = btnLoc[1] + (floatingBtnView.getHeight() / 2f);
-                if (btnCenterX >= boxLeft && btnCenterX <= boxRight && btnCenterY >= boxTop && btnCenterY <= boxBottom) {
-                    return true;
-                }
-            }
         }
         DisplayMetrics dm = new DisplayMetrics();
         windowManager.getDefaultDisplay().getRealMetrics(dm);
@@ -313,6 +377,7 @@ public class MainActivity extends Activity {
                 return;
             }
             if (!checkAndRequestOverlayPermission()) return;
+            setQuantumOverlayStrobe(true);
             if (floatingBtnView != null) return;
 
             int overlayType = Build.VERSION.SDK_INT >= Build.VERSION_CODES.O
@@ -354,18 +419,18 @@ public class MainActivity extends Activity {
             floatingTxtView = new TextView(this);
             updateFloatingBubbleAppearance();
 
-            bubbleContainer.addView(floatingTxtView, new FrameLayout.LayoutParams(134, 134, Gravity.CENTER));
+            bubbleContainer.addView(floatingTxtView, new FrameLayout.LayoutParams(128, 128, Gravity.CENTER));
             floatingBtnView = bubbleContainer;
 
             floatBtnParams = new WindowManager.LayoutParams(
-                    146, 146,
+                    140, 140,
                     overlayType,
                     getStealthOverlayFlags(false),
                     PixelFormat.TRANSLUCENT
             );
-            floatBtnParams.gravity = Gravity.TOP | Gravity.START;
-            floatBtnParams.x = 40;
-            floatBtnParams.y = 260;
+            floatBtnParams.gravity = Gravity.BOTTOM | Gravity.END;
+            floatBtnParams.x = 28;
+            floatBtnParams.y = 120;
 
             floatingBtnView.setOnTouchListener(new View.OnTouchListener() {
                 private int initX, initY;
@@ -384,8 +449,8 @@ public class MainActivity extends Activity {
                             return true;
 
                         case MotionEvent.ACTION_MOVE:
-                            int dx = (int) (event.getRawX() - touchX);
-                            int dy = (int) (event.getRawY() - touchY);
+                            int dx = (int) (touchX - event.getRawX());
+                            int dy = (int) (touchY - event.getRawY());
                             if (Math.abs(dx) > 6 || Math.abs(dy) > 6) {
                                 moved = true;
                                 if (trashDropView != null && trashDropView.getVisibility() != View.VISIBLE) {
@@ -403,8 +468,6 @@ public class MainActivity extends Activity {
                                 GradientDrawable bg = (GradientDrawable) trashBoxView.getBackground();
                                 bg.setColor(Color.parseColor(inTrash ? "#FFBE123C" : "#E60F172A"));
                                 trashBoxView.setText(inTrash ? "💥 ОТПУСТИТЕ ДЛЯ УДАЛЕНИЯ" : "🗑 Перетащите сюда, чтобы удалить");
-                                trashBoxView.setScaleX(inTrash ? 1.10f : 1.0f);
-                                trashBoxView.setScaleY(inTrash ? 1.10f : 1.0f);
                             }
                             return true;
 
@@ -418,7 +481,7 @@ public class MainActivity extends Activity {
                                 getSharedPreferences("so2_teleport_prefs", Context.MODE_PRIVATE)
                                         .edit().putBoolean("float_btn_enabled", false).apply();
                                 removeFloatingButton();
-                                Toast.makeText(MainActivity.this, "Кнопка 📐 удалена", Toast.LENGTH_SHORT).show();
+                                Toast.makeText(MainActivity.this, "Кнопка Со2 скрыта", Toast.LENGTH_SHORT).show();
                                 return true;
                             }
                             if (!moved) {
@@ -426,12 +489,13 @@ public class MainActivity extends Activity {
                                 String ratio = prefs.getString("stretch_ratio", "16:9");
                                 if (!isStretchedActive) {
                                     applyResolutionRatio(ratio);
+                                    setQuantumOverlayStrobe(true);
                                     triggerCrosshairPulse();
-                                    Toast.makeText(MainActivity.this, "Растяг " + ratio + " + Квантовый Телепорт ВКЛ!", Toast.LENGTH_SHORT).show();
+                                    Toast.makeText(MainActivity.this, "Со2: Растяг " + ratio + " + ТЕЛЕПОРТ ВКЛ!", Toast.LENGTH_SHORT).show();
                                 } else {
                                     resetResolution();
                                     triggerCrosshairPulse();
-                                    Toast.makeText(MainActivity.this, "Стандартный экран возвращён", Toast.LENGTH_SHORT).show();
+                                    Toast.makeText(MainActivity.this, "Со2: Стандартный экран", Toast.LENGTH_SHORT).show();
                                 }
                             }
                             return true;
@@ -449,22 +513,20 @@ public class MainActivity extends Activity {
 
     private void updateFloatingBubbleAppearance() {
         if (floatingTxtView == null) return;
-        SharedPreferences prefs = getSharedPreferences("so2_teleport_prefs", Context.MODE_PRIVATE);
-        String savedRatio = prefs.getString("stretch_ratio", "16:9");
-
-        floatingTxtView.setText(isStretchedActive ? savedRatio : "📐");
+        floatingTxtView.setText("Со2");
         floatingTxtView.setTextColor(Color.WHITE);
-        floatingTxtView.setTextSize(isStretchedActive ? 14f : 20f);
+        floatingTxtView.setTextSize(16f);
         floatingTxtView.setGravity(Gravity.CENTER);
 
         GradientDrawable circle = new GradientDrawable();
-        circle.setShape(GradientDrawable.OVAL);
+        circle.setShape(GradientDrawable.RECTANGLE);
+        circle.setCornerRadius(34f);
         if (isStretchedActive) {
             circle.setColor(Color.parseColor("#E60284C7"));
-            circle.setStroke(4, Color.parseColor("#FFFFFF"));
+            circle.setStroke(4, Color.parseColor("#38BDF8"));
         } else {
-            circle.setColor(Color.parseColor("#CC0B192C"));
-            circle.setStroke(3, Color.parseColor("#38BDF8"));
+            circle.setColor(Color.parseColor("#D9080E1A"));
+            circle.setStroke(3, Color.parseColor("#64748B"));
         }
         floatingTxtView.setBackground(circle);
     }
@@ -519,10 +581,11 @@ public class MainActivity extends Activity {
 
         isStretchedActive = true;
         runOnUiThread(this::updateFloatingBubbleAppearance);
+        setQuantumOverlayStrobe(true);
 
         int snap = prefs.getInt("tp_snap_power", 500);
         String preset = prefs.getString("selected_preset", "teleport");
-        TeleportEngine.setStepQuantization(true, snap / 25.0f);
+        TeleportEngine.setStepQuantization(true, snap / 15.0f);
         TeleportEngine.startTeleport(this, snap, preset);
 
         new Thread(() -> {
@@ -556,6 +619,7 @@ public class MainActivity extends Activity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
+        setQuantumOverlayStrobe(false);
         removeCrosshairOverlay();
         removeFloatingButton();
     }
