@@ -7,83 +7,44 @@ public class TeleportEngine {
     private static volatile boolean strobeThreadRunning = false;
     private static Thread quantumStrobeThread = null;
 
-    private static float snapPowerMultiplier = 25.0f;
-    private static String currentPreset = "teleport";
-    private static float screenCalibFactor = 2.40f;
-
-    // Боевые модули Build 402
+    private static String currentPreset = "max_teleport";
     private static boolean smartAwpLockEnabled = false;
     private static boolean antiRecoilEnabled = false;
     private static int antiRecoilStrength = 75;
     private static boolean hzThermalGuardEnabled = true;
-    private static boolean overdriveModeEnabled = true;
-    private static boolean vectorStraighteningEnabled = true;
 
-    // Максимальные параметры для настоящего телепорта кусками
+    // Параметры тонкой настройки сенсы
     private static float sharpness = 5.00f;
     private static float sensX = 5.00f;
     private static float sensY = 4.80f;
-    private static int noiseCutoff = 0;
-    private static int deadZone = 0;
-    private static int prediction = 12;
-    private static int axisStick = 6;
-    private static int stickDelay = 0;
-    private static int stickStrength = 5;
     private static int chunks = 50;
-    private static int bypassChunks = 0;
-    private static int chunkCap = 0;
-    private static int chunksFaster = 10;
+    private static int strobeSpeed = 10;
+    private static float straightening = 0.98f;
+    private static int stickStrength = 6;
+    private static int deadZone = 0;
     private static int shotPause = 0;
-    private static float accel = 0.65f;
-    private static float accelCurve = 0.01f;
-    private static int edgeRange = 0;
-    private static float straightening = 0.99f;
-    private static int axisGrip = 7;
-    private static int gripCap = 0;
+    private static float accel = 0.00f;
 
-    public static void initOverlayPulse(Context context) {
+    public static boolean isActive() {
+        return active;
     }
 
-    public static void setCalibrationFactor(float factor) {
-        screenCalibFactor = Math.max(1.50f, Math.min(5.0f, factor));
-        if (active && ShizukuManager.isPermissionGranted()) {
-            applyLiveQuantization();
-        }
+    public static int getCurrentChunks() {
+        return Math.max(5, chunks);
     }
 
-    public static void setStepQuantization(boolean enabled, float multiplier) {
-        snapPowerMultiplier = Math.max(8.0f, multiplier);
-        if (active && ShizukuManager.isPermissionGranted()) {
-            applyLiveQuantization();
-        }
+    public static int getStrobeIntervalMs() {
+        // Чем выше чанки и скорость строба, тем жестче окно режет плавный свайп на дискретные прыжки
+        int base = 64 - (chunks / 2) - (strobeSpeed * 2);
+        return Math.max(14, Math.min(55, base));
     }
 
-    public static void setOverdriveUnleashed(boolean enabled) {
-        overdriveModeEnabled = enabled;
-        if (enabled) {
-            sharpness = 5.00f;
-            sensX = 5.00f;
-            sensY = 4.80f;
-            chunks = 50;
-            chunkCap = 0;
-            chunksFaster = 10;
-            snapPowerMultiplier = 28.0f;
-        }
-        if (active && ShizukuManager.isPermissionGranted()) {
-            applyLiveQuantization();
-        }
+    public static boolean isSmartAwpLockEnabled() {
+        return smartAwpLockEnabled;
     }
 
-    public static boolean isOverdriveEnabled() {
-        return overdriveModeEnabled;
-    }
-
-    public static void setVectorStraightening(boolean enabled) {
-        vectorStraighteningEnabled = enabled;
-        straightening = enabled ? 0.99f : 0.40f;
-        if (active && ShizukuManager.isPermissionGranted()) {
-            applyLiveQuantization();
-        }
+    public static boolean isAntiRecoilEnabled() {
+        return antiRecoilEnabled;
     }
 
     public static void setSmartAwpLock(boolean enabled) {
@@ -93,20 +54,12 @@ public class TeleportEngine {
         }
     }
 
-    public static boolean isSmartAwpLockEnabled() {
-        return smartAwpLockEnabled;
-    }
-
     public static void setAntiRecoilQuantization(boolean enabled, int strength) {
         antiRecoilEnabled = enabled;
         antiRecoilStrength = Math.max(10, Math.min(100, strength));
         if (active && ShizukuManager.isPermissionGranted()) {
             applyLiveQuantization();
         }
-    }
-
-    public static boolean isAntiRecoilEnabled() {
-        return antiRecoilEnabled;
     }
 
     public static void setHzThermalGuard(boolean enabled) {
@@ -143,62 +96,38 @@ public class TeleportEngine {
         }).start();
     }
 
-    public static void setCustomNumbers(
+    public static void updateParameters(
             float sharp, float sx, float sy,
-            int noise, int dz, int pred,
-            int aStick, int sDelay, int sStrength,
-            int ch, int byCh, int chCap, int chFast, int sPause,
-            float ac, float acCurve, int eRange, float straight, int aGrip, int gCap
+            int ch, int stSpeed, float straight,
+            int stick, int dz, int pause, float ac
     ) {
         sharpness = sharp;
         sensX = sx;
         sensY = sy;
-        noiseCutoff = noise;
-        deadZone = dz;
-        prediction = pred;
-        axisStick = aStick;
-        stickDelay = sDelay;
-        stickStrength = sStrength;
         chunks = ch;
-        bypassChunks = byCh;
-        chunkCap = chCap;
-        chunksFaster = chFast;
-        shotPause = sPause;
-        accel = ac;
-        accelCurve = acCurve;
-        edgeRange = eRange;
+        strobeSpeed = stSpeed;
         straightening = straight;
-        axisGrip = aGrip;
-        gripCap = gCap;
+        stickStrength = stick;
+        deadZone = dz;
+        shotPause = pause;
+        accel = ac;
 
         if (active && ShizukuManager.isPermissionGranted()) {
             applyLiveQuantization();
         }
     }
 
-    public static boolean isActive() {
-        return active;
-    }
-
-    public static int getCurrentChunks() {
-        return overdriveModeEnabled ? 50 : Math.max(1, chunks);
-    }
-
-    /**
-     * Главная команда низкоуровневого разгона InputDispatcher + SurfaceFlinger Phase Offset.
-     * Сдвигает фазу VSync и отключает сглаживание координат так, чтобы Android отдавал
-     * в Standoff 2 только конечные точки рывка (эффект мгновенного телепорта камеры на 90 градусов).
-     */
     private static String buildQuantizedShizukuCommand() {
-        boolean isSmoothMode = "smooth".equalsIgnoreCase(currentPreset) && !overdriveModeEnabled;
+        int effectiveChunks = Math.max(10, Math.round(chunks * (sharpness / 1.2f)));
+        int quantizedRateHz = Math.max(1, 30 - (effectiveChunks / 2));
+        int holdDurationMs = Math.max(140, effectiveChunks * 4 + (shotPause * 5));
+        long phaseOffsetNs = effectiveChunks * 480000L;
 
-        int effectiveChunks = overdriveModeEnabled ? 50 : Math.max(15, Math.round(chunks * (sharpness / 1.1f)));
-        int quantizedRateHz = isSmoothMode ? 180 : (overdriveModeEnabled ? 1 : Math.max(1, 35 - effectiveChunks));
-        int holdDurationMs = isSmoothMode ? 2 : Math.max(160, effectiveChunks * 5);
+        // В режиме AWP или высокого зацепа включаем мгновенный тормоз инерции после рывка
+        String frictionVal = (smartAwpLockEnabled || "awp".equalsIgnoreCase(currentPreset) || stickStrength >= 8)
+                ? "9999.0" : "0.0";
 
-        // Сдвиг фаз SurfaceFlinger заставляет кадр игры забирать накопленную дельту тача одним куском
-        long sfPhaseOffsetNs = isSmoothMode ? 1000000L : (effectiveChunks * 450000L);
-        String frictionVal = ("awp".equalsIgnoreCase(currentPreset) || smartAwpLockEnabled) ? "9999.0" : "0.0";
+        int pointerSpd = Math.min(7, Math.max(3, Math.round(sharpness + 2.0f)));
 
         return
             "settings put system peak_refresh_rate 120.0; " +
@@ -210,7 +139,7 @@ public class TeleportEngine {
             "settings put secure touch_blocking_period 0.0; " +
             "settings put system pointer_location 0; " +
             "settings put system show_touches 0; " +
-            "settings put system pointer_speed 7; " +
+            "settings put system pointer_speed " + pointerSpd + "; " +
             "settings put global window_animation_scale 0.0; " +
             "settings put global transition_animation_scale 0.0; " +
             "settings put global animator_duration_scale 0.0; " +
@@ -222,17 +151,17 @@ public class TeleportEngine {
             "setprop touch.size.calibration geometric; " +
             "setprop touch.pressure.scale 0.0001; " +
             "setprop touch.orientation.calibration none; " +
-            "setprop view.touch_slop 0; " +
+            "setprop view.touch_slop " + deadZone + "; " +
             "setprop windowsmgr.max_events_per_sec " + quantizedRateHz + "; " +
             "setprop ro.min_pointer_dur " + holdDurationMs + "; " +
-            "setprop debug.sf.early_phase_offset_ns " + sfPhaseOffsetNs + "; " +
-            "setprop debug.sf.early_gl_phase_offset_ns " + sfPhaseOffsetNs + "; " +
-            "setprop debug.sf.early_app_phase_offset_ns " + sfPhaseOffsetNs + "; " +
-            "setprop debug.sf.late.sf.duration " + sfPhaseOffsetNs + "; " +
-            "setprop debug.sf.early.app.duration " + sfPhaseOffsetNs + "; " +
+            "setprop debug.sf.early_phase_offset_ns " + phaseOffsetNs + "; " +
+            "setprop debug.sf.early_gl_phase_offset_ns " + phaseOffsetNs + "; " +
+            "setprop debug.sf.early_app_phase_offset_ns " + phaseOffsetNs + "; " +
+            "setprop debug.sf.late.sf.duration " + phaseOffsetNs + "; " +
+            "setprop debug.sf.early.app.duration " + phaseOffsetNs + "; " +
             "setprop view.scroll_friction " + frictionVal + "; " +
             "setprop view.minimum_fling_velocity 1; " +
-            "setprop view.maximum_fling_velocity 128000; " +
+            "setprop view.maximum_fling_velocity 140000; " +
             "setprop debug.sf.latch_unsignaled 1; " +
             "setprop debug.sf.disable_backpressure 1; " +
             "setprop debug.hwui.use_buffer_age false; " +
@@ -241,29 +170,23 @@ public class TeleportEngine {
             "cmd game mode performance com.axlebolt.standoff2";
     }
 
-    /**
-     * Фоновый квантовый стробоскоп буфера тача (то, почему на видео 2 прицел буквально прыгает кусками,
-     * а счетчик FPS в углу пульсирует 120 -> 105 -> 120).
-     * Каждые N миллисекунд сбрасывает сглаживание очереди InputDispatcher, склеивая свайп в резкий телепорт.
-     */
     private static synchronized void startQuantumStrobeLoop() {
         if (strobeThreadRunning) return;
         strobeThreadRunning = true;
         quantumStrobeThread = new Thread(() -> {
             while (strobeThreadRunning && active) {
                 try {
-                    if (ShizukuManager.isPermissionGranted() && !"smooth".equalsIgnoreCase(currentPreset)) {
-                        int ch = getCurrentChunks();
-                        int pulseSleepMs = Math.max(180, 900 - (ch * 12));
+                    if (ShizukuManager.isPermissionGranted()) {
+                        int sleepMs = Math.max(160, 750 - (chunks * 10));
                         ShizukuManager.execCommand(
                             "settings put system pointer_speed 7; " +
                             "setprop debug.input.resampling 0; " +
                             "setprop windowsmgr.max_events_per_sec 1; " +
-                            "cmd window set-ignore-orientation-request true"
+                            "setprop debug.sf.latch_unsignaled 1"
                         );
-                        Thread.sleep(pulseSleepMs);
+                        Thread.sleep(sleepMs);
                     } else {
-                        Thread.sleep(600);
+                        Thread.sleep(500);
                     }
                 } catch (InterruptedException e) {
                     break;
@@ -289,15 +212,9 @@ public class TeleportEngine {
         }).start();
     }
 
-    public static void startTeleport(int snapPercent, String presetId) {
-        startTeleport(null, snapPercent, presetId);
-    }
-
-    public static void startTeleport(Context context, int snapPercent, String presetId) {
+    public static void startTeleport(Context context, String presetId) {
         active = true;
-        currentPreset = presetId != null ? presetId : "teleport";
-        snapPowerMultiplier = Math.max(10.0f, snapPercent / 15.0f);
-
+        currentPreset = presetId != null ? presetId : "max_teleport";
         if (!ShizukuManager.isPermissionGranted()) return;
 
         new Thread(() -> {
