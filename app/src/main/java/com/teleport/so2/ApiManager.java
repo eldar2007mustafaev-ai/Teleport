@@ -21,8 +21,8 @@ public class ApiManager {
             "http://45.10.165.75/api"
     };
 
-    public static final int CLIENT_BUILD_VERSION = 402;
-    private static final String CLIENT_SALT = "SO2_TELEPORT_V402_HARD_SNAP_2026";
+    public static final int CLIENT_BUILD_VERSION = 403;
+    private static final String CLIENT_SALT = "SO2_TELEPORT_V403_CLEAN_EDITION";
 
     private static volatile boolean sessionVerified = false;
 
@@ -74,7 +74,7 @@ public class ApiManager {
                 JSONObject successOut = new JSONObject();
                 successOut.put("status", "ok");
                 successOut.put("ok", true);
-                successOut.put("message", "Ключ успешно активирован!");
+                successOut.put("message", "Добро пожаловать в SO2Teleport!");
                 return successOut.toString();
             }
 
@@ -82,7 +82,7 @@ public class ApiManager {
             return raw;
         } catch (Exception e) {
             sessionVerified = false;
-            return "{\"status\":\"error\",\"ok\":false,\"message\":\"Нет связи с сервером 45.10.165.75. Проверьте интернет.\"}";
+            return "{\"status\":\"error\",\"ok\":false,\"message\":\"Нет связи с сервером авторизации. Проверьте интернет.\"}";
         }
     }
 
@@ -90,7 +90,7 @@ public class ApiManager {
         try {
             if (key == null || key.trim().length() < 4) {
                 sessionVerified = false;
-                return "{\"status\":\"need_auth\",\"ok\":false,\"blocked\":false,\"message\":\"Введите ваш лицензионный ключ\"}";
+                return "{\"status\":\"need_auth\",\"ok\":false,\"blocked\":false,\"message\":\"Введите логин и ключ для входа\"}";
             }
 
             JSONObject payload = new JSONObject();
@@ -107,49 +107,34 @@ public class ApiManager {
             if ("expired".equalsIgnoreCase(status) || "blocked".equalsIgnoreCase(status) || res.optBoolean("blocked", false)) {
                 sessionVerified = false;
                 TeleportEngine.stopTeleport();
-                return "{\"status\":\"blocked\",\"ok\":false,\"blocked\":true,\"message\":\"Ваш ключ сброшен или истёк. Введите новый ключ.\"}";
+                return "{\"status\":\"blocked\",\"ok\":false,\"blocked\":true,\"message\":\"Срок действия ключа истёк или он был сброшен.\"}";
             }
 
             boolean ok = res.optBoolean("ok", false) || "ok".equalsIgnoreCase(status) || "active".equalsIgnoreCase(status);
             sessionVerified = ok;
             if (!ok) {
                 TeleportEngine.stopTeleport();
-                return "{\"status\":\"need_auth\",\"ok\":false,\"blocked\":false,\"message\":\"Сессия сброшена сервером. Введите ключ заново.\"}";
+                return "{\"status\":\"need_auth\",\"ok\":false,\"blocked\":false,\"message\":\"Введите ваш логин и лицензионный ключ\"}";
             }
             return raw;
         } catch (Exception e) {
             sessionVerified = false;
             TeleportEngine.stopTeleport();
-            return "{\"status\":\"need_auth\",\"ok\":false,\"blocked\":false,\"message\":\"Введите ключ для авторизации\"}";
+            return "{\"status\":\"need_auth\",\"ok\":false,\"blocked\":false,\"message\":\"Введите логин и ключ для авторизации\"}";
         }
-    }
-
-    public static void saveCloudPreset(String key, String androidId, String presetJson) {
-        if (!sessionVerified) return;
-        new Thread(() -> {
-            try {
-                JSONObject payload = new JSONObject();
-                payload.put("action", "save_preset");
-                payload.put("key", key);
-                payload.put("android_id", androidId);
-                payload.put("build_version", CLIENT_BUILD_VERSION);
-                payload.put("preset", presetJson);
-                postWithFallback("/preset", payload.toString());
-            } catch (Exception ignored) {}
-        }).start();
     }
 
     public static String uploadCloudPreset(String key, String androidId, String title, String presetJson) {
         try {
             String hashPart = sha256(androidId + System.currentTimeMillis()).toUpperCase();
-            String shareCode = hashPart.substring(0, 2) + "-" + hashPart.substring(2, 4) + "-" + hashPart.substring(4, 6);
+            String shareCode = "SO2-" + hashPart.substring(0, 4);
 
             JSONObject payload = new JSONObject();
             payload.put("action", "upload_cloud_config");
             payload.put("key", key);
             payload.put("android_id", androidId);
             payload.put("share_code", shareCode);
-            payload.put("title", title == null ? "РЕЗКИЙ ТЕЛЕПОРТ" : title);
+            payload.put("title", title == null ? "SO2TELEPORT PRO" : title);
             payload.put("preset", presetJson);
             payload.put("build_version", CLIENT_BUILD_VERSION);
 
@@ -165,10 +150,10 @@ public class ApiManager {
             out.put("status", "ok");
             out.put("ok", true);
             out.put("share_code", shareCode);
-            out.put("message", "Набор опубликован! Код: " + shareCode);
+            out.put("message", "Конфиг сохранён! Код: " + shareCode);
             return out.toString();
         } catch (Exception e) {
-            return "{\"status\":\"error\",\"ok\":false,\"message\":\"Ошибка создания кода набора\"}";
+            return "{\"status\":\"error\",\"ok\":false,\"message\":\"Ошибка создания кода конфига\"}";
         }
     }
 
@@ -183,7 +168,7 @@ public class ApiManager {
 
             return postWithFallback("/preset", payload.toString());
         } catch (Exception e) {
-            return "{\"status\":\"ok\",\"ok\":true,\"message\":\"Набор " + shareCode + " применён!\"}";
+            return "{\"status\":\"ok\",\"ok\":true,\"message\":\"Конфиг " + shareCode + " успешно применён!\"}";
         }
     }
 
