@@ -44,12 +44,12 @@ public class AndroidBridge {
     public String handleShizukuCardClick() {
         if (!isShizukuReady()) {
             requestShizukuPermission();
-            return "Откройте окно Shizuku и нажмите «Разрешить»";
+            return "Нажмите «Разрешить» в появившемся окне Shizuku";
         } else {
             if (activity instanceof MainActivity) {
                 ((MainActivity) activity).healBrokenTouchTimeouts();
             }
-            return "Shizuku уже активен и готов к работе!";
+            return "Shizuku активен и полностью готов!";
         }
     }
 
@@ -60,10 +60,11 @@ public class AndroidBridge {
         String preset = prefs.getString("selected_preset", "max_teleport");
 
         if (isRunning) {
-            TeleportEngine.startTeleport(activity, preset);
             if (activity instanceof MainActivity) {
+                ((MainActivity) activity).checkAndRequestOverlayPermission();
                 ((MainActivity) activity).setQuantumOverlayStrobe(true);
             }
+            TeleportEngine.startTeleport(activity, preset);
         } else {
             TeleportEngine.stopTeleport();
             if (activity instanceof MainActivity) {
@@ -94,16 +95,16 @@ public class AndroidBridge {
             TeleportEngine.setSmartAwpLock(false);
             TeleportEngine.updateParameters(4.80f, 4.90f, 4.70f, 45, 9, 0.99f, 9, 0, 4, 0.00f);
         } else {
-            // max_teleport
             TeleportEngine.setSmartAwpLock(false);
             TeleportEngine.updateParameters(5.00f, 5.00f, 4.80f, 50, 10, 0.98f, 6, 0, 0, 0.00f);
         }
 
         TeleportEngine.startTeleport(activity, presetId);
         if (activity instanceof MainActivity) {
+            ((MainActivity) activity).checkAndRequestOverlayPermission();
             ((MainActivity) activity).setQuantumOverlayStrobe(true);
         }
-        return "Пресет активирован! Телепорт включён.";
+        return "Режим активирован! Квантовый телепорт включён.";
     }
 
     @JavascriptInterface
@@ -152,7 +153,7 @@ public class AndroidBridge {
         prefs.edit().putBoolean("hz_thermal_guard", enabled).apply();
         if (!isShizukuReady()) return "Сначала активируйте Shizuku!";
         TeleportEngine.setHzThermalGuard(enabled);
-        return enabled ? "Фиксация 120 Гц и защита от троттлинга: ВКЛ" : "Стандартный режим частот";
+        return enabled ? "Фиксация 120 Гц и анти-троттлинг: ВКЛ" : "Стандартный режим частот";
     }
 
     @JavascriptInterface
@@ -233,7 +234,7 @@ public class AndroidBridge {
         if (activity instanceof MainActivity) {
             ((MainActivity) activity).applyResolutionRatio(clean);
         }
-        return "Растяг " + clean + " успешно применён!";
+        return "Растяг " + clean + " + Телепорт-сетка применены!";
     }
 
     @JavascriptInterface
