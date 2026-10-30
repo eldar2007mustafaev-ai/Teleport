@@ -9,6 +9,7 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.PixelFormat;
+import android.graphics.RectF;
 import android.graphics.drawable.GradientDrawable;
 import android.net.Uri;
 import android.os.Build;
@@ -20,6 +21,7 @@ import android.util.DisplayMetrics;
 import android.view.Gravity;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
+import android.view.Surface;
 import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
@@ -49,11 +51,11 @@ public class MainActivity extends Activity {
     private View floatingBtnView;
     private TextView floatingTxtView;
     private View trashDropView;
-    private TextView trashBoxView;
+    private CyberTrashView cyberTrashIconView;
     private WindowManager.LayoutParams floatBtnParams;
     private WindowManager.LayoutParams trashParams;
 
-    // Квантовый стробоскоп склейки чанков (работает автономно от кнопки растяга!)
+    // Квантовый стробоскоп склейки чанков (работает только в фоне поверх игры!)
     private View quantumPulseView;
     private WindowManager.LayoutParams quantumPulseParams;
     private boolean strobeWanted = false;
@@ -64,6 +66,96 @@ public class MainActivity extends Activity {
     private boolean stealthModeEnabled = false;
     private OnBackInvokedCallback backInvokedCallback;
 
+    /**
+     * КАСТОМНОЕ НЕОНОВОЕ ВЕДРО УДАЛЕНИЯ С АНИМАЦИЕЙ ОТКРЫТИЯ КРЫШКИ И ПОРТАЛОМ
+     */
+    private static class CyberTrashView extends View {
+        private final Paint bgPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+        private final Paint borderPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+        private final Paint iconPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+        private final Paint textPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+        private final RectF pillRect = new RectF();
+        private final RectF binBody = new RectF();
+        private boolean hovered = false;
+
+        public CyberTrashView(Context context) {
+            super(context);
+            borderPaint.setStyle(Paint.Style.STROKE);
+            borderPaint.setStrokeWidth(4.5f);
+
+            iconPaint.setStyle(Paint.Style.STROKE);
+            iconPaint.setStrokeWidth(4.2f);
+            iconPaint.setStrokeCap(Paint.Cap.ROUND);
+
+            textPaint.setColor(Color.WHITE);
+            textPaint.setTextSize(32f);
+            textPaint.setFakeBoldText(true);
+            textPaint.setTextAlign(Paint.Align.LEFT);
+        }
+
+        public void setHovered(boolean isHover) {
+            if (this.hovered != isHover) {
+                this.hovered = isHover;
+                animate().scaleX(isHover ? 1.12f : 1.0f)
+                        .scaleY(isHover ? 1.12f : 1.0f)
+                        .setDuration(140)
+                        .start();
+                invalidate();
+            }
+        }
+
+        @Override
+        protected void onDraw(Canvas canvas) {
+            super.onDraw(canvas);
+            float w = getWidth();
+            float h = getHeight();
+            float pad = 12f;
+            pillRect.set(pad, pad, w - pad, h - pad);
+
+            if (hovered) {
+                bgPaint.setColor(Color.parseColor("#F24C0519"));
+                borderPaint.setColor(Color.parseColor("#FF2E93"));
+                iconPaint.setColor(Color.parseColor("#FF2E93"));
+            } else {
+                bgPaint.setColor(Color.parseColor("#EB140828"));
+                borderPaint.setColor(Color.parseColor("#A855F7"));
+                iconPaint.setColor(Color.parseColor("#D946EF"));
+            }
+
+            canvas.drawRoundRect(pillRect, 999f, 999f, bgPaint);
+            canvas.drawRoundRect(pillRect, 999f, 999f, borderPaint);
+
+            // Рисуем неоновое ведро слева внутри капсулы
+            float cx = pad + 64f;
+            float cy = h / 2f;
+
+            // Корпус корзины
+            binBody.set(cx - 18f, cy - 10f, cx + 18f, cy + 22f);
+            canvas.drawRoundRect(binBody, 6f, 6f, iconPaint);
+
+            // Внутренние неоновые рёбра ведра
+            canvas.drawLine(cx - 7f, cy - 3f, cx - 7f, cy + 15f, iconPaint);
+            canvas.drawLine(cx + 7f, cy - 3f, cx + 7f, cy + 15f, iconPaint);
+
+            // Крышка ведра (приподнимается при наведении кнопки)
+            float lidOffsetY = hovered ? -9f : -3f;
+            canvas.drawLine(cx - 23f, cy - 12f + lidOffsetY, cx + 23f, cy - 12f + lidOffsetY, iconPaint);
+            canvas.drawLine(cx - 8f, cy - 18f + lidOffsetY, cx + 8f, cy - 18f + lidOffsetY, iconPaint);
+
+            // Текст подсказки
+            String label = hovered ? "ОТПУСТИТЕ ДЛЯ УДАЛЕНИЯ" : "УБРАТЬ КНОПКУ «T»";
+            Paint.FontMetrics fm = textPaint.getFontMetrics();
+            float textY = cy - (fm.ascent + fm.descent) / 2f;
+            textPaint.setColor(hovered ? Color.parseColor("#FFE4E6") : Color.parseColor("#F3E8FF"));
+            canvas.drawText(label, cx + 42f, textY, textPaint);
+        }
+    }
+
+    /**
+     * КВАНТОВЫЙ СТРОБОСКОП ПАКЕТОВ ВВОДА (MULTI-PULSE INPUT BATCHING):
+     * Во время фазы удержания делает серию быстрых транзакций окна, заставляя SurfaceFlinger
+     * и InputDispatcher склеить путь пальца в один резкий дискретный прыжок камеры.
+     */
     private final Runnable batchStrobeRunnable = new Runnable() {
         @Override
         public void run() {
@@ -74,15 +166,16 @@ public class MainActivity extends Activity {
                 try {
                     pulsePhase = !pulsePhase;
                     if (pulsePhase) {
-                        // Фаза удержания чанка: склеивает плавный путь пальца в один дискретный вектор
-                        quantumPulseParams.width = 6;
-                        quantumPulseParams.height = 6;
-                        quantumPulseParams.x = 3;
-                        windowManager.updateViewLayout(quantumPulseView, quantumPulseParams);
+                        int burst = TeleportEngine.getQuantumBurstCount();
+                        for (int i = 0; i < burst; i++) {
+                            quantumPulseParams.width = 4 + (i % 3);
+                            quantumPulseParams.height = 4 + (i % 3);
+                            quantumPulseParams.x = (i % 2 == 0) ? 2 : 0;
+                            windowManager.updateViewLayout(quantumPulseView, quantumPulseParams);
+                        }
                         mainHandler.postDelayed(this, TeleportEngine.getBatchHoldMs());
                         return;
                     } else {
-                        // Фаза выброса чанка в кадр игры
                         quantumPulseParams.width = 1;
                         quantumPulseParams.height = 1;
                         quantumPulseParams.x = 0;
@@ -99,6 +192,7 @@ public class MainActivity extends Activity {
         super.onCreate(savedInstanceState);
         requestWindowFeature(Window.FEATURE_NO_TITLE);
 
+        // Жёсткая вертикальная фиксация самого приложения SO2Teleport
         setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
         getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE);
 
@@ -130,7 +224,6 @@ public class MainActivity extends Activity {
 
         setContentView(webView);
 
-        // Регистрация свайпа «Назад» для Android 13+ (API 33+)
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             backInvokedCallback = this::handleSwipeBackNavigation;
             getOnBackInvokedDispatcher().registerOnBackInvokedCallback(
@@ -140,10 +233,6 @@ public class MainActivity extends Activity {
         }
     }
 
-    /**
-     * Если открыта внутренняя карточка — возвращает на главный экран приложения.
-     * Если пользователь уже на главном экране — сворачивает приложение.
-     */
     private void handleSwipeBackNavigation() {
         if (webView != null) {
             webView.evaluateJavascript(
@@ -261,7 +350,7 @@ public class MainActivity extends Activity {
             if (!Settings.canDrawOverlays(this)) {
                 runOnUiThread(() -> {
                     try {
-                        Toast.makeText(this, "Разрешите показ поверх других окон!", Toast.LENGTH_LONG).show();
+                        Toast.makeText(this, "Разрешите показ поверх других окон для SO2Teleport!", Toast.LENGTH_LONG).show();
                         Intent intent = new Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
                                 Uri.parse("package:" + getPackageName()));
                         startActivity(intent);
@@ -391,24 +480,24 @@ public class MainActivity extends Activity {
     }
 
     private boolean isOverTrashBox(float rawTouchX, float rawTouchY) {
-        if (trashBoxView != null && trashDropView != null && trashDropView.getVisibility() == View.VISIBLE) {
+        if (cyberTrashIconView != null && trashDropView != null && trashDropView.getVisibility() == View.VISIBLE) {
             int[] boxLoc = new int[2];
-            trashBoxView.getLocationOnScreen(boxLoc);
-            int boxLeft = boxLoc[0] - 90;
-            int boxTop = boxLoc[1] - 110;
-            int boxRight = boxLoc[0] + trashBoxView.getWidth() + 90;
-            int boxBottom = boxLoc[1] + trashBoxView.getHeight() + 140;
+            cyberTrashIconView.getLocationOnScreen(boxLoc);
+            int boxLeft = boxLoc[0] - 80;
+            int boxTop = boxLoc[1] - 90;
+            int boxRight = boxLoc[0] + cyberTrashIconView.getWidth() + 80;
+            int boxBottom = boxLoc[1] + cyberTrashIconView.getHeight() + 120;
             if (rawTouchX >= boxLeft && rawTouchX <= boxRight && rawTouchY >= boxTop && rawTouchY <= boxBottom) {
                 return true;
             }
         }
         DisplayMetrics dm = new DisplayMetrics();
         windowManager.getDefaultDisplay().getRealMetrics(dm);
-        return rawTouchY >= (dm.heightPixels - 210);
+        return rawTouchY >= (dm.heightPixels - 200);
     }
 
     /**
-     * ПЛАВАЮЩАЯ КНОПКА УПРАВЛЯЕТ СТРОГО РАСТЯГОМ ЭКРАНА (БЕЗ ВМЕШАТЕЛЬСТВА В ТЕЛЕПОРТ)
+     * ПЛАВАЮЩАЯ КНОПКА «T» С НЕОНОВЫМ ВЕДРОМ УДАЛЕНИЯ (ВКЛЮЧАЕТ РАСТЯГ В ИГРЕ)
      */
     public void toggleFloatingButton(boolean enable) {
         runOnUiThread(() -> {
@@ -424,22 +513,11 @@ public class MainActivity extends Activity {
                     : WindowManager.LayoutParams.TYPE_PHONE;
 
             trashDropView = new FrameLayout(this);
-            trashBoxView = new TextView(this);
-            trashBoxView.setText("Перетащите сюда для удаления");
-            trashBoxView.setTextColor(Color.WHITE);
-            trashBoxView.setTextSize(13f);
-            trashBoxView.setGravity(Gravity.CENTER);
-            trashBoxView.setPadding(46, 22, 46, 22);
+            cyberTrashIconView = new CyberTrashView(this);
 
-            GradientDrawable trashBg = new GradientDrawable();
-            trashBg.setColor(Color.parseColor("#E6190B33"));
-            trashBg.setCornerRadius(999f);
-            trashBg.setStroke(4, Color.parseColor("#F43F5E"));
-            trashBoxView.setBackground(trashBg);
-
-            ((FrameLayout) trashDropView).addView(trashBoxView, new FrameLayout.LayoutParams(
-                    FrameLayout.LayoutParams.WRAP_CONTENT,
-                    FrameLayout.LayoutParams.WRAP_CONTENT,
+            ((FrameLayout) trashDropView).addView(cyberTrashIconView, new FrameLayout.LayoutParams(
+                    580,
+                    126,
                     Gravity.CENTER
             ));
             trashDropView.setVisibility(View.GONE);
@@ -452,7 +530,7 @@ public class MainActivity extends Activity {
                     PixelFormat.TRANSLUCENT
             );
             trashParams.gravity = Gravity.BOTTOM | Gravity.CENTER_HORIZONTAL;
-            trashParams.y = 16;
+            trashParams.y = 20;
 
             FrameLayout bubbleContainer = new FrameLayout(this);
             floatingTxtView = new TextView(this);
@@ -462,14 +540,14 @@ public class MainActivity extends Activity {
             floatingBtnView = bubbleContainer;
 
             floatBtnParams = new WindowManager.LayoutParams(
-                    136, 136,
+                    138, 138,
                     overlayType,
                     getStealthOverlayFlags(false),
                     PixelFormat.TRANSLUCENT
             );
             floatBtnParams.gravity = Gravity.BOTTOM | Gravity.END;
-            floatBtnParams.x = 26;
-            floatBtnParams.y = 140;
+            floatBtnParams.x = 28;
+            floatBtnParams.y = 150;
 
             floatingBtnView.setOnTouchListener(new View.OnTouchListener() {
                 private int initX, initY;
@@ -493,7 +571,9 @@ public class MainActivity extends Activity {
                             if (Math.abs(dx) > 6 || Math.abs(dy) > 6) {
                                 moved = true;
                                 if (trashDropView != null && trashDropView.getVisibility() != View.VISIBLE) {
+                                    trashDropView.setAlpha(0f);
                                     trashDropView.setVisibility(View.VISIBLE);
+                                    trashDropView.animate().alpha(1f).setDuration(150).start();
                                 }
                             }
                             floatBtnParams.x = initX + dx;
@@ -501,31 +581,40 @@ public class MainActivity extends Activity {
                             try {
                                 windowManager.updateViewLayout(floatingBtnView, floatBtnParams);
                             } catch (Exception ignored) {}
+
+                            if (cyberTrashIconView != null) {
+                                cyberTrashIconView.setHovered(isOverTrashBox(event.getRawX(), event.getRawY()));
+                            }
                             return true;
 
                         case MotionEvent.ACTION_UP:
                         case MotionEvent.ACTION_CANCEL:
                             boolean dropInTrash = moved && isOverTrashBox(event.getRawX(), event.getRawY());
+                            if (cyberTrashIconView != null) {
+                                cyberTrashIconView.setHovered(false);
+                            }
                             if (trashDropView != null) {
                                 trashDropView.setVisibility(View.GONE);
                             }
                             if (dropInTrash) {
                                 getSharedPreferences("so2_teleport_prefs", Context.MODE_PRIVATE)
                                         .edit().putBoolean("float_btn_enabled", false).apply();
+                                if (isStretchedActive) {
+                                    resetResolution();
+                                }
                                 removeFloatingButton();
-                                Toast.makeText(MainActivity.this, "Кнопка растяга убрана", Toast.LENGTH_SHORT).show();
+                                Toast.makeText(MainActivity.this, "Кнопка «T» удалена", Toast.LENGTH_SHORT).show();
                                 return true;
                             }
                             if (!moved) {
-                                // СТРОГО ТОЛЬКО РАСТЯГ ЭКРАНА!
                                 SharedPreferences prefs = getSharedPreferences("so2_teleport_prefs", Context.MODE_PRIVATE);
                                 String ratio = prefs.getString("stretch_ratio", "4:3");
                                 if (!isStretchedActive) {
                                     applyResolutionRatio(ratio);
-                                    Toast.makeText(MainActivity.this, "Растяг " + ratio + " включён", Toast.LENGTH_SHORT).show();
+                                    Toast.makeText(MainActivity.this, "Растяг " + ratio + " ВКЛ", Toast.LENGTH_SHORT).show();
                                 } else {
                                     resetResolution();
-                                    Toast.makeText(MainActivity.this, "Растяг сброшен (Стандартный экран)", Toast.LENGTH_SHORT).show();
+                                    Toast.makeText(MainActivity.this, "Стандартный экран", Toast.LENGTH_SHORT).show();
                                 }
                             }
                             return true;
@@ -573,9 +662,9 @@ public class MainActivity extends Activity {
     }
 
     /**
-     * ЧИСТЫЙ РАСТЯГ ЭКРАНА + БЛОКИРОВКА ПЕРЕВОРОТА ИГРЫ ДАЖЕ ПРИ ВКЛЮЧЕННОМ АВТОПОВОРОТЕ:
-     * Отключает датчик автоповорота (`accelerometer_rotation 0`) и фиксирует ориентацию окна,
-     * чтобы Standoff 2 никогда не переворачивался при растяге.
+     * РАБОЧИЙ РАСТЯГ В ИГРЕ С ФИКСАЦИЕЙ ОРИЕНТАЦИИ (БЕЗ ПЕРЕВОРОТА STANDOFF 2 И ПРИЛОЖЕНИЯ):
+     * set-ignore-orientation-request выставлен в false, чтобы Android уважал альбомный режим Standoff 2
+     * и портретный режим SO2Teleport!
      */
     public void applyResolutionRatio(String ratio) {
         if (!ShizukuManager.isPermissionGranted()) return;
@@ -589,16 +678,13 @@ public class MainActivity extends Activity {
 
         int savedBaseShort = prefs.getInt("native_short_px", 0);
         int savedBaseLong = prefs.getInt("native_long_px", 0);
-        int savedBaseDpi = prefs.getInt("native_dpi", 0);
 
-        if (savedBaseShort <= 0 || savedBaseLong <= 0 || savedBaseDpi <= 0) {
+        if (savedBaseShort <= 0 || savedBaseLong <= 0) {
             savedBaseShort = Math.min(dm.widthPixels, dm.heightPixels);
             savedBaseLong = Math.max(dm.widthPixels, dm.heightPixels);
-            savedBaseDpi = dm.densityDpi;
             prefs.edit()
                     .putInt("native_short_px", savedBaseShort)
                     .putInt("native_long_px", savedBaseLong)
-                    .putInt("native_dpi", savedBaseDpi)
                     .apply();
         }
 
@@ -618,21 +704,23 @@ public class MainActivity extends Activity {
 
         if ((targetLong & 1) == 1) targetLong++;
         final int finalLong = targetLong;
-        final int targetDpi = Math.max(220, Math.round(savedBaseDpi * 0.88f));
+
+        // Определяем текущий альбомный поворот (1 = 90°, 3 = 270°), чтобы зафиксировать игру без переворота
+        int currentRot = windowManager.getDefaultDisplay().getRotation();
+        final int lockUserRot = (currentRot == Surface.ROTATION_270) ? 3 : 1;
 
         isStretchedActive = true;
         runOnUiThread(this::updateFloatingBubbleAppearance);
 
         new Thread(() -> {
             String cmd =
+                "cmd window set-ignore-orientation-request false; " +
+                "cmd window set-fix-to-user-rotation disabled; " +
                 "settings put system accelerometer_rotation 0; " +
-                "cmd window set-ignore-orientation-request true; " +
-                "cmd window set-fix-to-user-rotation enabled; " +
+                "settings put system user_rotation " + lockUserRot + "; " +
                 "settings put global window_animation_scale 0.0; " +
                 "settings put global transition_animation_scale 0.0; " +
-                "wm size " + baseShort + "x" + finalLong + "; " +
-                "wm density " + targetDpi + "; " +
-                "cmd game downscale disable com.axlebolt.standoff2";
+                "wm size " + baseShort + "x" + finalLong;
             ShizukuManager.execCommand(cmd);
         }).start();
     }
@@ -646,8 +734,8 @@ public class MainActivity extends Activity {
             ShizukuManager.execCommand(
                 "wm size reset; " +
                 "wm density reset; " +
-                "cmd window set-fix-to-user-rotation default; " +
                 "cmd window set-ignore-orientation-request false; " +
+                "cmd window set-fix-to-user-rotation default; " +
                 "settings put system accelerometer_rotation 0"
             );
         }).start();
