@@ -40,7 +40,6 @@
     overflow-x: hidden;
   }
 
-  /* ОПУСКАЕМ КОНТЕНТ НИЖЕ СИСТЕМНОГО СТАТУС-БАРА С ЧАСАМИ И БАТАРЕЕЙ */
   body {
     padding: calc(env(safe-area-inset-top, 40px) + 30px) 14px 48px 14px;
     position: relative;
@@ -65,7 +64,6 @@
     background-size: 36px 36px;
   }
 
-  /* Вместо тяжелого filter: blur(55px) используем мягкие радиальные градиенты с аппаратным ускорением */
   .glow-orb {
     position: absolute;
     border-radius: 50%;
@@ -94,7 +92,7 @@
   .glow-orb.orb-3 {
     width: 300px;
     height: 300px;
-    background: radial-gradient(circle, rgba(124, 58, 237, 0.25) 0%, rgba(124, 58, 237, 0) 70%);
+    background: radial-gradient(circle, rgba(59, 130, 246, 0.22) 0%, rgba(59, 130, 246, 0) 70%);
     bottom: -70px;
     left: 10%;
     animation-duration: 11s;
@@ -120,11 +118,11 @@
     z-index: 2;
   }
 
-  /* ==================== КАСКАДНЫЕ АНИМАЦИИ ПАДЕНИЯ СВЕРХУ ==================== */
-  @keyframes dropFromTop {
+  /* ==================== СВЕРХПЛАВНЫЕ GPU-АНИМАЦИИ ПЕРЕХОДОВ ==================== */
+  @keyframes smoothSlideIn {
     0% {
       opacity: 0;
-      transform: translate3d(0, -24px, 0) scale(0.98);
+      transform: translate3d(0, 18px, 0) scale(0.985);
     }
     100% {
       opacity: 1;
@@ -147,15 +145,15 @@
   .cascade-item {
     opacity: 0;
     will-change: transform, opacity;
-    animation: dropFromTop 0.36s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+    animation: smoothSlideIn 0.34s cubic-bezier(0.16, 1, 0.3, 1) forwards;
   }
-  .d-1 { animation-delay: 0.03s; }
-  .d-2 { animation-delay: 0.07s; }
-  .d-3 { animation-delay: 0.11s; }
-  .d-4 { animation-delay: 0.15s; }
-  .d-5 { animation-delay: 0.19s; }
-  .d-6 { animation-delay: 0.23s; }
-  .d-7 { animation-delay: 0.27s; }
+  .d-1 { animation-delay: 0.02s; }
+  .d-2 { animation-delay: 0.05s; }
+  .d-3 { animation-delay: 0.08s; }
+  .d-4 { animation-delay: 0.11s; }
+  .d-5 { animation-delay: 0.14s; }
+  .d-6 { animation-delay: 0.17s; }
+  .d-7 { animation-delay: 0.20s; }
 
   /* ==================== ОКНО ДОБРО ПОЖАЛОВАТЬ В SO2TELEPORT ==================== */
   #welcomeAuthOverlay {
@@ -178,7 +176,7 @@
     padding: 26px 20px;
     text-align: center;
     box-shadow: 0 0 40px rgba(168, 85, 247, 0.35), inset 0 0 18px rgba(168, 85, 247, 0.12);
-    animation: dropFromTop 0.42s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+    animation: smoothSlideIn 0.38s cubic-bezier(0.16, 1, 0.3, 1) forwards;
   }
 
   .welcome-badge {
@@ -229,16 +227,17 @@
 
   .primary-btn {
     width: 100%;
-    background: linear-gradient(90deg, #7c3aed 0%, #a855f7 50%, #d946ef 100%);
+    background: linear-gradient(90deg, #00c6ff 0%, #7c3aed 50%, #d946ef 100%);
     color: #ffffff;
     font-weight: 900;
     font-size: 14px;
     padding: 14px;
-    border: 1px solid rgba(243, 232, 255, 0.4);
+    border: 1px solid rgba(243, 232, 255, 0.45);
     border-radius: 14px;
     cursor: pointer;
     box-shadow: 0 4px 20px rgba(168, 85, 247, 0.4);
     margin-bottom: 8px;
+    transition: transform 0.14s cubic-bezier(0.16, 1, 0.3, 1);
   }
 
   .primary-btn:active {
@@ -255,6 +254,11 @@
     padding: 12px;
     border-radius: 14px;
     cursor: pointer;
+    transition: transform 0.14s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  .secondary-btn:active {
+    transform: scale(0.97);
   }
 
   /* ==================== ВЕРХНЯЯ ПАНЕЛЬ И SHIZUKU СПРАВА ВВЕРХУ ==================== */
@@ -314,8 +318,8 @@
   }
 
   .shizuku-top-card.ready .shiz-led {
-    background: #c084fc;
-    box-shadow: 0 0 10px #d946ef;
+    background: #00f0ff;
+    box-shadow: 0 0 10px #00f0ff;
   }
 
   .shiz-title {
@@ -354,7 +358,7 @@
     align-items: center;
     justify-content: center;
     cursor: pointer;
-    transition: transform 0.2s ease, box-shadow 0.25s ease;
+    transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.25s ease;
     position: relative;
   }
 
@@ -365,7 +369,7 @@
   }
 
   .big-power-circle.on-state {
-    background: radial-gradient(circle at 35% 25%, #f5d0fe 0%, #c084fc 38%, #9333ea 78%, #3b0764 100%);
+    background: radial-gradient(circle at 35% 25%, #00f0ff 0%, #a855f7 45%, #7c3aed 80%, #3b0764 100%);
     border: 4px solid #fae8ff;
     animation: pulsePurpleRing 2.2s infinite;
   }
@@ -438,7 +442,7 @@
     border-radius: 20px;
     padding: 16px 14px;
     cursor: pointer;
-    transition: transform 0.15s;
+    transition: transform 0.16s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.2s;
     display: flex;
     flex-direction: column;
     justify-content: space-between;
@@ -447,8 +451,8 @@
   }
 
   .hub-card:active {
-    transform: scale(0.96);
-    border-color: #e879f9;
+    transform: scale(0.95);
+    border-color: #00f0ff;
   }
 
   .hub-card-top {
@@ -458,13 +462,12 @@
     margin-bottom: 8px;
   }
 
-  /* КВАДРАТИКИ ИКОНОК С ФИОЛЕТОВЫМ НЕОНОВЫМ СВЕЧЕНИЕМ */
   .hub-icon {
     width: 38px;
     height: 38px;
     border-radius: 12px;
-    background: linear-gradient(135deg, rgba(168, 85, 247, 0.32) 0%, rgba(217, 70, 239, 0.22) 100%);
-    border: 1px solid rgba(216, 180, 254, 0.6);
+    background: linear-gradient(135deg, rgba(0, 240, 255, 0.24) 0%, rgba(217, 70, 239, 0.28) 100%);
+    border: 1px solid rgba(216, 180, 254, 0.65);
     box-shadow: 0 0 14px rgba(168, 85, 247, 0.45);
     display: flex;
     align-items: center;
@@ -513,12 +516,17 @@
     padding: 12px 15px;
     border-radius: 16px;
     box-shadow: 0 0 16px rgba(168, 85, 247, 0.2);
+    transition: transform 0.14s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  .back-bar:active {
+    transform: scale(0.97);
   }
 
   .back-btn-ico {
     font-size: 18px;
     font-weight: 900;
-    color: #e879f9;
+    color: #00f0ff;
   }
 
   .back-title {
@@ -558,11 +566,16 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
+    transition: transform 0.14s ease, border-color 0.2s ease;
+  }
+
+  .preset-card:active {
+    transform: scale(0.98);
   }
 
   .preset-card.selected {
     background: linear-gradient(135deg, rgba(59, 7, 100, 0.9) 0%, rgba(30, 10, 60, 0.95) 100%);
-    border-color: #e879f9;
+    border-color: #00f0ff;
     box-shadow: 0 0 18px rgba(192, 132, 252, 0.35);
   }
 
@@ -684,9 +697,9 @@
 
   .opt-btn.active {
     background: rgba(168, 85, 247, 0.34);
-    border: 1.5px solid #e879f9;
+    border: 1.5px solid #00f0ff;
     color: #ffffff;
-    box-shadow: 0 0 14px rgba(217, 70, 239, 0.4);
+    box-shadow: 0 0 14px rgba(0, 240, 255, 0.35);
   }
 
   .preview-box {
@@ -841,7 +854,7 @@
         </div>
         <div>
           <div class="hub-title">Сенса</div>
-          <div class="hub-desc">Готовый телепорт, пресеты для авиков и ползунки</div>
+          <div class="hub-desc">Чанки 100, анти-сглаживание, пресеты и ползунки</div>
         </div>
       </div>
 
@@ -874,7 +887,7 @@
         </div>
         <div>
           <div class="hub-title">Растяг</div>
-          <div class="hub-desc">Чёткий растяг 4:3 / 5:4 / 16:9 и кнопка поверх игры</div>
+          <div class="hub-desc">Растяг 4:3 / 5:4 / 16:9 без переворота + кнопка T</div>
         </div>
       </div>
 
@@ -903,7 +916,7 @@
   </div>
 
   <!-- ========================================================================= -->
-  <!-- КАРТОЧКА 1: СЕНСА                                                         -->
+  <!-- КАРТОЧКА 1: СЕНСА (ЧАНКИ ПРОКАЧАНЫ ДО 100)                                -->
   <!-- ========================================================================= -->
   <div id="page-sens" class="subpage">
     <div class="back-bar cascade-item d-1" onclick="backToHub()">
@@ -914,13 +927,13 @@
     <div class="section-box cascade-item d-2">
       <div class="sec-label">
         <span>1. ГОТОВЫЕ БОЕВЫЕ РЕЖИМЫ СЕНСЫ</span>
-        <span>В 1 КЛИК</span>
+        <span>ULTRA CHUNKS 100</span>
       </div>
 
       <div id="pr-max_teleport" class="preset-card selected" onclick="selectSensPresetCard('max_teleport')">
         <div>
-          <div class="pr-name">МАКС ТЕЛЕПОРТ (Куски 50 + Рывок)</div>
-          <div class="pr-sub">Прицел мгновенно перескакивает за пальцем дискретными кусками без плавности</div>
+          <div class="pr-name">МАКС ТЕЛЕПОРТ (Куски 100 + Без сглаживания)</div>
+          <div class="pr-sub">Полный обход сглаживания Android: прицел перескакивает крупными кусками за 1 кадр</div>
         </div>
         <span class="pr-badge">АКТИВЕН</span>
       </div>
@@ -928,7 +941,7 @@
       <div id="pr-sharp" class="preset-card" onclick="selectSensPresetCard('sharp')">
         <div>
           <div class="pr-name">МАКС РЕЗКАЯ (Чистый флик 90°)</div>
-          <div class="pr-sub">Молниеносный сухой разворот без залипания и без системного сглаживания</div>
+          <div class="pr-sub">Молниеносный сухой разворот (Куски 95) без залипания и инерции</div>
         </div>
         <span class="pr-badge">ВЫБРАТЬ</span>
       </div>
@@ -936,7 +949,7 @@
       <div id="pr-awp" class="preset-card" onclick="selectSensPresetCard('awp')">
         <div>
           <div class="pr-name">ДЛЯ АВИКОВ (AWM Стоп-Флик)</div>
-          <div class="pr-sub">Резкий рывок с мгновенной остановкой камеры в точке выстрела без скольжения</div>
+          <div class="pr-sub">Резкий рывок (Куски 85) с мгновенной остановкой камеры в точке выстрела</div>
         </div>
         <span class="pr-badge">ВЫБРАТЬ</span>
       </div>
@@ -944,7 +957,7 @@
       <div id="pr-sticky" class="preset-card" onclick="selectSensPresetCard('sticky')">
         <div>
           <div class="pr-name">ТЕЛЕПОРТ + ЖЁСТКИЙ ЗАЦЕП</div>
-          <div class="pr-sub">Быстрый перескок между целями и плотная фиксация на линии головы</div>
+          <div class="pr-sub">Квантовый перескок (Куски 90) и плотная фиксация на линии головы</div>
         </div>
         <span class="pr-badge">ВЫБРАТЬ</span>
       </div>
@@ -963,14 +976,14 @@
       </div>
 
       <div class="slider-item">
-        <div class="sl-head"><span class="sl-title">Квантовые куски (Chunks)</span><span id="lbl_chunks" class="sl-value">50</span></div>
-        <div class="sl-explain">Главный параметр телепорта: режет плавный путь пальца на крупные мгновенные скачки. На 50 прицел буквально тепается.</div>
-        <input id="rng_chunks" type="range" min="5" max="50" step="1" value="50" oninput="onManualSlidersChange()" />
+        <div class="sl-head"><span class="sl-title">Квантовые куски (Chunks)</span><span id="lbl_chunks" class="sl-value">100</span></div>
+        <div class="sl-explain">Усиленный параметр телепорта (до 100): отключает сглаживание Android и режет путь пальца на мгновенные скачки.</div>
+        <input id="rng_chunks" type="range" min="10" max="100" step="1" value="100" oninput="onManualSlidersChange()" />
       </div>
 
       <div class="slider-item">
         <div class="sl-head"><span class="sl-title">Частота строба (Strobe Speed)</span><span id="lbl_strobeSpeed" class="sl-value">10</span></div>
-        <div class="sl-explain">Скорость сброса буфера тачскрина. Чем выше значение, тем быстрее куски выстреливают в кадр игры.</div>
+        <div class="sl-explain">Скорость сброса буфера тачскрина. На 10 куски выстреливают в кадр игры с максимальной частотой.</div>
         <input id="rng_strobeSpeed" type="range" min="1" max="10" step="1" value="10" oninput="onManualSlidersChange()" />
       </div>
 
@@ -987,9 +1000,9 @@
       </div>
 
       <div class="slider-item">
-        <div class="sl-head"><span class="sl-title">Выпрямление линии (Straightening)</span><span id="lbl_straightening" class="sl-value">0.98</span></div>
+        <div class="sl-head"><span class="sl-title">Выпрямление линии (Straightening)</span><span id="lbl_straightening" class="sl-value">0.99</span></div>
         <div class="sl-explain">Убирает вертикальную дрожь пальца, чтобы прицел шёл строго по прямой горизонтальной линии.</div>
-        <input id="rng_straightening" type="range" min="0.00" max="1.00" step="0.02" value="0.98" oninput="onManualSlidersChange()" />
+        <input id="rng_straightening" type="range" min="0.00" max="1.00" step="0.01" value="0.99" oninput="onManualSlidersChange()" />
       </div>
 
       <div class="slider-item">
@@ -1063,8 +1076,8 @@
 
       <div class="preset-card" onclick="selectSensPresetCard('max_teleport'); backToHub();">
         <div>
-          <div class="pr-name">SO2Teleport ULTRA CHUNKS 50</div>
-          <div class="pr-sub">Максимальный телепорт кусками • Выпрямление 0.98 • Ускорение 0.00</div>
+          <div class="pr-name">SO2Teleport ULTRA CHUNKS 100</div>
+          <div class="pr-sub">Максимальный телепорт кусками 100 • Обход сглаживания • Ускорение 0.00</div>
         </div>
         <span class="pr-badge">ПРИМЕНИТЬ</span>
       </div>
@@ -1072,7 +1085,7 @@
       <div class="preset-card" onclick="selectSensPresetCard('awp'); backToHub();">
         <div>
           <div class="pr-name">SO2Teleport SNIPER LOCK</div>
-          <div class="pr-sub">Идеальная сборка под AWM и M40 с жестким стоп-фликом</div>
+          <div class="pr-sub">Идеальная сборка под AWM и M40 с жестким стоп-фликом (Куски 85)</div>
         </div>
         <span class="pr-badge">ПРИМЕНИТЬ</span>
       </div>
@@ -1080,7 +1093,7 @@
       <div class="preset-card" onclick="selectSensPresetCard('sticky'); backToHub();">
         <div>
           <div class="pr-name">SO2Teleport HEAD MAGNET</div>
-          <div class="pr-sub">Резкий телепорт + повышенное осевое прилипание на голове</div>
+          <div class="pr-sub">Резкий телепорт (Куски 90) + повышенное осевое прилипание на голове</div>
         </div>
         <span class="pr-badge">ПРИМЕНИТЬ</span>
       </div>
@@ -1095,7 +1108,7 @@
   </div>
 
   <!-- ========================================================================= -->
-  <!-- КАРТОЧКА 4: РАСТЯГ ЭКРАНА                                                 -->
+  <!-- КАРТОЧКА 4: РАСТЯГ ЭКРАНА (БЕЗ ЛИШНЕГО ПОЛЗУНКА, КНОПКА СРАЗУ ВКЛЮЧАЕТ T) -->
   <!-- ========================================================================= -->
   <div id="page-stretch" class="subpage">
     <div class="back-bar cascade-item d-1" onclick="backToHub()">
@@ -1111,7 +1124,7 @@
 
       <canvas id="stretchPreviewCanvas" class="preview-box" width="340" height="110"></canvas>
       <div class="sl-explain">
-        Само приложение SO2Teleport остаётся строго вертикальным, а в Standoff 2 модели игроков расширяются на весь экран + укрупняется шаг координатной сетки для резкого телепорта.
+        При нажатии «Включить растяг» автоматически появляется плавающая кнопка «T» (работает строго на растяг) и фиксируется поворот, чтобы игра никогда не переворачивалась.
       </div>
 
       <div class="opts-row">
@@ -1123,25 +1136,11 @@
       </div>
 
       <button type="button" id="btnApplyStretch" class="primary-btn" onclick="applyStretchNow()">
-        ВКЛЮЧИТЬ РАСТЯГ 4:3
+        ВКЛЮЧИТЬ РАСТЯГ 4:3 + КНОПКУ «T»
       </button>
       <button type="button" class="secondary-btn" onclick="resetStretchNow()">
-        СБРОСИТЬ РАЗМЕР ЭКРАНА
+        СБРОСИТЬ РАЗМЕР И УБРАТЬ КНОПКУ
       </button>
-    </div>
-
-    <div class="section-box cascade-item d-3">
-      <div class="sec-label"><span>ПЛАВАЮЩАЯ КНОПКА ПОВЕРХ ИГРЫ</span><span>OVERLAY</span></div>
-      <div class="toggle-row">
-        <div>
-          <div class="sl-title">Кружок «TP» поверх Standoff 2</div>
-          <div class="sl-explain" style="margin-bottom:0;">Нажатие в игре мгновенно включает или выключает выбранный растяг и стробоскоп телепорта</div>
-        </div>
-        <label class="sw-box">
-          <input id="swFloatTp" type="checkbox" onchange="onToggleFloatingTp(this.checked)">
-          <span class="sw-track"></span>
-        </label>
-      </div>
     </div>
   </div>
 
@@ -1261,8 +1260,18 @@
   let currentCrossShape = "off";
   let currentCrossColor = "#D946EF";
   let sliderDebounceTimer = null;
+  let activeSubpageId = null;
 
-  /* ==================== ОБЛЕГЧЁННЫЕ ЖИВЫЕ ФИОЛЕТОВЫЕ ЧАСТИЦЫ БЕЗ ЛАГОВ ==================== */
+  /* ==================== ОБРАБОТЧИК СИСТЕМНОГО СВАЙПА НАЗАД ==================== */
+  window.handleSystemBack = function() {
+    if (activeSubpageId !== null) {
+      backToHub();
+      return true;
+    }
+    return false;
+  };
+
+  /* ==================== ЛЁГКИЕ ЧАСТИЦЫ БЕЗ ЛАГОВ ==================== */
   function initLiveParticles() {
     const canvas = document.getElementById("bgParticlesCanvas");
     if (!canvas) return;
@@ -1271,14 +1280,14 @@
     let h = (canvas.height = window.innerHeight);
 
     const particles = [];
-    for (let i = 0; i < 16; i++) {
+    for (let i = 0; i < 14; i++) {
       particles.push({
         x: Math.random() * w,
         y: Math.random() * h,
-        r: 1.5 + Math.random() * 2.0,
-        vx: (Math.random() - 0.5) * 0.3,
-        vy: -0.25 - Math.random() * 0.4,
-        alpha: 0.25 + Math.random() * 0.5
+        r: 1.4 + Math.random() * 1.8,
+        vx: (Math.random() - 0.5) * 0.28,
+        vy: -0.22 - Math.random() * 0.35,
+        alpha: 0.25 + Math.random() * 0.45
       });
     }
 
@@ -1297,10 +1306,9 @@
         if (p.x < -10) p.x = w + 10;
         if (p.x > w + 10) p.x = -10;
 
-        // Рисуем мягкий ореол без тяжёлого ctx.shadowBlur
         ctx.beginPath();
-        ctx.fillStyle = `rgba(217, 70, 239, ${p.alpha * 0.28})`;
-        ctx.arc(p.x, p.y, p.r * 2.6, 0, Math.PI * 2);
+        ctx.fillStyle = `rgba(217, 70, 239, ${p.alpha * 0.26})`;
+        ctx.arc(p.x, p.y, p.r * 2.4, 0, Math.PI * 2);
         ctx.fill();
 
         ctx.beginPath();
@@ -1328,11 +1336,12 @@
     items.forEach((el, idx) => {
       el.style.animation = "none";
       void el.offsetWidth;
-      el.style.animation = `dropFromTop 0.36s cubic-bezier(0.22, 1, 0.36, 1) ${idx * 0.045}s forwards`;
+      el.style.animation = `smoothSlideIn 0.34s cubic-bezier(0.16, 1, 0.3, 1) ${idx * 0.035}s forwards`;
     });
   }
 
   function openCardPage(pageId) {
+    activeSubpageId = pageId;
     document.getElementById("mainHubView").style.display = "none";
     document.querySelectorAll(".subpage").forEach(p => p.classList.remove("open"));
     const target = document.getElementById(pageId);
@@ -1342,15 +1351,16 @@
     }
     if (pageId === "page-stretch") drawStretchPreview();
     if (pageId === "page-crosshair") drawCrossPreview();
-    window.scrollTo(0, 0);
+    window.scrollTo({ top: 0, behavior: "instant" });
   }
 
   function backToHub() {
+    activeSubpageId = null;
     document.querySelectorAll(".subpage").forEach(p => p.classList.remove("open"));
     const hub = document.getElementById("mainHubView");
     hub.style.display = "block";
     replayCascadeAnimation(hub);
-    window.scrollTo(0, 0);
+    window.scrollTo({ top: 0, behavior: "instant" });
   }
 
   function verifyStartupAuth() {
@@ -1441,10 +1451,6 @@
         title.innerText = "Shizuku: ВЫКЛ";
         sub.innerText = "Кликни на меня для активации";
       }
-
-      if (AndroidBridge.isFloatingStretchButtonEnabled) {
-        document.getElementById("swFloatTp").checked = AndroidBridge.isFloatingStretchButtonEnabled();
-      }
     } catch (e) {}
   }
 
@@ -1461,7 +1467,7 @@
     }
     isTeleportOn = AndroidBridge.toggleTeleport();
     renderPowerCircle();
-    showToast(isTeleportOn ? "ТЕЛЕПОРТ АКТИВИРОВАН!" : "Телепорт остановлен");
+    showToast(isTeleportOn ? "ТЕЛЕПОРТ АКТИВИРОВАН (ЧАНКИ 100)!" : "Телепорт остановлен");
   }
 
   function renderPowerCircle() {
@@ -1475,7 +1481,7 @@
       txt.innerText = "АКТИВЕН";
       pill.classList.remove("off");
       pill.classList.add("on");
-      pill.innerText = "• ТЕЛЕПОРТ АКТИВЕН (РАБОТАЕТ В ИГРЕ)";
+      pill.innerText = "• ТЕЛЕПОРТ АКТИВЕН (ЧАНКИ 100 • БЕЗ СГЛАЖИВАНИЯ)";
     } else {
       circle.classList.remove("on-state");
       circle.classList.add("off-state");
@@ -1496,13 +1502,13 @@
     });
 
     if (presetId === "max_teleport") {
-      setSlidersUI(5.00, 50, 10, 5.00, 4.80, 0.98, 6, 0, 0, 0.00);
+      setSlidersUI(5.00, 100, 10, 5.00, 4.80, 0.99, 6, 0, 0, 0.00);
     } else if (presetId === "sharp") {
-      setSlidersUI(5.00, 48, 10, 5.00, 5.00, 0.90, 2, 0, 0, 0.00);
+      setSlidersUI(5.00, 95, 10, 5.00, 5.00, 0.92, 2, 0, 0, 0.00);
     } else if (presetId === "awp") {
-      setSlidersUI(4.60, 44, 9, 4.70, 4.40, 0.96, 8, 14, 0, 0.00);
+      setSlidersUI(4.80, 85, 10, 4.80, 4.50, 0.97, 8, 14, 0, 0.00);
     } else if (presetId === "sticky") {
-      setSlidersUI(4.80, 45, 9, 4.90, 4.70, 0.99, 9, 4, 0, 0.00);
+      setSlidersUI(4.90, 90, 10, 5.00, 4.80, 0.99, 9, 4, 0, 0.00);
     }
 
     if (window.AndroidBridge && AndroidBridge.applySensPreset) {
@@ -1546,7 +1552,6 @@
     const json = JSON.stringify(payload);
     localStorage.setItem("so2_custom_sliders", json);
 
-    // Debounce 140 мс: цифры меняются мгновенно без лагов, а команда в Shizuku уходит плавно
     clearTimeout(sliderDebounceTimer);
     sliderDebounceTimer = setTimeout(() => {
       if (window.AndroidBridge && AndroidBridge.saveCustomSlidersJson) {
@@ -1554,13 +1559,13 @@
         isTeleportOn = true;
         renderPowerCircle();
       }
-    }, 140);
+    }, 120);
   }
 
   function selectStretchOption(ratio) {
     currentRatio = ratio;
     document.getElementById("stretchCurrentBadge").innerText = ratio;
-    document.getElementById("btnApplyStretch").innerText = "ВКЛЮЧИТЬ РАСТЯГ " + ratio;
+    document.getElementById("btnApplyStretch").innerText = "ВКЛЮЧИТЬ РАСТЯГ " + ratio + " + КНОПКУ «T»";
     ["5:4", "4:3", "3:2", "16:10", "16:9"].forEach(r => {
       const el = document.getElementById("st-" + r);
       if (el) el.classList.toggle("active", r === ratio);
@@ -1582,7 +1587,7 @@
     ctx.strokeRect(22, 12, c.width - 44, c.height - 24);
 
     ctx.setLineDash([]);
-    ctx.strokeStyle = "#d946ef";
+    ctx.strokeStyle = "#00f0ff";
     ctx.lineWidth = 2;
     let factor = 0.72;
     if (currentRatio === "5:4") factor = 0.66;
@@ -1598,7 +1603,7 @@
     ctx.fillStyle = "#e879f9";
     ctx.font = "bold 12px sans-serif";
     ctx.textAlign = "center";
-    ctx.fillText("ФОРМАТ " + currentRatio, c.width / 2, c.height / 2 + 4);
+    ctx.fillText("ФОРМАТ " + currentRatio + " (БЕЗ ПЕРЕВОРОТА)", c.width / 2, c.height / 2 + 4);
   }
 
   function applyStretchNow() {
@@ -1610,12 +1615,6 @@
   function resetStretchNow() {
     if (window.AndroidBridge && AndroidBridge.resetDisplayToDefault) {
       showToast(AndroidBridge.resetDisplayToDefault());
-    }
-  }
-
-  function onToggleFloatingTp(enabled) {
-    if (window.AndroidBridge && AndroidBridge.setFloatingStretchButton) {
-      showToast(AndroidBridge.setFloatingStretchButton(enabled));
     }
   }
 
