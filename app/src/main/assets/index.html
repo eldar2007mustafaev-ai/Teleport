@@ -7,13 +7,12 @@
 <style>
   :root {
     --bg-dark: #070312;
-    --bg-card: rgba(18, 10, 36, 0.78);
-    --bg-inner: rgba(11, 5, 24, 0.88);
+    --bg-card: rgba(19, 10, 38, 0.94);
+    --bg-inner: rgba(11, 5, 24, 0.96);
     --border-dim: rgba(168, 85, 247, 0.28);
     --border-neon: #c084fc;
     --purple: #a855f7;
     --purple-bright: #d946ef;
-    --purple-glow: rgba(168, 85, 247, 0.45);
     --green: #10b981;
     --red: #f43f5e;
     --txt-main: #faf5ff;
@@ -41,73 +40,70 @@
     overflow-x: hidden;
   }
 
-  /* ОПУСКАЕМ КОНТЕНТ НИЖЕ ЧАСОВ, КАМЕРЫ И БАТАРЕИ */
+  /* ОПУСКАЕМ КОНТЕНТ НИЖЕ СИСТЕМНОГО СТАТУС-БАРА С ЧАСАМИ И БАТАРЕЕЙ */
   body {
-    padding: calc(env(safe-area-inset-top, 38px) + 28px) 14px 48px 14px;
+    padding: calc(env(safe-area-inset-top, 40px) + 30px) 14px 48px 14px;
     position: relative;
   }
 
-  /* ==================== ЖИВОЙ АНИМИРОВАННЫЙ ФИОЛЕТОВЫЙ ФОН ==================== */
+  /* ==================== ЛЁГКИЙ 120 FPS ЖИВОЙ ФИОЛЕТОВЫЙ ФОН ==================== */
   .live-bg {
     position: fixed;
     inset: 0;
     z-index: 0;
     overflow: hidden;
     pointer-events: none;
-    background: radial-gradient(circle at 50% 10%, #1e0b3b 0%, #070312 72%);
+    background: radial-gradient(circle at 50% 8%, #210c42 0%, #070312 72%);
   }
 
   .live-grid {
     position: absolute;
     inset: 0;
     background-image:
-      linear-gradient(rgba(168, 85, 247, 0.06) 1px, transparent 1px),
-      linear-gradient(90deg, rgba(168, 85, 247, 0.06) 1px, transparent 1px);
-    background-size: 34px 34px;
-    mask-image: radial-gradient(circle at 50% 35%, black 30%, transparent 85%);
-    -webkit-mask-image: radial-gradient(circle at 50% 35%, black 30%, transparent 85%);
+      linear-gradient(rgba(168, 85, 247, 0.05) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(168, 85, 247, 0.05) 1px, transparent 1px);
+    background-size: 36px 36px;
   }
 
+  /* Вместо тяжелого filter: blur(55px) используем мягкие радиальные градиенты с аппаратным ускорением */
   .glow-orb {
     position: absolute;
     border-radius: 50%;
-    filter: blur(55px);
-    opacity: 0.55;
-    animation: floatOrb 9s ease-in-out infinite alternate;
+    will-change: transform;
+    animation: floatOrb 10s ease-in-out infinite alternate;
   }
 
   .glow-orb.orb-1 {
-    width: 240px;
-    height: 240px;
-    background: radial-gradient(circle, #a855f7 0%, transparent 70%);
-    top: -40px;
-    left: -50px;
+    width: 320px;
+    height: 320px;
+    background: radial-gradient(circle, rgba(168, 85, 247, 0.28) 0%, rgba(168, 85, 247, 0) 70%);
+    top: -80px;
+    left: -80px;
   }
 
   .glow-orb.orb-2 {
-    width: 270px;
-    height: 270px;
-    background: radial-gradient(circle, #d946ef 0%, transparent 70%);
-    top: 32%;
-    right: -80px;
-    animation-duration: 12s;
+    width: 340px;
+    height: 340px;
+    background: radial-gradient(circle, rgba(217, 70, 239, 0.24) 0%, rgba(217, 70, 239, 0) 70%);
+    top: 28%;
+    right: -110px;
+    animation-duration: 13s;
     animation-delay: -3s;
   }
 
   .glow-orb.orb-3 {
-    width: 220px;
-    height: 220px;
-    background: radial-gradient(circle, #7c3aed 0%, transparent 70%);
-    bottom: -30px;
-    left: 15%;
-    animation-duration: 10s;
+    width: 300px;
+    height: 300px;
+    background: radial-gradient(circle, rgba(124, 58, 237, 0.25) 0%, rgba(124, 58, 237, 0) 70%);
+    bottom: -70px;
+    left: 10%;
+    animation-duration: 11s;
     animation-delay: -5s;
   }
 
   @keyframes floatOrb {
-    0% { transform: translate(0, 0) scale(1); }
-    50% { transform: translate(22px, -28px) scale(1.12); }
-    100% { transform: translate(-18px, 24px) scale(0.94); }
+    0% { transform: translate3d(0, 0, 0) scale(1); }
+    100% { transform: translate3d(20px, -24px, 0) scale(1.08); }
   }
 
   #bgParticlesCanvas {
@@ -128,44 +124,44 @@
   @keyframes dropFromTop {
     0% {
       opacity: 0;
-      transform: translateY(-28px) scale(0.97);
+      transform: translate3d(0, -24px, 0) scale(0.98);
     }
     100% {
       opacity: 1;
-      transform: translateY(0) scale(1);
+      transform: translate3d(0, 0, 0) scale(1);
     }
   }
 
   @keyframes pulsePurpleRing {
     0% {
-      box-shadow: 0 0 0 0 rgba(192, 132, 252, 0.6), 0 0 42px rgba(168, 85, 247, 0.7);
+      box-shadow: 0 0 0 0 rgba(192, 132, 252, 0.55), 0 0 36px rgba(168, 85, 247, 0.65);
     }
     70% {
-      box-shadow: 0 0 0 20px rgba(192, 132, 252, 0), 0 0 56px rgba(217, 70, 239, 0.9);
+      box-shadow: 0 0 0 18px rgba(192, 132, 252, 0), 0 0 48px rgba(217, 70, 239, 0.85);
     }
     100% {
-      box-shadow: 0 0 0 0 rgba(192, 132, 252, 0), 0 0 42px rgba(168, 85, 247, 0.7);
+      box-shadow: 0 0 0 0 rgba(192, 132, 252, 0), 0 0 36px rgba(168, 85, 247, 0.65);
     }
   }
 
   .cascade-item {
     opacity: 0;
-    animation: dropFromTop 0.42s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+    will-change: transform, opacity;
+    animation: dropFromTop 0.36s cubic-bezier(0.22, 1, 0.36, 1) forwards;
   }
-  .d-1 { animation-delay: 0.04s; }
-  .d-2 { animation-delay: 0.09s; }
-  .d-3 { animation-delay: 0.14s; }
-  .d-4 { animation-delay: 0.19s; }
-  .d-5 { animation-delay: 0.24s; }
-  .d-6 { animation-delay: 0.29s; }
-  .d-7 { animation-delay: 0.34s; }
+  .d-1 { animation-delay: 0.03s; }
+  .d-2 { animation-delay: 0.07s; }
+  .d-3 { animation-delay: 0.11s; }
+  .d-4 { animation-delay: 0.15s; }
+  .d-5 { animation-delay: 0.19s; }
+  .d-6 { animation-delay: 0.23s; }
+  .d-7 { animation-delay: 0.27s; }
 
   /* ==================== ОКНО ДОБРО ПОЖАЛОВАТЬ В SO2TELEPORT ==================== */
   #welcomeAuthOverlay {
     position: fixed;
     inset: 0;
-    background: radial-gradient(circle at 50% 25%, rgba(46, 16, 101, 0.96) 0%, rgba(7, 3, 18, 0.98) 75%);
-    backdrop-filter: blur(16px);
+    background: radial-gradient(circle at 50% 25%, #2a0f57 0%, #060210 78%);
     z-index: 999999;
     display: none;
     align-items: center;
@@ -176,13 +172,13 @@
   .welcome-box {
     width: 100%;
     max-width: 380px;
-    background: rgba(19, 9, 39, 0.94);
+    background: #130927;
     border: 1.5px solid var(--border-neon);
     border-radius: 24px;
     padding: 26px 20px;
     text-align: center;
-    box-shadow: 0 0 45px rgba(168, 85, 247, 0.35), inset 0 0 22px rgba(168, 85, 247, 0.12);
-    animation: dropFromTop 0.5s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+    box-shadow: 0 0 40px rgba(168, 85, 247, 0.35), inset 0 0 18px rgba(168, 85, 247, 0.12);
+    animation: dropFromTop 0.42s cubic-bezier(0.22, 1, 0.36, 1) forwards;
   }
 
   .welcome-badge {
@@ -196,7 +192,6 @@
     padding: 4px 12px;
     border-radius: 999px;
     margin-bottom: 10px;
-    box-shadow: 0 0 14px rgba(168, 85, 247, 0.35);
   }
 
   .welcome-title {
@@ -205,7 +200,7 @@
     color: #ffffff;
     margin-bottom: 6px;
     letter-spacing: 0.4px;
-    text-shadow: 0 0 16px rgba(192, 132, 252, 0.5);
+    text-shadow: 0 0 14px rgba(192, 132, 252, 0.45);
   }
 
   .welcome-sub {
@@ -225,12 +220,11 @@
     font-size: 14px;
     margin-bottom: 11px;
     outline: none;
-    transition: 0.2s;
   }
 
   .inp-field:focus {
     border-color: var(--border-neon);
-    box-shadow: 0 0 16px rgba(168, 85, 247, 0.4);
+    box-shadow: 0 0 12px rgba(168, 85, 247, 0.35);
   }
 
   .primary-btn {
@@ -243,10 +237,8 @@
     border: 1px solid rgba(243, 232, 255, 0.4);
     border-radius: 14px;
     cursor: pointer;
-    box-shadow: 0 4px 24px rgba(168, 85, 247, 0.45);
+    box-shadow: 0 4px 20px rgba(168, 85, 247, 0.4);
     margin-bottom: 8px;
-    transition: transform 0.15s;
-    text-shadow: 0 1px 4px rgba(0, 0, 0, 0.35);
   }
 
   .primary-btn:active {
@@ -255,7 +247,7 @@
 
   .secondary-btn {
     width: 100%;
-    background: rgba(24, 12, 48, 0.9);
+    background: #180c30;
     border: 1px solid rgba(168, 85, 247, 0.35);
     color: #e9d5ff;
     font-weight: 800;
@@ -263,7 +255,6 @@
     padding: 12px;
     border-radius: 14px;
     cursor: pointer;
-    box-shadow: 0 0 14px rgba(168, 85, 247, 0.12);
   }
 
   /* ==================== ВЕРХНЯЯ ПАНЕЛЬ И SHIZUKU СПРАВА ВВЕРХУ ==================== */
@@ -285,7 +276,7 @@
     font-weight: 900;
     letter-spacing: 0.8px;
     color: #ffffff;
-    text-shadow: 0 0 18px rgba(192, 132, 252, 0.75);
+    text-shadow: 0 0 16px rgba(192, 132, 252, 0.7);
   }
 
   .logo-tag {
@@ -296,7 +287,7 @@
   }
 
   .shizuku-top-card {
-    background: rgba(22, 11, 44, 0.92);
+    background: #160b2c;
     border: 1.5px solid rgba(244, 63, 94, 0.55);
     border-radius: 16px;
     padding: 8px 12px;
@@ -304,18 +295,13 @@
     align-items: center;
     gap: 9px;
     cursor: pointer;
-    transition: 0.2s;
     max-width: 215px;
-    box-shadow: 0 0 16px rgba(244, 63, 94, 0.2);
+    box-shadow: 0 0 14px rgba(244, 63, 94, 0.2);
   }
 
   .shizuku-top-card.ready {
-    border-color: rgba(192, 132, 252, 0.7);
-    box-shadow: 0 0 20px rgba(168, 85, 247, 0.35), inset 0 0 12px rgba(168, 85, 247, 0.15);
-  }
-
-  .shizuku-top-card:active {
-    transform: scale(0.96);
+    border-color: rgba(192, 132, 252, 0.75);
+    box-shadow: 0 0 18px rgba(168, 85, 247, 0.35), inset 0 0 10px rgba(168, 85, 247, 0.15);
   }
 
   .shiz-led {
@@ -323,13 +309,13 @@
     height: 10px;
     border-radius: 50%;
     background: var(--red);
-    box-shadow: 0 0 10px var(--red);
+    box-shadow: 0 0 8px var(--red);
     flex-shrink: 0;
   }
 
   .shizuku-top-card.ready .shiz-led {
     background: #c084fc;
-    box-shadow: 0 0 12px #d946ef;
+    box-shadow: 0 0 10px #d946ef;
   }
 
   .shiz-title {
@@ -360,30 +346,28 @@
   }
 
   .big-power-circle {
-    width: 174px;
-    height: 174px;
+    width: 172px;
+    height: 172px;
     border-radius: 50%;
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
     cursor: pointer;
-    transition: all 0.28s ease;
+    transition: transform 0.2s ease, box-shadow 0.25s ease;
     position: relative;
   }
 
-  /* СОСТОЯНИЕ: ВЫКЛЮЧЕНО */
   .big-power-circle.off-state {
     background: radial-gradient(circle at 50% 35%, #231242 0%, #0d061c 80%);
-    border: 3px solid rgba(168, 85, 247, 0.35);
-    box-shadow: 0 0 28px rgba(168, 85, 247, 0.18), inset 0 0 20px rgba(0, 0, 0, 0.85);
+    border: 3px solid rgba(168, 85, 247, 0.38);
+    box-shadow: 0 0 24px rgba(168, 85, 247, 0.2), inset 0 0 18px rgba(0, 0, 0, 0.85);
   }
 
-  /* СОСТОЯНИЕ: АКТИВНО (ЯРКИЙ ФИОЛЕТОВО-ПУРПУРНЫЙ НЕОН) */
   .big-power-circle.on-state {
     background: radial-gradient(circle at 35% 25%, #f5d0fe 0%, #c084fc 38%, #9333ea 78%, #3b0764 100%);
     border: 4px solid #fae8ff;
-    animation: pulsePurpleRing 2s infinite;
+    animation: pulsePurpleRing 2.2s infinite;
   }
 
   .big-power-circle:active {
@@ -399,12 +383,10 @@
 
   .big-power-circle.off-state .power-icon-svg {
     color: #c084fc;
-    text-shadow: 0 0 12px rgba(192, 132, 252, 0.5);
   }
 
   .big-power-circle.on-state .power-icon-svg {
     color: #ffffff;
-    text-shadow: 0 0 14px rgba(255, 255, 255, 0.8);
   }
 
   .power-main-label {
@@ -419,7 +401,6 @@
 
   .big-power-circle.on-state .power-main-label {
     color: #ffffff;
-    text-shadow: 0 1px 6px rgba(0, 0, 0, 0.45);
   }
 
   .power-status-pill {
@@ -432,16 +413,16 @@
   }
 
   .power-status-pill.off {
-    background: rgba(168, 85, 247, 0.12);
+    background: rgba(168, 85, 247, 0.14);
     border: 1px solid rgba(168, 85, 247, 0.35);
     color: #d8b4fe;
   }
 
   .power-status-pill.on {
-    background: rgba(217, 70, 239, 0.2);
+    background: rgba(217, 70, 239, 0.22);
     border: 1px solid #e879f9;
     color: #fae8ff;
-    box-shadow: 0 0 16px rgba(217, 70, 239, 0.35);
+    box-shadow: 0 0 14px rgba(217, 70, 239, 0.35);
   }
 
   /* ==================== СЕТКА 6 КАРТОЧЕК С ФИОЛЕТОВЫМ СВЕЧЕНИЕМ ==================== */
@@ -452,25 +433,22 @@
   }
 
   .hub-card {
-    background: var(--bg-card);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
-    border: 1px solid rgba(192, 132, 252, 0.32);
+    background: linear-gradient(160deg, rgba(25, 13, 48, 0.96) 0%, rgba(13, 6, 26, 0.96) 100%);
+    border: 1px solid rgba(192, 132, 252, 0.34);
     border-radius: 20px;
     padding: 16px 14px;
     cursor: pointer;
-    transition: transform 0.16s, border-color 0.2s, box-shadow 0.2s;
+    transition: transform 0.15s;
     display: flex;
     flex-direction: column;
     justify-content: space-between;
     min-height: 114px;
-    box-shadow: 0 6px 24px rgba(124, 58, 237, 0.16), inset 0 0 16px rgba(168, 85, 247, 0.08);
+    box-shadow: 0 4px 18px rgba(124, 58, 237, 0.18), inset 0 0 14px rgba(168, 85, 247, 0.08);
   }
 
   .hub-card:active {
     transform: scale(0.96);
     border-color: #e879f9;
-    box-shadow: 0 0 24px rgba(217, 70, 239, 0.45), inset 0 0 18px rgba(217, 70, 239, 0.2);
   }
 
   .hub-card-top {
@@ -480,28 +458,26 @@
     margin-bottom: 8px;
   }
 
-  /* КВАДРАТИКИ ИКОНОК С ЛЁГКИМ ФИОЛЕТОВЫМ СВЕЧЕНИЕМ */
+  /* КВАДРАТИКИ ИКОНОК С ФИОЛЕТОВЫМ НЕОНОВЫМ СВЕЧЕНИЕМ */
   .hub-icon {
     width: 38px;
     height: 38px;
     border-radius: 12px;
-    background: linear-gradient(135deg, rgba(168, 85, 247, 0.28) 0%, rgba(217, 70, 239, 0.18) 100%);
-    border: 1px solid rgba(216, 180, 254, 0.55);
-    box-shadow: 0 0 16px rgba(168, 85, 247, 0.45), inset 0 0 8px rgba(255, 255, 255, 0.2);
+    background: linear-gradient(135deg, rgba(168, 85, 247, 0.32) 0%, rgba(217, 70, 239, 0.22) 100%);
+    border: 1px solid rgba(216, 180, 254, 0.6);
+    box-shadow: 0 0 14px rgba(168, 85, 247, 0.45);
     display: flex;
     align-items: center;
     justify-content: center;
     font-size: 17px;
     font-weight: 900;
     color: #f3e8ff;
-    text-shadow: 0 0 8px #d946ef;
   }
 
   .hub-arrow {
     font-size: 18px;
     color: #c084fc;
     font-weight: 900;
-    text-shadow: 0 0 8px rgba(192, 132, 252, 0.6);
   }
 
   .hub-title {
@@ -532,23 +508,17 @@
     gap: 10px;
     margin-bottom: 14px;
     cursor: pointer;
-    background: rgba(22, 11, 44, 0.88);
-    backdrop-filter: blur(10px);
+    background: #160b2c;
     border: 1px solid rgba(192, 132, 252, 0.35);
     padding: 12px 15px;
     border-radius: 16px;
-    box-shadow: 0 0 18px rgba(168, 85, 247, 0.2);
-  }
-
-  .back-bar:active {
-    transform: scale(0.98);
+    box-shadow: 0 0 16px rgba(168, 85, 247, 0.2);
   }
 
   .back-btn-ico {
     font-size: 18px;
     font-weight: 900;
     color: #e879f9;
-    text-shadow: 0 0 10px #d946ef;
   }
 
   .back-title {
@@ -559,13 +529,11 @@
 
   .section-box {
     background: var(--bg-card);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
     border: 1px solid rgba(192, 132, 252, 0.3);
     border-radius: 20px;
     padding: 15px;
     margin-bottom: 13px;
-    box-shadow: 0 6px 24px rgba(124, 58, 237, 0.14), inset 0 0 14px rgba(168, 85, 247, 0.06);
+    box-shadow: 0 4px 20px rgba(124, 58, 237, 0.14);
   }
 
   .sec-label {
@@ -578,13 +546,11 @@
     letter-spacing: 0.7px;
     text-transform: uppercase;
     margin-bottom: 11px;
-    text-shadow: 0 0 10px rgba(192, 132, 252, 0.4);
   }
 
-  /* ГОТОВЫЕ РЕЖИМЫ ВНУТРИ КАРТОЧКИ СЕНСЫ */
   .preset-card {
     background: var(--bg-inner);
-    border: 1.5px solid rgba(168, 85, 247, 0.2);
+    border: 1.5px solid rgba(168, 85, 247, 0.22);
     border-radius: 16px;
     padding: 13px 14px;
     margin-bottom: 9px;
@@ -592,13 +558,12 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    transition: 0.18s;
   }
 
   .preset-card.selected {
-    background: linear-gradient(135deg, rgba(59, 7, 100, 0.85) 0%, rgba(30, 10, 60, 0.92) 100%);
+    background: linear-gradient(135deg, rgba(59, 7, 100, 0.9) 0%, rgba(30, 10, 60, 0.95) 100%);
     border-color: #e879f9;
-    box-shadow: 0 0 20px rgba(192, 132, 252, 0.35), inset 0 0 12px rgba(217, 70, 239, 0.15);
+    box-shadow: 0 0 18px rgba(192, 132, 252, 0.35);
   }
 
   .pr-name {
@@ -615,7 +580,7 @@
   }
 
   .pr-badge {
-    background: rgba(168, 85, 247, 0.22);
+    background: rgba(168, 85, 247, 0.24);
     border: 1px solid rgba(216, 180, 254, 0.5);
     color: #f3e8ff;
     font-size: 10px;
@@ -624,10 +589,8 @@
     border-radius: 999px;
     flex-shrink: 0;
     margin-left: 8px;
-    box-shadow: 0 0 10px rgba(168, 85, 247, 0.3);
   }
 
-  /* ПОЛЗУНКИ С ФИОЛЕТОВЫМ НЕОНОМ */
   .slider-item {
     margin-bottom: 15px;
     padding-bottom: 12px;
@@ -661,7 +624,6 @@
     font-weight: 900;
     padding: 2px 9px;
     border-radius: 8px;
-    box-shadow: 0 0 10px rgba(168, 85, 247, 0.35);
   }
 
   .sl-explain {
@@ -690,11 +652,10 @@
     border-radius: 50%;
     background: #d946ef;
     border: 3px solid #ffffff;
-    box-shadow: 0 0 14px #d946ef, 0 0 6px #a855f7;
+    box-shadow: 0 0 10px #d946ef;
     cursor: pointer;
   }
 
-  /* КНОПКИ СЕТКИ (РАСТЯГ, ПРИЦЕЛ, ЦВЕТА) */
   .opts-row {
     display: grid;
     grid-template-columns: repeat(5, 1fr);
@@ -719,14 +680,13 @@
     font-weight: 900;
     text-align: center;
     cursor: pointer;
-    box-shadow: 0 0 10px rgba(168, 85, 247, 0.1);
   }
 
   .opt-btn.active {
     background: rgba(168, 85, 247, 0.34);
     border: 1.5px solid #e879f9;
     color: #ffffff;
-    box-shadow: 0 0 16px rgba(217, 70, 239, 0.45);
+    box-shadow: 0 0 14px rgba(217, 70, 239, 0.4);
   }
 
   .preview-box {
@@ -736,10 +696,8 @@
     border-radius: 14px;
     display: block;
     margin-bottom: 10px;
-    box-shadow: inset 0 0 18px rgba(168, 85, 247, 0.12);
   }
 
-  /* ТУМБЛЕРЫ */
   .toggle-row {
     display: flex;
     justify-content: space-between;
@@ -791,7 +749,6 @@
   .sw-box input:checked + .sw-track {
     background: linear-gradient(90deg, #9333ea, #d946ef);
     border-color: #f5d0fe;
-    box-shadow: 0 0 14px rgba(217, 70, 239, 0.55);
   }
 
   .sw-box input:checked + .sw-track::before {
@@ -800,7 +757,7 @@
 
   #toastPopup {
     position: fixed;
-    top: calc(env(safe-area-inset-top, 38px) + 12px);
+    top: calc(env(safe-area-inset-top, 40px) + 12px);
     left: 50%;
     transform: translateX(-50%);
     background: linear-gradient(90deg, #7c3aed, #c026d3);
@@ -812,13 +769,12 @@
     font-weight: 900;
     z-index: 2000000;
     display: none;
-    box-shadow: 0 6px 24px rgba(168, 85, 247, 0.6);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.6);
   }
 </style>
 </head>
 <body>
 
-<!-- ЖИВОЙ АНИМИРОВАННЫЙ НЕОНОВЫЙ ФОН -->
 <div class="live-bg">
   <div class="live-grid"></div>
   <div class="glow-orb orb-1"></div>
@@ -849,7 +805,7 @@
 </div>
 
 <div class="container">
-  <!-- ВЕРХНЯЯ ПАНЕЛЬ (ОПУЩЕНА НИЖЕ ЧАСОВ И БАТАРЕИ) -->
+  <!-- ВЕРХНЯЯ ПАНЕЛЬ -->
   <div class="top-bar cascade-item d-1">
     <div class="logo-block">
       <div class="logo-name">SO2Teleport</div>
@@ -867,7 +823,6 @@
 
   <!-- ==================== ГЛАВНЫЙ ЭКРАН (БОЛЬШАЯ КНОПКА + 6 КАРТОЧЕК) ==================== -->
   <div id="mainHubView">
-    <!-- БОЛЬШАЯ КРУГЛАЯ КНОПКА ЗАПУСКА СВЕРХУ -->
     <div class="power-center-wrap cascade-item d-2">
       <div id="bigPowerCircle" class="big-power-circle off-state" onclick="onBigPowerClick()">
         <div class="power-icon-svg">⚡</div>
@@ -878,7 +833,6 @@
       </div>
     </div>
 
-    <!-- 6 КАРТОЧЕК МЕНЮ С ФИОЛЕТОВЫМ СВЕЧЕНИЕМ -->
     <div class="cards-grid-6">
       <div class="hub-card cascade-item d-2" onclick="openCardPage('page-sens')">
         <div class="hub-card-top">
@@ -949,7 +903,7 @@
   </div>
 
   <!-- ========================================================================= -->
-  <!-- КАРТОЧКА 1: СЕНСА (ГОТОВЫЕ ПРЕСЕТЫ + РУЧНЫЕ ПОЛЗУНКИ С ОБЪЯСНЕНИЯМИ)      -->
+  <!-- КАРТОЧКА 1: СЕНСА                                                         -->
   <!-- ========================================================================= -->
   <div id="page-sens" class="subpage">
     <div class="back-bar cascade-item d-1" onclick="backToHub()">
@@ -1157,7 +1111,7 @@
 
       <canvas id="stretchPreviewCanvas" class="preview-box" width="340" height="110"></canvas>
       <div class="sl-explain">
-        Само приложение SO2Teleport остаётся строго вертикальным, а в Standoff 2 модели игроков расширяются на весь экран без черных полос.
+        Само приложение SO2Teleport остаётся строго вертикальным, а в Standoff 2 модели игроков расширяются на весь экран + укрупняется шаг координатной сетки для резкого телепорта.
       </div>
 
       <div class="opts-row">
@@ -1306,8 +1260,9 @@
   let currentRatio = "4:3";
   let currentCrossShape = "off";
   let currentCrossColor = "#D946EF";
+  let sliderDebounceTimer = null;
 
-  /* ==================== ЖИВЫЕ ФИОЛЕТОВЫЕ ЧАСТИЦЫ НА ФОНЕ ==================== */
+  /* ==================== ОБЛЕГЧЁННЫЕ ЖИВЫЕ ФИОЛЕТОВЫЕ ЧАСТИЦЫ БЕЗ ЛАГОВ ==================== */
   function initLiveParticles() {
     const canvas = document.getElementById("bgParticlesCanvas");
     if (!canvas) return;
@@ -1316,14 +1271,14 @@
     let h = (canvas.height = window.innerHeight);
 
     const particles = [];
-    for (let i = 0; i < 28; i++) {
+    for (let i = 0; i < 16; i++) {
       particles.push({
         x: Math.random() * w,
         y: Math.random() * h,
-        r: 1.2 + Math.random() * 2.2,
-        vx: (Math.random() - 0.5) * 0.35,
-        vy: -0.25 - Math.random() * 0.45,
-        alpha: 0.25 + Math.random() * 0.55
+        r: 1.5 + Math.random() * 2.0,
+        vx: (Math.random() - 0.5) * 0.3,
+        vy: -0.25 - Math.random() * 0.4,
+        alpha: 0.25 + Math.random() * 0.5
       });
     }
 
@@ -1342,10 +1297,14 @@
         if (p.x < -10) p.x = w + 10;
         if (p.x > w + 10) p.x = -10;
 
+        // Рисуем мягкий ореол без тяжёлого ctx.shadowBlur
         ctx.beginPath();
-        ctx.fillStyle = `rgba(216, 180, 254, ${p.alpha})`;
-        ctx.shadowBlur = 10;
-        ctx.shadowColor = "#d946ef";
+        ctx.fillStyle = `rgba(217, 70, 239, ${p.alpha * 0.28})`;
+        ctx.arc(p.x, p.y, p.r * 2.6, 0, Math.PI * 2);
+        ctx.fill();
+
+        ctx.beginPath();
+        ctx.fillStyle = `rgba(243, 232, 255, ${p.alpha})`;
         ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
         ctx.fill();
       }
@@ -1363,14 +1322,13 @@
     window._toastTimer = setTimeout(() => { t.style.display = "none"; }, 2200);
   }
 
-  /* ==================== АНИМАЦИЯ КАСКАДНОГО ПАДЕНИЯ ПРИ ПЕРЕХОДАХ ==================== */
   function replayCascadeAnimation(parentEl) {
     if (!parentEl) return;
     const items = parentEl.querySelectorAll(".cascade-item");
     items.forEach((el, idx) => {
       el.style.animation = "none";
       void el.offsetWidth;
-      el.style.animation = `dropFromTop 0.42s cubic-bezier(0.22, 1, 0.36, 1) ${idx * 0.055}s forwards`;
+      el.style.animation = `dropFromTop 0.36s cubic-bezier(0.22, 1, 0.36, 1) ${idx * 0.045}s forwards`;
     });
   }
 
@@ -1395,7 +1353,6 @@
     window.scrollTo(0, 0);
   }
 
-  /* ==================== ВХОД: ДОБРО ПОЖАЛОВАТЬ В SO2TELEPORT ==================== */
   function verifyStartupAuth() {
     if (!window.AndroidBridge || !AndroidBridge.verifySavedLicenseOnStartup) return;
     try {
@@ -1461,7 +1418,6 @@
     document.getElementById("welcomeAuthOverlay").style.display = "flex";
   }
 
-  /* ==================== SHIZUKU СПРАВА ВВЕРХУ ==================== */
   function onShizukuTopClick() {
     if (!window.AndroidBridge) return;
     const msg = AndroidBridge.handleShizukuCardClick();
@@ -1492,7 +1448,6 @@
     } catch (e) {}
   }
 
-  /* ==================== БОЛЬШАЯ КРУГЛАЯ КНОПКА ЗАПУСКА ==================== */
   function onBigPowerClick() {
     if (!window.AndroidBridge) {
       isTeleportOn = !isTeleportOn;
@@ -1520,7 +1475,7 @@
       txt.innerText = "АКТИВЕН";
       pill.classList.remove("off");
       pill.classList.add("on");
-      pill.innerText = "• ТЕЛЕПОРТ АКТИВЕН (КВАНТОВЫЙ СТРОБ ВКЛЮЧЁН)";
+      pill.innerText = "• ТЕЛЕПОРТ АКТИВЕН (РАБОТАЕТ В ИГРЕ)";
     } else {
       circle.classList.remove("on-state");
       circle.classList.add("off-state");
@@ -1531,7 +1486,6 @@
     }
   }
 
-  /* ==================== КАРТОЧКА СЕНСЫ: ПРЕСЕТЫ И ПОЛЗУНКИ ==================== */
   function selectSensPresetCard(presetId) {
     ["max_teleport", "sharp", "awp", "sticky"].forEach(id => {
       const card = document.getElementById("pr-" + id);
@@ -1591,14 +1545,18 @@
 
     const json = JSON.stringify(payload);
     localStorage.setItem("so2_custom_sliders", json);
-    if (window.AndroidBridge && AndroidBridge.saveCustomSlidersJson) {
-      AndroidBridge.saveCustomSlidersJson(json);
-      isTeleportOn = true;
-      renderPowerCircle();
-    }
+
+    // Debounce 140 мс: цифры меняются мгновенно без лагов, а команда в Shizuku уходит плавно
+    clearTimeout(sliderDebounceTimer);
+    sliderDebounceTimer = setTimeout(() => {
+      if (window.AndroidBridge && AndroidBridge.saveCustomSlidersJson) {
+        AndroidBridge.saveCustomSlidersJson(json);
+        isTeleportOn = true;
+        renderPowerCircle();
+      }
+    }, 140);
   }
 
-  /* ==================== КАРТОЧКА РАСТЯГА ==================== */
   function selectStretchOption(ratio) {
     currentRatio = ratio;
     document.getElementById("stretchCurrentBadge").innerText = ratio;
@@ -1661,7 +1619,6 @@
     }
   }
 
-  /* ==================== КАРТОЧКА КАСТОМНОГО ПРИЦЕЛА ==================== */
   function selectCrossShape(shape) {
     currentCrossShape = shape;
     document.getElementById("crossStateBadge").innerText = shape.toUpperCase();
@@ -1733,7 +1690,6 @@
     }
   }
 
-  /* ==================== КОНФИГИ, ПИКСЕЛИ И ПРОФИЛЬ ==================== */
   function applyCloudCodeConfig() {
     const code = document.getElementById("inpConfigCode").value.trim();
     if (!code) { showToast("Введите код конфига!"); return; }
@@ -1788,7 +1744,7 @@
     loadProfileInfo();
     syncTopState();
     verifyStartupAuth();
-    setInterval(syncTopState, 1200);
+    setInterval(syncTopState, 1500);
   };
 </script>
 </body>
