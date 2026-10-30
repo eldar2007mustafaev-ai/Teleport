@@ -41,7 +41,7 @@ public class MainActivity extends Activity {
     private String currentCrosshairType = "off";
     private int crosshairScale = 50;
     private int crosshairOpacity = 100;
-    private int crosshairColor = Color.parseColor("#00F0FF");
+    private int crosshairColor = Color.parseColor("#D946EF");
 
     private View floatingBtnView;
     private TextView floatingTxtView;
@@ -50,21 +50,52 @@ public class MainActivity extends Activity {
     private WindowManager.LayoutParams floatBtnParams;
     private WindowManager.LayoutParams trashParams;
 
-    // Аппаратный стробоскоп очереди касаний поверх игры
+    // Квантовый синхронизатор склейки пакетов тача (работает только поверх игры!)
     private View quantumPulseView;
     private WindowManager.LayoutParams quantumPulseParams;
-    private boolean pulseRunning = false;
-    private boolean pulsePhaseToggle = false;
+    private boolean strobeWanted = false;
+    private boolean isAppInForeground = true;
+    private boolean pulsePhase = false;
 
     private boolean isStretchedActive = false;
     private boolean stealthModeEnabled = false;
+
+    private final Runnable batchStrobeRunnable = new Runnable() {
+        @Override
+        public void run() {
+            if (!strobeWanted || !TeleportEngine.isActive() || isAppInForeground) {
+                return;
+            }
+            if (quantumPulseView != null && quantumPulseParams != null) {
+                try {
+                    pulsePhase = !pulsePhase;
+                    if (pulsePhase) {
+                        // Фаза 1: кратковременный импульс фокуса/геометрии окна заставляет InputDispatcher
+                        // аккумулировать координаты свайпа в один пакет (эффект прыжка куском)
+                        quantumPulseParams.width = 4;
+                        quantumPulseParams.height = 4;
+                        quantumPulseParams.x = 2;
+                        windowManager.updateViewLayout(quantumPulseView, quantumPulseParams);
+                        mainHandler.postDelayed(this, TeleportEngine.getBatchHoldMs());
+                        return;
+                    } else {
+                        // Фаза 2: сброс пакета в кадр игры одним резким скачком
+                        quantumPulseParams.width = 1;
+                        quantumPulseParams.height = 1;
+                        quantumPulseParams.x = 0;
+                        windowManager.updateViewLayout(quantumPulseView, quantumPulseParams);
+                    }
+                } catch (Exception ignored) {}
+            }
+            mainHandler.postDelayed(this, TeleportEngine.getBatchReleaseIntervalMs());
+        }
+    };
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         requestWindowFeature(Window.FEATURE_NO_TITLE);
 
-        // СТРОГАЯ ВЕРТИКАЛЬНАЯ ФИКСАЦИЯ: приложение никогда не переворачивается боком
         setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
         getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE);
 
@@ -75,6 +106,7 @@ public class MainActivity extends Activity {
         stealthModeEnabled = prefs.getBoolean("stealth_overlays", false);
 
         webView = new WebView(this);
+        webView.setLayerType(View.LAYER_TYPE_HARDWARE, null);
         webView.setFocusable(true);
         webView.setFocusableInTouchMode(true);
         webView.requestFocus(View.FOCUS_DOWN);
@@ -87,7 +119,7 @@ public class MainActivity extends Activity {
         ws.setAllowContentAccess(true);
         ws.setCacheMode(WebSettings.LOAD_NO_CACHE);
 
-        webView.setBackgroundColor(Color.parseColor("#050B14"));
+        webView.setBackgroundColor(Color.parseColor("#070312"));
         webView.setWebChromeClient(new WebChromeClient());
         webView.setWebViewClient(new WebViewClient());
         webView.addJavascriptInterface(new AndroidBridge(this), "AndroidBridge");
@@ -99,71 +131,71 @@ public class MainActivity extends Activity {
     @Override
     protected void onResume() {
         super.onResume();
-        // Дополнительная гарантия строго вертикального режима при возврате из игры
+        isAppInForeground = true;
         setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
+        // Пока пользователь в меню SO2Teleport — отключаем стробоскоп, чтобы интерфейс летал в 120 FPS без лагов
+        mainHandler.removeCallbacks(batchStrobeRunnable);
     }
 
-    /**
-     * Реальный квантовый стробоскоп окна для создания телепорта сенсы кусками.
-     * Сдвигает координату и флаги 1x1 слоя с частотой чанков, заставляя InputDispatcher
-     * выдавать в Standoff 2 дискретные скачки вместо плавного свайпа.
-     */
+    @Override
+    protected void onPause() {
+        super.onPause();
+        isAppInForeground = false;
+        // Как только свернули приложение и перешли в игру — запускаем квантовый стробоскоп кусков!
+        if (strobeWanted && TeleportEngine.isActive()) {
+            ensureQuantumOverlayCreated();
+            mainHandler.removeCallbacks(batchStrobeRunnable);
+            mainHandler.postDelayed(batchStrobeRunnable, 100);
+        }
+    }
+
+    private void ensureQuantumOverlayCreated() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && !Settings.canDrawOverlays(this)) {
+            return;
+        }
+        if (quantumPulseView == null) {
+            quantumPulseView = new View(this);
+            quantumPulseView.setBackgroundColor(Color.TRANSPARENT);
+            int overlayType = Build.VERSION.SDK_INT >= Build.VERSION_CODES.O
+                    ? WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY
+                    : WindowManager.LayoutParams.TYPE_PHONE;
+
+            quantumPulseParams = new WindowManager.LayoutParams(
+                    1, 1,
+                    overlayType,
+                    WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE
+                            | WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL
+                            | WindowManager.LayoutParams.FLAG_WATCH_OUTSIDE_TOUCH
+                            | WindowManager.LayoutParams.FLAG_HARDWARE_ACCELERATED,
+                    PixelFormat.TRANSLUCENT
+            );
+            quantumPulseParams.gravity = Gravity.TOP | Gravity.START;
+            quantumPulseParams.x = 0;
+            quantumPulseParams.y = 0;
+            try {
+                windowManager.addView(quantumPulseView, quantumPulseParams);
+            } catch (Exception ignored) {}
+        }
+    }
+
     public void setQuantumOverlayStrobe(boolean enable) {
         runOnUiThread(() -> {
+            strobeWanted = enable;
+            mainHandler.removeCallbacks(batchStrobeRunnable);
             if (!enable) {
-                pulseRunning = false;
                 if (quantumPulseView != null) {
                     try { windowManager.removeView(quantumPulseView); } catch (Exception ignored) {}
                     quantumPulseView = null;
                 }
                 return;
             }
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && !Settings.canDrawOverlays(this)) {
-                return;
-            }
-            if (quantumPulseView == null) {
-                quantumPulseView = new View(this);
-                quantumPulseView.setBackgroundColor(Color.TRANSPARENT);
-                int overlayType = Build.VERSION.SDK_INT >= Build.VERSION_CODES.O
-                        ? WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY
-                        : WindowManager.LayoutParams.TYPE_PHONE;
-
-                quantumPulseParams = new WindowManager.LayoutParams(
-                        2, 2,
-                        overlayType,
-                        WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE
-                                | WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL
-                                | WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS,
-                        PixelFormat.TRANSLUCENT
-                );
-                quantumPulseParams.gravity = Gravity.TOP | Gravity.START;
-                quantumPulseParams.x = 0;
-                quantumPulseParams.y = 0;
-                try {
-                    windowManager.addView(quantumPulseView, quantumPulseParams);
-                } catch (Exception ignored) {}
-            }
-            if (!pulseRunning) {
-                pulseRunning = true;
-                scheduleNextQuantumPulse();
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && Settings.canDrawOverlays(this)) {
+                ensureQuantumOverlayCreated();
+                if (!isAppInForeground) {
+                    mainHandler.post(batchStrobeRunnable);
+                }
             }
         });
-    }
-
-    private void scheduleNextQuantumPulse() {
-        if (!pulseRunning || !TeleportEngine.isActive()) return;
-        int interval = TeleportEngine.getStrobeIntervalMs();
-        mainHandler.postDelayed(() -> {
-            if (!pulseRunning || quantumPulseView == null || quantumPulseParams == null) return;
-            try {
-                pulsePhaseToggle = !pulsePhaseToggle;
-                quantumPulseParams.x = pulsePhaseToggle ? 1 : 0;
-                quantumPulseParams.y = pulsePhaseToggle ? 1 : 0;
-                quantumPulseView.requestLayout();
-                windowManager.updateViewLayout(quantumPulseView, quantumPulseParams);
-            } catch (Exception ignored) {}
-            scheduleNextQuantumPulse();
-        }, interval);
     }
 
     public void healBrokenTouchTimeouts() {
@@ -185,7 +217,7 @@ public class MainActivity extends Activity {
             if (!Settings.canDrawOverlays(this)) {
                 runOnUiThread(() -> {
                     try {
-                        Toast.makeText(this, "Разрешите показ поверх других окон для SO2Teleport!", Toast.LENGTH_LONG).show();
+                        Toast.makeText(this, "Разрешите показ поверх других окон для работы Телепорта!", Toast.LENGTH_LONG).show();
                         Intent intent = new Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
                                 Uri.parse("package:" + getPackageName()));
                         startActivity(intent);
@@ -231,7 +263,7 @@ public class MainActivity extends Activity {
         try {
             this.crosshairColor = Color.parseColor(colorHex);
         } catch (Exception e) {
-            this.crosshairColor = Color.parseColor("#00F0FF");
+            this.crosshairColor = Color.parseColor("#D946EF");
         }
         runOnUiThread(() -> {
             if (crosshairView != null) crosshairView.invalidate();
@@ -354,9 +386,9 @@ public class MainActivity extends Activity {
             trashBoxView.setPadding(46, 22, 46, 22);
 
             GradientDrawable trashBg = new GradientDrawable();
-            trashBg.setColor(Color.parseColor("#E60F172A"));
+            trashBg.setColor(Color.parseColor("#E6190B33"));
             trashBg.setCornerRadius(999f);
-            trashBg.setStroke(4, Color.parseColor("#FB7185"));
+            trashBg.setStroke(4, Color.parseColor("#F43F5E"));
             trashBoxView.setBackground(trashBg);
 
             ((FrameLayout) trashDropView).addView(trashBoxView, new FrameLayout.LayoutParams(
@@ -444,10 +476,10 @@ public class MainActivity extends Activity {
                                 if (!isStretchedActive) {
                                     applyResolutionRatio(ratio);
                                     setQuantumOverlayStrobe(true);
-                                    Toast.makeText(MainActivity.this, "SO2Teleport: Растяг " + ratio + " ВКЛ", Toast.LENGTH_SHORT).show();
+                                    Toast.makeText(MainActivity.this, "SO2Teleport: Растяг " + ratio + " + ТЕЛЕПОРТ ВКЛ!", Toast.LENGTH_SHORT).show();
                                 } else {
                                     resetResolution();
-                                    Toast.makeText(MainActivity.this, "SO2Teleport: Экран сброшен", Toast.LENGTH_SHORT).show();
+                                    Toast.makeText(MainActivity.this, "SO2Teleport: Стандартный экран", Toast.LENGTH_SHORT).show();
                                 }
                             }
                             return true;
@@ -473,11 +505,11 @@ public class MainActivity extends Activity {
         GradientDrawable circle = new GradientDrawable();
         circle.setShape(GradientDrawable.OVAL);
         if (isStretchedActive) {
-            circle.setColor(Color.parseColor("#E606B6D4"));
-            circle.setStroke(4, Color.parseColor("#A5F3FC"));
+            circle.setColor(Color.parseColor("#E69333EA"));
+            circle.setStroke(4, Color.parseColor("#F5D0FE"));
         } else {
-            circle.setColor(Color.parseColor("#D90B1528"));
-            circle.setStroke(3, Color.parseColor("#38BDF8"));
+            circle.setColor(Color.parseColor("#D9140826"));
+            circle.setStroke(3, Color.parseColor("#A855F7"));
         }
         floatingTxtView.setBackground(circle);
     }
@@ -494,9 +526,9 @@ public class MainActivity extends Activity {
     }
 
     /**
-     * ИСПРАВЛЕННЫЙ РАБОЧИЙ РАСТЯГ ЭКРАНА:
-     * Считает истинное соотношение от базовой короткой стороны матрицы, не ломая портретную
-     * ориентацию самого приложения SO2Teleport, и растягивает ландшафтную игру во весь экран.
+     * РАСТЯГ ЭКРАНА + КВАНТОВАНИЕ КООРДИНАТНОЙ СЕТКИ ТАЧА (COARSE TOUCH GRID):
+     * За счет масштабирования логической сетки каждый физический сдвиг пальца по тачскрину
+     * пересчитывается в более крупный угловой шаг в игре — прицел буквально прыгает кусками!
      */
     public void applyResolutionRatio(String ratio) {
         if (!ShizukuManager.isPermissionGranted()) return;
@@ -523,26 +555,30 @@ public class MainActivity extends Activity {
                     .apply();
         }
 
-        final int baseShort = savedBaseShort;
-        final int baseDpi = savedBaseDpi;
-        int targetLong;
+        // Чем выше выставлены чанки, тем сильнее укрупняется шаг сетки (Coarse Grid Multiplier)
+        int chunks = TeleportEngine.getCurrentChunks();
+        float gridQuantFactor = (chunks >= 40) ? 0.75f : ((chunks >= 25) ? 0.85f : 1.0f);
 
+        int gridShort = Math.round(savedBaseShort * gridQuantFactor);
+        if ((gridShort & 1) == 1) gridShort++;
+
+        int targetLong;
         if ("5:4".equals(cleanRatio)) {
-            targetLong = Math.round(baseShort * 5f / 4f);
+            targetLong = Math.round(gridShort * 5f / 4f);
         } else if ("4:3".equals(cleanRatio)) {
-            targetLong = Math.round(baseShort * 4f / 3f);
+            targetLong = Math.round(gridShort * 4f / 3f);
         } else if ("3:2".equals(cleanRatio)) {
-            targetLong = Math.round(baseShort * 3f / 2f);
+            targetLong = Math.round(gridShort * 3f / 2f);
         } else if ("16:10".equals(cleanRatio)) {
-            targetLong = Math.round(baseShort * 16f / 10f);
+            targetLong = Math.round(gridShort * 16f / 10f);
         } else {
-            targetLong = Math.round(baseShort * 16f / 9f);
+            targetLong = Math.round(gridShort * 16f / 9f);
         }
 
         if ((targetLong & 1) == 1) targetLong++;
+        final int finalShort = gridShort;
         final int finalLong = targetLong;
-        // Слегка адаптируем DPI, чтобы интерфейс и хитбоксы в игре масштабировались без обрезки краев
-        final int targetDpi = Math.max(240, Math.round(baseDpi * 0.88f));
+        final int targetDpi = Math.max(180, Math.round(savedBaseDpi * gridQuantFactor * 0.88f));
 
         isStretchedActive = true;
         runOnUiThread(this::updateFloatingBubbleAppearance);
@@ -556,7 +592,7 @@ public class MainActivity extends Activity {
                 "cmd window set-ignore-orientation-request true; " +
                 "settings put global window_animation_scale 0.0; " +
                 "settings put global transition_animation_scale 0.0; " +
-                "wm size " + baseShort + "x" + finalLong + "; " +
+                "wm size " + finalShort + "x" + finalLong + "; " +
                 "wm density " + targetDpi + "; " +
                 "cmd game downscale disable com.axlebolt.standoff2";
             ShizukuManager.execCommand(cmd);
