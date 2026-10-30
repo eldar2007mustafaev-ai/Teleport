@@ -7,8 +7,8 @@
 <style>
   :root {
     --bg-dark: #070312;
-    --bg-card: rgba(19, 10, 38, 0.94);
-    --bg-inner: rgba(11, 5, 24, 0.96);
+    --bg-card: #130a26;
+    --bg-inner: #0b0518;
     --border-dim: rgba(168, 85, 247, 0.28);
     --border-neon: #c084fc;
     --purple: #a855f7;
@@ -45,14 +45,18 @@
     position: relative;
   }
 
-  /* ==================== ЛЁГКИЙ 120 FPS ЖИВОЙ ФИОЛЕТОВЫЙ ФОН ==================== */
+  /* ==================== 120 FPS БЕЗЛАГОВЫЙ ЖИВОЙ НЕОНОВЫЙ ФОН ==================== */
   .live-bg {
     position: fixed;
     inset: 0;
     z-index: 0;
     overflow: hidden;
     pointer-events: none;
-    background: radial-gradient(circle at 50% 8%, #210c42 0%, #070312 72%);
+    background:
+      radial-gradient(circle at 18% 12%, rgba(168, 85, 247, 0.22) 0%, transparent 45%),
+      radial-gradient(circle at 85% 32%, rgba(217, 70, 239, 0.18) 0%, transparent 48%),
+      radial-gradient(circle at 50% 85%, rgba(59, 130, 246, 0.16) 0%, transparent 50%),
+      radial-gradient(circle at 50% 8%, #1f0b3d 0%, #070312 74%);
   }
 
   .live-grid {
@@ -61,54 +65,30 @@
     background-image:
       linear-gradient(rgba(168, 85, 247, 0.05) 1px, transparent 1px),
       linear-gradient(90deg, rgba(168, 85, 247, 0.05) 1px, transparent 1px);
-    background-size: 36px 36px;
+    background-size: 38px 38px;
   }
 
-  .glow-orb {
+  /* Аппаратные GPU-звёзды без нагрузки на процессор */
+  .neon-star {
     position: absolute;
+    width: 4px;
+    height: 4px;
     border-radius: 50%;
-    will-change: transform;
-    animation: floatOrb 10s ease-in-out infinite alternate;
+    background: #f5d0fe;
+    box-shadow: 0 0 8px #d946ef;
+    will-change: transform, opacity;
+    animation: starFloat 6s ease-in-out infinite alternate;
   }
+  .s1 { top: 14%; left: 12%; animation-duration: 5s; }
+  .s2 { top: 26%; right: 16%; animation-duration: 7s; animation-delay: -2s; }
+  .s3 { top: 48%; left: 8%; animation-duration: 6.5s; animation-delay: -4s; }
+  .s4 { top: 64%; right: 10%; animation-duration: 8s; animation-delay: -1s; }
+  .s5 { top: 82%; left: 22%; animation-duration: 5.5s; animation-delay: -3s; }
+  .s6 { top: 36%; left: 52%; animation-duration: 7.5s; animation-delay: -2.5s; }
 
-  .glow-orb.orb-1 {
-    width: 320px;
-    height: 320px;
-    background: radial-gradient(circle, rgba(168, 85, 247, 0.28) 0%, rgba(168, 85, 247, 0) 70%);
-    top: -80px;
-    left: -80px;
-  }
-
-  .glow-orb.orb-2 {
-    width: 340px;
-    height: 340px;
-    background: radial-gradient(circle, rgba(217, 70, 239, 0.24) 0%, rgba(217, 70, 239, 0) 70%);
-    top: 28%;
-    right: -110px;
-    animation-duration: 13s;
-    animation-delay: -3s;
-  }
-
-  .glow-orb.orb-3 {
-    width: 300px;
-    height: 300px;
-    background: radial-gradient(circle, rgba(59, 130, 246, 0.22) 0%, rgba(59, 130, 246, 0) 70%);
-    bottom: -70px;
-    left: 10%;
-    animation-duration: 11s;
-    animation-delay: -5s;
-  }
-
-  @keyframes floatOrb {
-    0% { transform: translate3d(0, 0, 0) scale(1); }
-    100% { transform: translate3d(20px, -24px, 0) scale(1.08); }
-  }
-
-  #bgParticlesCanvas {
-    position: fixed;
-    inset: 0;
-    z-index: 0;
-    pointer-events: none;
+  @keyframes starFloat {
+    0% { transform: translate3d(0, 0, 0) scale(0.8); opacity: 0.3; }
+    100% { transform: translate3d(0, -18px, 0) scale(1.3); opacity: 0.85; }
   }
 
   .container {
@@ -118,42 +98,45 @@
     z-index: 2;
   }
 
-  /* ==================== СВЕРХПЛАВНЫЕ GPU-АНИМАЦИИ ПЕРЕХОДОВ ==================== */
+  /* ==================== ПЛАВНЫЕ GPU-АНИМАЦИИ ПЕРЕХОДОВ ==================== */
   @keyframes smoothSlideIn {
     0% {
       opacity: 0;
-      transform: translate3d(0, 18px, 0) scale(0.985);
+      transform: translate3d(0, 14px, 0);
     }
     100% {
       opacity: 1;
-      transform: translate3d(0, 0, 0) scale(1);
+      transform: translate3d(0, 0, 0);
     }
   }
 
-  @keyframes pulsePurpleRing {
+  @keyframes gpuRingPulse {
     0% {
-      box-shadow: 0 0 0 0 rgba(192, 132, 252, 0.55), 0 0 36px rgba(168, 85, 247, 0.65);
+      transform: scale(0.98);
+      opacity: 0.75;
     }
     70% {
-      box-shadow: 0 0 0 18px rgba(192, 132, 252, 0), 0 0 48px rgba(217, 70, 239, 0.85);
+      transform: scale(1.16);
+      opacity: 0;
     }
     100% {
-      box-shadow: 0 0 0 0 rgba(192, 132, 252, 0), 0 0 36px rgba(168, 85, 247, 0.65);
+      transform: scale(1.16);
+      opacity: 0;
     }
   }
 
   .cascade-item {
     opacity: 0;
     will-change: transform, opacity;
-    animation: smoothSlideIn 0.34s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    animation: smoothSlideIn 0.28s cubic-bezier(0.2, 0.9, 0.3, 1) forwards;
   }
-  .d-1 { animation-delay: 0.02s; }
-  .d-2 { animation-delay: 0.05s; }
-  .d-3 { animation-delay: 0.08s; }
-  .d-4 { animation-delay: 0.11s; }
-  .d-5 { animation-delay: 0.14s; }
-  .d-6 { animation-delay: 0.17s; }
-  .d-7 { animation-delay: 0.20s; }
+  .d-1 { animation-delay: 0.01s; }
+  .d-2 { animation-delay: 0.03s; }
+  .d-3 { animation-delay: 0.05s; }
+  .d-4 { animation-delay: 0.07s; }
+  .d-5 { animation-delay: 0.09s; }
+  .d-6 { animation-delay: 0.11s; }
+  .d-7 { animation-delay: 0.13s; }
 
   /* ==================== ОКНО ДОБРО ПОЖАЛОВАТЬ В SO2TELEPORT ==================== */
   #welcomeAuthOverlay {
@@ -175,8 +158,8 @@
     border-radius: 24px;
     padding: 26px 20px;
     text-align: center;
-    box-shadow: 0 0 40px rgba(168, 85, 247, 0.35), inset 0 0 18px rgba(168, 85, 247, 0.12);
-    animation: smoothSlideIn 0.38s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    box-shadow: 0 0 32px rgba(168, 85, 247, 0.3);
+    animation: smoothSlideIn 0.32s cubic-bezier(0.2, 0.9, 0.3, 1) forwards;
   }
 
   .welcome-badge {
@@ -198,7 +181,6 @@
     color: #ffffff;
     margin-bottom: 6px;
     letter-spacing: 0.4px;
-    text-shadow: 0 0 14px rgba(192, 132, 252, 0.45);
   }
 
   .welcome-sub {
@@ -221,8 +203,7 @@
   }
 
   .inp-field:focus {
-    border-color: var(--border-neon);
-    box-shadow: 0 0 12px rgba(168, 85, 247, 0.35);
+    border-color: #00f0ff;
   }
 
   .primary-btn {
@@ -235,9 +216,9 @@
     border: 1px solid rgba(243, 232, 255, 0.45);
     border-radius: 14px;
     cursor: pointer;
-    box-shadow: 0 4px 20px rgba(168, 85, 247, 0.4);
+    box-shadow: 0 4px 16px rgba(168, 85, 247, 0.35);
     margin-bottom: 8px;
-    transition: transform 0.14s cubic-bezier(0.16, 1, 0.3, 1);
+    transition: transform 0.12s ease;
   }
 
   .primary-btn:active {
@@ -254,14 +235,14 @@
     padding: 12px;
     border-radius: 14px;
     cursor: pointer;
-    transition: transform 0.14s cubic-bezier(0.16, 1, 0.3, 1);
+    transition: transform 0.12s ease;
   }
 
   .secondary-btn:active {
     transform: scale(0.97);
   }
 
-  /* ==================== ВЕРХНЯЯ ПАНЕЛЬ И SHIZUKU СПРАВА ВВЕРХУ ==================== */
+  /* ==================== ВЕРХНЯЯ ПАНЕЛЬ И SHIZUKU ==================== */
   .top-bar {
     display: flex;
     justify-content: space-between;
@@ -280,7 +261,7 @@
     font-weight: 900;
     letter-spacing: 0.8px;
     color: #ffffff;
-    text-shadow: 0 0 16px rgba(192, 132, 252, 0.7);
+    text-shadow: 0 0 14px rgba(192, 132, 252, 0.65);
   }
 
   .logo-tag {
@@ -300,12 +281,11 @@
     gap: 9px;
     cursor: pointer;
     max-width: 215px;
-    box-shadow: 0 0 14px rgba(244, 63, 94, 0.2);
   }
 
   .shizuku-top-card.ready {
     border-color: rgba(192, 132, 252, 0.75);
-    box-shadow: 0 0 18px rgba(168, 85, 247, 0.35), inset 0 0 10px rgba(168, 85, 247, 0.15);
+    box-shadow: 0 0 14px rgba(168, 85, 247, 0.3);
   }
 
   .shiz-led {
@@ -313,13 +293,12 @@
     height: 10px;
     border-radius: 50%;
     background: var(--red);
-    box-shadow: 0 0 8px var(--red);
     flex-shrink: 0;
   }
 
   .shizuku-top-card.ready .shiz-led {
     background: #00f0ff;
-    box-shadow: 0 0 10px #00f0ff;
+    box-shadow: 0 0 8px #00f0ff;
   }
 
   .shiz-title {
@@ -341,7 +320,7 @@
     color: #e9d5ff;
   }
 
-  /* ==================== БОЛЬШАЯ КРУГЛАЯ КНОПКА ЗАПУСКА ==================== */
+  /* ==================== БОЛЬШАЯ КРУГЛАЯ КНОПКА ЗАПУСКА (GPU RING) ==================== */
   .power-center-wrap {
     display: flex;
     flex-direction: column;
@@ -350,28 +329,43 @@
   }
 
   .big-power-circle {
-    width: 172px;
-    height: 172px;
+    width: 170px;
+    height: 170px;
     border-radius: 50%;
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
     cursor: pointer;
-    transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.25s ease;
+    transition: transform 0.16s ease;
     position: relative;
+  }
+
+  .big-power-circle::after {
+    content: "";
+    position: absolute;
+    inset: -6px;
+    border-radius: 50%;
+    border: 2.5px solid #e879f9;
+    opacity: 0;
+    pointer-events: none;
+    will-change: transform, opacity;
   }
 
   .big-power-circle.off-state {
     background: radial-gradient(circle at 50% 35%, #231242 0%, #0d061c 80%);
     border: 3px solid rgba(168, 85, 247, 0.38);
-    box-shadow: 0 0 24px rgba(168, 85, 247, 0.2), inset 0 0 18px rgba(0, 0, 0, 0.85);
+    box-shadow: 0 0 22px rgba(168, 85, 247, 0.2);
   }
 
   .big-power-circle.on-state {
     background: radial-gradient(circle at 35% 25%, #00f0ff 0%, #a855f7 45%, #7c3aed 80%, #3b0764 100%);
     border: 4px solid #fae8ff;
-    animation: pulsePurpleRing 2.2s infinite;
+    box-shadow: 0 0 32px rgba(168, 85, 247, 0.55);
+  }
+
+  .big-power-circle.on-state::after {
+    animation: gpuRingPulse 2s infinite;
   }
 
   .big-power-circle:active {
@@ -426,7 +420,6 @@
     background: rgba(217, 70, 239, 0.22);
     border: 1px solid #e879f9;
     color: #fae8ff;
-    box-shadow: 0 0 14px rgba(217, 70, 239, 0.35);
   }
 
   /* ==================== СЕТКА 6 КАРТОЧЕК С ФИОЛЕТОВЫМ СВЕЧЕНИЕМ ==================== */
@@ -437,21 +430,21 @@
   }
 
   .hub-card {
-    background: linear-gradient(160deg, rgba(25, 13, 48, 0.96) 0%, rgba(13, 6, 26, 0.96) 100%);
+    background: linear-gradient(160deg, #190d30 0%, #0d061a 100%);
     border: 1px solid rgba(192, 132, 252, 0.34);
     border-radius: 20px;
     padding: 16px 14px;
     cursor: pointer;
-    transition: transform 0.16s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.2s;
+    transition: transform 0.14s ease, border-color 0.18s ease;
     display: flex;
     flex-direction: column;
     justify-content: space-between;
     min-height: 114px;
-    box-shadow: 0 4px 18px rgba(124, 58, 237, 0.18), inset 0 0 14px rgba(168, 85, 247, 0.08);
+    box-shadow: 0 4px 14px rgba(124, 58, 237, 0.16);
   }
 
   .hub-card:active {
-    transform: scale(0.95);
+    transform: scale(0.96);
     border-color: #00f0ff;
   }
 
@@ -466,9 +459,9 @@
     width: 38px;
     height: 38px;
     border-radius: 12px;
-    background: linear-gradient(135deg, rgba(0, 240, 255, 0.24) 0%, rgba(217, 70, 239, 0.28) 100%);
+    background: linear-gradient(135deg, rgba(0, 240, 255, 0.22) 0%, rgba(217, 70, 239, 0.28) 100%);
     border: 1px solid rgba(216, 180, 254, 0.65);
-    box-shadow: 0 0 14px rgba(168, 85, 247, 0.45);
+    box-shadow: 0 0 12px rgba(168, 85, 247, 0.4);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -515,8 +508,7 @@
     border: 1px solid rgba(192, 132, 252, 0.35);
     padding: 12px 15px;
     border-radius: 16px;
-    box-shadow: 0 0 16px rgba(168, 85, 247, 0.2);
-    transition: transform 0.14s cubic-bezier(0.16, 1, 0.3, 1);
+    transition: transform 0.12s ease;
   }
 
   .back-bar:active {
@@ -541,7 +533,6 @@
     border-radius: 20px;
     padding: 15px;
     margin-bottom: 13px;
-    box-shadow: 0 4px 20px rgba(124, 58, 237, 0.14);
   }
 
   .sec-label {
@@ -566,17 +557,11 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    transition: transform 0.14s ease, border-color 0.2s ease;
-  }
-
-  .preset-card:active {
-    transform: scale(0.98);
   }
 
   .preset-card.selected {
-    background: linear-gradient(135deg, rgba(59, 7, 100, 0.9) 0%, rgba(30, 10, 60, 0.95) 100%);
+    background: linear-gradient(135deg, #3b0764 0%, #1e0a3c 100%);
     border-color: #00f0ff;
-    box-shadow: 0 0 18px rgba(192, 132, 252, 0.35);
   }
 
   .pr-name {
@@ -665,7 +650,6 @@
     border-radius: 50%;
     background: #d946ef;
     border: 3px solid #ffffff;
-    box-shadow: 0 0 10px #d946ef;
     cursor: pointer;
   }
 
@@ -699,7 +683,6 @@
     background: rgba(168, 85, 247, 0.34);
     border: 1.5px solid #00f0ff;
     color: #ffffff;
-    box-shadow: 0 0 14px rgba(0, 240, 255, 0.35);
   }
 
   .preview-box {
@@ -790,11 +773,13 @@
 
 <div class="live-bg">
   <div class="live-grid"></div>
-  <div class="glow-orb orb-1"></div>
-  <div class="glow-orb orb-2"></div>
-  <div class="glow-orb orb-3"></div>
+  <div class="neon-star s1"></div>
+  <div class="neon-star s2"></div>
+  <div class="neon-star s3"></div>
+  <div class="neon-star s4"></div>
+  <div class="neon-star s5"></div>
+  <div class="neon-star s6"></div>
 </div>
-<canvas id="bgParticlesCanvas"></canvas>
 
 <div id="toastPopup"></div>
 
@@ -887,7 +872,7 @@
         </div>
         <div>
           <div class="hub-title">Растяг</div>
-          <div class="hub-desc">Растяг 4:3 / 5:4 / 16:9 без переворота + кнопка T</div>
+          <div class="hub-desc">Запуск плавающей кнопки «T» для растяга в игре</div>
         </div>
       </div>
 
@@ -916,7 +901,7 @@
   </div>
 
   <!-- ========================================================================= -->
-  <!-- КАРТОЧКА 1: СЕНСА (ЧАНКИ ПРОКАЧАНЫ ДО 100)                                -->
+  <!-- КАРТОЧКА 1: СЕНСА (ЧАНКИ 100)                                             -->
   <!-- ========================================================================= -->
   <div id="page-sens" class="subpage">
     <div class="back-bar cascade-item d-1" onclick="backToHub()">
@@ -1108,7 +1093,7 @@
   </div>
 
   <!-- ========================================================================= -->
-  <!-- КАРТОЧКА 4: РАСТЯГ ЭКРАНА (БЕЗ ЛИШНЕГО ПОЛЗУНКА, КНОПКА СРАЗУ ВКЛЮЧАЕТ T) -->
+  <!-- КАРТОЧКА 4: РАСТЯГ ЭКРАНА (ЗАПУСКАЕТ КНОПКУ T, А РАСТЯГ ВКЛЮЧАЕТСЯ В ИГРЕ) -->
   <!-- ========================================================================= -->
   <div id="page-stretch" class="subpage">
     <div class="back-bar cascade-item d-1" onclick="backToHub()">
@@ -1118,13 +1103,14 @@
 
     <div class="section-box cascade-item d-2">
       <div class="sec-label">
-        <span>ВЫБОР ПРОПОРЦИЙ ЭКРАНА</span>
+        <span>ВЫБОР ПРОПОРЦИЙ ДЛЯ ПЛАВАЮЩЕЙ КНОПКИ «T»</span>
         <span id="stretchCurrentBadge">4:3</span>
       </div>
 
       <canvas id="stretchPreviewCanvas" class="preview-box" width="340" height="110"></canvas>
       <div class="sl-explain">
-        При нажатии «Включить растяг» автоматически появляется плавающая кнопка «T» (работает строго на растяг) и фиксируется поворот, чтобы игра никогда не переворачивалась.
+        1. Выберите нужную пропорцию (например, 4:3) и нажмите кнопку ниже — на экране появится плавающая кнопка «T».<br>
+        2. Зайдите в Standoff 2 и нажмите на «T» — экран растянется прямо в игре без переворота!
       </div>
 
       <div class="opts-row">
@@ -1136,10 +1122,10 @@
       </div>
 
       <button type="button" id="btnApplyStretch" class="primary-btn" onclick="applyStretchNow()">
-        ВКЛЮЧИТЬ РАСТЯГ 4:3 + КНОПКУ «T»
+        ВКЛЮЧИТЬ ПЛАВАЮЩУЮ КНОПКУ «T» (4:3)
       </button>
       <button type="button" class="secondary-btn" onclick="resetStretchNow()">
-        СБРОСИТЬ РАЗМЕР И УБРАТЬ КНОПКУ
+        СБРОСИТЬ ЭКРАН И УБРАТЬ КНОПКУ «T»
       </button>
     </div>
   </div>
@@ -1262,7 +1248,6 @@
   let sliderDebounceTimer = null;
   let activeSubpageId = null;
 
-  /* ==================== ОБРАБОТЧИК СИСТЕМНОГО СВАЙПА НАЗАД ==================== */
   window.handleSystemBack = function() {
     if (activeSubpageId !== null) {
       backToHub();
@@ -1270,56 +1255,6 @@
     }
     return false;
   };
-
-  /* ==================== ЛЁГКИЕ ЧАСТИЦЫ БЕЗ ЛАГОВ ==================== */
-  function initLiveParticles() {
-    const canvas = document.getElementById("bgParticlesCanvas");
-    if (!canvas) return;
-    const ctx = canvas.getContext("2d");
-    let w = (canvas.width = window.innerWidth);
-    let h = (canvas.height = window.innerHeight);
-
-    const particles = [];
-    for (let i = 0; i < 14; i++) {
-      particles.push({
-        x: Math.random() * w,
-        y: Math.random() * h,
-        r: 1.4 + Math.random() * 1.8,
-        vx: (Math.random() - 0.5) * 0.28,
-        vy: -0.22 - Math.random() * 0.35,
-        alpha: 0.25 + Math.random() * 0.45
-      });
-    }
-
-    window.addEventListener("resize", () => {
-      w = canvas.width = window.innerWidth;
-      h = canvas.height = window.innerHeight;
-    });
-
-    function tick() {
-      ctx.clearRect(0, 0, w, h);
-      for (let i = 0; i < particles.length; i++) {
-        const p = particles[i];
-        p.x += p.vx;
-        p.y += p.vy;
-        if (p.y < -10) { p.y = h + 10; p.x = Math.random() * w; }
-        if (p.x < -10) p.x = w + 10;
-        if (p.x > w + 10) p.x = -10;
-
-        ctx.beginPath();
-        ctx.fillStyle = `rgba(217, 70, 239, ${p.alpha * 0.26})`;
-        ctx.arc(p.x, p.y, p.r * 2.4, 0, Math.PI * 2);
-        ctx.fill();
-
-        ctx.beginPath();
-        ctx.fillStyle = `rgba(243, 232, 255, ${p.alpha})`;
-        ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
-        ctx.fill();
-      }
-      requestAnimationFrame(tick);
-    }
-    tick();
-  }
 
   function showToast(msg) {
     if (!msg) return;
@@ -1336,7 +1271,7 @@
     items.forEach((el, idx) => {
       el.style.animation = "none";
       void el.offsetWidth;
-      el.style.animation = `smoothSlideIn 0.34s cubic-bezier(0.16, 1, 0.3, 1) ${idx * 0.035}s forwards`;
+      el.style.animation = `smoothSlideIn 0.28s cubic-bezier(0.2, 0.9, 0.3, 1) ${idx * 0.025}s forwards`;
     });
   }
 
@@ -1565,7 +1500,7 @@
   function selectStretchOption(ratio) {
     currentRatio = ratio;
     document.getElementById("stretchCurrentBadge").innerText = ratio;
-    document.getElementById("btnApplyStretch").innerText = "ВКЛЮЧИТЬ РАСТЯГ " + ratio + " + КНОПКУ «T»";
+    document.getElementById("btnApplyStretch").innerText = "ВКЛЮЧИТЬ ПЛАВАЮЩУЮ КНОПКУ «T» (" + ratio + ")";
     ["5:4", "4:3", "3:2", "16:10", "16:9"].forEach(r => {
       const el = document.getElementById("st-" + r);
       if (el) el.classList.toggle("active", r === ratio);
@@ -1603,7 +1538,7 @@
     ctx.fillStyle = "#e879f9";
     ctx.font = "bold 12px sans-serif";
     ctx.textAlign = "center";
-    ctx.fillText("ФОРМАТ " + currentRatio + " (БЕЗ ПЕРЕВОРОТА)", c.width / 2, c.height / 2 + 4);
+    ctx.fillText("КНОПКА «T» -> РАСТЯГ " + currentRatio + " В ИГРЕ", c.width / 2, c.height / 2 + 4);
   }
 
   function applyStretchNow() {
@@ -1737,7 +1672,6 @@
   }
 
   window.onload = function() {
-    initLiveParticles();
     drawStretchPreview();
     drawCrossPreview();
     loadProfileInfo();
