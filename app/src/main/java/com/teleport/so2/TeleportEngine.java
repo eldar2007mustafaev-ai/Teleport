@@ -1,11 +1,12 @@
 package com.teleport.so2;
 
 import android.content.Context;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 public class TeleportEngine {
     private static volatile boolean active = false;
-    private static volatile boolean strobeThreadRunning = false;
-    private static Thread quantumStrobeThread = null;
+    private static final AtomicBoolean commandInProgress = new AtomicBoolean(false);
+    private static volatile boolean pendingUpdate = false;
 
     private static String currentPreset = "max_teleport";
     private static boolean smartAwpLockEnabled = false;
@@ -13,7 +14,7 @@ public class TeleportEngine {
     private static int antiRecoilStrength = 75;
     private static boolean hzThermalGuardEnabled = true;
 
-    // Параметры тонкой настройки сенсы
+    // Параметры квантового телепорта
     private static float sharpness = 5.00f;
     private static float sensX = 5.00f;
     private static float sensY = 4.80f;
@@ -33,10 +34,23 @@ public class TeleportEngine {
         return Math.max(5, chunks);
     }
 
-    public static int getStrobeIntervalMs() {
-        // Чем выше чанки и скорость строба, тем жестче окно режет плавный свайп на дискретные прыжки
-        int base = 64 - (chunks / 2) - (strobeSpeed * 2);
-        return Math.max(14, Math.min(55, base));
+    public static int getStrobeSpeed() {
+        return Math.max(1, strobeSpeed);
+    }
+
+    /**
+     * Длительность склейки пакета касаний (мс):
+     * Чем выше чанки, тем крупнее кусок пути пальца склеивается в один мгновенный прыжок камеры.
+     */
+    public static int getBatchHoldMs() {
+        return Math.max(12, Math.min(42, (chunks * 3) / 4));
+    }
+
+    /**
+     * Интервал между выбросами склеенных кусков в игру (мс).
+     */
+    public static int getBatchReleaseIntervalMs() {
+        return Math.max(18, 65 - (strobeSpeed * 4));
     }
 
     public static boolean isSmartAwpLockEnabled() {
@@ -118,16 +132,15 @@ public class TeleportEngine {
     }
 
     private static String buildQuantizedShizukuCommand() {
-        int effectiveChunks = Math.max(10, Math.round(chunks * (sharpness / 1.2f)));
-        int quantizedRateHz = Math.max(1, 30 - (effectiveChunks / 2));
-        int holdDurationMs = Math.max(140, effectiveChunks * 4 + (shotPause * 5));
-        long phaseOffsetNs = effectiveChunks * 480000L;
+        int effectiveChunks = Math.max(15, Math.round(chunks * (sharpness / 1.15f)));
+        int quantizedRateHz = 1;
+        int holdDurationMs = Math.max(180, effectiveChunks * 4 + (shotPause * 6));
+        long phaseOffsetNs = effectiveChunks * 550000L;
 
-        // В режиме AWP или высокого зацепа включаем мгновенный тормоз инерции после рывка
         String frictionVal = (smartAwpLockEnabled || "awp".equalsIgnoreCase(currentPreset) || stickStrength >= 8)
                 ? "9999.0" : "0.0";
 
-        int pointerSpd = Math.min(7, Math.max(3, Math.round(sharpness + 2.0f)));
+        int pointerSpd = Math.min(7, Math.max(4, Math.round(sharpness + 2.0f)));
 
         return
             "settings put system peak_refresh_rate 120.0; " +
@@ -161,7 +174,7 @@ public class TeleportEngine {
             "setprop debug.sf.early.app.duration " + phaseOffsetNs + "; " +
             "setprop view.scroll_friction " + frictionVal + "; " +
             "setprop view.minimum_fling_velocity 1; " +
-            "setprop view.maximum_fling_velocity 140000; " +
+            "setprop view.maximum_fling_velocity 160000; " +
             "setprop debug.sf.latch_unsignaled 1; " +
             "setprop debug.sf.disable_backpressure 1; " +
             "setprop debug.hwui.use_buffer_age false; " +
@@ -170,62 +183,36 @@ public class TeleportEngine {
             "cmd game mode performance com.axlebolt.standoff2";
     }
 
-    private static synchronized void startQuantumStrobeLoop() {
-        if (strobeThreadRunning) return;
-        strobeThreadRunning = true;
-        quantumStrobeThread = new Thread(() -> {
-            while (strobeThreadRunning && active) {
-                try {
-                    if (ShizukuManager.isPermissionGranted()) {
-                        int sleepMs = Math.max(160, 750 - (chunks * 10));
-                        ShizukuManager.execCommand(
-                            "settings put system pointer_speed 7; " +
-                            "setprop debug.input.resampling 0; " +
-                            "setprop windowsmgr.max_events_per_sec 1; " +
-                            "setprop debug.sf.latch_unsignaled 1"
-                        );
-                        Thread.sleep(sleepMs);
-                    } else {
-                        Thread.sleep(500);
-                    }
-                } catch (InterruptedException e) {
-                    break;
-                } catch (Exception ignored) {}
-            }
-        });
-        quantumStrobeThread.setDaemon(true);
-        quantumStrobeThread.start();
-    }
-
-    private static synchronized void stopQuantumStrobeLoop() {
-        strobeThreadRunning = false;
-        if (quantumStrobeThread != null) {
-            quantumStrobeThread.interrupt();
-            quantumStrobeThread = null;
-        }
-    }
-
+    /**
+     * Выполняет команду без создания очереди зависающих потоков при быстром движении ползунка.
+     */
     private static void applyLiveQuantization() {
+        if (!ShizukuManager.isPermissionGranted()) return;
+        if (!commandInProgress.compareAndSet(false, true)) {
+            pendingUpdate = true;
+            return;
+        }
         new Thread(() -> {
-            if (!ShizukuManager.isPermissionGranted()) return;
-            ShizukuManager.execCommand(buildQuantizedShizukuCommand());
+            try {
+                do {
+                    pendingUpdate = false;
+                    ShizukuManager.execCommand(buildQuantizedShizukuCommand());
+                } while (pendingUpdate && active);
+            } finally {
+                commandInProgress.set(false);
+            }
         }).start();
     }
 
     public static void startTeleport(Context context, String presetId) {
         active = true;
         currentPreset = presetId != null ? presetId : "max_teleport";
-        if (!ShizukuManager.isPermissionGranted()) return;
-
-        new Thread(() -> {
-            ShizukuManager.execCommand(buildQuantizedShizukuCommand());
-            startQuantumStrobeLoop();
-        }).start();
+        applyLiveQuantization();
     }
 
     public static void stopTeleport() {
         active = false;
-        stopQuantumStrobeLoop();
+        pendingUpdate = false;
         if (!ShizukuManager.isPermissionGranted()) return;
 
         new Thread(() -> {
