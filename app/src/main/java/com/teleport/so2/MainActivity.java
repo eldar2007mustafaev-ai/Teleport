@@ -18,6 +18,7 @@ import android.os.Looper;
 import android.provider.Settings;
 import android.util.DisplayMetrics;
 import android.view.Gravity;
+import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.Window;
@@ -29,6 +30,8 @@ import android.webkit.WebViewClient;
 import android.widget.FrameLayout;
 import android.widget.TextView;
 import android.widget.Toast;
+import android.window.OnBackInvokedCallback;
+import android.window.OnBackInvokedDispatcher;
 
 public class MainActivity extends Activity {
 
@@ -50,7 +53,7 @@ public class MainActivity extends Activity {
     private WindowManager.LayoutParams floatBtnParams;
     private WindowManager.LayoutParams trashParams;
 
-    // Квантовый синхронизатор склейки пакетов тача (работает только поверх игры!)
+    // Квантовый стробоскоп склейки чанков (работает автономно от кнопки растяга!)
     private View quantumPulseView;
     private WindowManager.LayoutParams quantumPulseParams;
     private boolean strobeWanted = false;
@@ -59,6 +62,7 @@ public class MainActivity extends Activity {
 
     private boolean isStretchedActive = false;
     private boolean stealthModeEnabled = false;
+    private OnBackInvokedCallback backInvokedCallback;
 
     private final Runnable batchStrobeRunnable = new Runnable() {
         @Override
@@ -70,16 +74,15 @@ public class MainActivity extends Activity {
                 try {
                     pulsePhase = !pulsePhase;
                     if (pulsePhase) {
-                        // Фаза 1: кратковременный импульс фокуса/геометрии окна заставляет InputDispatcher
-                        // аккумулировать координаты свайпа в один пакет (эффект прыжка куском)
-                        quantumPulseParams.width = 4;
-                        quantumPulseParams.height = 4;
-                        quantumPulseParams.x = 2;
+                        // Фаза удержания чанка: склеивает плавный путь пальца в один дискретный вектор
+                        quantumPulseParams.width = 6;
+                        quantumPulseParams.height = 6;
+                        quantumPulseParams.x = 3;
                         windowManager.updateViewLayout(quantumPulseView, quantumPulseParams);
                         mainHandler.postDelayed(this, TeleportEngine.getBatchHoldMs());
                         return;
                     } else {
-                        // Фаза 2: сброс пакета в кадр игры одним резким скачком
+                        // Фаза выброса чанка в кадр игры
                         quantumPulseParams.width = 1;
                         quantumPulseParams.height = 1;
                         quantumPulseParams.x = 0;
@@ -126,6 +129,49 @@ public class MainActivity extends Activity {
         webView.loadUrl("file:///android_asset/index.html");
 
         setContentView(webView);
+
+        // Регистрация свайпа «Назад» для Android 13+ (API 33+)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            backInvokedCallback = this::handleSwipeBackNavigation;
+            getOnBackInvokedDispatcher().registerOnBackInvokedCallback(
+                    OnBackInvokedDispatcher.PRIORITY_DEFAULT,
+                    backInvokedCallback
+            );
+        }
+    }
+
+    /**
+     * Если открыта внутренняя карточка — возвращает на главный экран приложения.
+     * Если пользователь уже на главном экране — сворачивает приложение.
+     */
+    private void handleSwipeBackNavigation() {
+        if (webView != null) {
+            webView.evaluateJavascript(
+                    "(function(){ return (window.handleSystemBack && window.handleSystemBack()) ? 'HANDLED' : 'ROOT'; })()",
+                    result -> {
+                        if (result == null || !result.contains("HANDLED")) {
+                            moveTaskToBack(true);
+                        }
+                    }
+            );
+        } else {
+            moveTaskToBack(true);
+        }
+    }
+
+    @Override
+    @SuppressWarnings("deprecation")
+    public void onBackPressed() {
+        handleSwipeBackNavigation();
+    }
+
+    @Override
+    public boolean dispatchKeyEvent(KeyEvent event) {
+        if (event.getKeyCode() == KeyEvent.KEYCODE_BACK && event.getAction() == KeyEvent.ACTION_UP) {
+            handleSwipeBackNavigation();
+            return true;
+        }
+        return super.dispatchKeyEvent(event);
     }
 
     @Override
@@ -133,7 +179,6 @@ public class MainActivity extends Activity {
         super.onResume();
         isAppInForeground = true;
         setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
-        // Пока пользователь в меню SO2Teleport — отключаем стробоскоп, чтобы интерфейс летал в 120 FPS без лагов
         mainHandler.removeCallbacks(batchStrobeRunnable);
     }
 
@@ -141,11 +186,10 @@ public class MainActivity extends Activity {
     protected void onPause() {
         super.onPause();
         isAppInForeground = false;
-        // Как только свернули приложение и перешли в игру — запускаем квантовый стробоскоп кусков!
         if (strobeWanted && TeleportEngine.isActive()) {
             ensureQuantumOverlayCreated();
             mainHandler.removeCallbacks(batchStrobeRunnable);
-            mainHandler.postDelayed(batchStrobeRunnable, 100);
+            mainHandler.postDelayed(batchStrobeRunnable, 80);
         }
     }
 
@@ -217,7 +261,7 @@ public class MainActivity extends Activity {
             if (!Settings.canDrawOverlays(this)) {
                 runOnUiThread(() -> {
                     try {
-                        Toast.makeText(this, "Разрешите показ поверх других окон для работы Телепорта!", Toast.LENGTH_LONG).show();
+                        Toast.makeText(this, "Разрешите показ поверх других окон!", Toast.LENGTH_LONG).show();
                         Intent intent = new Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
                                 Uri.parse("package:" + getPackageName()));
                         startActivity(intent);
@@ -363,6 +407,9 @@ public class MainActivity extends Activity {
         return rawTouchY >= (dm.heightPixels - 210);
     }
 
+    /**
+     * ПЛАВАЮЩАЯ КНОПКА УПРАВЛЯЕТ СТРОГО РАСТЯГОМ ЭКРАНА (БЕЗ ВМЕШАТЕЛЬСТВА В ТЕЛЕПОРТ)
+     */
     public void toggleFloatingButton(boolean enable) {
         runOnUiThread(() -> {
             if (!enable) {
@@ -370,7 +417,6 @@ public class MainActivity extends Activity {
                 return;
             }
             if (!checkAndRequestOverlayPermission()) return;
-            setQuantumOverlayStrobe(true);
             if (floatingBtnView != null) return;
 
             int overlayType = Build.VERSION.SDK_INT >= Build.VERSION_CODES.O
@@ -467,19 +513,19 @@ public class MainActivity extends Activity {
                                 getSharedPreferences("so2_teleport_prefs", Context.MODE_PRIVATE)
                                         .edit().putBoolean("float_btn_enabled", false).apply();
                                 removeFloatingButton();
-                                Toast.makeText(MainActivity.this, "Плавающая кнопка скрыта", Toast.LENGTH_SHORT).show();
+                                Toast.makeText(MainActivity.this, "Кнопка растяга убрана", Toast.LENGTH_SHORT).show();
                                 return true;
                             }
                             if (!moved) {
+                                // СТРОГО ТОЛЬКО РАСТЯГ ЭКРАНА!
                                 SharedPreferences prefs = getSharedPreferences("so2_teleport_prefs", Context.MODE_PRIVATE);
                                 String ratio = prefs.getString("stretch_ratio", "4:3");
                                 if (!isStretchedActive) {
                                     applyResolutionRatio(ratio);
-                                    setQuantumOverlayStrobe(true);
-                                    Toast.makeText(MainActivity.this, "SO2Teleport: Растяг " + ratio + " + ТЕЛЕПОРТ ВКЛ!", Toast.LENGTH_SHORT).show();
+                                    Toast.makeText(MainActivity.this, "Растяг " + ratio + " включён", Toast.LENGTH_SHORT).show();
                                 } else {
                                     resetResolution();
-                                    Toast.makeText(MainActivity.this, "SO2Teleport: Стандартный экран", Toast.LENGTH_SHORT).show();
+                                    Toast.makeText(MainActivity.this, "Растяг сброшен (Стандартный экран)", Toast.LENGTH_SHORT).show();
                                 }
                             }
                             return true;
@@ -497,18 +543,19 @@ public class MainActivity extends Activity {
 
     private void updateFloatingBubbleAppearance() {
         if (floatingTxtView == null) return;
-        floatingTxtView.setText("TP");
+        floatingTxtView.setText("T");
         floatingTxtView.setTextColor(Color.WHITE);
-        floatingTxtView.setTextSize(16f);
+        floatingTxtView.setTextSize(19f);
         floatingTxtView.setGravity(Gravity.CENTER);
 
         GradientDrawable circle = new GradientDrawable();
-        circle.setShape(GradientDrawable.OVAL);
+        circle.setShape(GradientDrawable.RECTANGLE);
+        circle.setCornerRadius(36f);
         if (isStretchedActive) {
-            circle.setColor(Color.parseColor("#E69333EA"));
-            circle.setStroke(4, Color.parseColor("#F5D0FE"));
+            circle.setColor(Color.parseColor("#E67C3AED"));
+            circle.setStroke(4, Color.parseColor("#00F0FF"));
         } else {
-            circle.setColor(Color.parseColor("#D9140826"));
+            circle.setColor(Color.parseColor("#D90B0719"));
             circle.setStroke(3, Color.parseColor("#A855F7"));
         }
         floatingTxtView.setBackground(circle);
@@ -526,9 +573,9 @@ public class MainActivity extends Activity {
     }
 
     /**
-     * РАСТЯГ ЭКРАНА + КВАНТОВАНИЕ КООРДИНАТНОЙ СЕТКИ ТАЧА (COARSE TOUCH GRID):
-     * За счет масштабирования логической сетки каждый физический сдвиг пальца по тачскрину
-     * пересчитывается в более крупный угловой шаг в игре — прицел буквально прыгает кусками!
+     * ЧИСТЫЙ РАСТЯГ ЭКРАНА + БЛОКИРОВКА ПЕРЕВОРОТА ИГРЫ ДАЖЕ ПРИ ВКЛЮЧЕННОМ АВТОПОВОРОТЕ:
+     * Отключает датчик автоповорота (`accelerometer_rotation 0`) и фиксирует ориентацию окна,
+     * чтобы Standoff 2 никогда не переворачивался при растяге.
      */
     public void applyResolutionRatio(String ratio) {
         if (!ShizukuManager.isPermissionGranted()) return;
@@ -555,44 +602,35 @@ public class MainActivity extends Activity {
                     .apply();
         }
 
-        // Чем выше выставлены чанки, тем сильнее укрупняется шаг сетки (Coarse Grid Multiplier)
-        int chunks = TeleportEngine.getCurrentChunks();
-        float gridQuantFactor = (chunks >= 40) ? 0.75f : ((chunks >= 25) ? 0.85f : 1.0f);
-
-        int gridShort = Math.round(savedBaseShort * gridQuantFactor);
-        if ((gridShort & 1) == 1) gridShort++;
-
+        final int baseShort = savedBaseShort;
         int targetLong;
         if ("5:4".equals(cleanRatio)) {
-            targetLong = Math.round(gridShort * 5f / 4f);
+            targetLong = Math.round(baseShort * 5f / 4f);
         } else if ("4:3".equals(cleanRatio)) {
-            targetLong = Math.round(gridShort * 4f / 3f);
+            targetLong = Math.round(baseShort * 4f / 3f);
         } else if ("3:2".equals(cleanRatio)) {
-            targetLong = Math.round(gridShort * 3f / 2f);
+            targetLong = Math.round(baseShort * 3f / 2f);
         } else if ("16:10".equals(cleanRatio)) {
-            targetLong = Math.round(gridShort * 16f / 10f);
+            targetLong = Math.round(baseShort * 16f / 10f);
         } else {
-            targetLong = Math.round(gridShort * 16f / 9f);
+            targetLong = Math.round(baseShort * 16f / 9f);
         }
 
         if ((targetLong & 1) == 1) targetLong++;
-        final int finalShort = gridShort;
         final int finalLong = targetLong;
-        final int targetDpi = Math.max(180, Math.round(savedBaseDpi * gridQuantFactor * 0.88f));
+        final int targetDpi = Math.max(220, Math.round(savedBaseDpi * 0.88f));
 
         isStretchedActive = true;
         runOnUiThread(this::updateFloatingBubbleAppearance);
-        setQuantumOverlayStrobe(true);
-
-        String preset = prefs.getString("selected_preset", "max_teleport");
-        TeleportEngine.startTeleport(this, preset);
 
         new Thread(() -> {
             String cmd =
+                "settings put system accelerometer_rotation 0; " +
                 "cmd window set-ignore-orientation-request true; " +
+                "cmd window set-fix-to-user-rotation enabled; " +
                 "settings put global window_animation_scale 0.0; " +
                 "settings put global transition_animation_scale 0.0; " +
-                "wm size " + finalShort + "x" + finalLong + "; " +
+                "wm size " + baseShort + "x" + finalLong + "; " +
                 "wm density " + targetDpi + "; " +
                 "cmd game downscale disable com.axlebolt.standoff2";
             ShizukuManager.execCommand(cmd);
@@ -608,7 +646,9 @@ public class MainActivity extends Activity {
             ShizukuManager.execCommand(
                 "wm size reset; " +
                 "wm density reset; " +
-                "cmd window set-ignore-orientation-request false"
+                "cmd window set-fix-to-user-rotation default; " +
+                "cmd window set-ignore-orientation-request false; " +
+                "settings put system accelerometer_rotation 0"
             );
         }).start();
     }
@@ -616,6 +656,9 @@ public class MainActivity extends Activity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU && backInvokedCallback != null) {
+            getOnBackInvokedDispatcher().unregisterOnBackInvokedCallback(backInvokedCallback);
+        }
         setQuantumOverlayStrobe(false);
         removeCrosshairOverlay();
         removeFloatingButton();
