@@ -87,16 +87,17 @@ public class AndroidBridge {
 
         if ("awp".equalsIgnoreCase(presetId)) {
             TeleportEngine.setSmartAwpLock(true);
-            TeleportEngine.updateParameters(4.60f, 4.70f, 4.40f, 44, 9, 0.96f, 8, 0, 14, 0.00f);
+            TeleportEngine.updateParameters(4.80f, 4.80f, 4.50f, 85, 10, 0.97f, 8, 0, 14, 0.00f);
         } else if ("sharp".equalsIgnoreCase(presetId)) {
             TeleportEngine.setSmartAwpLock(false);
-            TeleportEngine.updateParameters(5.00f, 5.00f, 5.00f, 48, 10, 0.90f, 2, 0, 0, 0.00f);
+            TeleportEngine.updateParameters(5.00f, 5.00f, 5.00f, 95, 10, 0.92f, 2, 0, 0, 0.00f);
         } else if ("sticky".equalsIgnoreCase(presetId)) {
             TeleportEngine.setSmartAwpLock(false);
-            TeleportEngine.updateParameters(4.80f, 4.90f, 4.70f, 45, 9, 0.99f, 9, 0, 4, 0.00f);
+            TeleportEngine.updateParameters(4.90f, 5.00f, 4.80f, 90, 10, 0.99f, 9, 0, 4, 0.00f);
         } else {
+            // max_teleport: Чанки 100 на максимум
             TeleportEngine.setSmartAwpLock(false);
-            TeleportEngine.updateParameters(5.00f, 5.00f, 4.80f, 50, 10, 0.98f, 6, 0, 0, 0.00f);
+            TeleportEngine.updateParameters(5.00f, 5.00f, 4.80f, 100, 10, 0.99f, 6, 0, 0, 0.00f);
         }
 
         TeleportEngine.startTeleport(activity, presetId);
@@ -104,7 +105,7 @@ public class AndroidBridge {
             ((MainActivity) activity).checkAndRequestOverlayPermission();
             ((MainActivity) activity).setQuantumOverlayStrobe(true);
         }
-        return "Режим активирован! Квантовый телепорт включён.";
+        return "Режим активирован! Чанки 100 + анти-сглаживание ВКЛ.";
     }
 
     @JavascriptInterface
@@ -116,7 +117,7 @@ public class AndroidBridge {
                     (float) o.optDouble("sharpness", 5.00),
                     (float) o.optDouble("sensX", 5.00),
                     (float) o.optDouble("sensY", 4.80),
-                    o.optInt("chunks", 50),
+                    o.optInt("chunks", 100),
                     o.optInt("strobeSpeed", 10),
                     (float) o.optDouble("straightening", 0.98),
                     o.optInt("stickStrength", 6),
@@ -198,32 +199,15 @@ public class AndroidBridge {
     }
 
     @JavascriptInterface
-    public boolean isFloatingStretchButtonEnabled() {
-        return prefs.getBoolean("float_btn_enabled", false);
-    }
-
-    @JavascriptInterface
-    public String setFloatingStretchButton(boolean enabled) {
-        if (enabled && activity instanceof MainActivity) {
-            if (!((MainActivity) activity).checkAndRequestOverlayPermission()) {
-                prefs.edit().putBoolean("float_btn_enabled", false).apply();
-                return "Разрешите отображение поверх других окон!";
-            }
-        }
-        prefs.edit().putBoolean("float_btn_enabled", enabled).apply();
-        if (activity instanceof MainActivity) {
-            ((MainActivity) activity).toggleFloatingButton(enabled);
-        }
-        return enabled ? "Плавающая кнопка TP включена" : "Плавающая кнопка скрыта";
-    }
-
-    @JavascriptInterface
     public void setSelectedStretchRatioOnly(String ratio) {
         if (ratio != null && !ratio.trim().isEmpty()) {
             prefs.edit().putString("stretch_ratio", ratio.trim()).apply();
         }
     }
 
+    /**
+     * ВКЛЮЧАЕТ РАСТЯГ + АВТОМАТИЧЕСКИ ПОКАЗЫВАЕТ ПЛАВАЮЩУЮ КНОПКУ РАСТЯГА
+     */
     @JavascriptInterface
     public String applyStretchRatio(String ratio) {
         String clean = (ratio == null || ratio.trim().isEmpty()) ? "4:3" : ratio.trim();
@@ -232,20 +216,31 @@ public class AndroidBridge {
             return "Кликните на Shizuku вверху справа для активации!";
         }
         if (activity instanceof MainActivity) {
-            ((MainActivity) activity).applyResolutionRatio(clean);
+            MainActivity ma = (MainActivity) activity;
+            if (ma.checkAndRequestOverlayPermission()) {
+                prefs.edit().putBoolean("float_btn_enabled", true).apply();
+                ma.toggleFloatingButton(true);
+            }
+            ma.applyResolutionRatio(clean);
         }
-        return "Растяг " + clean + " + Телепорт-сетка применены!";
+        return "Растяг " + clean + " включён + появилась кнопка T!";
     }
 
+    /**
+     * СБРАСЫВАЕТ РАСТЯГ И УБИРАЕТ ПЛАВАЮЩУЮ КНОПКУ
+     */
     @JavascriptInterface
     public String resetDisplayToDefault() {
         if (!isShizukuReady()) {
             return "Сначала активируйте Shizuku!";
         }
+        prefs.edit().putBoolean("float_btn_enabled", false).apply();
         if (activity instanceof MainActivity) {
-            ((MainActivity) activity).resetResolution();
+            MainActivity ma = (MainActivity) activity;
+            ma.resetResolution();
+            ma.toggleFloatingButton(false);
         }
-        return "Разрешение экрана сброшено по умолчанию";
+        return "Экран сброшен, плавающая кнопка скрыта";
     }
 
     @JavascriptInterface
