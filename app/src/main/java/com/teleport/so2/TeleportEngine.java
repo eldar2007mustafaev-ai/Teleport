@@ -14,13 +14,12 @@ public class TeleportEngine {
     private static int antiRecoilStrength = 75;
     private static boolean hzThermalGuardEnabled = true;
 
-    // Усиленные параметры: Чанки до 100 для максимального дискретного телепорта
     private static float sharpness = 5.00f;
     private static float sensX = 5.00f;
     private static float sensY = 4.80f;
     private static int chunks = 100;
     private static int strobeSpeed = 10;
-    private static float straightening = 0.98f;
+    private static float straightening = 0.99f;
     private static int stickStrength = 6;
     private static int deadZone = 0;
     private static int shotPause = 0;
@@ -31,26 +30,28 @@ public class TeleportEngine {
     }
 
     public static int getCurrentChunks() {
-        return Math.max(5, Math.min(100, chunks));
-    }
-
-    public static int getStrobeSpeed() {
-        return Math.max(1, Math.min(10, strobeSpeed));
+        return Math.max(10, Math.min(100, chunks));
     }
 
     /**
-     * Время накопления (склейки) пакета тача (мс):
-     * При 100 чанках удерживает микро-движения пальца и выстреливает их одним крупным прыжком.
+     * Количество микро-импульсов блокировки буфера за один цикл (чем выше чанки, тем жёстче склейка).
+     */
+    public static int getQuantumBurstCount() {
+        return Math.max(2, Math.min(6, 1 + (chunks / 20)));
+    }
+
+    /**
+     * Окно накопления дельты пальца (мс): копит координаты свайпа и отдаёт их в игру одним прыжком.
      */
     public static int getBatchHoldMs() {
-        return Math.max(14, Math.min(52, (chunks * 45) / 100));
+        return Math.max(16, Math.min(48, (chunks * 42) / 100));
     }
 
     /**
-     * Интервал между выбросами кусков в кадр игры (мс).
+     * Интервал между выбросами готовых кусков в кадр игры (мс).
      */
     public static int getBatchReleaseIntervalMs() {
-        return Math.max(12, 56 - (strobeSpeed * 4));
+        return Math.max(10, 52 - (strobeSpeed * 4));
     }
 
     public static boolean isSmartAwpLockEnabled() {
@@ -118,7 +119,7 @@ public class TeleportEngine {
         sharpness = sharp;
         sensX = sx;
         sensY = sy;
-        chunks = Math.max(5, Math.min(100, ch));
+        chunks = Math.max(10, Math.min(100, ch));
         strobeSpeed = stSpeed;
         straightening = straight;
         stickStrength = stick;
@@ -131,14 +132,10 @@ public class TeleportEngine {
         }
     }
 
-    /**
-     * Полный обход системного сглаживания Android (InputFlinger, Choreographer, TouchResampling)
-     * + квантование фазы кадра под чанки до 100.
-     */
     private static String buildQuantizedShizukuCommand() {
-        int effectiveChunks = Math.max(20, Math.round(chunks * (sharpness / 1.1f)));
-        int holdDurationMs = Math.max(220, effectiveChunks * 4 + (shotPause * 8));
-        long phaseOffsetNs = effectiveChunks * 420000L;
+        int effectiveChunks = Math.max(25, Math.round(chunks * (sharpness / 1.1f)));
+        int holdDurationMs = Math.max(240, effectiveChunks * 4 + (shotPause * 8));
+        long phaseOffsetNs = effectiveChunks * 450000L;
 
         String frictionVal = (smartAwpLockEnabled || "awp".equalsIgnoreCase(currentPreset) || stickStrength >= 8)
                 ? "9999.0" : "0.0";
@@ -180,8 +177,9 @@ public class TeleportEngine {
             "setprop debug.sf.early.app.duration " + phaseOffsetNs + "; " +
             "setprop view.scroll_friction " + frictionVal + "; " +
             "setprop view.minimum_fling_velocity 1; " +
-            "setprop view.maximum_fling_velocity 200000; " +
+            "setprop view.maximum_fling_velocity 220000; " +
             "setprop debug.sf.latch_unsignaled 1; " +
+            "setprop debug.sf.auto_latch_unsignaled false; " +
             "setprop debug.sf.disable_backpressure 1; " +
             "setprop debug.hwui.use_buffer_age false; " +
             "cmd power set-fixed-performance-mode-enabled true; " +
