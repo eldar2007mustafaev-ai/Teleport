@@ -95,7 +95,6 @@ public class AndroidBridge {
             TeleportEngine.setSmartAwpLock(false);
             TeleportEngine.updateParameters(4.90f, 5.00f, 4.80f, 90, 10, 0.99f, 9, 0, 4, 0.00f);
         } else {
-            // max_teleport: Чанки 100 на максимум
             TeleportEngine.setSmartAwpLock(false);
             TeleportEngine.updateParameters(5.00f, 5.00f, 4.80f, 100, 10, 0.99f, 6, 0, 0, 0.00f);
         }
@@ -206,7 +205,9 @@ public class AndroidBridge {
     }
 
     /**
-     * ВКЛЮЧАЕТ РАСТЯГ + АВТОМАТИЧЕСКИ ПОКАЗЫВАЕТ ПЛАВАЮЩУЮ КНОПКУ РАСТЯГА
+     * ТЕПЕРЬ НЕ РАСТЯГИВАЕТ САМО ПРИЛОЖЕНИЕ!
+     * Только сохраняет выбранный формат (например, 4:3) и запускает плавающую кнопку «T».
+     * Сам растяг включается уже внутри Standoff 2 нажатием на кнопку «T».
      */
     @JavascriptInterface
     public String applyStretchRatio(String ratio) {
@@ -217,30 +218,29 @@ public class AndroidBridge {
         }
         if (activity instanceof MainActivity) {
             MainActivity ma = (MainActivity) activity;
-            if (ma.checkAndRequestOverlayPermission()) {
-                prefs.edit().putBoolean("float_btn_enabled", true).apply();
-                ma.toggleFloatingButton(true);
+            if (!ma.checkAndRequestOverlayPermission()) {
+                return "Разрешите показ поверх других окон и нажмите ещё раз!";
             }
-            ma.applyResolutionRatio(clean);
+            prefs.edit().putBoolean("float_btn_enabled", true).apply();
+            ma.toggleFloatingButton(true);
         }
-        return "Растяг " + clean + " включён + появилась кнопка T!";
+        return "Кнопка «T» (" + clean + ") запущена! Нажмите на неё в игре для растяга.";
     }
 
     /**
-     * СБРАСЫВАЕТ РАСТЯГ И УБИРАЕТ ПЛАВАЮЩУЮ КНОПКУ
+     * СБРАСЫВАЕТ РАСТЯГ (ЕСЛИ ОН БЫЛ ВКЛЮЧЁН) И УБИРАЕТ ПЛАВАЮЩУЮ КНОПКУ «T»
      */
     @JavascriptInterface
     public String resetDisplayToDefault() {
-        if (!isShizukuReady()) {
-            return "Сначала активируйте Shizuku!";
-        }
         prefs.edit().putBoolean("float_btn_enabled", false).apply();
         if (activity instanceof MainActivity) {
             MainActivity ma = (MainActivity) activity;
-            ma.resetResolution();
+            if (isShizukuReady()) {
+                ma.resetResolution();
+            }
             ma.toggleFloatingButton(false);
         }
-        return "Экран сброшен, плавающая кнопка скрыта";
+        return "Плавающая кнопка убрана, экран стандартный";
     }
 
     @JavascriptInterface
