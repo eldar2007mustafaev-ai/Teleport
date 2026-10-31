@@ -14,8 +14,6 @@ import android.graphics.drawable.GradientDrawable;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
-import android.os.Handler;
-import android.os.Looper;
 import android.provider.Settings;
 import android.util.DisplayMetrics;
 import android.view.Gravity;
@@ -39,7 +37,6 @@ public class MainActivity extends Activity {
 
     private WebView webView;
     private WindowManager windowManager;
-    private final Handler mainHandler = new Handler(Looper.getMainLooper());
 
     private View crosshairView;
     private WindowManager.LayoutParams crosshairParams;
@@ -55,19 +52,12 @@ public class MainActivity extends Activity {
     private WindowManager.LayoutParams floatBtnParams;
     private WindowManager.LayoutParams trashParams;
 
-    // Квантовый стробоскоп склейки чанков (работает только в фоне поверх игры!)
-    private View quantumPulseView;
-    private WindowManager.LayoutParams quantumPulseParams;
-    private boolean strobeWanted = false;
-    private boolean isAppInForeground = true;
-    private boolean pulsePhase = false;
-
     private boolean isStretchedActive = false;
     private boolean stealthModeEnabled = false;
     private OnBackInvokedCallback backInvokedCallback;
 
     /**
-     * КАСТОМНОЕ НЕОНОВОЕ ВЕДРО УДАЛЕНИЯ С АНИМАЦИЕЙ ОТКРЫТИЯ КРЫШКИ И ПОРТАЛОМ
+     * КАСТОМНОЕ НЕОНОВОЕ ВЕДРО УДАЛЕНИЯ С АНИМАЦИЕЙ ОТКРЫТИЯ КРЫШКИ
      */
     private static class CyberTrashView extends View {
         private final Paint bgPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
@@ -88,7 +78,7 @@ public class MainActivity extends Activity {
             iconPaint.setStrokeCap(Paint.Cap.ROUND);
 
             textPaint.setColor(Color.WHITE);
-            textPaint.setTextSize(32f);
+            textPaint.setTextSize(30f);
             textPaint.setFakeBoldText(true);
             textPaint.setTextAlign(Paint.Align.LEFT);
         }
@@ -96,9 +86,9 @@ public class MainActivity extends Activity {
         public void setHovered(boolean isHover) {
             if (this.hovered != isHover) {
                 this.hovered = isHover;
-                animate().scaleX(isHover ? 1.12f : 1.0f)
-                        .scaleY(isHover ? 1.12f : 1.0f)
-                        .setDuration(140)
+                animate().scaleX(isHover ? 1.10f : 1.0f)
+                        .scaleY(isHover ? 1.10f : 1.0f)
+                        .setDuration(120)
                         .start();
                 invalidate();
             }
@@ -125,76 +115,41 @@ public class MainActivity extends Activity {
             canvas.drawRoundRect(pillRect, 999f, 999f, bgPaint);
             canvas.drawRoundRect(pillRect, 999f, 999f, borderPaint);
 
-            // Рисуем неоновое ведро слева внутри капсулы
-            float cx = pad + 64f;
+            float cx = pad + 62f;
             float cy = h / 2f;
 
-            // Корпус корзины
-            binBody.set(cx - 18f, cy - 10f, cx + 18f, cy + 22f);
+            binBody.set(cx - 17f, cy - 9f, cx + 17f, cy + 21f);
             canvas.drawRoundRect(binBody, 6f, 6f, iconPaint);
 
-            // Внутренние неоновые рёбра ведра
-            canvas.drawLine(cx - 7f, cy - 3f, cx - 7f, cy + 15f, iconPaint);
-            canvas.drawLine(cx + 7f, cy - 3f, cx + 7f, cy + 15f, iconPaint);
+            canvas.drawLine(cx - 6f, cy - 2f, cx - 6f, cy + 14f, iconPaint);
+            canvas.drawLine(cx + 6f, cy - 2f, cx + 6f, cy + 14f, iconPaint);
 
-            // Крышка ведра (приподнимается при наведении кнопки)
-            float lidOffsetY = hovered ? -9f : -3f;
-            canvas.drawLine(cx - 23f, cy - 12f + lidOffsetY, cx + 23f, cy - 12f + lidOffsetY, iconPaint);
-            canvas.drawLine(cx - 8f, cy - 18f + lidOffsetY, cx + 8f, cy - 18f + lidOffsetY, iconPaint);
+            float lidOffsetY = hovered ? -8f : -3f;
+            canvas.drawLine(cx - 22f, cy - 11f + lidOffsetY, cx + 22f, cy - 11f + lidOffsetY, iconPaint);
+            canvas.drawLine(cx - 8f, cy - 17f + lidOffsetY, cx + 8f, cy - 17f + lidOffsetY, iconPaint);
 
-            // Текст подсказки
-            String label = hovered ? "ОТПУСТИТЕ ДЛЯ УДАЛЕНИЯ" : "УБРАТЬ КНОПКУ «T»";
+            String label = hovered ? "ОТПУСТИТЕ ДЛЯ УДАЛЕНИЯ" : "УДАЛИТЬ КНОПКУ «T»";
             Paint.FontMetrics fm = textPaint.getFontMetrics();
             float textY = cy - (fm.ascent + fm.descent) / 2f;
             textPaint.setColor(hovered ? Color.parseColor("#FFE4E6") : Color.parseColor("#F3E8FF"));
-            canvas.drawText(label, cx + 42f, textY, textPaint);
+            canvas.drawText(label, cx + 40f, textY, textPaint);
         }
     }
-
-    /**
-     * КВАНТОВЫЙ СТРОБОСКОП ПАКЕТОВ ВВОДА (MULTI-PULSE INPUT BATCHING):
-     * Во время фазы удержания делает серию быстрых транзакций окна, заставляя SurfaceFlinger
-     * и InputDispatcher склеить путь пальца в один резкий дискретный прыжок камеры.
-     */
-    private final Runnable batchStrobeRunnable = new Runnable() {
-        @Override
-        public void run() {
-            if (!strobeWanted || !TeleportEngine.isActive() || isAppInForeground) {
-                return;
-            }
-            if (quantumPulseView != null && quantumPulseParams != null) {
-                try {
-                    pulsePhase = !pulsePhase;
-                    if (pulsePhase) {
-                        int burst = TeleportEngine.getQuantumBurstCount();
-                        for (int i = 0; i < burst; i++) {
-                            quantumPulseParams.width = 4 + (i % 3);
-                            quantumPulseParams.height = 4 + (i % 3);
-                            quantumPulseParams.x = (i % 2 == 0) ? 2 : 0;
-                            windowManager.updateViewLayout(quantumPulseView, quantumPulseParams);
-                        }
-                        mainHandler.postDelayed(this, TeleportEngine.getBatchHoldMs());
-                        return;
-                    } else {
-                        quantumPulseParams.width = 1;
-                        quantumPulseParams.height = 1;
-                        quantumPulseParams.x = 0;
-                        windowManager.updateViewLayout(quantumPulseView, quantumPulseParams);
-                    }
-                } catch (Exception ignored) {}
-            }
-            mainHandler.postDelayed(this, TeleportEngine.getBatchReleaseIntervalMs());
-        }
-    };
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         requestWindowFeature(Window.FEATURE_NO_TITLE);
 
-        // Жёсткая вертикальная фиксация самого приложения SO2Teleport
         setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
         getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE);
+
+        // Принудительно запрашиваем 120 Гц для окна самого приложения
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            WindowManager.LayoutParams lp = getWindow().getAttributes();
+            lp.preferredRefreshRate = 120.0f;
+            getWindow().setAttributes(lp);
+        }
 
         windowManager = (WindowManager) getSystemService(WINDOW_SERVICE);
         healBrokenTouchTimeouts();
@@ -204,6 +159,9 @@ public class MainActivity extends Activity {
 
         webView = new WebView(this);
         webView.setLayerType(View.LAYER_TYPE_HARDWARE, null);
+        webView.setOverScrollMode(View.OVER_SCROLL_NEVER);
+        webView.setVerticalScrollBarEnabled(false);
+        webView.setHorizontalScrollBarEnabled(false);
         webView.setFocusable(true);
         webView.setFocusableInTouchMode(true);
         webView.requestFocus(View.FOCUS_DOWN);
@@ -266,81 +224,19 @@ public class MainActivity extends Activity {
     @Override
     protected void onResume() {
         super.onResume();
-        isAppInForeground = true;
         setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
-        mainHandler.removeCallbacks(batchStrobeRunnable);
-    }
-
-    @Override
-    protected void onPause() {
-        super.onPause();
-        isAppInForeground = false;
-        if (strobeWanted && TeleportEngine.isActive()) {
-            ensureQuantumOverlayCreated();
-            mainHandler.removeCallbacks(batchStrobeRunnable);
-            mainHandler.postDelayed(batchStrobeRunnable, 80);
-        }
-    }
-
-    private void ensureQuantumOverlayCreated() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && !Settings.canDrawOverlays(this)) {
-            return;
-        }
-        if (quantumPulseView == null) {
-            quantumPulseView = new View(this);
-            quantumPulseView.setBackgroundColor(Color.TRANSPARENT);
-            int overlayType = Build.VERSION.SDK_INT >= Build.VERSION_CODES.O
-                    ? WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY
-                    : WindowManager.LayoutParams.TYPE_PHONE;
-
-            quantumPulseParams = new WindowManager.LayoutParams(
-                    1, 1,
-                    overlayType,
-                    WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE
-                            | WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL
-                            | WindowManager.LayoutParams.FLAG_WATCH_OUTSIDE_TOUCH
-                            | WindowManager.LayoutParams.FLAG_HARDWARE_ACCELERATED,
-                    PixelFormat.TRANSLUCENT
-            );
-            quantumPulseParams.gravity = Gravity.TOP | Gravity.START;
-            quantumPulseParams.x = 0;
-            quantumPulseParams.y = 0;
-            try {
-                windowManager.addView(quantumPulseView, quantumPulseParams);
-            } catch (Exception ignored) {}
-        }
-    }
-
-    public void setQuantumOverlayStrobe(boolean enable) {
-        runOnUiThread(() -> {
-            strobeWanted = enable;
-            mainHandler.removeCallbacks(batchStrobeRunnable);
-            if (!enable) {
-                if (quantumPulseView != null) {
-                    try { windowManager.removeView(quantumPulseView); } catch (Exception ignored) {}
-                    quantumPulseView = null;
-                }
-                return;
-            }
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && Settings.canDrawOverlays(this)) {
-                ensureQuantumOverlayCreated();
-                if (!isAppInForeground) {
-                    mainHandler.post(batchStrobeRunnable);
-                }
-            }
-        });
     }
 
     public void healBrokenTouchTimeouts() {
         if (!ShizukuManager.isPermissionGranted()) return;
         new Thread(() -> {
             ShizukuManager.execCommand(
-                "settings put secure long_press_timeout 400; " +
-                "settings put secure multi_press_timeout 250; " +
-                "settings delete secure tap_duration_threshold; " +
-                "settings delete secure touch_blocking_period; " +
-                "settings put system pointer_location 0; " +
-                "settings put system show_touches 0"
+                    "settings put secure long_press_timeout 400; " +
+                    "settings put secure multi_press_timeout 250; " +
+                    "settings delete secure tap_duration_threshold; " +
+                    "settings delete secure touch_blocking_period; " +
+                    "settings put system pointer_location 0; " +
+                    "settings put system show_touches 0"
             );
         }).start();
     }
@@ -364,7 +260,8 @@ public class MainActivity extends Activity {
 
     private int getStealthOverlayFlags(boolean nonTouchable) {
         int flags = WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE
-                | WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN;
+                | WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN
+                | WindowManager.LayoutParams.FLAG_HARDWARE_ACCELERATED;
         if (nonTouchable) {
             flags |= WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE;
         }
@@ -496,9 +393,6 @@ public class MainActivity extends Activity {
         return rawTouchY >= (dm.heightPixels - 200);
     }
 
-    /**
-     * ПЛАВАЮЩАЯ КНОПКА «T» С НЕОНОВЫМ ВЕДРОМ УДАЛЕНИЯ (ВКЛЮЧАЕТ РАСТЯГ В ИГРЕ)
-     */
     public void toggleFloatingButton(boolean enable) {
         runOnUiThread(() -> {
             if (!enable) {
@@ -573,7 +467,7 @@ public class MainActivity extends Activity {
                                 if (trashDropView != null && trashDropView.getVisibility() != View.VISIBLE) {
                                     trashDropView.setAlpha(0f);
                                     trashDropView.setVisibility(View.VISIBLE);
-                                    trashDropView.animate().alpha(1f).setDuration(150).start();
+                                    trashDropView.animate().alpha(1f).setDuration(140).start();
                                 }
                             }
                             floatBtnParams.x = initX + dx;
@@ -662,9 +556,7 @@ public class MainActivity extends Activity {
     }
 
     /**
-     * РАБОЧИЙ РАСТЯГ В ИГРЕ С ФИКСАЦИЕЙ ОРИЕНТАЦИИ (БЕЗ ПЕРЕВОРОТА STANDOFF 2 И ПРИЛОЖЕНИЯ):
-     * set-ignore-orientation-request выставлен в false, чтобы Android уважал альбомный режим Standoff 2
-     * и портретный режим SO2Teleport!
+     * РАСТЯГ В ИГРЕ С ЖЁСТКОЙ ФИКСАЦИЕЙ ОРИЕНТАЦИИ И ЧАСТОТЫ 120 ГЦ (БЕЗ ПЕРЕВОРОТА STANDOFF 2)
      */
     public void applyResolutionRatio(String ratio) {
         if (!ShizukuManager.isPermissionGranted()) return;
@@ -705,7 +597,6 @@ public class MainActivity extends Activity {
         if ((targetLong & 1) == 1) targetLong++;
         final int finalLong = targetLong;
 
-        // Определяем текущий альбомный поворот (1 = 90°, 3 = 270°), чтобы зафиксировать игру без переворота
         int currentRot = windowManager.getDefaultDisplay().getRotation();
         final int lockUserRot = (currentRot == Surface.ROTATION_270) ? 3 : 1;
 
@@ -714,13 +605,14 @@ public class MainActivity extends Activity {
 
         new Thread(() -> {
             String cmd =
-                "cmd window set-ignore-orientation-request false; " +
-                "cmd window set-fix-to-user-rotation disabled; " +
-                "settings put system accelerometer_rotation 0; " +
-                "settings put system user_rotation " + lockUserRot + "; " +
-                "settings put global window_animation_scale 0.0; " +
-                "settings put global transition_animation_scale 0.0; " +
-                "wm size " + baseShort + "x" + finalLong;
+                    "cmd window set-ignore-orientation-request false; " +
+                    "cmd window set-fix-to-user-rotation disabled; " +
+                    "settings put system accelerometer_rotation 0; " +
+                    "settings put system user_rotation " + lockUserRot + "; " +
+                    "settings put system peak_refresh_rate 120.0; " +
+                    "settings put system min_refresh_rate 120.0; " +
+                    "settings put secure refresh_rate_mode 2; " +
+                    "wm size " + baseShort + "x" + finalLong;
             ShizukuManager.execCommand(cmd);
         }).start();
     }
@@ -732,11 +624,11 @@ public class MainActivity extends Activity {
 
         new Thread(() -> {
             ShizukuManager.execCommand(
-                "wm size reset; " +
-                "wm density reset; " +
-                "cmd window set-ignore-orientation-request false; " +
-                "cmd window set-fix-to-user-rotation default; " +
-                "settings put system accelerometer_rotation 0"
+                    "wm size reset; " +
+                    "wm density reset; " +
+                    "cmd window set-ignore-orientation-request false; " +
+                    "cmd window set-fix-to-user-rotation default; " +
+                    "settings put system accelerometer_rotation 0"
             );
         }).start();
     }
@@ -747,7 +639,6 @@ public class MainActivity extends Activity {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU && backInvokedCallback != null) {
             getOnBackInvokedDispatcher().unregisterOnBackInvokedCallback(backInvokedCallback);
         }
-        setQuantumOverlayStrobe(false);
         removeCrosshairOverlay();
         removeFloatingButton();
     }
