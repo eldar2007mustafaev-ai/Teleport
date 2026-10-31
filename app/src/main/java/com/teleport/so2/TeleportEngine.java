@@ -9,23 +9,22 @@ public class TeleportEngine {
     private static final AtomicBoolean commandInProgress = new AtomicBoolean(false);
     private static volatile boolean pendingUpdate = false;
 
-    private static String currentPreset = "friend";
+    private static String currentPreset = "s25u";
     private static boolean smartAwpLockEnabled = false;
     private static boolean antiRecoilEnabled = false;
     private static int antiRecoilStrength = 75;
     private static boolean hzThermalGuardEnabled = true;
 
-    // Параметры с большим запасом (по умолчанию стоят точные числа с видео друга)
-    private static float sharpness = 1.00f;
-    private static float sensX = 1.00f;
+    private static float sharpness = 1.30f;
+    private static float sensX = 1.25f;
     private static float sensY = 1.00f;
-    private static int chunks = 10;
+    private static int chunks = 14;
     private static int packetRateHz = 120;
-    private static float straightening = 0.80f;
-    private static int stepGrid = 3;
-    private static int stickStrength = 4;
-    private static int shotPause = 0;
-    private static float accel = 0.30f;
+    private static float straightening = 0.86f;
+    private static int stepGrid = 4;
+    private static int stickStrength = 5;
+    private static int shotPause = 2;
+    private static float accel = 0.35f;
 
     public static boolean isActive() {
         return active;
@@ -96,10 +95,10 @@ public class TeleportEngine {
             int ch, int pktHz, float straight,
             int stick, int grid, int pause, float ac
     ) {
-        sharpness = Math.max(0.5f, Math.min(10.0f, sharp));
-        sensX = Math.max(0.5f, Math.min(10.0f, sx));
-        sensY = Math.max(0.5f, Math.min(10.0f, sy));
-        chunks = Math.max(1, Math.min(150, ch));
+        sharpness = Math.max(0.5f, Math.min(6.0f, sharp));
+        sensX = Math.max(0.5f, Math.min(6.0f, sx));
+        sensY = Math.max(0.5f, Math.min(6.0f, sy));
+        chunks = Math.max(1, Math.min(120, ch));
         packetRateHz = Math.max(10, Math.min(120, pktHz));
         straightening = Math.max(0.0f, Math.min(1.0f, straight));
         stickStrength = Math.max(0, Math.min(35, stick));
@@ -113,25 +112,17 @@ public class TeleportEngine {
     }
 
     private static String buildQuantizedShizukuCommand(boolean includeHeavySettings) {
-        // 1. Дискретный шаг куска (Куски + Отсечка шума + Мёртвая зона)
-        int quantumSlop = Math.max(1, Math.min(32, stepGrid + (chunks / 3)));
-
-        // 2. Осевое удержание и выпрямление по линии головы (Прилипание + Выпрямление + Хват)
+        int quantumSlop = Math.max(1, Math.min(28, stepGrid + (chunks / 3)));
         float recoilFactor = antiRecoilEnabled ? (antiRecoilStrength * 0.0004f) : 0.0f;
         float axisFriction = (smartAwpLockEnabled || "awp".equalsIgnoreCase(currentPreset))
                 ? 45.0f
                 : Math.max(0.002f, (stickStrength * 0.012f) + (straightening * 0.025f) + recoilFactor);
 
-        // 3. Импульс броска между кусками
         float effectiveGain = (sharpness * 0.65f) + (sensX * 0.35f);
         int pointerSpd = Math.min(7, Math.max(1, Math.round(effectiveGain * 2.2f)));
         int minFling = Math.max(80, Math.round((chunks * 22) + (effectiveGain * 180)));
         int maxFling = Math.max(24000, Math.round(effectiveGain * 28000 * (1.0f + accel)));
-
-        // 4. Выдержка куска (Пауза после выстрела + Куски)
         int pointerDur = Math.max(2, Math.min(35, (chunks / 2) + shotPause));
-
-        // 5. Держим очередь 240 Гц, чтобы LTPO экран S25 Ultra НИКОГДА не падал в 60 Гц
         int safeWindowEvents = 240;
 
         StringBuilder sb = new StringBuilder(600);
@@ -205,7 +196,7 @@ public class TeleportEngine {
     public static void startTeleport(Context context, String presetId) {
         active = true;
         baseSettingsApplied = false;
-        currentPreset = presetId != null ? presetId : "friend";
+        currentPreset = presetId != null ? presetId : "s25u";
         applyLiveQuantization();
     }
 
