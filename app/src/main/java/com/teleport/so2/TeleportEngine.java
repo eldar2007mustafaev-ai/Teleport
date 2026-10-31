@@ -9,22 +9,23 @@ public class TeleportEngine {
     private static final AtomicBoolean commandInProgress = new AtomicBoolean(false);
     private static volatile boolean pendingUpdate = false;
 
-    private static String currentPreset = "s25u";
+    private static String currentPreset = "max_teleport";
     private static boolean smartAwpLockEnabled = false;
     private static boolean antiRecoilEnabled = false;
     private static int antiRecoilStrength = 75;
     private static boolean hzThermalGuardEnabled = true;
 
-    private static float sharpness = 1.30f;
-    private static float sensX = 1.25f;
-    private static float sensY = 1.00f;
-    private static int chunks = 14;
-    private static int packetRateHz = 120;
-    private static float straightening = 0.86f;
-    private static int stepGrid = 4;
-    private static int stickStrength = 5;
-    private static int shotPause = 2;
-    private static float accel = 0.35f;
+    // Боевые параметры по умолчанию (МАКС ТЕЛЕПОРТ)
+    private static float sharpness = 5.00f;
+    private static float sensX = 5.00f;
+    private static float sensY = 4.80f;
+    private static int chunks = 50;
+    private static int packetRateHz = 10;
+    private static float straightening = 0.98f;
+    private static int stepGrid = 1;
+    private static int stickStrength = 6;
+    private static int shotPause = 0;
+    private static float accel = 0.00f;
 
     public static boolean isActive() {
         return active;
@@ -95,14 +96,14 @@ public class TeleportEngine {
             int ch, int pktHz, float straight,
             int stick, int grid, int pause, float ac
     ) {
-        sharpness = Math.max(0.5f, Math.min(6.0f, sharp));
-        sensX = Math.max(0.5f, Math.min(6.0f, sx));
-        sensY = Math.max(0.5f, Math.min(6.0f, sy));
-        chunks = Math.max(1, Math.min(120, ch));
-        packetRateHz = Math.max(10, Math.min(120, pktHz));
+        sharpness = Math.max(0.5f, Math.min(10.0f, sharp));
+        sensX = Math.max(0.5f, Math.min(10.0f, sx));
+        sensY = Math.max(0.5f, Math.min(10.0f, sy));
+        chunks = Math.max(1, Math.min(150, ch));
+        packetRateHz = Math.max(1, Math.min(120, pktHz));
         straightening = Math.max(0.0f, Math.min(1.0f, straight));
         stickStrength = Math.max(0, Math.min(35, stick));
-        stepGrid = Math.max(1, Math.min(40, grid));
+        stepGrid = Math.max(0, Math.min(40, grid));
         shotPause = Math.max(0, Math.min(30, pause));
         accel = Math.max(0.0f, Math.min(2.0f, ac));
 
@@ -111,21 +112,35 @@ public class TeleportEngine {
         }
     }
 
+    /**
+     * АГРЕССИВНЫЙ КВАНТОВЫЙ ГЕНЕРАТОР БЕЗ ПРОСАДОК ДО 60 ГЦ:
+     * - Вырубает системный ресэмплинг и фильтрацию (прицел прыгает мгновенными кусками).
+     * - Максимально разгоняет стартовый импульс срыва (minimum/maximum_fling_velocity).
+     * - Жестко держит 120 Гц и 240 событий/сек в WindowManager, исключая статтеры и троттлинг.
+     */
     private static String buildQuantizedShizukuCommand(boolean includeHeavySettings) {
-        int quantumSlop = Math.max(1, Math.min(28, stepGrid + (chunks / 3)));
-        float recoilFactor = antiRecoilEnabled ? (antiRecoilStrength * 0.0004f) : 0.0f;
-        float axisFriction = (smartAwpLockEnabled || "awp".equalsIgnoreCase(currentPreset))
-                ? 45.0f
-                : Math.max(0.002f, (stickStrength * 0.012f) + (straightening * 0.025f) + recoilFactor);
+        // 1. Дискретный квантовый шаг (чем выше chunks, тем резче прыжок между точками)
+        int quantumSlop = Math.max(1, Math.min(22, stepGrid + (chunks / 4)));
 
-        float effectiveGain = (sharpness * 0.65f) + (sensX * 0.35f);
-        int pointerSpd = Math.min(7, Math.max(1, Math.round(effectiveGain * 2.2f)));
-        int minFling = Math.max(80, Math.round((chunks * 22) + (effectiveGain * 180)));
-        int maxFling = Math.max(24000, Math.round(effectiveGain * 28000 * (1.0f + accel)));
-        int pointerDur = Math.max(2, Math.min(35, (chunks / 2) + shotPause));
+        // 2. Осевой зацеп и стоп-фиксация в точке головы
+        float recoilFactor = antiRecoilEnabled ? (antiRecoilStrength * 0.0005f) : 0.0f;
+        float axisFriction = (smartAwpLockEnabled || "awp".equalsIgnoreCase(currentPreset))
+                ? 55.0f
+                : Math.max(0.003f, (stickStrength * 0.016f) + (straightening * 0.035f) + recoilFactor);
+
+        // 3. Зверский импульс срыва с первой миллисекунды касания
+        float powerFactor = (sharpness * 0.60f) + (sensX * 0.40f);
+        int pointerSpd = Math.min(7, Math.max(2, Math.round(powerFactor * 1.4f)));
+        int minFling = Math.max(250, Math.round((chunks * 45) + (powerFactor * 420)));
+        int maxFling = Math.max(36000, Math.round((powerFactor + (packetRateHz * 0.15f)) * 16000));
+
+        // 4. Квантовая выдержка строба
+        int pointerDur = Math.max(1, Math.min(28, (chunks / 4) + shotPause));
+
+        // 5. Строго 240 Гц на уровне очереди окна, чтобы LTPO экран НИКОГДА не падал в 60 FPS
         int safeWindowEvents = 240;
 
-        StringBuilder sb = new StringBuilder(600);
+        StringBuilder sb = new StringBuilder(640);
 
         if (includeHeavySettings) {
             sb.append("settings put system peak_refresh_rate 120.0; ")
@@ -139,6 +154,9 @@ public class TeleportEngine {
               .append("settings put system pointer_location 0; ")
               .append("settings put system show_touches 0; ")
               .append("settings put system pointer_speed ").append(pointerSpd).append("; ")
+              .append("settings put global window_animation_scale 0.0; ")
+              .append("settings put global transition_animation_scale 0.0; ")
+              .append("settings put global animator_duration_scale 0.0; ")
               .append("device_config delete game_overlay com.axlebolt.standoff2; ")
               .append("cmd power set-fixed-performance-mode-enabled true; ")
               .append("cmd game mode performance com.axlebolt.standoff2; ");
@@ -196,7 +214,7 @@ public class TeleportEngine {
     public static void startTeleport(Context context, String presetId) {
         active = true;
         baseSettingsApplied = false;
-        currentPreset = presetId != null ? presetId : "s25u";
+        currentPreset = presetId != null ? presetId : "max_teleport";
         applyLiveQuantization();
     }
 
