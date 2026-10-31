@@ -56,9 +56,6 @@ public class MainActivity extends Activity {
     private boolean stealthModeEnabled = false;
     private OnBackInvokedCallback backInvokedCallback;
 
-    /**
-     * КАСТОМНОЕ НЕОНОВОЕ ВЕДРО УДАЛЕНИЯ С АНИМАЦИЕЙ ОТКРЫТИЯ КРЫШКИ
-     */
     private static class CyberTrashView extends View {
         private final Paint bgPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
         private final Paint borderPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
@@ -144,7 +141,6 @@ public class MainActivity extends Activity {
         setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
         getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE);
 
-        // Принудительно запрашиваем 120 Гц для окна самого приложения
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
             WindowManager.LayoutParams lp = getWindow().getAttributes();
             lp.preferredRefreshRate = 120.0f;
@@ -285,6 +281,10 @@ public class MainActivity extends Activity {
                 }
             } catch (Exception ignored) {}
         });
+    }
+
+    public void setQuantumOverlayStrobe(boolean enabled) {
+        updateOverlayStealthFlag(enabled);
     }
 
     public void updateCrosshairStyle(int scale, int opacity, String colorHex) {
@@ -555,9 +555,6 @@ public class MainActivity extends Activity {
         }
     }
 
-    /**
-     * РАСТЯГ В ИГРЕ С ЖЁСТКОЙ ФИКСАЦИЕЙ ОРИЕНТАЦИИ И ЧАСТОТЫ 120 ГЦ (БЕЗ ПЕРЕВОРОТА STANDOFF 2)
-     */
     public void applyResolutionRatio(String ratio) {
         if (!ShizukuManager.isPermissionGranted()) return;
 
