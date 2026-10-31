@@ -5,53 +5,30 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 public class TeleportEngine {
     private static volatile boolean active = false;
+    private static volatile boolean baseSettingsApplied = false;
     private static final AtomicBoolean commandInProgress = new AtomicBoolean(false);
     private static volatile boolean pendingUpdate = false;
 
-    private static String currentPreset = "max_teleport";
+    private static String currentPreset = "friend_video";
     private static boolean smartAwpLockEnabled = false;
     private static boolean antiRecoilEnabled = false;
     private static int antiRecoilStrength = 75;
     private static boolean hzThermalGuardEnabled = true;
 
-    private static float sharpness = 5.00f;
-    private static float sensX = 5.00f;
-    private static float sensY = 4.80f;
-    private static int chunks = 100;
-    private static int strobeSpeed = 10;
-    private static float straightening = 0.99f;
-    private static int stickStrength = 6;
-    private static int deadZone = 0;
-    private static int shotPause = 0;
-    private static float accel = 0.00f;
+    // Параметры с запасом (поддерживают как пресет друга с видео, так и жёсткий выкрут)
+    private static float sharpness = 1.00f;      // Резкость (0.50 .. 10.00)
+    private static float sensX = 1.00f;          // Влево-вправо (0.50 .. 10.00)
+    private static float sensY = 1.00f;          // Вверх-вниз (0.50 .. 10.00)
+    private static int chunks = 10;              // Куски (1 .. 150)
+    private static int packetRateHz = 120;       // Внутренний делитель кванта (10 .. 120)
+    private static float straightening = 0.80f;  // Выпрямление (0.00 .. 1.00)
+    private static int stepGrid = 3;             // Отсечка шума / Мёртвая зона (1 .. 40)
+    private static int stickStrength = 4;        // Прилипание к осям / Хват (0 .. 30)
+    private static int shotPause = 0;            // Пауза после выстрела (0 .. 30 мс)
+    private static float accel = 0.30f;          // Крутизна разгона (0.00 .. 2.00)
 
     public static boolean isActive() {
         return active;
-    }
-
-    public static int getCurrentChunks() {
-        return Math.max(10, Math.min(100, chunks));
-    }
-
-    /**
-     * Количество микро-импульсов блокировки буфера за один цикл (чем выше чанки, тем жёстче склейка).
-     */
-    public static int getQuantumBurstCount() {
-        return Math.max(2, Math.min(6, 1 + (chunks / 20)));
-    }
-
-    /**
-     * Окно накопления дельты пальца (мс): копит координаты свайпа и отдаёт их в игру одним прыжком.
-     */
-    public static int getBatchHoldMs() {
-        return Math.max(16, Math.min(48, (chunks * 42) / 100));
-    }
-
-    /**
-     * Интервал между выбросами готовых кусков в кадр игры (мс).
-     */
-    public static int getBatchReleaseIntervalMs() {
-        return Math.max(10, 52 - (strobeSpeed * 4));
     }
 
     public static boolean isSmartAwpLockEnabled() {
@@ -85,16 +62,11 @@ public class TeleportEngine {
                 ShizukuManager.execCommand(
                     "settings put system peak_refresh_rate 120.0; " +
                     "settings put system min_refresh_rate 120.0; " +
-                    "settings put secure user_refresh_rate 120; " +
-                    "cmd power set-fixed-performance-mode-enabled true; " +
-                    "cmd thermalservice override-status 0; " +
+                    "settings put secure refresh_rate_mode 2; " +
                     "cmd game mode performance com.axlebolt.standoff2"
                 );
             } else {
-                ShizukuManager.execCommand(
-                    "cmd power set-fixed-performance-mode-enabled false; " +
-                    "cmd thermalservice reset"
-                );
+                ShizukuManager.execCommand("settings put secure refresh_rate_mode 1");
             }
         }).start();
     }
@@ -105,7 +77,7 @@ public class TeleportEngine {
             if (percent >= 100) {
                 ShizukuManager.execCommand("cmd game downscale disable com.axlebolt.standoff2");
             } else {
-                float scale = Math.max(0.5f, Math.min(0.9f, percent / 100.0f));
+                float scale = Math.max(0.5f, Math.min(0.95f, percent / 100.0f));
                 ShizukuManager.execCommand("cmd game downscale " + scale + " com.axlebolt.standoff2");
             }
         }).start();
@@ -113,78 +85,100 @@ public class TeleportEngine {
 
     public static void updateParameters(
             float sharp, float sx, float sy,
-            int ch, int stSpeed, float straight,
-            int stick, int dz, int pause, float ac
+            int ch, int pktHz, float straight,
+            int stick, int grid, int pause, float ac
     ) {
-        sharpness = sharp;
-        sensX = sx;
-        sensY = sy;
-        chunks = Math.max(10, Math.min(100, ch));
-        strobeSpeed = stSpeed;
-        straightening = straight;
-        stickStrength = stick;
-        deadZone = dz;
-        shotPause = pause;
-        accel = ac;
+        sharpness = Math.max(0.5f, Math.min(10.0f, sharp));
+        sensX = Math.max(0.5f, Math.min(10.0f, sx));
+        sensY = Math.max(0.5f, Math.min(10.0f, sy));
+        chunks = Math.max(1, Math.min(150, ch));
+        packetRateHz = Math.max(10, Math.min(120, pktHz));
+        straightening = Math.max(0.0f, Math.min(1.0f, straight));
+        stickStrength = Math.max(0, Math.min(30, stick));
+        stepGrid = Math.max(1, Math.min(40, grid));
+        shotPause = Math.max(0, Math.min(30, pause));
+        accel = Math.max(0.0f, Math.min(2.0f, ac));
 
         if (active && ShizukuManager.isPermissionGranted()) {
             applyLiveQuantization();
         }
     }
 
-    private static String buildQuantizedShizukuCommand() {
-        int effectiveChunks = Math.max(25, Math.round(chunks * (sharpness / 1.1f)));
-        int holdDurationMs = Math.max(240, effectiveChunks * 4 + (shotPause * 8));
-        long phaseOffsetNs = effectiveChunks * 450000L;
+    /**
+     * ГЕНЕРАТОР ТЕЛЕПОРТА БЕЗ ПАДЕНИЯ FPS (СТАБИЛЬНЫЕ 120 ГЦ НА S25 ULTRA):
+     * - Не душит windowsmgr.max_events_per_sec ниже 180 Гц, чтобы LTPO экран не падал в 60 Гц.
+     * - Формирует ступенчатый телепорт ("Куски" + "Прилипание к осям" + "Отсечка шума")
+     *   через калибровку геометрии InputReader, порог отсечки микро-тремора и нулевой ресэмплинг.
+     */
+    private static String buildQuantizedShizukuCommand(boolean includeHeavySettings) {
+        // 1. Расчёт порога дискретного куска (Куски + Отсечка шума + Мёртвая зона)
+        // При значениях друга (Куски=10, Отсечка=3) даёт чёткий шаг 6px без потерь кадров
+        int quantumSlop = Math.max(1, Math.min(32, stepGrid + (chunks / 3)));
 
-        String frictionVal = (smartAwpLockEnabled || "awp".equalsIgnoreCase(currentPreset) || stickStrength >= 8)
-                ? "9999.0" : "0.0";
+        // 2. Удержание по осям и выпрямление (Прилипание к осям + Выпрямление 0.80)
+        float axisFriction = (smartAwpLockEnabled || "awp".equalsIgnoreCase(currentPreset))
+                ? 45.0f
+                : Math.max(0.002f, (stickStrength * 0.012f) + (straightening * 0.025f));
 
-        int pointerSpd = Math.min(7, Math.max(5, Math.round(sharpness + 2.0f)));
+        // 3. Импульс броска между кусками (Острота + Влево-вправо + Крутизна разгона)
+        float effectiveGain = (sharpness * 0.65f) + (sensX * 0.35f);
+        int pointerSpd = Math.min(7, Math.max(1, Math.round(effectiveGain * 2.2f)));
+        int minFling = Math.max(80, Math.round((chunks * 22) + (effectiveGain * 180)));
+        int maxFling = Math.max(24000, Math.round(effectiveGain * 28000 * (1.0f + accel)));
 
-        return
-            "settings put system peak_refresh_rate 120.0; " +
-            "settings put system min_refresh_rate 120.0; " +
-            "settings put secure user_refresh_rate 120; " +
-            "settings put secure long_press_timeout 400; " +
-            "settings put secure multi_press_timeout 250; " +
-            "settings put secure tap_duration_threshold 0.0; " +
-            "settings put secure touch_blocking_period 0.0; " +
-            "settings put system pointer_location 0; " +
-            "settings put system show_touches 0; " +
-            "settings put system pointer_speed " + pointerSpd + "; " +
-            "settings put global window_animation_scale 0.0; " +
-            "settings put global transition_animation_scale 0.0; " +
-            "settings put global animator_duration_scale 0.0; " +
-            "setprop debug.input.resampling 0; " +
-            "setprop persist.sys.input.resampling 0; " +
-            "setprop ro.input.resampling 0; " +
-            "setprop ro.input.no_resample 1; " +
-            "setprop debug.sf.vsp_touch_boost 1; " +
-            "setprop touch.filter.level 0; " +
-            "setprop touch.gestureMode spots; " +
-            "setprop touch.size.calibration geometric; " +
-            "setprop touch.pressure.scale 0.0001; " +
-            "setprop touch.orientation.calibration none; " +
-            "setprop touch.distance.scale 0; " +
-            "setprop view.touch_slop " + deadZone + "; " +
-            "setprop windowsmgr.max_events_per_sec 1; " +
-            "setprop ro.min_pointer_dur " + holdDurationMs + "; " +
-            "setprop debug.sf.early_phase_offset_ns " + phaseOffsetNs + "; " +
-            "setprop debug.sf.early_gl_phase_offset_ns " + phaseOffsetNs + "; " +
-            "setprop debug.sf.early_app_phase_offset_ns " + phaseOffsetNs + "; " +
-            "setprop debug.sf.late.sf.duration " + phaseOffsetNs + "; " +
-            "setprop debug.sf.early.app.duration " + phaseOffsetNs + "; " +
-            "setprop view.scroll_friction " + frictionVal + "; " +
-            "setprop view.minimum_fling_velocity 1; " +
-            "setprop view.maximum_fling_velocity 220000; " +
-            "setprop debug.sf.latch_unsignaled 1; " +
-            "setprop debug.sf.auto_latch_unsignaled false; " +
-            "setprop debug.sf.disable_backpressure 1; " +
-            "setprop debug.hwui.use_buffer_age false; " +
-            "cmd power set-fixed-performance-mode-enabled true; " +
-            "cmd thermalservice override-status 0; " +
-            "cmd game mode performance com.axlebolt.standoff2";
+        // 4. Минимальная выдержка куска для эффекта "тепа" (Пауза после выстрела + Куски)
+        int pointerDur = Math.max(2, Math.min(35, (chunks / 2) + shotPause));
+
+        // 5. Частота очереди строго 240+ (чтобы экран НИКОГДА не сбрасывался в 60 Гц!)
+        int safeWindowEvents = 240;
+
+        StringBuilder sb = new StringBuilder(512);
+
+        // Тяжёлые команды settings put вызываем ТОЛЬКО при включении (чтобы не лагало при кручении ползунков)
+        if (includeHeavySettings) {
+            sb.append("settings put system peak_refresh_rate 120.0; ")
+              .append("settings put system min_refresh_rate 120.0; ")
+              .append("settings put secure refresh_rate_mode 2; ")
+              .append("settings put secure long_press_timeout 400; ")
+              .append("settings put secure multi_press_timeout 250; ")
+              .append("settings delete secure tap_duration_threshold; ")
+              .append("settings delete secure touch_blocking_period; ")
+              .append("settings put system pointer_location 0; ")
+              .append("settings put system show_touches 0; ")
+              .append("settings put system pointer_speed ").append(pointerSpd).append("; ")
+              .append("device_config delete game_overlay com.axlebolt.standoff2; ")
+              .append("cmd game mode performance com.axlebolt.standoff2; ");
+        } else {
+            sb.append("settings put system pointer_speed ").append(pointerSpd).append("; ");
+        }
+
+        // Быстрые нативные свойства ядра ввода (выполняются за 2 мс без нагрузки на CPU)
+        sb.append("setprop debug.sf.touch_resampling 0; ")
+          .append("setprop debug.input.resampling 0; ")
+          .append("setprop persist.sys.input.resampling 0; ")
+          .append("setprop ro.input.resampling 0; ")
+          .append("setprop ro.input.no_resample 1; ")
+          .append("setprop touch.filter.level 0; ")
+          .append("setprop touch.coverage.calibration box; ")
+          .append("setprop touch.gestureMode spots; ")
+          .append("setprop touch.size.calibration geometric; ")
+          .append("setprop touch.pressure.scale 0.0001; ")
+          .append("setprop touch.orientation.calibration vector; ")
+          .append("setprop touch.distance.scale 1; ")
+          .append("setprop touch.acceleration.hw ").append(accel > 0.05f ? "1" : "0").append("; ")
+          .append("setprop windowsmgr.max_events_per_sec ").append(safeWindowEvents).append("; ")
+          .append("setprop persist.sys.scrolling.max_events_per_sec ").append(safeWindowEvents).append("; ")
+          .append("setprop view.touch_slop ").append(quantumSlop).append("; ")
+          .append("setprop debug.input.touch_slop ").append(quantumSlop).append("; ")
+          .append("setprop ro.min_pointer_dur ").append(pointerDur).append("; ")
+          .append("setprop view.scroll_friction ").append(axisFriction).append("; ")
+          .append("setprop view.minimum_fling_velocity ").append(minFling).append("; ")
+          .append("setprop view.maximum_fling_velocity ").append(maxFling).append("; ")
+          // Убираем десинхрон VSync, который ронял S25 Ultra в 60 FPS
+          .append("setprop debug.sf.latch_unsignaled 0; ")
+          .append("setprop debug.sf.disable_backpressure 0");
+
+        return sb.toString();
     }
 
     private static void applyLiveQuantization() {
@@ -197,7 +191,9 @@ public class TeleportEngine {
             try {
                 do {
                     pendingUpdate = false;
-                    ShizukuManager.execCommand(buildQuantizedShizukuCommand());
+                    boolean needHeavy = !baseSettingsApplied;
+                    baseSettingsApplied = true;
+                    ShizukuManager.execCommand(buildQuantizedShizukuCommand(needHeavy));
                 } while (pendingUpdate && active);
             } finally {
                 commandInProgress.set(false);
@@ -207,25 +203,26 @@ public class TeleportEngine {
 
     public static void startTeleport(Context context, String presetId) {
         active = true;
-        currentPreset = presetId != null ? presetId : "max_teleport";
+        baseSettingsApplied = false;
+        currentPreset = presetId != null ? presetId : "friend_video";
         applyLiveQuantization();
     }
 
     public static void stopTeleport() {
         active = false;
+        baseSettingsApplied = false;
         pendingUpdate = false;
         if (!ShizukuManager.isPermissionGranted()) return;
 
         new Thread(() -> {
             String cmd =
-                "settings put secure long_press_timeout 500; " +
-                "settings put secure multi_press_timeout 300; " +
-                "settings delete secure tap_duration_threshold; " +
-                "settings delete secure touch_blocking_period; " +
                 "settings put system pointer_speed 0; " +
+                "setprop debug.sf.touch_resampling 1; " +
                 "setprop debug.input.resampling 1; " +
+                "setprop persist.sys.input.resampling 1; " +
                 "setprop ro.input.no_resample 0; " +
                 "setprop windowsmgr.max_events_per_sec 240; " +
+                "setprop view.touch_slop 8; " +
                 "setprop view.scroll_friction 0.015; " +
                 "setprop view.minimum_fling_velocity 50; " +
                 "setprop view.maximum_fling_velocity 8000; " +
