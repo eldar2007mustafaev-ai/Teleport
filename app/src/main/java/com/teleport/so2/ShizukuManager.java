@@ -30,7 +30,6 @@ public class ShizukuManager {
 
             String[] shellCmd = new String[]{ "sh", "-c", command };
 
-            // Обходим private access в Shizuku API 13+ через рефлексию
             Method newProcessMethod = Shizuku.class.getDeclaredMethod(
                     "newProcess",
                     String[].class,
