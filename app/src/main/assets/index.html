@@ -2,1683 +2,945 @@
 <html lang="ru">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-<title>SO2Teleport</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>SO2 Teleport Engine</title>
 <style>
   :root {
-    --bg-dark: #070312;
-    --bg-card: #130a26;
-    --bg-inner: #0b0518;
-    --border-dim: rgba(168, 85, 247, 0.28);
-    --border-neon: #c084fc;
-    --purple: #a855f7;
-    --purple-bright: #d946ef;
-    --green: #10b981;
-    --red: #f43f5e;
-    --txt-main: #faf5ff;
-    --txt-muted: #7e6b9b;
-    --txt-soft: #c4b5fd;
+    --bg-main: #09040a;
+    --card-bg: #120912;
+    --card-border: #3d1428;
+    --accent: #ff2a5f;
+    --accent-glow: rgba(255, 42, 95, 0.35);
+    --badge-bg: #2b111c;
+    --text-main: #f5eef0;
+    --text-sub: #9e858d;
+    --cyan: #00f0ff;
   }
 
   * {
     box-sizing: border-box;
-    margin: 0;
-    padding: 0;
     -webkit-tap-highlight-color: transparent;
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-  }
-
-  input, button {
-    user-select: auto;
-    -webkit-user-select: auto;
-  }
-
-  html, body {
-    background-color: var(--bg-dark);
-    color: var(--txt-main);
-    min-height: 100vh;
-    overflow-x: hidden;
+    user-select: none;
   }
 
   body {
-    padding: calc(env(safe-area-inset-top, 40px) + 30px) 14px 48px 14px;
-    position: relative;
+    margin: 0;
+    padding: 14px 12px 40px 12px;
+    background: radial-gradient(circle at top, #1f0915 0%, var(--bg-main) 55%);
+    color: var(--text-main);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    overflow-x: hidden;
   }
 
-  /* ==================== 120 FPS БЕЗЛАГОВЫЙ ЖИВОЙ НЕОНОВЫЙ ФОН ==================== */
-  .live-bg {
-    position: fixed;
-    inset: 0;
-    z-index: 0;
-    overflow: hidden;
-    pointer-events: none;
-    background:
-      radial-gradient(circle at 18% 12%, rgba(168, 85, 247, 0.22) 0%, transparent 45%),
-      radial-gradient(circle at 85% 32%, rgba(217, 70, 239, 0.18) 0%, transparent 48%),
-      radial-gradient(circle at 50% 85%, rgba(59, 130, 246, 0.16) 0%, transparent 50%),
-      radial-gradient(circle at 50% 8%, #1f0b3d 0%, #070312 74%);
+  /* ВЕРХНИЕ ВКЛАДКИ (ЗАПУСК / НАСТРОЙКИ) КАК НА ВИДЕО */
+  .top-tabs {
+    display: flex;
+    background: #140a12;
+    border: 1px solid var(--card-border);
+    border-radius: 999px;
+    padding: 5px;
+    margin-bottom: 16px;
   }
 
-  .live-grid {
-    position: absolute;
-    inset: 0;
-    background-image:
-      linear-gradient(rgba(168, 85, 247, 0.05) 1px, transparent 1px),
-      linear-gradient(90deg, rgba(168, 85, 247, 0.05) 1px, transparent 1px);
-    background-size: 38px 38px;
-  }
-
-  /* Аппаратные GPU-звёзды без нагрузки на процессор */
-  .neon-star {
-    position: absolute;
-    width: 4px;
-    height: 4px;
-    border-radius: 50%;
-    background: #f5d0fe;
-    box-shadow: 0 0 8px #d946ef;
-    will-change: transform, opacity;
-    animation: starFloat 6s ease-in-out infinite alternate;
-  }
-  .s1 { top: 14%; left: 12%; animation-duration: 5s; }
-  .s2 { top: 26%; right: 16%; animation-duration: 7s; animation-delay: -2s; }
-  .s3 { top: 48%; left: 8%; animation-duration: 6.5s; animation-delay: -4s; }
-  .s4 { top: 64%; right: 10%; animation-duration: 8s; animation-delay: -1s; }
-  .s5 { top: 82%; left: 22%; animation-duration: 5.5s; animation-delay: -3s; }
-  .s6 { top: 36%; left: 52%; animation-duration: 7.5s; animation-delay: -2.5s; }
-
-  @keyframes starFloat {
-    0% { transform: translate3d(0, 0, 0) scale(0.8); opacity: 0.3; }
-    100% { transform: translate3d(0, -18px, 0) scale(1.3); opacity: 0.85; }
-  }
-
-  .container {
-    max-width: 460px;
-    margin: 0 auto;
-    position: relative;
-    z-index: 2;
-  }
-
-  /* ==================== ПЛАВНЫЕ GPU-АНИМАЦИИ ПЕРЕХОДОВ ==================== */
-  @keyframes smoothSlideIn {
-    0% {
-      opacity: 0;
-      transform: translate3d(0, 14px, 0);
-    }
-    100% {
-      opacity: 1;
-      transform: translate3d(0, 0, 0);
-    }
-  }
-
-  @keyframes gpuRingPulse {
-    0% {
-      transform: scale(0.98);
-      opacity: 0.75;
-    }
-    70% {
-      transform: scale(1.16);
-      opacity: 0;
-    }
-    100% {
-      transform: scale(1.16);
-      opacity: 0;
-    }
-  }
-
-  .cascade-item {
-    opacity: 0;
-    will-change: transform, opacity;
-    animation: smoothSlideIn 0.28s cubic-bezier(0.2, 0.9, 0.3, 1) forwards;
-  }
-  .d-1 { animation-delay: 0.01s; }
-  .d-2 { animation-delay: 0.03s; }
-  .d-3 { animation-delay: 0.05s; }
-  .d-4 { animation-delay: 0.07s; }
-  .d-5 { animation-delay: 0.09s; }
-  .d-6 { animation-delay: 0.11s; }
-  .d-7 { animation-delay: 0.13s; }
-
-  /* ==================== ОКНО ДОБРО ПОЖАЛОВАТЬ В SO2TELEPORT ==================== */
-  #welcomeAuthOverlay {
-    position: fixed;
-    inset: 0;
-    background: radial-gradient(circle at 50% 25%, #2a0f57 0%, #060210 78%);
-    z-index: 999999;
-    display: none;
-    align-items: center;
-    justify-content: center;
-    padding: 18px;
-  }
-
-  .welcome-box {
-    width: 100%;
-    max-width: 380px;
-    background: #130927;
-    border: 1.5px solid var(--border-neon);
-    border-radius: 24px;
-    padding: 26px 20px;
+  .tab-btn {
+    flex: 1;
+    padding: 12px 0;
     text-align: center;
-    box-shadow: 0 0 32px rgba(168, 85, 247, 0.3);
-    animation: smoothSlideIn 0.32s cubic-bezier(0.2, 0.9, 0.3, 1) forwards;
-  }
-
-  .welcome-badge {
-    display: inline-block;
-    background: rgba(168, 85, 247, 0.18);
-    border: 1px solid rgba(192, 132, 252, 0.5);
-    color: #e9d5ff;
-    font-size: 10.5px;
-    font-weight: 900;
-    letter-spacing: 1.2px;
-    padding: 4px 12px;
     border-radius: 999px;
-    margin-bottom: 10px;
-  }
-
-  .welcome-title {
-    font-size: 22px;
-    font-weight: 900;
-    color: #ffffff;
-    margin-bottom: 6px;
-    letter-spacing: 0.4px;
-  }
-
-  .welcome-sub {
-    font-size: 12.5px;
-    color: var(--txt-soft);
-    margin-bottom: 18px;
-    line-height: 1.4;
-  }
-
-  .inp-field {
-    width: 100%;
-    background: #090416;
-    border: 1px solid rgba(168, 85, 247, 0.38);
-    color: #ffffff;
-    padding: 13px 15px;
-    border-radius: 14px;
-    font-size: 14px;
-    margin-bottom: 11px;
-    outline: none;
-  }
-
-  .inp-field:focus {
-    border-color: #00f0ff;
-  }
-
-  .primary-btn {
-    width: 100%;
-    background: linear-gradient(90deg, #00c6ff 0%, #7c3aed 50%, #d946ef 100%);
-    color: #ffffff;
-    font-weight: 900;
-    font-size: 14px;
-    padding: 14px;
-    border: 1px solid rgba(243, 232, 255, 0.45);
-    border-radius: 14px;
-    cursor: pointer;
-    box-shadow: 0 4px 16px rgba(168, 85, 247, 0.35);
-    margin-bottom: 8px;
-    transition: transform 0.12s ease;
-  }
-
-  .primary-btn:active {
-    transform: scale(0.97);
-  }
-
-  .secondary-btn {
-    width: 100%;
-    background: #180c30;
-    border: 1px solid rgba(168, 85, 247, 0.35);
-    color: #e9d5ff;
-    font-weight: 800;
     font-size: 13px;
-    padding: 12px;
-    border-radius: 14px;
-    cursor: pointer;
-    transition: transform 0.12s ease;
-  }
-
-  .secondary-btn:active {
-    transform: scale(0.97);
-  }
-
-  /* ==================== ВЕРХНЯЯ ПАНЕЛЬ И SHIZUKU ==================== */
-  .top-bar {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    gap: 10px;
-    margin-bottom: 18px;
-  }
-
-  .logo-block {
-    display: flex;
-    flex-direction: column;
-  }
-
-  .logo-name {
-    font-size: 21px;
-    font-weight: 900;
-    letter-spacing: 0.8px;
-    color: #ffffff;
-    text-shadow: 0 0 14px rgba(192, 132, 252, 0.65);
-  }
-
-  .logo-tag {
-    font-size: 10.5px;
-    color: #d8b4fe;
     font-weight: 800;
-    letter-spacing: 0.7px;
-  }
-
-  .shizuku-top-card {
-    background: #160b2c;
-    border: 1.5px solid rgba(244, 63, 94, 0.55);
-    border-radius: 16px;
-    padding: 8px 12px;
-    display: flex;
-    align-items: center;
-    gap: 9px;
+    letter-spacing: 0.8px;
+    color: var(--text-sub);
     cursor: pointer;
-    max-width: 215px;
+    transition: 0.2s;
   }
 
-  .shizuku-top-card.ready {
-    border-color: rgba(192, 132, 252, 0.75);
-    box-shadow: 0 0 14px rgba(168, 85, 247, 0.3);
+  .tab-btn.active {
+    background: linear-gradient(90deg, #d91b4b, #ff2e63);
+    color: #fff;
+    box-shadow: 0 0 18px var(--accent-glow);
   }
 
-  .shiz-led {
-    width: 10px;
-    height: 10px;
-    border-radius: 50%;
-    background: var(--red);
-    flex-shrink: 0;
+  /* ОСНОВНАЯ КАРТОЧКА */
+  .main-card {
+    background: var(--card-bg);
+    border: 1px solid var(--card-border);
+    border-radius: 22px;
+    padding: 18px 16px;
+    box-shadow: 0 10px 35px rgba(0,0,0,0.65);
+    margin-bottom: 16px;
   }
 
-  .shizuku-top-card.ready .shiz-led {
-    background: #00f0ff;
-    box-shadow: 0 0 8px #00f0ff;
-  }
-
-  .shiz-title {
-    font-size: 12px;
-    font-weight: 900;
-    color: #ffffff;
-    line-height: 1.15;
-  }
-
-  .shiz-sub {
-    font-size: 10px;
-    color: #fda4af;
-    font-weight: 700;
-    line-height: 1.15;
-    margin-top: 2px;
-  }
-
-  .shizuku-top-card.ready .shiz-sub {
-    color: #e9d5ff;
-  }
-
-  /* ==================== БОЛЬШАЯ КРУГЛАЯ КНОПКА ЗАПУСКА (GPU RING) ==================== */
-  .power-center-wrap {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    margin: 8px 0 22px 0;
-  }
-
-  .big-power-circle {
-    width: 170px;
-    height: 170px;
-    border-radius: 50%;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    transition: transform 0.16s ease;
-    position: relative;
-  }
-
-  .big-power-circle::after {
-    content: "";
-    position: absolute;
-    inset: -6px;
-    border-radius: 50%;
-    border: 2.5px solid #e879f9;
-    opacity: 0;
-    pointer-events: none;
-    will-change: transform, opacity;
-  }
-
-  .big-power-circle.off-state {
-    background: radial-gradient(circle at 50% 35%, #231242 0%, #0d061c 80%);
-    border: 3px solid rgba(168, 85, 247, 0.38);
-    box-shadow: 0 0 22px rgba(168, 85, 247, 0.2);
-  }
-
-  .big-power-circle.on-state {
-    background: radial-gradient(circle at 35% 25%, #00f0ff 0%, #a855f7 45%, #7c3aed 80%, #3b0764 100%);
-    border: 4px solid #fae8ff;
-    box-shadow: 0 0 32px rgba(168, 85, 247, 0.55);
-  }
-
-  .big-power-circle.on-state::after {
-    animation: gpuRingPulse 2s infinite;
-  }
-
-  .big-power-circle:active {
-    transform: scale(0.94);
-  }
-
-  .power-icon-svg {
-    font-size: 42px;
-    font-weight: 900;
-    line-height: 1;
-    margin-bottom: 6px;
-  }
-
-  .big-power-circle.off-state .power-icon-svg {
-    color: #c084fc;
-  }
-
-  .big-power-circle.on-state .power-icon-svg {
-    color: #ffffff;
-  }
-
-  .power-main-label {
-    font-size: 14px;
-    font-weight: 900;
-    letter-spacing: 1px;
-  }
-
-  .big-power-circle.off-state .power-main-label {
-    color: #d8b4fe;
-  }
-
-  .big-power-circle.on-state .power-main-label {
-    color: #ffffff;
-  }
-
-  .power-status-pill {
-    margin-top: 13px;
-    padding: 6px 15px;
-    border-radius: 999px;
-    font-size: 11px;
-    font-weight: 900;
-    letter-spacing: 0.6px;
-  }
-
-  .power-status-pill.off {
-    background: rgba(168, 85, 247, 0.14);
-    border: 1px solid rgba(168, 85, 247, 0.35);
-    color: #d8b4fe;
-  }
-
-  .power-status-pill.on {
-    background: rgba(217, 70, 239, 0.22);
-    border: 1px solid #e879f9;
-    color: #fae8ff;
-  }
-
-  /* ==================== СЕТКА 6 КАРТОЧЕК С ФИОЛЕТОВЫМ СВЕЧЕНИЕМ ==================== */
-  .cards-grid-6 {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 12px;
-  }
-
-  .hub-card {
-    background: linear-gradient(160deg, #190d30 0%, #0d061a 100%);
-    border: 1px solid rgba(192, 132, 252, 0.34);
-    border-radius: 20px;
-    padding: 16px 14px;
-    cursor: pointer;
-    transition: transform 0.14s ease, border-color 0.18s ease;
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-    min-height: 114px;
-    box-shadow: 0 4px 14px rgba(124, 58, 237, 0.16);
-  }
-
-  .hub-card:active {
-    transform: scale(0.96);
-    border-color: #00f0ff;
-  }
-
-  .hub-card-top {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 8px;
-  }
-
-  .hub-icon {
-    width: 38px;
-    height: 38px;
-    border-radius: 12px;
-    background: linear-gradient(135deg, rgba(0, 240, 255, 0.22) 0%, rgba(217, 70, 239, 0.28) 100%);
-    border: 1px solid rgba(216, 180, 254, 0.65);
-    box-shadow: 0 0 12px rgba(168, 85, 247, 0.4);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 17px;
-    font-weight: 900;
-    color: #f3e8ff;
-  }
-
-  .hub-arrow {
-    font-size: 18px;
-    color: #c084fc;
-    font-weight: 900;
-  }
-
-  .hub-title {
-    font-size: 14.5px;
-    font-weight: 900;
-    color: #ffffff;
-    margin-bottom: 3px;
-  }
-
-  .hub-desc {
-    font-size: 11px;
-    color: var(--txt-soft);
-    line-height: 1.25;
-  }
-
-  /* ==================== ВНУТРЕННИЕ ЭКРАНЫ КАРТОЧЕК ==================== */
-  .subpage {
-    display: none;
-  }
-
-  .subpage.open {
-    display: block;
-  }
-
-  .back-bar {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    margin-bottom: 14px;
-    cursor: pointer;
-    background: #160b2c;
-    border: 1px solid rgba(192, 132, 252, 0.35);
-    padding: 12px 15px;
-    border-radius: 16px;
-    transition: transform 0.12s ease;
-  }
-
-  .back-bar:active {
-    transform: scale(0.97);
-  }
-
-  .back-btn-ico {
-    font-size: 18px;
-    font-weight: 900;
-    color: #00f0ff;
-  }
-
-  .back-title {
+  .sec-header {
     font-size: 15px;
-    font-weight: 900;
-    color: #ffffff;
-  }
-
-  .section-box {
-    background: var(--bg-card);
-    border: 1px solid rgba(192, 132, 252, 0.3);
-    border-radius: 20px;
-    padding: 15px;
-    margin-bottom: 13px;
-  }
-
-  .sec-label {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    font-size: 11.5px;
-    font-weight: 900;
-    color: #d8b4fe;
+    font-weight: 800;
     letter-spacing: 0.7px;
     text-transform: uppercase;
-    margin-bottom: 11px;
+    margin: 18px 0 4px 0;
+    color: #fff;
+  }
+  .sec-header:first-child {
+    margin-top: 0;
   }
 
-  .preset-card {
-    background: var(--bg-inner);
-    border: 1.5px solid rgba(168, 85, 247, 0.22);
-    border-radius: 16px;
-    padding: 13px 14px;
-    margin-bottom: 9px;
-    cursor: pointer;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
+  .sec-desc {
+    font-size: 13px;
+    color: var(--text-sub);
+    margin-bottom: 14px;
   }
 
-  .preset-card.selected {
-    background: linear-gradient(135deg, #3b0764 0%, #1e0a3c 100%);
-    border-color: #00f0ff;
+  /* ПОЛЗУНКИ (ТОЧНЫЙ СТИЛЬ ИЗ ВИДЕО ДРУГА) */
+  .param-block {
+    padding: 12px 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
   }
-
-  .pr-name {
-    font-size: 13.5px;
-    font-weight: 900;
-    color: #ffffff;
-    margin-bottom: 3px;
-  }
-
-  .pr-sub {
-    font-size: 11.5px;
-    color: var(--txt-soft);
-    line-height: 1.3;
-  }
-
-  .pr-badge {
-    background: rgba(168, 85, 247, 0.24);
-    border: 1px solid rgba(216, 180, 254, 0.5);
-    color: #f3e8ff;
-    font-size: 10px;
-    font-weight: 900;
-    padding: 4px 10px;
-    border-radius: 999px;
-    flex-shrink: 0;
-    margin-left: 8px;
-  }
-
-  .slider-item {
-    margin-bottom: 15px;
-    padding-bottom: 12px;
-    border-bottom: 1px solid rgba(168, 85, 247, 0.12);
-  }
-
-  .slider-item:last-child {
-    margin-bottom: 2px;
-    padding-bottom: 0;
+  .param-block:last-child {
     border-bottom: none;
   }
 
-  .sl-head {
+  .param-top {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 4px;
+    margin-bottom: 10px;
   }
 
-  .sl-title {
-    font-size: 13.5px;
-    font-weight: 900;
-    color: #faf5ff;
+  .param-title {
+    font-size: 15px;
+    font-weight: 700;
+    color: #fff;
   }
 
-  .sl-value {
-    background: rgba(168, 85, 247, 0.24);
-    border: 1px solid rgba(216, 180, 254, 0.55);
-    color: #f3e8ff;
-    font-size: 11.5px;
-    font-weight: 900;
-    padding: 2px 9px;
+  .param-badge {
+    background: var(--badge-bg);
+    border: 1px solid #4d192b;
+    color: #ff4778;
+    font-weight: 700;
+    font-size: 13px;
+    padding: 4px 10px;
     border-radius: 8px;
-  }
-
-  .sl-explain {
-    font-size: 11.5px;
-    color: var(--txt-soft);
-    margin-bottom: 8px;
-    line-height: 1.35;
+    min-width: 44px;
+    text-align: center;
   }
 
   input[type="range"] {
     -webkit-appearance: none;
-    appearance: none;
     width: 100%;
-    height: 6px;
-    background: #190b33;
-    border: 1px solid rgba(168, 85, 247, 0.25);
-    border-radius: 999px;
+    height: 5px;
+    background: #2b1822;
+    border-radius: 5px;
     outline: none;
+    margin: 6px 0 10px 0;
   }
 
   input[type="range"]::-webkit-slider-thumb {
     -webkit-appearance: none;
-    appearance: none;
     width: 22px;
     height: 22px;
     border-radius: 50%;
-    background: #d946ef;
-    border: 3px solid #ffffff;
+    background: var(--accent);
+    box-shadow: 0 0 12px var(--accent);
     cursor: pointer;
+    border: 2px solid #xffb3c6;
   }
 
-  .opts-row {
-    display: grid;
-    grid-template-columns: repeat(5, 1fr);
-    gap: 6px;
-    margin: 10px 0;
-  }
-
-  .opts-row-4 {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 8px;
-    margin: 10px 0;
-  }
-
-  .opt-btn {
-    background: var(--bg-inner);
-    border: 1px solid rgba(168, 85, 247, 0.28);
-    color: #e9d5ff;
-    padding: 11px 4px;
-    border-radius: 12px;
+  .param-hint {
     font-size: 12px;
-    font-weight: 900;
+    font-style: italic;
+    color: var(--text-sub);
+  }
+
+  /* КНОПКИ УПРАВЛЕНИЯ */
+  .btn-row {
+    display: flex;
+    gap: 10px;
+    margin-top: 14px;
+  }
+
+  .pill-btn {
+    flex: 1;
+    padding: 13px 12px;
+    border-radius: 999px;
+    background: #1c0f18;
+    border: 1px solid #3d1b2c;
+    color: #fff;
+    font-size: 14px;
+    font-weight: 700;
     text-align: center;
     cursor: pointer;
+    transition: 0.15s;
+  }
+  .pill-btn:active {
+    transform: scale(0.97);
+    background: #2b1423;
   }
 
-  .opt-btn.active {
-    background: rgba(168, 85, 247, 0.34);
-    border: 1.5px solid #00f0ff;
-    color: #ffffff;
+  .pill-btn.primary {
+    background: linear-gradient(90deg, #d91b4b, #ff2e63);
+    border: none;
+    box-shadow: 0 0 16px var(--accent-glow);
   }
 
-  .preview-box {
-    width: 100%;
-    background: #090416;
-    border: 1px dashed rgba(192, 132, 252, 0.45);
-    border-radius: 14px;
-    display: block;
+  .action-box {
+    margin-top: 14px;
+    text-align: center;
+  }
+
+  .action-caption {
+    font-size: 12px;
+    font-style: italic;
+    color: var(--text-sub);
+    margin-top: 6px;
     margin-bottom: 10px;
   }
 
-  .toggle-row {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 11px 0;
-    border-bottom: 1px solid rgba(168, 85, 247, 0.12);
+  /* ПРЕСЕТЫ НА ВКЛАДКЕ ЗАПУСКА */
+  .preset-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
     gap: 10px;
+    margin-bottom: 16px;
   }
 
-  .toggle-row:last-child {
-    border-bottom: none;
+  .preset-card {
+    background: #190c16;
+    border: 1px solid #361526;
+    border-radius: 14px;
+    padding: 12px;
+    cursor: pointer;
+    transition: 0.2s;
+  }
+  .preset-card.selected {
+    border-color: var(--accent);
+    background: #290e1c;
+    box-shadow: 0 0 12px var(--accent-glow);
+  }
+  .preset-card h4 {
+    margin: 0 0 4px 0;
+    font-size: 14px;
+    color: #fff;
+  }
+  .preset-card p {
+    margin: 0;
+    font-size: 11px;
+    color: var(--text-sub);
   }
 
-  .sw-box {
+  /* МОДАЛЬНЫЕ ОКНА (СКАНЕР ЭКРАНА И ТЕСТ КАСАНИЙ) */
+  .modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(5, 2, 8, 0.94);
+    z-index: 999;
+    padding: 18px;
+    flex-direction: column;
+    justify-content: center;
+  }
+
+  .scan-frame {
+    width: 100%;
+    height: 300px;
+    border: 2px dashed var(--accent);
+    border-radius: 20px;
+    background: #130811;
     position: relative;
-    width: 48px;
-    height: 26px;
-    flex-shrink: 0;
+    overflow: hidden;
+    touch-action: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 20px;
   }
 
-  .sw-box input {
-    opacity: 0;
-    width: 0;
-    height: 0;
-  }
-
-  .sw-track {
+  canvas.touch-canvas {
     position: absolute;
     inset: 0;
-    background: #1e103a;
-    border: 1px solid rgba(168, 85, 247, 0.3);
-    border-radius: 999px;
-    transition: 0.2s;
-    cursor: pointer;
+    width: 100%;
+    height: 100%;
   }
 
-  .sw-track::before {
-    content: "";
-    position: absolute;
-    width: 20px;
-    height: 20px;
-    left: 3px;
-    bottom: 2px;
-    background: #ffffff;
-    border-radius: 50%;
-    transition: 0.2s;
-  }
-
-  .sw-box input:checked + .sw-track {
-    background: linear-gradient(90deg, #9333ea, #d946ef);
-    border-color: #f5d0fe;
-  }
-
-  .sw-box input:checked + .sw-track::before {
-    transform: translateX(21px);
-  }
-
-  #toastPopup {
-    position: fixed;
-    top: calc(env(safe-area-inset-top, 40px) + 12px);
-    left: 50%;
-    transform: translateX(-50%);
-    background: linear-gradient(90deg, #7c3aed, #c026d3);
-    border: 1px solid #f5d0fe;
-    color: #ffffff;
-    padding: 10px 18px;
-    border-radius: 999px;
+  .status-banner {
+    background: #1b0c16;
+    border-left: 4px solid var(--accent);
+    padding: 10px 12px;
+    border-radius: 8px;
     font-size: 12px;
-    font-weight: 900;
-    z-index: 2000000;
-    display: none;
-    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.6);
+    color: #ffd6e0;
+    margin-bottom: 14px;
   }
 </style>
 </head>
 <body>
 
-<div class="live-bg">
-  <div class="live-grid"></div>
-  <div class="neon-star s1"></div>
-  <div class="neon-star s2"></div>
-  <div class="neon-star s3"></div>
-  <div class="neon-star s4"></div>
-  <div class="neon-star s5"></div>
-  <div class="neon-star s6"></div>
-</div>
-
-<div id="toastPopup"></div>
-
-<!-- ==================== ОКНО ДОБРО ПОЖАЛОВАТЬ В SO2TELEPORT ==================== -->
-<div id="welcomeAuthOverlay">
-  <div class="welcome-box">
-    <div class="welcome-badge">OFFICIAL BUILD 403</div>
-    <div class="welcome-title">Добро пожаловать в SO2Teleport</div>
-    <div id="welcomeStatusText" class="welcome-sub">
-      Введите ваш логин и лицензионный ключ снизу для входа в панель управления
-    </div>
-    <input id="inpLoginNick" class="inp-field" type="text" placeholder="Введите ваш логин (никнейм)" autocomplete="off" />
-    <input id="inpLicenseKey" class="inp-field" type="text" placeholder="Введите лицензионный ключ" autocomplete="off" />
-    <button type="button" class="primary-btn" onclick="submitWelcomeAuth()">
-      ВОЙТИ И АКТИВИРОВАТЬ
-    </button>
-    <button type="button" class="secondary-btn" onclick="if(window.AndroidBridge) AndroidBridge.openExternalLink('https://t.me/');">
-      Получить ключ в Telegram-боте
-    </button>
-  </div>
-</div>
-
-<div class="container">
-  <!-- ВЕРХНЯЯ ПАНЕЛЬ -->
-  <div class="top-bar cascade-item d-1">
-    <div class="logo-block">
-      <div class="logo-name">SO2Teleport</div>
-      <div class="logo-tag">QUANTUM ENGINE V403</div>
-    </div>
-
-    <div id="shizukuTopBtn" class="shizuku-top-card" onclick="onShizukuTopClick()">
-      <span id="shizukuLed" class="shiz-led"></span>
-      <div>
-        <div id="shizukuTitle" class="shiz-title">Shizuku: ВЫКЛ</div>
-        <div id="shizukuSub" class="shiz-sub">Кликни на меня для активации</div>
-      </div>
-    </div>
+  <!-- ВЕРХНИЕ ВКЛАДКИ КАК В ПРИЛОЖЕНИИ ДРУГА -->
+  <div class="top-tabs">
+    <div id="tab-launch" class="tab-btn" onclick="switchTab('launch')">► ЗАПУСК</div>
+    <div id="tab-settings" class="tab-btn active" onclick="switchTab('settings')">⇄ НАСТРОЙКИ</div>
   </div>
 
-  <!-- ==================== ГЛАВНЫЙ ЭКРАН (БОЛЬШАЯ КНОПКА + 6 КАРТОЧЕК) ==================== -->
-  <div id="mainHubView">
-    <div class="power-center-wrap cascade-item d-2">
-      <div id="bigPowerCircle" class="big-power-circle off-state" onclick="onBigPowerClick()">
-        <div class="power-icon-svg">⚡</div>
-        <div id="bigPowerText" class="power-main-label">ВЫКЛЮЧЕН</div>
+  <!-- ================= ВКЛАДКА 1: ЗАПУСК И ДОП. ФУНКЦИИ ================= -->
+  <div id="view-launch" style="display: none;">
+    <div class="main-card">
+      <div class="sec-header">СТАТУС TELEPORT ENGINE</div>
+      <div id="engine-status" class="status-banner">
+        Статус: <b>Готов к запуску</b> (120 FPS Lock без просадок активен)
       </div>
-      <div id="bigPowerPill" class="power-status-pill off">
-        • СТАТУС: НЕ АКТИВЕН (НАЖМИ НА КРУГ ДЛЯ ЗАПУСКА)
+
+      <div class="sec-header">ГОТОВЫЕ НАБОРЫ ТЕЛЕПОРТА</div>
+      <div class="sec-desc">Выбери базу или настрой свои числа во вкладке «Настройки».</div>
+
+      <div class="preset-grid">
+        <div class="preset-card selected" id="pre-friend" onclick="applyPreset('friend')">
+          <h4>🔥 Как у друга (1:1)</h4>
+          <p>Куски: 10, Выпрямление: 0.80, Хват: 4, Отсечка: 3</p>
+        </div>
+        <div class="preset-card" id="pre-s25u" onclick="applyPreset('s25u')">
+          <h4>⚡ S25 Ultra Boost</h4>
+          <p>Под QHD+ 120Hz: Куски: 14, Выпрямление: 0.88, Хват: 6</p>
+        </div>
+        <div class="preset-card" id="pre-hard" onclick="applyPreset('hard')">
+          <h4>🚀 Жёсткий Телепорт</h4>
+          <p>Крупный шаг куска (22) + резкий срыв в голову</p>
+        </div>
+        <div class="preset-card" id="pre-awp" onclick="applyPreset('awp')">
+          <h4>🎯 AWP Снайпер</h4>
+          <p>Максимальная стоп-фиксация в конце флика</p>
+        </div>
+      </div>
+
+      <div class="btn-row">
+        <div class="pill-btn primary" onclick="startEngine()">🚀 ВКЛЮЧИТЬ ТЕЛЕПОРТ</div>
+        <div class="pill-btn" onclick="stopEngine()">⏹ ВЫКЛЮЧИТЬ</div>
       </div>
     </div>
 
-    <div class="cards-grid-6">
-      <div class="hub-card cascade-item d-2" onclick="openCardPage('page-sens')">
-        <div class="hub-card-top">
-          <div class="hub-icon">⚡</div>
-          <span class="hub-arrow">›</span>
-        </div>
-        <div>
-          <div class="hub-title">Сенса</div>
-          <div class="hub-desc">Чанки 100, анти-сглаживание, пресеты и ползунки</div>
-        </div>
+    <!-- РАСТЯГ ЭКРАНА 120 ГЦ И ПРИЦЕЛ ИЗ ТВОЕГО MAINACTIVITY -->
+    <div class="main-card">
+      <div class="sec-header">РАСТЯГ ЭКРАНА (БЕЗ ПЕРЕВОРОТА И ПРОСАДОК)</div>
+      <div class="sec-desc">Фиксирует 120 Гц и управляется плавающей кнопкой «T».</div>
+      <div class="btn-row">
+        <div class="pill-btn" onclick="setStretch('4:3')">4:3</div>
+        <div class="pill-btn" onclick="setStretch('5:4')">5:4</div>
+        <div class="pill-btn" onclick="setStretch('16:10')">16:10</div>
+        <div class="pill-btn" onclick="resetStretch()">Сброс</div>
+      </div>
+      <div class="btn-row">
+        <div class="pill-btn" onclick="toggleFloatT(true)">Вкл кнопку «T»</div>
+        <div class="pill-btn" onclick="toggleFloatT(false)">Убрать «T»</div>
       </div>
 
-      <div class="hub-card cascade-item d-3" onclick="openCardPage('page-profile')">
-        <div class="hub-card-top">
-          <div class="hub-icon">👤</div>
-          <span class="hub-arrow">›</span>
-        </div>
-        <div>
-          <div class="hub-title">Профиль</div>
-          <div class="hub-desc">Ваш логин, ключ, герцовка и данные телефона</div>
-        </div>
-      </div>
-
-      <div class="hub-card cascade-item d-4" onclick="openCardPage('page-configs')">
-        <div class="hub-card-top">
-          <div class="hub-icon">&lt;/&gt;</div>
-          <span class="hub-arrow">›</span>
-        </div>
-        <div>
-          <div class="hub-title">Готовые конфиги</div>
-          <div class="hub-desc">Активация по коду и киберспортивные сборки</div>
-        </div>
-      </div>
-
-      <div class="hub-card cascade-item d-5" onclick="openCardPage('page-stretch')">
-        <div class="hub-card-top">
-          <div class="hub-icon">📐</div>
-          <span class="hub-arrow">›</span>
-        </div>
-        <div>
-          <div class="hub-title">Растяг</div>
-          <div class="hub-desc">Запуск плавающей кнопки «T» для растяга в игре</div>
-        </div>
-      </div>
-
-      <div class="hub-card cascade-item d-6" onclick="openCardPage('page-crosshair')">
-        <div class="hub-card-top">
-          <div class="hub-icon">🎯</div>
-          <span class="hub-arrow">›</span>
-        </div>
-        <div>
-          <div class="hub-title">Кастомный прицел</div>
-          <div class="hub-desc">Точка, крест, круг, размер и выбор цвета</div>
-        </div>
-      </div>
-
-      <div class="hub-card cascade-item d-7" onclick="openCardPage('page-settings')">
-        <div class="hub-card-top">
-          <div class="hub-icon">⚙</div>
-          <span class="hub-arrow">›</span>
-        </div>
-        <div>
-          <div class="hub-title">Настройки</div>
-          <div class="hub-desc">120 Гц, анти-троттлинг, оптимизация пикселей</div>
-        </div>
+      <div class="sec-header" style="margin-top: 20px;">КАСТОМНЫЙ ПРИЦЕЛ</div>
+      <div class="btn-row">
+        <div class="pill-btn" onclick="setCross('dot')">Точка</div>
+        <div class="pill-btn" onclick="setCross('cross')">Крест</div>
+        <div class="pill-btn" onclick="setCross('tshape')">T-Форма</div>
+        <div class="pill-btn" onclick="setCross('off')">Выкл</div>
       </div>
     </div>
   </div>
 
-  <!-- ========================================================================= -->
-  <!-- КАРТОЧКА 1: СЕНСА (ЧАНКИ 100)                                             -->
-  <!-- ========================================================================= -->
-  <div id="page-sens" class="subpage">
-    <div class="back-bar cascade-item d-1" onclick="backToHub()">
-      <span class="back-btn-ico">←</span>
-      <span class="back-title">Сенса и Квантовый Телепорт</span>
+  <!-- ================= ВКЛАДКА 2: НАСТРОЙКИ (1 В 1 КАК НА ВИДЕО + ЗАПАС) ================= -->
+  <div id="view-settings">
+    <div class="main-card">
+      <div class="sec-header">СВОИ ЧИСЛА</div>
+      <div class="sec-desc">Эти значения твои. Ползунки сделаны с большим запасом для регулировки.</div>
+
+      <!-- БЛОК 1: ОСТРОТА -->
+      <div class="sec-header">ОСТРОТА</div>
+      <div class="sec-desc">Насколько резко реагирует прицел.</div>
+
+      <div class="param-block">
+        <div class="param-top">
+          <span class="param-title">Резкость</span>
+          <span class="param-badge" id="lbl-sharp">1.00</span>
+        </div>
+        <input type="range" id="sl-sharp" min="0.50" max="5.00" step="0.05" value="1.00" oninput="syncUI()" onchange="pushLiveParams()">
+        <div class="param-hint">Больше — чувствительнее, но дрожит прицел</div>
+      </div>
+
+      <div class="param-block">
+        <div class="param-top">
+          <span class="param-title">Влево-вправо</span>
+          <span class="param-badge" id="lbl-sx">1.00</span>
+        </div>
+        <input type="range" id="sl-sx" min="0.50" max="5.00" step="0.05" value="1.00" oninput="syncUI()" onchange="pushLiveParams()">
+        <div class="param-hint">Только горизонталь — прицел по врагам в стороне</div>
+      </div>
+
+      <div class="param-block">
+        <div class="param-top">
+          <span class="param-title">Вверх-вниз</span>
+          <span class="param-badge" id="lbl-sy">1.00</span>
+        </div>
+        <input type="range" id="sl-sy" min="0.50" max="5.00" step="0.05" value="1.00" oninput="syncUI()" onchange="pushLiveParams()">
+        <div class="param-hint">Только вертикаль — прицел по земле и вверх</div>
+      </div>
+
+      <!-- БЛОК 2: ТОЧНОСТЬ -->
+      <div class="sec-header">ТОЧНОСТЬ</div>
+      <div class="sec-desc">Убирает дрожание, задержку и мёртвую зону.</div>
+
+      <div class="param-block">
+        <div class="param-top">
+          <span class="param-title">Отсечка шума</span>
+          <span class="param-badge" id="lbl-noise">3</span>
+        </div>
+        <input type="range" id="sl-noise" min="0" max="25" step="1" value="3" oninput="syncUI()" onchange="pushLiveParams()">
+        <div class="param-hint">Игнорирует микродвижения пальца — меньше дребезга</div>
+      </div>
+
+      <div class="param-block">
+        <div class="param-top">
+          <span class="param-title">Мёртвая зона</span>
+          <span class="param-badge" id="lbl-dead">1</span>
+        </div>
+        <input type="range" id="sl-dead" min="0" max="20" step="1" value="1" oninput="syncUI()" onchange="pushLiveParams()">
+        <div class="param-hint">Маленькие движения не двигают прицел вообще</div>
+      </div>
+
+      <div class="param-block">
+        <div class="param-top">
+          <span class="param-title">Упреждение</span>
+          <span class="param-badge" id="lbl-lead">0</span>
+        </div>
+        <input type="range" id="sl-lead" min="0" max="20" step="1" value="0" oninput="syncUI()" onchange="pushLiveParams()">
+        <div class="param-hint">Прицел ведёт цель — попадать легче</div>
+      </div>
+
+      <!-- БЛОК 3: ПРИЛИПАНИЕ -->
+      <div class="sec-header">ПРИЛИПАНИЕ</div>
+      <div class="sec-desc">Прицел держится на линиях и углах.</div>
+
+      <div class="param-block">
+        <div class="param-top">
+          <span class="param-title">Прилипание к осям</span>
+          <span class="param-badge" id="lbl-axis">4</span>
+        </div>
+        <input type="range" id="sl-axis" min="0" max="25" step="1" value="4" oninput="syncUI()" onchange="pushLiveParams()">
+        <div class="param-hint">Притягивает прицел к горизонтали и вертикали</div>
+      </div>
+
+      <div class="param-block">
+        <div class="param-top">
+          <span class="param-title">Через сколько липнуть</span>
+          <span class="param-badge" id="lbl-stick-delay">29</span>
+        </div>
+        <input type="range" id="sl-stick-delay" min="0" max="100" step="1" value="29" oninput="syncUI()" onchange="pushLiveParams()">
+        <div class="param-hint">Сколько держать палец спокойно, чтобы включилось</div>
+      </div>
+
+      <div class="btn-row">
+        <div class="pill-btn" id="btn-toggle-extra" onclick="toggleExtraSection()">Спрятать</div>
+        <div class="pill-btn" onclick="applyPreset('friend')">Вернуть набор</div>
+      </div>
+
+      <!-- БЛОК 4: ДОПОЛНИТЕЛЬНО -->
+      <div id="extra-section" style="margin-top: 18px;">
+        <div class="sec-header">ДОПОЛНИТЕЛЬНО</div>
+        <div class="sec-desc">Для тех, кто знает, зачем это.</div>
+
+        <div class="param-block">
+          <div class="param-top">
+            <span class="param-title">Сила прилипания</span>
+            <span class="param-badge" id="lbl-stick-force">1</span>
+          </div>
+          <input type="range" id="sl-stick-force" min="0" max="20" step="1" value="1" oninput="syncUI()" onchange="pushLiveParams()">
+        </div>
+
+        <div class="param-block">
+          <div class="param-top">
+            <span class="param-title">Куски</span>
+            <span class="param-badge" id="lbl-chunks">10</span>
+          </div>
+          <input type="range" id="sl-chunks" min="1" max="100" step="1" value="10" oninput="syncUI()" onchange="pushLiveParams()">
+        </div>
+
+        <div class="param-block">
+          <div class="param-top">
+            <span class="param-title">Мелочь мимо кусков</span>
+            <span class="param-badge" id="lbl-bypass">0</span>
+          </div>
+          <input type="range" id="sl-bypass" min="0" max="30" step="1" value="0" oninput="syncUI()" onchange="pushLiveParams()">
+        </div>
+
+        <div class="param-block">
+          <div class="param-top">
+            <span class="param-title">Потолок куска</span>
+            <span class="param-badge" id="lbl-chunk-cap">0</span>
+          </div>
+          <input type="range" id="sl-chunk-cap" min="0" max="50" step="1" value="0" oninput="syncUI()" onchange="pushLiveParams()">
+        </div>
+
+        <div class="param-block">
+          <div class="param-top">
+            <span class="param-title">Куски только быстрее</span>
+            <span class="param-badge" id="lbl-chunk-fast">0</span>
+          </div>
+          <input type="range" id="sl-chunk-fast" min="0" max="30" step="1" value="0" oninput="syncUI()" onchange="pushLiveParams()">
+        </div>
+
+        <div class="param-block">
+          <div class="param-top">
+            <span class="param-title">Пауза после выстрела</span>
+            <span class="param-badge" id="lbl-pause">0</span>
+          </div>
+          <input type="range" id="sl-pause" min="0" max="30" step="1" value="0" oninput="syncUI()" onchange="pushLiveParams()">
+        </div>
+
+        <div class="param-block">
+          <div class="param-top">
+            <span class="param-title">Разгон</span>
+            <span class="param-badge" id="lbl-accel">0.00</span>
+          </div>
+          <input type="range" id="sl-accel" min="0.00" max="2.00" step="0.05" value="0.00" oninput="syncUI()" onchange="pushLiveParams()">
+        </div>
+
+        <div class="param-block">
+          <div class="param-top">
+            <span class="param-title">Крутизна разгона</span>
+            <span class="param-badge" id="lbl-slope">0.30</span>
+          </div>
+          <input type="range" id="sl-slope" min="0.00" max="2.00" step="0.05" value="0.30" oninput="syncUI()" onchange="pushLiveParams()">
+        </div>
+
+        <div class="param-block">
+          <div class="param-top">
+            <span class="param-title">Дальность краёв</span>
+            <span class="param-badge" id="lbl-edge">0</span>
+          </div>
+          <input type="range" id="sl-edge" min="0" max="30" step="1" value="0" oninput="syncUI()" onchange="pushLiveParams()">
+        </div>
+
+        <div class="param-block">
+          <div class="param-top">
+            <span class="param-title">Выпрямление</span>
+            <span class="param-badge" id="lbl-straight">0.80</span>
+          </div>
+          <input type="range" id="sl-straight" min="0.00" max="1.00" step="0.02" value="0.80" oninput="syncUI()" onchange="pushLiveParams()">
+        </div>
+
+        <div class="param-block">
+          <div class="param-top">
+            <span class="param-title">Хват по осям</span>
+            <span class="param-badge" id="lbl-grip">4</span>
+          </div>
+          <input type="range" id="sl-grip" min="0" max="20" step="1" value="4" oninput="syncUI()" onchange="pushLiveParams()">
+        </div>
+
+        <div class="param-block">
+          <div class="param-top">
+            <span class="param-title">Потолок хвата</span>
+            <span class="param-badge" id="lbl-grip-cap">4</span>
+          </div>
+          <input type="range" id="sl-grip-cap" min="0" max="20" step="1" value="4" oninput="syncUI()" onchange="pushLiveParams()">
+          <div class="param-hint" style="margin-top: 8px;">Разгон спит, пока движение ровное — крутить его обычно не надо.</div>
+        </div>
+      </div>
+
+      <div class="btn-row">
+        <div class="pill-btn" onclick="openHelpModal()">Как настроить</div>
+      </div>
     </div>
 
-    <div class="section-box cascade-item d-2">
-      <div class="sec-label">
-        <span>1. ГОТОВЫЕ БОЕВЫЕ РЕЖИМЫ СЕНСЫ</span>
-        <span>ULTRA CHUNKS 100</span>
+    <!-- НИЖНИЕ КНОПКИ КАЛИБРОВКИ И ТЕСТА КАСАНИЙ КАК НА ВИДЕО -->
+    <div class="action-box">
+      <div class="pill-btn" style="padding: 15px;" onclick="openScanModal()">
+        👆 Определить экран заново
+      </div>
+      <div class="action-caption">
+        Откроется рамка: проведи по ней пальцем, и телефон поймёт, какой у него экран.
       </div>
 
-      <div id="pr-max_teleport" class="preset-card selected" onclick="selectSensPresetCard('max_teleport')">
-        <div>
-          <div class="pr-name">МАКС ТЕЛЕПОРТ (Куски 100 + Без сглаживания)</div>
-          <div class="pr-sub">Полный обход сглаживания Android: прицел перескакивает крупными кусками за 1 кадр</div>
-        </div>
-        <span class="pr-badge">АКТИВЕН</span>
+      <div class="action-caption" style="margin-top: 14px;">
+        Если сенса не идёт — нажми сюда и тыкай экран.
       </div>
-
-      <div id="pr-sharp" class="preset-card" onclick="selectSensPresetCard('sharp')">
-        <div>
-          <div class="pr-name">МАКС РЕЗКАЯ (Чистый флик 90°)</div>
-          <div class="pr-sub">Молниеносный сухой разворот (Куски 95) без залипания и инерции</div>
-        </div>
-        <span class="pr-badge">ВЫБРАТЬ</span>
-      </div>
-
-      <div id="pr-awp" class="preset-card" onclick="selectSensPresetCard('awp')">
-        <div>
-          <div class="pr-name">ДЛЯ АВИКОВ (AWM Стоп-Флик)</div>
-          <div class="pr-sub">Резкий рывок (Куски 85) с мгновенной остановкой камеры в точке выстрела</div>
-        </div>
-        <span class="pr-badge">ВЫБРАТЬ</span>
-      </div>
-
-      <div id="pr-sticky" class="preset-card" onclick="selectSensPresetCard('sticky')">
-        <div>
-          <div class="pr-name">ТЕЛЕПОРТ + ЖЁСТКИЙ ЗАЦЕП</div>
-          <div class="pr-sub">Квантовый перескок (Куски 90) и плотная фиксация на линии головы</div>
-        </div>
-        <span class="pr-badge">ВЫБРАТЬ</span>
-      </div>
-    </div>
-
-    <div class="section-box cascade-item d-3">
-      <div class="sec-label">
-        <span>2. РУЧНАЯ НАСТРОЙКА ПОЛЗУНКОВ</span>
-        <span>СВОИ ЧИСЛА</span>
-      </div>
-
-      <div class="slider-item">
-        <div class="sl-head"><span class="sl-title">Резкость срыва (Sharpness)</span><span id="lbl_sharpness" class="sl-value">5.00</span></div>
-        <div class="sl-explain">Отвечает за то, насколько агрессивно и быстро прицел срывается с места от малейшего касания.</div>
-        <input id="rng_sharpness" type="range" min="1.00" max="5.00" step="0.05" value="5.00" oninput="onManualSlidersChange()" />
-      </div>
-
-      <div class="slider-item">
-        <div class="sl-head"><span class="sl-title">Квантовые куски (Chunks)</span><span id="lbl_chunks" class="sl-value">100</span></div>
-        <div class="sl-explain">Усиленный параметр телепорта (до 100): отключает сглаживание Android и режет путь пальца на мгновенные скачки.</div>
-        <input id="rng_chunks" type="range" min="10" max="100" step="1" value="100" oninput="onManualSlidersChange()" />
-      </div>
-
-      <div class="slider-item">
-        <div class="sl-head"><span class="sl-title">Частота строба (Strobe Speed)</span><span id="lbl_strobeSpeed" class="sl-value">10</span></div>
-        <div class="sl-explain">Скорость сброса буфера тачскрина. На 10 куски выстреливают в кадр игры с максимальной частотой.</div>
-        <input id="rng_strobeSpeed" type="range" min="1" max="10" step="1" value="10" oninput="onManualSlidersChange()" />
-      </div>
-
-      <div class="slider-item">
-        <div class="sl-head"><span class="sl-title">Горизонталь Влево-Вправо (Sens X)</span><span id="lbl_sensX" class="sl-value">5.00</span></div>
-        <div class="sl-explain">Скорость горизонтальных разворотов и наводки по соперникам на уровне головы.</div>
-        <input id="rng_sensX" type="range" min="1.00" max="5.00" step="0.05" value="5.00" oninput="onManualSlidersChange()" />
-      </div>
-
-      <div class="slider-item">
-        <div class="sl-head"><span class="sl-title">Вертикаль Вверх-Вниз (Sens Y)</span><span id="lbl_sensY" class="sl-value">4.80</span></div>
-        <div class="sl-explain">Отвечает за вертикальный контроль отдачи при зажиме с автоматов.</div>
-        <input id="rng_sensY" type="range" min="1.00" max="5.00" step="0.05" value="4.80" oninput="onManualSlidersChange()" />
-      </div>
-
-      <div class="slider-item">
-        <div class="sl-head"><span class="sl-title">Выпрямление линии (Straightening)</span><span id="lbl_straightening" class="sl-value">0.99</span></div>
-        <div class="sl-explain">Убирает вертикальную дрожь пальца, чтобы прицел шёл строго по прямой горизонтальной линии.</div>
-        <input id="rng_straightening" type="range" min="0.00" max="1.00" step="0.01" value="0.99" oninput="onManualSlidersChange()" />
-      </div>
-
-      <div class="slider-item">
-        <div class="sl-head"><span class="sl-title">Сила прилипания (Stick Strength)</span><span id="lbl_stickStrength" class="sl-value">6</span></div>
-        <div class="sl-explain">Притормаживает прицел в конце флика, помогая зафиксировать точку на модели противника.</div>
-        <input id="rng_stickStrength" type="range" min="0" max="10" step="1" value="6" oninput="onManualSlidersChange()" />
-      </div>
-
-      <div class="slider-item">
-        <div class="sl-head"><span class="sl-title">Пауза выстрела (Shot Pause)</span><span id="lbl_shotPause" class="sl-value">0</span></div>
-        <div class="sl-explain">Замораживает микро-сдвиги камеры в момент нажатия кнопки стрельбы (идеально для снайперок).</div>
-        <input id="rng_shotPause" type="range" min="0" max="20" step="1" value="0" oninput="onManualSlidersChange()" />
-      </div>
-
-      <div class="slider-item">
-        <div class="sl-head"><span class="sl-title">Мёртвая зона (Dead Zone)</span><span id="lbl_deadZone" class="sl-value">0</span></div>
-        <div class="sl-explain">Игнорирует мелкий тремор пальца, когда ты просто держишь прицел в одной точке (0 = мгновенный отклик).</div>
-        <input id="rng_deadZone" type="range" min="0" max="10" step="1" value="0" oninput="onManualSlidersChange()" />
-      </div>
-
-      <div class="slider-item">
-        <div class="sl-head"><span class="sl-title">Ускорение (Acceleration)</span><span id="lbl_accel" class="sl-value">0.00</span></div>
-        <div class="sl-explain">Рекомендуется 0.00, чтобы длина прыжка прицела всегда была стабильной и предсказуемой для мышечной памяти.</div>
-        <input id="rng_accel" type="range" min="0.00" max="1.50" step="0.05" value="0.00" oninput="onManualSlidersChange()" />
+      <div class="pill-btn" style="padding: 15px;" onclick="openTouchTestModal()">
+        👉 Проверить касания
       </div>
     </div>
   </div>
 
-  <!-- ========================================================================= -->
-  <!-- КАРТОЧКА 2: ПРОФИЛЬ                                                       -->
-  <!-- ========================================================================= -->
-  <div id="page-profile" class="subpage">
-    <div class="back-bar cascade-item d-1" onclick="backToHub()">
-      <span class="back-btn-ico">←</span>
-      <span class="back-title">Профиль пользователя</span>
-    </div>
-
-    <div class="section-box cascade-item d-2">
-      <div class="sec-label"><span>ДАННЫЕ АККАУНТА SO2TELEPORT</span><span>PRO</span></div>
-      <div style="font-size:13.5px;line-height:2.0;color:#f3e8ff;margin-bottom:14px;">
-        <div>Ваш логин: <b id="profNick" style="color:#e879f9;">Игрок</b></div>
-        <div>Статус подписки: <b style="color:var(--green);">АКТИВНА</b></div>
-        <div>Модель устройства: <b id="profModel">Android</b></div>
-        <div>Экран и частота: <b id="profRes">1080x2400</b> (<b id="profHz" style="color:#c084fc;">120</b> Гц)</div>
-        <div>HWID устройства: <span id="profHwid" style="font-size:11.5px;color:var(--txt-soft);">...</span></div>
+  <!-- МОДАЛКА 1: ОПРЕДЕЛИТЬ ЭКРАН ЗАНОВО (РАМКА АВТО-КАЛИБРОВКИ) -->
+  <div id="modal-scan" class="modal-overlay">
+    <div class="main-card">
+      <div class="sec-header">ОПРЕДЕЛЕНИЕ ЭКРАНА</div>
+      <div class="sec-desc" id="scan-instruction">
+        Проведи пальцем влево-вправо по рамке ниже (как будто фликаешь в игре). Мы замерим частоту тача, плотность пикселей и выставим идеальный телепорт.
       </div>
-      <button type="button" class="secondary-btn" style="border-color:rgba(244,63,94,0.5);color:#fda4af;" onclick="logoutCurrentKey()">
-        Сменить логин или лицензионный ключ
-      </button>
-    </div>
-  </div>
-
-  <!-- ========================================================================= -->
-  <!-- КАРТОЧКА 3: ГОТОВЫЕ КОНФИГИ                                               -->
-  <!-- ========================================================================= -->
-  <div id="page-configs" class="subpage">
-    <div class="back-bar cascade-item d-1" onclick="backToHub()">
-      <span class="back-btn-ico">←</span>
-      <span class="back-title">Готовые конфиги</span>
-    </div>
-
-    <div class="section-box cascade-item d-2">
-      <div class="sec-label"><span>АКТИВАЦИЯ КОНФИГА ПО КОДУ</span><span>CLOUD</span></div>
-      <div class="sl-explain">Введите код конфига, чтобы мгновенно применить настройки сенсы:</div>
-      <input id="inpConfigCode" class="inp-field" type="text" placeholder="Например: SO2-A9F4" />
-      <button type="button" class="primary-btn" onclick="applyCloudCodeConfig()">ПРИМЕНИТЬ КОНФИГ</button>
-    </div>
-
-    <div class="section-box cascade-item d-3">
-      <div class="sec-label"><span>ФИРМЕННЫЕ СБОРКИ SO2TELEPORT</span><span>ТОП</span></div>
-
-      <div class="preset-card" onclick="selectSensPresetCard('max_teleport'); backToHub();">
-        <div>
-          <div class="pr-name">SO2Teleport ULTRA CHUNKS 100</div>
-          <div class="pr-sub">Максимальный телепорт кусками 100 • Обход сглаживания • Ускорение 0.00</div>
+      <div class="scan-frame" id="scan-box">
+        <canvas id="scan-canvas" class="touch-canvas"></canvas>
+        <div id="scan-progress" style="z-index:2; pointer-events:none; font-weight:bold; color:#ff4778;">
+          Проведи пальцем по этой рамке (0%)
         </div>
-        <span class="pr-badge">ПРИМЕНИТЬ</span>
       </div>
-
-      <div class="preset-card" onclick="selectSensPresetCard('awp'); backToHub();">
-        <div>
-          <div class="pr-name">SO2Teleport SNIPER LOCK</div>
-          <div class="pr-sub">Идеальная сборка под AWM и M40 с жестким стоп-фликом (Куски 85)</div>
-        </div>
-        <span class="pr-badge">ПРИМЕНИТЬ</span>
-      </div>
-
-      <div class="preset-card" onclick="selectSensPresetCard('sticky'); backToHub();">
-        <div>
-          <div class="pr-name">SO2Teleport HEAD MAGNET</div>
-          <div class="pr-sub">Резкий телепорт (Куски 90) + повышенное осевое прилипание на голове</div>
-        </div>
-        <span class="pr-badge">ПРИМЕНИТЬ</span>
-      </div>
-    </div>
-
-    <div class="section-box cascade-item d-4">
-      <div class="sec-label"><span>СОЗДАТЬ КОД СВОЕГО КОНФИГА</span><span>SHARE</span></div>
-      <input id="inpMyConfigTitle" class="inp-field" type="text" placeholder="Название вашей сборки" />
-      <button type="button" class="secondary-btn" onclick="createShareCode()">Сохранить и получить код</button>
-      <div id="shareCodeResult" style="font-size:13px;font-weight:900;color:var(--green);text-align:center;margin-top:8px;"></div>
-    </div>
-  </div>
-
-  <!-- ========================================================================= -->
-  <!-- КАРТОЧКА 4: РАСТЯГ ЭКРАНА (ЗАПУСКАЕТ КНОПКУ T, А РАСТЯГ ВКЛЮЧАЕТСЯ В ИГРЕ) -->
-  <!-- ========================================================================= -->
-  <div id="page-stretch" class="subpage">
-    <div class="back-bar cascade-item d-1" onclick="backToHub()">
-      <span class="back-btn-ico">←</span>
-      <span class="back-title">Растяг экрана</span>
-    </div>
-
-    <div class="section-box cascade-item d-2">
-      <div class="sec-label">
-        <span>ВЫБОР ПРОПОРЦИЙ ДЛЯ ПЛАВАЮЩЕЙ КНОПКИ «T»</span>
-        <span id="stretchCurrentBadge">4:3</span>
-      </div>
-
-      <canvas id="stretchPreviewCanvas" class="preview-box" width="340" height="110"></canvas>
-      <div class="sl-explain">
-        1. Выберите нужную пропорцию (например, 4:3) и нажмите кнопку ниже — на экране появится плавающая кнопка «T».<br>
-        2. Зайдите в Standoff 2 и нажмите на «T» — экран растянется прямо в игре без переворота!
-      </div>
-
-      <div class="opts-row">
-        <div id="st-5:4" class="opt-btn" onclick="selectStretchOption('5:4')">5:4</div>
-        <div id="st-4:3" class="opt-btn active" onclick="selectStretchOption('4:3')">4:3</div>
-        <div id="st-3:2" class="opt-btn" onclick="selectStretchOption('3:2')">3:2</div>
-        <div id="st-16:10" class="opt-btn" onclick="selectStretchOption('16:10')">16:10</div>
-        <div id="st-16:9" class="opt-btn" onclick="selectStretchOption('16:9')">16:9</div>
-      </div>
-
-      <button type="button" id="btnApplyStretch" class="primary-btn" onclick="applyStretchNow()">
-        ВКЛЮЧИТЬ ПЛАВАЮЩУЮ КНОПКУ «T» (4:3)
-      </button>
-      <button type="button" class="secondary-btn" onclick="resetStretchNow()">
-        СБРОСИТЬ ЭКРАН И УБРАТЬ КНОПКУ «T»
-      </button>
-    </div>
-  </div>
-
-  <!-- ========================================================================= -->
-  <!-- КАРТОЧКА 5: КАСТОМНЫЙ ПРИЦЕЛ                                              -->
-  <!-- ========================================================================= -->
-  <div id="page-crosshair" class="subpage">
-    <div class="back-bar cascade-item d-1" onclick="backToHub()">
-      <span class="back-btn-ico">←</span>
-      <span class="back-title">Кастомный прицел</span>
-    </div>
-
-    <div class="section-box cascade-item d-2">
-      <div class="sec-label">
-        <span>ПРЕДПРОСМОТР И ФОРМА ПРИЦЕЛА</span>
-        <span id="crossStateBadge">ВЫКЛ</span>
-      </div>
-
-      <canvas id="crossPreviewCanvas" class="preview-box" width="340" height="110"></canvas>
-
-      <div class="opts-row">
-        <div id="cr-off" class="opt-btn active" onclick="selectCrossShape('off')">ВЫКЛ</div>
-        <div id="cr-dot" class="opt-btn" onclick="selectCrossShape('dot')">ТОЧКА</div>
-        <div id="cr-cross" class="opt-btn" onclick="selectCrossShape('cross')">КРЕСТ</div>
-        <div id="cr-tshape" class="opt-btn" onclick="selectCrossShape('tshape')">Т-ФОРМА</div>
-        <div id="cr-circle" class="opt-btn" onclick="selectCrossShape('circle')">КРУГ</div>
-      </div>
-
-      <div class="sec-label" style="margin-top:12px;"><span>ЦВЕТ ПРИЦЕЛА</span></div>
-      <div class="opts-row-4">
-        <div class="opt-btn" style="color:#d946ef;border-color:#d946ef;" onclick="selectCrossColor('#D946EF')">ФИОЛЕТ</div>
-        <div class="opt-btn" style="color:#00f0ff;border-color:#00f0ff;" onclick="selectCrossColor('#00F0FF')">ГОЛУБОЙ</div>
-        <div class="opt-btn" style="color:#10b981;border-color:#10b981;" onclick="selectCrossColor('#10B981')">ЗЕЛЁНЫЙ</div>
-        <div class="opt-btn" style="color:#f43f5e;border-color:#f43f5e;" onclick="selectCrossColor('#F43F5E')">КРАСНЫЙ</div>
-      </div>
-
-      <div class="slider-item" style="margin-top:12px;">
-        <div class="sl-head"><span class="sl-title">Размер прицела</span><span id="lblCrossSize" class="sl-value">50%</span></div>
-        <input id="rngCrossSize" type="range" min="15" max="100" value="50" oninput="onCrossParamsChange()" />
-      </div>
-
-      <div class="slider-item">
-        <div class="sl-head"><span class="sl-title">Прозрачность</span><span id="lblCrossAlpha" class="sl-value">100%</span></div>
-        <input id="rngCrossAlpha" type="range" min="20" max="100" value="100" oninput="onCrossParamsChange()" />
+      <div class="btn-row" style="margin-top:16px;">
+        <div class="pill-btn" onclick="closeModals()">Закрыть</div>
       </div>
     </div>
   </div>
 
-  <!-- ========================================================================= -->
-  <!-- КАРТОЧКА 6: НАСТРОЙКИ И ОПТИМИЗАЦИЯ                                       -->
-  <!-- ========================================================================= -->
-  <div id="page-settings" class="subpage">
-    <div class="back-bar cascade-item d-1" onclick="backToHub()">
-      <span class="back-btn-ico">←</span>
-      <span class="back-title">Настройки системы</span>
-    </div>
-
-    <div class="section-box cascade-item d-2">
-      <div class="sec-label"><span>СИСТЕМНЫЙ БУСТЕР И ЗАЩИТА</span><span>SHIZUKU</span></div>
-
-      <div class="toggle-row">
-        <div>
-          <div class="sl-title">Фиксация 120 Гц и защита от троттлинга</div>
-          <div class="sl-explain" style="margin-bottom:0;">Удерживает максимальную герцовку экрана и отключает сброс частот процессора</div>
-        </div>
-        <label class="sw-box">
-          <input id="swHzBoost" type="checkbox" checked onchange="if(window.AndroidBridge) showToast(AndroidBridge.setHzThermalGuard(this.checked));">
-          <span class="sw-track"></span>
-        </label>
+  <!-- МОДАЛКА 2: ПРОВЕРИТЬ КАСАНИЯ (ВИЗУАЛИЗАТОР ТЕЛЕПОРТА КУСКАМИ) -->
+  <div id="modal-test" class="modal-overlay">
+    <div class="main-card">
+      <div class="sec-header">ПРОВЕРКА КАСАНИЙ И КУСКОВ</div>
+      <div class="sec-desc">
+        Води пальцем: серая точка — обычный сырой палец, <b style="color:#00f0ff;">голубой прицел</b> — как твой прицел прыгает кусками и держит линию головы.
       </div>
-
-      <div class="toggle-row">
-        <div>
-          <div class="sl-title">Квантовая компенсация отдачи (Anti-Recoil)</div>
-          <div class="sl-explain" style="margin-bottom:0;">Помогает удерживать зажим в одной точке по вертикали</div>
-        </div>
-        <label class="sw-box">
-          <input id="swRecoilComp" type="checkbox" onchange="if(window.AndroidBridge) showToast(AndroidBridge.setAntiRecoil(this.checked, 75));">
-          <span class="sw-track"></span>
-        </label>
+      <div class="scan-frame" id="test-box">
+        <canvas id="test-canvas" class="touch-canvas"></canvas>
       </div>
-
-      <div class="toggle-row">
-        <div>
-          <div class="sl-title">Скрывать прицел и кнопку на записи (Stealth)</div>
-          <div class="sl-explain" style="margin-bottom:0;">Делает оверлеи невидимыми на скриншотах и видеозаписи экрана</div>
-        </div>
-        <label class="sw-box">
-          <input id="swStealthMode" type="checkbox" onchange="if(window.AndroidBridge) showToast(AndroidBridge.setHideOverlaysOnScreenshot(this.checked));">
-          <span class="sw-track"></span>
-        </label>
-      </div>
-    </div>
-
-    <div class="section-box cascade-item d-3">
-      <div class="sec-label">
-        <span>ОПТИМИЗАЦИЯ ПИКСЕЛЕЙ (ДАУНСКЕЙЛ)</span>
-        <span id="lblPixelScale">100%</span>
-      </div>
-      <div class="sl-explain">
-        На мощных устройствах оставляйте 100%. При просадках FPS в замесах выберите 90% или 80% для повышения плавности:
-      </div>
-      <div class="opts-row">
-        <div id="px-100" class="opt-btn active" onclick="selectPixels(100)">100%</div>
-        <div id="px-90" class="opt-btn" onclick="selectPixels(90)">90%</div>
-        <div id="px-80" class="opt-btn" onclick="selectPixels(80)">80%</div>
-        <div id="px-70" class="opt-btn" onclick="selectPixels(70)">70%</div>
-        <div id="px-60" class="opt-btn" onclick="selectPixels(60)">60%</div>
+      <div class="btn-row" style="margin-top:16px;">
+        <div class="pill-btn primary" onclick="healTouchAndClose()">Исправить тач и применить</div>
+        <div class="pill-btn" onclick="closeModals()">Закрыть</div>
       </div>
     </div>
   </div>
-</div>
 
 <script>
-  let isTeleportOn = false;
-  let currentRatio = "4:3";
-  let currentCrossShape = "off";
-  let currentCrossColor = "#D946EF";
-  let sliderDebounceTimer = null;
-  let activeSubpageId = null;
+  // Текущие значения всех 18 параметров
+  function getVals() {
+    return {
+      sharp: parseFloat(document.getElementById('sl-sharp').value),
+      sx: parseFloat(document.getElementById('sl-sx').value),
+      sy: parseFloat(document.getElementById('sl-sy').value),
+      noise: parseInt(document.getElementById('sl-noise').value),
+      dead: parseInt(document.getElementById('sl-dead').value),
+      lead: parseInt(document.getElementById('sl-lead').value),
+      axis: parseInt(document.getElementById('sl-axis').value),
+      stickDelay: parseInt(document.getElementById('sl-stick-delay').value),
+      stickForce: parseInt(document.getElementById('sl-stick-force').value),
+      chunks: parseInt(document.getElementById('sl-chunks').value),
+      bypass: parseInt(document.getElementById('sl-bypass').value),
+      chunkCap: parseInt(document.getElementById('sl-chunk-cap').value),
+      chunkFast: parseInt(document.getElementById('sl-chunk-fast').value),
+      pause: parseInt(document.getElementById('sl-pause').value),
+      accel: parseFloat(document.getElementById('sl-accel').value),
+      slope: parseFloat(document.getElementById('sl-slope').value),
+      edge: parseInt(document.getElementById('sl-edge').value),
+      straight: parseFloat(document.getElementById('sl-straight').value),
+      grip: parseInt(document.getElementById('sl-grip').value),
+      gripCap: parseInt(document.getElementById('sl-grip-cap').value)
+    };
+  }
 
-  window.handleSystemBack = function() {
-    if (activeSubpageId !== null) {
-      backToHub();
-      return true;
+  function syncUI() {
+    const v = getVals();
+    document.getElementById('lbl-sharp').innerText = v.sharp.toFixed(2);
+    document.getElementById('lbl-sx').innerText = v.sx.toFixed(2);
+    document.getElementById('lbl-sy').innerText = v.sy.toFixed(2);
+    document.getElementById('lbl-noise').innerText = v.noise;
+    document.getElementById('lbl-dead').innerText = v.dead;
+    document.getElementById('lbl-lead').innerText = v.lead;
+    document.getElementById('lbl-axis').innerText = v.axis;
+    document.getElementById('lbl-stick-delay').innerText = v.stickDelay;
+    document.getElementById('lbl-stick-force').innerText = v.stickForce;
+    document.getElementById('lbl-chunks').innerText = v.chunks;
+    document.getElementById('lbl-bypass').innerText = v.bypass;
+    document.getElementById('lbl-chunk-cap').innerText = v.chunkCap;
+    document.getElementById('lbl-chunk-fast').innerText = v.chunkFast;
+    document.getElementById('lbl-pause').innerText = v.pause;
+    document.getElementById('lbl-accel').innerText = v.accel.toFixed(2);
+    document.getElementById('lbl-slope').innerText = v.slope.toFixed(2);
+    document.getElementById('lbl-edge').innerText = v.edge;
+    document.getElementById('lbl-straight').innerText = v.straight.toFixed(2);
+    document.getElementById('lbl-grip').innerText = v.grip;
+    document.getElementById('lbl-grip-cap').innerText = v.gripCap;
+  }
+
+  function setSliderValues(cfg) {
+    for (const k in cfg) {
+      const el = document.getElementById('sl-' + k);
+      if (el) el.value = cfg[k];
     }
-    return false;
-  };
-
-  function showToast(msg) {
-    if (!msg) return;
-    const t = document.getElementById("toastPopup");
-    t.innerText = msg;
-    t.style.display = "block";
-    clearTimeout(window._toastTimer);
-    window._toastTimer = setTimeout(() => { t.style.display = "none"; }, 2200);
+    syncUI();
+    pushLiveParams();
   }
 
-  function replayCascadeAnimation(parentEl) {
-    if (!parentEl) return;
-    const items = parentEl.querySelectorAll(".cascade-item");
-    items.forEach((el, idx) => {
-      el.style.animation = "none";
-      void el.offsetWidth;
-      el.style.animation = `smoothSlideIn 0.28s cubic-bezier(0.2, 0.9, 0.3, 1) ${idx * 0.025}s forwards`;
-    });
-  }
+  // Готовые пресеты (включая точный набор с видео друга)
+  function applyPreset(name) {
+    document.querySelectorAll('.preset-card').forEach(c => c.classList.remove('selected'));
+    const card = document.getElementById('pre-' + name);
+    if (card) card.classList.add('selected');
 
-  function openCardPage(pageId) {
-    activeSubpageId = pageId;
-    document.getElementById("mainHubView").style.display = "none";
-    document.querySelectorAll(".subpage").forEach(p => p.classList.remove("open"));
-    const target = document.getElementById(pageId);
-    if (target) {
-      target.classList.add("open");
-      replayCascadeAnimation(target);
-    }
-    if (pageId === "page-stretch") drawStretchPreview();
-    if (pageId === "page-crosshair") drawCrossPreview();
-    window.scrollTo({ top: 0, behavior: "instant" });
-  }
-
-  function backToHub() {
-    activeSubpageId = null;
-    document.querySelectorAll(".subpage").forEach(p => p.classList.remove("open"));
-    const hub = document.getElementById("mainHubView");
-    hub.style.display = "block";
-    replayCascadeAnimation(hub);
-    window.scrollTo({ top: 0, behavior: "instant" });
-  }
-
-  function verifyStartupAuth() {
-    if (!window.AndroidBridge || !AndroidBridge.verifySavedLicenseOnStartup) return;
-    try {
-      const raw = AndroidBridge.verifySavedLicenseOnStartup();
-      const res = JSON.parse(raw);
-      if (!res.ok || res.blocked || res.status === "need_auth" || res.status === "blocked") {
-        document.getElementById("welcomeAuthOverlay").style.display = "flex";
-        if (res.message) document.getElementById("welcomeStatusText").innerText = res.message;
-      } else {
-        document.getElementById("welcomeAuthOverlay").style.display = "none";
-      }
-    } catch (e) {
-      document.getElementById("welcomeAuthOverlay").style.display = "flex";
+    if (name === 'friend') {
+      // ТОЧНЫЕ ЧИСЛА С ВИДЕО ДРУГА
+      setSliderValues({
+        'sharp': 1.00, 'sx': 1.00, 'sy': 1.00,
+        'noise': 3, 'dead': 1, 'lead': 0,
+        'axis': 4, 'stick-delay': 29, 'stick-force': 1,
+        'chunks': 10, 'bypass': 0, 'chunk-cap': 0, 'chunk-fast': 0,
+        'pause': 0, 'accel': 0.00, 'slope': 0.30, 'edge': 0,
+        'straight': 0.80, 'grip': 4, 'grip-cap': 4
+      });
+    } else if (name === 's25u') {
+      // Адаптировано под высокое QHD+ разрешение S25 Ultra
+      setSliderValues({
+        'sharp': 1.35, 'sx': 1.30, 'sy': 1.05,
+        'noise': 4, 'dead': 1, 'lead': 2,
+        'axis': 6, 'stick-delay': 25, 'stick-force': 2,
+        'chunks': 14, 'bypass': 0, 'chunk-cap': 24, 'chunk-fast': 4,
+        'pause': 2, 'accel': 0.00, 'slope': 0.35, 'edge': 0,
+        'straight': 0.88, 'grip': 6, 'grip-cap': 6
+      });
+    } else if (name === 'hard') {
+      // Выкрученный телепорт крупными кусками
+      setSliderValues({
+        'sharp': 1.80, 'sx': 1.75, 'sy': 1.10,
+        'noise': 5, 'dead': 2, 'lead': 4,
+        'axis': 8, 'stick-delay': 20, 'stick-force': 3,
+        'chunks': 22, 'bypass': 0, 'chunk-cap': 35, 'chunk-fast': 8,
+        'pause': 4, 'accel': 0.00, 'slope': 0.45, 'edge': 0,
+        'straight': 0.94, 'grip': 8, 'grip-cap': 8
+      });
+    } else if (name === 'awp') {
+      setSliderValues({
+        'sharp': 1.20, 'sx': 1.25, 'sy': 0.90,
+        'noise': 4, 'dead': 2, 'lead': 0,
+        'axis': 9, 'stick-delay': 15, 'stick-force': 6,
+        'chunks': 12, 'bypass': 0, 'chunk-cap': 20, 'chunk-fast': 0,
+        'pause': 8, 'accel': 0.00, 'slope': 0.25, 'edge': 0,
+        'straight': 0.90, 'grip': 9, 'grip-cap': 9
+      });
     }
   }
 
-  function submitWelcomeAuth() {
-    const login = document.getElementById("inpLoginNick").value.trim();
-    const key = document.getElementById("inpLicenseKey").value.trim();
-    const statusEl = document.getElementById("welcomeStatusText");
+  // Передача параметров в TeleportEngine.java через AndroidBridge
+  let debounceTimer = null;
+  function pushLiveParams() {
+    clearTimeout(debounceTimer);
+    debounceTimer = setTimeout(() => {
+      const v = getVals();
+      const combinedGrid = v.noise + v.dead;
+      const combinedStick = v.axis + v.stickForce + v.grip;
+      const combinedAccel = v.accel + v.slope;
 
-    if (!login || key.length < 4) {
-      statusEl.innerText = "Пожалуйста, введите и логин, и лицензионный ключ!";
-      statusEl.style.color = "#fda4af";
-      return;
-    }
-
-    statusEl.innerText = "Проверка ключа на сервере SO2Teleport...";
-    statusEl.style.color = "#e879f9";
-
-    setTimeout(() => {
-      if (!window.AndroidBridge || !AndroidBridge.authorizeAndActivate) {
-        document.getElementById("welcomeAuthOverlay").style.display = "none";
-        replayCascadeAnimation(document.body);
-        return;
-      }
-      try {
-        const raw = AndroidBridge.authorizeAndActivate(login, key);
-        const res = JSON.parse(raw);
-        if (res.ok || res.status === "ok") {
-          document.getElementById("welcomeAuthOverlay").style.display = "none";
-          replayCascadeAnimation(document.body);
-          loadProfileInfo();
-          showToast("Добро пожаловать в SO2Teleport!");
-        } else {
-          statusEl.innerText = res.message || "Ключ недействителен или уже привязан к другому устройству.";
-          statusEl.style.color = "#fda4af";
+      if (window.AndroidBridge) {
+        if (typeof AndroidBridge.updateParameters === 'function') {
+          AndroidBridge.updateParameters(
+            v.sharp, v.sx, v.sy,
+            v.chunks, 120, v.straight,
+            combinedStick, combinedGrid, v.pause, combinedAccel
+          );
         }
-      } catch (e) {
-        statusEl.innerText = "Ошибка соединения с сервером. Проверьте интернет.";
-      }
-    }, 60);
-  }
-
-  function logoutCurrentKey() {
-    if (window.AndroidBridge && AndroidBridge.forceLogoutKey) {
-      AndroidBridge.forceLogoutKey();
-    }
-    isTeleportOn = false;
-    renderPowerCircle();
-    document.getElementById("inpLicenseKey").value = "";
-    document.getElementById("welcomeStatusText").innerText = "Введите ваш логин и лицензионный ключ снизу:";
-    document.getElementById("welcomeAuthOverlay").style.display = "flex";
-  }
-
-  function onShizukuTopClick() {
-    if (!window.AndroidBridge) return;
-    const msg = AndroidBridge.handleShizukuCardClick();
-    showToast(msg);
-    setTimeout(syncTopState, 900);
-  }
-
-  function syncTopState() {
-    if (!window.AndroidBridge) return;
-    try {
-      const ready = AndroidBridge.isShizukuReady();
-      const card = document.getElementById("shizukuTopBtn");
-      const title = document.getElementById("shizukuTitle");
-      const sub = document.getElementById("shizukuSub");
-
-      card.classList.toggle("ready", ready);
-      if (ready) {
-        title.innerText = "Shizuku: АКТИВЕН";
-        sub.innerText = "Связь установлена • ОК";
-      } else {
-        title.innerText = "Shizuku: ВЫКЛ";
-        sub.innerText = "Кликни на меня для активации";
-      }
-    } catch (e) {}
-  }
-
-  function onBigPowerClick() {
-    if (!window.AndroidBridge) {
-      isTeleportOn = !isTeleportOn;
-      renderPowerCircle();
-      return;
-    }
-    if (!AndroidBridge.isShizukuReady()) {
-      AndroidBridge.requestShizukuPermission();
-      showToast("Сначала разрешите доступ в окне Shizuku!");
-      return;
-    }
-    isTeleportOn = AndroidBridge.toggleTeleport();
-    renderPowerCircle();
-    showToast(isTeleportOn ? "ТЕЛЕПОРТ АКТИВИРОВАН (ЧАНКИ 100)!" : "Телепорт остановлен");
-  }
-
-  function renderPowerCircle() {
-    const circle = document.getElementById("bigPowerCircle");
-    const txt = document.getElementById("bigPowerText");
-    const pill = document.getElementById("bigPowerPill");
-
-    if (isTeleportOn) {
-      circle.classList.remove("off-state");
-      circle.classList.add("on-state");
-      txt.innerText = "АКТИВЕН";
-      pill.classList.remove("off");
-      pill.classList.add("on");
-      pill.innerText = "• ТЕЛЕПОРТ АКТИВЕН (ЧАНКИ 100 • БЕЗ СГЛАЖИВАНИЯ)";
-    } else {
-      circle.classList.remove("on-state");
-      circle.classList.add("off-state");
-      txt.innerText = "ВЫКЛЮЧЕН";
-      pill.classList.remove("on");
-      pill.classList.add("off");
-      pill.innerText = "• СТАТУС: НЕ АКТИВЕН (НАЖМИ НА КРУГ ДЛЯ ЗАПУСКА)";
-    }
-  }
-
-  function selectSensPresetCard(presetId) {
-    ["max_teleport", "sharp", "awp", "sticky"].forEach(id => {
-      const card = document.getElementById("pr-" + id);
-      if (!card) return;
-      const active = (id === presetId);
-      card.classList.toggle("selected", active);
-      card.querySelector(".pr-badge").innerText = active ? "АКТИВЕН" : "ВЫБРАТЬ";
-    });
-
-    if (presetId === "max_teleport") {
-      setSlidersUI(5.00, 100, 10, 5.00, 4.80, 0.99, 6, 0, 0, 0.00);
-    } else if (presetId === "sharp") {
-      setSlidersUI(5.00, 95, 10, 5.00, 5.00, 0.92, 2, 0, 0, 0.00);
-    } else if (presetId === "awp") {
-      setSlidersUI(4.80, 85, 10, 4.80, 4.50, 0.97, 8, 14, 0, 0.00);
-    } else if (presetId === "sticky") {
-      setSlidersUI(4.90, 90, 10, 5.00, 4.80, 0.99, 9, 4, 0, 0.00);
-    }
-
-    if (window.AndroidBridge && AndroidBridge.applySensPreset) {
-      const msg = AndroidBridge.applySensPreset(presetId);
-      isTeleportOn = true;
-      renderPowerCircle();
-      showToast(msg);
-    }
-  }
-
-  function setSlidersUI(sharp, ch, stSpd, sx, sy, straight, stick, pause, dz, acc) {
-    document.getElementById("rng_sharpness").value = sharp;
-    document.getElementById("rng_chunks").value = ch;
-    document.getElementById("rng_strobeSpeed").value = stSpd;
-    document.getElementById("rng_sensX").value = sx;
-    document.getElementById("rng_sensY").value = sy;
-    document.getElementById("rng_straightening").value = straight;
-    document.getElementById("rng_stickStrength").value = stick;
-    document.getElementById("rng_shotPause").value = pause;
-    document.getElementById("rng_deadZone").value = dz;
-    document.getElementById("rng_accel").value = acc;
-    onManualSlidersChange();
-  }
-
-  function onManualSlidersChange() {
-    const floats = ["sharpness", "sensX", "sensY", "straightening", "accel"];
-    const ints = ["chunks", "strobeSpeed", "stickStrength", "shotPause", "deadZone"];
-    const payload = {};
-
-    floats.forEach(k => {
-      const v = parseFloat(document.getElementById("rng_" + k).value);
-      document.getElementById("lbl_" + k).innerText = v.toFixed(2);
-      payload[k] = v;
-    });
-    ints.forEach(k => {
-      const v = parseInt(document.getElementById("rng_" + k).value, 10);
-      document.getElementById("lbl_" + k).innerText = v;
-      payload[k] = v;
-    });
-
-    const json = JSON.stringify(payload);
-    localStorage.setItem("so2_custom_sliders", json);
-
-    clearTimeout(sliderDebounceTimer);
-    sliderDebounceTimer = setTimeout(() => {
-      if (window.AndroidBridge && AndroidBridge.saveCustomSlidersJson) {
-        AndroidBridge.saveCustomSlidersJson(json);
-        isTeleportOn = true;
-        renderPowerCircle();
       }
     }, 120);
   }
 
-  function selectStretchOption(ratio) {
-    currentRatio = ratio;
-    document.getElementById("stretchCurrentBadge").innerText = ratio;
-    document.getElementById("btnApplyStretch").innerText = "ВКЛЮЧИТЬ ПЛАВАЮЩУЮ КНОПКУ «T» (" + ratio + ")";
-    ["5:4", "4:3", "3:2", "16:10", "16:9"].forEach(r => {
-      const el = document.getElementById("st-" + r);
-      if (el) el.classList.toggle("active", r === ratio);
-    });
-    drawStretchPreview();
-    if (window.AndroidBridge && AndroidBridge.setSelectedStretchRatioOnly) {
-      AndroidBridge.setSelectedStretchRatioOnly(ratio);
+  function startEngine() {
+    pushLiveParams();
+    if (window.AndroidBridge && typeof AndroidBridge.startTeleport === 'function') {
+      AndroidBridge.startTeleport('friend_video');
+    }
+    document.getElementById('engine-status').innerHTML =
+      'Статус: <b style="color:#00f0ff;">ТЕЛЕПОРТ АКТИВЕН (120 FPS LOCK)</b>';
+  }
+
+  function stopEngine() {
+    if (window.AndroidBridge && typeof AndroidBridge.stopTeleport === 'function') {
+      AndroidBridge.stopTeleport();
+    }
+    document.getElementById('engine-status').innerHTML =
+      'Статус: <b>Остановлен (Заводская сенса)</b>';
+  }
+
+  function switchTab(tab) {
+    document.getElementById('tab-launch').classList.toggle('active', tab === 'launch');
+    document.getElementById('tab-settings').classList.toggle('active', tab === 'settings');
+    document.getElementById('view-launch').style.display = (tab === 'launch') ? 'block' : 'none';
+    document.getElementById('view-settings').style.display = (tab === 'settings') ? 'block' : 'none';
+  }
+
+  function toggleExtraSection() {
+    const sec = document.getElementById('extra-section');
+    const btn = document.getElementById('btn-toggle-extra');
+    if (sec.style.display === 'none') {
+      sec.style.display = 'block';
+      btn.innerText = 'Спрятать';
+    } else {
+      sec.style.display = 'none';
+      btn.innerText = 'Ещё настройки';
     }
   }
 
-  function drawStretchPreview() {
-    const c = document.getElementById("stretchPreviewCanvas");
-    if (!c) return;
-    const ctx = c.getContext("2d");
-    ctx.clearRect(0, 0, c.width, c.height);
-
-    ctx.strokeStyle = "rgba(192, 132, 252, 0.35)";
-    ctx.setLineDash([5, 5]);
-    ctx.strokeRect(22, 12, c.width - 44, c.height - 24);
-
-    ctx.setLineDash([]);
-    ctx.strokeStyle = "#00f0ff";
-    ctx.lineWidth = 2;
-    let factor = 0.72;
-    if (currentRatio === "5:4") factor = 0.66;
-    else if (currentRatio === "3:2") factor = 0.80;
-    else if (currentRatio === "16:10") factor = 0.88;
-    else if (currentRatio === "16:9") factor = 1.00;
-
-    const fullW = c.width - 44;
-    const innerW = fullW * factor;
-    const x0 = 22 + (fullW - innerW) / 2;
-    ctx.strokeRect(x0, 12, innerW, c.height - 24);
-
-    ctx.fillStyle = "#e879f9";
-    ctx.font = "bold 12px sans-serif";
-    ctx.textAlign = "center";
-    ctx.fillText("КНОПКА «T» -> РАСТЯГ " + currentRatio + " В ИГРЕ", c.width / 2, c.height / 2 + 4);
+  // Мост к функциям растяга и прицела в MainActivity
+  function setStretch(ratio) {
+    if (window.AndroidBridge && AndroidBridge.applyResolutionRatio) {
+      AndroidBridge.applyResolutionRatio(ratio);
+    }
   }
-
-  function applyStretchNow() {
-    if (window.AndroidBridge && AndroidBridge.applyStretchRatio) {
-      showToast(AndroidBridge.applyStretchRatio(currentRatio));
+  function resetStretch() {
+    if (window.AndroidBridge && AndroidBridge.resetResolution) {
+      AndroidBridge.resetResolution();
+    }
+  }
+  function toggleFloatT(on) {
+    if (window.AndroidBridge && AndroidBridge.toggleFloatingButton) {
+      AndroidBridge.toggleFloatingButton(on);
+    }
+  }
+  function setCross(type) {
+    if (window.AndroidBridge && AndroidBridge.updateCrosshair) {
+      AndroidBridge.updateCrosshair(type);
     }
   }
 
-  function resetStretchNow() {
-    if (window.AndroidBridge && AndroidBridge.resetDisplayToDefault) {
-      showToast(AndroidBridge.resetDisplayToDefault());
-    }
-  }
+  // ================= 1. РАМКА «ОПРЕДЕЛИТЬ ЭКРАН ЗАНОВО» =================
+  let scanSamples = [];
+  function openScanModal() {
+    document.getElementById('modal-scan').style.display = 'flex';
+    scanSamples = [];
+    const box = document.getElementById('scan-box');
+    const canvas = document.getElementById('scan-canvas');
+    canvas.width = box.clientWidth;
+    canvas.height = box.clientHeight;
+    const ctx = canvas.getContext('2d');
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    document.getElementById('scan-progress').innerText = 'Проведи пальцем по этой рамке (0%)';
 
-  function selectCrossShape(shape) {
-    currentCrossShape = shape;
-    document.getElementById("crossStateBadge").innerText = shape.toUpperCase();
-    ["off", "dot", "cross", "tshape", "circle"].forEach(s => {
-      const el = document.getElementById("cr-" + s);
-      if (el) el.classList.toggle("active", s === shape);
-    });
-    drawCrossPreview();
-    if (window.AndroidBridge && AndroidBridge.setCrosshairType) {
-      showToast(AndroidBridge.setCrosshairType(shape));
-    }
-  }
+    box.ontouchmove = (e) => {
+      e.preventDefault();
+      const t = e.touches[0];
+      const rect = box.getBoundingClientRect();
+      const x = t.clientX - rect.left;
+      const y = t.clientY - rect.top;
+      scanSamples.push({ x, y, time: performance.now() });
 
-  function selectCrossColor(hex) {
-    currentCrossColor = hex;
-    onCrossParamsChange();
-  }
-
-  function onCrossParamsChange() {
-    const sz = parseInt(document.getElementById("rngCrossSize").value, 10);
-    const al = parseInt(document.getElementById("rngCrossAlpha").value, 10);
-    document.getElementById("lblCrossSize").innerText = sz + "%";
-    document.getElementById("lblCrossAlpha").innerText = al + "%";
-    drawCrossPreview();
-    if (window.AndroidBridge && AndroidBridge.updateCrosshairParams) {
-      AndroidBridge.updateCrosshairParams(sz, al, currentCrossColor);
-    }
-  }
-
-  function drawCrossPreview() {
-    const c = document.getElementById("crossPreviewCanvas");
-    if (!c) return;
-    const ctx = c.getContext("2d");
-    ctx.clearRect(0, 0, c.width, c.height);
-    const cx = c.width / 2;
-    const cy = c.height / 2;
-    const szVal = parseInt(document.getElementById("rngCrossSize").value, 10);
-    const size = 6 + (szVal / 100) * 18;
-    const gap = 3 + (szVal / 100) * 6;
-
-    ctx.strokeStyle = currentCrossColor;
-    ctx.fillStyle = currentCrossColor;
-    ctx.lineWidth = 2.5;
-
-    if (currentCrossShape === "dot") {
+      ctx.fillStyle = '#ff2a5f';
       ctx.beginPath();
-      ctx.arc(cx, cy, Math.max(3.5, size * 0.3), 0, Math.PI * 2);
+      ctx.arc(x, y, 4, 0, Math.PI * 2);
       ctx.fill();
-    } else if (currentCrossShape === "cross") {
-      ctx.beginPath();
-      ctx.moveTo(cx - size, cy); ctx.lineTo(cx - gap, cy);
-      ctx.moveTo(cx + gap, cy); ctx.lineTo(cx + size, cy);
-      ctx.moveTo(cx, cy - size); ctx.lineTo(cx, cy - gap);
-      ctx.moveTo(cx, cy + gap); ctx.lineTo(cx, cy + size);
-      ctx.stroke();
-    } else if (currentCrossShape === "tshape") {
-      ctx.beginPath();
-      ctx.moveTo(cx - size, cy); ctx.lineTo(cx - gap, cy);
-      ctx.moveTo(cx + gap, cy); ctx.lineTo(cx + size, cy);
-      ctx.moveTo(cx, cy + gap); ctx.lineTo(cx, cy + size);
-      ctx.stroke();
-    } else if (currentCrossShape === "circle") {
-      ctx.beginPath();
-      ctx.arc(cx, cy, size * 0.65, 0, Math.PI * 2);
-      ctx.stroke();
-      ctx.beginPath();
-      ctx.arc(cx, cy, 2.5, 0, Math.PI * 2);
-      ctx.fill();
-    }
-  }
 
-  function applyCloudCodeConfig() {
-    const code = document.getElementById("inpConfigCode").value.trim();
-    if (!code) { showToast("Введите код конфига!"); return; }
-    if (window.AndroidBridge && AndroidBridge.downloadCloudConfig) {
-      AndroidBridge.downloadCloudConfig(code);
-    }
-    isTeleportOn = true;
-    renderPowerCircle();
-    showToast("Конфиг " + code + " успешно активирован!");
-  }
+      const pct = Math.min(100, Math.round((scanSamples.length / 45) * 100));
+      document.getElementById('scan-progress').innerText = 'Калибровка матрицы: ' + pct + '%';
 
-  function createShareCode() {
-    if (!window.AndroidBridge || !AndroidBridge.uploadCloudConfig) return;
-    const title = document.getElementById("inpMyConfigTitle").value.trim() || "SO2Teleport Pro";
-    const json = localStorage.getItem("so2_custom_sliders") || "{}";
-    try {
-      const res = JSON.parse(AndroidBridge.uploadCloudConfig(title, json));
-      if (res.share_code) {
-        document.getElementById("shareCodeResult").innerText = "Ваш код: " + res.share_code;
+      if (scanSamples.length >= 45) {
+        box.ontouchmove = null;
+        finishScreenScan();
       }
-    } catch (e) {}
+    };
   }
 
-  function selectPixels(pct) {
-    [100, 90, 80, 70, 60].forEach(p => {
-      const el = document.getElementById("px-" + p);
-      if (el) el.classList.toggle("active", p === pct);
-    });
-    document.getElementById("lblPixelScale").innerText = pct + "%";
-    if (window.AndroidBridge && AndroidBridge.setPixelOptimization) {
-      showToast(AndroidBridge.setPixelOptimization(pct));
+  function finishScreenScan() {
+    const dpr = window.devicePixelRatio || 2.5;
+    const realWidthPx = Math.round(window.screen.width * dpr);
+
+    // Считаем средний шаг между событиями пальца
+    let totalDelta = 0;
+    for (let i = 1; i < scanSamples.length; i++) {
+      totalDelta += Math.hypot(
+        scanSamples[i].x - scanSamples[i - 1].x,
+        scanSamples[i].y - scanSamples[i - 1].y
+      );
     }
+    const avgStep = totalDelta / Math.max(1, scanSamples.length - 1);
+
+    // Автоматический расчёт идеальных ползунков под конкретный экран
+    const isUltraQHD = realWidthPx >= 1350 || dpr >= 3.2;
+    const autoChunks = isUltraQHD ? 14 : 10;
+    const autoSharp = avgStep > 14 ? 1.15 : 1.35;
+    const autoNoise = isUltraQHD ? 4 : 3;
+    const autoAxis = isUltraQHD ? 5 : 4;
+
+    setSliderValues({
+      'sharp': autoSharp,
+      'sx': autoSharp,
+      'sy': 1.00,
+      'noise': autoNoise,
+      'dead': 1,
+      'lead': 0,
+      'axis': autoAxis,
+      'stick-delay': 29,
+      'stick-force': 1,
+      'chunks': autoChunks,
+      'straight': 0.82,
+      'grip': autoAxis,
+      'grip-cap': autoAxis,
+      'slope': 0.30
+    });
+
+    document.getElementById('scan-progress').innerHTML =
+      '✅ Экран определён (' + realWidthPx + 'p)!<br>Подобрано: Куски = ' + autoChunks + ', Отсечка = ' + autoNoise;
+    setTimeout(closeModals, 1300);
   }
 
-  function loadProfileInfo() {
-    if (!window.AndroidBridge) return;
-    try {
-      const p = JSON.parse(AndroidBridge.getProfileData());
-      const d = JSON.parse(AndroidBridge.scanDevice());
-      document.getElementById("profNick").innerText = p.nickname || "Игрок";
-      document.getElementById("profHwid").innerText = p.android_id || "";
-      document.getElementById("profModel").innerText = d.device_name || "Android";
-      document.getElementById("profRes").innerText = d.resolution || "1080x2400";
-      document.getElementById("profHz").innerText = d.refresh_rate || 120;
-    } catch (e) {}
+  // ================= 2. ПОЛИГОН «ПРОВЕРИТЬ КАСАНИЯ» =================
+  function openTouchTestModal() {
+    document.getElementById('modal-test').style.display = 'flex';
+    const box = document.getElementById('test-box');
+    const canvas = document.getElementById('test-canvas');
+    canvas.width = box.clientWidth;
+    canvas.height = box.clientHeight;
+    const ctx = canvas.getContext('2d');
+
+    let anchorY = canvas.height / 2;
+    box.ontouchstart = (e) => {
+      const rect = box.getBoundingClientRect();
+      anchorY = e.touches[0].clientY - rect.top;
+    };
+
+    box.ontouchmove = (e) => {
+      e.preventDefault();
+      const v = getVals();
+      const rect = box.getBoundingClientRect();
+      const rawX = e.touches[0].clientX - rect.left;
+      const rawY = e.touches[0].clientY - rect.top;
+
+      // Квантование по кускам + выпрямление по оси головы (как в игре)
+      const stepPx = Math.max(4, v.chunks * 1.4);
+      const quantX = Math.round(rawX / stepPx) * stepPx;
+      const quantY = anchorY + (rawY - anchorY) * (1 - v.straight * 0.85);
+
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      // Линия горизонта головы
+      ctx.strokeStyle = 'rgba(255, 42, 95, 0.35)';
+      ctx.beginPath();
+      ctx.moveTo(0, anchorY);
+      ctx.lineTo(canvas.width, anchorY);
+      ctx.stroke();
+
+      // Сырое касание пальца (серое)
+      ctx.fillStyle = '#666';
+      ctx.beginPath();
+      ctx.arc(rawX, rawY, 6, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Телепортирующийся прицел (голубой)
+      ctx.strokeStyle = '#00f0ff';
+      ctx.lineWidth = 2.5;
+      ctx.beginPath();
+      ctx.arc(quantX, quantY, 12, 0, Math.PI * 2);
+      ctx.moveTo(quantX - 18, quantY);
+      ctx.lineTo(quantX + 18, quantY);
+      ctx.moveTo(quantX, quantY - 18);
+      ctx.lineTo(quantX, quantY + 18);
+      ctx.stroke();
+    };
   }
 
-  window.onload = function() {
-    drawStretchPreview();
-    drawCrossPreview();
-    loadProfileInfo();
-    syncTopState();
-    verifyStartupAuth();
-    setInterval(syncTopState, 1500);
-  };
+  function healTouchAndClose() {
+    startEngine();
+    closeModals();
+  }
+
+  function openHelpModal() {
+    alert(
+      "КАК РАБОТАЮТ ЧИСЛА:\n\n" +
+      "1. Куски (10–16) — оптимальный шаг телепорта. Если поставить 70+, прицел начнёт перепрыгивать через модельку врага.\n" +
+      "2. Выпрямление (0.80) + Прилипание к осям (4) — держат прицел ровно на линии головы при переводе влево-вправо.\n" +
+      "3. Отсечка шума (3) + Мёртвая зона (1) — убирают тряску прицела, когда жмёшь на стрельбу.\n" +
+      "4. В самом Standoff 2 поставь: Чувствительность 1.40, Ускорение 0.00, Сглаживание 0.00."
+    );
+  }
+
+  function closeModals() {
+    document.getElementById('modal-scan').style.display = 'none';
+    document.getElementById('modal-test').style.display = 'none';
+  }
+
+  syncUI();
 </script>
 </body>
 </html>
