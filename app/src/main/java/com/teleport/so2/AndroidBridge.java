@@ -98,7 +98,7 @@ public class AndroidBridge {
 
     @JavascriptInterface
     public void setQuantumOverlayStrobe(boolean enabled) {
-        activity.updateOverlayStealthFlag(enabled);
+        activity.setQuantumOverlayStrobe(enabled);
     }
 
     @JavascriptInterface
