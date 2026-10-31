@@ -3,19 +3,16 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>SO2 Teleport Quantum Hub</title>
+<title>SO2 Teleport Engine</title>
 <style>
   :root {
     --bg-deep: #070309;
     --bg-card: #120812;
     --bg-card-inner: #1a0c1a;
     --border-main: #3b1529;
-    --border-active: #ff2a5f;
     --accent: #ff2a5f;
-    --accent-dark: #b8143e;
     --accent-glow: rgba(255, 42, 95, 0.38);
     --neon-cyan: #00f0ff;
-    --neon-purple: #a855f7;
     --neon-green: #00e676;
     --text-primary: #f8f0f4;
     --text-secondary: #a38993;
@@ -33,7 +30,7 @@
     padding: 0;
     background: radial-gradient(circle at 50% 0%, #240a18 0%, var(--bg-deep) 60%);
     color: var(--text-primary);
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, sans-serif;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
     min-height: 100vh;
     overflow-x: hidden;
   }
@@ -44,7 +41,6 @@
     padding: 14px 12px 60px 12px;
   }
 
-  /* ВЕРХНИЙ СТАТУС-БАР ЖЕЛЕЗА И SHIZUKU */
   .top-statusbar {
     display: flex;
     justify-content: space-between;
@@ -54,7 +50,6 @@
     border-radius: 16px;
     padding: 10px 14px;
     margin-bottom: 12px;
-    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.5);
   }
 
   .brand-title {
@@ -62,8 +57,7 @@
     align-items: center;
     gap: 8px;
     font-weight: 900;
-    font-size: 15px;
-    letter-spacing: 0.6px;
+    font-size: 14.5px;
     color: #fff;
   }
 
@@ -74,7 +68,6 @@
     background: var(--accent);
     box-shadow: 0 0 10px var(--accent);
   }
-
   .brand-dot.online {
     background: var(--neon-green);
     box-shadow: 0 0 10px var(--neon-green);
@@ -90,7 +83,6 @@
     border-radius: 999px;
   }
 
-  /* ПЕРЕКЛЮЧАТЕЛЬ ВКЛАДОК (ЗАПУСК / НАСТРОЙКИ) КАК НА ВИДЕО */
   .top-tabs {
     display: flex;
     background: #140913;
@@ -98,7 +90,6 @@
     border-radius: 999px;
     padding: 5px;
     margin-bottom: 16px;
-    box-shadow: inset 0 2px 8px rgba(0,0,0,0.6);
   }
 
   .tab-btn {
@@ -111,7 +102,7 @@
     letter-spacing: 0.8px;
     color: var(--text-secondary);
     cursor: pointer;
-    transition: all 0.2s ease;
+    transition: 0.2s;
   }
 
   .tab-btn.active {
@@ -120,7 +111,6 @@
     box-shadow: 0 0 20px var(--accent-glow);
   }
 
-  /* КАРТОЧКИ КОНТЕНТА */
   .card {
     background: var(--bg-card);
     border: 1px solid var(--border-main);
@@ -152,7 +142,6 @@
     line-height: 1.35;
   }
 
-  /* АВТО-СКАНЕР УСТРОЙСТВА БАННЕР */
   .autotune-banner {
     background: linear-gradient(135deg, rgba(255,42,95,0.16), rgba(168,85,247,0.14));
     border: 1px solid rgba(255,42,95,0.45);
@@ -170,7 +159,6 @@
     line-height: 1.4;
   }
 
-  /* СЕТКА ПРЕСЕТОВ */
   .preset-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -184,30 +172,24 @@
     border-radius: 15px;
     padding: 12px;
     cursor: pointer;
-    transition: all 0.18s ease;
-    position: relative;
+    transition: 0.18s;
   }
-
   .preset-item.active {
     border-color: var(--accent);
     background: #280d1b;
     box-shadow: 0 0 15px var(--accent-glow);
   }
-
   .preset-item h4 {
     margin: 0 0 5px 0;
     font-size: 13.5px;
     color: #fff;
   }
-
   .preset-item p {
     margin: 0;
     font-size: 11px;
     color: var(--text-secondary);
-    line-height: 1.3;
   }
 
-  /* ПОЛЗУНКИ (1 В 1 КАК В ПРИЛОЖЕНИИ ДРУГА НА ВИДЕО + ЗАПАС) */
   .slider-row {
     padding: 13px 0;
     border-bottom: 1px solid rgba(255, 255, 255, 0.05);
@@ -268,7 +250,6 @@
     color: var(--text-secondary);
   }
 
-  /* ПЕРЕКЛЮЧАТЕЛИ (ТУМБЛЕРЫ) */
   .toggle-row {
     display: flex;
     justify-content: space-between;
@@ -326,13 +307,11 @@
   input:checked + .slider-toggle {
     background-color: var(--accent);
     border-color: #ff6b93;
-    box-shadow: 0 0 12px var(--accent-glow);
   }
   input:checked + .slider-toggle:before {
     transform: translateX(22px);
   }
 
-  /* КНОПКИ */
   .btn-group {
     display: flex;
     gap: 10px;
@@ -342,7 +321,7 @@
 
   .btn {
     flex: 1;
-    min-width: 110px;
+    min-width: 105px;
     padding: 13px 14px;
     border-radius: 999px;
     background: #1b0d18;
@@ -367,11 +346,6 @@
     border: none;
     color: #fff;
   }
-  .btn.active-chip {
-    border-color: var(--neon-cyan);
-    color: var(--neon-cyan);
-    background: rgba(0, 240, 255, 0.12);
-  }
 
   .bottom-action-wrap {
     margin-top: 14px;
@@ -385,7 +359,6 @@
     margin: 7px 0 12px 0;
   }
 
-  /* ЦВЕТОВЫЕ КРУЖКИ ДЛЯ ПРИЦЕЛА */
   .color-row {
     display: flex;
     gap: 10px;
@@ -403,7 +376,6 @@
     transform: scale(1.12);
   }
 
-  /* МОДАЛЬНЫЕ ОКНА (РАМКА ОПРЕДЕЛЕНИЯ ЭКРАНА И ТЕСТ КАСАНИЙ) */
   .modal-backdrop {
     display: none;
     position: fixed;
@@ -417,7 +389,7 @@
 
   .touch-arena {
     width: 100%;
-    height: 310px;
+    height: 300px;
     border: 2px dashed var(--accent);
     border-radius: 20px;
     background: #120710;
@@ -451,7 +423,6 @@
 
 <div class="app-wrapper">
 
-  <!-- ВЕРХНЯЯ ПАНЕЛЬ СТАТУСА И УСТРОЙСТВА -->
   <div class="top-statusbar">
     <div class="brand-title">
       <span id="status-dot" class="brand-dot"></span>
@@ -460,45 +431,40 @@
     <div id="hw-badge" class="hw-chip">Определение...</div>
   </div>
 
-  <!-- ВЕРХНИЕ ВКЛАДКИ (1 В 1 КАК НА ВИДЕО) -->
   <div class="top-tabs">
     <div id="tab-btn-launch" class="tab-btn" onclick="switchMainTab('launch')">► ЗАПУСК</div>
     <div id="tab-btn-settings" class="tab-btn active" onclick="switchMainTab('settings')">⇄ НАСТРОЙКИ</div>
   </div>
 
-  <!-- ================================================================= -->
-  <!-- ВКЛАДКА 1: ЗАПУСК, АВТО-СКАНЕР, РАСТЯГ 4:3, ПРИЦЕЛ И ЗАЩИТА 120 ГЦ -->
-  <!-- ================================================================= -->
+  <!-- ВКЛАДКА 1: ЗАПУСК -->
   <div id="tab-launch" style="display: none;">
-
-    <!-- КАРТОЧКА АВТО-СКАНИРОВАНИЯ УСТРОЙСТВА И АКТИВАЦИИ -->
     <div class="card">
       <div class="sec-title">
-        <span>УПРАВЛЕНИЕ ДВИЖКОМ</span>
+        <span>УПРАВЛЕНИЕ ТЕЛЕПОРТОМ</span>
         <span style="font-size:11px; color:var(--neon-green);">120 FPS LOCK</span>
       </div>
       <div class="sec-subtitle">
-        Квантование тача кусками + осевое выпрямление без сброса герцовки экрана до 60 Гц.
+        Квантование тача кусками + осевое выпрямление без сброса экрана до 60 Гц.
       </div>
 
       <div class="autotune-banner">
         <div class="autotune-info" id="autotune-summary">
-          Нажми <b>«Авто-настройка под мой девайс»</b> — приложение считает модель процессора, DPI экрана и выставит идеальные ползунки телепорта.
+          Нажми кнопку ниже — приложение определит процессор и разрешение экрана и выставит идеальные ползунки.
         </div>
         <div class="btn cyan" onclick="autoDetectAndTuneHardware()">
           ⚡ Авто-настройка под мой девайс (Scan)
         </div>
       </div>
 
-      <div class="sec-title">ГОТОВЫЕ НАБОРЫ (ПРЕСЕТЫ)</div>
+      <div class="sec-title">ГОТОВЫЕ НАБОРЫ</div>
       <div class="preset-grid">
         <div class="preset-item active" id="preset-friend" onclick="selectPreset('friend')">
           <h4>🔥 Сенса Друга (1:1)</h4>
-          <p>Точные числа с видео: Куски 10, Выпрямление 0.80, Хват 4</p>
+          <p>Числа с видео: Куски 10, Выпрямление 0.80, Хват 4</p>
         </div>
         <div class="preset-item" id="preset-s25u" onclick="selectPreset('s25u')">
           <h4>💎 S25 Ultra QHD+</h4>
-          <p>Под плотную матрицу: Куски 14, Выпрямление 0.86, Хват 5</p>
+          <p>Под плотный экран: Куски 14, Выпрямление 0.86, Хват 5</p>
         </div>
         <div class="preset-item" id="preset-hard" onclick="selectPreset('hard')">
           <h4>🚀 Жёсткий Телепорт</h4>
@@ -516,15 +482,14 @@
       </div>
     </div>
 
-    <!-- КАРТОЧКА ДОПОЛНИТЕЛЬНЫХ МОДУЛЕЙ И ФИКСА ПРОСАДОК FPS -->
     <div class="card">
-      <div class="sec-title">ФИКС ФРИЗОВ И БОЕВЫЕ МОДУЛИ</div>
+      <div class="sec-title">ФИКС ЛАГОВ И БОЕВЫЕ МОДУЛИ</div>
       <div class="sec-subtitle">Стабилизация 120 FPS без троттлинга и просадок до 60 Гц.</div>
 
       <div class="toggle-row">
         <div class="toggle-text">
           <h5>Защита 120 Гц (Anti-60Hz Drop)</h5>
-          <p>Запрещает One UI и GameService сбрасывать экран в 60 Гц</p>
+          <p>Запрещает системе сбрасывать герцовку экрана в 60 Гц</p>
         </div>
         <label class="switch">
           <input type="checkbox" id="chk-thermal" checked onchange="toggleThermalGuard(this.checked)">
@@ -535,7 +500,7 @@
       <div class="toggle-row">
         <div class="toggle-text">
           <h5>Smart AWP Lock (Стоп-вязкость)</h5>
-          <p>Убирает срыв прицела в момент нажатия кнопки выстрела</p>
+          <p>Убирает срыв прицела в момент нажатия кнопки стрельбы</p>
         </div>
         <label class="switch">
           <input type="checkbox" id="chk-awp" onchange="toggleSmartAwp(this.checked)">
@@ -556,8 +521,8 @@
 
       <div class="toggle-row">
         <div class="toggle-text">
-          <h5>Стелс-режим оверлеев (Защита записи)</h5>
-          <p>Скрывает кнопку «T» и прицел на видео и скриншотах</p>
+          <h5>Стелс-режим оверлеев</h5>
+          <p>Скрывает кнопку «T» и прицел на записи экрана</p>
         </div>
         <label class="switch">
           <input type="checkbox" id="chk-stealth" onchange="toggleStealth(this.checked)">
@@ -573,38 +538,33 @@
         <input type="range" id="sl-downscale" min="70" max="100" step="5" value="100"
                oninput="document.getElementById('lbl-downscale').innerText = this.value + '%'"
                onchange="applyDownscale(this.value)">
-        <div class="slider-hint">100% — родное качество; 85–90% — убирает нагрев на длинных каткаx</div>
       </div>
     </div>
 
-    <!-- КАРТОЧКА РАСТЯГА ЭКРАНА И КНОПКИ «T» -->
     <div class="card">
       <div class="sec-title">РАСТЯГ ЭКРАНА (БЕЗ ПЕРЕВОРОТА ИГРЫ)</div>
-      <div class="sec-subtitle">Широкие модельки с жёсткой фиксацией 120 Гц и управлением кнопкой «T».</div>
+      <div class="sec-subtitle">Широкие модельки с фиксацией 120 Гц и плавающей кнопкой «T».</div>
 
       <div class="btn-group">
-        <div class="btn" onclick="applyStretchRatio('4:3')">4:3 Классика</div>
-        <div class="btn" onclick="applyStretchRatio('5:4')">5:4 Широкий</div>
-        <div class="btn" onclick="applyStretchRatio('3:2')">3:2 Кибер</div>
-        <div class="btn" onclick="applyStretchRatio('16:10')">16:10 Лайт</div>
+        <div class="btn" onclick="applyStretchRatio('4:3')">4:3</div>
+        <div class="btn" onclick="applyStretchRatio('5:4')">5:4</div>
+        <div class="btn" onclick="applyStretchRatio('3:2')">3:2</div>
+        <div class="btn" onclick="applyStretchRatio('16:10')">16:10</div>
       </div>
 
       <div class="btn-group">
-        <div class="btn primary" onclick="enableFloatingT(true)">Показать кнопку «T»</div>
+        <div class="btn primary" onclick="enableFloatingT(true)">Вкл кнопку «T»</div>
         <div class="btn" onclick="enableFloatingT(false)">Скрыть «T»</div>
         <div class="btn" onclick="resetScreenStretch()">Сброс экрана</div>
       </div>
     </div>
 
-    <!-- КАРТОЧКА КАСТОМНОГО ПРИЦЕЛА -->
     <div class="card">
       <div class="sec-title">КАСТОМНЫЙ ПРИЦЕЛ</div>
-      <div class="sec-subtitle">Аппаратный оверлей по центру экрана без задержки.</div>
-
       <div class="btn-group">
         <div class="btn" onclick="selectCrosshair('dot')">Точка</div>
         <div class="btn" onclick="selectCrosshair('cross')">Крест</div>
-        <div class="btn" onclick="selectCrosshair('tshape')">T-Прицел</div>
+        <div class="btn" onclick="selectCrosshair('tshape')">T-Тип</div>
         <div class="btn" onclick="selectCrosshair('circle')">Круг</div>
         <div class="btn" onclick="selectCrosshair('off')">Выкл</div>
       </div>
@@ -635,15 +595,12 @@
     </div>
   </div>
 
-  <!-- ================================================================= -->
-  <!-- ВКЛАДКА 2: НАСТРОЙКИ (ВСЕ 18 ПОЛЗУНКОВ ИЗ ВИДЕО ДРУГА С ЗАПАСОМ)   -->
-  <!-- ================================================================= -->
+  <!-- ВКЛАДКА 2: НАСТРОЙКИ (18 ПОЛЗУНКОВ ИЗ ВИДЕО ДРУГА С ЗАПАСОМ) -->
   <div id="tab-settings">
     <div class="card">
       <div class="sec-title">СВОИ ЧИСЛА</div>
-      <div class="sec-subtitle">Эти значения твои. Ползунки расширены с запасом, чтобы каждый мог настроить под себя.</div>
+      <div class="sec-subtitle">Эти значения твои. Ползунки расширены с запасом для тонкой подстройки.</div>
 
-      <!-- СЕКЦИЯ 1: ОСТРОТА -->
       <div class="sec-title">ОСТРОТА</div>
       <div class="sec-subtitle">Насколько резко реагирует прицел.</div>
 
@@ -674,7 +631,6 @@
         <div class="slider-hint">Только вертикаль — прицел по земле и вверх</div>
       </div>
 
-      <!-- СЕКЦИЯ 2: ТОЧНОСТЬ -->
       <div class="sec-title">ТОЧНОСТЬ</div>
       <div class="sec-subtitle">Убирает дрожание, задержку и мёртвую зону.</div>
 
@@ -705,7 +661,6 @@
         <div class="slider-hint">Прицел ведёт цель — попадать легче</div>
       </div>
 
-      <!-- СЕКЦИЯ 3: ПРИЛИПАНИЕ -->
       <div class="sec-title">ПРИЛИПАНИЕ</div>
       <div class="sec-subtitle">Прицел держится на линиях и углах.</div>
 
@@ -732,7 +687,6 @@
         <div class="btn" onclick="selectPreset('friend')">Вернуть набор</div>
       </div>
 
-      <!-- СЕКЦИЯ 4: ДОПОЛНИТЕЛЬНО (ВСЕ ПАРАМЕТРЫ КУСКОВ И ХВАТА ПО ОСЯМ) -->
       <div id="block-extra" style="margin-top: 18px;">
         <div class="sec-title">ДОПОЛНИТЕЛЬНО</div>
         <div class="sec-subtitle">Для тех, кто знает, зачем это.</div>
@@ -840,7 +794,6 @@
       </div>
     </div>
 
-    <!-- НИЖНИЕ КНОПКИ КАЛИБРОВКИ ЭКРАНА И ТЕСТА КАСАНИЙ (1 В 1 КАК НА ВИДЕО) -->
     <div class="bottom-action-wrap">
       <div class="btn" style="padding:15px;" onclick="openScreenCalibrator()">
         👆 Определить экран заново
@@ -860,12 +813,12 @@
 
 </div>
 
-<!-- МОДАЛЬНОЕ ОКНО 1: РАМКА ОПРЕДЕЛЕНИЯ ЭКРАНА -->
+<!-- МОДАЛЬНОЕ ОКНО 1: ОПРЕДЕЛИТЬ ЭКРАН ЗАНОВО -->
 <div id="modal-calibrator" class="modal-backdrop">
   <div class="card">
-    <div class="sec-title">ОПРЕДЕЛЕНИЕ ЭКРАНА И ТАЧА</div>
+    <div class="sec-title">ОПРЕДЕЛЕНИЕ ЭКРАНА</div>
     <div class="sec-subtitle">
-      Быстро проведи пальцем влево-вправо внутри рамки. Мы измерим частоту отклика матрицы, плотность пикселей и автоматически подберём ползунки.
+      Проведи пальцем влево-вправо внутри рамки. Мы измерим шаг матрицы и автоматически подберём ползунки под твой телефон.
     </div>
     <div class="touch-arena" id="calibrator-arena">
       <canvas id="calibrator-canvas" class="arena-canvas"></canvas>
@@ -879,12 +832,12 @@
   </div>
 </div>
 
-<!-- МОДАЛЬНОЕ ОКНО 2: ПРОВЕРИТЬ КАСАНИЯ (ВИЗУАЛИЗАТОР ТЕЛЕПОРТА) -->
+<!-- МОДАЛЬНОЕ ОКНО 2: ПРОВЕРИТЬ КАСАНИЯ -->
 <div id="modal-visualizer" class="modal-backdrop">
   <div class="card">
     <div class="sec-title">ПРОВЕРКА КАСАНИЙ И КУСКОВ</div>
     <div class="sec-subtitle">
-      Води пальцем: серая точка — обычный сырой свайп, <b style="color:var(--neon-cyan);">голубой прицел</b> — как работает квантование кусками и удержание линии головы.
+      Серая точка — обычный свайп, <b style="color:var(--neon-cyan);">голубой прицел</b> — как прицел прыгает кусками и держит линию головы.
     </div>
     <div class="touch-arena" id="visualizer-arena">
       <canvas id="visualizer-canvas" class="arena-canvas"></canvas>
@@ -965,7 +918,6 @@
     if (target) target.classList.add('active');
 
     if (id === 'friend') {
-      // ТОЧНЫЕ ЗНАЧЕНИЯ С ПЕРВОГО ВИДЕО ДРУГА
       applySliderMap({
         'sharp': 1.00, 'sx': 1.00, 'sy': 1.00,
         'noise': 3, 'dead': 1, 'lead': 0,
@@ -975,7 +927,6 @@
         'straight': 0.80, 'grip': 4, 'grip-cap': 4
       });
     } else if (id === 's25u') {
-      // Идеально под QHD+ матрицу Samsung S25 Ultra
       applySliderMap({
         'sharp': 1.30, 'sx': 1.25, 'sy': 1.00,
         'noise': 4, 'dead': 1, 'lead': 2,
@@ -1010,7 +961,6 @@
     clearTimeout(updateTimer);
     updateTimer = setTimeout(() => {
       const v = readAllSliders();
-      // Суммарная передача всех 18 ползунков в ядро TeleportEngine.java
       const effectiveSharp = v.sharp + (v.lead * 0.04) + (v.chunkFast * 0.03);
       const effectiveChunks = Math.max(1, v.chunks - Math.round(v.bypass * 0.3));
       const effectiveGrid = Math.max(1, v.noise + v.dead);
@@ -1048,7 +998,6 @@
     document.getElementById('status-title').innerText = 'TELEPORT: ОСТАНОВЛЕН';
   }
 
-  // АВТО-ОПРЕДЕЛЕНИЕ ЖЕЛЕЗА И ПОДБОР ПОЛЗУНКОВ
   function autoDetectAndTuneHardware() {
     const ua = navigator.userAgent || '';
     const dpr = window.devicePixelRatio || 2.5;
@@ -1065,9 +1014,6 @@
     } else if (ua.includes('SM-S938')) {
       modelName = 'Galaxy S25 Ultra';
       shortPx = 1440;
-    } else if (ua.includes('SM-S721')) {
-      modelName = 'Galaxy S24 FE';
-      shortPx = 1080;
     }
 
     document.getElementById('hw-badge').innerText = modelName + ' (' + shortPx + 'p)';
@@ -1075,15 +1021,14 @@
     if (shortPx >= 1350 || ua.includes('SM-S938')) {
       selectPreset('s25u');
       document.getElementById('autotune-summary').innerHTML =
-        '✅ Определён флагман <b>' + modelName + ' (' + shortPx + 'p)</b>. Выставлены Куски = 14, Выпрямление = 0.86, 120 FPS Lock активен.';
+        '✅ Определён <b>' + modelName + ' (' + shortPx + 'p)</b>. Выставлены Куски = 14, Выпрямление = 0.86, 120 FPS Lock активен.';
     } else {
       selectPreset('friend');
       document.getElementById('autotune-summary').innerHTML =
-        '✅ Определён экран <b>' + modelName + ' (' + shortPx + 'p)</b>. Выставлены точные параметры друга (Куски = 10, Выпрямление = 0.80).';
+        '✅ Определён <b>' + modelName + ' (' + shortPx + 'p)</b>. Выставлены параметры друга (Куски = 10, Выпрямление = 0.80).';
     }
   }
 
-  // МОСТЫ К MAINACTIVITY И TELEPORTENGINE
   function toggleThermalGuard(on) {
     if (window.AndroidBridge && AndroidBridge.setHzThermalGuard) {
       AndroidBridge.setHzThermalGuard(on);
@@ -1164,7 +1109,6 @@
     }
   }
 
-  // РАМКА «ОПРЕДЕЛИТЬ ЭКРАН ЗАНОВО»
   let calPoints = [];
   function openScreenCalibrator() {
     document.getElementById('modal-calibrator').style.display = 'flex';
@@ -1201,7 +1145,6 @@
     };
   }
 
-  // ПОЛИГОН «ПРОВЕРИТЬ КАСАНИЯ»
   function openTouchVisualizer() {
     document.getElementById('modal-visualizer').style.display = 'flex';
     const arena = document.getElementById('visualizer-arena');
@@ -1268,9 +1211,9 @@
   function showGuideAlert() {
     alert(
       "ШПАРГАЛКА ПО ТЕЛЕПОРТУ:\n\n" +
-      "• Куски (10–16): оптимальный размер рывка. На 1080p ставь 10 (как у друга), на S25 Ultra QHD+ ставь 14. Выше 50 прицел начнёт перепрыгивать через голову.\n" +
-      "• Выпрямление (0.80–0.88) + Прилипание к осям (4–5): держат прицел ровно на линии головы при горизонтальном флике.\n" +
-      "• Отсечка шума (3–4) + Мёртвая зона (1): убирают микродрожание пальца в момент выстрела.\n" +
+      "• Куски (10–16): оптимальный размер рывка. На 1080p ставь 10 (как у друга), на S25 Ultra QHD+ ставь 14.\n" +
+      "• Выпрямление (0.80–0.88) + Прилипание к осям (4–5): держат прицел ровно на линии головы.\n" +
+      "• Отсечка шума (3–4) + Мёртвая зона (1): убирают дрожание пальца в момент выстрела.\n" +
       "• В самом Standoff 2 поставь Ускорение = 0.00 и Сглаживание = 0.00."
     );
   }
