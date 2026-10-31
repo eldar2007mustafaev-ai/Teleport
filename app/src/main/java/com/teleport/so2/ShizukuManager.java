@@ -1,6 +1,7 @@
 package com.teleport.so2;
 
 import android.content.pm.PackageManager;
+import java.lang.reflect.Method;
 import rikka.shizuku.Shizuku;
 
 public class ShizukuManager {
@@ -26,9 +27,22 @@ public class ShizukuManager {
     public static void execCommand(String command) {
         try {
             if (!isPermissionGranted()) return;
-            String[] shellCmd = { "sh", "-c", command };
-            Process process = Shizuku.newProcess(shellCmd, null, null);
-            process.waitFor();
+
+            String[] shellCmd = new String[]{ "sh", "-c", command };
+
+            // Обходим private access в Shizuku API 13+ через рефлексию
+            Method newProcessMethod = Shizuku.class.getDeclaredMethod(
+                    "newProcess",
+                    String[].class,
+                    String[].class,
+                    String.class
+            );
+            newProcessMethod.setAccessible(true);
+
+            Process process = (Process) newProcessMethod.invoke(null, shellCmd, null, null);
+            if (process != null) {
+                process.waitFor();
+            }
         } catch (Throwable ignored) {}
     }
 }
