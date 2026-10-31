@@ -11,21 +11,21 @@ public class TeleportEngine {
 
     private static String currentPreset = "max_teleport";
     private static boolean smartAwpLockEnabled = false;
-    private static boolean antiRecoilEnabled = false;
-    private static int antiRecoilStrength = 75;
+    private static boolean antiRecoilEnabled = true;
+    private static int antiRecoilStrength = 80;
     private static boolean hzThermalGuardEnabled = true;
 
-    // Боевые параметры по умолчанию (МАКС ТЕЛЕПОРТ)
-    private static float sharpness = 5.00f;
-    private static float sensX = 5.00f;
-    private static float sensY = 4.80f;
-    private static int chunks = 50;
-    private static int packetRateHz = 10;
-    private static float straightening = 0.98f;
-    private static int stepGrid = 1;
-    private static int stickStrength = 6;
-    private static int shotPause = 0;
-    private static float accel = 0.00f;
+    // Зверские параметры по умолчанию (со скриншотов)
+    private static float sharpness = 6.00f;
+    private static float sensX = 6.00f;
+    private static float sensY = 6.00f;
+    private static int chunks = 60;
+    private static int packetRateHz = 30;
+    private static float straightening = 0.86f;
+    private static int stepGrid = 9;
+    private static int stickStrength = 12;
+    private static int shotPause = 2;
+    private static float accel = 2.00f;
 
     public static boolean isActive() {
         return active;
@@ -102,10 +102,10 @@ public class TeleportEngine {
         chunks = Math.max(1, Math.min(150, ch));
         packetRateHz = Math.max(1, Math.min(120, pktHz));
         straightening = Math.max(0.0f, Math.min(1.0f, straight));
-        stickStrength = Math.max(0, Math.min(35, stick));
-        stepGrid = Math.max(0, Math.min(40, grid));
+        stickStrength = Math.max(0, Math.min(50, stick));
+        stepGrid = Math.max(0, Math.min(45, grid));
         shotPause = Math.max(0, Math.min(30, pause));
-        accel = Math.max(0.0f, Math.min(2.0f, ac));
+        accel = Math.max(0.0f, Math.min(4.0f, ac));
 
         if (active && ShizukuManager.isPermissionGranted()) {
             applyLiveQuantization();
@@ -113,34 +113,34 @@ public class TeleportEngine {
     }
 
     /**
-     * АГРЕССИВНЫЙ КВАНТОВЫЙ ГЕНЕРАТОР БЕЗ ПРОСАДОК ДО 60 ГЦ:
-     * - Вырубает системный ресэмплинг и фильтрацию (прицел прыгает мгновенными кусками).
-     * - Максимально разгоняет стартовый импульс срыва (minimum/maximum_fling_velocity).
-     * - Жестко держит 120 Гц и 240 событий/сек в WindowManager, исключая статтеры и троттлинг.
+     * УЛЬТРА-АГРЕССИВНЫЙ ТЕЛЕПОРТ + ЛЕГАЛЬНЫЙ КОНТРОЛЬ ЗАЖИМА БЕЗ ПОТЕРИ 120 FPS:
+     * 1. Быстрые флики ("Куски только быстрее" + "Потолок куска") срываются с места с максимальным ускорением.
+     * 2. Медленная оттяжка пальца вниз при зажиме ("Мелочь мимо кусков" + "Хват по осям") проходит через
+     *    осевой стабилизатор, убирая горизонтальную отдачу и позволяя зажимать в одну точку.
      */
     private static String buildQuantizedShizukuCommand(boolean includeHeavySettings) {
-        // 1. Дискретный квантовый шаг (чем выше chunks, тем резче прыжок между точками)
-        int quantumSlop = Math.max(1, Math.min(22, stepGrid + (chunks / 4)));
+        // 1. Дискретный порог куска с учётом обхода мелких движений для контроля зажима
+        int quantumSlop = Math.max(1, Math.min(20, (stepGrid / 2) + (chunks / 5)));
 
-        // 2. Осевой зацеп и стоп-фиксация в точке головы
-        float recoilFactor = antiRecoilEnabled ? (antiRecoilStrength * 0.0005f) : 0.0f;
+        // 2. Легальный стабилизатор зажима и хват по осям (удерживает прицел от бокового разброса)
+        float sprayLockFriction = antiRecoilEnabled ? (antiRecoilStrength * 0.00065f) : 0.0f;
         float axisFriction = (smartAwpLockEnabled || "awp".equalsIgnoreCase(currentPreset))
-                ? 55.0f
-                : Math.max(0.003f, (stickStrength * 0.016f) + (straightening * 0.035f) + recoilFactor);
+                ? 60.0f
+                : Math.max(0.004f, (stickStrength * 0.015f) + (straightening * 0.042f) + sprayLockFriction);
 
-        // 3. Зверский импульс срыва с первой миллисекунды касания
-        float powerFactor = (sharpness * 0.60f) + (sensX * 0.40f);
-        int pointerSpd = Math.min(7, Math.max(2, Math.round(powerFactor * 1.4f)));
-        int minFling = Math.max(250, Math.round((chunks * 45) + (powerFactor * 420)));
-        int maxFling = Math.max(36000, Math.round((powerFactor + (packetRateHz * 0.15f)) * 16000));
+        // 3. Зверский импульс срыва для мгновенного телепорта между мишенями
+        float burstGain = (sharpness * 0.55f) + (sensX * 0.45f) + (accel * 0.65f);
+        int pointerSpd = Math.min(7, Math.max(3, Math.round(burstGain)));
+        int minFling = Math.max(350, Math.round((chunks * 55) + (burstGain * 500)));
+        int maxFling = Math.max(48000, Math.round((burstGain + (packetRateHz * 0.2f)) * 19500));
 
-        // 4. Квантовая выдержка строба
-        int pointerDur = Math.max(1, Math.min(28, (chunks / 4) + shotPause));
+        // 4. Квантовая выдержка точки при остановке в голове
+        int pointerDur = Math.max(1, Math.min(24, (chunks / 5) + shotPause));
 
-        // 5. Строго 240 Гц на уровне очереди окна, чтобы LTPO экран НИКОГДА не падал в 60 FPS
+        // 5. Строго 240 событий/сек, чтобы контроллер LTPO на S25 Ultra держал 120 FPS без единого дропа
         int safeWindowEvents = 240;
 
-        StringBuilder sb = new StringBuilder(640);
+        StringBuilder sb = new StringBuilder(680);
 
         if (includeHeavySettings) {
             sb.append("settings put system peak_refresh_rate 120.0; ")
