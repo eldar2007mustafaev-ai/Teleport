@@ -3,18 +3,23 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>SO2 Teleport Engine</title>
+<title>SO2 Teleport Quantum Hub</title>
 <style>
   :root {
-    --bg-main: #09040a;
-    --card-bg: #120912;
-    --card-border: #3d1428;
+    --bg-deep: #070309;
+    --bg-card: #120812;
+    --bg-card-inner: #1a0c1a;
+    --border-main: #3b1529;
+    --border-active: #ff2a5f;
     --accent: #ff2a5f;
-    --accent-glow: rgba(255, 42, 95, 0.35);
-    --badge-bg: #2b111c;
-    --text-main: #f5eef0;
-    --text-sub: #9e858d;
-    --cyan: #00f0ff;
+    --accent-dark: #b8143e;
+    --accent-glow: rgba(255, 42, 95, 0.38);
+    --neon-cyan: #00f0ff;
+    --neon-purple: #a855f7;
+    --neon-green: #00e676;
+    --text-primary: #f8f0f4;
+    --text-secondary: #a38993;
+    --badge-bg: #29101c;
   }
 
   * {
@@ -23,23 +28,77 @@
     user-select: none;
   }
 
-  body {
+  html, body {
     margin: 0;
-    padding: 14px 12px 40px 12px;
-    background: radial-gradient(circle at top, #1f0915 0%, var(--bg-main) 55%);
-    color: var(--text-main);
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    padding: 0;
+    background: radial-gradient(circle at 50% 0%, #240a18 0%, var(--bg-deep) 60%);
+    color: var(--text-primary);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, sans-serif;
+    min-height: 100vh;
     overflow-x: hidden;
   }
 
-  /* ВЕРХНИЕ ВКЛАДКИ (ЗАПУСК / НАСТРОЙКИ) КАК НА ВИДЕО */
+  .app-wrapper {
+    max-width: 540px;
+    margin: 0 auto;
+    padding: 14px 12px 60px 12px;
+  }
+
+  /* ВЕРХНИЙ СТАТУС-БАР ЖЕЛЕЗА И SHIZUKU */
+  .top-statusbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: rgba(20, 9, 18, 0.9);
+    border: 1px solid var(--border-main);
+    border-radius: 16px;
+    padding: 10px 14px;
+    margin-bottom: 12px;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.5);
+  }
+
+  .brand-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: 900;
+    font-size: 15px;
+    letter-spacing: 0.6px;
+    color: #fff;
+  }
+
+  .brand-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: var(--accent);
+    box-shadow: 0 0 10px var(--accent);
+  }
+
+  .brand-dot.online {
+    background: var(--neon-green);
+    box-shadow: 0 0 10px var(--neon-green);
+  }
+
+  .hw-chip {
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--neon-cyan);
+    background: rgba(0, 240, 255, 0.1);
+    border: 1px solid rgba(0, 240, 255, 0.3);
+    padding: 4px 10px;
+    border-radius: 999px;
+  }
+
+  /* ПЕРЕКЛЮЧАТЕЛЬ ВКЛАДОК (ЗАПУСК / НАСТРОЙКИ) КАК НА ВИДЕО */
   .top-tabs {
     display: flex;
-    background: #140a12;
-    border: 1px solid var(--card-border);
+    background: #140913;
+    border: 1px solid var(--border-main);
     border-radius: 999px;
     padding: 5px;
     margin-bottom: 16px;
+    box-shadow: inset 0 2px 8px rgba(0,0,0,0.6);
   }
 
   .tab-btn {
@@ -50,76 +109,135 @@
     font-size: 13px;
     font-weight: 800;
     letter-spacing: 0.8px;
-    color: var(--text-sub);
+    color: var(--text-secondary);
     cursor: pointer;
-    transition: 0.2s;
+    transition: all 0.2s ease;
   }
 
   .tab-btn.active {
-    background: linear-gradient(90deg, #d91b4b, #ff2e63);
+    background: linear-gradient(90deg, #d41948, #ff2a5f);
     color: #fff;
-    box-shadow: 0 0 18px var(--accent-glow);
+    box-shadow: 0 0 20px var(--accent-glow);
   }
 
-  /* ОСНОВНАЯ КАРТОЧКА */
-  .main-card {
-    background: var(--card-bg);
-    border: 1px solid var(--card-border);
+  /* КАРТОЧКИ КОНТЕНТА */
+  .card {
+    background: var(--bg-card);
+    border: 1px solid var(--border-main);
     border-radius: 22px;
     padding: 18px 16px;
-    box-shadow: 0 10px 35px rgba(0,0,0,0.65);
     margin-bottom: 16px;
+    box-shadow: 0 12px 34px rgba(0, 0, 0, 0.65);
   }
 
-  .sec-header {
+  .sec-title {
     font-size: 15px;
     font-weight: 800;
     letter-spacing: 0.7px;
     text-transform: uppercase;
-    margin: 18px 0 4px 0;
     color: #fff;
+    margin: 18px 0 4px 0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
   }
-  .sec-header:first-child {
+  .sec-title:first-child {
     margin-top: 0;
   }
 
-  .sec-desc {
+  .sec-subtitle {
     font-size: 13px;
-    color: var(--text-sub);
+    color: var(--text-secondary);
     margin-bottom: 14px;
+    line-height: 1.35;
   }
 
-  /* ПОЛЗУНКИ (ТОЧНЫЙ СТИЛЬ ИЗ ВИДЕО ДРУГА) */
-  .param-block {
-    padding: 12px 0;
+  /* АВТО-СКАНЕР УСТРОЙСТВА БАННЕР */
+  .autotune-banner {
+    background: linear-gradient(135deg, rgba(255,42,95,0.16), rgba(168,85,247,0.14));
+    border: 1px solid rgba(255,42,95,0.45);
+    border-radius: 16px;
+    padding: 14px;
+    margin-bottom: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .autotune-info {
+    font-size: 12.5px;
+    color: #ffdce5;
+    line-height: 1.4;
+  }
+
+  /* СЕТКА ПРЕСЕТОВ */
+  .preset-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-bottom: 16px;
+  }
+
+  .preset-item {
+    background: var(--bg-card-inner);
+    border: 1px solid #331324;
+    border-radius: 15px;
+    padding: 12px;
+    cursor: pointer;
+    transition: all 0.18s ease;
+    position: relative;
+  }
+
+  .preset-item.active {
+    border-color: var(--accent);
+    background: #280d1b;
+    box-shadow: 0 0 15px var(--accent-glow);
+  }
+
+  .preset-item h4 {
+    margin: 0 0 5px 0;
+    font-size: 13.5px;
+    color: #fff;
+  }
+
+  .preset-item p {
+    margin: 0;
+    font-size: 11px;
+    color: var(--text-secondary);
+    line-height: 1.3;
+  }
+
+  /* ПОЛЗУНКИ (1 В 1 КАК В ПРИЛОЖЕНИИ ДРУГА НА ВИДЕО + ЗАПАС) */
+  .slider-row {
+    padding: 13px 0;
     border-bottom: 1px solid rgba(255, 255, 255, 0.05);
   }
-  .param-block:last-child {
+  .slider-row:last-child {
     border-bottom: none;
   }
 
-  .param-top {
+  .slider-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 10px;
+    margin-bottom: 9px;
   }
 
-  .param-title {
+  .slider-name {
     font-size: 15px;
     font-weight: 700;
     color: #fff;
   }
 
-  .param-badge {
+  .slider-val {
     background: var(--badge-bg);
-    border: 1px solid #4d192b;
+    border: 1px solid #521a2e;
     color: #ff4778;
     font-weight: 700;
     font-size: 13px;
     padding: 4px 10px;
     border-radius: 8px;
-    min-width: 44px;
+    min-width: 46px;
     text-align: center;
   }
 
@@ -127,7 +245,7 @@
     -webkit-appearance: none;
     width: 100%;
     height: 5px;
-    background: #2b1822;
+    background: #2b1621;
     border-radius: 5px;
     outline: none;
     margin: 6px 0 10px 0;
@@ -140,110 +258,169 @@
     border-radius: 50%;
     background: var(--accent);
     box-shadow: 0 0 12px var(--accent);
+    border: 2px solid #ffe0e9;
     cursor: pointer;
-    border: 2px solid #xffb3c6;
   }
 
-  .param-hint {
+  .slider-hint {
     font-size: 12px;
     font-style: italic;
-    color: var(--text-sub);
+    color: var(--text-secondary);
   }
 
-  /* КНОПКИ УПРАВЛЕНИЯ */
-  .btn-row {
+  /* ПЕРЕКЛЮЧАТЕЛИ (ТУМБЛЕРЫ) */
+  .toggle-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 0;
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+  }
+  .toggle-row:last-child {
+    border-bottom: none;
+  }
+
+  .toggle-text h5 {
+    margin: 0 0 3px 0;
+    font-size: 14px;
+    color: #fff;
+  }
+  .toggle-text p {
+    margin: 0;
+    font-size: 11.5px;
+    color: var(--text-secondary);
+  }
+
+  .switch {
+    position: relative;
+    display: inline-block;
+    width: 48px;
+    height: 26px;
+    flex-shrink: 0;
+  }
+  .switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+  }
+  .slider-toggle {
+    position: absolute;
+    cursor: pointer;
+    inset: 0;
+    background-color: #2b1621;
+    border: 1px solid #4a1f34;
+    transition: .25s;
+    border-radius: 34px;
+  }
+  .slider-toggle:before {
+    position: absolute;
+    content: "";
+    height: 18px;
+    width: 18px;
+    left: 3px;
+    bottom: 3px;
+    background-color: #fff;
+    transition: .25s;
+    border-radius: 50%;
+  }
+  input:checked + .slider-toggle {
+    background-color: var(--accent);
+    border-color: #ff6b93;
+    box-shadow: 0 0 12px var(--accent-glow);
+  }
+  input:checked + .slider-toggle:before {
+    transform: translateX(22px);
+  }
+
+  /* КНОПКИ */
+  .btn-group {
     display: flex;
     gap: 10px;
-    margin-top: 14px;
+    margin-top: 12px;
+    flex-wrap: wrap;
   }
 
-  .pill-btn {
+  .btn {
     flex: 1;
-    padding: 13px 12px;
+    min-width: 110px;
+    padding: 13px 14px;
     border-radius: 999px;
-    background: #1c0f18;
+    background: #1b0d18;
     border: 1px solid #3d1b2c;
     color: #fff;
-    font-size: 14px;
+    font-size: 13.5px;
     font-weight: 700;
     text-align: center;
     cursor: pointer;
     transition: 0.15s;
   }
-  .pill-btn:active {
+  .btn:active {
     transform: scale(0.97);
-    background: #2b1423;
   }
-
-  .pill-btn.primary {
+  .btn.primary {
     background: linear-gradient(90deg, #d91b4b, #ff2e63);
     border: none;
-    box-shadow: 0 0 16px var(--accent-glow);
+    box-shadow: 0 0 18px var(--accent-glow);
+  }
+  .btn.cyan {
+    background: linear-gradient(90deg, #0072ff, #00c6ff);
+    border: none;
+    color: #fff;
+  }
+  .btn.active-chip {
+    border-color: var(--neon-cyan);
+    color: var(--neon-cyan);
+    background: rgba(0, 240, 255, 0.12);
   }
 
-  .action-box {
+  .bottom-action-wrap {
     margin-top: 14px;
     text-align: center;
   }
 
-  .action-caption {
+  .bottom-caption {
     font-size: 12px;
     font-style: italic;
-    color: var(--text-sub);
-    margin-top: 6px;
-    margin-bottom: 10px;
+    color: var(--text-secondary);
+    margin: 7px 0 12px 0;
   }
 
-  /* ПРЕСЕТЫ НА ВКЛАДКЕ ЗАПУСКА */
-  .preset-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
+  /* ЦВЕТОВЫЕ КРУЖКИ ДЛЯ ПРИЦЕЛА */
+  .color-row {
+    display: flex;
     gap: 10px;
-    margin-bottom: 16px;
+    margin-top: 10px;
   }
-
-  .preset-card {
-    background: #190c16;
-    border: 1px solid #361526;
-    border-radius: 14px;
-    padding: 12px;
+  .color-swatch {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
     cursor: pointer;
-    transition: 0.2s;
+    border: 2px solid transparent;
   }
-  .preset-card.selected {
-    border-color: var(--accent);
-    background: #290e1c;
-    box-shadow: 0 0 12px var(--accent-glow);
-  }
-  .preset-card h4 {
-    margin: 0 0 4px 0;
-    font-size: 14px;
-    color: #fff;
-  }
-  .preset-card p {
-    margin: 0;
-    font-size: 11px;
-    color: var(--text-sub);
+  .color-swatch.active {
+    border-color: #fff;
+    transform: scale(1.12);
   }
 
-  /* МОДАЛЬНЫЕ ОКНА (СКАНЕР ЭКРАНА И ТЕСТ КАСАНИЙ) */
-  .modal-overlay {
+  /* МОДАЛЬНЫЕ ОКНА (РАМКА ОПРЕДЕЛЕНИЯ ЭКРАНА И ТЕСТ КАСАНИЙ) */
+  .modal-backdrop {
     display: none;
     position: fixed;
     inset: 0;
     background: rgba(5, 2, 8, 0.94);
-    z-index: 999;
-    padding: 18px;
+    z-index: 1000;
+    padding: 16px;
     flex-direction: column;
     justify-content: center;
   }
 
-  .scan-frame {
+  .touch-arena {
     width: 100%;
-    height: 300px;
+    height: 310px;
     border: 2px dashed var(--accent);
     border-radius: 20px;
-    background: #130811;
+    background: #120710;
     position: relative;
     overflow: hidden;
     touch-action: none;
@@ -251,422 +428,545 @@
     align-items: center;
     justify-content: center;
     text-align: center;
-    padding: 20px;
   }
 
-  canvas.touch-canvas {
+  canvas.arena-canvas {
     position: absolute;
     inset: 0;
     width: 100%;
     height: 100%;
   }
 
-  .status-banner {
-    background: #1b0c16;
-    border-left: 4px solid var(--accent);
-    padding: 10px 12px;
-    border-radius: 8px;
-    font-size: 12px;
-    color: #ffd6e0;
-    margin-bottom: 14px;
+  .arena-overlay-label {
+    z-index: 2;
+    pointer-events: none;
+    padding: 14px;
+    font-size: 13.5px;
+    font-weight: 700;
+    color: #ff5c8a;
   }
 </style>
 </head>
 <body>
 
-  <!-- ВЕРХНИЕ ВКЛАДКИ КАК В ПРИЛОЖЕНИИ ДРУГА -->
+<div class="app-wrapper">
+
+  <!-- ВЕРХНЯЯ ПАНЕЛЬ СТАТУСА И УСТРОЙСТВА -->
+  <div class="top-statusbar">
+    <div class="brand-title">
+      <span id="status-dot" class="brand-dot"></span>
+      <span id="status-title">TELEPORT SO2: ГОТОВ</span>
+    </div>
+    <div id="hw-badge" class="hw-chip">Определение...</div>
+  </div>
+
+  <!-- ВЕРХНИЕ ВКЛАДКИ (1 В 1 КАК НА ВИДЕО) -->
   <div class="top-tabs">
-    <div id="tab-launch" class="tab-btn" onclick="switchTab('launch')">► ЗАПУСК</div>
-    <div id="tab-settings" class="tab-btn active" onclick="switchTab('settings')">⇄ НАСТРОЙКИ</div>
+    <div id="tab-btn-launch" class="tab-btn" onclick="switchMainTab('launch')">► ЗАПУСК</div>
+    <div id="tab-btn-settings" class="tab-btn active" onclick="switchMainTab('settings')">⇄ НАСТРОЙКИ</div>
   </div>
 
-  <!-- ================= ВКЛАДКА 1: ЗАПУСК И ДОП. ФУНКЦИИ ================= -->
-  <div id="view-launch" style="display: none;">
-    <div class="main-card">
-      <div class="sec-header">СТАТУС TELEPORT ENGINE</div>
-      <div id="engine-status" class="status-banner">
-        Статус: <b>Готов к запуску</b> (120 FPS Lock без просадок активен)
+  <!-- ================================================================= -->
+  <!-- ВКЛАДКА 1: ЗАПУСК, АВТО-СКАНЕР, РАСТЯГ 4:3, ПРИЦЕЛ И ЗАЩИТА 120 ГЦ -->
+  <!-- ================================================================= -->
+  <div id="tab-launch" style="display: none;">
+
+    <!-- КАРТОЧКА АВТО-СКАНИРОВАНИЯ УСТРОЙСТВА И АКТИВАЦИИ -->
+    <div class="card">
+      <div class="sec-title">
+        <span>УПРАВЛЕНИЕ ДВИЖКОМ</span>
+        <span style="font-size:11px; color:var(--neon-green);">120 FPS LOCK</span>
+      </div>
+      <div class="sec-subtitle">
+        Квантование тача кусками + осевое выпрямление без сброса герцовки экрана до 60 Гц.
       </div>
 
-      <div class="sec-header">ГОТОВЫЕ НАБОРЫ ТЕЛЕПОРТА</div>
-      <div class="sec-desc">Выбери базу или настрой свои числа во вкладке «Настройки».</div>
+      <div class="autotune-banner">
+        <div class="autotune-info" id="autotune-summary">
+          Нажми <b>«Авто-настройка под мой девайс»</b> — приложение считает модель процессора, DPI экрана и выставит идеальные ползунки телепорта.
+        </div>
+        <div class="btn cyan" onclick="autoDetectAndTuneHardware()">
+          ⚡ Авто-настройка под мой девайс (Scan)
+        </div>
+      </div>
 
+      <div class="sec-title">ГОТОВЫЕ НАБОРЫ (ПРЕСЕТЫ)</div>
       <div class="preset-grid">
-        <div class="preset-card selected" id="pre-friend" onclick="applyPreset('friend')">
-          <h4>🔥 Как у друга (1:1)</h4>
-          <p>Куски: 10, Выпрямление: 0.80, Хват: 4, Отсечка: 3</p>
+        <div class="preset-item active" id="preset-friend" onclick="selectPreset('friend')">
+          <h4>🔥 Сенса Друга (1:1)</h4>
+          <p>Точные числа с видео: Куски 10, Выпрямление 0.80, Хват 4</p>
         </div>
-        <div class="preset-card" id="pre-s25u" onclick="applyPreset('s25u')">
-          <h4>⚡ S25 Ultra Boost</h4>
-          <p>Под QHD+ 120Hz: Куски: 14, Выпрямление: 0.88, Хват: 6</p>
+        <div class="preset-item" id="preset-s25u" onclick="selectPreset('s25u')">
+          <h4>💎 S25 Ultra QHD+</h4>
+          <p>Под плотную матрицу: Куски 14, Выпрямление 0.86, Хват 5</p>
         </div>
-        <div class="preset-card" id="pre-hard" onclick="applyPreset('hard')">
+        <div class="preset-item" id="preset-hard" onclick="selectPreset('hard')">
           <h4>🚀 Жёсткий Телепорт</h4>
-          <p>Крупный шаг куска (22) + резкий срыв в голову</p>
+          <p>Крупные куски (20) + резкий горизонтальный флик</p>
         </div>
-        <div class="preset-card" id="pre-awp" onclick="applyPreset('awp')">
-          <h4>🎯 AWP Снайпер</h4>
-          <p>Максимальная стоп-фиксация в конце флика</p>
+        <div class="preset-item" id="preset-awp" onclick="selectPreset('awp')">
+          <h4>🎯 AWP Стоп-Фикс</h4>
+          <p>Мгновенная остановка прицела в точке выстрела</p>
         </div>
       </div>
 
-      <div class="btn-row">
-        <div class="pill-btn primary" onclick="startEngine()">🚀 ВКЛЮЧИТЬ ТЕЛЕПОРТ</div>
-        <div class="pill-btn" onclick="stopEngine()">⏹ ВЫКЛЮЧИТЬ</div>
+      <div class="btn-group">
+        <div class="btn primary" onclick="activateTeleportEngine()">🚀 ЗАПУСТИТЬ ТЕЛЕПОРТ</div>
+        <div class="btn" onclick="deactivateTeleportEngine()">⏹ ВЫКЛЮЧИТЬ</div>
       </div>
     </div>
 
-    <!-- РАСТЯГ ЭКРАНА 120 ГЦ И ПРИЦЕЛ ИЗ ТВОЕГО MAINACTIVITY -->
-    <div class="main-card">
-      <div class="sec-header">РАСТЯГ ЭКРАНА (БЕЗ ПЕРЕВОРОТА И ПРОСАДОК)</div>
-      <div class="sec-desc">Фиксирует 120 Гц и управляется плавающей кнопкой «T».</div>
-      <div class="btn-row">
-        <div class="pill-btn" onclick="setStretch('4:3')">4:3</div>
-        <div class="pill-btn" onclick="setStretch('5:4')">5:4</div>
-        <div class="pill-btn" onclick="setStretch('16:10')">16:10</div>
-        <div class="pill-btn" onclick="resetStretch()">Сброс</div>
-      </div>
-      <div class="btn-row">
-        <div class="pill-btn" onclick="toggleFloatT(true)">Вкл кнопку «T»</div>
-        <div class="pill-btn" onclick="toggleFloatT(false)">Убрать «T»</div>
+    <!-- КАРТОЧКА ДОПОЛНИТЕЛЬНЫХ МОДУЛЕЙ И ФИКСА ПРОСАДОК FPS -->
+    <div class="card">
+      <div class="sec-title">ФИКС ФРИЗОВ И БОЕВЫЕ МОДУЛИ</div>
+      <div class="sec-subtitle">Стабилизация 120 FPS без троттлинга и просадок до 60 Гц.</div>
+
+      <div class="toggle-row">
+        <div class="toggle-text">
+          <h5>Защита 120 Гц (Anti-60Hz Drop)</h5>
+          <p>Запрещает One UI и GameService сбрасывать экран в 60 Гц</p>
+        </div>
+        <label class="switch">
+          <input type="checkbox" id="chk-thermal" checked onchange="toggleThermalGuard(this.checked)">
+          <span class="slider-toggle"></span>
+        </label>
       </div>
 
-      <div class="sec-header" style="margin-top: 20px;">КАСТОМНЫЙ ПРИЦЕЛ</div>
-      <div class="btn-row">
-        <div class="pill-btn" onclick="setCross('dot')">Точка</div>
-        <div class="pill-btn" onclick="setCross('cross')">Крест</div>
-        <div class="pill-btn" onclick="setCross('tshape')">T-Форма</div>
-        <div class="pill-btn" onclick="setCross('off')">Выкл</div>
+      <div class="toggle-row">
+        <div class="toggle-text">
+          <h5>Smart AWP Lock (Стоп-вязкость)</h5>
+          <p>Убирает срыв прицела в момент нажатия кнопки выстрела</p>
+        </div>
+        <label class="switch">
+          <input type="checkbox" id="chk-awp" onchange="toggleSmartAwp(this.checked)">
+          <span class="slider-toggle"></span>
+        </label>
+      </div>
+
+      <div class="toggle-row">
+        <div class="toggle-text">
+          <h5>Квантование отдачи (AKR / M4)</h5>
+          <p>Уплотняет вертикальный шаг при зажиме</p>
+        </div>
+        <label class="switch">
+          <input type="checkbox" id="chk-recoil" onchange="toggleAntiRecoil(this.checked)">
+          <span class="slider-toggle"></span>
+        </label>
+      </div>
+
+      <div class="toggle-row">
+        <div class="toggle-text">
+          <h5>Стелс-режим оверлеев (Защита записи)</h5>
+          <p>Скрывает кнопку «T» и прицел на видео и скриншотах</p>
+        </div>
+        <label class="switch">
+          <input type="checkbox" id="chk-stealth" onchange="toggleStealth(this.checked)">
+          <span class="slider-toggle"></span>
+        </label>
+      </div>
+
+      <div class="slider-row" style="margin-top:6px;">
+        <div class="slider-header">
+          <span class="slider-name">Масштаб рендера игры (FPS Boost)</span>
+          <span class="slider-val" id="lbl-downscale">100%</span>
+        </div>
+        <input type="range" id="sl-downscale" min="70" max="100" step="5" value="100"
+               oninput="document.getElementById('lbl-downscale').innerText = this.value + '%'"
+               onchange="applyDownscale(this.value)">
+        <div class="slider-hint">100% — родное качество; 85–90% — убирает нагрев на длинных каткаx</div>
+      </div>
+    </div>
+
+    <!-- КАРТОЧКА РАСТЯГА ЭКРАНА И КНОПКИ «T» -->
+    <div class="card">
+      <div class="sec-title">РАСТЯГ ЭКРАНА (БЕЗ ПЕРЕВОРОТА ИГРЫ)</div>
+      <div class="sec-subtitle">Широкие модельки с жёсткой фиксацией 120 Гц и управлением кнопкой «T».</div>
+
+      <div class="btn-group">
+        <div class="btn" onclick="applyStretchRatio('4:3')">4:3 Классика</div>
+        <div class="btn" onclick="applyStretchRatio('5:4')">5:4 Широкий</div>
+        <div class="btn" onclick="applyStretchRatio('3:2')">3:2 Кибер</div>
+        <div class="btn" onclick="applyStretchRatio('16:10')">16:10 Лайт</div>
+      </div>
+
+      <div class="btn-group">
+        <div class="btn primary" onclick="enableFloatingT(true)">Показать кнопку «T»</div>
+        <div class="btn" onclick="enableFloatingT(false)">Скрыть «T»</div>
+        <div class="btn" onclick="resetScreenStretch()">Сброс экрана</div>
+      </div>
+    </div>
+
+    <!-- КАРТОЧКА КАСТОМНОГО ПРИЦЕЛА -->
+    <div class="card">
+      <div class="sec-title">КАСТОМНЫЙ ПРИЦЕЛ</div>
+      <div class="sec-subtitle">Аппаратный оверлей по центру экрана без задержки.</div>
+
+      <div class="btn-group">
+        <div class="btn" onclick="selectCrosshair('dot')">Точка</div>
+        <div class="btn" onclick="selectCrosshair('cross')">Крест</div>
+        <div class="btn" onclick="selectCrosshair('tshape')">T-Прицел</div>
+        <div class="btn" onclick="selectCrosshair('circle')">Круг</div>
+        <div class="btn" onclick="selectCrosshair('off')">Выкл</div>
+      </div>
+
+      <div class="slider-row">
+        <div class="slider-header">
+          <span class="slider-name">Размер прицела</span>
+          <span class="slider-val" id="lbl-ch-scale">50</span>
+        </div>
+        <input type="range" id="sl-ch-scale" min="10" max="100" value="50" oninput="syncCrosshairStyle()">
+      </div>
+
+      <div class="slider-row">
+        <div class="slider-header">
+          <span class="slider-name">Прозрачность</span>
+          <span class="slider-val" id="lbl-ch-op">100%</span>
+        </div>
+        <input type="range" id="sl-ch-op" min="15" max="100" value="100" oninput="syncCrosshairStyle()">
+      </div>
+
+      <div class="color-row">
+        <div class="color-swatch active" style="background:#00F0FF;" onclick="pickCrosshairColor('#00F0FF', this)"></div>
+        <div class="color-swatch" style="background:#FF2A5F;" onclick="pickCrosshairColor('#FF2A5F', this)"></div>
+        <div class="color-swatch" style="background:#00E676;" onclick="pickCrosshairColor('#00E676', this)"></div>
+        <div class="color-swatch" style="background:#D946EF;" onclick="pickCrosshairColor('#D946EF', this)"></div>
+        <div class="color-swatch" style="background:#FFEE00;" onclick="pickCrosshairColor('#FFEE00', this)"></div>
       </div>
     </div>
   </div>
 
-  <!-- ================= ВКЛАДКА 2: НАСТРОЙКИ (1 В 1 КАК НА ВИДЕО + ЗАПАС) ================= -->
-  <div id="view-settings">
-    <div class="main-card">
-      <div class="sec-header">СВОИ ЧИСЛА</div>
-      <div class="sec-desc">Эти значения твои. Ползунки сделаны с большим запасом для регулировки.</div>
+  <!-- ================================================================= -->
+  <!-- ВКЛАДКА 2: НАСТРОЙКИ (ВСЕ 18 ПОЛЗУНКОВ ИЗ ВИДЕО ДРУГА С ЗАПАСОМ)   -->
+  <!-- ================================================================= -->
+  <div id="tab-settings">
+    <div class="card">
+      <div class="sec-title">СВОИ ЧИСЛА</div>
+      <div class="sec-subtitle">Эти значения твои. Ползунки расширены с запасом, чтобы каждый мог настроить под себя.</div>
 
-      <!-- БЛОК 1: ОСТРОТА -->
-      <div class="sec-header">ОСТРОТА</div>
-      <div class="sec-desc">Насколько резко реагирует прицел.</div>
+      <!-- СЕКЦИЯ 1: ОСТРОТА -->
+      <div class="sec-title">ОСТРОТА</div>
+      <div class="sec-subtitle">Насколько резко реагирует прицел.</div>
 
-      <div class="param-block">
-        <div class="param-top">
-          <span class="param-title">Резкость</span>
-          <span class="param-badge" id="lbl-sharp">1.00</span>
+      <div class="slider-row">
+        <div class="slider-header">
+          <span class="slider-name">Резкость</span>
+          <span class="slider-val" id="val-sharp">1.00</span>
         </div>
-        <input type="range" id="sl-sharp" min="0.50" max="5.00" step="0.05" value="1.00" oninput="syncUI()" onchange="pushLiveParams()">
-        <div class="param-hint">Больше — чувствительнее, но дрожит прицел</div>
+        <input type="range" id="inp-sharp" min="0.50" max="6.00" step="0.05" value="1.00" oninput="onSliderInput()" onchange="commitEngineUpdate()">
+        <div class="slider-hint">Больше — чувствительнее, но дрожит прицел</div>
       </div>
 
-      <div class="param-block">
-        <div class="param-top">
-          <span class="param-title">Влево-вправо</span>
-          <span class="param-badge" id="lbl-sx">1.00</span>
+      <div class="slider-row">
+        <div class="slider-header">
+          <span class="slider-name">Влево-вправо</span>
+          <span class="slider-val" id="val-sx">1.00</span>
         </div>
-        <input type="range" id="sl-sx" min="0.50" max="5.00" step="0.05" value="1.00" oninput="syncUI()" onchange="pushLiveParams()">
-        <div class="param-hint">Только горизонталь — прицел по врагам в стороне</div>
+        <input type="range" id="inp-sx" min="0.50" max="6.00" step="0.05" value="1.00" oninput="onSliderInput()" onchange="commitEngineUpdate()">
+        <div class="slider-hint">Только горизонталь — прицел по врагам в стороне</div>
       </div>
 
-      <div class="param-block">
-        <div class="param-top">
-          <span class="param-title">Вверх-вниз</span>
-          <span class="param-badge" id="lbl-sy">1.00</span>
+      <div class="slider-row">
+        <div class="slider-header">
+          <span class="slider-name">Вверх-вниз</span>
+          <span class="slider-val" id="val-sy">1.00</span>
         </div>
-        <input type="range" id="sl-sy" min="0.50" max="5.00" step="0.05" value="1.00" oninput="syncUI()" onchange="pushLiveParams()">
-        <div class="param-hint">Только вертикаль — прицел по земле и вверх</div>
+        <input type="range" id="inp-sy" min="0.50" max="6.00" step="0.05" value="1.00" oninput="onSliderInput()" onchange="commitEngineUpdate()">
+        <div class="slider-hint">Только вертикаль — прицел по земле и вверх</div>
       </div>
 
-      <!-- БЛОК 2: ТОЧНОСТЬ -->
-      <div class="sec-header">ТОЧНОСТЬ</div>
-      <div class="sec-desc">Убирает дрожание, задержку и мёртвую зону.</div>
+      <!-- СЕКЦИЯ 2: ТОЧНОСТЬ -->
+      <div class="sec-title">ТОЧНОСТЬ</div>
+      <div class="sec-subtitle">Убирает дрожание, задержку и мёртвую зону.</div>
 
-      <div class="param-block">
-        <div class="param-top">
-          <span class="param-title">Отсечка шума</span>
-          <span class="param-badge" id="lbl-noise">3</span>
+      <div class="slider-row">
+        <div class="slider-header">
+          <span class="slider-name">Отсечка шума</span>
+          <span class="slider-val" id="val-noise">3</span>
         </div>
-        <input type="range" id="sl-noise" min="0" max="25" step="1" value="3" oninput="syncUI()" onchange="pushLiveParams()">
-        <div class="param-hint">Игнорирует микродвижения пальца — меньше дребезга</div>
+        <input type="range" id="inp-noise" min="0" max="25" step="1" value="3" oninput="onSliderInput()" onchange="commitEngineUpdate()">
+        <div class="slider-hint">Игнорирует микродвижения пальца — меньше дребезга</div>
       </div>
 
-      <div class="param-block">
-        <div class="param-top">
-          <span class="param-title">Мёртвая зона</span>
-          <span class="param-badge" id="lbl-dead">1</span>
+      <div class="slider-row">
+        <div class="slider-header">
+          <span class="slider-name">Мёртвая зона</span>
+          <span class="slider-val" id="val-dead">1</span>
         </div>
-        <input type="range" id="sl-dead" min="0" max="20" step="1" value="1" oninput="syncUI()" onchange="pushLiveParams()">
-        <div class="param-hint">Маленькие движения не двигают прицел вообще</div>
+        <input type="range" id="inp-dead" min="0" max="20" step="1" value="1" oninput="onSliderInput()" onchange="commitEngineUpdate()">
+        <div class="slider-hint">Маленькие движения не двигают прицел вообще</div>
       </div>
 
-      <div class="param-block">
-        <div class="param-top">
-          <span class="param-title">Упреждение</span>
-          <span class="param-badge" id="lbl-lead">0</span>
+      <div class="slider-row">
+        <div class="slider-header">
+          <span class="slider-name">Упреждение</span>
+          <span class="slider-val" id="val-lead">0</span>
         </div>
-        <input type="range" id="sl-lead" min="0" max="20" step="1" value="0" oninput="syncUI()" onchange="pushLiveParams()">
-        <div class="param-hint">Прицел ведёт цель — попадать легче</div>
+        <input type="range" id="inp-lead" min="0" max="25" step="1" value="0" oninput="onSliderInput()" onchange="commitEngineUpdate()">
+        <div class="slider-hint">Прицел ведёт цель — попадать легче</div>
       </div>
 
-      <!-- БЛОК 3: ПРИЛИПАНИЕ -->
-      <div class="sec-header">ПРИЛИПАНИЕ</div>
-      <div class="sec-desc">Прицел держится на линиях и углах.</div>
+      <!-- СЕКЦИЯ 3: ПРИЛИПАНИЕ -->
+      <div class="sec-title">ПРИЛИПАНИЕ</div>
+      <div class="sec-subtitle">Прицел держится на линиях и углах.</div>
 
-      <div class="param-block">
-        <div class="param-top">
-          <span class="param-title">Прилипание к осям</span>
-          <span class="param-badge" id="lbl-axis">4</span>
+      <div class="slider-row">
+        <div class="slider-header">
+          <span class="slider-name">Прилипание к осям</span>
+          <span class="slider-val" id="val-axis">4</span>
         </div>
-        <input type="range" id="sl-axis" min="0" max="25" step="1" value="4" oninput="syncUI()" onchange="pushLiveParams()">
-        <div class="param-hint">Притягивает прицел к горизонтали и вертикали</div>
+        <input type="range" id="inp-axis" min="0" max="25" step="1" value="4" oninput="onSliderInput()" onchange="commitEngineUpdate()">
+        <div class="slider-hint">Притягивает прицел к горизонтали и вертикали</div>
       </div>
 
-      <div class="param-block">
-        <div class="param-top">
-          <span class="param-title">Через сколько липнуть</span>
-          <span class="param-badge" id="lbl-stick-delay">29</span>
+      <div class="slider-row">
+        <div class="slider-header">
+          <span class="slider-name">Через сколько липнуть</span>
+          <span class="slider-val" id="val-stick-delay">29</span>
         </div>
-        <input type="range" id="sl-stick-delay" min="0" max="100" step="1" value="29" oninput="syncUI()" onchange="pushLiveParams()">
-        <div class="param-hint">Сколько держать палец спокойно, чтобы включилось</div>
+        <input type="range" id="inp-stick-delay" min="0" max="100" step="1" value="29" oninput="onSliderInput()" onchange="commitEngineUpdate()">
+        <div class="slider-hint">Сколько держать палец спокойно, чтобы включилось</div>
       </div>
 
-      <div class="btn-row">
-        <div class="pill-btn" id="btn-toggle-extra" onclick="toggleExtraSection()">Спрятать</div>
-        <div class="pill-btn" onclick="applyPreset('friend')">Вернуть набор</div>
+      <div class="btn-group">
+        <div class="btn" id="btn-extra-toggle" onclick="toggleExtraBlock()">Спрятать</div>
+        <div class="btn" onclick="selectPreset('friend')">Вернуть набор</div>
       </div>
 
-      <!-- БЛОК 4: ДОПОЛНИТЕЛЬНО -->
-      <div id="extra-section" style="margin-top: 18px;">
-        <div class="sec-header">ДОПОЛНИТЕЛЬНО</div>
-        <div class="sec-desc">Для тех, кто знает, зачем это.</div>
+      <!-- СЕКЦИЯ 4: ДОПОЛНИТЕЛЬНО (ВСЕ ПАРАМЕТРЫ КУСКОВ И ХВАТА ПО ОСЯМ) -->
+      <div id="block-extra" style="margin-top: 18px;">
+        <div class="sec-title">ДОПОЛНИТЕЛЬНО</div>
+        <div class="sec-subtitle">Для тех, кто знает, зачем это.</div>
 
-        <div class="param-block">
-          <div class="param-top">
-            <span class="param-title">Сила прилипания</span>
-            <span class="param-badge" id="lbl-stick-force">1</span>
+        <div class="slider-row">
+          <div class="slider-header">
+            <span class="slider-name">Сила прилипания</span>
+            <span class="slider-val" id="val-stick-force">1</span>
           </div>
-          <input type="range" id="sl-stick-force" min="0" max="20" step="1" value="1" oninput="syncUI()" onchange="pushLiveParams()">
+          <input type="range" id="inp-stick-force" min="0" max="25" step="1" value="1" oninput="onSliderInput()" onchange="commitEngineUpdate()">
         </div>
 
-        <div class="param-block">
-          <div class="param-top">
-            <span class="param-title">Куски</span>
-            <span class="param-badge" id="lbl-chunks">10</span>
+        <div class="slider-row">
+          <div class="slider-header">
+            <span class="slider-name">Куски</span>
+            <span class="slider-val" id="val-chunks">10</span>
           </div>
-          <input type="range" id="sl-chunks" min="1" max="100" step="1" value="10" oninput="syncUI()" onchange="pushLiveParams()">
+          <input type="range" id="inp-chunks" min="1" max="120" step="1" value="10" oninput="onSliderInput()" onchange="commitEngineUpdate()">
         </div>
 
-        <div class="param-block">
-          <div class="param-top">
-            <span class="param-title">Мелочь мимо кусков</span>
-            <span class="param-badge" id="lbl-bypass">0</span>
+        <div class="slider-row">
+          <div class="slider-header">
+            <span class="slider-name">Мелочь мимо кусков</span>
+            <span class="slider-val" id="val-bypass">0</span>
           </div>
-          <input type="range" id="sl-bypass" min="0" max="30" step="1" value="0" oninput="syncUI()" onchange="pushLiveParams()">
+          <input type="range" id="inp-bypass" min="0" max="30" step="1" value="0" oninput="onSliderInput()" onchange="commitEngineUpdate()">
         </div>
 
-        <div class="param-block">
-          <div class="param-top">
-            <span class="param-title">Потолок куска</span>
-            <span class="param-badge" id="lbl-chunk-cap">0</span>
+        <div class="slider-row">
+          <div class="slider-header">
+            <span class="slider-name">Потолок куска</span>
+            <span class="slider-val" id="val-chunk-cap">0</span>
           </div>
-          <input type="range" id="sl-chunk-cap" min="0" max="50" step="1" value="0" oninput="syncUI()" onchange="pushLiveParams()">
+          <input type="range" id="inp-chunk-cap" min="0" max="60" step="1" value="0" oninput="onSliderInput()" onchange="commitEngineUpdate()">
         </div>
 
-        <div class="param-block">
-          <div class="param-top">
-            <span class="param-title">Куски только быстрее</span>
-            <span class="param-badge" id="lbl-chunk-fast">0</span>
+        <div class="slider-row">
+          <div class="slider-header">
+            <span class="slider-name">Куски только быстрее</span>
+            <span class="slider-val" id="val-chunk-fast">0</span>
           </div>
-          <input type="range" id="sl-chunk-fast" min="0" max="30" step="1" value="0" oninput="syncUI()" onchange="pushLiveParams()">
+          <input type="range" id="inp-chunk-fast" min="0" max="30" step="1" value="0" oninput="onSliderInput()" onchange="commitEngineUpdate()">
         </div>
 
-        <div class="param-block">
-          <div class="param-top">
-            <span class="param-title">Пауза после выстрела</span>
-            <span class="param-badge" id="lbl-pause">0</span>
+        <div class="slider-row">
+          <div class="slider-header">
+            <span class="slider-name">Пауза после выстрела</span>
+            <span class="slider-val" id="val-pause">0</span>
           </div>
-          <input type="range" id="sl-pause" min="0" max="30" step="1" value="0" oninput="syncUI()" onchange="pushLiveParams()">
+          <input type="range" id="inp-pause" min="0" max="30" step="1" value="0" oninput="onSliderInput()" onchange="commitEngineUpdate()">
         </div>
 
-        <div class="param-block">
-          <div class="param-top">
-            <span class="param-title">Разгон</span>
-            <span class="param-badge" id="lbl-accel">0.00</span>
+        <div class="slider-row">
+          <div class="slider-header">
+            <span class="slider-name">Разгон</span>
+            <span class="slider-val" id="val-accel">0.00</span>
           </div>
-          <input type="range" id="sl-accel" min="0.00" max="2.00" step="0.05" value="0.00" oninput="syncUI()" onchange="pushLiveParams()">
+          <input type="range" id="inp-accel" min="0.00" max="2.00" step="0.05" value="0.00" oninput="onSliderInput()" onchange="commitEngineUpdate()">
         </div>
 
-        <div class="param-block">
-          <div class="param-top">
-            <span class="param-title">Крутизна разгона</span>
-            <span class="param-badge" id="lbl-slope">0.30</span>
+        <div class="slider-row">
+          <div class="slider-header">
+            <span class="slider-name">Крутизна разгона</span>
+            <span class="slider-val" id="val-slope">0.30</span>
           </div>
-          <input type="range" id="sl-slope" min="0.00" max="2.00" step="0.05" value="0.30" oninput="syncUI()" onchange="pushLiveParams()">
+          <input type="range" id="inp-slope" min="0.00" max="2.00" step="0.05" value="0.30" oninput="onSliderInput()" onchange="commitEngineUpdate()">
         </div>
 
-        <div class="param-block">
-          <div class="param-top">
-            <span class="param-title">Дальность краёв</span>
-            <span class="param-badge" id="lbl-edge">0</span>
+        <div class="slider-row">
+          <div class="slider-header">
+            <span class="slider-name">Дальность краёв</span>
+            <span class="slider-val" id="val-edge">0</span>
           </div>
-          <input type="range" id="sl-edge" min="0" max="30" step="1" value="0" oninput="syncUI()" onchange="pushLiveParams()">
+          <input type="range" id="inp-edge" min="0" max="30" step="1" value="0" oninput="onSliderInput()" onchange="commitEngineUpdate()">
         </div>
 
-        <div class="param-block">
-          <div class="param-top">
-            <span class="param-title">Выпрямление</span>
-            <span class="param-badge" id="lbl-straight">0.80</span>
+        <div class="slider-row">
+          <div class="slider-header">
+            <span class="slider-name">Выпрямление</span>
+            <span class="slider-val" id="val-straight">0.80</span>
           </div>
-          <input type="range" id="sl-straight" min="0.00" max="1.00" step="0.02" value="0.80" oninput="syncUI()" onchange="pushLiveParams()">
+          <input type="range" id="inp-straight" min="0.00" max="1.00" step="0.02" value="0.80" oninput="onSliderInput()" onchange="commitEngineUpdate()">
         </div>
 
-        <div class="param-block">
-          <div class="param-top">
-            <span class="param-title">Хват по осям</span>
-            <span class="param-badge" id="lbl-grip">4</span>
+        <div class="slider-row">
+          <div class="slider-header">
+            <span class="slider-name">Хват по осям</span>
+            <span class="slider-val" id="val-grip">4</span>
           </div>
-          <input type="range" id="sl-grip" min="0" max="20" step="1" value="4" oninput="syncUI()" onchange="pushLiveParams()">
+          <input type="range" id="inp-grip" min="0" max="25" step="1" value="4" oninput="onSliderInput()" onchange="commitEngineUpdate()">
         </div>
 
-        <div class="param-block">
-          <div class="param-top">
-            <span class="param-title">Потолок хвата</span>
-            <span class="param-badge" id="lbl-grip-cap">4</span>
+        <div class="slider-row">
+          <div class="slider-header">
+            <span class="slider-name">Потолок хвата</span>
+            <span class="slider-val" id="val-grip-cap">4</span>
           </div>
-          <input type="range" id="sl-grip-cap" min="0" max="20" step="1" value="4" oninput="syncUI()" onchange="pushLiveParams()">
-          <div class="param-hint" style="margin-top: 8px;">Разгон спит, пока движение ровное — крутить его обычно не надо.</div>
+          <input type="range" id="inp-grip-cap" min="0" max="25" step="1" value="4" oninput="onSliderInput()" onchange="commitEngineUpdate()">
+          <div class="slider-hint" style="margin-top:8px;">Разгон спит, пока движение ровное — крутить его обычно не надо.</div>
         </div>
       </div>
 
-      <div class="btn-row">
-        <div class="pill-btn" onclick="openHelpModal()">Как настроить</div>
+      <div class="btn-group">
+        <div class="btn" onclick="showGuideAlert()">Как настроить</div>
       </div>
     </div>
 
-    <!-- НИЖНИЕ КНОПКИ КАЛИБРОВКИ И ТЕСТА КАСАНИЙ КАК НА ВИДЕО -->
-    <div class="action-box">
-      <div class="pill-btn" style="padding: 15px;" onclick="openScanModal()">
+    <!-- НИЖНИЕ КНОПКИ КАЛИБРОВКИ ЭКРАНА И ТЕСТА КАСАНИЙ (1 В 1 КАК НА ВИДЕО) -->
+    <div class="bottom-action-wrap">
+      <div class="btn" style="padding:15px;" onclick="openScreenCalibrator()">
         👆 Определить экран заново
       </div>
-      <div class="action-caption">
+      <div class="bottom-caption">
         Откроется рамка: проведи по ней пальцем, и телефон поймёт, какой у него экран.
       </div>
 
-      <div class="action-caption" style="margin-top: 14px;">
+      <div class="bottom-caption" style="margin-top:14px;">
         Если сенса не идёт — нажми сюда и тыкай экран.
       </div>
-      <div class="pill-btn" style="padding: 15px;" onclick="openTouchTestModal()">
+      <div class="btn" style="padding:15px;" onclick="openTouchVisualizer()">
         👉 Проверить касания
       </div>
     </div>
   </div>
 
-  <!-- МОДАЛКА 1: ОПРЕДЕЛИТЬ ЭКРАН ЗАНОВО (РАМКА АВТО-КАЛИБРОВКИ) -->
-  <div id="modal-scan" class="modal-overlay">
-    <div class="main-card">
-      <div class="sec-header">ОПРЕДЕЛЕНИЕ ЭКРАНА</div>
-      <div class="sec-desc" id="scan-instruction">
-        Проведи пальцем влево-вправо по рамке ниже (как будто фликаешь в игре). Мы замерим частоту тача, плотность пикселей и выставим идеальный телепорт.
-      </div>
-      <div class="scan-frame" id="scan-box">
-        <canvas id="scan-canvas" class="touch-canvas"></canvas>
-        <div id="scan-progress" style="z-index:2; pointer-events:none; font-weight:bold; color:#ff4778;">
-          Проведи пальцем по этой рамке (0%)
-        </div>
-      </div>
-      <div class="btn-row" style="margin-top:16px;">
-        <div class="pill-btn" onclick="closeModals()">Закрыть</div>
-      </div>
-    </div>
-  </div>
+</div>
 
-  <!-- МОДАЛКА 2: ПРОВЕРИТЬ КАСАНИЯ (ВИЗУАЛИЗАТОР ТЕЛЕПОРТА КУСКАМИ) -->
-  <div id="modal-test" class="modal-overlay">
-    <div class="main-card">
-      <div class="sec-header">ПРОВЕРКА КАСАНИЙ И КУСКОВ</div>
-      <div class="sec-desc">
-        Води пальцем: серая точка — обычный сырой палец, <b style="color:#00f0ff;">голубой прицел</b> — как твой прицел прыгает кусками и держит линию головы.
-      </div>
-      <div class="scan-frame" id="test-box">
-        <canvas id="test-canvas" class="touch-canvas"></canvas>
-      </div>
-      <div class="btn-row" style="margin-top:16px;">
-        <div class="pill-btn primary" onclick="healTouchAndClose()">Исправить тач и применить</div>
-        <div class="pill-btn" onclick="closeModals()">Закрыть</div>
+<!-- МОДАЛЬНОЕ ОКНО 1: РАМКА ОПРЕДЕЛЕНИЯ ЭКРАНА -->
+<div id="modal-calibrator" class="modal-backdrop">
+  <div class="card">
+    <div class="sec-title">ОПРЕДЕЛЕНИЕ ЭКРАНА И ТАЧА</div>
+    <div class="sec-subtitle">
+      Быстро проведи пальцем влево-вправо внутри рамки. Мы измерим частоту отклика матрицы, плотность пикселей и автоматически подберём ползунки.
+    </div>
+    <div class="touch-arena" id="calibrator-arena">
+      <canvas id="calibrator-canvas" class="arena-canvas"></canvas>
+      <div id="calibrator-status" class="arena-overlay-label">
+        Проведи пальцем по рамке (0%)
       </div>
     </div>
+    <div class="btn-group" style="margin-top:14px;">
+      <div class="btn" onclick="closeAllModals()">Закрыть</div>
+    </div>
   </div>
+</div>
+
+<!-- МОДАЛЬНОЕ ОКНО 2: ПРОВЕРИТЬ КАСАНИЯ (ВИЗУАЛИЗАТОР ТЕЛЕПОРТА) -->
+<div id="modal-visualizer" class="modal-backdrop">
+  <div class="card">
+    <div class="sec-title">ПРОВЕРКА КАСАНИЙ И КУСКОВ</div>
+    <div class="sec-subtitle">
+      Води пальцем: серая точка — обычный сырой свайп, <b style="color:var(--neon-cyan);">голубой прицел</b> — как работает квантование кусками и удержание линии головы.
+    </div>
+    <div class="touch-arena" id="visualizer-arena">
+      <canvas id="visualizer-canvas" class="arena-canvas"></canvas>
+    </div>
+    <div class="btn-group" style="margin-top:14px;">
+      <div class="btn primary" onclick="healAndApplyFromTest()">Сбросить лаги тача и применить</div>
+      <div class="btn" onclick="closeAllModals()">Закрыть</div>
+    </div>
+  </div>
+</div>
 
 <script>
-  // Текущие значения всех 18 параметров
-  function getVals() {
+  let selectedCrosshairColor = '#00F0FF';
+  let currentPresetId = 'friend';
+
+  function readAllSliders() {
     return {
-      sharp: parseFloat(document.getElementById('sl-sharp').value),
-      sx: parseFloat(document.getElementById('sl-sx').value),
-      sy: parseFloat(document.getElementById('sl-sy').value),
-      noise: parseInt(document.getElementById('sl-noise').value),
-      dead: parseInt(document.getElementById('sl-dead').value),
-      lead: parseInt(document.getElementById('sl-lead').value),
-      axis: parseInt(document.getElementById('sl-axis').value),
-      stickDelay: parseInt(document.getElementById('sl-stick-delay').value),
-      stickForce: parseInt(document.getElementById('sl-stick-force').value),
-      chunks: parseInt(document.getElementById('sl-chunks').value),
-      bypass: parseInt(document.getElementById('sl-bypass').value),
-      chunkCap: parseInt(document.getElementById('sl-chunk-cap').value),
-      chunkFast: parseInt(document.getElementById('sl-chunk-fast').value),
-      pause: parseInt(document.getElementById('sl-pause').value),
-      accel: parseFloat(document.getElementById('sl-accel').value),
-      slope: parseFloat(document.getElementById('sl-slope').value),
-      edge: parseInt(document.getElementById('sl-edge').value),
-      straight: parseFloat(document.getElementById('sl-straight').value),
-      grip: parseInt(document.getElementById('sl-grip').value),
-      gripCap: parseInt(document.getElementById('sl-grip-cap').value)
+      sharp: parseFloat(document.getElementById('inp-sharp').value),
+      sx: parseFloat(document.getElementById('inp-sx').value),
+      sy: parseFloat(document.getElementById('inp-sy').value),
+      noise: parseInt(document.getElementById('inp-noise').value),
+      dead: parseInt(document.getElementById('inp-dead').value),
+      lead: parseInt(document.getElementById('inp-lead').value),
+      axis: parseInt(document.getElementById('inp-axis').value),
+      stickDelay: parseInt(document.getElementById('inp-stick-delay').value),
+      stickForce: parseInt(document.getElementById('inp-stick-force').value),
+      chunks: parseInt(document.getElementById('inp-chunks').value),
+      bypass: parseInt(document.getElementById('inp-bypass').value),
+      chunkCap: parseInt(document.getElementById('inp-chunk-cap').value),
+      chunkFast: parseInt(document.getElementById('inp-chunk-fast').value),
+      pause: parseInt(document.getElementById('inp-pause').value),
+      accel: parseFloat(document.getElementById('inp-accel').value),
+      slope: parseFloat(document.getElementById('inp-slope').value),
+      edge: parseInt(document.getElementById('inp-edge').value),
+      straight: parseFloat(document.getElementById('inp-straight').value),
+      grip: parseInt(document.getElementById('inp-grip').value),
+      gripCap: parseInt(document.getElementById('inp-grip-cap').value)
     };
   }
 
-  function syncUI() {
-    const v = getVals();
-    document.getElementById('lbl-sharp').innerText = v.sharp.toFixed(2);
-    document.getElementById('lbl-sx').innerText = v.sx.toFixed(2);
-    document.getElementById('lbl-sy').innerText = v.sy.toFixed(2);
-    document.getElementById('lbl-noise').innerText = v.noise;
-    document.getElementById('lbl-dead').innerText = v.dead;
-    document.getElementById('lbl-lead').innerText = v.lead;
-    document.getElementById('lbl-axis').innerText = v.axis;
-    document.getElementById('lbl-stick-delay').innerText = v.stickDelay;
-    document.getElementById('lbl-stick-force').innerText = v.stickForce;
-    document.getElementById('lbl-chunks').innerText = v.chunks;
-    document.getElementById('lbl-bypass').innerText = v.bypass;
-    document.getElementById('lbl-chunk-cap').innerText = v.chunkCap;
-    document.getElementById('lbl-chunk-fast').innerText = v.chunkFast;
-    document.getElementById('lbl-pause').innerText = v.pause;
-    document.getElementById('lbl-accel').innerText = v.accel.toFixed(2);
-    document.getElementById('lbl-slope').innerText = v.slope.toFixed(2);
-    document.getElementById('lbl-edge').innerText = v.edge;
-    document.getElementById('lbl-straight').innerText = v.straight.toFixed(2);
-    document.getElementById('lbl-grip').innerText = v.grip;
-    document.getElementById('lbl-grip-cap').innerText = v.gripCap;
+  function onSliderInput() {
+    const v = readAllSliders();
+    document.getElementById('val-sharp').innerText = v.sharp.toFixed(2);
+    document.getElementById('val-sx').innerText = v.sx.toFixed(2);
+    document.getElementById('val-sy').innerText = v.sy.toFixed(2);
+    document.getElementById('val-noise').innerText = v.noise;
+    document.getElementById('val-dead').innerText = v.dead;
+    document.getElementById('val-lead').innerText = v.lead;
+    document.getElementById('val-axis').innerText = v.axis;
+    document.getElementById('val-stick-delay').innerText = v.stickDelay;
+    document.getElementById('val-stick-force').innerText = v.stickForce;
+    document.getElementById('val-chunks').innerText = v.chunks;
+    document.getElementById('val-bypass').innerText = v.bypass;
+    document.getElementById('val-chunk-cap').innerText = v.chunkCap;
+    document.getElementById('val-chunk-fast').innerText = v.chunkFast;
+    document.getElementById('val-pause').innerText = v.pause;
+    document.getElementById('val-accel').innerText = v.accel.toFixed(2);
+    document.getElementById('val-slope').innerText = v.slope.toFixed(2);
+    document.getElementById('val-edge').innerText = v.edge;
+    document.getElementById('val-straight').innerText = v.straight.toFixed(2);
+    document.getElementById('val-grip').innerText = v.grip;
+    document.getElementById('val-grip-cap').innerText = v.gripCap;
   }
 
-  function setSliderValues(cfg) {
-    for (const k in cfg) {
-      const el = document.getElementById('sl-' + k);
-      if (el) el.value = cfg[k];
+  function applySliderMap(map) {
+    for (const key in map) {
+      const el = document.getElementById('inp-' + key);
+      if (el) el.value = map[key];
     }
-    syncUI();
-    pushLiveParams();
+    onSliderInput();
+    commitEngineUpdate();
   }
 
-  // Готовые пресеты (включая точный набор с видео друга)
-  function applyPreset(name) {
-    document.querySelectorAll('.preset-card').forEach(c => c.classList.remove('selected'));
-    const card = document.getElementById('pre-' + name);
-    if (card) card.classList.add('selected');
+  function selectPreset(id) {
+    currentPresetId = id;
+    document.querySelectorAll('.preset-item').forEach(el => el.classList.remove('active'));
+    const target = document.getElementById('preset-' + id);
+    if (target) target.classList.add('active');
 
-    if (name === 'friend') {
-      // ТОЧНЫЕ ЧИСЛА С ВИДЕО ДРУГА
-      setSliderValues({
+    if (id === 'friend') {
+      // ТОЧНЫЕ ЗНАЧЕНИЯ С ПЕРВОГО ВИДЕО ДРУГА
+      applySliderMap({
         'sharp': 1.00, 'sx': 1.00, 'sy': 1.00,
         'noise': 3, 'dead': 1, 'lead': 0,
         'axis': 4, 'stick-delay': 29, 'stick-force': 1,
@@ -674,273 +974,330 @@
         'pause': 0, 'accel': 0.00, 'slope': 0.30, 'edge': 0,
         'straight': 0.80, 'grip': 4, 'grip-cap': 4
       });
-    } else if (name === 's25u') {
-      // Адаптировано под высокое QHD+ разрешение S25 Ultra
-      setSliderValues({
-        'sharp': 1.35, 'sx': 1.30, 'sy': 1.05,
+    } else if (id === 's25u') {
+      // Идеально под QHD+ матрицу Samsung S25 Ultra
+      applySliderMap({
+        'sharp': 1.30, 'sx': 1.25, 'sy': 1.00,
         'noise': 4, 'dead': 1, 'lead': 2,
-        'axis': 6, 'stick-delay': 25, 'stick-force': 2,
+        'axis': 5, 'stick-delay': 26, 'stick-force': 2,
         'chunks': 14, 'bypass': 0, 'chunk-cap': 24, 'chunk-fast': 4,
         'pause': 2, 'accel': 0.00, 'slope': 0.35, 'edge': 0,
-        'straight': 0.88, 'grip': 6, 'grip-cap': 6
+        'straight': 0.86, 'grip': 5, 'grip-cap': 5
       });
-    } else if (name === 'hard') {
-      // Выкрученный телепорт крупными кусками
-      setSliderValues({
-        'sharp': 1.80, 'sx': 1.75, 'sy': 1.10,
+    } else if (id === 'hard') {
+      applySliderMap({
+        'sharp': 1.75, 'sx': 1.70, 'sy': 1.10,
         'noise': 5, 'dead': 2, 'lead': 4,
-        'axis': 8, 'stick-delay': 20, 'stick-force': 3,
-        'chunks': 22, 'bypass': 0, 'chunk-cap': 35, 'chunk-fast': 8,
-        'pause': 4, 'accel': 0.00, 'slope': 0.45, 'edge': 0,
-        'straight': 0.94, 'grip': 8, 'grip-cap': 8
+        'axis': 7, 'stick-delay': 20, 'stick-force': 3,
+        'chunks': 20, 'bypass': 0, 'chunk-cap': 35, 'chunk-fast': 6,
+        'pause': 3, 'accel': 0.00, 'slope': 0.45, 'edge': 0,
+        'straight': 0.92, 'grip': 7, 'grip-cap': 7
       });
-    } else if (name === 'awp') {
-      setSliderValues({
-        'sharp': 1.20, 'sx': 1.25, 'sy': 0.90,
+    } else if (id === 'awp') {
+      applySliderMap({
+        'sharp': 1.15, 'sx': 1.20, 'sy': 0.90,
         'noise': 4, 'dead': 2, 'lead': 0,
-        'axis': 9, 'stick-delay': 15, 'stick-force': 6,
+        'axis': 8, 'stick-delay': 15, 'stick-force': 6,
         'chunks': 12, 'bypass': 0, 'chunk-cap': 20, 'chunk-fast': 0,
         'pause': 8, 'accel': 0.00, 'slope': 0.25, 'edge': 0,
-        'straight': 0.90, 'grip': 9, 'grip-cap': 9
+        'straight': 0.90, 'grip': 8, 'grip-cap': 8
       });
     }
   }
 
-  // Передача параметров в TeleportEngine.java через AndroidBridge
-  let debounceTimer = null;
-  function pushLiveParams() {
-    clearTimeout(debounceTimer);
-    debounceTimer = setTimeout(() => {
-      const v = getVals();
-      const combinedGrid = v.noise + v.dead;
-      const combinedStick = v.axis + v.stickForce + v.grip;
-      const combinedAccel = v.accel + v.slope;
+  let updateTimer = null;
+  function commitEngineUpdate() {
+    clearTimeout(updateTimer);
+    updateTimer = setTimeout(() => {
+      const v = readAllSliders();
+      // Суммарная передача всех 18 ползунков в ядро TeleportEngine.java
+      const effectiveSharp = v.sharp + (v.lead * 0.04) + (v.chunkFast * 0.03);
+      const effectiveChunks = Math.max(1, v.chunks - Math.round(v.bypass * 0.3));
+      const effectiveGrid = Math.max(1, v.noise + v.dead);
+      const effectiveStick = v.axis + v.stickForce + v.grip;
+      const effectiveAccel = v.accel + v.slope;
 
-      if (window.AndroidBridge) {
-        if (typeof AndroidBridge.updateParameters === 'function') {
-          AndroidBridge.updateParameters(
-            v.sharp, v.sx, v.sy,
-            v.chunks, 120, v.straight,
-            combinedStick, combinedGrid, v.pause, combinedAccel
-          );
-        }
+      try {
+        localStorage.setItem('so2_teleport_saved_v2', JSON.stringify(v));
+      } catch (e) {}
+
+      if (window.AndroidBridge && typeof AndroidBridge.updateParameters === 'function') {
+        AndroidBridge.updateParameters(
+          effectiveSharp, v.sx, v.sy,
+          effectiveChunks, 120, v.straight,
+          effectiveStick, effectiveGrid, v.pause, effectiveAccel
+        );
       }
-    }, 120);
+    }, 100);
   }
 
-  function startEngine() {
-    pushLiveParams();
+  function activateTeleportEngine() {
+    commitEngineUpdate();
     if (window.AndroidBridge && typeof AndroidBridge.startTeleport === 'function') {
-      AndroidBridge.startTeleport('friend_video');
+      AndroidBridge.startTeleport(currentPresetId);
     }
-    document.getElementById('engine-status').innerHTML =
-      'Статус: <b style="color:#00f0ff;">ТЕЛЕПОРТ АКТИВЕН (120 FPS LOCK)</b>';
+    document.getElementById('status-dot').classList.add('online');
+    document.getElementById('status-title').innerText = 'TELEPORT: АКТИВЕН (120Hz)';
   }
 
-  function stopEngine() {
+  function deactivateTeleportEngine() {
     if (window.AndroidBridge && typeof AndroidBridge.stopTeleport === 'function') {
       AndroidBridge.stopTeleport();
     }
-    document.getElementById('engine-status').innerHTML =
-      'Статус: <b>Остановлен (Заводская сенса)</b>';
+    document.getElementById('status-dot').classList.remove('online');
+    document.getElementById('status-title').innerText = 'TELEPORT: ОСТАНОВЛЕН';
   }
 
-  function switchTab(tab) {
-    document.getElementById('tab-launch').classList.toggle('active', tab === 'launch');
-    document.getElementById('tab-settings').classList.toggle('active', tab === 'settings');
-    document.getElementById('view-launch').style.display = (tab === 'launch') ? 'block' : 'none';
-    document.getElementById('view-settings').style.display = (tab === 'settings') ? 'block' : 'none';
-  }
+  // АВТО-ОПРЕДЕЛЕНИЕ ЖЕЛЕЗА И ПОДБОР ПОЛЗУНКОВ
+  function autoDetectAndTuneHardware() {
+    const ua = navigator.userAgent || '';
+    const dpr = window.devicePixelRatio || 2.5;
+    let shortPx = Math.round(Math.min(window.screen.width, window.screen.height) * dpr);
+    let modelName = 'Android 120Hz';
 
-  function toggleExtraSection() {
-    const sec = document.getElementById('extra-section');
-    const btn = document.getElementById('btn-toggle-extra');
-    if (sec.style.display === 'none') {
-      sec.style.display = 'block';
-      btn.innerText = 'Спрятать';
+    if (window.AndroidBridge && typeof AndroidBridge.getDeviceHardwareInfo === 'function') {
+      try {
+        const raw = AndroidBridge.getDeviceHardwareInfo().split('|');
+        modelName = raw[0] || modelName;
+        const dims = (raw[2] || '').split('x');
+        if (dims.length === 2) shortPx = parseInt(dims[0]) || shortPx;
+      } catch (e) {}
+    } else if (ua.includes('SM-S938')) {
+      modelName = 'Galaxy S25 Ultra';
+      shortPx = 1440;
+    } else if (ua.includes('SM-S721')) {
+      modelName = 'Galaxy S24 FE';
+      shortPx = 1080;
+    }
+
+    document.getElementById('hw-badge').innerText = modelName + ' (' + shortPx + 'p)';
+
+    if (shortPx >= 1350 || ua.includes('SM-S938')) {
+      selectPreset('s25u');
+      document.getElementById('autotune-summary').innerHTML =
+        '✅ Определён флагман <b>' + modelName + ' (' + shortPx + 'p)</b>. Выставлены Куски = 14, Выпрямление = 0.86, 120 FPS Lock активен.';
     } else {
-      sec.style.display = 'none';
-      btn.innerText = 'Ещё настройки';
+      selectPreset('friend');
+      document.getElementById('autotune-summary').innerHTML =
+        '✅ Определён экран <b>' + modelName + ' (' + shortPx + 'p)</b>. Выставлены точные параметры друга (Куски = 10, Выпрямление = 0.80).';
     }
   }
 
-  // Мост к функциям растяга и прицела в MainActivity
-  function setStretch(ratio) {
+  // МОСТЫ К MAINACTIVITY И TELEPORTENGINE
+  function toggleThermalGuard(on) {
+    if (window.AndroidBridge && AndroidBridge.setHzThermalGuard) {
+      AndroidBridge.setHzThermalGuard(on);
+    }
+  }
+  function toggleSmartAwp(on) {
+    if (window.AndroidBridge && AndroidBridge.setSmartAwpLock) {
+      AndroidBridge.setSmartAwpLock(on);
+    }
+  }
+  function toggleAntiRecoil(on) {
+    if (window.AndroidBridge && AndroidBridge.setAntiRecoilQuantization) {
+      AndroidBridge.setAntiRecoilQuantization(on, 75);
+    }
+  }
+  function toggleStealth(on) {
+    if (window.AndroidBridge && AndroidBridge.updateOverlayStealthFlag) {
+      AndroidBridge.updateOverlayStealthFlag(on);
+    }
+  }
+  function applyDownscale(val) {
+    if (window.AndroidBridge && AndroidBridge.setPixelDownscaleFactor) {
+      AndroidBridge.setPixelDownscaleFactor(parseInt(val));
+    }
+  }
+  function applyStretchRatio(ratio) {
     if (window.AndroidBridge && AndroidBridge.applyResolutionRatio) {
       AndroidBridge.applyResolutionRatio(ratio);
     }
   }
-  function resetStretch() {
+  function resetScreenStretch() {
     if (window.AndroidBridge && AndroidBridge.resetResolution) {
       AndroidBridge.resetResolution();
     }
   }
-  function toggleFloatT(on) {
+  function enableFloatingT(on) {
     if (window.AndroidBridge && AndroidBridge.toggleFloatingButton) {
       AndroidBridge.toggleFloatingButton(on);
     }
   }
-  function setCross(type) {
+  function selectCrosshair(type) {
     if (window.AndroidBridge && AndroidBridge.updateCrosshair) {
       AndroidBridge.updateCrosshair(type);
     }
   }
+  function syncCrosshairStyle() {
+    const sc = parseInt(document.getElementById('sl-ch-scale').value);
+    const op = parseInt(document.getElementById('sl-ch-op').value);
+    document.getElementById('lbl-ch-scale').innerText = sc;
+    document.getElementById('lbl-ch-op').innerText = op + '%';
+    if (window.AndroidBridge && AndroidBridge.updateCrosshairStyle) {
+      AndroidBridge.updateCrosshairStyle(sc, op, selectedCrosshairColor);
+    }
+  }
+  function pickCrosshairColor(hex, el) {
+    selectedCrosshairColor = hex;
+    document.querySelectorAll('.color-swatch').forEach(s => s.classList.remove('active'));
+    if (el) el.classList.add('active');
+    syncCrosshairStyle();
+  }
 
-  // ================= 1. РАМКА «ОПРЕДЕЛИТЬ ЭКРАН ЗАНОВО» =================
-  let scanSamples = [];
-  function openScanModal() {
-    document.getElementById('modal-scan').style.display = 'flex';
-    scanSamples = [];
-    const box = document.getElementById('scan-box');
-    const canvas = document.getElementById('scan-canvas');
-    canvas.width = box.clientWidth;
-    canvas.height = box.clientHeight;
+  function switchMainTab(tab) {
+    document.getElementById('tab-btn-launch').classList.toggle('active', tab === 'launch');
+    document.getElementById('tab-btn-settings').classList.toggle('active', tab === 'settings');
+    document.getElementById('tab-launch').style.display = (tab === 'launch') ? 'block' : 'none';
+    document.getElementById('tab-settings').style.display = (tab === 'settings') ? 'block' : 'none';
+  }
+
+  function toggleExtraBlock() {
+    const b = document.getElementById('block-extra');
+    const btn = document.getElementById('btn-extra-toggle');
+    if (b.style.display === 'none') {
+      b.style.display = 'block';
+      btn.innerText = 'Спрятать';
+    } else {
+      b.style.display = 'none';
+      btn.innerText = 'Ещё настройки';
+    }
+  }
+
+  // РАМКА «ОПРЕДЕЛИТЬ ЭКРАН ЗАНОВО»
+  let calPoints = [];
+  function openScreenCalibrator() {
+    document.getElementById('modal-calibrator').style.display = 'flex';
+    calPoints = [];
+    const arena = document.getElementById('calibrator-arena');
+    const canvas = document.getElementById('calibrator-canvas');
+    canvas.width = arena.clientWidth;
+    canvas.height = arena.clientHeight;
     const ctx = canvas.getContext('2d');
     ctx.clearRect(0, 0, canvas.width, canvas.height);
-    document.getElementById('scan-progress').innerText = 'Проведи пальцем по этой рамке (0%)';
+    document.getElementById('calibrator-status').innerText = 'Проведи пальцем по рамке (0%)';
 
-    box.ontouchmove = (e) => {
+    arena.ontouchmove = (e) => {
       e.preventDefault();
-      const t = e.touches[0];
-      const rect = box.getBoundingClientRect();
-      const x = t.clientX - rect.left;
-      const y = t.clientY - rect.top;
-      scanSamples.push({ x, y, time: performance.now() });
+      const rect = arena.getBoundingClientRect();
+      const x = e.touches[0].clientX - rect.left;
+      const y = e.touches[0].clientY - rect.top;
+      calPoints.push({ x, y, t: performance.now() });
 
       ctx.fillStyle = '#ff2a5f';
       ctx.beginPath();
       ctx.arc(x, y, 4, 0, Math.PI * 2);
       ctx.fill();
 
-      const pct = Math.min(100, Math.round((scanSamples.length / 45) * 100));
-      document.getElementById('scan-progress').innerText = 'Калибровка матрицы: ' + pct + '%';
+      const progress = Math.min(100, Math.round((calPoints.length / 40) * 100));
+      document.getElementById('calibrator-status').innerText = 'Сканирование тача: ' + progress + '%';
 
-      if (scanSamples.length >= 45) {
-        box.ontouchmove = null;
-        finishScreenScan();
+      if (calPoints.length >= 40) {
+        arena.ontouchmove = null;
+        autoDetectAndTuneHardware();
+        document.getElementById('calibrator-status').innerText = '✅ Экран откалиброван! Ползунки выставлены.';
+        setTimeout(closeAllModals, 1100);
       }
     };
   }
 
-  function finishScreenScan() {
-    const dpr = window.devicePixelRatio || 2.5;
-    const realWidthPx = Math.round(window.screen.width * dpr);
-
-    // Считаем средний шаг между событиями пальца
-    let totalDelta = 0;
-    for (let i = 1; i < scanSamples.length; i++) {
-      totalDelta += Math.hypot(
-        scanSamples[i].x - scanSamples[i - 1].x,
-        scanSamples[i].y - scanSamples[i - 1].y
-      );
-    }
-    const avgStep = totalDelta / Math.max(1, scanSamples.length - 1);
-
-    // Автоматический расчёт идеальных ползунков под конкретный экран
-    const isUltraQHD = realWidthPx >= 1350 || dpr >= 3.2;
-    const autoChunks = isUltraQHD ? 14 : 10;
-    const autoSharp = avgStep > 14 ? 1.15 : 1.35;
-    const autoNoise = isUltraQHD ? 4 : 3;
-    const autoAxis = isUltraQHD ? 5 : 4;
-
-    setSliderValues({
-      'sharp': autoSharp,
-      'sx': autoSharp,
-      'sy': 1.00,
-      'noise': autoNoise,
-      'dead': 1,
-      'lead': 0,
-      'axis': autoAxis,
-      'stick-delay': 29,
-      'stick-force': 1,
-      'chunks': autoChunks,
-      'straight': 0.82,
-      'grip': autoAxis,
-      'grip-cap': autoAxis,
-      'slope': 0.30
-    });
-
-    document.getElementById('scan-progress').innerHTML =
-      '✅ Экран определён (' + realWidthPx + 'p)!<br>Подобрано: Куски = ' + autoChunks + ', Отсечка = ' + autoNoise;
-    setTimeout(closeModals, 1300);
-  }
-
-  // ================= 2. ПОЛИГОН «ПРОВЕРИТЬ КАСАНИЯ» =================
-  function openTouchTestModal() {
-    document.getElementById('modal-test').style.display = 'flex';
-    const box = document.getElementById('test-box');
-    const canvas = document.getElementById('test-canvas');
-    canvas.width = box.clientWidth;
-    canvas.height = box.clientHeight;
+  // ПОЛИГОН «ПРОВЕРИТЬ КАСАНИЯ»
+  function openTouchVisualizer() {
+    document.getElementById('modal-visualizer').style.display = 'flex';
+    const arena = document.getElementById('visualizer-arena');
+    const canvas = document.getElementById('visualizer-canvas');
+    canvas.width = arena.clientWidth;
+    canvas.height = arena.clientHeight;
     const ctx = canvas.getContext('2d');
+    let lockY = canvas.height / 2;
 
-    let anchorY = canvas.height / 2;
-    box.ontouchstart = (e) => {
-      const rect = box.getBoundingClientRect();
-      anchorY = e.touches[0].clientY - rect.top;
+    arena.ontouchstart = (e) => {
+      const rect = arena.getBoundingClientRect();
+      lockY = e.touches[0].clientY - rect.top;
     };
 
-    box.ontouchmove = (e) => {
+    arena.ontouchmove = (e) => {
       e.preventDefault();
-      const v = getVals();
-      const rect = box.getBoundingClientRect();
+      const v = readAllSliders();
+      const rect = arena.getBoundingClientRect();
       const rawX = e.touches[0].clientX - rect.left;
       const rawY = e.touches[0].clientY - rect.top;
 
-      // Квантование по кускам + выпрямление по оси головы (как в игре)
-      const stepPx = Math.max(4, v.chunks * 1.4);
-      const quantX = Math.round(rawX / stepPx) * stepPx;
-      const quantY = anchorY + (rawY - anchorY) * (1 - v.straight * 0.85);
+      const stepPx = Math.max(4, v.chunks * 1.35);
+      const qX = Math.round(rawX / stepPx) * stepPx;
+      const qY = lockY + (rawY - lockY) * (1 - v.straight * 0.85);
 
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-      // Линия горизонта головы
       ctx.strokeStyle = 'rgba(255, 42, 95, 0.35)';
       ctx.beginPath();
-      ctx.moveTo(0, anchorY);
-      ctx.lineTo(canvas.width, anchorY);
+      ctx.moveTo(0, lockY);
+      ctx.lineTo(canvas.width, lockY);
       ctx.stroke();
 
-      // Сырое касание пальца (серое)
       ctx.fillStyle = '#666';
       ctx.beginPath();
       ctx.arc(rawX, rawY, 6, 0, Math.PI * 2);
       ctx.fill();
 
-      // Телепортирующийся прицел (голубой)
       ctx.strokeStyle = '#00f0ff';
       ctx.lineWidth = 2.5;
       ctx.beginPath();
-      ctx.arc(quantX, quantY, 12, 0, Math.PI * 2);
-      ctx.moveTo(quantX - 18, quantY);
-      ctx.lineTo(quantX + 18, quantY);
-      ctx.moveTo(quantX, quantY - 18);
-      ctx.lineTo(quantX, quantY + 18);
+      ctx.arc(qX, qY, 11, 0, Math.PI * 2);
+      ctx.moveTo(qX - 17, qY);
+      ctx.lineTo(qX + 17, qY);
+      ctx.moveTo(qX, qY - 17);
+      ctx.lineTo(qX, qY + 17);
       ctx.stroke();
     };
   }
 
-  function healTouchAndClose() {
-    startEngine();
-    closeModals();
+  function healAndApplyFromTest() {
+    if (window.AndroidBridge && AndroidBridge.healTouch) {
+      AndroidBridge.healTouch();
+    }
+    activateTeleportEngine();
+    closeAllModals();
   }
 
-  function openHelpModal() {
+  function closeAllModals() {
+    document.getElementById('modal-calibrator').style.display = 'none';
+    document.getElementById('modal-visualizer').style.display = 'none';
+  }
+
+  function showGuideAlert() {
     alert(
-      "КАК РАБОТАЮТ ЧИСЛА:\n\n" +
-      "1. Куски (10–16) — оптимальный шаг телепорта. Если поставить 70+, прицел начнёт перепрыгивать через модельку врага.\n" +
-      "2. Выпрямление (0.80) + Прилипание к осям (4) — держат прицел ровно на линии головы при переводе влево-вправо.\n" +
-      "3. Отсечка шума (3) + Мёртвая зона (1) — убирают тряску прицела, когда жмёшь на стрельбу.\n" +
-      "4. В самом Standoff 2 поставь: Чувствительность 1.40, Ускорение 0.00, Сглаживание 0.00."
+      "ШПАРГАЛКА ПО ТЕЛЕПОРТУ:\n\n" +
+      "• Куски (10–16): оптимальный размер рывка. На 1080p ставь 10 (как у друга), на S25 Ultra QHD+ ставь 14. Выше 50 прицел начнёт перепрыгивать через голову.\n" +
+      "• Выпрямление (0.80–0.88) + Прилипание к осям (4–5): держат прицел ровно на линии головы при горизонтальном флике.\n" +
+      "• Отсечка шума (3–4) + Мёртвая зона (1): убирают микродрожание пальца в момент выстрела.\n" +
+      "• В самом Standoff 2 поставь Ускорение = 0.00 и Сглаживание = 0.00."
     );
   }
 
-  function closeModals() {
-    document.getElementById('modal-scan').style.display = 'none';
-    document.getElementById('modal-test').style.display = 'none';
-  }
+  window.handleSystemBack = function() {
+    const m1 = document.getElementById('modal-calibrator');
+    const m2 = document.getElementById('modal-visualizer');
+    if (m1.style.display === 'flex' || m2.style.display === 'flex') {
+      closeAllModals();
+      return true;
+    }
+    return false;
+  };
 
-  syncUI();
+  window.addEventListener('DOMContentLoaded', () => {
+    try {
+      const saved = localStorage.getItem('so2_teleport_saved_v2');
+      if (saved) {
+        applySliderMap(JSON.parse(saved));
+      } else {
+        onSliderInput();
+      }
+    } catch (e) {
+      onSliderInput();
+    }
+    autoDetectAndTuneHardware();
+  });
 </script>
 </body>
 </html>
