@@ -20,7 +20,6 @@ public class AndroidBridge {
     private final MainActivity activity;
     private volatile boolean licenseVerified = false;
 
-    // Список адресов твоего сервера с bot.py (порт 8080)
     private static final String[] BOT_SERVERS = new String[]{
             "http://45.10.165.75:8080",
             "http://188.191.20.243:8080"
@@ -31,9 +30,6 @@ public class AndroidBridge {
         this.licenseVerified = false;
     }
 
-    /**
-     * Постоянный системный android_id (не меняется при обновлении APK)
-     */
     @JavascriptInterface
     public String getDeviceHwid() {
         try {
@@ -63,9 +59,6 @@ public class AndroidBridge {
         } catch (Exception ignored) {}
     }
 
-    /**
-     * Активация нового или существующего ключа через POST /api/activate в bot.py
-     */
     @JavascriptInterface
     public String activateLicenseKey(String rawKey) {
         if (rawKey == null || rawKey.trim().length() < 5) {
@@ -85,9 +78,6 @@ public class AndroidBridge {
         return handleBotJsonResponse(key, respJson);
     }
 
-    /**
-     * Проверка активного ключа и его срока через POST /api/verify в bot.py
-     */
     @JavascriptInterface
     public String verifyLicenseKey(String rawKey) {
         String key = (rawKey != null && !rawKey.trim().isEmpty())
@@ -104,7 +94,6 @@ public class AndroidBridge {
 
         String respJson = postToBot("/api/verify", key, androidId, nickname);
         if (respJson == null) {
-            // Если кратковременно пропал интернет, проверяем сохранённый локально timestamp истечения
             SharedPreferences prefs = activity.getSharedPreferences("so2_teleport_prefs", Context.MODE_PRIVATE);
             long savedExpSec = prefs.getLong("license_expires_at_sec", 0L);
             long nowSec = System.currentTimeMillis() / 1000L;
@@ -115,7 +104,6 @@ public class AndroidBridge {
             return "SERVER_ERROR|Нет связи с сервером проверки ключей";
         }
 
-        // Если ключ ещё ни разу не был активирован (status == unused), пробуем активировать
         if (respJson.contains("need_auth")) {
             String actJson = postToBot("/api/activate", key, androidId, nickname);
             if (actJson != null) {
@@ -200,7 +188,6 @@ public class AndroidBridge {
                 conn.setReadTimeout(4000);
                 conn.setRequestMethod("POST");
                 conn.setRequestProperty("Content-Type", "application/json; charset=UTF-8");
-                // Обязательный заголовок для прохождения _hard_block_aiohttp_v400 в bot.py
                 conn.setRequestProperty("X-Client-Build", "400");
                 conn.setDoOutput(true);
 
@@ -319,15 +306,34 @@ public class AndroidBridge {
         TeleportEngine.setPixelDownscaleFactor(percent);
     }
 
+    /**
+     * Сохраняет выбранный формат растяга (4:3, 5:4 и т.д.) и сразу включает плавающую кнопку «T»,
+     * НЕ растягивая само приложение SO2Teleport! Растяг включится по нажатию «T» уже в игре.
+     */
+    @JavascriptInterface
+    public void activateStretchFloatingButton(String ratio) {
+        if (!licenseVerified) return;
+        String cleanRatio = (ratio == null || ratio.trim().isEmpty()) ? "4:3" : ratio.trim();
+        SharedPreferences prefs = activity.getSharedPreferences("so2_teleport_prefs", Context.MODE_PRIVATE);
+        prefs.edit()
+                .putString("stretch_ratio", cleanRatio)
+                .putBoolean("float_btn_enabled", true)
+                .apply();
+        activity.toggleFloatingButton(true);
+    }
+
     @JavascriptInterface
     public void applyResolutionRatio(String ratio) {
         if (!licenseVerified) return;
-        activity.applyResolutionRatio(ratio);
+        activateStretchFloatingButton(ratio);
     }
 
     @JavascriptInterface
     public void resetResolution() {
         activity.resetResolution();
+        SharedPreferences prefs = activity.getSharedPreferences("so2_teleport_prefs", Context.MODE_PRIVATE);
+        prefs.edit().putBoolean("float_btn_enabled", false).apply();
+        activity.toggleFloatingButton(false);
     }
 
     @JavascriptInterface
