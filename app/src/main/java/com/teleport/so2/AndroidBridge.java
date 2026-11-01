@@ -47,8 +47,14 @@ public class AndroidBridge {
     @JavascriptInterface
     public String getSavedKey() {
         SharedPreferences prefs = activity.getSharedPreferences("so2_teleport_prefs", Context.MODE_PRIVATE);
+        // Защита от авто-входа при первом запуске после установки/обновления APK
+        boolean sessionConfirmed = prefs.getBoolean("session_v405_confirmed", false);
+        if (!sessionConfirmed) {
+            return "";
+        }
         return prefs.getString("saved_license_key", "");
     }
+
 
     @JavascriptInterface
     public void openTelegramBot() {
@@ -218,11 +224,13 @@ public class AndroidBridge {
         SharedPreferences prefs = activity.getSharedPreferences("so2_teleport_prefs", Context.MODE_PRIVATE);
         SharedPreferences.Editor ed = prefs.edit();
         ed.putString("saved_license_key", key);
+        ed.putBoolean("session_v405_confirmed", true);
         if (expiresAtSec > 0L) {
             ed.putLong("license_expires_at_sec", expiresAtSec);
         }
         ed.apply();
     }
+
 
     @JavascriptInterface
     public void logoutLicenseKey() {
@@ -236,6 +244,7 @@ public class AndroidBridge {
         prefs.edit()
                 .remove("saved_license_key")
                 .remove("license_expires_at_sec")
+                .putBoolean("session_v405_confirmed", false)
                 .apply();
     }
 
