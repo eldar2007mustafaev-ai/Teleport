@@ -15,6 +15,11 @@ public class TeleportEngine {
     private static int antiRecoilStrength = 80;
     private static boolean hzThermalGuardEnabled = true;
 
+    // Автоматический игровой DPI (работает ТОЛЬКО внутри Standoff 2 и не трогает растяг)
+    private static volatile boolean autoDpiEnabled = false;
+    private static volatile int gameTargetDpi = 360;
+    private static Thread gameDpiWatcherThread = null;
+
     // Зверские параметры по умолчанию (со скриншотов)
     private static float sharpness = 6.00f;
     private static float sensX = 6.00f;
@@ -52,6 +57,106 @@ public class TeleportEngine {
         if (active && ShizukuManager.isPermissionGranted()) {
             applyLiveQuantization();
         }
+    }
+
+    /**
+     * Усиленный фикс отдачи PRO:
+     * Гасит боковой тремор пальца при оттяжке вниз и жестко стабилизирует вертикальную ось.
+     */
+    public static void applyEnhancedRecoilFix(boolean enabled, int powerPercent) {
+        antiRecoilEnabled = enabled;
+        antiRecoilStrength = Math.max(10, Math.min(100, powerPercent));
+
+        if (!ShizukuManager.isPermissionGranted()) return;
+
+        new Thread(() -> {
+            if (!enabled) {
+                ShizukuManager.execCommand(
+                    "settings put secure long_press_timeout 400; " +
+                    "settings put secure multi_press_timeout 300; " +
+                    "setprop touch.filter.level 0; " +
+                    "setprop view.scroll_friction 0.015"
+                );
+                if (active) applyLiveQuantization();
+                return;
+            }
+
+            int pwr = antiRecoilStrength;
+            int longPress = Math.max(190, 360 - (pwr * 15 / 10));
+            float axisFriction = 0.018f + (pwr * 0.0011f);
+            float pressureScale = 0.0001f + ((100 - pwr) * 0.00001f);
+
+            String cmd =
+                "settings put secure long_press_timeout " + longPress + "; " +
+                "settings put secure multi_press_timeout 160; " +
+                "setprop touch.size.calibration geometric; " +
+                "setprop touch.pressure.calibration amplitude; " +
+                "setprop touch.pressure.scale " + pressureScale + "; " +
+                "setprop touch.orientation.calibration vector; " +
+                "setprop touch.filter.level 2; " +
+                "setprop view.scroll_friction " + axisFriction;
+
+            ShizukuManager.execCommand(cmd);
+            if (active) {
+                applyLiveQuantization();
+            }
+        }).start();
+    }
+
+    /**
+     * Форсированный DPI сетки экрана ТОЛЬКО В ИГРЕ:
+     * Проверяет активное окно. Если открыт Standoff 2 (com.axlebolt.standoff2) — ставит игровой DPI.
+     * Если пользователь вышел из игры или свернул её — мгновенно делает wm density reset.
+     * Не затрагивает wm size, поэтому растяг 4:3 / 5:4 / 16:9 работает без конфликтов!
+     */
+    public static void setAutoGameDpi(boolean enabled, int targetDpi) {
+        autoDpiEnabled = enabled;
+        gameTargetDpi = Math.max(240, Math.min(600, targetDpi));
+
+        if (!enabled) {
+            if (ShizukuManager.isPermissionGranted()) {
+                new Thread(() -> ShizukuManager.execCommand(
+                    "wm density reset; setprop debug.so2.dpi_state 0"
+                )).start();
+            }
+            return;
+        }
+
+        startGameDpiWatcher();
+    }
+
+    private static synchronized void startGameDpiWatcher() {
+        if (gameDpiWatcherThread != null && gameDpiWatcherThread.isAlive()) {
+            return;
+        }
+
+        gameDpiWatcherThread = new Thread(() -> {
+            while (autoDpiEnabled) {
+                try {
+                    if (ShizukuManager.isPermissionGranted()) {
+                        int dpi = gameTargetDpi;
+                        // Умная однострочная команда для Shizuku:
+                        // меняет DPI только когда Standoff 2 на экране и только при смене состояния (без спама!)
+                        String watchCmd =
+                            "if dumpsys window displays | grep -E 'mCurrentFocus|mFocusedApp' | grep -q 'com.axlebolt.standoff2'; then " +
+                                "if [ \"$(getprop debug.so2.dpi_state)\" != \"" + dpi + "\" ]; then " +
+                                    "wm density " + dpi + "; setprop debug.so2.dpi_state " + dpi + "; " +
+                                "fi; " +
+                            "else " +
+                                "if [ \"$(getprop debug.so2.dpi_state)\" != \"0\" ] && [ -n \"$(getprop debug.so2.dpi_state)\" ]; then " +
+                                    "wm density reset; setprop debug.so2.dpi_state 0; " +
+                                "fi; " +
+                            "fi";
+                        ShizukuManager.execCommand(watchCmd);
+                    }
+                    Thread.sleep(1600);
+                } catch (InterruptedException e) {
+                    break;
+                } catch (Exception ignored) {}
+            }
+        });
+        gameDpiWatcherThread.setDaemon(true);
+        gameDpiWatcherThread.start();
     }
 
     public static void setHzThermalGuard(boolean enabled) {
@@ -122,11 +227,11 @@ public class TeleportEngine {
         // 1. Дискретный порог куска с учётом обхода мелких движений для контроля зажима
         int quantumSlop = Math.max(1, Math.min(20, (stepGrid / 2) + (chunks / 5)));
 
-        // 2. Легальный стабилизатор зажима и хват по осям (удерживает прицел от бокового разброса)
-        float sprayLockFriction = antiRecoilEnabled ? (antiRecoilStrength * 0.00065f) : 0.0f;
+        // 2. Усиленный стабилизатор зажима и хват по осям (удерживает прицел от бокового разброса)
+        float sprayLockFriction = antiRecoilEnabled ? (antiRecoilStrength * 0.00095f) : 0.0f;
         float axisFriction = (smartAwpLockEnabled || "awp".equalsIgnoreCase(currentPreset))
                 ? 60.0f
-                : Math.max(0.004f, (stickStrength * 0.015f) + (straightening * 0.042f) + sprayLockFriction);
+                : Math.max(0.004f, (stickStrength * 0.015f) + (straightening * 0.045f) + sprayLockFriction);
 
         // 3. Зверский импульс срыва для мгновенного телепорта между мишенями
         float burstGain = (sharpness * 0.55f) + (sensX * 0.45f) + (accel * 0.65f);
@@ -140,15 +245,15 @@ public class TeleportEngine {
         // 5. Строго 240 событий/сек, чтобы контроллер LTPO на S25 Ultra держал 120 FPS без единого дропа
         int safeWindowEvents = 240;
 
-        StringBuilder sb = new StringBuilder(680);
+        StringBuilder sb = new StringBuilder(720);
 
         if (includeHeavySettings) {
             sb.append("settings put system peak_refresh_rate 120.0; ")
               .append("settings put system min_refresh_rate 120.0; ")
               .append("settings put secure user_refresh_rate 120; ")
               .append("settings put secure refresh_rate_mode 2; ")
-              .append("settings put secure long_press_timeout 400; ")
-              .append("settings put secure multi_press_timeout 250; ")
+              .append("settings put secure long_press_timeout 240; ")
+              .append("settings put secure multi_press_timeout 180; ")
               .append("settings delete secure tap_duration_threshold; ")
               .append("settings delete secure touch_blocking_period; ")
               .append("settings put system pointer_location 0; ")
@@ -169,7 +274,7 @@ public class TeleportEngine {
           .append("setprop persist.sys.input.resampling 0; ")
           .append("setprop ro.input.resampling 0; ")
           .append("setprop ro.input.no_resample 1; ")
-          .append("setprop touch.filter.level 0; ")
+          .append("setprop touch.filter.level ").append(antiRecoilEnabled ? "2" : "0").append("; ")
           .append("setprop touch.coverage.calibration box; ")
           .append("setprop touch.gestureMode spots; ")
           .append("setprop touch.size.calibration geometric; ")
