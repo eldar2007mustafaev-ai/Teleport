@@ -755,7 +755,7 @@
     </div>
   </div>
 
-  <!-- ГЛАВНЫЙ ЭКРАН (КАК НА ФОТО 5) -->
+  <!-- ГЛАВНЫЙ ЭКРАН -->
   <div id="page-home">
     <div class="hero-circle-wrap">
       <div id="main-power-circle" class="power-circle" onclick="toggleTeleportMaster()">
@@ -795,12 +795,12 @@
 
       <div class="nav-card" onclick="openPage('settings')">
         <div class="nav-card-top"><div class="nav-icon">⚙</div><span class="nav-arrow">›</span></div>
-        <div><h3>Настройки</h3><p>120 Гц, анти-троттлинг, оптимизация пикселей</p></div>
+        <div><h3>Настройки</h3><p>120 Гц, форсированный DPI, усиленный фикс отдачи</p></div>
       </div>
     </div>
   </div>
 
-  <!-- ================= РАЗДЕЛ 1: СЕНСА (ВСЕ НАСТРОЙКИ С ФОТО 1-4) ================= -->
+  <!-- ================= РАЗДЕЛ 1: СЕНСА ================= -->
   <div id="page-sens" class="subpage">
     <div class="back-bar" onclick="openPage('home')"><span>←</span><span>Сенса и Квантовый Телепорт</span></div>
 
@@ -909,7 +909,7 @@
         <button class="outline-btn" onclick="selectPreset('max_teleport')">Вернуть набор</button>
       </div>
 
-      <!-- БЛОК 4: ДОПОЛНИТЕЛЬНО (ВСЕ КУСКИ, ПОТОЛОК И ХВАТ С ФОТО 2-4) -->
+      <!-- БЛОК 4: ДОПОЛНИТЕЛЬНО -->
       <div id="block-extra">
         <div class="cat-header">ДОПОЛНИТЕЛЬНО</div>
         <div class="cat-sub">Для тех, кто знает, зачем это.</div>
@@ -1101,6 +1101,7 @@
     <div class="back-bar" onclick="openPage('home')"><span>←</span><span>Настройки системы</span></div>
     <div class="panel-card">
       <div class="panel-head"><span>СИСТЕМНЫЙ БУСТЕР И КОНТРОЛЬ ЗАЖИМА</span><span>SHIZUKU</span></div>
+
       <div class="toggle-line">
         <div>
           <h4>Фиксация 120 Гц и защита от просадок</h4>
@@ -1108,13 +1109,40 @@
         </div>
         <label class="switch"><input type="checkbox" id="chk-thermal" checked onchange="toggleThermalGuard(this.checked)"><span class="sw-slider"></span></label>
       </div>
-      <div class="toggle-line">
+
+      <div class="toggle-line" style="border-bottom:none; padding-bottom:6px;">
         <div>
-          <h4>Легальный стабилизатор зажима (Anti-Recoil Axis)</h4>
-          <p>Гасит боковую тряску при оттяжке пальца вниз во время стрельбы зажимом</p>
+          <h4>Усиленный фикс отдачи PRO (Anti-Recoil Axis)</h4>
+          <p>Гасит боковую тряску и стабилизирует вертикальную ось при стрельбе зажимом</p>
         </div>
-        <label class="switch"><input type="checkbox" id="chk-recoil" checked onchange="toggleAntiRecoil(this.checked)"><span class="sw-slider"></span></label>
+        <label class="switch"><input type="checkbox" id="chk-recoil" checked onchange="updateRecoilFix()"><span class="sw-slider"></span></label>
       </div>
+
+      <!-- Ползунок силы удержания отдачи -->
+      <div style="padding: 4px 0 14px 0; border-bottom: 1px solid rgba(255, 255, 255, 0.06);">
+        <div style="display: flex; justify-content: space-between; font-size: 12px; font-weight: 800; color: #c084fc; margin-bottom: 6px;">
+          <span>Сила удержания вертикали</span>
+          <span id="recoilValText" style="color: #00f0ff;">80%</span>
+        </div>
+        <input type="range" id="recoilPowerRange" min="10" max="100" step="5" value="80"
+               oninput="document.getElementById('recoilValText').innerText = this.value + '%'; updateRecoilFix();">
+      </div>
+
+      <div class="toggle-line" style="border-bottom:none; padding-bottom:6px;">
+        <div>
+          <h4>Форсированный DPI сетки (Только в игре)</h4>
+          <p>Сам включается при входе в Standoff 2 и сбрасывается при выходе. Не мешает растягу</p>
+        </div>
+        <label class="switch"><input type="checkbox" id="toggleAutoDpi" onchange="updateAutoDpi()"><span class="sw-slider"></span></label>
+      </div>
+
+      <!-- Кнопки пресетов игрового DPI -->
+      <div class="chip-row" style="margin-top: 6px; margin-bottom: 12px; padding-bottom: 12px; border-bottom: 1px solid rgba(255, 255, 255, 0.06);">
+        <div class="chip-btn active" id="dpi-360" onclick="selectDpiPreset(360, this)">360 (Плавный)</div>
+        <div class="chip-btn" id="dpi-400" onclick="selectDpiPreset(400, this)">400 (Баланс)</div>
+        <div class="chip-btn" id="dpi-440" onclick="selectDpiPreset(440, this)">440 (Резкий)</div>
+      </div>
+
       <div class="toggle-line">
         <div>
           <h4>Скрывать кнопку «T» и прицел на записи (Stealth)</h4>
@@ -1167,6 +1195,7 @@
   let currentRatio = '4:3';
   let currentCrosshairType = 'off';
   let selectedCrosshairColor = '#00F0FF';
+  let currentDpiPreset = 360;
   let licenseWatchdogTimer = null;
 
   function openPage(pageId) {
@@ -1318,7 +1347,6 @@
     });
 
     if (id === 'max_teleport') {
-      // ТОЧНЫЕ ЗВЕРСКИЕ ЧИСЛА СО СКРИНШОТОВ 1-4
       applySliderMap({
         'sharp': 6.00, 'sx': 6.00, 'sy': 6.00,
         'noise': 4, 'dead': 5, 'lead': 2,
@@ -1328,7 +1356,6 @@
         'straight': 0.86, 'grip': 5, 'grip-cap': 5
       });
     } else if (id === 'spray_laser') {
-      // ТЕЛЕПОРТ + ЛЕГАЛЬНЫЙ КОНТРОЛЬ ЗАЖИМА В ОДНУ ТОЧКУ
       applySliderMap({
         'sharp': 5.40, 'sx': 5.60, 'sy': 4.90,
         'noise': 5, 'dead': 4, 'lead': 3,
@@ -1499,16 +1526,63 @@
     }
   }
 
-  // СИСТЕМНЫЕ ПЕРЕКЛЮЧАТЕЛИ
+  // СИСТЕМНЫЕ ПЕРЕКЛЮЧАТЕЛИ: 120 ГЦ, УСИЛЕННЫЙ ФИКС ОТДАЧИ, ФОРСИРОВАННЫЙ DPI (ТОЛЬКО В ИГРЕ), STEALTH
   function toggleThermalGuard(on) {
     if (window.AndroidBridge && AndroidBridge.setHzThermalGuard) AndroidBridge.setHzThermalGuard(on);
   }
-  function toggleAntiRecoil(on) {
-    if (window.AndroidBridge && AndroidBridge.setAntiRecoilQuantization) AndroidBridge.setAntiRecoilQuantization(on, 80);
+
+  function updateRecoilFix() {
+    const sw = document.getElementById('chk-recoil');
+    const range = document.getElementById('recoilPowerRange');
+    const enabled = sw ? sw.checked : true;
+    const power = range ? parseInt(range.value, 10) : 80;
+    try {
+      localStorage.setItem('so2_recoil_enabled', enabled ? '1' : '0');
+      localStorage.setItem('so2_recoil_power', String(power));
+    } catch (e) {}
+
+    if (window.AndroidBridge) {
+      if (typeof AndroidBridge.setEnhancedRecoilFix === 'function') {
+        AndroidBridge.setEnhancedRecoilFix(enabled, power);
+      }
+      if (typeof AndroidBridge.setAntiRecoilQuantization === 'function') {
+        AndroidBridge.setAntiRecoilQuantization(enabled, power);
+      }
+    }
   }
+
+  function toggleAntiRecoil(on) {
+    updateRecoilFix();
+  }
+
+  function selectDpiPreset(dpi, el) {
+    currentDpiPreset = dpi;
+    ['dpi-360', 'dpi-400', 'dpi-440'].forEach(id => {
+      const btn = document.getElementById(id);
+      if (btn) btn.classList.toggle('active', id === 'dpi-' + dpi);
+    });
+    try {
+      localStorage.setItem('so2_dpi_preset', String(dpi));
+    } catch (e) {}
+    updateAutoDpi();
+  }
+
+  function updateAutoDpi() {
+    const sw = document.getElementById('toggleAutoDpi');
+    const enabled = sw ? sw.checked : false;
+    try {
+      localStorage.setItem('so2_auto_dpi_enabled', enabled ? '1' : '0');
+    } catch (e) {}
+
+    if (window.AndroidBridge && typeof AndroidBridge.setAutoGameDpi === 'function') {
+      AndroidBridge.setAutoGameDpi(enabled, currentDpiPreset);
+    }
+  }
+
   function toggleStealth(on) {
     if (window.AndroidBridge && AndroidBridge.updateOverlayStealthFlag) AndroidBridge.updateOverlayStealthFlag(on);
   }
+
   function pickDownscale(pct) {
     [100, 90, 80, 70].forEach(v => {
       const el = document.getElementById('ds-' + v);
@@ -1712,6 +1786,24 @@
       const saved = localStorage.getItem('so2_quantum_v404');
       if (saved) applySliderMap(JSON.parse(saved));
       else selectPreset('max_teleport');
+
+      // Восстановление настроек DPI и усиленного фикса отдачи
+      const savedDpi = parseInt(localStorage.getItem('so2_dpi_preset') || '360', 10);
+      if ([360, 400, 440].includes(savedDpi)) {
+        selectDpiPreset(savedDpi, document.getElementById('dpi-' + savedDpi));
+      }
+      const savedAutoDpi = localStorage.getItem('so2_auto_dpi_enabled') === '1';
+      document.getElementById('toggleAutoDpi').checked = savedAutoDpi;
+      if (savedAutoDpi) updateAutoDpi();
+
+      const savedRecoilPower = parseInt(localStorage.getItem('so2_recoil_power') || '80', 10);
+      document.getElementById('recoilPowerRange').value = savedRecoilPower;
+      document.getElementById('recoilValText').innerText = savedRecoilPower + '%';
+      const savedRecoilEn = localStorage.getItem('so2_recoil_enabled');
+      if (savedRecoilEn !== null) {
+        document.getElementById('chk-recoil').checked = (savedRecoilEn === '1');
+      }
+      updateRecoilFix();
     } catch (e) {
       selectPreset('max_teleport');
     }
