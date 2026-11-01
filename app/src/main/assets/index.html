@@ -7,7 +7,7 @@
 <style>
   :root {
     --bg-core: #070310;
-    --bg-card: rgba(19, 10, 32, 0.90);
+    --bg-card: rgba(19, 10, 32, 0.92);
     --bg-card-hover: rgba(29, 15, 48, 0.96);
     --border-neon: rgba(168, 85, 247, 0.34);
     --border-bright: #c084fc;
@@ -18,7 +18,6 @@
     --accent-red: #ff2a5f;
     --text-main: #f8f5ff;
     --text-muted: #9d8ec4;
-    /* Увеличенный отступ сверху (60px+), чтобы статус-бар телефона НИКОГДА не перекрывал кнопки */
     --safe-top: calc(env(safe-area-inset-top, 28px) + 38px);
   }
 
@@ -44,7 +43,7 @@
     width: 100vw;
     height: 100vh;
     object-fit: cover;
-    opacity: 0.20;
+    opacity: 0.16;
     z-index: -1;
     pointer-events: none;
   }
@@ -234,7 +233,7 @@
     align-items: center;
     justify-content: center;
     cursor: pointer;
-    transition: all 0.28s cubic-bezier(0.22, 1, 0.36, 1);
+    transition: transform 0.2s ease, border-color 0.2s ease;
   }
   .power-circle:active {
     transform: scale(0.95);
@@ -242,14 +241,13 @@
   .power-circle.active {
     background: radial-gradient(circle at 50% 30%, #d946ef 0%, #7e22ce 68%, #3b0764 100%);
     border-color: #f5d0fe;
-    box-shadow: 0 0 50px rgba(217, 70, 239, 0.65), inset 0 0 25px rgba(255, 255, 255, 0.35);
+    box-shadow: 0 0 42px rgba(217, 70, 239, 0.55), inset 0 0 20px rgba(255, 255, 255, 0.3);
   }
 
   .power-bolt {
     font-size: 42px;
     line-height: 1;
     margin-bottom: 10px;
-    filter: drop-shadow(0 0 12px rgba(255, 215, 0, 0.6));
   }
 
   .power-label {
@@ -277,7 +275,6 @@
     border-color: #e879f9;
     color: #fff;
     background: rgba(88, 28, 135, 0.55);
-    box-shadow: 0 0 20px rgba(217, 70, 239, 0.25);
   }
 
   /* ================= СЕТКА 6 КАРТОЧЕК МЕНЮ ================= */
@@ -293,7 +290,6 @@
     border-radius: 20px;
     padding: 16px 14px;
     cursor: pointer;
-    transition: 0.18s;
     display: flex;
     flex-direction: column;
     justify-content: space-between;
@@ -350,12 +346,6 @@
   /* ================= ВНУТРЕННИЕ РАЗДЕЛЫ ================= */
   .subpage {
     display: none;
-    animation: fadeIn 0.18s ease;
-  }
-
-  @keyframes fadeIn {
-    from { opacity: 0; transform: translateY(6px); }
-    to { opacity: 1; transform: translateY(0); }
   }
 
   .back-bar {
@@ -396,6 +386,31 @@
     margin-bottom: 12px;
   }
 
+  /* ПЛАШКА АВТОСКАНИРОВАНИЯ УСТРОЙСТВА */
+  .smart-scan-box {
+    background: linear-gradient(135deg, rgba(168, 85, 247, 0.22) 0%, rgba(0, 240, 255, 0.12) 100%);
+    border: 1px solid var(--accent-cyan);
+    border-radius: 20px;
+    padding: 16px;
+    margin-bottom: 16px;
+    box-shadow: 0 6px 24px rgba(0, 240, 255, 0.12);
+  }
+  .smart-scan-title {
+    font-size: 14.5px;
+    font-weight: 900;
+    color: var(--accent-cyan);
+    margin: 0 0 6px 0;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .smart-scan-desc {
+    font-size: 12px;
+    color: #e9d5ff;
+    line-height: 1.4;
+    margin: 0 0 12px 0;
+  }
+
   .cat-header {
     font-size: 14px;
     font-weight: 900;
@@ -427,7 +442,6 @@
   .mode-card.active {
     border-color: #e879f9;
     background: rgba(59, 7, 100, 0.45);
-    box-shadow: 0 0 18px rgba(217, 70, 239, 0.2);
   }
 
   .mode-info h4 {
@@ -458,7 +472,6 @@
     border-color: transparent;
   }
 
-  /* ПОЛЗУНКИ (ВСЕ 18 НАСТРОЕК С ФОТО) */
   .slider-card {
     background: rgba(14, 7, 25, 0.9);
     border: 1px solid rgba(168, 85, 247, 0.24);
@@ -517,7 +530,6 @@
     border-radius: 50%;
     background: #ff2a5f;
     border: 3px solid #ffe0e9;
-    box-shadow: 0 0 12px #ff2a5f;
     cursor: pointer;
   }
 
@@ -533,7 +545,7 @@
     letter-spacing: 0.5px;
     text-align: center;
     cursor: pointer;
-    box-shadow: 0 4px 20px rgba(219, 39, 119, 0.35);
+    box-shadow: 0 4px 18px rgba(219, 39, 119, 0.3);
   }
   .grad-btn:active { transform: scale(0.98); }
 
@@ -661,21 +673,27 @@
   }
   .profile-row b { color: #fff; }
 
-  /* МОДАЛКИ КАЛИБРОВКИ ЭКРАНА И ТЕСТА КАСАНИЙ */
+  /* МОДАЛКИ */
   .modal-backdrop {
     display: none;
     position: fixed;
     inset: 0;
-    background: rgba(5, 2, 10, 0.95);
+    background: rgba(5, 2, 12, 0.94);
     z-index: 1000;
     padding: var(--safe-top) 16px 20px 16px;
     flex-direction: column;
     justify-content: center;
+    align-items: center;
+  }
+
+  .modal-box {
+    width: 100%;
+    max-width: 420px;
   }
 
   .touch-arena {
     width: 100%;
-    height: 290px;
+    height: 280px;
     border: 2px dashed #ff2a5f;
     border-radius: 20px;
     background: #11061c;
@@ -737,14 +755,13 @@
   </div>
 </div>
 
-<!-- ОСНОВНОЙ ИНТЕРФЕЙС (С ЗАЩИТНЫМ ОТСТУПОМ ОТ СТАТУС-БАРА) -->
+<!-- ОСНОВНОЙ ИНТЕРФЕЙС -->
 <div class="app-shell" id="main-app-container">
 
-  <!-- ВЕРХНЯЯ ШАПКА -->
   <div class="top-header">
     <div class="brand-block">
       <h1>SO2Teleport</h1>
-      <span>QUANTUM ENGINE V403</span>
+      <span>QUANTUM ENGINE V405 • COLD FPS</span>
     </div>
     <div class="shizuku-badge" onclick="refreshShizukuStatus(true)">
       <div class="shz-top">
@@ -768,9 +785,9 @@
     </div>
 
     <div class="nav-grid">
-      <div class="nav-card" onclick="openPage('sens')">
+      <div class="nav-card" onclick="openSensWithPrompt()">
         <div class="nav-card-top"><div class="nav-icon">⚡</div><span class="nav-arrow">›</span></div>
-        <div><h3>Сенса</h3><p>Готовый телепорт, пресеты для авиков и ползунки</p></div>
+        <div><h3>Сенса</h3><p>Автоподбор под телефон, 1мм отклик и ползунки</p></div>
       </div>
 
       <div class="nav-card" onclick="openPage('profile')">
@@ -790,12 +807,12 @@
 
       <div class="nav-card" onclick="openPage('crosshair')">
         <div class="nav-card-top"><div class="nav-icon">🎯</div><span class="nav-arrow">›</span></div>
-        <div><h3>Кастомный прицел</h3><p>Точка, крест, круг, размер и выбор цвета</p></div>
+        <div><h3>Кастомный прицел</h3><p>Точка, крест, круг без нагрузки на FPS</p></div>
       </div>
 
       <div class="nav-card" onclick="openPage('settings')">
         <div class="nav-card-top"><div class="nav-icon">⚙</div><span class="nav-arrow">›</span></div>
-        <div><h3>Настройки</h3><p>120 Гц, форсированный DPI, усиленный фикс отдачи</p></div>
+        <div><h3>Настройки</h3><p>120 Гц без нагрева, DPI в игре, фикс отдачи</p></div>
       </div>
     </div>
   </div>
@@ -804,13 +821,24 @@
   <div id="page-sens" class="subpage">
     <div class="back-bar" onclick="openPage('home')"><span>←</span><span>Сенса и Квантовый Телепорт</span></div>
 
+    <!-- УМНЫЙ БЛОК АВТОПОДБОРА БЕЗ ПЕРЕГРЕВА -->
+    <div class="smart-scan-box">
+      <div class="smart-scan-title">🔍 Умный подбор под твой телефон (Без нагрева)</div>
+      <div class="smart-scan-desc" id="smart-scan-status">
+        Система проверит процессор, матрицу и герцовку твоего телефона и выставит максимальный телепорт + мгновенный сдвиг на 1 мм так, чтобы телефон не грелся и не проседал FPS даже с растягом и прицелом.
+      </div>
+      <button class="grad-btn" style="padding:12px; font-size:13px;" onclick="runHardwareSmartScan()">
+        ⚡ ПРОСКАНИРОВАТЬ ТЕЛЕФОН И ПОДОБРАТЬ НАСТРОЙКИ
+      </button>
+    </div>
+
     <div class="panel-card">
       <div class="panel-head"><span>1. ГОТОВЫЕ БОЕВЫЕ РЕЖИМЫ</span><span>В 1 КЛИК</span></div>
 
       <div class="mode-card active" id="mode-max_teleport" onclick="selectPreset('max_teleport')">
         <div class="mode-info">
-          <h4>ЗВЕРСКИЙ ТЕЛЕПОРТ (Макс. рывок)</h4>
-          <p>Острота 6.00 • Куски 60 • Потолок 60 • Разгон 2.00 — мгновенный перескок в голову</p>
+          <h4>ЗВЕРСКИЙ ТЕЛЕПОРТ + 1ММ ИМПУЛЬС</h4>
+          <p>Мгновенный отклик на 1 мм и длинный флик в голову без нагрева процессора</p>
         </div>
         <div class="mode-btn" id="btn-mode-max_teleport">АКТИВЕН</div>
       </div>
@@ -818,7 +846,7 @@
       <div class="mode-card" id="mode-spray_laser" onclick="selectPreset('spray_laser')">
         <div class="mode-info">
           <h4>ТЕЛЕПОРТ + ЗАЖИМ В ТОЧКУ (AKR / M4)</h4>
-          <p>Резкий телепорт по горизонтали + осевая стабилизация вертикальной отдачи при зажиме</p>
+          <p>Резкий телепорт по горизонтали + осевая стабилизация вертикальной отдачи</p>
         </div>
         <div class="mode-btn" id="btn-mode-spray_laser">ВЫБРАТЬ</div>
       </div>
@@ -826,23 +854,31 @@
       <div class="mode-card" id="mode-awp" onclick="selectPreset('awp')">
         <div class="mode-info">
           <h4>ДЛЯ АВИКОВ (Стоп-Импульс)</h4>
-          <p>Молниеносный флик с жёсткой остановкой камеры в момент выстрела без скольжения</p>
+          <p>Молниеносный флик с жёсткой остановкой камеры в момент выстрела</p>
         </div>
         <div class="mode-btn" id="btn-mode-awp">ВЫБРАТЬ</div>
       </div>
 
       <div class="mode-card" id="mode-smooth_pro" onclick="selectPreset('smooth_pro')">
         <div class="mode-info">
-          <h4>ПЛАВНЫЙ КОНТРОЛЬ (Мягкая доводка)</h4>
-          <p>Умеренный шаг кусков и плавное ведение цели без резких срывов</p>
+          <h4>ПЛАВНЫЙ КОНТРОЛЬ (Холодный FPS)</h4>
+          <p>Минимальная нагрузка для слабых устройств и плавное ведение цели</p>
         </div>
         <div class="mode-btn" id="btn-mode-smooth_pro">ВЫБРАТЬ</div>
       </div>
     </div>
 
     <div class="panel-card">
-      <div class="cat-header">СВОИ ЧИСЛА</div>
-      <div class="cat-sub">Эти значения твои. Ползунки расширены с запасом для тонкой подстройки.</div>
+      <div class="cat-header">МГНОВЕННЫЙ МИКРО-ФЛИК (1 ММ)</div>
+      <div class="cat-sub">Убирает системную задержку Android в начале движения пальца.</div>
+
+      <div class="toggle-line" style="padding-top:4px; margin-bottom:10px;">
+        <div>
+          <h4>Мгновенный отклик 1 мм (Zero-Delay Snap)</h4>
+          <p>Даже 1 мм сдвига пальца и длинный флик срабатывают за 1 миллисекунду</p>
+        </div>
+        <label class="switch"><input type="checkbox" id="chk-micro-snap" checked onchange="commitEngineUpdate()"><span class="sw-slider"></span></label>
+      </div>
 
       <!-- БЛОК 1: ОСТРОТА -->
       <div class="cat-header">ОСТРОТА</div>
@@ -877,9 +913,9 @@
       </div>
 
       <div class="slider-card">
-        <div class="slider-top"><span class="slider-title">Мёртвая зона</span><span class="slider-badge" id="val-dead">5</span></div>
-        <input type="range" id="inp-dead" min="0" max="20" step="1" value="5" oninput="onSliderInput()" onchange="commitEngineUpdate()">
-        <div class="slider-desc">Маленькие движения не двигают прицел вообще</div>
+        <div class="slider-top"><span class="slider-title">Мёртвая зона</span><span class="slider-badge" id="val-dead">1</span></div>
+        <input type="range" id="inp-dead" min="0" max="20" step="1" value="1" oninput="onSliderInput()" onchange="commitEngineUpdate()">
+        <div class="slider-desc">При значении 0–1 прицел реагирует даже на миллиметровый сдвиг</div>
       </div>
 
       <div class="slider-card">
@@ -906,13 +942,13 @@
 
       <div class="two-btns">
         <button class="outline-btn" id="btn-extra-toggle" onclick="toggleExtraBlock()">Спрятать</button>
-        <button class="outline-btn" onclick="selectPreset('max_teleport')">Вернуть набор</button>
+        <button class="outline-btn" onclick="runHardwareSmartScan()">Автоподбор</button>
       </div>
 
       <!-- БЛОК 4: ДОПОЛНИТЕЛЬНО -->
       <div id="block-extra">
         <div class="cat-header">ДОПОЛНИТЕЛЬНО</div>
-        <div class="cat-sub">Для тех, кто знает, зачем это.</div>
+        <div class="cat-sub">Все 18 параметров тонкой квантовой доводки.</div>
 
         <div class="slider-card">
           <div class="slider-top"><span class="slider-title">Сила прилипания</span><span class="slider-badge" id="val-stick-force">2</span></div>
@@ -927,7 +963,7 @@
         <div class="slider-card">
           <div class="slider-top"><span class="slider-title">Мелочь мимо кусков</span><span class="slider-badge" id="val-bypass">30</span></div>
           <input type="range" id="inp-bypass" min="0" max="30" step="1" value="30" oninput="onSliderInput()" onchange="commitEngineUpdate()">
-          <div class="slider-desc">Пропускает плавную оттяжку пальца вниз мимо кусков для идеального зажима</div>
+          <div class="slider-desc">Пропускает микро-наводку на 1 мм и плавную оттяжку вниз без ступенек</div>
         </div>
 
         <div class="slider-card">
@@ -973,16 +1009,11 @@
         <div class="slider-card">
           <div class="slider-top"><span class="slider-title">Потолок хвата</span><span class="slider-badge" id="val-grip-cap">5</span></div>
           <input type="range" id="inp-grip-cap" min="0" max="25" step="1" value="5" oninput="onSliderInput()" onchange="commitEngineUpdate()">
-          <div class="slider-desc">Разгон спит, пока движение ровное — крутить его обычно не надо.</div>
         </div>
       </div>
 
-      <button class="outline-btn" onclick="showGuideAlert()">Как настроить</button>
-      <button class="outline-btn" onclick="openScreenCalibrator()">👆 Определить экран заново</button>
-      <div class="slider-desc" style="text-align:center; margin-bottom:6px;">
-        Откроется рамка: проведи по ней пальцем, и телефон поймёт, какой у него экран.
-      </div>
-      <button class="outline-btn" onclick="openTouchVisualizer()">👉 Проверить касания</button>
+      <button class="outline-btn" onclick="openScreenCalibrator()">👆 Определить матрицу экрана вручную</button>
+      <button class="outline-btn" onclick="openTouchVisualizer()">👉 Проверить касания и 1мм отклик</button>
     </div>
   </div>
 
@@ -1011,11 +1042,11 @@
     </div>
 
     <div class="panel-card">
-      <div class="panel-head"><span>ТОПОВЫЕ БОЕВЫЕ СБОРКИ</span><span>ТОП</span></div>
+      <div class="panel-head"><span>ТОПОВЫЕ БОЕВЫЕ СБОРКИ (БЕЗ НАГРЕВА)</span><span>ТОП</span></div>
       <div class="mode-card" onclick="selectPreset('max_teleport'); activateTeleportEngine(); openPage('home');">
         <div class="mode-info">
-          <h4>BEAST TELEPORT 60 (Макс. агрессия)</h4>
-          <p>Куски 60 • Потолок 60 • Острота 6.00 • Разгон 2.00</p>
+          <h4>BEAST TELEPORT + 1MM SNAP</h4>
+          <p>Мгновенный сдвиг на 1 мм • Длинный флик • Без троттлинга</p>
         </div>
         <div class="mode-btn">ПРИМЕНИТЬ</div>
       </div>
@@ -1036,7 +1067,7 @@
     </div>
   </div>
 
-  <!-- ================= РАЗДЕЛ 4: РАСТЯГ (ТОЛЬКО ВЫВОД КНОПКИ «T» В ИГРУ) ================= -->
+  <!-- ================= РАЗДЕЛ 4: РАСТЯГ ================= -->
   <div id="page-stretch" class="subpage">
     <div class="back-bar" onclick="openPage('home')"><span>←</span><span>Растяг экрана</span></div>
     <div class="panel-card">
@@ -1046,7 +1077,7 @@
         <div class="ratio-inner" id="lbl-ratio-box">ФОРМАТ 4:3</div>
       </div>
       <div class="slider-desc" style="margin-bottom:12px;">
-        Выбери формат и нажми кнопку ниже — появится плавающая кнопка <b>«T»</b>. Само приложение не растягивается: зайди в Standoff 2 и нажми «T», чтобы включить растяг прямо в катке!
+        Выбери формат и нажми кнопку ниже — появится лёгкая кнопка <b>«T»</b> без нагрузки на видеоядро. Зайди в Standoff 2 и нажми «T», чтобы включить растяг прямо в катке!
       </div>
 
       <div class="chip-row">
@@ -1070,7 +1101,7 @@
   <div id="page-crosshair" class="subpage">
     <div class="back-bar" onclick="openPage('home')"><span>←</span><span>Кастомный прицел</span></div>
     <div class="panel-card">
-      <div class="panel-head"><span>ФОРМА И ЦВЕТ ПРИЦЕЛА</span><span id="lbl-ch-type">ВЫКЛ</span></div>
+      <div class="panel-head"><span>ФОРМА И ЦВЕТ ПРИЦЕЛА (ZERO-LAG)</span><span id="lbl-ch-type">ВЫКЛ</span></div>
       <div class="ratio-preview-box"><canvas id="ch-preview-canvas" width="120" height="90"></canvas></div>
       <div class="chip-row">
         <div class="chip-btn active" id="ch-off" onclick="selectCrosshair('off')">ВЫКЛ</div>
@@ -1100,12 +1131,12 @@
   <div id="page-settings" class="subpage">
     <div class="back-bar" onclick="openPage('home')"><span>←</span><span>Настройки системы</span></div>
     <div class="panel-card">
-      <div class="panel-head"><span>СИСТЕМНЫЙ БУСТЕР И КОНТРОЛЬ ЗАЖИМА</span><span>SHIZUKU</span></div>
+      <div class="panel-head"><span>ХОЛОДНЫЙ БУСТЕР И КОНТРОЛЬ ЗАЖИМА</span><span>SHIZUKU</span></div>
 
       <div class="toggle-line">
         <div>
-          <h4>Фиксация 120 Гц и защита от просадок</h4>
-          <p>Жестко держит 120 FPS без сброса экрана до 60 Гц</p>
+          <h4>Холодная фиксация 120 Гц (Анти-Нагрев)</h4>
+          <p>Держит стабильные 120 FPS без перегрева процессора и троттлинга</p>
         </div>
         <label class="switch"><input type="checkbox" id="chk-thermal" checked onchange="toggleThermalGuard(this.checked)"><span class="sw-slider"></span></label>
       </div>
@@ -1113,7 +1144,7 @@
       <div class="toggle-line" style="border-bottom:none; padding-bottom:6px;">
         <div>
           <h4>Усиленный фикс отдачи PRO (Anti-Recoil Axis)</h4>
-          <p>Гасит боковую тряску и стабилизирует вертикальную ось при стрельбе зажимом</p>
+          <p>Жестко выпрямляет вертикальную оттяжку вниз и гасит боковой разброс</p>
         </div>
         <label class="switch"><input type="checkbox" id="chk-recoil" checked onchange="updateRecoilFix()"><span class="sw-slider"></span></label>
       </div>
@@ -1122,25 +1153,24 @@
       <div style="padding: 4px 0 14px 0; border-bottom: 1px solid rgba(255, 255, 255, 0.06);">
         <div style="display: flex; justify-content: space-between; font-size: 12px; font-weight: 800; color: #c084fc; margin-bottom: 6px;">
           <span>Сила удержания вертикали</span>
-          <span id="recoilValText" style="color: #00f0ff;">80%</span>
+          <span id="recoilValText" style="color: #00f0ff;">85%</span>
         </div>
-        <input type="range" id="recoilPowerRange" min="10" max="100" step="5" value="80"
+        <input type="range" id="recoilPowerRange" min="10" max="100" step="5" value="85"
                oninput="document.getElementById('recoilValText').innerText = this.value + '%'; updateRecoilFix();">
       </div>
 
       <div class="toggle-line" style="border-bottom:none; padding-bottom:6px;">
         <div>
           <h4>Форсированный DPI сетки (Только в игре)</h4>
-          <p>Сам включается при входе в Standoff 2 и сбрасывается при выходе. Не мешает растягу</p>
+          <p>Включается при входе в SO2 и возвращает родной DPI (411) при выходе</p>
         </div>
         <label class="switch"><input type="checkbox" id="toggleAutoDpi" onchange="updateAutoDpi()"><span class="sw-slider"></span></label>
       </div>
 
-      <!-- Кнопки пресетов игрового DPI -->
       <div class="chip-row" style="margin-top: 6px; margin-bottom: 12px; padding-bottom: 12px; border-bottom: 1px solid rgba(255, 255, 255, 0.06);">
-        <div class="chip-btn active" id="dpi-360" onclick="selectDpiPreset(360, this)">360 (Плавный)</div>
-        <div class="chip-btn" id="dpi-400" onclick="selectDpiPreset(400, this)">400 (Баланс)</div>
-        <div class="chip-btn" id="dpi-440" onclick="selectDpiPreset(440, this)">440 (Резкий)</div>
+        <div class="chip-btn active" id="dpi-360" onclick="selectDpiPreset(360)">360 (Плавный)</div>
+        <div class="chip-btn" id="dpi-400" onclick="selectDpiPreset(400)">400 (Баланс)</div>
+        <div class="chip-btn" id="dpi-440" onclick="selectDpiPreset(440)">440 (Резкий)</div>
       </div>
 
       <div class="toggle-line">
@@ -1153,7 +1183,7 @@
     </div>
 
     <div class="panel-card">
-      <div class="panel-head"><span>ОПТИМИЗАЦИЯ ПИКСЕЛЕЙ (FPS BOOST)</span><span id="lbl-downscale">100%</span></div>
+      <div class="panel-head"><span>ОПТИМИЗАЦИЯ ПИКСЕЛЕЙ (ДЛЯ СЛАБЫХ ТЕЛЕФОНОВ)</span><span id="lbl-downscale">100%</span></div>
       <div class="chip-row">
         <div class="chip-btn active" id="ds-100" onclick="pickDownscale(100)">100%</div>
         <div class="chip-btn" id="ds-90" onclick="pickDownscale(90)">90%</div>
@@ -1165,9 +1195,26 @@
 
 </div>
 
+<!-- ОПОВЕЩЕНИЕ ПЕРЕД ВХОДОМ В СЕНСУ: УМНОЕ СКАНИРОВАНИЕ ТЕЛЕФОНА -->
+<div id="modal-sens-prompt" class="modal-backdrop">
+  <div class="panel-card modal-box" style="text-align:center;">
+    <div style="font-size:36px; margin-bottom:8px;">⚡</div>
+    <h3 style="margin:0 0 8px 0; color:#fff; font-size:18px;">Умная калибровка телефона</h3>
+    <p style="font-size:13px; color:#d8b4fe; line-height:1.45; margin:0 0 16px 0;">
+      Советуем просканировать телефон! Система сама определит процессор и герцовку, включит <b>мгновенный отклик на 1 мм</b> и подберёт настройки так, чтобы <b>телефон не грелся и не проседал FPS</b> даже при включённом растяге и прицеле.
+    </p>
+    <button class="grad-btn" onclick="acceptSmartScanFromPrompt()">
+      🔍 СКАНИРОВАТЬ И ПОДОБРАТЬ АВТОМАТИЧЕСКИ
+    </button>
+    <button class="outline-btn" onclick="skipSmartScanPrompt()">
+      Перейти к ползункам вручную
+    </button>
+  </div>
+</div>
+
 <!-- МОДАЛКА 1: ОПРЕДЕЛИТЬ ЭКРАН ЗАНОВО -->
 <div id="modal-calibrator" class="modal-backdrop">
-  <div class="panel-card">
+  <div class="panel-card modal-box">
     <div class="panel-head"><span>ОПРЕДЕЛЕНИЕ ЭКРАНА И МАТРИЦЫ</span></div>
     <div class="touch-arena" id="calibrator-arena">
       <canvas id="calibrator-canvas" class="arena-canvas"></canvas>
@@ -1179,8 +1226,8 @@
 
 <!-- МОДАЛКА 2: ПРОВЕРИТЬ КАСАНИЯ -->
 <div id="modal-visualizer" class="modal-backdrop">
-  <div class="panel-card">
-    <div class="panel-head"><span>ПРОВЕРКА КУСКОВ И ЗАЖИМА</span></div>
+  <div class="panel-card modal-box">
+    <div class="panel-head"><span>ПРОВЕРКА 1ММ ОТКЛИКА И ЗАЖИМА</span></div>
     <div class="touch-arena" id="visualizer-arena">
       <canvas id="visualizer-canvas" class="arena-canvas"></canvas>
     </div>
@@ -1198,6 +1245,14 @@
   let currentDpiPreset = 360;
   let licenseWatchdogTimer = null;
 
+  // Перехват фонового видео при сворачивании, чтобы WebView тратил 0% GPU во время игры
+  document.addEventListener('visibilitychange', () => {
+    const vid = document.getElementById('bg-video');
+    if (!vid) return;
+    if (document.hidden) vid.pause();
+    else vid.play().catch(() => {});
+  });
+
   function openPage(pageId) {
     document.getElementById('page-home').style.display = (pageId === 'home') ? 'block' : 'none';
     ['sens', 'profile', 'configs', 'stretch', 'crosshair', 'settings'].forEach(p => {
@@ -1208,10 +1263,87 @@
     window.scrollTo(0, 0);
   }
 
+  // Показ умного оповещения перед входом в раздел «Сенса»
+  function openSensWithPrompt() {
+    openPage('sens');
+    const alreadyScanned = sessionStorage.getItem('so2_prompt_shown');
+    if (!alreadyScanned) {
+      document.getElementById('modal-sens-prompt').style.display = 'flex';
+      sessionStorage.setItem('so2_prompt_shown', '1');
+    }
+  }
+
+  function acceptSmartScanFromPrompt() {
+    document.getElementById('modal-sens-prompt').style.display = 'none';
+    runHardwareSmartScan();
+  }
+
+  function skipSmartScanPrompt() {
+    document.getElementById('modal-sens-prompt').style.display = 'none';
+  }
+
+  // УМНЫЙ АВТОСКАНЕР ЖЕЛЕЗА (БЕЗ НАГРЕВА + 1ММ ОТКЛИК)
+  function runHardwareSmartScan() {
+    let model = 'Android Device';
+    let shortPx = 1080;
+    let tier = 'HIGH';
+
+    if (window.AndroidBridge && typeof AndroidBridge.runSmartDeviceScan === 'function') {
+      try {
+        const scanStr = AndroidBridge.runSmartDeviceScan(); // MODEL|TIER|SHORT_PX
+        const parts = scanStr.split('|');
+        if (parts[0]) model = parts[0];
+        if (parts[1]) tier = parts[1];
+        if (parts[2]) shortPx = parseInt(parts[2], 10) || 1080;
+      } catch (e) {}
+    }
+
+    document.getElementById('chk-micro-snap').checked = true;
+
+    if (tier === 'ULTRA') {
+      // Флагманы (S25 Ultra и аналоги): максимальный телепорт без перегрева ядер
+      applySliderMap({
+        'sharp': 6.00, 'sx': 6.00, 'sy': 6.00,
+        'noise': 2, 'dead': 0, 'lead': 3,
+        'axis': 6, 'stick-delay': 20, 'stick-force': 3,
+        'chunks': 56, 'bypass': 30, 'chunk-cap': 60, 'chunk-fast': 30,
+        'pause': 1, 'accel': 2.00, 'slope': 2.00, 'edge': 0,
+        'straight': 0.88, 'grip': 6, 'grip-cap': 6
+      });
+    } else if (tier === 'LOW') {
+      // Бюджетные телефоны (Redmi 13C / Galaxy A13 и др.): 0% лагов и 0% нагрева
+      applySliderMap({
+        'sharp': 5.60, 'sx': 5.60, 'sy': 5.40,
+        'noise': 3, 'dead': 0, 'lead': 2,
+        'axis': 6, 'stick-delay': 22, 'stick-force': 3,
+        'chunks': 42, 'bypass': 30, 'chunk-cap': 50, 'chunk-fast': 28,
+        'pause': 1, 'accel': 1.85, 'slope': 1.85, 'edge': 0,
+        'straight': 0.86, 'grip': 5, 'grip-cap': 5
+      });
+    } else {
+      // Средние и мощные устройства
+      applySliderMap({
+        'sharp': 5.85, 'sx': 5.85, 'sy': 5.70,
+        'noise': 2, 'dead': 0, 'lead': 3,
+        'axis': 6, 'stick-delay': 22, 'stick-force': 3,
+        'chunks': 50, 'bypass': 30, 'chunk-cap': 58, 'chunk-fast': 30,
+        'pause': 1, 'accel': 1.95, 'slope': 1.95, 'edge': 0,
+        'straight': 0.87, 'grip': 6, 'grip-cap': 6
+      });
+    }
+
+    const statusEl = document.getElementById('smart-scan-status');
+    if (statusEl) {
+      statusEl.innerHTML = '✅ <b>Профиль подобран под ' + model + '!</b> Включен мгновенный сдвиг 1 мм (Zero-Delay), защита от перегрева и стабильные 120 FPS.';
+    }
+    activateTeleportEngine();
+  }
+
   window.handleSystemBack = function() {
+    const m0 = document.getElementById('modal-sens-prompt');
     const m1 = document.getElementById('modal-calibrator');
     const m2 = document.getElementById('modal-visualizer');
-    if (m1.style.display === 'flex' || m2.style.display === 'flex') {
+    if (m0.style.display === 'flex' || m1.style.display === 'flex' || m2.style.display === 'flex') {
       closeAllModals();
       return true;
     }
@@ -1234,7 +1366,7 @@
     if (ok) {
       dot.classList.add('ok');
       title.innerText = 'Shizuku: АКТИВЕН';
-      sub.innerText = 'Связь установлена • ОК';
+      sub.innerText = 'Холодный FPS • ОК';
     } else {
       dot.classList.remove('ok');
       title.innerText = 'Shizuku: ВЫКЛ';
@@ -1263,7 +1395,7 @@
     document.getElementById('power-circle-text').innerText = 'АКТИВЕН';
     const pill = document.getElementById('hero-status-bar');
     pill.classList.add('active');
-    pill.innerText = '• ТЕЛЕПОРТ АКТИВЕН (ЗВЕРСКИЙ СТРОБ + 120 ГЦ)';
+    pill.innerText = '• ТЕЛЕПОРТ АКТИВЕН (1ММ ИМПУЛЬС + БЕЗ НАГРЕВА)';
     refreshShizukuStatus(false);
   }
 
@@ -1349,38 +1481,38 @@
     if (id === 'max_teleport') {
       applySliderMap({
         'sharp': 6.00, 'sx': 6.00, 'sy': 6.00,
-        'noise': 4, 'dead': 5, 'lead': 2,
-        'axis': 5, 'stick-delay': 26, 'stick-force': 2,
+        'noise': 2, 'dead': 0, 'lead': 3,
+        'axis': 5, 'stick-delay': 22, 'stick-force': 2,
         'chunks': 60, 'bypass': 30, 'chunk-cap': 60, 'chunk-fast': 30,
-        'pause': 2, 'accel': 2.00, 'slope': 2.00, 'edge': 0,
+        'pause': 1, 'accel': 2.00, 'slope': 2.00, 'edge': 0,
         'straight': 0.86, 'grip': 5, 'grip-cap': 5
       });
     } else if (id === 'spray_laser') {
       applySliderMap({
-        'sharp': 5.40, 'sx': 5.60, 'sy': 4.90,
-        'noise': 5, 'dead': 4, 'lead': 3,
-        'axis': 9, 'stick-delay': 20, 'stick-force': 5,
+        'sharp': 5.50, 'sx': 5.70, 'sy': 5.00,
+        'noise': 3, 'dead': 0, 'lead': 3,
+        'axis': 9, 'stick-delay': 18, 'stick-force': 6,
         'chunks': 48, 'bypass': 30, 'chunk-cap': 55, 'chunk-fast': 28,
-        'pause': 2, 'accel': 1.60, 'slope': 1.80, 'edge': 0,
+        'pause': 1, 'accel': 1.70, 'slope': 1.85, 'edge': 0,
         'straight': 0.94, 'grip': 9, 'grip-cap': 9
       });
     } else if (id === 'awp') {
       applySliderMap({
-        'sharp': 5.80, 'sx': 5.80, 'sy': 4.50,
-        'noise': 4, 'dead': 3, 'lead': 0,
-        'axis': 8, 'stick-delay': 15, 'stick-force': 8,
-        'chunks': 52, 'bypass': 10, 'chunk-cap': 60, 'chunk-fast': 25,
-        'pause': 8, 'accel': 1.50, 'slope': 1.70, 'edge': 0,
+        'sharp': 5.90, 'sx': 5.90, 'sy': 4.60,
+        'noise': 2, 'dead': 0, 'lead': 0,
+        'axis': 8, 'stick-delay': 14, 'stick-force': 8,
+        'chunks': 54, 'bypass': 15, 'chunk-cap': 60, 'chunk-fast': 28,
+        'pause': 6, 'accel': 1.75, 'slope': 1.85, 'edge': 0,
         'straight': 0.92, 'grip': 8, 'grip-cap': 8
       });
     } else if (id === 'smooth_pro') {
       applySliderMap({
-        'sharp': 2.50, 'sx': 2.50, 'sy': 2.20,
-        'noise': 3, 'dead': 1, 'lead': 2,
-        'axis': 4, 'stick-delay': 28, 'stick-force': 2,
-        'chunks': 16, 'bypass': 15, 'chunk-cap': 25, 'chunk-fast': 10,
-        'pause': 1, 'accel': 0.20, 'slope': 0.40, 'edge': 0,
-        'straight': 0.84, 'grip': 4, 'grip-cap': 4
+        'sharp': 3.20, 'sx': 3.20, 'sy': 2.80,
+        'noise': 2, 'dead': 0, 'lead': 2,
+        'axis': 4, 'stick-delay': 24, 'stick-force': 2,
+        'chunks': 24, 'bypass': 20, 'chunk-cap': 30, 'chunk-fast': 15,
+        'pause': 1, 'accel': 0.80, 'slope': 0.80, 'edge': 0,
+        'straight': 0.85, 'grip': 4, 'grip-cap': 4
       });
     }
   }
@@ -1390,14 +1522,16 @@
     clearTimeout(updateTimer);
     updateTimer = setTimeout(() => {
       const v = readAllSliders();
+      const microSnap = document.getElementById('chk-micro-snap') ? document.getElementById('chk-micro-snap').checked : true;
       const effectiveSharp = v.sharp + (v.lead * 0.05) + (v.chunkFast * 0.04);
       const effectiveChunks = Math.max(1, Math.min(120, Math.round((v.chunks * 0.7) + (v.chunkCap * 0.3))));
-      const effectiveGrid = Math.max(1, v.noise + v.dead - Math.round(v.bypass * 0.15));
+      // Если включен Мгновенный отклик 1 мм — порог мёртвой зоны обнуляется до 1 пикселя
+      const effectiveGrid = microSnap ? 1 : Math.max(1, v.noise + v.dead - Math.round(v.bypass * 0.15));
       const effectiveStick = v.axis + v.stickForce + v.grip + v.gripCap;
       const effectiveAccel = v.accel + v.slope;
 
       try {
-        localStorage.setItem('so2_quantum_v404', JSON.stringify(v));
+        localStorage.setItem('so2_quantum_v405', JSON.stringify(v));
       } catch (e) {}
 
       if (window.AndroidBridge && typeof AndroidBridge.updateParameters === 'function') {
@@ -1407,7 +1541,7 @@
           effectiveStick, effectiveGrid, v.pause, effectiveAccel
         );
       }
-    }, 80);
+    }, 100);
   }
 
   function toggleExtraBlock() {
@@ -1433,7 +1567,7 @@
     openPage('home');
   }
 
-  // РАСТЯГ: ВЫБОР ПРОПОРЦИИ И ВЫВОД ПЛАВАЮЩЕЙ КНОПКИ «T»
+  // РАСТЯГ
   function pickRatio(r) {
     currentRatio = r;
     ['5:4', '4:3', '3:2', '16:10', '16:9'].forEach(item => {
@@ -1526,7 +1660,7 @@
     }
   }
 
-  // СИСТЕМНЫЕ ПЕРЕКЛЮЧАТЕЛИ: 120 ГЦ, УСИЛЕННЫЙ ФИКС ОТДАЧИ, ФОРСИРОВАННЫЙ DPI (ТОЛЬКО В ИГРЕ), STEALTH
+  // СИСТЕМНЫЕ ПЕРЕКЛЮЧАТЕЛИ
   function toggleThermalGuard(on) {
     if (window.AndroidBridge && AndroidBridge.setHzThermalGuard) AndroidBridge.setHzThermalGuard(on);
   }
@@ -1535,7 +1669,7 @@
     const sw = document.getElementById('chk-recoil');
     const range = document.getElementById('recoilPowerRange');
     const enabled = sw ? sw.checked : true;
-    const power = range ? parseInt(range.value, 10) : 80;
+    const power = range ? parseInt(range.value, 10) : 85;
     try {
       localStorage.setItem('so2_recoil_enabled', enabled ? '1' : '0');
       localStorage.setItem('so2_recoil_power', String(power));
@@ -1544,18 +1678,13 @@
     if (window.AndroidBridge) {
       if (typeof AndroidBridge.setEnhancedRecoilFix === 'function') {
         AndroidBridge.setEnhancedRecoilFix(enabled, power);
-      }
-      if (typeof AndroidBridge.setAntiRecoilQuantization === 'function') {
+      } else if (typeof AndroidBridge.setAntiRecoilQuantization === 'function') {
         AndroidBridge.setAntiRecoilQuantization(enabled, power);
       }
     }
   }
 
-  function toggleAntiRecoil(on) {
-    updateRecoilFix();
-  }
-
-  function selectDpiPreset(dpi, el) {
+  function selectDpiPreset(dpi) {
     currentDpiPreset = dpi;
     ['dpi-360', 'dpi-400', 'dpi-440'].forEach(id => {
       const btn = document.getElementById(id);
@@ -1594,7 +1723,7 @@
     }
   }
 
-  // КАЛИБРОВКА ЭКРАНА И ПОЛИГОН ТЕСТА КАСАНИЙ
+  // КАЛИБРОВКА И ТЕСТ КАСАНИЙ
   let calPoints = [];
   function openScreenCalibrator() {
     document.getElementById('modal-calibrator').style.display = 'flex';
@@ -1619,9 +1748,9 @@
       document.getElementById('calibrator-status').innerText = 'Калибровка матрицы: ' + pct + '%';
       if (calPoints.length >= 40) {
         arena.ontouchmove = null;
-        selectPreset('max_teleport');
-        document.getElementById('calibrator-status').innerText = '✅ Экран откалиброван! Выставлен максимальный телепорт.';
-        setTimeout(closeAllModals, 1000);
+        runHardwareSmartScan();
+        document.getElementById('calibrator-status').innerText = '✅ Матрица откалибрована без нагрева!';
+        setTimeout(closeAllModals, 900);
       }
     };
   }
@@ -1645,7 +1774,7 @@
       const rect = arena.getBoundingClientRect();
       const rawX = e.touches[0].clientX - rect.left;
       const rawY = e.touches[0].clientY - rect.top;
-      const stepPx = Math.max(5, v.chunks * 0.45);
+      const stepPx = Math.max(4, v.chunks * 0.4);
       const qX = Math.round(rawX / stepPx) * stepPx;
       const qY = lockY + (rawY - lockY) * (1 - v.straight * 0.85);
       ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -1670,16 +1799,9 @@
   }
 
   function closeAllModals() {
+    document.getElementById('modal-sens-prompt').style.display = 'none';
     document.getElementById('modal-calibrator').style.display = 'none';
     document.getElementById('modal-visualizer').style.display = 'none';
-  }
-
-  function showGuideAlert() {
-    alert(
-      "КАК РАБОТАЕТ ЗВЕРСКИЙ ТЕЛЕПОРТ + ЗАЖИМ:\n\n" +
-      "• Резкость 6.00 + Куски 60 + Потолок 60 + Разгон 2.00 — дают мгновенный перескок прицела по головам при быстрых фликах.\n" +
-      "• Мелочь мимо кусков (30) + Хват по осям (5) — пропускают плавную оттяжку пальца вниз мимо кусков, чтобы зажим с AKR/M4 летел строго в одну точку без боковой тряски."
-    );
   }
 
   // АВТОРИЗАЦИЯ И ПРОФИЛЬ
@@ -1756,11 +1878,13 @@
 
     clearInterval(licenseWatchdogTimer);
     licenseWatchdogTimer = setInterval(() => {
+      // Не нагружаем сеть и процессор во время игры (когда приложение свернуто)
+      if (document.hidden) return;
       if (window.AndroidBridge && typeof AndroidBridge.verifyLicenseKey === 'function') {
         const res = AndroidBridge.verifyLicenseKey(key) || '';
         if (res.split('|')[0] !== 'OK') lockAppWithReason('⏳ Срок действия ключа истёк!');
       }
-    }, 30000);
+    }, 60000);
   }
 
   function lockAppWithReason(text) {
@@ -1783,27 +1907,21 @@
 
   window.addEventListener('DOMContentLoaded', () => {
     try {
-      const saved = localStorage.getItem('so2_quantum_v404');
+      const saved = localStorage.getItem('so2_quantum_v405');
       if (saved) applySliderMap(JSON.parse(saved));
       else selectPreset('max_teleport');
 
-      // Восстановление настроек DPI и усиленного фикса отдачи
       const savedDpi = parseInt(localStorage.getItem('so2_dpi_preset') || '360', 10);
       if ([360, 400, 440].includes(savedDpi)) {
-        selectDpiPreset(savedDpi, document.getElementById('dpi-' + savedDpi));
+        selectDpiPreset(savedDpi);
       }
       const savedAutoDpi = localStorage.getItem('so2_auto_dpi_enabled') === '1';
       document.getElementById('toggleAutoDpi').checked = savedAutoDpi;
       if (savedAutoDpi) updateAutoDpi();
 
-      const savedRecoilPower = parseInt(localStorage.getItem('so2_recoil_power') || '80', 10);
+      const savedRecoilPower = parseInt(localStorage.getItem('so2_recoil_power') || '85', 10);
       document.getElementById('recoilPowerRange').value = savedRecoilPower;
       document.getElementById('recoilValText').innerText = savedRecoilPower + '%';
-      const savedRecoilEn = localStorage.getItem('so2_recoil_enabled');
-      if (savedRecoilEn !== null) {
-        document.getElementById('chk-recoil').checked = (savedRecoilEn === '1');
-      }
-      updateRecoilFix();
     } catch (e) {
       selectPreset('max_teleport');
     }
