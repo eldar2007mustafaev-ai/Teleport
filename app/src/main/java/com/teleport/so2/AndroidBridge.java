@@ -295,6 +295,18 @@ public class AndroidBridge {
     }
 
     @JavascriptInterface
+    public void setEnhancedRecoilFix(boolean enabled, int powerPercent) {
+        if (!licenseVerified) return;
+        TeleportEngine.applyEnhancedRecoilFix(enabled, powerPercent);
+    }
+
+    @JavascriptInterface
+    public void setAutoGameDpi(boolean enabled, int targetDpi) {
+        if (!licenseVerified) return;
+        TeleportEngine.setAutoGameDpi(enabled, targetDpi);
+    }
+
+    @JavascriptInterface
     public void setHzThermalGuard(boolean enabled) {
         if (!licenseVerified) return;
         TeleportEngine.setHzThermalGuard(enabled);
