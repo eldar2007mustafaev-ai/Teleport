@@ -188,14 +188,14 @@ public class AndroidBridge {
                 conn.setReadTimeout(4000);
                 conn.setRequestMethod("POST");
                 conn.setRequestProperty("Content-Type", "application/json; charset=UTF-8");
-                conn.setRequestProperty("X-Client-Build", "400");
+                conn.setRequestProperty("X-Client-Build", "405");
                 conn.setDoOutput(true);
 
                 JSONObject payload = new JSONObject();
                 payload.put("key", key);
                 payload.put("android_id", androidId);
                 payload.put("nickname", nickname);
-                payload.put("build_version", 400);
+                payload.put("build_version", 405);
 
                 byte[] bytes = payload.toString().getBytes("UTF-8");
                 try (OutputStream os = conn.getOutputStream()) {
@@ -261,9 +261,32 @@ public class AndroidBridge {
         return TeleportEngine.isActive();
     }
 
+    /**
+     * Умный автосканер устройства: определяет количество ядер, разрешение и класс телефона,
+     * чтобы выставить максимальный телепорт без нагрева и просадок FPS.
+     */
+    @JavascriptInterface
+    public String runSmartDeviceScan() {
+        DisplayMetrics dm = new DisplayMetrics();
+        activity.getWindowManager().getDefaultDisplay().getRealMetrics(dm);
+        int shortPx = Math.min(dm.widthPixels, dm.heightPixels);
+        int cores = Runtime.getRuntime().availableProcessors();
+        String model = Build.MODEL != null ? Build.MODEL : "Android";
+        String tier = "MID";
+        if (shortPx >= 1200 || model.contains("S938") || model.contains("S928") || model.contains("Ultra")) {
+            tier = "ULTRA";
+        } else if (cores <= 6 || shortPx <= 720) {
+            tier = "LOW";
+        }
+        // На время игры отключаем тяжелый строб оверлея, чтобы не просаживать FPS прицелом и кнопкой Т
+        activity.setQuantumOverlayStrobe(false);
+        return model + "|" + tier + "|" + shortPx;
+    }
+
     @JavascriptInterface
     public void startTeleport(String presetId) {
         if (!licenseVerified) return;
+        activity.setQuantumOverlayStrobe(false);
         TeleportEngine.startTeleport(activity, presetId);
     }
 
@@ -318,10 +341,6 @@ public class AndroidBridge {
         TeleportEngine.setPixelDownscaleFactor(percent);
     }
 
-    /**
-     * Сохраняет выбранный формат растяга (4:3, 5:4 и т.д.) и сразу включает плавающую кнопку «T»,
-     * НЕ растягивая само приложение SO2Teleport! Растяг включится по нажатию «T» уже в игре.
-     */
     @JavascriptInterface
     public void activateStretchFloatingButton(String ratio) {
         if (!licenseVerified) return;
@@ -377,7 +396,7 @@ public class AndroidBridge {
 
     @JavascriptInterface
     public void setQuantumOverlayStrobe(boolean enabled) {
-        activity.setQuantumOverlayStrobe(enabled);
+        activity.setQuantumOverlayStrobe(false);
     }
 
     @JavascriptInterface
