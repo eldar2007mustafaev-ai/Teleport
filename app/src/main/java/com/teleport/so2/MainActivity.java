@@ -54,6 +54,7 @@ public class MainActivity extends Activity {
 
     private boolean isStretchedActive = false;
     private boolean stealthModeEnabled = false;
+    private int cachedScreenHeight = 2400;
     private OnBackInvokedCallback backInvokedCallback;
 
     private static class CyberTrashView extends View {
@@ -67,6 +68,7 @@ public class MainActivity extends Activity {
 
         public CyberTrashView(Context context) {
             super(context);
+            setLayerType(View.LAYER_TYPE_HARDWARE, null);
             borderPaint.setStyle(Paint.Style.STROKE);
             borderPaint.setStrokeWidth(4.5f);
 
@@ -148,6 +150,10 @@ public class MainActivity extends Activity {
         }
 
         windowManager = (WindowManager) getSystemService(WINDOW_SERVICE);
+        DisplayMetrics dm = new DisplayMetrics();
+        windowManager.getDefaultDisplay().getRealMetrics(dm);
+        cachedScreenHeight = dm.heightPixels;
+
         healBrokenTouchTimeouts();
 
         SharedPreferences prefs = getSharedPreferences("so2_teleport_prefs", Context.MODE_PRIVATE);
@@ -169,7 +175,7 @@ public class MainActivity extends Activity {
         ws.setAllowFileAccess(true);
         ws.setAllowContentAccess(true);
         ws.setMediaPlaybackRequiresUserGesture(false);
-        ws.setCacheMode(WebSettings.LOAD_NO_CACHE);
+        ws.setCacheMode(WebSettings.LOAD_DEFAULT);
 
         webView.setBackgroundColor(Color.parseColor("#070312"));
         webView.setWebChromeClient(new WebChromeClient());
@@ -218,10 +224,27 @@ public class MainActivity extends Activity {
         return super.dispatchKeyEvent(event);
     }
 
+    /**
+     * Когда пользователь сворачивает SO2Teleport и заходит в Standoff 2,
+     * полностью замораживаем рендеринг WebView, чтобы он тратил 0% CPU и GPU!
+     */
+    @Override
+    protected void onPause() {
+        super.onPause();
+        if (webView != null) {
+            webView.onPause();
+            webView.pauseTimers();
+        }
+    }
+
     @Override
     protected void onResume() {
         super.onResume();
         setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
+        if (webView != null) {
+            webView.onResume();
+            webView.resumeTimers();
+        }
     }
 
     public void healBrokenTouchTimeouts() {
@@ -269,6 +292,7 @@ public class MainActivity extends Activity {
     }
 
     public void updateOverlayStealthFlag(boolean enabled) {
+        if (this.stealthModeEnabled == enabled) return;
         this.stealthModeEnabled = enabled;
         runOnUiThread(() -> {
             try {
@@ -285,7 +309,7 @@ public class MainActivity extends Activity {
     }
 
     public void setQuantumOverlayStrobe(boolean enabled) {
-        updateOverlayStealthFlag(enabled);
+        // Отключено принудительное дерганье флагов окна, чтобы не вызывать просадки FPS
     }
 
     public void updateCrosshairStyle(int scale, int opacity, String colorHex) {
@@ -320,16 +344,16 @@ public class MainActivity extends Activity {
                         int cx = getWidth() / 2;
                         int cy = getHeight() / 2;
 
-                        float size = 6f + (crosshairScale / 100f) * 26f;
-                        float gap = 3f + (crosshairScale / 100f) * 9f;
+                        float size = 5f + (crosshairScale / 100f) * 22f;
+                        float gap = 2.5f + (crosshairScale / 100f) * 7f;
 
                         paint.setColor(crosshairColor);
                         paint.setAlpha((int) (255 * (crosshairOpacity / 100f)));
-                        paint.setStrokeWidth(3.0f);
+                        paint.setStrokeWidth(2.8f);
 
                         if ("dot".equalsIgnoreCase(currentCrosshairType)) {
                             paint.setStyle(Paint.Style.FILL);
-                            canvas.drawCircle(cx, cy, Math.max(3.5f, size * 0.28f), paint);
+                            canvas.drawCircle(cx, cy, Math.max(3.2f, size * 0.28f), paint);
                         } else if ("tshape".equalsIgnoreCase(currentCrosshairType)) {
                             paint.setStyle(Paint.Style.STROKE);
                             canvas.drawLine(cx - size, cy, cx - gap, cy, paint);
@@ -339,7 +363,7 @@ public class MainActivity extends Activity {
                             paint.setStyle(Paint.Style.STROKE);
                             canvas.drawCircle(cx, cy, size * 0.65f, paint);
                             paint.setStyle(Paint.Style.FILL);
-                            canvas.drawCircle(cx, cy, 2.5f, paint);
+                            canvas.drawCircle(cx, cy, 2.2f, paint);
                         } else {
                             paint.setStyle(Paint.Style.STROKE);
                             canvas.drawLine(cx - size, cy, cx - gap, cy, paint);
@@ -349,13 +373,15 @@ public class MainActivity extends Activity {
                         }
                     }
                 };
+                // Аппаратное кэширование текстуры прицела — 0% нагрузки на FPS в игре
+                crosshairView.setLayerType(View.LAYER_TYPE_HARDWARE, null);
 
                 int overlayType = Build.VERSION.SDK_INT >= Build.VERSION_CODES.O
                         ? WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY
                         : WindowManager.LayoutParams.TYPE_PHONE;
 
                 crosshairParams = new WindowManager.LayoutParams(
-                        180, 180,
+                        96, 96,
                         overlayType,
                         getStealthOverlayFlags(true),
                         PixelFormat.TRANSLUCENT
@@ -389,9 +415,7 @@ public class MainActivity extends Activity {
                 return true;
             }
         }
-        DisplayMetrics dm = new DisplayMetrics();
-        windowManager.getDefaultDisplay().getRealMetrics(dm);
-        return rawTouchY >= (dm.heightPixels - 200);
+        return rawTouchY >= (cachedScreenHeight - 200);
     }
 
     public void toggleFloatingButton(boolean enable) {
@@ -402,6 +426,10 @@ public class MainActivity extends Activity {
             }
             if (!checkAndRequestOverlayPermission()) return;
             if (floatingBtnView != null) return;
+
+            DisplayMetrics dm = new DisplayMetrics();
+            windowManager.getDefaultDisplay().getRealMetrics(dm);
+            cachedScreenHeight = dm.heightPixels;
 
             int overlayType = Build.VERSION.SDK_INT >= Build.VERSION_CODES.O
                     ? WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY
@@ -428,6 +456,7 @@ public class MainActivity extends Activity {
             trashParams.y = 20;
 
             FrameLayout bubbleContainer = new FrameLayout(this);
+            bubbleContainer.setLayerType(View.LAYER_TYPE_HARDWARE, null);
             floatingTxtView = new TextView(this);
             updateFloatingBubbleAppearance();
 
@@ -466,6 +495,9 @@ public class MainActivity extends Activity {
                             if (Math.abs(dx) > 6 || Math.abs(dy) > 6) {
                                 moved = true;
                                 if (trashDropView != null && trashDropView.getVisibility() != View.VISIBLE) {
+                                    DisplayMetrics m = new DisplayMetrics();
+                                    windowManager.getDefaultDisplay().getRealMetrics(m);
+                                    cachedScreenHeight = m.heightPixels;
                                     trashDropView.setAlpha(0f);
                                     trashDropView.setVisibility(View.VISIBLE);
                                     trashDropView.animate().alpha(1f).setDuration(140).start();
@@ -621,9 +653,9 @@ public class MainActivity extends Activity {
         runOnUiThread(this::updateFloatingBubbleAppearance);
 
         new Thread(() -> {
+            // Сбрасываем только размер экрана и ориентацию (DPI контролируется отдельно тумблером Авто-DPI)
             ShizukuManager.execCommand(
                     "wm size reset; " +
-                    "wm density reset; " +
                     "cmd window set-ignore-orientation-request false; " +
                     "cmd window set-fix-to-user-rotation default; " +
                     "settings put system accelerometer_rotation 0"
