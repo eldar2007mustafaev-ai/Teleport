@@ -386,7 +386,6 @@
     margin-bottom: 12px;
   }
 
-  /* ПЛАШКА АВТОСКАНИРОВАНИЯ УСТРОЙСТВА */
   .smart-scan-box {
     background: linear-gradient(135deg, rgba(168, 85, 247, 0.22) 0%, rgba(0, 240, 255, 0.12) 100%);
     border: 1px solid var(--accent-cyan);
@@ -729,7 +728,7 @@
   <source src="bg_capsules.mp4" type="video/mp4">
 </video>
 
-<!-- ЭКРАН АВТОРИЗАЦИИ ПО КЛЮЧУ -->
+<!-- ЭКРАН АВТОРИЗАЦИИ ПО КЛЮЧУ (СТРОГО ОБЯЗАТЕЛЕН С 1-ГО ВХОДА) -->
 <div id="auth-gate">
   <div class="auth-card">
     <div class="auth-logo">⚡</div>
@@ -821,7 +820,6 @@
   <div id="page-sens" class="subpage">
     <div class="back-bar" onclick="openPage('home')"><span>←</span><span>Сенса и Квантовый Телепорт</span></div>
 
-    <!-- УМНЫЙ БЛОК АВТОПОДБОРА БЕЗ ПЕРЕГРЕВА -->
     <div class="smart-scan-box">
       <div class="smart-scan-title">🔍 Умный подбор под твой телефон (Без нагрева)</div>
       <div class="smart-scan-desc" id="smart-scan-status">
@@ -1149,7 +1147,6 @@
         <label class="switch"><input type="checkbox" id="chk-recoil" checked onchange="updateRecoilFix()"><span class="sw-slider"></span></label>
       </div>
 
-      <!-- Ползунок силы удержания отдачи -->
       <div style="padding: 4px 0 14px 0; border-bottom: 1px solid rgba(255, 255, 255, 0.06);">
         <div style="display: flex; justify-content: space-between; font-size: 12px; font-weight: 800; color: #c084fc; margin-bottom: 6px;">
           <span>Сила удержания вертикали</span>
@@ -1244,8 +1241,8 @@
   let selectedCrosshairColor = '#00F0FF';
   let currentDpiPreset = 360;
   let licenseWatchdogTimer = null;
+  let isUnlockedSession = false;
 
-  // Перехват фонового видео при сворачивании, чтобы WebView тратил 0% GPU во время игры
   document.addEventListener('visibilitychange', () => {
     const vid = document.getElementById('bg-video');
     if (!vid) return;
@@ -1254,6 +1251,10 @@
   });
 
   function openPage(pageId) {
+    if (!isUnlockedSession) {
+      lockAppWithReason('🔑 Введите лицензионный ключ для доступа');
+      return;
+    }
     document.getElementById('page-home').style.display = (pageId === 'home') ? 'block' : 'none';
     ['sens', 'profile', 'configs', 'stretch', 'crosshair', 'settings'].forEach(p => {
       const el = document.getElementById('page-' + p);
@@ -1263,8 +1264,8 @@
     window.scrollTo(0, 0);
   }
 
-  // Показ умного оповещения перед входом в раздел «Сенса»
   function openSensWithPrompt() {
+    if (!isUnlockedSession) return;
     openPage('sens');
     const alreadyScanned = sessionStorage.getItem('so2_prompt_shown');
     if (!alreadyScanned) {
@@ -1282,7 +1283,6 @@
     document.getElementById('modal-sens-prompt').style.display = 'none';
   }
 
-  // УМНЫЙ АВТОСКАНЕР ЖЕЛЕЗА (БЕЗ НАГРЕВА + 1ММ ОТКЛИК)
   function runHardwareSmartScan() {
     let model = 'Android Device';
     let shortPx = 1080;
@@ -1290,7 +1290,7 @@
 
     if (window.AndroidBridge && typeof AndroidBridge.runSmartDeviceScan === 'function') {
       try {
-        const scanStr = AndroidBridge.runSmartDeviceScan(); // MODEL|TIER|SHORT_PX
+        const scanStr = AndroidBridge.runSmartDeviceScan();
         const parts = scanStr.split('|');
         if (parts[0]) model = parts[0];
         if (parts[1]) tier = parts[1];
@@ -1301,7 +1301,6 @@
     document.getElementById('chk-micro-snap').checked = true;
 
     if (tier === 'ULTRA') {
-      // Флагманы (S25 Ultra и аналоги): максимальный телепорт без перегрева ядер
       applySliderMap({
         'sharp': 6.00, 'sx': 6.00, 'sy': 6.00,
         'noise': 2, 'dead': 0, 'lead': 3,
@@ -1311,7 +1310,6 @@
         'straight': 0.88, 'grip': 6, 'grip-cap': 6
       });
     } else if (tier === 'LOW') {
-      // Бюджетные телефоны (Redmi 13C / Galaxy A13 и др.): 0% лагов и 0% нагрева
       applySliderMap({
         'sharp': 5.60, 'sx': 5.60, 'sy': 5.40,
         'noise': 3, 'dead': 0, 'lead': 2,
@@ -1321,7 +1319,6 @@
         'straight': 0.86, 'grip': 5, 'grip-cap': 5
       });
     } else {
-      // Средние и мощные устройства
       applySliderMap({
         'sharp': 5.85, 'sx': 5.85, 'sy': 5.70,
         'noise': 2, 'dead': 0, 'lead': 3,
@@ -1378,6 +1375,7 @@
   }
 
   function toggleTeleportMaster() {
+    if (!isUnlockedSession) return;
     if (!engineRunning) {
       activateTeleportEngine();
     } else {
@@ -1386,6 +1384,7 @@
   }
 
   function activateTeleportEngine() {
+    if (!isUnlockedSession) return;
     engineRunning = true;
     commitEngineUpdate();
     if (window.AndroidBridge && typeof AndroidBridge.startTeleport === 'function') {
@@ -1519,13 +1518,13 @@
 
   let updateTimer = null;
   function commitEngineUpdate() {
+    if (!isUnlockedSession) return;
     clearTimeout(updateTimer);
     updateTimer = setTimeout(() => {
       const v = readAllSliders();
       const microSnap = document.getElementById('chk-micro-snap') ? document.getElementById('chk-micro-snap').checked : true;
       const effectiveSharp = v.sharp + (v.lead * 0.05) + (v.chunkFast * 0.04);
       const effectiveChunks = Math.max(1, Math.min(120, Math.round((v.chunks * 0.7) + (v.chunkCap * 0.3))));
-      // Если включен Мгновенный отклик 1 мм — порог мёртвой зоны обнуляется до 1 пикселя
       const effectiveGrid = microSnap ? 1 : Math.max(1, v.noise + v.dead - Math.round(v.bypass * 0.15));
       const effectiveStick = v.axis + v.stickForce + v.grip + v.gripCap;
       const effectiveAccel = v.accel + v.slope;
@@ -1580,6 +1579,7 @@
   }
 
   function spawnStretchFloatingButton() {
+    if (!isUnlockedSession) return;
     if (window.AndroidBridge) {
       if (typeof AndroidBridge.activateStretchFloatingButton === 'function') {
         AndroidBridge.activateStretchFloatingButton(currentRatio);
@@ -1597,6 +1597,7 @@
 
   // КАСТОМНЫЙ ПРИЦЕЛ
   function selectCrosshair(type) {
+    if (!isUnlockedSession) return;
     currentCrosshairType = type;
     ['off', 'dot', 'cross', 'tshape', 'circle'].forEach(t => {
       const el = document.getElementById('ch-' + t);
@@ -1662,10 +1663,12 @@
 
   // СИСТЕМНЫЕ ПЕРЕКЛЮЧАТЕЛИ
   function toggleThermalGuard(on) {
+    if (!isUnlockedSession) return;
     if (window.AndroidBridge && AndroidBridge.setHzThermalGuard) AndroidBridge.setHzThermalGuard(on);
   }
 
   function updateRecoilFix() {
+    if (!isUnlockedSession) return;
     const sw = document.getElementById('chk-recoil');
     const range = document.getElementById('recoilPowerRange');
     const enabled = sw ? sw.checked : true;
@@ -1693,10 +1696,11 @@
     try {
       localStorage.setItem('so2_dpi_preset', String(dpi));
     } catch (e) {}
-    updateAutoDpi();
+    if (isUnlockedSession) updateAutoDpi();
   }
 
   function updateAutoDpi() {
+    if (!isUnlockedSession) return;
     const sw = document.getElementById('toggleAutoDpi');
     const enabled = sw ? sw.checked : false;
     try {
@@ -1713,6 +1717,7 @@
   }
 
   function pickDownscale(pct) {
+    if (!isUnlockedSession) return;
     [100, 90, 80, 70].forEach(v => {
       const el = document.getElementById('ds-' + v);
       if (el) el.classList.toggle('active', v === pct);
@@ -1804,7 +1809,7 @@
     document.getElementById('modal-visualizer').style.display = 'none';
   }
 
-  // АВТОРИЗАЦИЯ И ПРОФИЛЬ
+  // АВТОРИЗАЦИЯ И ПРОФИЛЬ (БЕЗ ОБХОДА ПРИ ПЕРВОМ СТАРТЕ)
   function loadHardwareProfile() {
     let hwid = 'ANDROID_HWID', model = 'Samsung SM-S938B', screen = '1440x3120 (120 Гц)';
     if (window.AndroidBridge) {
@@ -1824,18 +1829,32 @@
   }
 
   function initAuthGate() {
-    loadHardwareProfile();
-    const savedNick = localStorage.getItem('so2_user_nick') || 'Player';
-    document.getElementById('login-nick-input').value = savedNick;
-    document.getElementById('prof-nick').innerText = savedNick;
+    // Гарантированно держим закрытым основное окно при старте
+    isUnlockedSession = false;
+    document.getElementById('main-app-container').style.display = 'none';
+    document.getElementById('auth-gate').style.display = 'flex';
 
-    let savedKey = '';
-    if (window.AndroidBridge && typeof AndroidBridge.getSavedKey === 'function') {
-      savedKey = AndroidBridge.getSavedKey();
+    loadHardwareProfile();
+    const savedNick = localStorage.getItem('so2_user_nick') || '';
+    if (savedNick) {
+      document.getElementById('login-nick-input').value = savedNick;
+      document.getElementById('prof-nick').innerText = savedNick;
     }
-    if (savedKey && savedKey.length >= 5) {
+
+    // Проверяем, был ли ключ уже лично введен пользователем на этом устройстве в текущем приложении
+    const localConfirmed = localStorage.getItem('so2_key_manually_activated') === '1';
+    let savedKey = '';
+    if (localConfirmed && window.AndroidBridge && typeof AndroidBridge.getSavedKey === 'function') {
+      savedKey = (AndroidBridge.getSavedKey() || '').trim();
+    }
+
+    if (localConfirmed && savedKey.length >= 5) {
       document.getElementById('license-key-input').value = savedKey;
       submitLicenseKey(true);
+    } else {
+      document.getElementById('license-key-input').value = '';
+      document.getElementById('auth-error-msg').style.color = '#9d8ec4';
+      document.getElementById('auth-error-msg').innerText = 'Введите ваш ключ для активации входа';
     }
   }
 
@@ -1845,57 +1864,77 @@
     const err = document.getElementById('auth-error-msg');
 
     if (key.length < 5) {
+      err.style.color = '#ff4778';
       err.innerText = '❌ Введите ключ из @SO2TeleportShop_bot';
+      return;
+    }
+
+    if (!window.AndroidBridge || typeof AndroidBridge.activateLicenseKey !== 'function') {
+      err.style.color = '#ff4778';
+      err.innerText = '⏳ Инициализация защиты... Нажмите Войти ещё раз';
       return;
     }
 
     localStorage.setItem('so2_user_nick', nick);
     document.getElementById('prof-nick').innerText = nick;
     err.style.color = '#00f0ff';
-    err.innerText = isAutoVerify ? '⏳ Проверка подписки...' : '⏳ Активация ключа...';
+    err.innerText = isAutoVerify ? '⏳ Проверка подписки на сервере...' : '⏳ Активация ключа...';
 
     setTimeout(() => {
-      if (!window.AndroidBridge) {
-        unlockMainApp(key, 'АКТИВНА');
-        return;
+      try {
+        const rawResp = isAutoVerify ? AndroidBridge.verifyLicenseKey(key) : AndroidBridge.activateLicenseKey(key);
+        const parts = (rawResp || 'ERROR|Ошибка связи с сервером').split('|');
+        if (parts[0] === 'OK') {
+          localStorage.setItem('so2_key_manually_activated', '1');
+          unlockMainApp(key, parts[1] || 'АКТИВНА');
+        } else {
+          localStorage.removeItem('so2_key_manually_activated');
+          lockAppWithReason('❌ ' + (parts[1] || 'Ключ недействителен'));
+        }
+      } catch (e) {
+        lockAppWithReason('❌ Ошибка проверки ключа');
       }
-      const rawResp = isAutoVerify ? AndroidBridge.verifyLicenseKey(key) : AndroidBridge.activateLicenseKey(key);
-      const parts = (rawResp || 'ERROR|Ошибка связи').split('|');
-      if (parts[0] === 'OK') {
-        unlockMainApp(key, parts[1] || 'АКТИВНА');
-      } else {
-        lockAppWithReason('❌ ' + (parts[1] || 'Ключ недействителен'));
-      }
-    }, 100);
+    }, 120);
   }
 
   function unlockMainApp(key, expText) {
+    isUnlockedSession = true;
     document.getElementById('auth-gate').style.display = 'none';
     document.getElementById('main-app-container').style.display = 'block';
     document.getElementById('prof-key').innerText = key;
     document.getElementById('prof-status').innerText = 'АКТИВНА (' + expText + ')';
     refreshShizukuStatus(false);
 
+    const savedAutoDpi = localStorage.getItem('so2_auto_dpi_enabled') === '1';
+    if (savedAutoDpi) updateAutoDpi();
+    updateRecoilFix();
+
     clearInterval(licenseWatchdogTimer);
     licenseWatchdogTimer = setInterval(() => {
-      // Не нагружаем сеть и процессор во время игры (когда приложение свернуто)
       if (document.hidden) return;
       if (window.AndroidBridge && typeof AndroidBridge.verifyLicenseKey === 'function') {
         const res = AndroidBridge.verifyLicenseKey(key) || '';
-        if (res.split('|')[0] !== 'OK') lockAppWithReason('⏳ Срок действия ключа истёк!');
+        if (res.split('|')[0] !== 'OK') {
+          localStorage.removeItem('so2_key_manually_activated');
+          lockAppWithReason('⏳ Срок действия ключа истёк!');
+        }
       }
     }, 60000);
   }
 
   function lockAppWithReason(text) {
+    isUnlockedSession = false;
     clearInterval(licenseWatchdogTimer);
     deactivateTeleportEngine();
     document.getElementById('main-app-container').style.display = 'none';
     document.getElementById('auth-gate').style.display = 'flex';
-    document.getElementById('auth-error-msg').innerText = text;
+    const err = document.getElementById('auth-error-msg');
+    err.style.color = '#ff4778';
+    err.innerText = text;
   }
 
   function logoutKey() {
+    localStorage.removeItem('so2_key_manually_activated');
     if (window.AndroidBridge && AndroidBridge.logoutLicenseKey) AndroidBridge.logoutLicenseKey();
     lockAppWithReason('Введите лицензионный ключ для входа');
   }
@@ -1917,7 +1956,6 @@
       }
       const savedAutoDpi = localStorage.getItem('so2_auto_dpi_enabled') === '1';
       document.getElementById('toggleAutoDpi').checked = savedAutoDpi;
-      if (savedAutoDpi) updateAutoDpi();
 
       const savedRecoilPower = parseInt(localStorage.getItem('so2_recoil_power') || '85', 10);
       document.getElementById('recoilPowerRange').value = savedRecoilPower;
