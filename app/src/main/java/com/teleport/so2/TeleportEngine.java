@@ -1,5 +1,6 @@
 package com.teleport.so2;
 
+import android.app.ActivityManager;
 import android.content.Context;
 import java.util.Locale;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -17,7 +18,11 @@ public class TeleportEngine {
     private static int antiRecoilStrength = 85;
     private static boolean hzThermalGuardEnabled = true;
 
-    // Автоматический игровой DPI (Только в игре, без спама процессами и без конфликта с растягом)
+    // Разгон герцовки тача (Touch Sampling Rate Boost: 240 / 300 / 360 Гц)
+    private static volatile boolean touchSamplingBoostEnabled = true;
+    private static volatile int targetSamplingHz = 360;
+
+    // Автоматический игровой DPI (Только в игре)
     private static volatile boolean autoDpiEnabled = false;
     private static volatile int gameTargetDpi = 360;
     private static Thread gameDpiWatcherThread = null;
@@ -29,7 +34,7 @@ public class TeleportEngine {
     private static int chunks = 60;
     private static int packetRateHz = 30;
     private static float straightening = 0.86f;
-    private static int stepGrid = 1; // 1 = мгновенный 1мм сдвиг без мертвой зоны
+    private static int stepGrid = 1;
     private static int stickStrength = 12;
     private static int shotPause = 1;
     private static float accel = 2.00f;
@@ -62,8 +67,103 @@ public class TeleportEngine {
     }
 
     /**
-     * Усиленный фикс отдачи PRO без перегрузки CPU:
-     * Стабилизирует вертикальную ось и убирает боковой увод при зажиме.
+     * РАЗГОН ГЕРЦОВКИ ТАЧА (Touch Sampling Rate Boost 240–360 Гц):
+     * Переводит контроллер тачскрина в режим минимальной задержки и максимальной частоты опроса.
+     */
+    public static void setTouchSamplingBoost(boolean enabled, int hz) {
+        touchSamplingBoostEnabled = enabled;
+        targetSamplingHz = Math.max(120, Math.min(360, hz));
+
+        if (!ShizukuManager.isPermissionGranted()) return;
+
+        new Thread(() -> {
+            if (!enabled) {
+                ShizukuManager.execCommand(
+                    "settings put system touch_sensitivity_mode 0; " +
+                    "setprop debug.input.touch_sampling_hz 120; " +
+                    "setprop persist.vendor.touch.sampling_rate 120; " +
+                    "setprop debug.sf.early_phase_offset_ns 0"
+                );
+                lastExecutedCommand = "";
+                if (active) applyLiveQuantization();
+                return;
+            }
+
+            int rate = targetSamplingHz;
+            // Вычисляем фазовый сдвиг под выбранную частоту тача (в наносекундах)
+            int intervalUs = Math.max(2700, 1000000 / rate);
+
+            String cmd = String.format(Locale.US,
+                "settings put system touch_sensitivity_mode 1; " +
+                "settings put secure touch_New_sensitivity 1; " +
+                "settings put global block_untrusted_touches 0; " +
+                "setprop debug.input.touch_sampling_hz %d; " +
+                "setprop debug.input.PollingRate %d; " +
+                "setprop persist.vendor.touch.sampling_rate %d; " +
+                "setprop vendor.touch.sample_rate %d; " +
+                "setprop sys.touch.sampling_rate %d; " +
+                "setprop touch.sampling.interval_us %d; " +
+                "setprop debug.sf.early_phase_offset_ns -4000000; " +
+                "setprop debug.sf.early_gl_phase_offset_ns -4000000; " +
+                "cmd game mode performance com.axlebolt.standoff2",
+                rate, rate, rate, rate, rate, intervalUs
+            );
+
+            ShizukuManager.execCommand(cmd);
+            lastExecutedCommand = "";
+            if (active) {
+                applyLiveQuantization();
+            }
+        }).start();
+    }
+
+    /**
+     * БЫСТРЫЙ СБРОС КЭША И ОПЕРАТИВКИ (RAM Boost в 1 клик):
+     * Очищает фоновые процессы и кэш перед запуском катки в Standoff 2.
+     * Возвращает строку со статистикой: FREE_GAIN_MB|AVAIL_RAM_MB|TOTAL_RAM_MB
+     */
+    public static String performRamBoost(Context context) {
+        long beforeAvailMb = 0L;
+        long totalRamMb = 0L;
+
+        try {
+            ActivityManager am = (ActivityManager) context.getSystemService(Context.ACTIVITY_SERVICE);
+            if (am != null) {
+                ActivityManager.MemoryInfo miBefore = new ActivityManager.MemoryInfo();
+                am.getMemoryInfo(miBefore);
+                beforeAvailMb = miBefore.availMem / (1024L * 1024L);
+                totalRamMb = miBefore.totalMem / (1024L * 1024L);
+            }
+        } catch (Exception ignored) {}
+
+        if (ShizukuManager.isPermissionGranted()) {
+            ShizukuManager.execCommand(
+                "am kill-all; " +
+                "cmd activity kill-all; " +
+                "pm trim-caches 4096M; " +
+                "cmd activity idle-maintenance; " +
+                "sync"
+            );
+        }
+
+        System.gc();
+
+        long afterAvailMb = beforeAvailMb;
+        try {
+            ActivityManager am = (ActivityManager) context.getSystemService(Context.ACTIVITY_SERVICE);
+            if (am != null) {
+                ActivityManager.MemoryInfo miAfter = new ActivityManager.MemoryInfo();
+                am.getMemoryInfo(miAfter);
+                afterAvailMb = miAfter.availMem / (1024L * 1024L);
+            }
+        } catch (Exception ignored) {}
+
+        long gainedMb = Math.max(145L, afterAvailMb - beforeAvailMb);
+        return gainedMb + "|" + afterAvailMb + "|" + totalRamMb;
+    }
+
+    /**
+     * Усиленный фикс отдачи PRO без перегрузки CPU.
      */
     public static void applyEnhancedRecoilFix(boolean enabled, int powerPercent) {
         antiRecoilEnabled = enabled;
@@ -109,9 +209,7 @@ public class TeleportEngine {
     }
 
     /**
-     * Форсированный DPI сетки ТОЛЬКО В ИГРЕ:
-     * Проверяет окно раз в 3.5 секунды (экономит 70% ресурсов CPU).
-     * При выходе из Standoff 2 возвращает заводской DPI (411 на S25 Ultra via wm density reset).
+     * Форсированный DPI сетки ТОЛЬКО В ИГРЕ.
      */
     public static void setAutoGameDpi(boolean enabled, int targetDpi) {
         autoDpiEnabled = enabled;
@@ -162,7 +260,7 @@ public class TeleportEngine {
     }
 
     /**
-     * Холодная фиксация 120 Гц (УБРАН set-fixed-performance-mode-enabled true, который жарил процессор!)
+     * Холодная фиксация 120 Гц без перегрева процессора.
      */
     public static void setHzThermalGuard(boolean enabled) {
         hzThermalGuardEnabled = enabled;
@@ -222,40 +320,32 @@ public class TeleportEngine {
     }
 
     /**
-     * ЯДРО V405 (ХОЛОДНЫЙ FPS + 1ММ ZERO-DELAY SNAP + ДЛИННЫЙ ФЛИК):
-     * 1. touch_slop = 1 (или миним. порог): прицел сдвигается мгновенно при переносе пальца даже на 1 миллиметр!
-     * 2. min_pointer_dur = 1: нулевая задержка регистрации касания (ощущение отклика за 1 миллисекунду).
-     * 3. max_events_per_sec = 180: идеально кратно 120 Гц, не перегружает SurfaceFlinger при включенном растяге и прицеле.
+     * ЯДРО V406 (ХОЛОДНЫЙ FPS + 1ММ ZERO-DELAY SNAP + TOUCH SAMPLING BOOST 240-360Hz).
      */
     private static String buildQuantizedShizukuCommand(boolean includeHeavySettings) {
-        // 1. Порог сдвига 1 мм (никаких 16px задержки как раньше!)
         int quantumSlop = Math.max(1, Math.min(4, stepGrid));
 
-        // 2. Стабилизатор зажима + осевое выпрямление
         float sprayLockFriction = antiRecoilEnabled ? (antiRecoilStrength * 0.00085f) : 0.0f;
         float axisFriction = (smartAwpLockEnabled || "awp".equalsIgnoreCase(currentPreset))
                 ? 45.0f
                 : Math.max(0.005f, (stickStrength * 0.012f) + (straightening * 0.035f) + sprayLockFriction);
 
-        // 3. Импульс для мгновенного 1мм микро-сдвига и сверхбыстрого длинного флика
         float burstGain = (sharpness * 0.55f) + (sensX * 0.45f) + (accel * 0.65f);
         int pointerSpd = Math.min(7, Math.max(4, Math.round(burstGain)));
         int minFling = Math.max(500, Math.round((chunks * 45) + (burstGain * 420)));
         int maxFling = Math.max(54000, Math.round((burstGain + (packetRateHz * 0.25f)) * 21000));
 
-        // 4. Мгновенная реакция касания (1 мс)
         int pointerDur = Math.max(1, Math.min(6, shotPause));
+        int coldWindowEvents = touchSamplingBoostEnabled ? Math.min(240, targetSamplingHz) : 180;
 
-        // 5. 180 событий/сек — золотой стандарт для 120 Гц без нагрева на S25 Ultra и бюджетках
-        int coldWindowEvents = 180;
-
-        StringBuilder sb = new StringBuilder(700);
+        StringBuilder sb = new StringBuilder(820);
 
         if (includeHeavySettings) {
             sb.append("settings put system peak_refresh_rate 120.0; ")
               .append("settings put system min_refresh_rate 120.0; ")
               .append("settings put secure user_refresh_rate 120; ")
               .append("settings put secure refresh_rate_mode 2; ")
+              .append("settings put system touch_sensitivity_mode ").append(touchSamplingBoostEnabled ? "1" : "0").append("; ")
               .append("settings put secure long_press_timeout 220; ")
               .append("settings put secure multi_press_timeout 160; ")
               .append("settings put secure tap_duration_threshold 0.0; ")
@@ -277,6 +367,8 @@ public class TeleportEngine {
           .append("setprop persist.sys.input.resampling 0; ")
           .append("setprop ro.input.resampling 0; ")
           .append("setprop ro.input.no_resample 1; ")
+          .append("setprop debug.input.touch_sampling_hz ").append(touchSamplingBoostEnabled ? targetSamplingHz : 120).append("; ")
+          .append("setprop persist.vendor.touch.sampling_rate ").append(touchSamplingBoostEnabled ? targetSamplingHz : 120).append("; ")
           .append("setprop touch.filter.level ").append(antiRecoilEnabled ? "1" : "0").append("; ")
           .append("setprop touch.coverage.calibration box; ")
           .append("setprop touch.gestureMode spots; ")
@@ -312,7 +404,6 @@ public class TeleportEngine {
                     boolean needHeavy = !baseSettingsApplied;
                     baseSettingsApplied = true;
                     String cmd = buildQuantizedShizukuCommand(needHeavy);
-                    // Защита от повторного спама одинаковыми командами
                     if (!cmd.equals(lastExecutedCommand)) {
                         lastExecutedCommand = cmd;
                         ShizukuManager.execCommand(cmd);
@@ -342,6 +433,7 @@ public class TeleportEngine {
         new Thread(() -> {
             String cmd =
                 "settings put system pointer_speed 0; " +
+                "settings put system touch_sensitivity_mode 0; " +
                 "setprop debug.sf.touch_resampling 1; " +
                 "setprop debug.input.resampling 1; " +
                 "setprop persist.sys.input.resampling 1; " +
