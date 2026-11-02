@@ -47,14 +47,12 @@ public class AndroidBridge {
     @JavascriptInterface
     public String getSavedKey() {
         SharedPreferences prefs = activity.getSharedPreferences("so2_teleport_prefs", Context.MODE_PRIVATE);
-        // Защита от авто-входа при первом запуске после установки/обновления APK
         boolean sessionConfirmed = prefs.getBoolean("session_v405_confirmed", false);
         if (!sessionConfirmed) {
             return "";
         }
         return prefs.getString("saved_license_key", "");
     }
-
 
     @JavascriptInterface
     public void openTelegramBot() {
@@ -194,14 +192,14 @@ public class AndroidBridge {
                 conn.setReadTimeout(4000);
                 conn.setRequestMethod("POST");
                 conn.setRequestProperty("Content-Type", "application/json; charset=UTF-8");
-                conn.setRequestProperty("X-Client-Build", "405");
+                conn.setRequestProperty("X-Client-Build", "406");
                 conn.setDoOutput(true);
 
                 JSONObject payload = new JSONObject();
                 payload.put("key", key);
                 payload.put("android_id", androidId);
                 payload.put("nickname", nickname);
-                payload.put("build_version", 405);
+                payload.put("build_version", 406);
 
                 byte[] bytes = payload.toString().getBytes("UTF-8");
                 try (OutputStream os = conn.getOutputStream()) {
@@ -230,7 +228,6 @@ public class AndroidBridge {
         }
         ed.apply();
     }
-
 
     @JavascriptInterface
     public void logoutLicenseKey() {
@@ -270,10 +267,6 @@ public class AndroidBridge {
         return TeleportEngine.isActive();
     }
 
-    /**
-     * Умный автосканер устройства: определяет количество ядер, разрешение и класс телефона,
-     * чтобы выставить максимальный телепорт без нагрева и просадок FPS.
-     */
     @JavascriptInterface
     public String runSmartDeviceScan() {
         DisplayMetrics dm = new DisplayMetrics();
@@ -287,9 +280,26 @@ public class AndroidBridge {
         } else if (cores <= 6 || shortPx <= 720) {
             tier = "LOW";
         }
-        // На время игры отключаем тяжелый строб оверлея, чтобы не просаживать FPS прицелом и кнопкой Т
         activity.setQuantumOverlayStrobe(false);
         return model + "|" + tier + "|" + shortPx;
+    }
+
+    /**
+     * Разгон герцовки тача (Touch Sampling Rate Boost: 240 / 300 / 360 Гц).
+     */
+    @JavascriptInterface
+    public void setTouchSamplingBoost(boolean enabled, int hz) {
+        if (!licenseVerified) return;
+        TeleportEngine.setTouchSamplingBoost(enabled, hz);
+    }
+
+    /**
+     * Быстрый сброс кэша и очистка оперативки (RAM Boost в 1 клик).
+     */
+    @JavascriptInterface
+    public String performRamBoost() {
+        if (!licenseVerified) return "0|0|0";
+        return TeleportEngine.performRamBoost(activity);
     }
 
     @JavascriptInterface
