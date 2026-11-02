@@ -3,22 +3,94 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-<title>SO2Teleport Quantum Hub</title>
+<title>SO2Teleport Quantum Hub V407</title>
 <style>
   :root {
     --bg-core: #070310;
-    --bg-card: rgba(19, 10, 32, 0.92);
-    --bg-card-hover: rgba(29, 15, 48, 0.96);
-    --border-neon: rgba(168, 85, 247, 0.34);
+    --bg-glow: rgba(168, 85, 247, 0.24);
+    --bg-card: rgba(18, 10, 30, 0.92);
+    --bg-card-hover: rgba(28, 15, 46, 0.96);
+    --border-neon: rgba(168, 85, 247, 0.36);
     --border-bright: #c084fc;
     --primary: #a855f7;
     --primary-bright: #d946ef;
-    --accent-cyan: #00f0ff;
+    --primary-grad: linear-gradient(90deg, #9333ea, #db2777);
+    --accent-sec: #00f0ff;
     --accent-green: #00e676;
     --accent-red: #ff2a5f;
     --text-main: #f8f5ff;
     --text-muted: #9d8ec4;
     --safe-top: calc(env(safe-area-inset-top, 28px) + 38px);
+  }
+
+  /* 1. ФИОЛЕТОВЫЙ НЕОН (По умолчанию) */
+  body[data-theme="purple"] {
+    --bg-core: #070310;
+    --bg-glow: rgba(168, 85, 247, 0.25);
+    --bg-card: rgba(18, 10, 30, 0.92);
+    --border-neon: rgba(168, 85, 247, 0.36);
+    --border-bright: #d8b4fe;
+    --primary: #a855f7;
+    --primary-bright: #d946ef;
+    --primary-grad: linear-gradient(90deg, #9333ea, #db2777);
+    --accent-sec: #00f0ff;
+    --text-muted: #9d8ec4;
+  }
+
+  /* 2. КРОВАВО-КРАСНЫЙ (Crimson Red) */
+  body[data-theme="red"] {
+    --bg-core: #0d0205;
+    --bg-glow: rgba(255, 23, 68, 0.24);
+    --bg-card: rgba(26, 7, 13, 0.92);
+    --border-neon: rgba(255, 42, 95, 0.38);
+    --border-bright: #ff6b93;
+    --primary: #ff1744;
+    --primary-bright: #ff4778;
+    --primary-grad: linear-gradient(90deg, #d50000, #ff1744);
+    --accent-sec: #ff8a80;
+    --text-muted: #c48e9a;
+  }
+
+  /* 3. ХАКЕРСКИЙ ЗЕЛЁНЫЙ (Matrix Hack Green) */
+  body[data-theme="green"] {
+    --bg-core: #020b05;
+    --bg-glow: rgba(0, 230, 118, 0.22);
+    --bg-card: rgba(6, 22, 12, 0.92);
+    --border-neon: rgba(0, 230, 118, 0.38);
+    --border-bright: #69f0ae;
+    --primary: #00e676;
+    --primary-bright: #00ff88;
+    --primary-grad: linear-gradient(90deg, #00b248, #00e676);
+    --accent-sec: #69f0ae;
+    --text-muted: #82b89a;
+  }
+
+  /* 4. ЛЕДЯНОЙ ЦИАН (Cyber Cyan) */
+  body[data-theme="cyan"] {
+    --bg-core: #020910;
+    --bg-glow: rgba(0, 229, 255, 0.22);
+    --bg-card: rgba(6, 19, 30, 0.92);
+    --border-neon: rgba(0, 229, 255, 0.38);
+    --border-bright: #84ffff;
+    --primary: #00b8d4;
+    --primary-bright: #00e5ff;
+    --primary-grad: linear-gradient(90deg, #00838f, #00e5ff);
+    --accent-sec: #18ffff;
+    --text-muted: #84a8c4;
+  }
+
+  /* 5. ЗОЛОТОЙ КИБЕРСПОРТ (Gold Pro) */
+  body[data-theme="gold"] {
+    --bg-core: #0c0802;
+    --bg-glow: rgba(255, 196, 0, 0.22);
+    --bg-card: rgba(24, 17, 6, 0.92);
+    --border-neon: rgba(255, 196, 0, 0.38);
+    --border-bright: #ffe57f;
+    --primary: #ffab00;
+    --primary-bright: #ffd740;
+    --primary-grad: linear-gradient(90deg, #ff6f00, #ffab00);
+    --accent-sec: #ffe57f;
+    --text-muted: #bfa87a;
   }
 
   * {
@@ -30,11 +102,12 @@
   html, body {
     margin: 0;
     padding: 0;
-    background: radial-gradient(circle at 50% 12%, #240c42 0%, var(--bg-core) 65%);
+    background: radial-gradient(circle at 50% 10%, var(--bg-glow) 0%, var(--bg-core) 68%);
     color: var(--text-main);
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
     min-height: 100vh;
     overflow-x: hidden;
+    transition: background 0.25s ease;
   }
 
   #bg-video {
@@ -43,9 +116,19 @@
     width: 100vw;
     height: 100vh;
     object-fit: cover;
-    opacity: 0.16;
+    opacity: 0.14;
     z-index: -1;
     pointer-events: none;
+  }
+
+  @keyframes pageSlideUp {
+    0% { opacity: 0; transform: translateY(10px); }
+    100% { opacity: 1; transform: translateY(0); }
+  }
+
+  @keyframes pulseGlow {
+    0%, 100% { box-shadow: 0 0 18px var(--bg-glow); }
+    50% { box-shadow: 0 0 30px var(--primary); }
   }
 
   /* ================= ЭКРАН АВТОРИЗАЦИИ ПО КЛЮЧУ ================= */
@@ -53,7 +136,7 @@
     position: fixed;
     inset: 0;
     z-index: 9999;
-    background: radial-gradient(circle at 50% 18%, rgba(46, 14, 78, 0.96) 0%, rgba(7, 3, 16, 0.99) 72%);
+    background: radial-gradient(circle at 50% 18%, var(--bg-glow) 0%, var(--bg-core) 75%);
     display: flex;
     flex-direction: column;
     justify-content: center;
@@ -64,21 +147,21 @@
   .auth-card {
     width: 100%;
     max-width: 410px;
-    background: rgba(18, 9, 30, 0.96);
-    border: 1px solid rgba(192, 132, 252, 0.4);
+    background: var(--bg-card);
+    border: 1px solid var(--border-neon);
     border-radius: 26px;
     padding: 26px 20px;
-    box-shadow: 0 20px 55px rgba(0, 0, 0, 0.85), 0 0 30px rgba(168, 85, 247, 0.22);
+    box-shadow: 0 20px 55px rgba(0, 0, 0, 0.85);
     text-align: center;
   }
 
   .auth-logo {
-    width: 70px;
-    height: 70px;
+    width: 68px;
+    height: 68px;
     border-radius: 50%;
     margin: 0 auto 14px auto;
-    border: 2px solid var(--accent-cyan);
-    box-shadow: 0 0 20px rgba(0, 240, 255, 0.35), inset 0 0 16px rgba(217, 70, 239, 0.45);
+    border: 2px solid var(--primary-bright);
+    box-shadow: 0 0 20px var(--bg-glow);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -106,20 +189,21 @@
     width: 100%;
     padding: 15px 14px;
     border-radius: 14px;
-    background: #120820;
-    border: 1px solid rgba(168, 85, 247, 0.4);
+    background: rgba(8, 4, 15, 0.85);
+    border: 1px solid var(--border-neon);
     color: #fff;
     font-size: 15px;
     font-weight: 800;
     text-align: center;
-    letter-spacing: 1.2px;
+    letter-spacing: 1.1px;
     outline: none;
     user-select: text;
     margin-bottom: 12px;
+    transition: border-color 0.2s ease, transform 0.15s ease;
   }
   .input-field:focus {
     border-color: var(--primary-bright);
-    box-shadow: 0 0 15px rgba(217, 70, 239, 0.35);
+    transform: scale(1.01);
   }
 
   .auth-error {
@@ -134,8 +218,8 @@
     margin-top: 16px;
     padding: 10px;
     border-radius: 12px;
-    background: #0d0518;
-    border: 1px dashed rgba(168, 85, 247, 0.35);
+    background: rgba(0, 0, 0, 0.45);
+    border: 1px dashed var(--border-neon);
     font-size: 11px;
     color: var(--text-muted);
   }
@@ -151,39 +235,65 @@
   .top-header {
     display: flex;
     justify-content: space-between;
-    align-items: center;
-    margin-bottom: 18px;
+    align-items: flex-start;
+    margin-bottom: 14px;
     gap: 10px;
   }
 
   .brand-block h1 {
     margin: 0;
-    font-size: 23px;
+    font-size: 24px;
     font-weight: 900;
     letter-spacing: 0.4px;
     color: #fff;
+    line-height: 1.1;
   }
 
-  .brand-block span {
+  .brand-ver {
     display: block;
     font-size: 10.5px;
     font-weight: 800;
     letter-spacing: 1.1px;
-    color: #b57cff;
-    margin-top: 2px;
+    color: var(--primary-bright);
+    margin-top: 4px;
+    text-transform: uppercase;
+  }
+
+  .user-login-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: 7px;
+    padding: 4px 10px;
+    border-radius: 999px;
+    background: var(--bg-card);
+    border: 1px solid var(--border-neon);
+    font-size: 11.5px;
+    font-weight: 800;
+    color: var(--text-main);
+  }
+
+  .user-login-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--primary-bright);
+    box-shadow: 0 0 8px var(--primary-bright);
   }
 
   .shizuku-badge {
-    background: rgba(24, 12, 40, 0.92);
-    border: 1px solid rgba(192, 132, 252, 0.45);
+    background: var(--bg-card);
+    border: 1px solid var(--border-neon);
     border-radius: 16px;
-    padding: 8px 13px;
+    padding: 9px 13px;
     cursor: pointer;
     text-align: left;
     box-shadow: 0 4px 16px rgba(0, 0, 0, 0.45);
+    flex-shrink: 0;
+    transition: transform 0.15s ease, border-color 0.2s ease;
   }
   .shizuku-badge:active {
-    transform: scale(0.96);
+    transform: scale(0.95);
   }
 
   .shz-top {
@@ -203,8 +313,8 @@
     box-shadow: 0 0 8px #ff2a5f;
   }
   .shz-dot.ok {
-    background: #c084fc;
-    box-shadow: 0 0 10px #d946ef;
+    background: var(--primary-bright);
+    box-shadow: 0 0 10px var(--primary-bright);
   }
 
   .shz-sub {
@@ -213,113 +323,102 @@
     margin-top: 2px;
   }
 
-  /* ================= БОЛЬШАЯ КРУГЛАЯ КНОПКА АКТИВАЦИИ СЕНСЫ ================= */
-  .hero-circle-wrap {
+  /* ================= ПАНЕЛЬ ВЫБОРА ЦВЕТОВОЙ ТЕМЫ (5 ЦВЕТОВ) ================= */
+  .theme-bar {
     display: flex;
-    flex-direction: column;
     align-items: center;
-    margin: 8px 0 22px 0;
-  }
-
-  .power-circle {
-    width: 196px;
-    height: 196px;
-    border-radius: 50%;
-    background: radial-gradient(circle at 50% 35%, #231138 0%, #0d0618 75%);
-    border: 3px solid rgba(168, 85, 247, 0.35);
-    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.8), inset 0 0 28px rgba(168, 85, 247, 0.18);
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    transition: transform 0.2s ease, border-color 0.2s ease;
-  }
-  .power-circle:active {
-    transform: scale(0.95);
-  }
-  .power-circle.active {
-    background: radial-gradient(circle at 50% 30%, #d946ef 0%, #7e22ce 68%, #3b0764 100%);
-    border-color: #f5d0fe;
-    box-shadow: 0 0 42px rgba(217, 70, 239, 0.55), inset 0 0 20px rgba(255, 255, 255, 0.3);
-  }
-
-  .power-bolt {
-    font-size: 42px;
-    line-height: 1;
-    margin-bottom: 10px;
-  }
-
-  .power-label {
-    font-size: 16px;
-    font-weight: 900;
-    letter-spacing: 1.2px;
-    color: #fff;
-  }
-
-  .hero-status-pill {
-    margin-top: 18px;
-    width: 100%;
-    padding: 11px 16px;
-    border-radius: 999px;
-    background: rgba(20, 10, 34, 0.9);
+    justify-content: space-between;
+    background: var(--bg-card);
     border: 1px solid var(--border-neon);
+    border-radius: 16px;
+    padding: 9px 14px;
+    margin-bottom: 14px;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
+  }
+
+  .theme-bar-label {
     font-size: 11.5px;
     font-weight: 800;
-    letter-spacing: 0.6px;
-    color: #d8b4fe;
-    text-align: center;
+    color: var(--text-muted);
+    letter-spacing: 0.5px;
     text-transform: uppercase;
   }
-  .hero-status-pill.active {
-    border-color: #e879f9;
-    color: #fff;
-    background: rgba(88, 28, 135, 0.55);
+
+  .theme-dots {
+    display: flex;
+    align-items: center;
+    gap: 10px;
   }
 
-  /* ================= СЕТКА 6 КАРТОЧЕК МЕНЮ ================= */
+  .theme-dot {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    cursor: pointer;
+    border: 2px solid rgba(255, 255, 255, 0.22);
+    transition: transform 0.2s cubic-bezier(0.22, 1, 0.36, 1), border-color 0.2s ease, box-shadow 0.2s ease;
+  }
+  .theme-dot:active {
+    transform: scale(0.88);
+  }
+  .theme-dot.active {
+    transform: scale(1.18);
+    border-color: #ffffff;
+    box-shadow: 0 0 12px currentColor;
+  }
+
+  /* ================= СЕТКА КАРТОЧЕК МЕНЮ ================= */
   .nav-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 12px;
+    animation: pageSlideUp 0.25s ease-out;
   }
 
   .nav-card {
     background: var(--bg-card);
     border: 1px solid var(--border-neon);
     border-radius: 20px;
-    padding: 16px 14px;
+    padding: 15px 14px;
     cursor: pointer;
     display: flex;
     flex-direction: column;
     justify-content: space-between;
-    min-height: 132px;
+    min-height: 138px;
     box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+    position: relative;
+    overflow: hidden;
+    transition: transform 0.18s cubic-bezier(0.22, 1, 0.36, 1), border-color 0.22s ease, box-shadow 0.22s ease;
   }
   .nav-card:active {
-    transform: scale(0.97);
+    transform: scale(0.96);
     border-color: var(--border-bright);
-    background: var(--bg-card-hover);
+  }
+
+  /* Особое свечение карточки Сенсы когда Телепорт включен */
+  .nav-card.sens-active {
+    border-color: var(--primary-bright);
+    box-shadow: 0 8px 28px var(--bg-glow), inset 0 0 22px var(--bg-glow);
   }
 
   .nav-card-top {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 12px;
+    margin-bottom: 10px;
   }
 
   .nav-icon {
     width: 40px;
     height: 40px;
     border-radius: 12px;
-    background: rgba(168, 85, 247, 0.15);
-    border: 1px solid rgba(192, 132, 252, 0.35);
+    background: var(--bg-glow);
+    border: 1px solid var(--border-neon);
     display: flex;
     align-items: center;
     justify-content: center;
     font-size: 18px;
-    color: #e879f9;
+    color: var(--primary-bright);
     font-weight: 900;
   }
 
@@ -327,6 +426,28 @@
     color: var(--text-muted);
     font-size: 16px;
     font-weight: 800;
+  }
+
+  .sens-card-controls {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .sens-mini-pill {
+    font-size: 9.5px;
+    font-weight: 900;
+    padding: 4px 8px;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid var(--border-neon);
+    color: var(--text-muted);
+    letter-spacing: 0.5px;
+  }
+  .sens-mini-pill.on {
+    background: var(--primary-grad);
+    border-color: transparent;
+    color: #fff;
   }
 
   .nav-card h3 {
@@ -346,6 +467,7 @@
   /* ================= ВНУТРЕННИЕ РАЗДЕЛЫ ================= */
   .subpage {
     display: none;
+    animation: pageSlideUp 0.22s ease-out;
   }
 
   .back-bar {
@@ -357,13 +479,93 @@
     background: var(--bg-card);
     border: 1px solid var(--border-neon);
     border-radius: 16px;
-    margin-bottom: 16px;
+    margin-bottom: 14px;
     cursor: pointer;
     font-size: 15px;
     font-weight: 800;
     color: #fff;
+    transition: transform 0.15s ease;
   }
   .back-bar:active { transform: scale(0.98); }
+
+  /* ================= НОВЫЙ РЕАКТОР ВКЛЮЧЕНИЯ ВНУТРИ РАЗДЕЛА СЕНСЫ ================= */
+  .reactor-card {
+    background: var(--bg-card);
+    border: 1.5px solid var(--border-neon);
+    border-radius: 22px;
+    padding: 16px;
+    margin-bottom: 14px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.65);
+    transition: border-color 0.25s ease, box-shadow 0.25s ease;
+  }
+  .reactor-card.active {
+    border-color: var(--primary-bright);
+    animation: pulseGlow 2.6s infinite ease-in-out;
+  }
+
+  .reactor-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 12px;
+  }
+
+  .reactor-status-left {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .reactor-orb {
+    width: 46px;
+    height: 46px;
+    border-radius: 14px;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1.5px solid var(--border-neon);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 22px;
+    transition: all 0.25s ease;
+  }
+  .reactor-card.active .reactor-orb {
+    background: var(--primary-grad);
+    border-color: #fff;
+    transform: scale(1.05);
+  }
+
+  .reactor-title {
+    font-size: 15px;
+    font-weight: 900;
+    color: #fff;
+    margin: 0 0 3px 0;
+  }
+
+  .reactor-sub {
+    font-size: 11.5px;
+    color: var(--text-muted);
+    margin: 0;
+  }
+
+  .reactor-btn {
+    width: 100%;
+    padding: 13px;
+    border-radius: 14px;
+    border: 1px solid var(--border-bright);
+    background: rgba(255, 255, 255, 0.05);
+    color: #fff;
+    font-size: 13.5px;
+    font-weight: 900;
+    letter-spacing: 0.6px;
+    cursor: pointer;
+    transition: transform 0.15s ease, background 0.2s ease;
+  }
+  .reactor-btn:active { transform: scale(0.98); }
+  .reactor-card.active .reactor-btn {
+    background: var(--primary-grad);
+    border-color: transparent;
+  }
 
   .panel-card {
     background: var(--bg-card);
@@ -381,23 +583,22 @@
     font-size: 12px;
     font-weight: 900;
     letter-spacing: 0.8px;
-    color: #c084fc;
+    color: var(--primary-bright);
     text-transform: uppercase;
     margin-bottom: 12px;
   }
 
   .smart-scan-box {
-    background: linear-gradient(135deg, rgba(168, 85, 247, 0.22) 0%, rgba(0, 240, 255, 0.12) 100%);
-    border: 1px solid var(--accent-cyan);
+    background: linear-gradient(135deg, var(--bg-glow) 0%, rgba(0, 240, 255, 0.08) 100%);
+    border: 1px solid var(--primary-bright);
     border-radius: 20px;
     padding: 16px;
-    margin-bottom: 16px;
-    box-shadow: 0 6px 24px rgba(0, 240, 255, 0.12);
+    margin-bottom: 14px;
   }
   .smart-scan-title {
     font-size: 14.5px;
     font-weight: 900;
-    color: var(--accent-cyan);
+    color: var(--primary-bright);
     margin: 0 0 6px 0;
     display: flex;
     align-items: center;
@@ -405,7 +606,7 @@
   }
   .smart-scan-desc {
     font-size: 12px;
-    color: #e9d5ff;
+    color: var(--text-main);
     line-height: 1.4;
     margin: 0 0 12px 0;
   }
@@ -427,8 +628,8 @@
   }
 
   .mode-card {
-    background: rgba(13, 6, 24, 0.85);
-    border: 1px solid rgba(168, 85, 247, 0.28);
+    background: rgba(10, 5, 18, 0.78);
+    border: 1px solid var(--border-neon);
     border-radius: 16px;
     padding: 14px;
     margin-bottom: 10px;
@@ -437,10 +638,12 @@
     align-items: center;
     gap: 12px;
     cursor: pointer;
+    transition: transform 0.16s ease, border-color 0.2s ease, background 0.2s ease;
   }
+  .mode-card:active { transform: scale(0.98); }
   .mode-card.active {
-    border-color: #e879f9;
-    background: rgba(59, 7, 100, 0.45);
+    border-color: var(--primary-bright);
+    background: var(--bg-glow);
   }
 
   .mode-info h4 {
@@ -459,24 +662,29 @@
   .mode-btn {
     padding: 9px 14px;
     border-radius: 999px;
-    border: 1px solid rgba(192, 132, 252, 0.5);
-    background: rgba(168, 85, 247, 0.15);
+    border: 1px solid var(--border-neon);
+    background: rgba(255, 255, 255, 0.06);
     color: #fff;
     font-size: 11.5px;
     font-weight: 800;
     flex-shrink: 0;
   }
   .mode-card.active .mode-btn {
-    background: linear-gradient(90deg, #a855f7, #ec4899);
+    background: var(--primary-grad);
     border-color: transparent;
   }
 
+  /* ================= АНИМИРОВАННЫЕ ПОЛЗУНКИ (GPU 120FPS) ================= */
   .slider-card {
-    background: rgba(14, 7, 25, 0.9);
-    border: 1px solid rgba(168, 85, 247, 0.24);
+    background: rgba(10, 5, 18, 0.85);
+    border: 1px solid var(--border-neon);
     border-radius: 16px;
     padding: 13px 14px;
     margin-bottom: 10px;
+    transition: border-color 0.2s ease, transform 0.15s ease;
+  }
+  .slider-card:focus-within, .slider-card:active {
+    border-color: var(--primary-bright);
   }
 
   .slider-top {
@@ -493,15 +701,20 @@
   }
 
   .slider-badge {
-    background: rgba(255, 42, 95, 0.18);
-    border: 1px solid rgba(255, 71, 120, 0.45);
-    color: #ff6b93;
+    background: var(--bg-glow);
+    border: 1px solid var(--primary-bright);
+    color: #fff;
     font-size: 12.5px;
-    font-weight: 800;
+    font-weight: 900;
     padding: 3px 10px;
     border-radius: 9px;
-    min-width: 44px;
+    min-width: 46px;
     text-align: center;
+    transition: transform 0.15s cubic-bezier(0.22, 1, 0.36, 1), background 0.2s ease;
+  }
+  .slider-badge.pop {
+    transform: scale(1.14);
+    background: var(--primary);
   }
 
   .slider-desc {
@@ -515,11 +728,11 @@
   input[type="range"] {
     -webkit-appearance: none;
     width: 100%;
-    height: 6px;
-    background: #27143e;
-    border-radius: 6px;
+    height: 7px;
+    background: linear-gradient(90deg, var(--primary-bright) var(--fill-pct, 50%), rgba(255, 255, 255, 0.12) var(--fill-pct, 50%));
+    border-radius: 8px;
     outline: none;
-    margin: 6px 0 2px 0;
+    margin: 7px 0 3px 0;
   }
 
   input[type="range"]::-webkit-slider-thumb {
@@ -527,9 +740,74 @@
     width: 22px;
     height: 22px;
     border-radius: 50%;
-    background: #ff2a5f;
-    border: 3px solid #ffe0e9;
+    background: var(--primary-bright);
+    border: 3px solid #ffffff;
+    box-shadow: 0 0 10px var(--primary);
     cursor: pointer;
+    transition: transform 0.15s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+  input[type="range"]:active::-webkit-slider-thumb {
+    transform: scale(1.25);
+  }
+
+  /* ================= ПРОКАЧАННЫЕ КАРТОЧКИ КОНФИГОВ ================= */
+  .pro-cfg-card {
+    background: rgba(10, 5, 18, 0.85);
+    border: 1px solid var(--border-neon);
+    border-radius: 18px;
+    padding: 15px;
+    margin-bottom: 12px;
+    transition: transform 0.16s ease, border-color 0.2s ease;
+  }
+  .pro-cfg-card.active {
+    border-color: var(--primary-bright);
+    box-shadow: 0 0 20px var(--bg-glow);
+  }
+
+  .pro-cfg-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 6px;
+  }
+
+  .pro-cfg-title {
+    font-size: 15px;
+    font-weight: 900;
+    color: #fff;
+  }
+
+  .pro-cfg-tag {
+    font-size: 10px;
+    font-weight: 900;
+    padding: 3px 9px;
+    border-radius: 999px;
+    background: var(--bg-glow);
+    border: 1px solid var(--primary-bright);
+    color: var(--primary-bright);
+  }
+
+  .pro-cfg-desc {
+    font-size: 11.5px;
+    color: var(--text-muted);
+    margin-bottom: 10px;
+    line-height: 1.35;
+  }
+
+  .pro-cfg-specs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-bottom: 12px;
+  }
+
+  .spec-pill {
+    font-size: 10.5px;
+    font-weight: 800;
+    padding: 4px 8px;
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.05);
+    color: #e2e8f0;
   }
 
   .grad-btn {
@@ -537,30 +815,33 @@
     padding: 14px;
     border-radius: 14px;
     border: none;
-    background: linear-gradient(90deg, #9333ea, #db2777);
+    background: var(--primary-grad);
     color: #fff;
     font-size: 14px;
     font-weight: 900;
     letter-spacing: 0.5px;
     text-align: center;
     cursor: pointer;
-    box-shadow: 0 4px 18px rgba(219, 39, 119, 0.3);
+    box-shadow: 0 4px 18px var(--bg-glow);
+    transition: transform 0.15s ease;
   }
-  .grad-btn:active { transform: scale(0.98); }
+  .grad-btn:active { transform: scale(0.97); }
 
   .outline-btn {
     width: 100%;
     padding: 13px;
     border-radius: 14px;
-    background: rgba(20, 10, 35, 0.9);
-    border: 1px solid rgba(192, 132, 252, 0.4);
+    background: rgba(14, 7, 26, 0.85);
+    border: 1px solid var(--border-neon);
     color: #fff;
     font-size: 13.5px;
     font-weight: 800;
     text-align: center;
     cursor: pointer;
     margin-top: 10px;
+    transition: transform 0.15s ease, border-color 0.2s ease;
   }
+  .outline-btn:active { transform: scale(0.97); border-color: var(--primary-bright); }
 
   .two-btns {
     display: flex;
@@ -582,24 +863,25 @@
     flex: 1;
     padding: 11px 6px;
     border-radius: 12px;
-    background: rgba(15, 7, 28, 0.9);
-    border: 1px solid rgba(168, 85, 247, 0.3);
+    background: rgba(12, 6, 22, 0.9);
+    border: 1px solid var(--border-neon);
     color: var(--text-muted);
     font-size: 12.5px;
     font-weight: 800;
     text-align: center;
     cursor: pointer;
+    transition: all 0.18s ease;
   }
   .chip-btn.active {
-    background: rgba(168, 85, 247, 0.28);
-    border-color: #e879f9;
+    background: var(--bg-glow);
+    border-color: var(--primary-bright);
     color: #fff;
   }
 
   .ratio-preview-box {
     width: 100%;
     height: 115px;
-    border: 1px dashed rgba(192, 132, 252, 0.4);
+    border: 1px dashed var(--border-neon);
     border-radius: 14px;
     display: flex;
     align-items: center;
@@ -609,13 +891,13 @@
   }
 
   .ratio-inner {
-    border: 2px solid #d946ef;
+    border: 2px solid var(--primary-bright);
     border-radius: 8px;
     padding: 14px 28px;
     font-size: 13px;
     font-weight: 900;
-    color: #f0abfc;
-    background: rgba(217, 70, 239, 0.12);
+    color: #fff;
+    background: var(--bg-glow);
   }
 
   .toggle-line {
@@ -641,8 +923,8 @@
   .sw-slider {
     position: absolute;
     inset: 0;
-    background-color: #24113a;
-    border: 1px solid rgba(168, 85, 247, 0.4);
+    background-color: rgba(255, 255, 255, 0.1);
+    border: 1px solid var(--border-neon);
     border-radius: 34px;
     transition: 0.22s;
   }
@@ -658,8 +940,8 @@
     transition: 0.22s;
   }
   input:checked + .sw-slider {
-    background-color: #c026d3;
-    border-color: #f0abfc;
+    background: var(--primary-grad);
+    border-color: var(--border-bright);
   }
   input:checked + .sw-slider:before {
     transform: translateX(22px);
@@ -693,9 +975,9 @@
   .touch-arena {
     width: 100%;
     height: 280px;
-    border: 2px dashed #ff2a5f;
+    border: 2px dashed var(--primary-bright);
     border-radius: 20px;
-    background: #11061c;
+    background: #0d0517;
     position: relative;
     overflow: hidden;
     touch-action: none;
@@ -718,11 +1000,11 @@
     padding: 14px;
     font-size: 13.5px;
     font-weight: 700;
-    color: #ff6b93;
+    color: var(--primary-bright);
   }
 </style>
 </head>
-<body>
+<body data-theme="purple">
 
 <video id="bg-video" autoplay loop muted playsinline>
   <source src="bg_capsules.mp4" type="video/mp4">
@@ -749,7 +1031,7 @@
     </button>
 
     <div class="hwid-pill">
-      HWID: <b id="lbl-hwid" style="color:#00f0ff;">Загрузка...</b>
+      HWID: <b id="lbl-hwid" style="color:var(--primary-bright);">Загрузка...</b>
     </div>
   </div>
 </div>
@@ -757,62 +1039,98 @@
 <!-- ОСНОВНОЙ ИНТЕРФЕЙС -->
 <div class="app-shell" id="main-app-container">
 
+  <!-- ВЕРХНЯЯ ШАПКА: НАЗВАНИЕ + ВЕРСИЯ + ЛОГИН ЧУТЬ НИЖЕ + SHIZUKU СПРАВА -->
   <div class="top-header">
     <div class="brand-block">
       <h1>SO2Teleport</h1>
-      <span>QUANTUM ENGINE V406 • 360HZ TOUCH</span>
+      <span class="brand-ver">QUANTUM ENGINE V407 • 360HZ TOUCH</span>
+      <div class="user-login-pill" onclick="openPage('profile')">
+        <span class="user-login-dot"></span>
+        <span>Игрок: <b id="hdr-user-nick">Player</b></span>
+      </div>
     </div>
+
     <div class="shizuku-badge" onclick="refreshShizukuStatus(true)">
       <div class="shz-top">
         <span id="shz-dot" class="shz-dot"></span>
         <span id="shz-title">Shizuku: ПРОВЕРКА</span>
       </div>
-      <div id="shz-sub" class="shz-sub">Связь установлена • ОК</div>
+      <div id="shz-sub" class="shz-sub">360Hz Тач • ОК</div>
     </div>
   </div>
 
   <!-- ГЛАВНЫЙ ЭКРАН -->
   <div id="page-home">
-    <div class="hero-circle-wrap">
-      <div id="main-power-circle" class="power-circle" onclick="toggleTeleportMaster()">
-        <div class="power-bolt">⚡</div>
-        <div id="power-circle-text" class="power-label">ВЫКЛЮЧЕН</div>
-      </div>
-      <div id="hero-status-bar" class="hero-status-pill">
-        • СТАТУС: НЕ АКТИВЕН (НАЖМИ НА КРУГ ДЛЯ ЗАПУСКА)
+
+    <!-- ПАНЕЛЬ ВЫБОРА ЦВЕТОВОЙ ТЕМЫ (5 ЦВЕТОВ) -->
+    <div class="theme-bar">
+      <span class="theme-bar-label">🎨 Тема меню:</span>
+      <div class="theme-dots">
+        <div class="theme-dot active" id="tdot-purple" style="background:#a855f7; color:#a855f7;" onclick="setAppTheme('purple')" title="Фиолетовый"></div>
+        <div class="theme-dot" id="tdot-red" style="background:#ff1744; color:#ff1744;" onclick="setAppTheme('red')" title="Красный"></div>
+        <div class="theme-dot" id="tdot-green" style="background:#00e676; color:#00e676;" onclick="setAppTheme('green')" title="Хакерский зелёный"></div>
+        <div class="theme-dot" id="tdot-cyan" style="background:#00e5ff; color:#00e5ff;" onclick="setAppTheme('cyan')" title="Циан"></div>
+        <div class="theme-dot" id="tdot-gold" style="background:#ffab00; color:#ffab00;" onclick="setAppTheme('gold')" title="Золотой"></div>
       </div>
     </div>
 
+    <!-- СЕТКА КАРТОЧЕК БЕЗ БОЛЬШОГО КРУГА (АКТИВАЦИЯ ПРЯМО В КАРТОЧКЕ СЕНСА) -->
     <div class="nav-grid">
-      <div class="nav-card" onclick="openSensWithPrompt()">
-        <div class="nav-card-top"><div class="nav-icon">⚡</div><span class="nav-arrow">›</span></div>
-        <div><h3>Сенса</h3><p>Автоподбор под телефон, 1мм отклик и ползунки</p></div>
+
+      <!-- КАРТОЧКА 1: СЕНСА С ПРЯМЫМ ВКЛЮЧЕНИЕМ -->
+      <div class="nav-card" id="home-sens-card" onclick="openSensWithPrompt()">
+        <div class="nav-card-top">
+          <div class="nav-icon">⚡</div>
+          <div class="sens-card-controls" onclick="event.stopPropagation();">
+            <span id="home-sens-pill" class="sens-mini-pill">ВЫКЛ</span>
+            <label class="switch" style="transform:scale(0.86); transform-origin:right center;">
+              <input type="checkbox" id="home-sens-toggle" onchange="toggleTeleportMaster()">
+              <span class="sw-slider"></span>
+            </label>
+          </div>
+        </div>
+        <div>
+          <h3>Сенса</h3>
+          <p id="home-sens-subtext">Нажми тумблер для пуска или открой настройку 1мм отклика</p>
+        </div>
       </div>
 
-      <div class="nav-card" onclick="openPage('profile')">
-        <div class="nav-card-top"><div class="nav-icon">👤</div><span class="nav-arrow">›</span></div>
-        <div><h3>Профиль</h3><p>Ваш логин, ключ, герцовка и данные телефона</p></div>
-      </div>
-
+      <!-- КАРТОЧКА 2: ГОТОВЫЕ КОНФИГИ PRO -->
       <div class="nav-card" onclick="openPage('configs')">
-        <div class="nav-card-top"><div class="nav-icon">&lt;/&gt;</div><span class="nav-arrow">›</span></div>
-        <div><h3>Готовые конфиги</h3><p>Активация по коду и киберспортивные сборки</p></div>
+        <div class="nav-card-top">
+          <div class="nav-icon">🔥</div>
+          <span class="sens-mini-pill on" id="home-cfg-badge">6 ТОП СБОРОК</span>
+        </div>
+        <div>
+          <h3>Готовые конфиги</h3>
+          <p>Реальные сборки киберспортсменов в 1 клик без ручной настройки</p>
+        </div>
       </div>
 
+      <!-- КАРТОЧКА 3: РАСТЯГ -->
       <div class="nav-card" onclick="openPage('stretch')">
         <div class="nav-card-top"><div class="nav-icon">📐</div><span class="nav-arrow">›</span></div>
-        <div><h3>Растяг</h3><p>Чёткий растяг 4:3 / 5:4 / 16:9 и кнопка поверх игры</p></div>
+        <div><h3>Растяг</h3><p>Чёткий растяг 4:3 / 5:4 / 16:9 и кнопка «T» поверх игры</p></div>
       </div>
 
+      <!-- КАРТОЧКА 4: КАСТОМНЫЙ ПРИЦЕЛ -->
       <div class="nav-card" onclick="openPage('crosshair')">
         <div class="nav-card-top"><div class="nav-icon">🎯</div><span class="nav-arrow">›</span></div>
         <div><h3>Кастомный прицел</h3><p>Точка, крест, круг без нагрузки на FPS</p></div>
       </div>
 
+      <!-- КАРТОЧКА 5: НАСТРОЙКИ (360 ГЦ + RAM BOOST) -->
       <div class="nav-card" onclick="openPage('settings')">
         <div class="nav-card-top"><div class="nav-icon">⚙</div><span class="nav-arrow">›</span></div>
-        <div><h3>Настройки</h3><p>Разгон тача 360 Гц, RAM Boost, DPI и анти-отдача</p></div>
+        <div><h3>Настройки</h3><p>Разгон тача 360 Гц, RAM Boost в 1 клик и анти-отдача</p></div>
       </div>
+
+      <!-- КАРТОЧКА 6: ПРОФИЛЬ -->
+      <div class="nav-card" onclick="openPage('profile')">
+        <div class="nav-card-top"><div class="nav-icon">👤</div><span class="nav-arrow">›</span></div>
+        <div><h3>Профиль</h3><p>Ваш логин, ключ, герцовка и данные телефона</p></div>
+      </div>
+
     </div>
   </div>
 
@@ -820,10 +1138,31 @@
   <div id="page-sens" class="subpage">
     <div class="back-bar" onclick="openPage('home')"><span>←</span><span>Сенса и Квантовый Телепорт</span></div>
 
+    <!-- НОВЫЙ БЛОК АКТИВАЦИИ ДВИЖКА ВНУТРИ РАЗДЕЛА СЕНСЫ -->
+    <div class="reactor-card" id="sens-reactor-card">
+      <div class="reactor-top">
+        <div class="reactor-status-left">
+          <div class="reactor-orb" id="reactor-orb-icon">⚡</div>
+          <div>
+            <h4 class="reactor-title" id="reactor-title-txt">ТЕЛЕПОРТ: ВЫКЛЮЧЕН</h4>
+            <p class="reactor-sub" id="reactor-sub-txt">Нажми кнопку ниже для активации 360Hz + 1мм отклика</p>
+          </div>
+        </div>
+        <label class="switch">
+          <input type="checkbox" id="inner-sens-toggle" onchange="toggleTeleportMaster()">
+          <span class="sw-slider"></span>
+        </label>
+      </div>
+      <button class="reactor-btn" id="reactor-action-btn" onclick="toggleTeleportMaster()">
+        ⚡ ЗАПУСТИТЬ КВАНТОВЫЙ ТЕЛЕПОРТ
+      </button>
+    </div>
+
+    <!-- УМНОЕ СКАНИРОВАНИЕ УСТРОЙСТВА -->
     <div class="smart-scan-box">
       <div class="smart-scan-title">🔍 Умный подбор под твой телефон (Без нагрева)</div>
       <div class="smart-scan-desc" id="smart-scan-status">
-        Система проверит процессор, матрицу и герцовку твоего телефона и выставит максимальный телепорт + мгновенный сдвиг на 1 мм так, чтобы телефон не грелся и не проседал FPS даже с растягом и прицелом.
+        Система проверит процессор, матрицу и герцовку твоего телефона и выставит максимальный телепорт + мгновенный сдвиг на 1 мм так, чтобы телефон не грелся и не проседал FPS.
       </div>
       <button class="grad-btn" style="padding:12px; font-size:13px;" onclick="runHardwareSmartScan()">
         ⚡ ПРОСКАНИРОВАТЬ ТЕЛЕФОН И ПОДОБРАТЬ НАСТРОЙКИ
@@ -831,9 +1170,9 @@
     </div>
 
     <div class="panel-card">
-      <div class="panel-head"><span>1. ГОТОВЫЕ БОЕВЫЕ РЕЖИМЫ</span><span>В 1 КЛИК</span></div>
+      <div class="panel-head"><span>1. БЫСТРЫЕ РЕЖИМЫ СЕНСЫ</span><span>В 1 КЛИК</span></div>
 
-      <div class="mode-card active" id="mode-max_teleport" onclick="selectPreset('max_teleport')">
+      <div class="mode-card active" id="mode-max_teleport" onclick="selectPreset('max_teleport'); activateTeleportEngine();">
         <div class="mode-info">
           <h4>ЗВЕРСКИЙ ТЕЛЕПОРТ + 1ММ ИМПУЛЬС</h4>
           <p>Мгновенный отклик на 1 мм и длинный флик в голову без нагрева процессора</p>
@@ -841,7 +1180,7 @@
         <div class="mode-btn" id="btn-mode-max_teleport">АКТИВЕН</div>
       </div>
 
-      <div class="mode-card" id="mode-spray_laser" onclick="selectPreset('spray_laser')">
+      <div class="mode-card" id="mode-spray_laser" onclick="selectPreset('spray_laser'); activateTeleportEngine();">
         <div class="mode-info">
           <h4>ТЕЛЕПОРТ + ЗАЖИМ В ТОЧКУ (AKR / M4)</h4>
           <p>Резкий телепорт по горизонтали + осевая стабилизация вертикальной отдачи</p>
@@ -849,7 +1188,7 @@
         <div class="mode-btn" id="btn-mode-spray_laser">ВЫБРАТЬ</div>
       </div>
 
-      <div class="mode-card" id="mode-awp" onclick="selectPreset('awp')">
+      <div class="mode-card" id="mode-awp" onclick="selectPreset('awp'); activateTeleportEngine();">
         <div class="mode-info">
           <h4>ДЛЯ АВИКОВ (Стоп-Импульс)</h4>
           <p>Молниеносный флик с жёсткой остановкой камеры в момент выстрела</p>
@@ -857,7 +1196,7 @@
         <div class="mode-btn" id="btn-mode-awp">ВЫБРАТЬ</div>
       </div>
 
-      <div class="mode-card" id="mode-smooth_pro" onclick="selectPreset('smooth_pro')">
+      <div class="mode-card" id="mode-smooth_pro" onclick="selectPreset('smooth_pro'); activateTeleportEngine();">
         <div class="mode-info">
           <h4>ПЛАВНЫЙ КОНТРОЛЬ (Холодный FPS)</h4>
           <p>Минимальная нагрузка для слабых устройств и плавное ведение цели</p>
@@ -884,19 +1223,19 @@
 
       <div class="slider-card">
         <div class="slider-top"><span class="slider-title">Резкость</span><span class="slider-badge" id="val-sharp">6.00</span></div>
-        <input type="range" id="inp-sharp" min="0.50" max="6.00" step="0.05" value="6.00" oninput="onSliderInput()" onchange="commitEngineUpdate()">
+        <input type="range" id="inp-sharp" min="0.50" max="6.00" step="0.05" value="6.00" oninput="onSliderInput(this, 'val-sharp')" onchange="commitEngineUpdate()">
         <div class="slider-desc">Больше — чувствительнее, мгновенный срыв с места</div>
       </div>
 
       <div class="slider-card">
         <div class="slider-top"><span class="slider-title">Влево-вправо</span><span class="slider-badge" id="val-sx">6.00</span></div>
-        <input type="range" id="inp-sx" min="0.50" max="6.00" step="0.05" value="6.00" oninput="onSliderInput()" onchange="commitEngineUpdate()">
+        <input type="range" id="inp-sx" min="0.50" max="6.00" step="0.05" value="6.00" oninput="onSliderInput(this, 'val-sx')" onchange="commitEngineUpdate()">
         <div class="slider-desc">Только горизонталь — прицел по врагам в стороне</div>
       </div>
 
       <div class="slider-card">
         <div class="slider-top"><span class="slider-title">Вверх-вниз</span><span class="slider-badge" id="val-sy">6.00</span></div>
-        <input type="range" id="inp-sy" min="0.50" max="6.00" step="0.05" value="6.00" oninput="onSliderInput()" onchange="commitEngineUpdate()">
+        <input type="range" id="inp-sy" min="0.50" max="6.00" step="0.05" value="6.00" oninput="onSliderInput(this, 'val-sy')" onchange="commitEngineUpdate()">
         <div class="slider-desc">Только вертикаль — контроль отдачи вниз и наводка вверх</div>
       </div>
 
@@ -906,19 +1245,19 @@
 
       <div class="slider-card">
         <div class="slider-top"><span class="slider-title">Отсечка шума</span><span class="slider-badge" id="val-noise">4</span></div>
-        <input type="range" id="inp-noise" min="0" max="25" step="1" value="4" oninput="onSliderInput()" onchange="commitEngineUpdate()">
+        <input type="range" id="inp-noise" min="0" max="25" step="1" value="4" oninput="onSliderInput(this, 'val-noise')" onchange="commitEngineUpdate()">
         <div class="slider-desc">Игнорирует микродвижения пальца — меньше дребезга</div>
       </div>
 
       <div class="slider-card">
         <div class="slider-top"><span class="slider-title">Мёртвая зона</span><span class="slider-badge" id="val-dead">1</span></div>
-        <input type="range" id="inp-dead" min="0" max="20" step="1" value="1" oninput="onSliderInput()" onchange="commitEngineUpdate()">
+        <input type="range" id="inp-dead" min="0" max="20" step="1" value="1" oninput="onSliderInput(this, 'val-dead')" onchange="commitEngineUpdate()">
         <div class="slider-desc">При значении 0–1 прицел реагирует даже на миллиметровый сдвиг</div>
       </div>
 
       <div class="slider-card">
         <div class="slider-top"><span class="slider-title">Упреждение</span><span class="slider-badge" id="val-lead">2</span></div>
-        <input type="range" id="inp-lead" min="0" max="25" step="1" value="2" oninput="onSliderInput()" onchange="commitEngineUpdate()">
+        <input type="range" id="inp-lead" min="0" max="25" step="1" value="2" oninput="onSliderInput(this, 'val-lead')" onchange="commitEngineUpdate()">
         <div class="slider-desc">Прицел ведёт цель — попадать легче</div>
       </div>
 
@@ -928,13 +1267,13 @@
 
       <div class="slider-card">
         <div class="slider-top"><span class="slider-title">Прилипание к осям</span><span class="slider-badge" id="val-axis">5</span></div>
-        <input type="range" id="inp-axis" min="0" max="25" step="1" value="5" oninput="onSliderInput()" onchange="commitEngineUpdate()">
+        <input type="range" id="inp-axis" min="0" max="25" step="1" value="5" oninput="onSliderInput(this, 'val-axis')" onchange="commitEngineUpdate()">
         <div class="slider-desc">Притягивает прицел к горизонтали головы и вертикали зажима</div>
       </div>
 
       <div class="slider-card">
         <div class="slider-top"><span class="slider-title">Через сколько липнуть</span><span class="slider-badge" id="val-stick-delay">26</span></div>
-        <input type="range" id="inp-stick-delay" min="0" max="100" step="1" value="26" oninput="onSliderInput()" onchange="commitEngineUpdate()">
+        <input type="range" id="inp-stick-delay" min="0" max="100" step="1" value="26" oninput="onSliderInput(this, 'val-stick-delay')" onchange="commitEngineUpdate()">
         <div class="slider-desc">Сколько держать палец спокойно, чтобы включилось</div>
       </div>
 
@@ -950,63 +1289,63 @@
 
         <div class="slider-card">
           <div class="slider-top"><span class="slider-title">Сила прилипания</span><span class="slider-badge" id="val-stick-force">2</span></div>
-          <input type="range" id="inp-stick-force" min="0" max="25" step="1" value="2" oninput="onSliderInput()" onchange="commitEngineUpdate()">
+          <input type="range" id="inp-stick-force" min="0" max="25" step="1" value="2" oninput="onSliderInput(this, 'val-stick-force')" onchange="commitEngineUpdate()">
         </div>
 
         <div class="slider-card">
           <div class="slider-top"><span class="slider-title">Куски</span><span class="slider-badge" id="val-chunks">60</span></div>
-          <input type="range" id="inp-chunks" min="1" max="120" step="1" value="60" oninput="onSliderInput()" onchange="commitEngineUpdate()">
+          <input type="range" id="inp-chunks" min="1" max="120" step="1" value="60" oninput="onSliderInput(this, 'val-chunks')" onchange="commitEngineUpdate()">
         </div>
 
         <div class="slider-card">
           <div class="slider-top"><span class="slider-title">Мелочь мимо кусков</span><span class="slider-badge" id="val-bypass">30</span></div>
-          <input type="range" id="inp-bypass" min="0" max="30" step="1" value="30" oninput="onSliderInput()" onchange="commitEngineUpdate()">
+          <input type="range" id="inp-bypass" min="0" max="30" step="1" value="30" oninput="onSliderInput(this, 'val-bypass')" onchange="commitEngineUpdate()">
           <div class="slider-desc">Пропускает микро-наводку на 1 мм и плавную оттяжку вниз без ступенек</div>
         </div>
 
         <div class="slider-card">
           <div class="slider-top"><span class="slider-title">Потолок куска</span><span class="slider-badge" id="val-chunk-cap">60</span></div>
-          <input type="range" id="inp-chunk-cap" min="0" max="60" step="1" value="60" oninput="onSliderInput()" onchange="commitEngineUpdate()">
+          <input type="range" id="inp-chunk-cap" min="0" max="60" step="1" value="60" oninput="onSliderInput(this, 'val-chunk-cap')" onchange="commitEngineUpdate()">
         </div>
 
         <div class="slider-card">
           <div class="slider-top"><span class="slider-title">Куски только быстрее</span><span class="slider-badge" id="val-chunk-fast">30</span></div>
-          <input type="range" id="inp-chunk-fast" min="0" max="30" step="1" value="30" oninput="onSliderInput()" onchange="commitEngineUpdate()">
+          <input type="range" id="inp-chunk-fast" min="0" max="30" step="1" value="30" oninput="onSliderInput(this, 'val-chunk-fast')" onchange="commitEngineUpdate()">
         </div>
 
         <div class="slider-card">
           <div class="slider-top"><span class="slider-title">Пауза после выстрела</span><span class="slider-badge" id="val-pause">2</span></div>
-          <input type="range" id="inp-pause" min="0" max="30" step="1" value="2" oninput="onSliderInput()" onchange="commitEngineUpdate()">
+          <input type="range" id="inp-pause" min="0" max="30" step="1" value="2" oninput="onSliderInput(this, 'val-pause')" onchange="commitEngineUpdate()">
         </div>
 
         <div class="slider-card">
           <div class="slider-top"><span class="slider-title">Разгон</span><span class="slider-badge" id="val-accel">2.00</span></div>
-          <input type="range" id="inp-accel" min="0.00" max="2.00" step="0.05" value="2.00" oninput="onSliderInput()" onchange="commitEngineUpdate()">
+          <input type="range" id="inp-accel" min="0.00" max="2.00" step="0.05" value="2.00" oninput="onSliderInput(this, 'val-accel')" onchange="commitEngineUpdate()">
         </div>
 
         <div class="slider-card">
           <div class="slider-top"><span class="slider-title">Крутизна разгона</span><span class="slider-badge" id="val-slope">2.00</span></div>
-          <input type="range" id="inp-slope" min="0.00" max="2.00" step="0.05" value="2.00" oninput="onSliderInput()" onchange="commitEngineUpdate()">
+          <input type="range" id="inp-slope" min="0.00" max="2.00" step="0.05" value="2.00" oninput="onSliderInput(this, 'val-slope')" onchange="commitEngineUpdate()">
         </div>
 
         <div class="slider-card">
           <div class="slider-top"><span class="slider-title">Дальность краёв</span><span class="slider-badge" id="val-edge">0</span></div>
-          <input type="range" id="inp-edge" min="0" max="30" step="1" value="0" oninput="onSliderInput()" onchange="commitEngineUpdate()">
+          <input type="range" id="inp-edge" min="0" max="30" step="1" value="0" oninput="onSliderInput(this, 'val-edge')" onchange="commitEngineUpdate()">
         </div>
 
         <div class="slider-card">
           <div class="slider-top"><span class="slider-title">Выпрямление</span><span class="slider-badge" id="val-straight">0.86</span></div>
-          <input type="range" id="inp-straight" min="0.00" max="1.00" step="0.02" value="0.86" oninput="onSliderInput()" onchange="commitEngineUpdate()">
+          <input type="range" id="inp-straight" min="0.00" max="1.00" step="0.02" value="0.86" oninput="onSliderInput(this, 'val-straight')" onchange="commitEngineUpdate()">
         </div>
 
         <div class="slider-card">
           <div class="slider-top"><span class="slider-title">Хват по осям</span><span class="slider-badge" id="val-grip">5</span></div>
-          <input type="range" id="inp-grip" min="0" max="25" step="1" value="5" oninput="onSliderInput()" onchange="commitEngineUpdate()">
+          <input type="range" id="inp-grip" min="0" max="25" step="1" value="5" oninput="onSliderInput(this, 'val-grip')" onchange="commitEngineUpdate()">
         </div>
 
         <div class="slider-card">
           <div class="slider-top"><span class="slider-title">Потолок хвата</span><span class="slider-badge" id="val-grip-cap">5</span></div>
-          <input type="range" id="inp-grip-cap" min="0" max="25" step="1" value="5" oninput="onSliderInput()" onchange="commitEngineUpdate()">
+          <input type="range" id="inp-grip-cap" min="0" max="25" step="1" value="5" oninput="onSliderInput(this, 'val-grip-cap')" onchange="commitEngineUpdate()">
         </div>
       </div>
 
@@ -1019,48 +1358,155 @@
   <div id="page-profile" class="subpage">
     <div class="back-bar" onclick="openPage('home')"><span>←</span><span>Профиль пользователя</span></div>
     <div class="panel-card">
-      <div class="panel-head"><span>ДАННЫЕ АККАУНТА SO2TELEPORT</span><span style="color:var(--accent-cyan);">PRO</span></div>
+      <div class="panel-head"><span>ДАННЫЕ АККАУНТА SO2TELEPORT</span><span>PRO V407</span></div>
       <div class="profile-row">Ваш логин: <b id="prof-nick">Player</b></div>
       <div class="profile-row">Статус подписки: <b id="prof-status" style="color:var(--accent-green);">АКТИВНА</b></div>
-      <div class="profile-row">Лицензионный ключ: <b id="prof-key" style="color:#e879f9;">—</b></div>
+      <div class="profile-row">Лицензионный ключ: <b id="prof-key" style="color:var(--primary-bright);">—</b></div>
       <div class="profile-row">Модель устройства: <b id="prof-model">Определение...</b></div>
       <div class="profile-row">Экран и частота: <b id="prof-screen">120 Гц</b></div>
-      <div class="profile-row" style="border-bottom:none;">HWID устройства: <b id="prof-hwid" style="color:#c084fc;">—</b></div>
+      <div class="profile-row" style="border-bottom:none;">HWID устройства: <b id="prof-hwid" style="color:var(--primary-bright);">—</b></div>
       <button class="outline-btn" onclick="logoutKey()">Сменить логин или лицензионный ключ</button>
     </div>
   </div>
 
-  <!-- ================= РАЗДЕЛ 3: ГОТОВЫЕ КОНФИГИ ================= -->
+  <!-- ================= РАЗДЕЛ 3: РЕАЛЬНЫЕ ГОТОВЫЕ КОНФИГИ ================= -->
   <div id="page-configs" class="subpage">
-    <div class="back-bar" onclick="openPage('home')"><span>←</span><span>Готовые конфиги</span></div>
-    <div class="panel-card">
-      <div class="panel-head"><span>АКТИВАЦИЯ КОНФИГА ПО КОДУ</span><span>CLOUD</span></div>
-      <input type="text" id="cfg-code-input" class="input-field" placeholder="Например: SO2-BEAST60">
-      <button class="grad-btn" onclick="applyConfigByCode()">ПРИМЕНИТЬ КОНФИГ</button>
-    </div>
+    <div class="back-bar" onclick="openPage('home')"><span>←</span><span>Готовые кибер-конфиги (В 1 клик)</span></div>
 
     <div class="panel-card">
-      <div class="panel-head"><span>ТОПОВЫЕ БОЕВЫЕ СБОРКИ (БЕЗ НАГРЕВА)</span><span>ТОП</span></div>
-      <div class="mode-card" onclick="selectPreset('max_teleport'); activateTeleportEngine(); openPage('home');">
-        <div class="mode-info">
-          <h4>BEAST TELEPORT + 1MM SNAP</h4>
-          <p>Мгновенный сдвиг на 1 мм • Длинный флик • Без троттлинга</p>
-        </div>
-        <div class="mode-btn">ПРИМЕНИТЬ</div>
+      <div class="panel-head"><span>ПРОВЕРЕННЫЕ БОЕВЫЕ СБОРКИ ИГРОКОВ</span><span>READY</span></div>
+      <div id="cfg-status-banner" style="font-size:12px; color:var(--text-muted); margin-bottom:14px;">
+        Не хочешь крутить 18 ползунков вручную? Выбери готовый конфиг ниже — он сам выставит проверенные параметры, включит 360 Гц тач и запустит Телепорт!
       </div>
-      <div class="mode-card" onclick="selectPreset('spray_laser'); activateTeleportEngine(); openPage('home');">
-        <div class="mode-info">
-          <h4>SPRAY LASER + TELEPORT (АКР / М4)</h4>
-          <p>Резкий флик по головам + удержание зажима в одну точку</p>
+
+      <!-- КОНФИГ 1 -->
+      <div class="pro-cfg-card" id="pcard-headshot_360">
+        <div class="pro-cfg-head">
+          <span class="pro-cfg-title">🔥 1. КИБЕР-ХЕДШОТ 360Hz (M4A1 / AKR)</span>
+          <span class="pro-cfg-tag">ТОП #1</span>
         </div>
-        <div class="mode-btn">ПРИМЕНИТЬ</div>
+        <div class="pro-cfg-desc">
+          Идеальное прилипание к линии головы (94% выпрямление траектории) + 0 мёртвая зона для мгновенных ваншотов.
+        </div>
+        <div class="pro-cfg-specs">
+          <span class="spec-pill">Резкость: 5.95</span>
+          <span class="spec-pill">Ось X/Y: 6.0 / 5.2</span>
+          <span class="spec-pill">Куски: 58</span>
+          <span class="spec-pill">Выпрямление: 0.94</span>
+        </div>
+        <button class="grad-btn" style="padding:11px; font-size:13px;" onclick="applyReadyProConfig('headshot_360', 'КИБЕР-ХЕДШОТ 360Hz')">
+          ⚡ ЗАГРУЗИТЬ И ВКЛЮЧИТЬ
+        </button>
       </div>
-      <div class="mode-card" onclick="selectPreset('awp'); activateTeleportEngine(); openPage('home');">
-        <div class="mode-info">
-          <h4>AWM SNIPER STOP-LOCK</h4>
-          <p>Мгновенный стоп-кадр в точке выстрела без срывов</p>
+
+      <!-- КОНФИГ 2 -->
+      <div class="pro-cfg-card" id="pcard-deagle_onetap">
+        <div class="pro-cfg-head">
+          <span class="pro-cfg-title">💀 2. DEAGLE / USP ВАНТАП МОНСТР</span>
+          <span class="pro-cfg-tag">1MM SNAP</span>
         </div>
-        <div class="mode-btn">ПРИМЕНИТЬ</div>
+        <div class="pro-cfg-desc">
+          Максимальный микро-импульс на 1 мм сдвига пальца с жёсткой фиксацией прицела в точке остановки.
+        </div>
+        <div class="pro-cfg-specs">
+          <span class="spec-pill">Резкость: 6.00</span>
+          <span class="spec-pill">Ось X/Y: 6.0 / 4.8</span>
+          <span class="spec-pill">Куски: 64</span>
+          <span class="spec-pill">Хват осей: 10</span>
+        </div>
+        <button class="grad-btn" style="padding:11px; font-size:13px;" onclick="applyReadyProConfig('deagle_onetap', 'DEAGLE ВАНТАП МОНСТР')">
+          ⚡ ЗАГРУЗИТЬ И ВКЛЮЧИТЬ
+        </button>
+      </div>
+
+      <!-- КОНФИГ 3 -->
+      <div class="pro-cfg-card" id="pcard-akr_laser">
+        <div class="pro-cfg-head">
+          <span class="pro-cfg-title">🎯 3. ЗАЖИМ В ТОЧКУ (AKR12 / M16 / F/S)</span>
+          <span class="pro-cfg-tag">NO RECOIL</span>
+        </div>
+        <div class="pro-cfg-desc">
+          Гасит горизонтальную тряску при зажиме и усиливает вертикальную оттяжку вниз вместе с Anti-Recoil 95%.
+        </div>
+        <div class="pro-cfg-specs">
+          <span class="spec-pill">Резкость: 5.50</span>
+          <span class="spec-pill">Ось X/Y: 5.6 / 5.4</span>
+          <span class="spec-pill">Анти-отдача: 95%</span>
+          <span class="spec-pill">Выпрямление: 0.96</span>
+        </div>
+        <button class="grad-btn" style="padding:11px; font-size:13px;" onclick="applyReadyProConfig('akr_laser', 'ЗАЖИМ В ТОЧКУ PRO')">
+          ⚡ ЗАГРУЗИТЬ И ВКЛЮЧИТЬ
+        </button>
+      </div>
+
+      <!-- КОНФИГ 4 -->
+      <div class="pro-cfg-card" id="pcard-awm_fastzoom">
+        <div class="pro-cfg-head">
+          <span class="pro-cfg-title">⚡ 4. AWM / M40 ФАСТЗУМ СНАЙПЕР</span>
+          <span class="pro-cfg-tag">SNIPER</span>
+        </div>
+        <div class="pro-cfg-desc">
+          Длинный телепорт-флик через весь экран со стоп-паузой (6 мс) в момент выстрела, чтобы прицел не срывался.
+        </div>
+        <div class="pro-cfg-specs">
+          <span class="spec-pill">Резкость: 6.00</span>
+          <span class="spec-pill">Ось X/Y: 6.0 / 4.5</span>
+          <span class="spec-pill">Стоп-пауза: 6</span>
+          <span class="spec-pill">Smart AWP: ВКЛ</span>
+        </div>
+        <button class="grad-btn" style="padding:11px; font-size:13px;" onclick="applyReadyProConfig('awm_fastzoom', 'AWM ФАСТЗУМ СНАЙПЕР')">
+          ⚡ ЗАГРУЗИТЬ И ВКЛЮЧИТЬ
+        </button>
+      </div>
+
+      <!-- КОНФИГ 5 -->
+      <div class="pro-cfg-card" id="pcard-4finger_claw">
+        <div class="pro-cfg-head">
+          <span class="pro-cfg-title">🖐 5. ТУРНИРНЫЙ В 3–4 ПАЛЬЦА (CLAW PRO)</span>
+          <span class="pro-cfg-tag">ESPORTS</span>
+        </div>
+        <div class="pro-cfg-desc">
+          Специальная калибровка без конфликтов мультитача при одновременном присяде, стрейфе и стрельбе.
+        </div>
+        <div class="pro-cfg-specs">
+          <span class="spec-pill">Резкость: 5.80</span>
+          <span class="spec-pill">Ось X/Y: 5.85 / 5.5</span>
+          <span class="spec-pill">Отсечка шума: 3</span>
+          <span class="spec-pill">360Hz Тач: ВКЛ</span>
+        </div>
+        <button class="grad-btn" style="padding:11px; font-size:13px;" onclick="applyReadyProConfig('4finger_claw', 'ТУРНИРНЫЙ 4 ПАЛЬЦА')">
+          ⚡ ЗАГРУЗИТЬ И ВКЛЮЧИТЬ
+        </button>
+      </div>
+
+      <!-- КОНФИГ 6 -->
+      <div class="pro-cfg-card" id="pcard-cold_fps">
+        <div class="pro-cfg-head">
+          <span class="pro-cfg-title">❄️ 6. АНТИ-ЛАГ 120 FPS (ДЛЯ СЛАБЫХ ТЕЛ)</span>
+          <span class="pro-cfg-tag">COLD CPU</span>
+        </div>
+        <div class="pro-cfg-desc">
+          Облегчённая частота пакетов без нагрузки на процессор + чистка ОЗУ для стабильных 120 кадров без нагрева.
+        </div>
+        <div class="pro-cfg-specs">
+          <span class="spec-pill">Резкость: 5.40</span>
+          <span class="spec-pill">Куски: 40</span>
+          <span class="spec-pill">Холодный 120Hz: ВКЛ</span>
+          <span class="spec-pill">Нагрев: 0%</span>
+        </div>
+        <button class="grad-btn" style="padding:11px; font-size:13px;" onclick="applyReadyProConfig('cold_fps', 'АНТИ-ЛАГ 120 FPS')">
+          ⚡ ЗАГРУЗИТЬ И ВКЛЮЧИТЬ
+        </button>
+      </div>
+    </div>
+
+    <!-- ОБМЕН КОДАМИ КОНФИГОВ С ДРУЗЬЯМИ -->
+    <div class="panel-card">
+      <div class="panel-head"><span>ИМПОРТ / ЭКСПОРТ КОДА КОНФИГА</span><span>SHARE</span></div>
+      <input type="text" id="cfg-code-input" class="input-field" placeholder="Вставь код (например: SO2-HEAD360)">
+      <div class="two-btns" style="margin-bottom:0;">
+        <button class="grad-btn" style="flex:1;" onclick="applyConfigByCode()">ПРИМЕНИТЬ КОД</button>
+        <button class="outline-btn" style="flex:1; margin-top:0;" onclick="exportMyCurrentConfig()">СКОПИРОВАТЬ СВОЙ</button>
       </div>
     </div>
   </div>
@@ -1129,7 +1575,6 @@
   <div id="page-settings" class="subpage">
     <div class="back-bar" onclick="openPage('home')"><span>←</span><span>Настройки системы</span></div>
 
-    <!-- НОВЫЙ БЛОК: БЫСТРЫЙ СБРОС КЭША (RAM BOOST В 1 КЛИК) -->
     <div class="smart-scan-box">
       <div class="smart-scan-title">🚀 Быстрый сброс кэша (RAM Boost в 1 клик)</div>
       <div class="smart-scan-desc" id="ram-boost-status">
@@ -1143,7 +1588,6 @@
     <div class="panel-card">
       <div class="panel-head"><span>РАЗГОН ТАЧА И КОНТРОЛЬ ЗАЖИМА</span><span>SHIZUKU</span></div>
 
-      <!-- НОВАЯ ФУНКЦИЯ: РАЗГОН ГЕРЦОВКИ ТАЧА (240–360 ГЦ) -->
       <div class="toggle-line" style="border-bottom:none; padding-bottom:6px;">
         <div>
           <h4>Разгон герцовки тача (Touch Sampling Boost)</h4>
@@ -1175,18 +1619,18 @@
       </div>
 
       <div style="padding: 4px 0 14px 0; border-bottom: 1px solid rgba(255, 255, 255, 0.06);">
-        <div style="display: flex; justify-content: space-between; font-size: 12px; font-weight: 800; color: #c084fc; margin-bottom: 6px;">
+        <div style="display: flex; justify-content: space-between; font-size: 12px; font-weight: 800; color: var(--primary-bright); margin-bottom: 6px;">
           <span>Сила удержания вертикали</span>
-          <span id="recoilValText" style="color: #00f0ff;">85%</span>
+          <span id="recoilValText" style="color: #fff;">85%</span>
         </div>
         <input type="range" id="recoilPowerRange" min="10" max="100" step="5" value="85"
-               oninput="document.getElementById('recoilValText').innerText = this.value + '%'; updateRecoilFix();">
+               oninput="document.getElementById('recoilValText').innerText = this.value + '%'; updateRangeFill(this); updateRecoilFix();">
       </div>
 
       <div class="toggle-line" style="border-bottom:none; padding-bottom:6px;">
         <div>
           <h4>Форсированный DPI сетки (Только в игре)</h4>
-          <p>Включается при входе в SO2 и возвращает родной DPI (411) при выходе</p>
+          <p>Включается при входе в SO2 и возвращает родной DPI при выходе</p>
         </div>
         <label class="switch"><input type="checkbox" id="toggleAutoDpi" onchange="updateAutoDpi()"><span class="sw-slider"></span></label>
       </div>
@@ -1224,8 +1668,8 @@
   <div class="panel-card modal-box" style="text-align:center;">
     <div style="font-size:36px; margin-bottom:8px;">⚡</div>
     <h3 style="margin:0 0 8px 0; color:#fff; font-size:18px;">Умная калибровка телефона</h3>
-    <p style="font-size:13px; color:#d8b4fe; line-height:1.45; margin:0 0 16px 0;">
-      Советуем просканировать телефон! Система сама определит процессор и герцовку, включит <b>мгновенный отклик на 1 мм</b> и подберёт настройки так, чтобы <b>телефон не грелся и не проседал FPS</b> даже при включённом растяге и прицеле.
+    <p style="font-size:13px; color:var(--text-muted); line-height:1.45; margin:0 0 16px 0;">
+      Советуем просканировать телефон! Система сама определит процессор и герцовку, включит <b>мгновенный отклик на 1 мм</b> и подберёт настройки так, чтобы <b>телефон не грелся и не проседал FPS</b>.
     </p>
     <button class="grad-btn" onclick="acceptSmartScanFromPrompt()">
       🔍 СКАНИРОВАТЬ И ПОДОБРАТЬ АВТОМАТИЧЕСКИ
@@ -1277,6 +1721,18 @@
     if (document.hidden) vid.pause();
     else vid.play().catch(() => {});
   });
+
+  // СМЕНА ЦВЕТОВОЙ ТЕМЫ (5 ТЕМ)
+  function setAppTheme(themeName) {
+    document.body.setAttribute('data-theme', themeName);
+    ['purple', 'red', 'green', 'cyan', 'gold'].forEach(t => {
+      const dot = document.getElementById('tdot-' + t);
+      if (dot) dot.classList.toggle('active', t === themeName);
+    });
+    try {
+      localStorage.setItem('so2_ui_theme', themeName);
+    } catch (e) {}
+  }
 
   function openPage(pageId) {
     if (!isUnlockedSession) {
@@ -1402,6 +1858,47 @@
     }
   }
 
+  // СИНХРОНИЗАЦИЯ ВКЛЮЧЕНИЯ В КАРТОЧКЕ СЕНСЫ И ВНУТРИ РАЗДЕЛА СЕНСЫ
+  function syncPowerUI(isRunning) {
+    const homeCard = document.getElementById('home-sens-card');
+    const homePill = document.getElementById('home-sens-pill');
+    const homeToggle = document.getElementById('home-sens-toggle');
+    const homeSub = document.getElementById('home-sens-subtext');
+
+    const reactorCard = document.getElementById('sens-reactor-card');
+    const innerToggle = document.getElementById('inner-sens-toggle');
+    const reactorTitle = document.getElementById('reactor-title-txt');
+    const reactorSub = document.getElementById('reactor-sub-txt');
+    const reactorBtn = document.getElementById('reactor-action-btn');
+
+    if (homeToggle) homeToggle.checked = isRunning;
+    if (innerToggle) innerToggle.checked = isRunning;
+
+    if (isRunning) {
+      if (homeCard) homeCard.classList.add('sens-active');
+      if (homePill) {
+        homePill.classList.add('on');
+        homePill.innerText = 'АКТИВЕН';
+      }
+      if (homeSub) homeSub.innerText = '🔥 Телепорт 360Hz + 1мм отклик работают! Нажми для настройки';
+      if (reactorCard) reactorCard.classList.add('active');
+      if (reactorTitle) reactorTitle.innerText = 'ТЕЛЕПОРТ: АКТИВЕН (360Hz)';
+      if (reactorSub) reactorSub.innerText = 'Нулевая задержка 1мм + квантование осей работают в фоне';
+      if (reactorBtn) reactorBtn.innerText = '⚡ ТЕЛЕПОРТ РАБОТАЕТ (НАЖМИ ДЛЯ ОСТАНОВКИ)';
+    } else {
+      if (homeCard) homeCard.classList.remove('sens-active');
+      if (homePill) {
+        homePill.classList.remove('on');
+        homePill.innerText = 'ВЫКЛ';
+      }
+      if (homeSub) homeSub.innerText = 'Нажми тумблер для пуска или открой настройку 1мм отклика';
+      if (reactorCard) reactorCard.classList.remove('active');
+      if (reactorTitle) reactorTitle.innerText = 'ТЕЛЕПОРТ: ВЫКЛЮЧЕН';
+      if (reactorSub) reactorSub.innerText = 'Нажми кнопку ниже для активации 360Hz + 1мм отклика';
+      if (reactorBtn) reactorBtn.innerText = '⚡ ЗАПУСТИТЬ КВАНТОВЫЙ ТЕЛЕПОРТ';
+    }
+  }
+
   function toggleTeleportMaster() {
     if (!isUnlockedSession) return;
     if (!engineRunning) {
@@ -1418,11 +1915,7 @@
     if (window.AndroidBridge && typeof AndroidBridge.startTeleport === 'function') {
       AndroidBridge.startTeleport(currentPresetId);
     }
-    document.getElementById('main-power-circle').classList.add('active');
-    document.getElementById('power-circle-text').innerText = 'АКТИВЕН';
-    const pill = document.getElementById('hero-status-bar');
-    pill.classList.add('active');
-    pill.innerText = '• ТЕЛЕПОРТ АКТИВЕН (360 ГЦ ТАЧ + 1ММ ОТКЛИК)';
+    syncPowerUI(true);
     refreshShizukuStatus(false);
   }
 
@@ -1431,11 +1924,7 @@
     if (window.AndroidBridge && typeof AndroidBridge.stopTeleport === 'function') {
       AndroidBridge.stopTeleport();
     }
-    document.getElementById('main-power-circle').classList.remove('active');
-    document.getElementById('power-circle-text').innerText = 'ВЫКЛЮЧЕН';
-    const pill = document.getElementById('hero-status-bar');
-    pill.classList.remove('active');
-    pill.innerText = '• СТАТУС: НЕ АКТИВЕН (НАЖМИ НА КРУГ ДЛЯ ЗАПУСКА)';
+    syncPowerUI(false);
   }
 
   function readAllSliders() {
@@ -1463,7 +1952,21 @@
     };
   }
 
-  function onSliderInput() {
+  // ОБНОВЛЕНИЕ ГРАДИЕНТНОЙ ЗАЛИВКИ ПОЛЗУНКА + ПРУЖИННАЯ АНИМАЦИЯ ЗНАЧЕНИЯ
+  function updateRangeFill(inp) {
+    if (!inp) return;
+    const min = parseFloat(inp.min || 0);
+    const max = parseFloat(inp.max || 100);
+    const val = parseFloat(inp.value || 0);
+    const pct = Math.max(0, Math.min(100, ((val - min) / (max - min)) * 100));
+    inp.style.setProperty('--fill-pct', pct + '%');
+  }
+
+  function refreshAllRangeFills() {
+    document.querySelectorAll('input[type="range"]').forEach(updateRangeFill);
+  }
+
+  function onSliderInput(sliderEl, badgeId) {
     const v = readAllSliders();
     document.getElementById('val-sharp').innerText = v.sharp.toFixed(2);
     document.getElementById('val-sx').innerText = v.sx.toFixed(2);
@@ -1485,6 +1988,18 @@
     document.getElementById('val-straight').innerText = v.straight.toFixed(2);
     document.getElementById('val-grip').innerText = v.grip;
     document.getElementById('val-grip-cap').innerText = v.gripCap;
+
+    if (sliderEl) updateRangeFill(sliderEl);
+    else refreshAllRangeFills();
+
+    if (badgeId) {
+      const b = document.getElementById(badgeId);
+      if (b) {
+        b.classList.add('pop');
+        clearTimeout(b._popTimer);
+        b._popTimer = setTimeout(() => b.classList.remove('pop'), 160);
+      }
+    }
   }
 
   function applySliderMap(map) {
@@ -1544,6 +2059,116 @@
     }
   }
 
+  // ПРИМЕНЕНИЕ 6 РЕАЛЬНЫХ ПРОФЕССИОНАЛЬНЫХ КОНФИГОВ В 1 КЛИК
+  function applyReadyProConfig(cfgKey, titleName) {
+    if (!isUnlockedSession) return;
+
+    ['headshot_360', 'deagle_onetap', 'akr_laser', 'awm_fastzoom', '4finger_claw', 'cold_fps'].forEach(k => {
+      const el = document.getElementById('pcard-' + k);
+      if (el) el.classList.toggle('active', k === cfgKey);
+    });
+
+    document.getElementById('chk-micro-snap').checked = true;
+
+    if (cfgKey === 'headshot_360') {
+      currentPresetId = 'max_teleport';
+      applySliderMap({
+        'sharp': 5.95, 'sx': 6.00, 'sy': 5.20,
+        'noise': 2, 'dead': 0, 'lead': 4,
+        'axis': 8, 'stick-delay': 18, 'stick-force': 5,
+        'chunks': 58, 'bypass': 30, 'chunk-cap': 60, 'chunk-fast': 30,
+        'pause': 1, 'accel': 1.95, 'slope': 1.95, 'edge': 0,
+        'straight': 0.94, 'grip': 8, 'grip-cap': 8
+      });
+      selectTsrPreset(360);
+    } else if (cfgKey === 'deagle_onetap') {
+      currentPresetId = 'max_teleport';
+      applySliderMap({
+        'sharp': 6.00, 'sx': 6.00, 'sy': 4.80,
+        'noise': 1, 'dead': 0, 'lead': 3,
+        'axis': 10, 'stick-delay': 15, 'stick-force': 7,
+        'chunks': 64, 'bypass': 30, 'chunk-cap': 60, 'chunk-fast': 30,
+        'pause': 2, 'accel': 2.00, 'slope': 2.00, 'edge': 0,
+        'straight': 0.96, 'grip': 10, 'grip-cap': 10
+      });
+      selectTsrPreset(360);
+    } else if (cfgKey === 'akr_laser') {
+      currentPresetId = 'spray_laser';
+      applySliderMap({
+        'sharp': 5.50, 'sx': 5.60, 'sy': 5.40,
+        'noise': 3, 'dead': 0, 'lead': 3,
+        'axis': 11, 'stick-delay': 16, 'stick-force': 8,
+        'chunks': 50, 'bypass': 30, 'chunk-cap': 56, 'chunk-fast': 28,
+        'pause': 1, 'accel': 1.75, 'slope': 1.85, 'edge': 0,
+        'straight': 0.96, 'grip': 10, 'grip-cap': 10
+      });
+      document.getElementById('chk-recoil').checked = true;
+      document.getElementById('recoilPowerRange').value = 95;
+      document.getElementById('recoilValText').innerText = '95%';
+      updateRecoilFix();
+    } else if (cfgKey === 'awm_fastzoom') {
+      currentPresetId = 'awp';
+      applySliderMap({
+        'sharp': 6.00, 'sx': 6.00, 'sy': 4.50,
+        'noise': 2, 'dead': 0, 'lead': 1,
+        'axis': 9, 'stick-delay': 12, 'stick-force': 9,
+        'chunks': 56, 'bypass': 18, 'chunk-cap': 60, 'chunk-fast': 30,
+        'pause': 6, 'accel': 1.85, 'slope': 1.90, 'edge': 0,
+        'straight': 0.92, 'grip': 9, 'grip-cap': 9
+      });
+      if (window.AndroidBridge && AndroidBridge.setSmartAwpLock) {
+        AndroidBridge.setSmartAwpLock(true);
+      }
+    } else if (cfgKey === '4finger_claw') {
+      currentPresetId = 'max_teleport';
+      applySliderMap({
+        'sharp': 5.80, 'sx': 5.85, 'sy': 5.50,
+        'noise': 3, 'dead': 0, 'lead': 3,
+        'axis': 7, 'stick-delay': 20, 'stick-force': 4,
+        'chunks': 54, 'bypass': 30, 'chunk-cap': 58, 'chunk-fast': 28,
+        'pause': 1, 'accel': 1.90, 'slope': 1.90, 'edge': 0,
+        'straight': 0.90, 'grip': 7, 'grip-cap': 7
+      });
+      selectTsrPreset(360);
+    } else if (cfgKey === 'cold_fps') {
+      currentPresetId = 'smooth_pro';
+      applySliderMap({
+        'sharp': 5.40, 'sx': 5.40, 'sy': 5.10,
+        'noise': 3, 'dead': 0, 'lead': 2,
+        'axis': 6, 'stick-delay': 22, 'stick-force': 3,
+        'chunks': 40, 'bypass': 30, 'chunk-cap': 48, 'chunk-fast': 24,
+        'pause': 1, 'accel': 1.70, 'slope': 1.70, 'edge': 0,
+        'straight': 0.88, 'grip': 6, 'grip-cap': 6
+      });
+      toggleThermalGuard(true);
+    }
+
+    activateTeleportEngine();
+
+    const banner = document.getElementById('cfg-status-banner');
+    if (banner) {
+      banner.innerHTML = '✅ Конфиг <b>«' + titleName + '»</b> успешно загружен и активирован! Можешь сразу заходить в катку.';
+      banner.style.color = 'var(--primary-bright)';
+    }
+    const badge = document.getElementById('home-cfg-badge');
+    if (badge) badge.innerText = titleName;
+  }
+
+  function exportMyCurrentConfig() {
+    const v = readAllSliders();
+    const code = 'SO2-' + Math.round(v.sharp * 10) + 'X' + Math.round(v.sx * 10) + '-C' + v.chunks + '-S' + Math.round(v.straight * 100);
+    const inp = document.getElementById('cfg-code-input');
+    if (inp) inp.value = code;
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(code).catch(() => {});
+    }
+    const banner = document.getElementById('cfg-status-banner');
+    if (banner) {
+      banner.innerHTML = '📋 Код твоего конфига скопирован: <b>' + code + '</b>! Отправь его другу.';
+      banner.style.color = 'var(--primary-bright)';
+    }
+  }
+
   let updateTimer = null;
   function commitEngineUpdate() {
     if (!isUnlockedSession) return;
@@ -1586,12 +2211,11 @@
   function applyConfigByCode() {
     const code = (document.getElementById('cfg-code-input').value || '').trim().toUpperCase();
     if (!code) return;
-    if (code.includes('SPRAY') || code.includes('LASER')) selectPreset('spray_laser');
-    else if (code.includes('AWP')) selectPreset('awp');
-    else if (code.includes('SMOOTH')) selectPreset('smooth_pro');
-    else selectPreset('max_teleport');
-    activateTeleportEngine();
-    openPage('home');
+    if (code.includes('SPRAY') || code.includes('LASER')) applyReadyProConfig('akr_laser', 'ЗАЖИМ В ТОЧКУ PRO');
+    else if (code.includes('AWP') || code.includes('AWM')) applyReadyProConfig('awm_fastzoom', 'AWM ФАСТЗУМ СНАЙПЕР');
+    else if (code.includes('DEAGLE') || code.includes('TAP')) applyReadyProConfig('deagle_onetap', 'DEAGLE ВАНТАП МОНСТР');
+    else if (code.includes('COLD') || code.includes('SMOOTH')) applyReadyProConfig('cold_fps', 'АНТИ-ЛАГ 120 FPS');
+    else applyReadyProConfig('headshot_360', 'КИБЕР-ХЕДШОТ 360Hz');
   }
 
   // РАСТЯГ
@@ -1646,8 +2270,12 @@
   }
 
   function syncCrosshairStyle() {
-    const sc = parseInt(document.getElementById('sl-ch-scale').value);
-    const op = parseInt(document.getElementById('sl-ch-op').value);
+    const scEl = document.getElementById('sl-ch-scale');
+    const opEl = document.getElementById('sl-ch-op');
+    const sc = parseInt(scEl.value);
+    const op = parseInt(opEl.value);
+    updateRangeFill(scEl);
+    updateRangeFill(opEl);
     document.getElementById('lbl-ch-scale').innerText = sc + '%';
     document.getElementById('lbl-ch-op').innerText = op + '%';
     if (window.AndroidBridge && AndroidBridge.updateCrosshairStyle) {
@@ -1821,7 +2449,7 @@
       const x = e.touches[0].clientX - rect.left;
       const y = e.touches[0].clientY - rect.top;
       calPoints.push({ x, y });
-      ctx.fillStyle = '#ff2a5f';
+      ctx.fillStyle = '#00f0ff';
       ctx.beginPath(); ctx.arc(x, y, 4, 0, Math.PI * 2); ctx.fill();
       const pct = Math.min(100, Math.round((calPoints.length / 40) * 100));
       document.getElementById('calibrator-status').innerText = 'Калибровка матрицы: ' + pct + '%';
@@ -1857,7 +2485,7 @@
       const qX = Math.round(rawX / stepPx) * stepPx;
       const qY = lockY + (rawY - lockY) * (1 - v.straight * 0.85);
       ctx.clearRect(0, 0, canvas.width, canvas.height);
-      ctx.strokeStyle = 'rgba(255, 42, 95, 0.35)';
+      ctx.strokeStyle = 'rgba(255, 255, 255, 0.25)';
       ctx.beginPath(); ctx.moveTo(0, lockY); ctx.lineTo(canvas.width, lockY); ctx.stroke();
       ctx.fillStyle = '#666';
       ctx.beginPath(); ctx.arc(rawX, rawY, 6, 0, Math.PI * 2); ctx.fill();
@@ -1883,7 +2511,7 @@
     document.getElementById('modal-visualizer').style.display = 'none';
   }
 
-  // АВТОРИЗАЦИЯ И ПРОФИЛЬ (БЕЗ ОБХОДА ПРИ ПЕРВОМ СТАРТЕ)
+  // АВТОРИЗАЦИЯ И ПРОФИЛЬ
   function loadHardwareProfile() {
     let hwid = 'ANDROID_HWID', model = 'Samsung SM-S938B', screen = '1440x3120 (120 Гц)';
     if (window.AndroidBridge) {
@@ -1912,6 +2540,7 @@
     if (savedNick) {
       document.getElementById('login-nick-input').value = savedNick;
       document.getElementById('prof-nick').innerText = savedNick;
+      document.getElementById('hdr-user-nick').innerText = savedNick;
     }
 
     const localConfirmed = localStorage.getItem('so2_key_manually_activated') === '1';
@@ -1949,6 +2578,7 @@
 
     localStorage.setItem('so2_user_nick', nick);
     document.getElementById('prof-nick').innerText = nick;
+    document.getElementById('hdr-user-nick').innerText = nick;
     err.style.color = '#00f0ff';
     err.innerText = isAutoVerify ? '⏳ Проверка подписки на сервере...' : '⏳ Активация ключа...';
 
@@ -1981,6 +2611,7 @@
     if (savedAutoDpi) updateAutoDpi();
     updateTouchSamplingBoost();
     updateRecoilFix();
+    refreshAllRangeFills();
 
     clearInterval(licenseWatchdogTimer);
     licenseWatchdogTimer = setInterval(() => {
@@ -2019,6 +2650,9 @@
 
   window.addEventListener('DOMContentLoaded', () => {
     try {
+      const savedTheme = localStorage.getItem('so2_ui_theme') || 'purple';
+      setAppTheme(savedTheme);
+
       const saved = localStorage.getItem('so2_quantum_v405');
       if (saved) applySliderMap(JSON.parse(saved));
       else selectPreset('max_teleport');
@@ -2040,6 +2674,8 @@
       const savedRecoilPower = parseInt(localStorage.getItem('so2_recoil_power') || '85', 10);
       document.getElementById('recoilPowerRange').value = savedRecoilPower;
       document.getElementById('recoilValText').innerText = savedRecoilPower + '%';
+
+      refreshAllRangeFills();
     } catch (e) {
       selectPreset('max_teleport');
     }
