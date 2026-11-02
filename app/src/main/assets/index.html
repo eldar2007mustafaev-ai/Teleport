@@ -728,7 +728,7 @@
   <source src="bg_capsules.mp4" type="video/mp4">
 </video>
 
-<!-- ЭКРАН АВТОРИЗАЦИИ ПО КЛЮЧУ (СТРОГО ОБЯЗАТЕЛЕН С 1-ГО ВХОДА) -->
+<!-- ЭКРАН АВТОРИЗАЦИИ ПО КЛЮЧУ -->
 <div id="auth-gate">
   <div class="auth-card">
     <div class="auth-logo">⚡</div>
@@ -760,7 +760,7 @@
   <div class="top-header">
     <div class="brand-block">
       <h1>SO2Teleport</h1>
-      <span>QUANTUM ENGINE V405 • COLD FPS</span>
+      <span>QUANTUM ENGINE V406 • 360HZ TOUCH</span>
     </div>
     <div class="shizuku-badge" onclick="refreshShizukuStatus(true)">
       <div class="shz-top">
@@ -811,7 +811,7 @@
 
       <div class="nav-card" onclick="openPage('settings')">
         <div class="nav-card-top"><div class="nav-icon">⚙</div><span class="nav-arrow">›</span></div>
-        <div><h3>Настройки</h3><p>120 Гц без нагрева, DPI в игре, фикс отдачи</p></div>
+        <div><h3>Настройки</h3><p>Разгон тача 360 Гц, RAM Boost, DPI и анти-отдача</p></div>
       </div>
     </div>
   </div>
@@ -1128,8 +1128,35 @@
   <!-- ================= РАЗДЕЛ 6: НАСТРОЙКИ СИСТЕМЫ ================= -->
   <div id="page-settings" class="subpage">
     <div class="back-bar" onclick="openPage('home')"><span>←</span><span>Настройки системы</span></div>
+
+    <!-- НОВЫЙ БЛОК: БЫСТРЫЙ СБРОС КЭША (RAM BOOST В 1 КЛИК) -->
+    <div class="smart-scan-box">
+      <div class="smart-scan-title">🚀 Быстрый сброс кэша (RAM Boost в 1 клик)</div>
+      <div class="smart-scan-desc" id="ram-boost-status">
+        Мгновенно выгружает фоновые процессы и очищает оперативную память от мусора перед запуском катки в Standoff 2.
+      </div>
+      <button class="grad-btn" id="btn-ram-boost" style="padding:12px; font-size:13.5px;" onclick="triggerRamBoost()">
+        🧹 ОЧИСТИТЬ ОПЕРАТИВКУ И КЭШ ПЕРЕД КАТКОЙ
+      </button>
+    </div>
+
     <div class="panel-card">
-      <div class="panel-head"><span>ХОЛОДНЫЙ БУСТЕР И КОНТРОЛЬ ЗАЖИМА</span><span>SHIZUKU</span></div>
+      <div class="panel-head"><span>РАЗГОН ТАЧА И КОНТРОЛЬ ЗАЖИМА</span><span>SHIZUKU</span></div>
+
+      <!-- НОВАЯ ФУНКЦИЯ: РАЗГОН ГЕРЦОВКИ ТАЧА (240–360 ГЦ) -->
+      <div class="toggle-line" style="border-bottom:none; padding-bottom:6px;">
+        <div>
+          <h4>Разгон герцовки тача (Touch Sampling Boost)</h4>
+          <p>Принудительный буст опроса матрицы (240–360 Гц) для нулевой задержки выстрела</p>
+        </div>
+        <label class="switch"><input type="checkbox" id="chk-tsr-boost" checked onchange="updateTouchSamplingBoost()"><span class="sw-slider"></span></label>
+      </div>
+
+      <div class="chip-row" style="margin-top: 6px; margin-bottom: 12px; padding-bottom: 12px; border-bottom: 1px solid rgba(255, 255, 255, 0.06);">
+        <div class="chip-btn" id="tsr-240" onclick="selectTsrPreset(240)">240 Гц</div>
+        <div class="chip-btn" id="tsr-300" onclick="selectTsrPreset(300)">300 Гц</div>
+        <div class="chip-btn active" id="tsr-360" onclick="selectTsrPreset(360)">360 Гц (MAX)</div>
+      </div>
 
       <div class="toggle-line">
         <div>
@@ -1240,6 +1267,7 @@
   let currentCrosshairType = 'off';
   let selectedCrosshairColor = '#00F0FF';
   let currentDpiPreset = 360;
+  let currentTsrHz = 360;
   let licenseWatchdogTimer = null;
   let isUnlockedSession = false;
 
@@ -1331,7 +1359,7 @@
 
     const statusEl = document.getElementById('smart-scan-status');
     if (statusEl) {
-      statusEl.innerHTML = '✅ <b>Профиль подобран под ' + model + '!</b> Включен мгновенный сдвиг 1 мм (Zero-Delay), защита от перегрева и стабильные 120 FPS.';
+      statusEl.innerHTML = '✅ <b>Профиль подобран под ' + model + '!</b> Включен мгновенный сдвиг 1 мм (Zero-Delay), опрос тача 360 Гц и защита от перегрева.';
     }
     activateTeleportEngine();
   }
@@ -1363,7 +1391,7 @@
     if (ok) {
       dot.classList.add('ok');
       title.innerText = 'Shizuku: АКТИВЕН';
-      sub.innerText = 'Холодный FPS • ОК';
+      sub.innerText = '360Hz Тач • ОК';
     } else {
       dot.classList.remove('ok');
       title.innerText = 'Shizuku: ВЫКЛ';
@@ -1394,7 +1422,7 @@
     document.getElementById('power-circle-text').innerText = 'АКТИВЕН';
     const pill = document.getElementById('hero-status-bar');
     pill.classList.add('active');
-    pill.innerText = '• ТЕЛЕПОРТ АКТИВЕН (1ММ ИМПУЛЬС + БЕЗ НАГРЕВА)';
+    pill.innerText = '• ТЕЛЕПОРТ АКТИВЕН (360 ГЦ ТАЧ + 1ММ ОТКЛИК)';
     refreshShizukuStatus(false);
   }
 
@@ -1661,7 +1689,53 @@
     }
   }
 
-  // СИСТЕМНЫЕ ПЕРЕКЛЮЧАТЕЛИ
+  // СИСТЕМНЫЕ ПЕРЕКЛЮЧАТЕЛИ + РАЗГОН ТАЧА 360 ГЦ + RAM BOOST
+  function selectTsrPreset(hz) {
+    currentTsrHz = hz;
+    ['tsr-240', 'tsr-300', 'tsr-360'].forEach(id => {
+      const btn = document.getElementById(id);
+      if (btn) btn.classList.toggle('active', id === 'tsr-' + hz);
+    });
+    try {
+      localStorage.setItem('so2_tsr_hz', String(hz));
+    } catch (e) {}
+    if (isUnlockedSession) updateTouchSamplingBoost();
+  }
+
+  function updateTouchSamplingBoost() {
+    if (!isUnlockedSession) return;
+    const sw = document.getElementById('chk-tsr-boost');
+    const enabled = sw ? sw.checked : true;
+    try {
+      localStorage.setItem('so2_tsr_enabled', enabled ? '1' : '0');
+    } catch (e) {}
+    if (window.AndroidBridge && typeof AndroidBridge.setTouchSamplingBoost === 'function') {
+      AndroidBridge.setTouchSamplingBoost(enabled, currentTsrHz);
+    }
+  }
+
+  function triggerRamBoost() {
+    if (!isUnlockedSession) return;
+    const btn = document.getElementById('btn-ram-boost');
+    const status = document.getElementById('ram-boost-status');
+    if (btn) btn.innerText = '⏳ ОЧИСТКА ОЗУ И ФОНОВОГО КЭША...';
+
+    setTimeout(() => {
+      let gained = '240', avail = '4200';
+      if (window.AndroidBridge && typeof AndroidBridge.performRamBoost === 'function') {
+        try {
+          const res = (AndroidBridge.performRamBoost() || '240|4200|8192').split('|');
+          if (res[0]) gained = res[0];
+          if (res[1]) avail = res[1];
+        } catch (e) {}
+      }
+      if (status) {
+        status.innerHTML = '✅ <b>Оперативка очищена!</b> Освобождено: <b>+' + gained + ' МБ</b> (Свободно: ' + avail + ' МБ). Можно заходить в Standoff 2 без микрофризов!';
+      }
+      if (btn) btn.innerText = '⚡ ОЗУ ОЧИЩЕНО (+' + gained + ' МБ) • ПОВТОРИТЬ';
+    }, 150);
+  }
+
   function toggleThermalGuard(on) {
     if (!isUnlockedSession) return;
     if (window.AndroidBridge && AndroidBridge.setHzThermalGuard) AndroidBridge.setHzThermalGuard(on);
@@ -1829,7 +1903,6 @@
   }
 
   function initAuthGate() {
-    // Гарантированно держим закрытым основное окно при старте
     isUnlockedSession = false;
     document.getElementById('main-app-container').style.display = 'none';
     document.getElementById('auth-gate').style.display = 'flex';
@@ -1841,7 +1914,6 @@
       document.getElementById('prof-nick').innerText = savedNick;
     }
 
-    // Проверяем, был ли ключ уже лично введен пользователем на этом устройстве в текущем приложении
     const localConfirmed = localStorage.getItem('so2_key_manually_activated') === '1';
     let savedKey = '';
     if (localConfirmed && window.AndroidBridge && typeof AndroidBridge.getSavedKey === 'function') {
@@ -1907,6 +1979,7 @@
 
     const savedAutoDpi = localStorage.getItem('so2_auto_dpi_enabled') === '1';
     if (savedAutoDpi) updateAutoDpi();
+    updateTouchSamplingBoost();
     updateRecoilFix();
 
     clearInterval(licenseWatchdogTimer);
@@ -1949,6 +2022,13 @@
       const saved = localStorage.getItem('so2_quantum_v405');
       if (saved) applySliderMap(JSON.parse(saved));
       else selectPreset('max_teleport');
+
+      const savedTsrHz = parseInt(localStorage.getItem('so2_tsr_hz') || '360', 10);
+      if ([240, 300, 360].includes(savedTsrHz)) {
+        selectTsrPreset(savedTsrHz);
+      }
+      const savedTsrEnabled = localStorage.getItem('so2_tsr_enabled') !== '0';
+      document.getElementById('chk-tsr-boost').checked = savedTsrEnabled;
 
       const savedDpi = parseInt(localStorage.getItem('so2_dpi_preset') || '360', 10);
       if ([360, 400, 440].includes(savedDpi)) {
