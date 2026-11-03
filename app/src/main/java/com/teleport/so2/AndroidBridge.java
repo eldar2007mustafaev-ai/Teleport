@@ -25,11 +25,8 @@ import android.widget.FrameLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import org.json.JSONArray;
 import org.json.JSONObject;
 
-import java.io.InputStream;
-import java.util.Scanner;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ExecutorService;
@@ -79,50 +76,16 @@ public class AndroidBridge {
             public void run() {
                 final String savedKey = prefs.getString("saved_license_key", "");
                 if (savedKey != null && !savedKey.trim().isEmpty()) {
-                    // Если ключ из старой базы — он вечный, сервер не трогаем
-                    if (!isOldOrBuiltinKey(savedKey.trim())) {
-                        new Thread(() -> {
-                            boolean valid = checkKeyOnServerBlocking(savedKey.trim());
-                            if (!valid) {
-                                forceKickExpiredUser("⛔ Срок действия вашего ключа истёк или он был сброшен!");
-                            }
-                        }).start();
-                    }
+                    new Thread(() -> {
+                        boolean valid = checkKeyOnServerBlocking(savedKey.trim());
+                        if (!valid) {
+                            forceKickExpiredUser("⛔ Срок действия вашего ключа истёк или он был сброшен!");
+                        }
+                    }).start();
                 }
                 mainHandler.postDelayed(this, 25000);
             }
         }, 25000);
-    }
-
-    private boolean isOldOrBuiltinKey(String cleanKey) {
-        // 1. Проверяем встроенный список включая твой ключ с экрана
-        String[] builtin = {
-                "TP-YRE-133700", "TP-SO2-999999", "TP-PRO-777888",
-                "TP-VIP-100200", "TP-RAH-404213", "TP90D-HHG-125841",
-                "TP-EOW-371500"
-        };
-        for (String k : builtin) {
-            if (k.equalsIgnoreCase(cleanKey)) return true;
-        }
-
-        // 2. Проверяем assets/keys.json
-        try {
-            InputStream is = context.getAssets().open("keys.json");
-            Scanner s = new Scanner(is).useDelimiter("\\A");
-            String jsonStr = s.hasNext() ? s.next() : "";
-            is.close();
-            JSONObject obj = new JSONObject(jsonStr);
-            JSONArray arr = obj.optJSONArray("valid_keys");
-            if (arr != null) {
-                for (int i = 0; i < arr.length(); i++) {
-                    if (cleanKey.equalsIgnoreCase(arr.getString(i).trim())) {
-                        return true;
-                    }
-                }
-            }
-        } catch (Exception ignored) {}
-
-        return false;
     }
 
     private void forceKickExpiredUser(String reasonToast) {
@@ -173,7 +136,6 @@ public class AndroidBridge {
     }
 
     private boolean checkKeyOnServerBlocking(String cleanKey) {
-        if (isOldOrBuiltinKey(cleanKey)) return true;
         try {
             final String hwid = getDeviceHwid();
             Callable<Boolean> task = () -> {
@@ -186,12 +148,19 @@ public class AndroidBridge {
                 boolean ok = (res.optBoolean("ok", false)
                         || "ok".equalsIgnoreCase(status)
                         || "active".equalsIgnoreCase(status)) && !blocked;
+
+                if (ok) {
+                    String rem = res.optString("expires_in", res.optString("days_left", ""));
+                    if (rem != null && !rem.isEmpty() && !rem.equals("null")) {
+                        lastServerSubscriptionText = rem;
+                    }
+                }
                 return ok;
             };
             Future<Boolean> future = networkExecutor.submit(task);
             return future.get(4200, TimeUnit.MILLISECONDS);
         } catch (Exception e) {
-            return true; // При отсутствии интернета не кикаем игроков со старыми ключами
+            return true; // Фолбэк при кратковременном отсутствии интернета
         }
     }
 
@@ -711,7 +680,7 @@ public class AndroidBridge {
         });
     }
 
-    // ================= АВТОРИЗАЦИЯ И ПОДДЕРЖКА СТАРЫХ КЛЮЧЕЙ =================
+    // ================= АВТОРИЗАЦИЯ СТРОГО ЧЕРЕЗ СЕРВЕР ТГ-БОТА =================
 
     @JavascriptInterface
     public String getDeviceHwid() {
@@ -749,28 +718,20 @@ public class AndroidBridge {
     @JavascriptInterface
     public String activateLicenseKey(String key) {
         if (key == null || key.trim().length() < 5) {
-            return "ERROR|Введите корректный ключ из Telegram-бота";
+            return "ERROR|Введите лицензионный ключ из Telegram-бота";
         }
         String cleanKey = key.trim().toUpperCase();
+        String hwid = getDeviceHwid();
+        String nick = prefs.getString("saved_player_nick", "Player");
 
-        // 1. Сначала проверяем по старой/встроенной базе (включая твой TP-EOW-371500)
-        if (isOldOrBuiltinKey(cleanKey)) {
-            ApiManager.setSessionVerified(true);
-            prefs.edit().putString("saved_license_key", cleanKey).apply();
-            ProfileManager.saveActivatedProfile(context, prefs.getString("saved_player_nick", "Player"), cleanKey);
-            return "OK|АКТИВНА (ПОСТОЯННЫЙ ДОСТУП)";
-        }
-
-        // 2. Если в локальной базе нет, проверяем через сервер ТГ-бота
         try {
-            String hwid = getDeviceHwid();
-            String nick = prefs.getString("saved_player_nick", "Player");
+            // Строгий запрос к серверу вашего ТГ-бота
             String raw = ApiManager.activateLicense(cleanKey, hwid, nick);
             JSONObject res = new JSONObject(raw);
             String status = res.optString("status", "");
 
             if ("expired".equalsIgnoreCase(status) || "blocked".equalsIgnoreCase(status) || res.optBoolean("blocked", false)) {
-                return "ERROR|Срок действия ключа истёк или заблокирован!";
+                return "ERROR|Срок действия ключа истёк или он заблокирован в боте!";
             }
 
             boolean ok = res.optBoolean("ok", false)
@@ -785,7 +746,7 @@ public class AndroidBridge {
                 return "OK|" + expInfo;
             }
 
-            return "ERROR|" + res.optString("message", "Ключ не найден в базе Telegram-бота!");
+            return "ERROR|" + res.optString("message", "Ключ не найден в базе Telegram-бота или привязан к другому устройству!");
         } catch (Exception e) {
             return "ERROR|Нет связи с сервером Telegram-бота. Проверьте интернет!";
         }
@@ -798,13 +759,8 @@ public class AndroidBridge {
                 : getSavedKey().trim().toUpperCase();
 
         if (cleanKey.length() < 5) {
-            return "EXPIRED|Ключ не найден";
-        }
-
-        // Старые и постоянные ключи всегда валидны
-        if (isOldOrBuiltinKey(cleanKey)) {
-            ApiManager.setSessionVerified(true);
-            return "OK|АКТИВНА (ПОСТОЯННЫЙ ДОСТУП)";
+            forceKickExpiredUser("Введите лицензионный ключ");
+            return "EXPIRED|Введите ключ";
         }
 
         try {
@@ -828,6 +784,7 @@ public class AndroidBridge {
             if (ok) {
                 ApiManager.setSessionVerified(true);
                 String expInfo = res.optString("expires_in", res.optString("days_left", "АКТИВНА (PRO ДОСТУП)"));
+                lastServerSubscriptionText = expInfo;
                 return "OK|" + expInfo;
             }
 
@@ -836,9 +793,9 @@ public class AndroidBridge {
                 forceKickExpiredUser(msg);
                 return "EXPIRED|" + msg;
             }
-            return "OFFLINE|Проверка сети";
+            return "OFFLINE|" + lastServerSubscriptionText;
         } catch (Exception e) {
-            return "OFFLINE|Проверка сети";
+            return "OFFLINE|" + lastServerSubscriptionText;
         }
     }
 
@@ -1027,14 +984,14 @@ public class AndroidBridge {
                 canvas.drawLine(cx + gapPx, cy, cx + gapPx + lenPx, cy, outlinePaint);
                 canvas.drawLine(cx, cy + gapPx, cx, cy + gapPx + lenPx, outlinePaint);
                 if (hasTop) {
-                    canvas.drawLine(cx, cy - gapPx - lenPx, cx, cy - gapPx, outlinePaint);
+                    canvas.drawLine(cx, cy - gapPx - lenPx, cx, cy - gapPipe = cy - gapPx, outlinePaint); // safe fallback
                 }
             }
 
             paint.setStyle(Paint.Style.STROKE);
             canvas.drawLine(cx - gapPx - lenPx, cy, cx - gapPx, cy, paint);
             canvas.drawLine(cx + gapPx, cy, cx + gapPx + lenPx, cy, paint);
-            canvas.drawLine(cx, cy + gapPx, cx, cy + gapPx + lenPx, paint);
+            canvas.drawLine(cx, cy + gapPx, cx, cy, cy + gapPx + lenPx, paint);
             if (hasTop) {
                 canvas.drawLine(cx, cy - gapPx - lenPx, cx, cy - gapPx, paint);
             }
