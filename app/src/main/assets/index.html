@@ -3,14 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>SO2Teleport V407</title>
+    <title>SO2Teleport V408 PRO</title>
     <style>
         :root {
             --accent: #00e5ff;
             --accent-glow: rgba(0, 229, 255, 0.35);
             --accent-soft: rgba(0, 229, 255, 0.14);
             --bg-deep: #050b11;
-            --card-bg: rgba(11, 22, 30, 0.90);
+            --card-bg: rgba(11, 22, 30, 0.92);
             --card-border: rgba(0, 229, 255, 0.24);
             --text-main: #f1f5f9;
             --text-sub: #8fa3b8;
@@ -35,7 +35,6 @@
                 radial-gradient(circle at 85% 85%, rgba(16, 185, 129, 0.08) 0%, transparent 45%);
             color: var(--text-main);
             min-height: 100vh;
-            /* Отступ сверху под камеру и статус-бар Android 15 */
             padding-top: calc(env(safe-area-inset-top, 16px) + 38px);
             padding-left: 14px;
             padding-right: 14px;
@@ -54,7 +53,6 @@
             pointer-events: none;
         }
 
-        /* Всплывающее уведомление ниже выреза камеры */
         #toastBanner {
             position: fixed;
             top: calc(env(safe-area-inset-top, 16px) + 42px);
@@ -67,13 +65,12 @@
             border-radius: 999px;
             font-size: 12px;
             font-weight: 800;
-            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.8);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.85);
             z-index: 99999;
             display: none;
             white-space: nowrap;
         }
 
-        /* ШАПКА V407 */
         .top-bar {
             display: flex;
             justify-content: space-between;
@@ -146,7 +143,6 @@
             margin-bottom: 12px;
         }
 
-        /* ВЫБОР ТЕМЫ МЕНЮ */
         .theme-bar {
             display: flex;
             justify-content: space-between;
@@ -185,7 +181,6 @@
             box-shadow: 0 0 10px currentColor;
         }
 
-        /* ГЛАВНАЯ СЕТКА ИЗ 6 КАРТОЧЕК */
         .bento-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
@@ -259,7 +254,6 @@
             color: var(--text-sub);
         }
 
-        /* ЭКРАНЫ И НАВИГАЦИЯ НАЗАД */
         .screen-view {
             display: none;
         }
@@ -282,7 +276,6 @@
             font-weight: 800;
         }
 
-        /* КАРТОЧКИ ВНУТРИ РАЗДЕЛОВ */
         .panel-card {
             background: var(--card-bg);
             border: 1px solid var(--card-border);
@@ -307,7 +300,6 @@
             text-transform: uppercase;
         }
 
-        /* КНОПКИ */
         .cyber-btn {
             width: 100%;
             border: none;
@@ -340,7 +332,6 @@
             box-shadow: none;
         }
 
-        /* ТУМБЛЕРЫ */
         .sw-wrap {
             position: relative;
             width: 50px;
@@ -386,24 +377,30 @@
             background: #03151a;
         }
 
-        /* ПОЛЗУНКИ СЕНСЫ */
+        /* АККУРАТНЫЕ КАРТОЧКИ ПОЛЗУНКОВ И КОНФИГОВ */
+        .slider-grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+        }
+
         .slider-card {
-            background: rgba(8, 17, 25, 0.85);
+            background: rgba(8, 17, 25, 0.9);
             border: 1px solid rgba(255, 255, 255, 0.08);
-            border-radius: 18px;
-            padding: 13px 14px;
-            margin-bottom: 10px;
+            border-radius: 16px;
+            padding: 12px 13px;
+            margin-bottom: 9px;
         }
 
         .slider-top {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 8px;
+            margin-bottom: 6px;
         }
 
         .slider-name {
-            font-size: 14px;
+            font-size: 13px;
             font-weight: 800;
             color: #fff;
         }
@@ -412,9 +409,9 @@
             background: rgba(0, 229, 255, 0.14);
             border: 1px solid var(--card-border);
             color: var(--accent);
-            padding: 3px 10px;
-            border-radius: 10px;
-            font-size: 12px;
+            padding: 2px 8px;
+            border-radius: 8px;
+            font-size: 11.5px;
             font-weight: 800;
             font-family: monospace;
         }
@@ -426,26 +423,56 @@
             border-radius: 4px;
             background: #1a2e3f;
             outline: none;
-            margin: 4px 0 8px 0;
+            margin: 4px 0 6px 0;
         }
 
         input[type="range"]::-webkit-slider-thumb {
             -webkit-appearance: none;
-            width: 20px;
-            height: 20px;
+            width: 18px;
+            height: 18px;
             border-radius: 50%;
             background: var(--accent);
-            border: 2.5px solid #fff;
-            box-shadow: 0 0 10px var(--accent);
+            border: 2px solid #fff;
+            box-shadow: 0 0 8px var(--accent);
             cursor: pointer;
         }
 
         .slider-hint {
-            font-size: 11px;
+            font-size: 10.5px;
             color: var(--text-sub);
+            line-height: 1.3;
         }
 
-        /* РЕЖИМЫ И КНОПКИ ВЫБОРА */
+        /* КАРТОЧКИ ГОТОВЫХ КОНФИГОВ С МИНИ-ЧИПАМИ СЕНСЫ */
+        .cfg-pack-card {
+            background: linear-gradient(145deg, rgba(12, 25, 36, 0.95), rgba(7, 15, 23, 0.95));
+            border: 1px solid rgba(0, 229, 255, 0.2);
+            border-radius: 18px;
+            padding: 14px;
+            margin-bottom: 11px;
+        }
+
+        .cfg-chips-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            margin: 8px 0 10px 0;
+        }
+
+        .cfg-chip {
+            background: rgba(0, 229, 255, 0.1);
+            border: 1px solid rgba(0, 229, 255, 0.25);
+            color: #e2e8f0;
+            font-size: 10.5px;
+            font-weight: 700;
+            padding: 4px 8px;
+            border-radius: 8px;
+        }
+
+        .cfg-chip b {
+            color: var(--accent);
+        }
+
         .mode-row {
             display: flex;
             justify-content: space-between;
@@ -480,12 +507,11 @@
             border-color: var(--accent);
         }
 
-        /* СЕТКА КНОПОК РАСТЯГА И ПРИЦЕЛА */
         .pill-grid-5 {
             display: grid;
             grid-template-columns: repeat(5, 1fr);
             gap: 6px;
-            margin: 12px 0;
+            margin: 10px 0;
         }
 
         .pill-grid-4 {
@@ -506,9 +532,9 @@
             background: rgba(14, 28, 40, 0.95);
             border: 1px solid rgba(255,255,255,0.12);
             color: #fff;
-            padding: 11px 4px;
+            padding: 10px 4px;
             border-radius: 12px;
-            font-size: 12px;
+            font-size: 11.5px;
             font-weight: 800;
             text-align: center;
             cursor: pointer;
@@ -521,10 +547,13 @@
             box-shadow: 0 0 12px var(--accent-soft);
         }
 
-        /* ПРЕВЬЮ РАСТЯГА И ПРИЦЕЛА */
         .preview-box {
-            height: 124px;
-            background: radial-gradient(circle, rgba(0, 229, 255, 0.08), rgba(5, 11, 17, 0.95));
+            height: 136px;
+            background:
+                linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px),
+                radial-gradient(circle, rgba(0, 229, 255, 0.1), rgba(5, 11, 17, 0.96));
+            background-size: 20px 20px, 20px 20px, 100% 100%;
             border: 1px solid var(--card-border);
             border-radius: 16px;
             display: flex;
@@ -541,11 +570,25 @@
             font-size: 14px;
             font-weight: 900;
             color: #fff;
-            background: rgba(0, 229, 255, 0.1);
+            background: rgba(0, 229, 255, 0.12);
             box-shadow: 0 0 18px var(--accent-soft);
         }
 
-        /* МОДАЛЬНОЕ ОКНО КАЛИБРОВКИ */
+        .step-guide-box {
+            background: rgba(7, 16, 24, 0.9);
+            border: 1px solid rgba(0, 229, 255, 0.2);
+            border-radius: 14px;
+            padding: 12px;
+            margin-bottom: 12px;
+            font-size: 11.5px;
+            color: var(--text-sub);
+            line-height: 1.45;
+        }
+
+        .step-guide-box b {
+            color: #fff;
+        }
+
         #calibModal {
             display: none;
             position: fixed;
@@ -569,7 +612,6 @@
             box-shadow: 0 12px 40px rgba(0, 0, 0, 0.85);
         }
 
-        /* НИЖНЯЯ ЗАКРЕПЛЕННАЯ ПАНЕЛЬ СОХРАНЕНИЯ И ОБМЕНА */
         .bottom-save-bar {
             position: fixed;
             bottom: 0;
@@ -647,11 +689,11 @@
 
     <div id="toastBanner">💾 Все настройки сохранены!</div>
 
-    <!-- ВЕРХНЯЯ ШАПКА V407 -->
+    <!-- ВЕРХНЯЯ ШАПКА -->
     <div class="top-bar">
         <div>
             <div class="brand-h1">SO2Teleport</div>
-            <div class="brand-sub">QUANTUM ENGINE V407 • 360HZ TOUCH</div>
+            <div class="brand-sub">QUANTUM ENGINE V408 • BUFFED 360HZ</div>
         </div>
         <div class="shizuku-box" onclick="healAndCheckShizuku()">
             <div class="shizuku-row">
@@ -696,7 +738,7 @@
                 </div>
                 <div>
                     <div class="bento-title">Сенса</div>
-                    <div class="bento-desc" id="homeSensaSub">Нажми тумблер для пуска или открой настройку 1мм отклика</div>
+                    <div class="bento-desc" id="homeSensaSub">Баффнутый отклик 1мм + настройка всех 18 осей</div>
                 </div>
             </div>
 
@@ -708,7 +750,7 @@
                 </div>
                 <div>
                     <div class="bento-title">Готовые конфиги</div>
-                    <div class="bento-desc">Реальные сборки киберспортсменов в 1 клик + обмен ссылками</div>
+                    <div class="bento-desc">Карточки кибер-сборок в 1 клик + обмен ссылками</div>
                 </div>
             </div>
 
@@ -719,8 +761,8 @@
                     <div class="bento-arrow">›</div>
                 </div>
                 <div>
-                    <div class="bento-title">Растяг</div>
-                    <div class="bento-desc">Чёткий растяг 4:3 / 5:4 / 16:9 и кнопка «T» поверх игры</div>
+                    <div class="bento-title">Растяг «TP»</div>
+                    <div class="bento-desc">Плавающая кнопка «TP» (полосы → полный растяг) + корзина</div>
                 </div>
             </div>
 
@@ -732,7 +774,7 @@
                 </div>
                 <div>
                     <div class="bento-title">Кастомный прицел</div>
-                    <div class="bento-desc">Точка, крест, круг без нагрузки на FPS</div>
+                    <div class="bento-desc">PRO-конструктор: 7 форм, длина, толщина, зазор, точка</div>
                 </div>
             </div>
 
@@ -773,7 +815,7 @@
             <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
                 <div>
                     <div id="innerSensaHeader" style="font-size:15px;font-weight:900;color:#fff;">ТЕЛЕПОРТ: ВЫКЛЮЧЕН</div>
-                    <div style="font-size:11px;color:var(--text-sub);margin-top:2px;">Нулевая задержка 1мм + квантование осей работают в фоне</div>
+                    <div style="font-size:11px;color:var(--text-sub);margin-top:2px;">Усиленный импульс 1мм + 360 Гц захват осей</div>
                 </div>
                 <label class="sw-wrap">
                     <input type="checkbox" id="chkInnerTeleport" onchange="toggleTeleportMaster(this.checked)">
@@ -781,54 +823,44 @@
                 </label>
             </div>
             <button type="button" class="cyber-btn" id="btnInnerTeleportAction" onclick="toggleTeleportMaster(!appState.teleportOn)">
-                ⚡ ВКЛЮЧИТЬ ТЕЛЕПОРТ (360HZ)
-            </button>
-        </div>
-
-        <div class="panel-card">
-            <div style="font-size:14px;font-weight:800;color:var(--accent);margin-bottom:6px;">● Умный подбор под твой телефон (Без нагрева)</div>
-            <div style="font-size:12px;color:var(--text-sub);line-height:1.4;margin-bottom:10px;" id="smartScanStatusTxt">
-                ✅ Профиль подобран под устройство! Включён мгновенный сдвиг 1 мм (Zero-Delay), опрос тача 360 Гц и защита от перегрева.
-            </div>
-            <button type="button" class="cyber-btn" onclick="executeSmartPhoneScan()">
-                ⚡ ПРОСКАНИРОВАТЬ ТЕЛЕФОН И ПОДОБРАТЬ НАСТРОЙКИ
+                ⚡ ВКЛЮЧИТЬ ТЕЛЕПОРТ (BUFFED 360HZ)
             </button>
         </div>
 
         <div class="panel-card">
             <div class="panel-head">
                 <span class="panel-title">1. БЫСТРЫЕ РЕЖИМЫ СЕНСЫ</span>
-                <span style="font-size:10px;color:var(--text-sub);font-weight:800;">В 1 КЛИК</span>
+                <span style="font-size:10px;color:var(--accent);font-weight:800;">BUFFED V408</span>
             </div>
 
-            <div class="mode-row active" data-qmode="beast" onclick="selectQuickMode('beast', 6.0, 6.0, 6.0, 56, 30)">
+            <div class="mode-row active" data-qmode="beast" onclick="selectQuickMode('beast', 6.0, 6.0, 6.0, 64, 38)">
                 <div style="padding-right:10px;">
                     <div style="font-size:13px;font-weight:900;color:#fff;">ЗВЕРСКИЙ ТЕЛЕПОРТ + 1ММ ИМПУЛЬС</div>
-                    <div style="font-size:11px;color:var(--text-sub);margin-top:2px;">Мгновенный отклик на 1 мм и длинный флик в голову без нагрева</div>
+                    <div style="font-size:11px;color:var(--text-sub);margin-top:2px;">Максимальный срыв с места 6.00 + мгновенный флик в голову</div>
                 </div>
                 <div class="mode-btn">АКТИВЕН</div>
             </div>
 
-            <div class="mode-row" data-qmode="spray" onclick="selectQuickMode('spray', 5.8, 5.9, 5.6, 52, 28)">
+            <div class="mode-row" data-qmode="spray" onclick="selectQuickMode('spray', 5.9, 6.0, 5.7, 56, 32)">
                 <div style="padding-right:10px;">
                     <div style="font-size:13px;font-weight:900;color:#fff;">ТЕЛЕПОРТ + ЗАЖИМ В ТОЧКУ (AKR / M4)</div>
-                    <div style="font-size:11px;color:var(--text-sub);margin-top:2px;">Резкий телепорт по горизонтали + осевая стабилизация отдачи</div>
+                    <div style="font-size:11px;color:var(--text-sub);margin-top:2px;">Мощный горизонтальный довод + удержание отдачи вниз</div>
                 </div>
                 <div class="mode-btn">ВЫБРАТЬ</div>
             </div>
 
-            <div class="mode-row" data-qmode="awm" onclick="selectQuickMode('awm', 6.0, 6.0, 4.8, 64, 35)">
+            <div class="mode-row" data-qmode="awm" onclick="selectQuickMode('awm', 6.0, 6.0, 5.2, 70, 42)">
                 <div style="padding-right:10px;">
                     <div style="font-size:13px;font-weight:900;color:#fff;">ДЛЯ АВИКОВ (Стоп-Импульс)</div>
-                    <div style="font-size:11px;color:var(--text-sub);margin-top:2px;">Молниеносный флик с жёсткой остановкой камеры в момент выстрела</div>
+                    <div style="font-size:11px;color:var(--text-sub);margin-top:2px;">Сверхбыстрый флик с жёсткой фиксацией камеры в момент выстрела</div>
                 </div>
                 <div class="mode-btn">ВЫБРАТЬ</div>
             </div>
 
-            <div class="mode-row" data-qmode="smooth" onclick="selectQuickMode('smooth', 5.4, 5.4, 5.2, 44, 24)">
+            <div class="mode-row" data-qmode="smooth" onclick="selectQuickMode('smooth', 5.5, 5.5, 5.3, 48, 26)">
                 <div style="padding-right:10px;">
                     <div style="font-size:13px;font-weight:900;color:#fff;">ПЛАВНЫЙ КОНТРОЛЬ (Холодный FPS)</div>
-                    <div style="font-size:11px;color:var(--text-sub);margin-top:2px;">Минимальная нагрузка для слабых устройств и плавное ведение цели</div>
+                    <div style="font-size:11px;color:var(--text-sub);margin-top:2px;">Стабильное ведение цели без нагрева процессора</div>
                 </div>
                 <div class="mode-btn">ВЫБРАТЬ</div>
             </div>
@@ -836,12 +868,10 @@
 
         <!-- МГНОВЕННЫЙ МИКРО-ФЛИК -->
         <div class="panel-card">
-            <div class="panel-title" style="margin-bottom:4px;">МГНОВЕННЫЙ МИКРО-ФЛИК (1 ММ)</div>
-            <div style="font-size:11px;color:var(--text-sub);margin-bottom:10px;">Убирает системную задержку Android в начале движения пальца.</div>
             <div style="display:flex;justify-content:space-between;align-items:center;">
                 <div style="padding-right:10px;">
-                    <div style="font-size:13px;font-weight:800;color:#fff;">Мгновенный отклик 1 мм (Zero-Delay Snap)</div>
-                    <div style="font-size:11px;color:var(--text-sub);margin-top:2px;">Даже 1 мм сдвига пальца и длинный флик срабатывают за 1 миллисекунду</div>
+                    <div style="font-size:13.5px;font-weight:900;color:#fff;">⚡ Мгновенный отклик 1 мм (Zero-Delay Snap)</div>
+                    <div style="font-size:11px;color:var(--text-sub);margin-top:3px;">Убирает системный фильтр Android — сдвиг пальца на 1 мм срабатывает за 1 мс</div>
                 </div>
                 <label class="sw-wrap">
                     <input type="checkbox" id="chkZeroDelay" checked onchange="onSliderCommit()">
@@ -850,157 +880,164 @@
             </div>
         </div>
 
-        <!-- ОСТРОТА -->
+        <!-- ОСТРОТА (В ВИДЕ КАРТОЧЕК) -->
         <div class="panel-card">
-            <div class="panel-title" style="margin-bottom:2px;">ОСТРОТА</div>
-            <div style="font-size:11px;color:var(--text-sub);margin-bottom:12px;">Насколько резко реагирует прицел.</div>
+            <div class="panel-head">
+                <span class="panel-title">ОСТРОТА И СЕНСА ОСЕЙ</span>
+                <span style="font-size:10px;color:var(--text-sub);">MAX BUFF</span>
+            </div>
 
             <div class="slider-card">
-                <div class="slider-top"><span class="slider-name">Резкость</span><span class="slider-badge" id="v_sharp">6.00</span></div>
+                <div class="slider-top"><span class="slider-name">🔥 Общая Резкость (Импульс)</span><span class="slider-badge" id="v_sharp">6.00</span></div>
                 <input type="range" id="s_sharp" min="1.0" max="6.0" step="0.05" value="6.00" oninput="onSliderLive()" onchange="onSliderCommit()">
-                <div class="slider-hint">Больше — чувствительнее, мгновенный срыв с места</div>
+                <div class="slider-hint">Отвечает за взрывной старт прицела с места</div>
             </div>
 
-            <div class="slider-card">
-                <div class="slider-top"><span class="slider-name">Влево-вправо</span><span class="slider-badge" id="v_sx">6.00</span></div>
-                <input type="range" id="s_sx" min="1.0" max="6.0" step="0.05" value="6.00" oninput="onSliderLive()" onchange="onSliderCommit()">
-                <div class="slider-hint">Только горизонталь — прицел по врагам в стороне</div>
-            </div>
+            <div class="slider-grid-2">
+                <div class="slider-card" style="margin-bottom:0;">
+                    <div class="slider-top"><span class="slider-name">Влево-вправо (X)</span><span class="slider-badge" id="v_sx">6.00</span></div>
+                    <input type="range" id="s_sx" min="1.0" max="6.0" step="0.05" value="6.00" oninput="onSliderLive()" onchange="onSliderCommit()">
+                    <div class="slider-hint">Горизонтальный флик</div>
+                </div>
 
-            <div class="slider-card">
-                <div class="slider-top"><span class="slider-name">Вверх-вниз</span><span class="slider-badge" id="v_sy">6.00</span></div>
-                <input type="range" id="s_sy" min="1.0" max="6.0" step="0.05" value="6.00" oninput="onSliderLive()" onchange="onSliderCommit()">
-                <div class="slider-hint">Только вертикаль — контроль отдачи вниз и наводка вверх</div>
-            </div>
-        </div>
-
-        <!-- ТОЧНОСТЬ -->
-        <div class="panel-card">
-            <div class="panel-title" style="margin-bottom:2px;">ТОЧНОСТЬ</div>
-            <div style="font-size:11px;color:var(--text-sub);margin-bottom:12px;">Убирает дрожание, задержку и мёртвую зону.</div>
-
-            <div class="slider-card">
-                <div class="slider-top"><span class="slider-name">Отсечка шума</span><span class="slider-badge" id="v_noise">2</span></div>
-                <input type="range" id="s_noise" min="0" max="10" step="1" value="2" oninput="onSliderLive()" onchange="onSliderCommit()">
-                <div class="slider-hint">Игнорирует микродвижения пальца — меньше дребезга</div>
-            </div>
-
-            <div class="slider-card">
-                <div class="slider-top"><span class="slider-name">Мёртвая зона</span><span class="slider-badge" id="v_deadzone">0</span></div>
-                <input type="range" id="s_deadzone" min="0" max="10" step="1" value="0" oninput="onSliderLive()" onchange="onSliderCommit()">
-                <div class="slider-hint">При значении 0–1 прицел реагирует даже на миллиметровый сдвиг</div>
-            </div>
-
-            <div class="slider-card">
-                <div class="slider-top"><span class="slider-name">Упреждение</span><span class="slider-badge" id="v_predict">3</span></div>
-                <input type="range" id="s_predict" min="0" max="10" step="1" value="3" oninput="onSliderLive()" onchange="onSliderCommit()">
-                <div class="slider-hint">Прицел ведёт цель — попадать легче</div>
+                <div class="slider-card" style="margin-bottom:0;">
+                    <div class="slider-top"><span class="slider-name">Вверх-вниз (Y)</span><span class="slider-badge" id="v_sy">6.00</span></div>
+                    <input type="range" id="s_sy" min="1.0" max="6.0" step="0.05" value="6.00" oninput="onSliderLive()" onchange="onSliderCommit()">
+                    <div class="slider-hint">Контроль зажима</div>
+                </div>
             </div>
         </div>
 
-        <!-- ПРИЛИПАНИЕ И ЗАЖИМ + ДОПОЛНИТЕЛЬНО -->
+        <!-- ТОЧНОСТЬ И ПРИЛИПАНИЕ (КАРТОЧНАЯ СЕТКА) -->
         <div class="panel-card">
-            <div class="panel-title" style="margin-bottom:2px;">ПРИЛИПАНИЕ И ЗАЖИМ</div>
-            <div style="font-size:11px;color:var(--text-sub);margin-bottom:12px;">Прицел держится на линиях и гасит боковой разброс при зажиме.</div>
-
-            <div class="slider-card">
-                <div class="slider-top"><span class="slider-name">Прилипание к осям</span><span class="slider-badge" id="v_stick">6</span></div>
-                <input type="range" id="s_stick" min="0" max="15" step="1" value="6" oninput="onSliderLive()" onchange="onSliderCommit()">
-                <div class="slider-hint">Притягивает прицел к горизонтали головы и вертикали зажима</div>
+            <div class="panel-head">
+                <span class="panel-title">ТОЧНОСТЬ И ПРИЛИПАНИЕ К ХИТБОКСУ</span>
+                <span style="font-size:10px;color:var(--text-sub);">AIM LOCK</span>
             </div>
 
-            <div class="slider-card">
-                <div class="slider-top"><span class="slider-name">Через сколько липнуть</span><span class="slider-badge" id="v_stickDelay">20</span></div>
-                <input type="range" id="s_stickDelay" min="5" max="60" step="1" value="20" oninput="onSliderLive()" onchange="onSliderCommit()">
-                <div class="slider-hint">Сколько держать палец спокойно, чтобы включилось</div>
+            <div class="slider-grid-2">
+                <div class="slider-card">
+                    <div class="slider-top"><span class="slider-name">Отсечка шума</span><span class="slider-badge" id="v_noise">2</span></div>
+                    <input type="range" id="s_noise" min="0" max="10" step="1" value="2" oninput="onSliderLive()" onchange="onSliderCommit()">
+                    <div class="slider-hint">Гасит дрожь пальца</div>
+                </div>
+
+                <div class="slider-card">
+                    <div class="slider-top"><span class="slider-name">Мёртвая зона</span><span class="slider-badge" id="v_deadzone">0</span></div>
+                    <input type="range" id="s_deadzone" min="0" max="10" step="1" value="0" oninput="onSliderLive()" onchange="onSliderCommit()">
+                    <div class="slider-hint">0 = отклик с 1 пикселя</div>
+                </div>
+
+                <div class="slider-card">
+                    <div class="slider-top"><span class="slider-name">Упреждение</span><span class="slider-badge" id="v_predict">3</span></div>
+                    <input type="range" id="s_predict" min="0" max="10" step="1" value="3" oninput="onSliderLive()" onchange="onSliderCommit()">
+                    <div class="slider-hint">Ведение бегущей цели</div>
+                </div>
+
+                <div class="slider-card">
+                    <div class="slider-top"><span class="slider-name">Липкость к осям</span><span class="slider-badge" id="v_stick">6</span></div>
+                    <input type="range" id="s_stick" min="0" max="15" step="1" value="6" oninput="onSliderLive()" onchange="onSliderCommit()">
+                    <div class="slider-hint">Фиксация на уровне головы</div>
+                </div>
+
+                <div class="slider-card" style="margin-bottom:0;">
+                    <div class="slider-top"><span class="slider-name">Тайминг липкости</span><span class="slider-badge" id="v_stickDelay">20</span></div>
+                    <input type="range" id="s_stickDelay" min="5" max="60" step="1" value="20" oninput="onSliderLive()" onchange="onSliderCommit()">
+                </div>
+
+                <div class="slider-card" style="margin-bottom:0;">
+                    <div class="slider-top"><span class="slider-name">Сила прилипания</span><span class="slider-badge" id="v_stickForce">3</span></div>
+                    <input type="range" id="s_stickForce" min="1" max="10" step="1" value="3" oninput="onSliderLive()" onchange="onSliderCommit()">
+                </div>
+            </div>
+        </div>
+
+        <!-- КВАНТОВЫЕ КУСКИ И РАЗГОН -->
+        <div class="panel-card">
+            <div class="panel-head">
+                <span class="panel-title">КВАНТОВЫЕ КУСКИ И ДОВОДКА (PRO)</span>
+                <span style="font-size:10px;color:var(--text-sub);">18 ПАРАМЕТРОВ</span>
             </div>
 
-            <div class="panel-title" style="margin:14px 0 8px 0;">ДОПОЛНИТЕЛЬНО (18 ПАРАМЕТРОВ)</div>
+            <div class="slider-grid-2">
+                <div class="slider-card">
+                    <div class="slider-top"><span class="slider-name">Куски (Chunks)</span><span class="slider-badge" id="v_chunks">56</span></div>
+                    <input type="range" id="s_chunks" min="10" max="80" step="2" value="56" oninput="onSliderLive()" onchange="onSliderCommit()">
+                </div>
 
-            <div class="slider-card">
-                <div class="slider-top"><span class="slider-name">Сила прилипания</span><span class="slider-badge" id="v_stickForce">3</span></div>
-                <input type="range" id="s_stickForce" min="1" max="10" step="1" value="3" oninput="onSliderLive()" onchange="onSliderCommit()">
+                <div class="slider-card">
+                    <div class="slider-top"><span class="slider-name">Мелочь мимо</span><span class="slider-badge" id="v_chunkFast">30</span></div>
+                    <input type="range" id="s_chunkFast" min="5" max="50" step="1" value="30" oninput="onSliderLive()" onchange="onSliderCommit()">
+                </div>
+
+                <div class="slider-card">
+                    <div class="slider-top"><span class="slider-name">Стоп-пауза</span><span class="slider-badge" id="v_pause">1</span></div>
+                    <input type="range" id="s_pause" min="0" max="10" step="1" value="1" oninput="onSliderLive()" onchange="onSliderCommit()">
+                </div>
+
+                <div class="slider-card">
+                    <div class="slider-top"><span class="slider-name">Импульс разгона</span><span class="slider-badge" id="v_accel">2.00</span></div>
+                    <input type="range" id="s_accel" min="0.5" max="3.0" step="0.05" value="2.00" oninput="onSliderLive()" onchange="onSliderCommit()">
+                </div>
+
+                <div class="slider-card">
+                    <div class="slider-top"><span class="slider-name">Крутизна</span><span class="slider-badge" id="v_accelSlope">2.00</span></div>
+                    <input type="range" id="s_accelSlope" min="0.5" max="3.0" step="0.05" value="2.00" oninput="onSliderLive()" onchange="onSliderCommit()">
+                </div>
+
+                <div class="slider-card">
+                    <div class="slider-top"><span class="slider-name">Дальность краёв</span><span class="slider-badge" id="v_edgeDist">0</span></div>
+                    <input type="range" id="s_edgeDist" min="0" max="15" step="1" value="0" oninput="onSliderLive()" onchange="onSliderCommit()">
+                </div>
+
+                <div class="slider-card">
+                    <div class="slider-top"><span class="slider-name">Выпрямление</span><span class="slider-badge" id="v_straight">0.88</span></div>
+                    <input type="range" id="s_straight" min="0.50" max="1.00" step="0.01" value="0.88" oninput="onSliderLive()" onchange="onSliderCommit()">
+                </div>
+
+                <div class="slider-card">
+                    <div class="slider-top"><span class="slider-name">Хват по осям</span><span class="slider-badge" id="v_grid">6</span></div>
+                    <input type="range" id="s_grid" min="1" max="12" step="1" value="6" oninput="onSliderLive()" onchange="onSliderCommit()">
+                </div>
             </div>
 
-            <div class="slider-card">
-                <div class="slider-top"><span class="slider-name">Куски (Chunks)</span><span class="slider-badge" id="v_chunks">56</span></div>
-                <input type="range" id="s_chunks" min="10" max="80" step="2" value="56" oninput="onSliderLive()" onchange="onSliderCommit()">
-            </div>
-
-            <div class="slider-card">
-                <div class="slider-top"><span class="slider-name">Мелочь мимо кусков</span><span class="slider-badge" id="v_chunkFast">30</span></div>
-                <input type="range" id="s_chunkFast" min="5" max="50" step="1" value="30" oninput="onSliderLive()" onchange="onSliderCommit()">
-            </div>
-
-            <div class="slider-card">
-                <div class="slider-top"><span class="slider-name">Пауза после выстрела</span><span class="slider-badge" id="v_pause">1</span></div>
-                <input type="range" id="s_pause" min="0" max="10" step="1" value="1" oninput="onSliderLive()" onchange="onSliderCommit()">
-            </div>
-
-            <div class="slider-card">
-                <div class="slider-top"><span class="slider-name">Разгон</span><span class="slider-badge" id="v_accel">2.00</span></div>
-                <input type="range" id="s_accel" min="0.5" max="3.0" step="0.05" value="2.00" oninput="onSliderLive()" onchange="onSliderCommit()">
-            </div>
-
-            <div class="slider-card">
-                <div class="slider-top"><span class="slider-name">Крутизна разгона</span><span class="slider-badge" id="v_accelSlope">2.00</span></div>
-                <input type="range" id="s_accelSlope" min="0.5" max="3.0" step="0.05" value="2.00" oninput="onSliderLive()" onchange="onSliderCommit()">
-            </div>
-
-            <div class="slider-card">
-                <div class="slider-top"><span class="slider-name">Дальность краёв</span><span class="slider-badge" id="v_edgeDist">0</span></div>
-                <input type="range" id="s_edgeDist" min="0" max="15" step="1" value="0" oninput="onSliderLive()" onchange="onSliderCommit()">
-            </div>
-
-            <div class="slider-card">
-                <div class="slider-top"><span class="slider-name">Выпрямление</span><span class="slider-badge" id="v_straight">0.88</span></div>
-                <input type="range" id="s_straight" min="0.50" max="1.00" step="0.01" value="0.88" oninput="onSliderLive()" onchange="onSliderCommit()">
-            </div>
-
-            <div class="slider-card">
-                <div class="slider-top"><span class="slider-name">Хват по осям</span><span class="slider-badge" id="v_grid">6</span></div>
-                <input type="range" id="s_grid" min="1" max="12" step="1" value="6" oninput="onSliderLive()" onchange="onSliderCommit()">
-            </div>
-
-            <div class="slider-card">
+            <div class="slider-card" style="margin-bottom:6px;">
                 <div class="slider-top"><span class="slider-name">Потолок хвата</span><span class="slider-badge" id="v_gripCap">6</span></div>
                 <input type="range" id="s_gripCap" min="1" max="12" step="1" value="6" oninput="onSliderLive()" onchange="onSliderCommit()">
             </div>
 
-            <button type="button" class="cyber-btn secondary" onclick="executeSmartPhoneScan()">👆 Определить матрицу экрана вручную</button>
-            <button type="button" class="cyber-btn secondary" onclick="healAndCheckShizuku()">👆 Проверить касания и 1мм отклик</button>
+            <button type="button" class="cyber-btn secondary" onclick="executeSmartPhoneScan()">⚡ Автокалибровка матрицы под телефон</button>
         </div>
     </div>
 
-    <!-- ================= ЭКРАН 2: ГОТОВЫЕ КИБЕР-КОНФИГИ + УДОБНЫЙ ОБМЕН ССЫЛКАМИ ================= -->
+    <!-- ================= ЭКРАН 2: ГОТОВЫЕ КИБЕР-КОНФИГИ (АККУРАТНЫЕ КАРТОЧКИ С ПАРАМЕТРАМИ) ================= -->
     <div id="screenConfigs" class="screen-view">
         <div class="back-bar" onclick="openScreen('screenHome')">
             <span>←</span>
-            <span>Готовые кибер-конфиги (В 1 клик)</span>
+            <span>Готовые кибер-конфиги и Ссылки</span>
         </div>
 
-        <!-- УДОБНЫЙ ОБМЕН ССЫЛКАМИ И СОХРАНЕНИЕ СВОИХ КОНФИГОВ -->
         <div class="panel-card">
             <div class="panel-head">
                 <span class="panel-title">ОБМЕН ССЫЛКОЙ НА КОНФИГ</span>
                 <span style="font-size:10px;color:var(--accent);font-weight:800;">SHARE LINK</span>
             </div>
             <div style="font-size:11.5px;color:var(--text-sub);margin-bottom:10px;">
-                Короткая ссылка содержит все твои настройки сенсы, растяга и прицела. Отправь её другу или вставь чужую ссылку ниже:
+                Скопируй короткую ссылку на свой конфиг (включая сенсу, растяг и кастомный прицел) или вставь ссылку друга:
             </div>
 
             <input type="text" id="shareCodeInput" class="code-input" placeholder="https://so2tp.cfg/?c=... или SO2-HEAD36">
 
-            <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px;">
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px;">
                 <button type="button" class="cyber-btn" style="margin:0;" onclick="importSharedConfigCode()">
                     📥 ПРИМЕНИТЬ
                 </button>
                 <button type="button" class="cyber-btn secondary" style="margin:0;" onclick="copyAndShareOwnConfig()">
-                    🔗 СКОПИРОВАТЬ ССЫЛКУ
+                    🔗 СКОПИРОВАТЬ СВОЮ
                 </button>
             </div>
 
-            <button type="button" class="cyber-btn secondary" style="margin-top:4px;" onclick="saveCurrentToMyPresets()">
+            <button type="button" class="cyber-btn secondary" onclick="saveCurrentToMyPresets()">
                 ⭐ СОХРАНИТЬ ТЕКУЩИЙ КОНФИГ В МОЙ СПИСОК
             </button>
 
@@ -1009,85 +1046,119 @@
 
         <div class="panel-card">
             <div class="panel-head">
-                <span class="panel-title">ПРОВЕРЕННЫЕ БОЕВЫЕ СБОРКИ ИГРОКОВ</span>
-                <span style="font-size:10px;color:var(--accent);font-weight:800;">READY</span>
+                <span class="panel-title">БОЕВЫЕ СБОРКИ (КАРТОЧКИ СЕНСЫ)</span>
+                <span style="font-size:10px;color:var(--accent);font-weight:800;">6 PRESETS</span>
             </div>
 
-            <div class="slider-card">
+            <div class="cfg-pack-card">
                 <div class="slider-top">
                     <span class="slider-name">🔥 1. КИБЕР-ХЕДШОТ 360HZ (M4A1 / AKR)</span>
                     <span class="slider-badge">ТОП #1</span>
                 </div>
-                <div class="slider-hint" style="margin-bottom:8px;">Идеальное прилипание к линии головы (94% выпрямление траектории) + 0 мёртвая зона для мгновенных ваншотов.</div>
-                <button type="button" class="cyber-btn" onclick="applyCyberPack(6.00, 6.0, 5.6, 58, 0.94, 'КИБЕР-ХЕДШОТ 360HZ')">⚡ ЗАГРУЗИТЬ И ВКЛЮЧИТЬ</button>
+                <div class="cfg-chips-row">
+                    <span class="cfg-chip">Резкость: <b>6.00</b></span>
+                    <span class="cfg-chip">Ось X/Y: <b>6.0 / 5.7</b></span>
+                    <span class="cfg-chip">Куски: <b>62</b></span>
+                    <span class="cfg-chip">Линия головы: <b>94%</b></span>
+                </div>
+                <button type="button" class="cyber-btn" onclick="applyCyberPack(6.00, 6.0, 5.7, 62, 0.94, 'КИБЕР-ХЕДШОТ 360HZ')">⚡ ЗАГРУЗИТЬ И ВКЛЮЧИТЬ</button>
             </div>
 
-            <div class="slider-card">
+            <div class="cfg-pack-card">
                 <div class="slider-top">
                     <span class="slider-name">💀 2. DEAGLE / USP ВАНТАП МОНСТР</span>
                     <span class="slider-badge">1MM SNAP</span>
                 </div>
-                <div class="slider-hint" style="margin-bottom:8px;">Максимальный микро-импульс на 1 мм сдвига пальца с жёсткой фиксацией прицела в точке остановки.</div>
-                <button type="button" class="cyber-btn" onclick="applyCyberPack(6.00, 6.0, 5.4, 64, 0.92, 'DEAGLE / USP ВАНТАП')">⚡ ЗАГРУЗИТЬ И ВКЛЮЧИТЬ</button>
+                <div class="cfg-chips-row">
+                    <span class="cfg-chip">Резкость: <b>6.00</b></span>
+                    <span class="cfg-chip">Ось X/Y: <b>6.0 / 5.5</b></span>
+                    <span class="cfg-chip">Куски: <b>68</b></span>
+                    <span class="cfg-chip">Хват осей: <b>10</b></span>
+                </div>
+                <button type="button" class="cyber-btn" onclick="applyCyberPack(6.00, 6.0, 5.5, 68, 0.92, 'DEAGLE / USP ВАНТАП')">⚡ ЗАГРУЗИТЬ И ВКЛЮЧИТЬ</button>
             </div>
 
-            <div class="slider-card">
+            <div class="cfg-pack-card">
                 <div class="slider-top">
                     <span class="slider-name">🎯 3. ЗАЖИМ В ТОЧКУ (AKR12 / M16 / F/S)</span>
                     <span class="slider-badge">NO RECOIL</span>
                 </div>
-                <div class="slider-hint" style="margin-bottom:8px;">Гасит горизонтальную тряску при зажиме и усиливает вертикальную оттяжку вниз вместе с Anti-Recoil 95%.</div>
-                <button type="button" class="cyber-btn" onclick="applyCyberPack(5.80, 5.8, 5.7, 52, 0.96, 'ЗАЖИМ В ТОЧКУ')">⚡ ЗАГРУЗИТЬ И ВКЛЮЧИТЬ</button>
+                <div class="cfg-chips-row">
+                    <span class="cfg-chip">Резкость: <b>5.85</b></span>
+                    <span class="cfg-chip">Ось X/Y: <b>5.8 / 5.8</b></span>
+                    <span class="cfg-chip">Анти-отдача: <b>100%</b></span>
+                    <span class="cfg-chip">Выпрямление: <b>0.96</b></span>
+                </div>
+                <button type="button" class="cyber-btn" onclick="applyCyberPack(5.85, 5.8, 5.8, 54, 0.96, 'ЗАЖИМ В ТОЧКУ')">⚡ ЗАГРУЗИТЬ И ВКЛЮЧИТЬ</button>
             </div>
 
-            <div class="slider-card">
+            <div class="cfg-pack-card">
                 <div class="slider-top">
                     <span class="slider-name">⚡ 4. AWM / M40 ФАСТЗУМ СНАЙПЕР</span>
                     <span class="slider-badge">SNIPER</span>
                 </div>
-                <div class="slider-hint" style="margin-bottom:8px;">Длинный телепорт-флик через весь экран со стоп-паузой в момент выстрела, чтобы прицел не срывался.</div>
-                <button type="button" class="cyber-btn" onclick="applyCyberPack(6.00, 6.0, 5.0, 62, 0.90, 'AWM ФАСТЗУМ СНАЙПЕР')">⚡ ЗАГРУЗИТЬ И ВКЛЮЧИТЬ</button>
+                <div class="cfg-chips-row">
+                    <span class="cfg-chip">Резкость: <b>6.00</b></span>
+                    <span class="cfg-chip">Ось X/Y: <b>6.0 / 5.2</b></span>
+                    <span class="cfg-chip">Куски: <b>72</b></span>
+                    <span class="cfg-chip">Стоп-пауза: <b>4 мс</b></span>
+                </div>
+                <button type="button" class="cyber-btn" onclick="applyCyberPack(6.00, 6.0, 5.2, 72, 0.90, 'AWM ФАСТЗУМ СНАЙПЕР')">⚡ ЗАГРУЗИТЬ И ВКЛЮЧИТЬ</button>
             </div>
 
-            <div class="slider-card">
+            <div class="cfg-pack-card">
                 <div class="slider-top">
                     <span class="slider-name">👑 5. ТУРНИРНЫЙ В 3–4 ПАЛЬЦА (CLAW PRO)</span>
                     <span class="slider-badge">ESPORTS</span>
                 </div>
-                <div class="slider-hint" style="margin-bottom:8px;">Специальная калибровка без конфликтов мультитача при одновременном приседе, стрейфе и стрельбе.</div>
-                <button type="button" class="cyber-btn" onclick="applyCyberPack(5.90, 5.9, 5.6, 56, 0.93, 'CLAW PRO ТУРНИРНЫЙ')">⚡ ЗАГРУЗИТЬ И ВКЛЮЧИТЬ</button>
+                <div class="cfg-chips-row">
+                    <span class="cfg-chip">Резкость: <b>5.95</b></span>
+                    <span class="cfg-chip">Ось X/Y: <b>5.95 / 5.6</b></span>
+                    <span class="cfg-chip">Отсечка: <b>2</b></span>
+                    <span class="cfg-chip">360Hz Тач: <b>ВКЛ</b></span>
+                </div>
+                <button type="button" class="cyber-btn" onclick="applyCyberPack(5.95, 5.95, 5.6, 58, 0.93, 'CLAW PRO ТУРНИРНЫЙ')">⚡ ЗАГРУЗИТЬ И ВКЛЮЧИТЬ</button>
             </div>
 
-            <div class="slider-card">
+            <div class="cfg-pack-card" style="margin-bottom:0;">
                 <div class="slider-top">
-                    <span class="slider-name">❄️ 6. АНТИ-ЛАГ 120 FPS (ДЛЯ СЛАБЫХ ТЕЛ)</span>
+                    <span class="slider-name">❄️ 6. АНТИ-ЛАГ 120 FPS (БЕЗ НАГРЕВА)</span>
                     <span class="slider-badge">COLD CPU</span>
                 </div>
-                <div class="slider-hint" style="margin-bottom:8px;">Облегчённая частота пакетов без нагрузки на процессор + чистка ОЗУ для стабильных 120 кадров без нагрева.</div>
-                <button type="button" class="cyber-btn" onclick="applyCyberPack(5.60, 5.5, 5.3, 44, 0.88, 'АНТИ-ЛАГ 120 FPS')">⚡ ЗАГРУЗИТЬ И ВКЛЮЧИТЬ</button>
+                <div class="cfg-chips-row">
+                    <span class="cfg-chip">Резкость: <b>5.65</b></span>
+                    <span class="cfg-chip">Ось X/Y: <b>5.6 / 5.4</b></span>
+                    <span class="cfg-chip">Куски: <b>46</b></span>
+                    <span class="cfg-chip">Нагрев: <b>0%</b></span>
+                </div>
+                <button type="button" class="cyber-btn" onclick="applyCyberPack(5.65, 5.6, 5.4, 46, 0.89, 'АНТИ-ЛАГ 120 FPS')">⚡ ЗАГРУЗИТЬ И ВКЛЮЧИТЬ</button>
             </div>
         </div>
     </div>
 
-    <!-- ================= ЭКРАН 3: РАСТЯГ ЭКРАНА (ТОЛЬКО ПЛАВАЮЩАЯ КНОПКА «T») ================= -->
+    <!-- ================= ЭКРАН 3: РАСТЯГ ЭКРАНА (КНОПКА «TP» В 2 ШАГА + КОРЗИНА) ================= -->
     <div id="screenStretch" class="screen-view">
         <div class="back-bar" onclick="openScreen('screenHome')">
             <span>←</span>
-            <span>Растяг экрана</span>
+            <span>Растяг экрана «TP»</span>
         </div>
 
         <div class="panel-card">
             <div class="panel-head">
-                <span class="panel-title">ВЫБОР ФОРМАТА ДЛЯ КНОПКИ «T»</span>
+                <span class="panel-title">ВЫБОР ФОРМАТА ДЛЯ КНОПКИ «TP»</span>
                 <span id="stretchHeaderRatio" style="font-size:12px;font-weight:900;color:var(--accent);">4:3</span>
             </div>
 
             <div class="preview-box">
-                <div class="ratio-frame" id="stretchCenterPreview">ФОРМАТ 4:3</div>
+                <div class="ratio-frame" id="stretchCenterPreview">TP • ФОРМАТ 4:3</div>
             </div>
 
-            <div style="font-size:12px;color:var(--text-sub);text-align:center;line-height:1.45;margin-bottom:12px;">
-                Выбери нужный формат ниже и нажми кнопку активации — поверх экрана появится плавающая кнопка <b>«T»</b>. Зайди в <b>Standoff 2</b> и нажми на кнопку <b>«T»</b>, чтобы мгновенно включить или выключить растяг прямо в катке!
+            <div class="step-guide-box">
+                <b>Как работает кнопка «TP» (как на видео):</b><br>
+                1. Активируй кнопку <b>«TP»</b> ниже и запусти Standoff 2.<br>
+                2. Во время запуска (на заставке Axlebolt) нажми на <b>«TP»</b> 1-й раз — появятся <b>чёрные полосы по бокам</b>.<br>
+                3. Когда игра загрузилась в меню — нажми на <b>«TP»</b> 2-й раз, и экран мгновенно <b>растянется во весь дисплей</b>!<br>
+                4. Зажми кнопку <b>«TP»</b> и перетащи вниз в корзину, чтобы убрать её.
             </div>
 
             <div class="pill-grid-5">
@@ -1099,55 +1170,95 @@
             </div>
 
             <button type="button" class="cyber-btn" id="btnActivateStretchT" onclick="spawnStretchButtonNow()">
-                ⚡ АКТИВИРОВАТЬ КНОПКУ РАСТЯГА «T» (4:3)
+                ⚡ АКТИВИРОВАТЬ КНОПКУ «TP» (4:3)
             </button>
 
             <button type="button" class="cyber-btn secondary" style="color:#fda4af;border-color:rgba(244,63,94,0.35);margin-top:10px;" onclick="resetStretchAndRemoveT()">
-                УБРАТЬ КНОПКУ «T» И СБРОСИТЬ ЭКРАН
+                УБРАТЬ КНОПКУ «TP» И СБРОСИТЬ ЭКРАН
             </button>
         </div>
     </div>
 
-    <!-- ================= ЭКРАН 4: КАСТОМНЫЙ ПРИЦЕЛ ================= -->
+    <!-- ================= ЭКРАН 4: PRO-КОНСТРУКТОР КАСТОМНОГО ПРИЦЕЛА ================= -->
     <div id="screenCrosshair" class="screen-view">
         <div class="back-bar" onclick="openScreen('screenHome')">
             <span>←</span>
-            <span>Кастомный прицел</span>
+            <span>Конструктор прицела PRO</span>
         </div>
 
         <div class="panel-card">
             <div class="panel-head">
-                <span class="panel-title">ФОРМА И ЦВЕТ ПРИЦЕЛА (ZERO-LAG)</span>
+                <span class="panel-title">ЖИВОЕ ПРЕВЬЮ И ФОРМА (ZERO-LAG)</span>
                 <span id="crossHeaderState" style="font-size:11px;font-weight:900;color:var(--accent);">ВЫКЛ</span>
             </div>
 
             <div class="preview-box">
-                <canvas id="crossPreviewCanvas" width="120" height="120"></canvas>
+                <canvas id="crossPreviewCanvas" width="130" height="130"></canvas>
             </div>
 
-            <div class="pill-grid-5">
+            <!-- 8 кнопок выбора любой формы -->
+            <div class="pill-grid-4">
                 <div class="opt-btn active" data-ctype="off" onclick="setCrosshairShape('off')">ВЫКЛ</div>
                 <div class="opt-btn" data-ctype="dot" onclick="setCrosshairShape('dot')">ТОЧКА</div>
                 <div class="opt-btn" data-ctype="cross" onclick="setCrosshairShape('cross')">КРЕСТ</div>
+                <div class="opt-btn" data-ctype="crossdot" onclick="setCrosshairShape('crossdot')">КРЕСТ + •</div>
                 <div class="opt-btn" data-ctype="tshape" onclick="setCrosshairShape('tshape')">T-ФОРМА</div>
                 <div class="opt-btn" data-ctype="circle" onclick="setCrosshairShape('circle')">КРУГ</div>
+                <div class="opt-btn" data-ctype="circledot" onclick="setCrosshairShape('circledot')">КРУГ + •</div>
+                <div class="opt-btn" data-ctype="box" onclick="setCrosshairShape('box')">КВАДРАТ</div>
             </div>
 
-            <div class="pill-grid-4">
-                <div class="opt-btn" data-cclr="#D946EF" onclick="setCrosshairColor('#D946EF')">ФИОЛЕТ</div>
-                <div class="opt-btn active" data-cclr="#00E5FF" onclick="setCrosshairColor('#00E5FF')">ГОЛУБОЙ</div>
-                <div class="opt-btn" data-cclr="#10B981" onclick="setCrosshairColor('#10B981')">ЗЕЛЁНЫЙ</div>
-                <div class="opt-btn" data-cclr="#F43F5E" onclick="setCrosshairColor('#F43F5E')">КРАСНЫЙ</div>
+            <div class="panel-title" style="margin:12px 0 6px 0;">ЦВЕТ ПРИЦЕЛА</div>
+            <div class="pill-grid-5">
+                <div class="opt-btn active" data-cclr="#00E5FF" onclick="setCrosshairColor('#00E5FF')" style="color:#00E5FF;">ГОЛУБОЙ</div>
+                <div class="opt-btn" data-cclr="#10B981" onclick="setCrosshairColor('#10B981')" style="color:#10B981;">ЗЕЛЁНЫЙ</div>
+                <div class="opt-btn" data-cclr="#F43F5E" onclick="setCrosshairColor('#F43F5E')" style="color:#F43F5E;">КРАСНЫЙ</div>
+                <div class="opt-btn" data-cclr="#FACC15" onclick="setCrosshairColor('#FACC15')" style="color:#FACC15;">ЖЁЛТЫЙ</div>
+                <div class="opt-btn" data-cclr="#D946EF" onclick="setCrosshairColor('#D946EF')" style="color:#D946EF;">ФИОЛЕТ</div>
             </div>
 
-            <div class="slider-card" style="margin-top:10px;">
-                <div class="slider-top"><span class="slider-name">Размер прицела</span><span class="slider-badge" id="v_cScale">50%</span></div>
-                <input type="range" id="s_cScale" min="15" max="100" step="5" value="50" oninput="updateCrosshairStyleNow()">
+            <div style="display:flex;justify-content:space-between;align-items:center;background:rgba(8,17,25,0.9);border-radius:14px;padding:10px 13px;margin-bottom:10px;border:1px solid rgba(255,255,255,0.08);">
+                <span style="font-size:13px;font-weight:800;">🎨 Свой оттенок цвета (HEX):</span>
+                <input type="color" id="inpCustomCrossColor" value="#00E5FF" onchange="setCrosshairColor(this.value)" style="width:44px;height:28px;border:none;background:transparent;cursor:pointer;">
+            </div>
+
+            <!-- Тонкая кастомизация геометрии прицела -->
+            <div class="slider-grid-2">
+                <div class="slider-card">
+                    <div class="slider-top"><span class="slider-name">Длина линий</span><span class="slider-badge" id="v_cLen">12</span></div>
+                    <input type="range" id="s_cLen" min="2" max="28" step="1" value="12" oninput="updateCrosshairStyleNow()">
+                </div>
+
+                <div class="slider-card">
+                    <div class="slider-top"><span class="slider-name">Толщина</span><span class="slider-badge" id="v_cThick">3</span></div>
+                    <input type="range" id="s_cThick" min="1" max="10" step="1" value="3" oninput="updateCrosshairStyleNow()">
+                </div>
+
+                <div class="slider-card">
+                    <div class="slider-top"><span class="slider-name">Зазор (Gap)</span><span class="slider-badge" id="v_cGap">4</span></div>
+                    <input type="range" id="s_cGap" min="0" max="18" step="1" value="4" oninput="updateCrosshairStyleNow()">
+                </div>
+
+                <div class="slider-card">
+                    <div class="slider-top"><span class="slider-name">Радиус точки</span><span class="slider-badge" id="v_cDot">3</span></div>
+                    <input type="range" id="s_cDot" min="1" max="12" step="1" value="3" oninput="updateCrosshairStyleNow()">
+                </div>
             </div>
 
             <div class="slider-card">
                 <div class="slider-top"><span class="slider-name">Прозрачность</span><span class="slider-badge" id="v_cOpacity">100%</span></div>
                 <input type="range" id="s_cOpacity" min="20" max="100" step="5" value="100" oninput="updateCrosshairStyleNow()">
+            </div>
+
+            <div style="display:flex;justify-content:space-between;align-items:center;padding-top:4px;">
+                <div>
+                    <div style="font-size:13.5px;font-weight:800;color:#fff;">Контрастная чёрная обводка (Outline)</div>
+                    <div style="font-size:11px;color:var(--text-sub);">Прицел идеально виден на светлых стенах и небе</div>
+                </div>
+                <label class="sw-wrap">
+                    <input type="checkbox" id="chkCrossOutline" checked onchange="updateCrosshairStyleNow()">
+                    <span class="sw-track"></span>
+                </label>
             </div>
         </div>
     </div>
@@ -1238,7 +1349,7 @@
 
             <div style="display:flex;justify-content:space-between;align-items:center;margin-top:14px;">
                 <div style="padding-right:10px;">
-                    <div style="font-size:13.5px;font-weight:800;color:#fff;">Скрывать кнопку «T» и прицел на записи (Stealth)</div>
+                    <div style="font-size:13.5px;font-weight:800;color:#fff;">Скрывать кнопку «TP» и прицел на записи (Stealth)</div>
                     <div style="font-size:11px;color:var(--text-sub);margin-top:2px;">Невидимость оверлеев на видео и скриншотах</div>
                 </div>
                 <label class="sw-wrap">
@@ -1272,7 +1383,7 @@
         <div class="panel-card">
             <div class="panel-head">
                 <span class="panel-title">ДАННЫЕ АККАУНТА SO2TELEPORT</span>
-                <span style="font-size:11px;font-weight:900;color:var(--accent);">PRO V407</span>
+                <span style="font-size:11px;font-weight:900;color:var(--accent);">PRO V408</span>
             </div>
 
             <div class="info-row">
@@ -1357,19 +1468,23 @@
             stick: 6,
             stickDelay: 20,
             stickForce: 3,
-            chunks: 56,
-            chunkFast: 30,
+            chunks: 64,
+            chunkFast: 38,
             pause: 1,
-            accel: 2.00,
-            accelSlope: 2.00,
+            accel: 2.20,
+            accelSlope: 2.10,
             edgeDist: 0,
-            straight: 0.88,
+            straight: 0.92,
             grid: 6,
             gripCap: 6,
             stretchRatio: "4:3",
             crossShape: "off",
             crossColor: "#00E5FF",
-            crossScale: 50,
+            crossLen: 12,
+            crossThick: 3,
+            crossGap: 4,
+            crossDot: 3,
+            crossOutline: true,
             crossOpacity: 100,
             touchBoost: true,
             touchHz: 360,
@@ -1389,7 +1504,7 @@
             clearTimeout(window._toastTimer);
             window._toastTimer = setTimeout(() => {
                 el.style.display = "none";
-            }, 2200);
+            }, 2300);
         }
 
         function openScreen(screenId, askCalib) {
@@ -1440,7 +1555,6 @@
             saveFullConfigNow(false);
         }
 
-        // Пуск / Остановка Телепорта с полной мощностью сенсы
         function toggleTeleportMaster(enabled) {
             appState.teleportOn = !!enabled;
             document.getElementById("chkHomeTeleport").checked = appState.teleportOn;
@@ -1454,15 +1568,15 @@
             if (appState.teleportOn) {
                 homeTxt.textContent = "АКТИВЕН";
                 homeTxt.style.color = "var(--accent)";
-                homeSub.textContent = "⚡ Телепорт 360Hz + 1мм отклик работают! Нажми для настройки";
+                homeSub.textContent = "⚡ Баффнутый Телепорт 360Hz + 1мм отклик работают!";
                 innerHdr.textContent = "ТЕЛЕПОРТ: АКТИВЕН (360Hz)";
                 innerBtn.textContent = "⚡ ТЕЛЕПОРТ РАБОТАЕТ (НАЖМИ ДЛЯ ОСТАНОВКИ)";
             } else {
                 homeTxt.textContent = "ВЫКЛ";
                 homeTxt.style.color = "var(--text-sub)";
-                homeSub.textContent = "Нажми тумблер для пуска или открой настройку 1мм отклика";
+                homeSub.textContent = "Баффнутый отклик 1мм + настройка всех 18 осей";
                 innerHdr.textContent = "ТЕЛЕПОРТ: ВЫКЛЮЧЕН";
-                innerBtn.textContent = "⚡ ВКЛЮЧИТЬ ТЕЛЕПОРТ (360HZ)";
+                innerBtn.textContent = "⚡ ВКЛЮЧИТЬ ТЕЛЕПОРТ (BUFFED 360HZ)";
             }
 
             const br = getBridge();
@@ -1512,14 +1626,13 @@
             showToast("🔥 Сборка «" + title + "» включена!");
         }
 
-        // Мгновенное обновление цифр без спама процессами Shizuku
         function onSliderLive() {
             readSlidersIntoState();
             updateSliderBadges();
             clearTimeout(paramDebounceTimer);
             paramDebounceTimer = setTimeout(() => {
                 pushAllParametersToBridge();
-            }, 180);
+            }, 160);
         }
 
         function onSliderCommit() {
@@ -1591,13 +1704,13 @@
             }
         }
 
-        // ================= ПЛАВАЮЩАЯ КНОПКА РАСТЯГА «T» =================
+        // ================= ПЛАВАЮЩАЯ КНОПКА РАСТЯГА «TP» =================
 
         function selectStretchRatio(ratio) {
             appState.stretchRatio = ratio;
             document.getElementById("stretchHeaderRatio").textContent = ratio;
-            document.getElementById("stretchCenterPreview").textContent = "ФОРМАТ " + ratio;
-            document.getElementById("btnActivateStretchT").textContent = "⚡ АКТИВИРОВАТЬ КНОПКУ РАСТЯГА «T» (" + ratio + ")";
+            document.getElementById("stretchCenterPreview").textContent = "TP • ФОРМАТ " + ratio;
+            document.getElementById("btnActivateStretchT").textContent = "⚡ АКТИВИРОВАТЬ КНОПКУ «TP» (" + ratio + ")";
 
             document.querySelectorAll("[data-sratio]").forEach(b => {
                 b.classList.toggle("active", b.getAttribute("data-sratio") === ratio);
@@ -1609,7 +1722,7 @@
             saveFullConfigNow(false);
             const br = getBridge();
             if (!br) {
-                showToast("⚡ Кнопка «T» (" + appState.stretchRatio + ") выведена!");
+                showToast("⚡ Кнопка «TP» (" + appState.stretchRatio + ") выведена!");
                 return;
             }
             if (typeof br.hasOverlayPermission === "function" && !br.hasOverlayPermission()) {
@@ -1617,14 +1730,11 @@
                 showToast("⚠️ Выдайте разрешение «Поверх других окон»!");
                 return;
             }
-            if (typeof br.isShizukuReady === "function" && !br.isShizukuReady()) {
-                if (typeof br.healTouch === "function") br.healTouch();
-            }
             const res = br.activateStretchFloatingButton(appState.stretchRatio);
             if (res === "NEED_PERMISSION") {
                 showToast("⚠️ Разрешите показ поверх других окон!");
             } else {
-                showToast("⚡ Кнопка «T» (" + appState.stretchRatio + ") запущена!");
+                showToast("⚡ Кнопка «TP» (" + appState.stretchRatio + ") запущена!");
             }
         }
 
@@ -1633,10 +1743,10 @@
             if (br && typeof br.resetResolution === "function") {
                 br.resetResolution();
             }
-            showToast("🔄 Кнопка «T» убрана, экран сброшен");
+            showToast("🔄 Кнопка «TP» убрана, экран сброшен");
         }
 
-        // ================= КАСТОМНЫЙ ПРИЦЕЛ =================
+        // ================= КОНСТРУКТОР КАСТОМНОГО ПРИЦЕЛА PRO =================
 
         function setCrosshairShape(shape) {
             appState.crossShape = shape;
@@ -1644,33 +1754,51 @@
             document.querySelectorAll("[data-ctype]").forEach(b => {
                 b.classList.toggle("active", b.getAttribute("data-ctype") === shape);
             });
-            drawCrosshairPreview();
-            const br = getBridge();
-            if (br && typeof br.updateCrosshair === "function") {
-                br.updateCrosshair(shape);
-                br.updateCrosshairStyle(appState.crossScale, appState.crossOpacity, appState.crossColor);
-            }
-            saveFullConfigNow(false);
+            updateCrosshairStyleNow();
         }
 
         function setCrosshairColor(hex) {
-            appState.crossColor = hex;
+            appState.crossColor = hex.toUpperCase();
+            document.getElementById("inpCustomCrossColor").value = appState.crossColor;
             document.querySelectorAll("[data-cclr]").forEach(b => {
-                b.classList.toggle("active", b.getAttribute("data-cclr") === hex);
+                b.classList.toggle("active", b.getAttribute("data-cclr").toUpperCase() === appState.crossColor);
             });
             updateCrosshairStyleNow();
         }
 
         function updateCrosshairStyleNow() {
-            appState.crossScale = parseInt(document.getElementById("s_cScale").value, 10);
+            appState.crossLen = parseInt(document.getElementById("s_cLen").value, 10);
+            appState.crossThick = parseInt(document.getElementById("s_cThick").value, 10);
+            appState.crossGap = parseInt(document.getElementById("s_cGap").value, 10);
+            appState.crossDot = parseInt(document.getElementById("s_cDot").value, 10);
             appState.crossOpacity = parseInt(document.getElementById("s_cOpacity").value, 10);
-            document.getElementById("v_cScale").textContent = appState.crossScale + "%";
+            appState.crossOutline = document.getElementById("chkCrossOutline").checked;
+
+            document.getElementById("v_cLen").textContent = appState.crossLen;
+            document.getElementById("v_cThick").textContent = appState.crossThick;
+            document.getElementById("v_cGap").textContent = appState.crossGap;
+            document.getElementById("v_cDot").textContent = appState.crossDot;
             document.getElementById("v_cOpacity").textContent = appState.crossOpacity + "%";
 
             drawCrosshairPreview();
+
             const br = getBridge();
-            if (br && typeof br.updateCrosshairStyle === "function") {
-                br.updateCrosshairStyle(appState.crossScale, appState.crossOpacity, appState.crossColor);
+            if (br) {
+                if (typeof br.updateCrosshairAdvanced === "function") {
+                    br.updateCrosshairAdvanced(
+                        appState.crossShape,
+                        appState.crossColor,
+                        appState.crossOpacity,
+                        appState.crossLen,
+                        appState.crossThick,
+                        appState.crossGap,
+                        appState.crossDot,
+                        appState.crossOutline
+                    );
+                } else if (typeof br.updateCrosshair === "function") {
+                    br.updateCrosshair(appState.crossShape);
+                    br.updateCrosshairStyle(appState.crossLen * 4, appState.crossOpacity, appState.crossColor);
+                }
             }
             saveFullConfigNow(false);
         }
@@ -1682,36 +1810,73 @@
             ctx.clearRect(0, 0, c.width, c.height);
             if (appState.crossShape === "off") return;
 
-            ctx.strokeStyle = appState.crossColor;
-            ctx.fillStyle = appState.crossColor;
-            ctx.globalAlpha = appState.crossOpacity / 100;
-            ctx.lineWidth = 3;
-
             const cx = c.width / 2, cy = c.height / 2;
-            const sz = 6 + (appState.crossScale / 100) * 22;
-            const gap = 3 + (appState.crossScale / 100) * 7;
+            const len = appState.crossLen * 1.4;
+            const thick = Math.max(1.5, appState.crossThick * 1.1);
+            const gap = appState.crossGap * 1.3;
+            const dotR = Math.max(1.5, appState.crossDot * 1.1);
+
+            ctx.globalAlpha = appState.crossOpacity / 100;
+
+            function strokeWithOutline(drawFn) {
+                if (appState.crossOutline) {
+                    ctx.strokeStyle = "#000000";
+                    ctx.lineWidth = thick + 2.5;
+                    drawFn();
+                }
+                ctx.strokeStyle = appState.crossColor;
+                ctx.lineWidth = thick;
+                drawFn();
+            }
+
+            function fillDot() {
+                if (appState.crossOutline) {
+                    ctx.fillStyle = "#000000";
+                    ctx.beginPath();
+                    ctx.arc(cx, cy, dotR + 1.5, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+                ctx.fillStyle = appState.crossColor;
+                ctx.beginPath();
+                ctx.arc(cx, cy, dotR, 0, Math.PI * 2);
+                ctx.fill();
+            }
 
             if (appState.crossShape === "dot") {
+                fillDot();
+                return;
+            }
+            if (appState.crossShape === "circle" || appState.crossShape === "circledot") {
+                strokeWithOutline(() => {
+                    ctx.beginPath();
+                    ctx.arc(cx, cy, Math.max(6, len * 0.9), 0, Math.PI * 2);
+                    ctx.stroke();
+                });
+                if (appState.crossShape === "circledot") fillDot();
+                return;
+            }
+            if (appState.crossShape === "box") {
+                const h = Math.max(6, len * 0.8);
+                strokeWithOutline(() => {
+                    ctx.strokeRect(cx - h, cy - h, h * 2, h * 2);
+                });
+                return;
+            }
+
+            const hasTop = appState.crossShape !== "tshape";
+            strokeWithOutline(() => {
                 ctx.beginPath();
-                ctx.arc(cx, cy, Math.max(3.5, sz * 0.28), 0, Math.PI * 2);
-                ctx.fill();
-            } else if (appState.crossShape === "circle") {
-                ctx.beginPath();
-                ctx.arc(cx, cy, sz * 0.65, 0, Math.PI * 2);
+                ctx.moveTo(cx - gap - len, cy); ctx.lineTo(cx - gap, cy);
+                ctx.moveTo(cx + gap, cy); ctx.lineTo(cx + gap + len, cy);
+                ctx.moveTo(cx, cy + gap); ctx.lineTo(cx, cy + gap + len);
+                if (hasTop) {
+                    ctx.moveTo(cx, cy - gap - len); ctx.lineTo(cx, cy - gap);
+                }
                 ctx.stroke();
-            } else if (appState.crossShape === "tshape") {
-                ctx.beginPath();
-                ctx.moveTo(cx - sz, cy); ctx.lineTo(cx - gap, cy);
-                ctx.moveTo(cx + gap, cy); ctx.lineTo(cx + sz, cy);
-                ctx.moveTo(cx, cy + gap); ctx.lineTo(cx, cy + sz);
-                ctx.stroke();
-            } else {
-                ctx.beginPath();
-                ctx.moveTo(cx - sz, cy); ctx.lineTo(cx - gap, cy);
-                ctx.moveTo(cx + gap, cy); ctx.lineTo(cx + sz, cy);
-                ctx.moveTo(cx, cy - sz); ctx.lineTo(cx, cy - gap);
-                ctx.moveTo(cx, cy + gap); ctx.lineTo(cx, cy + sz);
-                ctx.stroke();
+            });
+
+            if (appState.crossShape === "crossdot") {
+                fillDot();
             }
         }
 
@@ -1786,8 +1951,6 @@
                 const res = br.runSmartDeviceScan().split("|");
                 if (res[0]) modelName = res[0];
             }
-            document.getElementById("smartScanStatusTxt").innerHTML =
-                "✅ Профиль подобран под <b>" + modelName + "</b>! Включён мгновенный сдвиг 1 мм (Zero-Delay), опрос тача 360 Гц и защита от перегрева.";
             showToast("⚡ Калибровка под " + modelName + " завершена!");
         }
 
@@ -1821,7 +1984,7 @@
 
         function buildCompactLink() {
             const rMap = { "5:4": 0, "4:3": 1, "3:2": 2, "16:10": 3, "16:9": 4 };
-            const cMap = { "off": 0, "dot": 1, "cross": 2, "tshape": 3, "circle": 4 };
+            const cMap = { "off": 0, "dot": 1, "cross": 2, "crossdot": 3, "tshape": 4, "circle": 5, "circledot": 6, "box": 7 };
             const arr = [
                 Math.round(appState.sharp * 100),
                 Math.round(appState.sx * 100),
@@ -1843,7 +2006,10 @@
                 appState.gripCap,
                 rMap[appState.stretchRatio] ?? 1,
                 cMap[appState.crossShape] ?? 0,
-                appState.crossScale,
+                appState.crossLen,
+                appState.crossThick,
+                appState.crossGap,
+                appState.crossDot,
                 appState.recoilPwr
             ];
             return "https://so2tp.cfg/?c=" + arr.join(".");
@@ -1851,13 +2017,12 @@
 
         function parseCompactLinkOrCode(str) {
             const raw = str.trim();
-            // 1. Если это новая компактная ссылка https://so2tp.cfg/?c=...
             if (raw.includes("?c=")) {
                 const part = raw.split("?c=")[1].split("&")[0].trim();
                 const nums = part.split(".").map(Number);
                 if (nums.length >= 18 && !nums.some(isNaN)) {
                     const rArr = ["5:4", "4:3", "3:2", "16:10", "16:9"];
-                    const cArr = ["off", "dot", "cross", "tshape", "circle"];
+                    const cArr = ["off", "dot", "cross", "crossdot", "tshape", "circle", "circledot", "box"];
                     appState.sharp = nums[0] / 100;
                     appState.sx = nums[1] / 100;
                     appState.sy = nums[2] / 100;
@@ -1878,17 +2043,18 @@
                     appState.gripCap = nums[17];
                     if (nums[18] !== undefined) appState.stretchRatio = rArr[nums[18]] || "4:3";
                     if (nums[19] !== undefined) appState.crossShape = cArr[nums[19]] || "off";
-                    if (nums[20] !== undefined) appState.crossScale = nums[20];
-                    if (nums[21] !== undefined) appState.recoilPwr = nums[21];
+                    if (nums[20] !== undefined) appState.crossLen = nums[20];
+                    if (nums[21] !== undefined) appState.crossThick = nums[21];
+                    if (nums[22] !== undefined) appState.crossGap = nums[22];
+                    if (nums[23] !== undefined) appState.crossDot = nums[23];
+                    if (nums[24] !== undefined) appState.recoilPwr = nums[24];
                     return true;
                 }
             }
-            // 2. Короткий именной код SO2-...
             if (raw.toUpperCase().startsWith("SO2-")) {
-                applyCyberPack(6.00, 6.0, 5.5, 60, 0.94, raw.toUpperCase());
+                applyCyberPack(6.00, 6.0, 5.6, 62, 0.94, raw.toUpperCase());
                 return true;
             }
-            // 3. Обратная совместимость со старым длинным Base64 кодом SO2TP-...
             const clean = raw.replace(/^SO2TP(-v408)?-/i, "").trim();
             const jsonStr = decodeURIComponent(escape(atob(clean)));
             const parsed = JSON.parse(jsonStr);
@@ -1933,7 +2099,6 @@
             }
         }
 
-        // Личный список сохранённых конфигов игрока
         function getMyPresets() {
             try {
                 return JSON.parse(localStorage.getItem(MY_PRESETS_KEY) || "[]");
@@ -2069,10 +2234,14 @@
 
             selectStretchRatio(appState.stretchRatio || "4:3");
 
-            document.getElementById("s_cScale").value = appState.crossScale;
-            document.getElementById("s_cOpacity").value = appState.crossOpacity;
-            setCrosshairShape(appState.crossShape || "off");
+            document.getElementById("s_cLen").value = appState.crossLen ?? 12;
+            document.getElementById("s_cThick").value = appState.crossThick ?? 3;
+            document.getElementById("s_cGap").value = appState.crossGap ?? 4;
+            document.getElementById("s_cDot").value = appState.crossDot ?? 3;
+            document.getElementById("s_cOpacity").value = appState.crossOpacity ?? 100;
+            document.getElementById("chkCrossOutline").checked = appState.crossOutline !== false;
             setCrosshairColor(appState.crossColor || "#00E5FF");
+            setCrosshairShape(appState.crossShape || "off");
 
             document.getElementById("chkTouchBoost").checked = !!appState.touchBoost;
             document.getElementById("chkCold120").checked = !!appState.cold120;
