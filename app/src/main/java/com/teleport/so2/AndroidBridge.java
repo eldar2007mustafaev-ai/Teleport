@@ -70,6 +70,7 @@ public class AndroidBridge {
         startLicenseWatchdog();
     }
 
+    // Фоновый сторож: каждые 15 секунд проверяет ключ на сервере. Если истёк или привязан к другому — моментальный кик!
     private void startLicenseWatchdog() {
         mainHandler.postDelayed(new Runnable() {
             @Override
@@ -79,16 +80,16 @@ public class AndroidBridge {
                     new Thread(() -> {
                         boolean valid = checkKeyOnServerBlocking(savedKey.trim());
                         if (!valid) {
-                            forceKickExpiredUser("⛔ Срок действия вашего ключа истёк или он был сброшен!");
+                            forceгиеКик("⛔ Доступ заблокирован: ключ истёк или используется на другом устройстве!");
                         }
                     }).start();
                 }
-                mainHandler.postDelayed(this, 25000);
+                mainHandler.postDelayed(this, 15000);
             }
-        }, 25000);
+        }, 15000);
     }
 
-    private void forceKickExpiredUser(String reasonToast) {
+    private void forceгиеКик(String reasonToast) {
         prefs.edit().remove("saved_license_key").apply();
         ApiManager.invalidateSession();
         TeleportEngine.stopTeleport();
@@ -144,7 +145,8 @@ public class AndroidBridge {
                 String status = res.optString("status", "");
                 boolean blocked = res.optBoolean("blocked", false)
                         || "expired".equalsIgnoreCase(status)
-                        || "blocked".equalsIgnoreCase(status);
+                        || "blocked".equalsIgnoreCase(status)
+                        || "device_mismatch".equalsIgnoreCase(status);
                 boolean ok = (res.optBoolean("ok", false)
                         || "ok".equalsIgnoreCase(status)
                         || "active".equalsIgnoreCase(status)) && !blocked;
@@ -393,7 +395,7 @@ public class AndroidBridge {
 
     private void toggleTwoStepStretchAction() {
         if (getSavedKey().isEmpty()) {
-            forceKickExpiredUser("Ключ не активен!");
+            forceгиеКик("Ключ не активен!");
             return;
         }
         boolean shizukuOk = TeleportEngine.isShizukuReady() || ShizukuManager.isPermissionGranted();
@@ -446,7 +448,7 @@ public class AndroidBridge {
             bg.setStroke(dpToPx(2), Color.WHITE);
             floatingStretchBtn.setText("ON\n" + selectedStretchRatio);
         } else {
-            bg.setColor(Color.parseColor("#E60B1622"));
+            bg.setColor(Color.parseColor("#D90B1622"));
             bg.setStroke(dpToPx(2), Color.parseColor("#00E5FF"));
             floatingStretchBtn.setText("TP\n" + selectedStretchRatio);
         }
@@ -680,7 +682,7 @@ public class AndroidBridge {
         });
     }
 
-    // ================= АВТОРИЗАЦИЯ СТРОГО ЧЕРЕЗ СЕРВЕР ТГ-БОТА =================
+    // ================= АВТОРИЗАЦИЯ СТРОГО ЧЕРЕЗ СЕРВЕР ТГ-БОТА С ПРИВЯЗКОЙ К 1 УСТРОЙСТВУ =================
 
     @JavascriptInterface
     public String getDeviceHwid() {
@@ -725,12 +727,19 @@ public class AndroidBridge {
         String nick = prefs.getString("saved_player_nick", "Player");
 
         try {
+            // Отправляем ключ и HWID на сервер бота: сервер сам проверит привязку к 1 устройству
             String raw = ApiManager.activateLicense(cleanKey, hwid, nick);
             JSONObject res = new JSONObject(raw);
             String status = res.optString("status", "");
 
-            if ("expired".equalsIgnoreCase(status) || "blocked".equalsIgnoreCase(status) || res.optBoolean("blocked", false)) {
-                return "ERROR|Срок действия ключа истёк или он заблокирован в боте!";
+            boolean blocked = res.optBoolean("blocked", false)
+                    || "expired".equalsIgnoreCase(status)
+                    || "blocked".equalsIgnoreCase(status)
+                    || "device_mismatch".equalsIgnoreCase(status);
+
+            if (blocked) {
+                String msg = res.optString("message", "Ключ привязан к другому устройству или истёк!");
+                return "ERROR|" + msg;
             }
 
             boolean ok = res.optBoolean("ok", false)
@@ -745,7 +754,7 @@ public class AndroidBridge {
                 return "OK|" + expInfo;
             }
 
-            return "ERROR|" + res.optString("message", "Ключ не найден в базе Telegram-бота или привязан к другому устройству!");
+            return "ERROR|" + res.optString("message", "Ключ привязан к другому устройству или недействителен!");
         } catch (Exception e) {
             return "ERROR|Нет связи с сервером Telegram-бота. Проверьте интернет!";
         }
@@ -758,7 +767,7 @@ public class AndroidBridge {
                 : getSavedKey().trim().toUpperCase();
 
         if (cleanKey.length() < 5) {
-            forceKickExpiredUser("Введите лицензионный ключ");
+            forceгиеКик("Введите лицензионный ключ");
             return "EXPIRED|Введите ключ";
         }
 
@@ -770,9 +779,10 @@ public class AndroidBridge {
             if ("expired".equalsIgnoreCase(status)
                     || "blocked".equalsIgnoreCase(status)
                     || "need_auth".equalsIgnoreCase(status)
+                    || "device_mismatch".equalsIgnoreCase(status)
                     || res.optBoolean("blocked", false)) {
-                String msg = res.optString("message", "Срок действия вашего ключа закончился!");
-                forceKickExpiredUser(msg);
+                String msg = res.optString("message", "Срок действия ключа истёк или он привязан к другому устройству!");
+                forceгиеКик(msg);
                 return "EXPIRED|" + msg;
             }
 
@@ -789,7 +799,7 @@ public class AndroidBridge {
 
             if (!raw.contains("Нет связи")) {
                 String msg = res.optString("message", "Ключ недействителен или закончился!");
-                forceKickExpiredUser(msg);
+                forceгиеКик(msg);
                 return "EXPIRED|" + msg;
             }
             return "OFFLINE|" + lastServerSubscriptionText;
@@ -800,7 +810,7 @@ public class AndroidBridge {
 
     @JavascriptInterface
     public void logoutLicenseKey() {
-        forceKickExpiredUser("Вы вышли из аккаунта");
+        forceгиеКик("Вы вышли из аккаунта");
     }
 
     @JavascriptInterface
@@ -981,7 +991,7 @@ public class AndroidBridge {
                 outlinePaint.setStyle(Paint.Style.STROKE);
                 canvas.drawLine(cx - gapPx - lenPx, cy, cx - gapPx, cy, outlinePaint);
                 canvas.drawLine(cx + gapPx, cy, cx + gapPx + lenPx, cy, outlinePaint);
-                canvas.drawLine(cx, cy + gapPx, cx, cy + gapPx + lenPx, outlinePaint);
+                canvas.drawLine(cx, cy + gapPx, cx, cx, cy + gapPx + lenPx, outlinePaint);
                 if (hasTop) {
                     canvas.drawLine(cx, cy - gapPx - lenPx, cx, cy - gapPx, outlinePaint);
                 }
@@ -990,7 +1000,7 @@ public class AndroidBridge {
             paint.setStyle(Paint.Style.STROKE);
             canvas.drawLine(cx - gapPx - lenPx, cy, cx - gapPx, cy, paint);
             canvas.drawLine(cx + gapPx, cy, cx + gapPx + lenPx, cy, paint);
-            canvas.drawLine(cx, cy + gapPx, cx, cy + gapPx + lenPx, paint);
+            canvas.drawLine(cx, cy + gapPx, cx, cx, cy + gapPx + lenPx, paint);
             if (hasTop) {
                 canvas.drawLine(cx, cy - gapPx - lenPx, cx, cy - gapPx, paint);
             }
