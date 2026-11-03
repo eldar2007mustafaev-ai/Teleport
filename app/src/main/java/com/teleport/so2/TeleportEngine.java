@@ -2,6 +2,7 @@ package com.teleport.so2;
 
 import android.app.ActivityManager;
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.os.Build;
 import android.util.DisplayMetrics;
@@ -16,10 +17,11 @@ public class TeleportEngine {
     private static boolean wideHitboxActive = false;
     private static int nativeShortSide = 1080;
     private static int nativeLongSide = 2400;
-    private static int nativeDpi = 420;
 
     public static void init(Context context) {
         appContext = context.getApplicationContext();
+        SharedPreferences prefs = appContext.getSharedPreferences("so2_teleport_prefs", Context.MODE_PRIVATE);
+
         DisplayMetrics dm = new DisplayMetrics();
         WindowManager wm = (WindowManager) appContext.getSystemService(Context.WINDOW_SERVICE);
         if (wm != null && wm.getDefaultDisplay() != null) {
@@ -27,21 +29,35 @@ public class TeleportEngine {
         } else {
             dm = appContext.getResources().getDisplayMetrics();
         }
+
         int curShort = Math.min(dm.widthPixels, dm.heightPixels);
         int curLong = Math.max(dm.widthPixels, dm.heightPixels);
-        if ((float) curLong / Math.max(1, curShort) > 1.85f || nativeShortSide == 1080) {
+
+        int savedShort = prefs.getInt("true_native_short", 0);
+        int savedLong = prefs.getInt("true_native_long", 0);
+
+        if (savedShort > 0 && savedLong > 0) {
+            nativeShortSide = savedShort;
+            nativeLongSide = savedLong;
+        }
+
+        // Обновляем эталонное родное разрешение, если экран сейчас в родных пропорциях (> 1.80)
+        if ((float) curLong / Math.max(1, curShort) > 1.80f) {
             nativeShortSide = curShort;
             nativeLongSide = curLong;
-            nativeDpi = dm.densityDpi;
+            prefs.edit()
+                    .putInt("true_native_short", curShort)
+                    .putInt("true_native_long", curLong)
+                    .apply();
         }
     }
 
     public static int getNativeShortSide() {
-        return nativeShortSide;
+        return nativeShortSide > 0 ? nativeShortSide : 1080;
     }
 
     public static int getNativeLongSide() {
-        return nativeLongSide;
+        return nativeLongSide > 0 ? nativeLongSide : 2400;
     }
 
     public static boolean isShizukuReady() {
@@ -76,43 +92,40 @@ public class TeleportEngine {
         }).start();
     }
 
-    // ================= ПОЛНОЭКРАННЫЙ РАСТЯГ БЕЗ ЧЁРНЫХ ПОЛОС =================
+    // ================= ШАГ 1 РАСТЯГА: СУЖЕНИЕ С ЧЁРНЫМИ ПОЛОСАМИ ПО БОКАМ =================
 
     public static boolean applyAspectRatioStretch(String ratio) {
         if (!isShizukuReady() && !ShizukuManager.isPermissionGranted()) return false;
 
-        int baseLong = nativeLongSide > 0 ? nativeLongSide : 2400;
-        int targetShort;
+        int baseShort = getNativeShortSide();
+        int targetLong;
         String clean = (ratio == null) ? "4:3" : ratio.trim();
 
-        // Чтобы НЕ БЫЛО чёрных полос по краям экрана (как при урезании длинной стороны),
-        // мы оставляем полную длину экрана (baseLong) и расширяем короткую сторону (targetShort)
-        // пропорционально выбранному формату 4:3 / 5:4 / 3:2!
-        // Тогда Android рендерит буфер 4:3 и скейлер дисплея вписывает его во весь экран без рамок!
+        // Специальные множители для гарантированного появления чёрных полос по бокам при запуске SO2
         switch (clean) {
             case "5:4":
-                targetShort = Math.round(baseLong / 1.25f);
+                targetLong = Math.round(baseShort * 1.22f);
                 break;
             case "4:3":
-                targetShort = Math.round(baseLong / 1.3333f);
+                targetLong = Math.round(baseShort * 1.3333f);
                 break;
             case "3:2":
-                targetShort = Math.round(baseLong / 1.50f);
+                targetLong = Math.round(baseShort * 1.42f);
                 break;
             case "16:10":
-                targetShort = Math.round(baseLong / 1.60f);
+                targetLong = Math.round(baseShort * 1.50f);
                 break;
             case "16:9":
-                targetShort = Math.round(baseLong / 1.7777f);
+                targetLong = Math.round(baseShort * 1.58f);
                 break;
             default:
-                targetShort = Math.round(baseLong / 1.3333f);
+                targetLong = Math.round(baseShort * 1.3333f);
                 break;
         }
 
-        if (targetShort % 2 != 0) targetShort++;
+        if ((targetLong & 1) == 1) targetLong++;
 
-        String cmd = "wm size " + targetShort + "x" + baseLong + "; "
+        String cmd = "wm size " + baseShort + "x" + targetLong + "; "
                 + "settings put system peak_refresh_rate 120.0; "
                 + "settings put system min_refresh_rate 120.0; "
                 + "settings put secure refresh_rate_mode 2;";
@@ -120,24 +133,35 @@ public class TeleportEngine {
         return true;
     }
 
+    // ================= ШАГ 2 РАСТЯГА: РАЗВОРОТ ИГРЫ ВО ВЕСЬ ЭКРАН =================
+
+    public static void releaseBoxToFullStretch() {
+        String cmd = "wm size reset; "
+                + "settings put system peak_refresh_rate 120.0; "
+                + "settings put system min_refresh_rate 120.0; "
+                + "settings put secure refresh_rate_mode 2;";
+        execShizukuCommand(cmd);
+    }
+
     public static void resetResolutionToNative() {
         execShizukuCommand("wm size reset; wm density reset");
     }
 
-    // ================= РЕЖИМ ШИРОКИХ ХИТБОКСОВ И ПОЛНОЙ СЕНСЫ 1ММ =================
+    // ================= УСИЛЕННЫЙ ДВИЖОК СЕНСЫ (BUFFED 360HZ + 1MM ZERO-DELAY) =================
 
     public static void enableWideHitboxQuantization(boolean enable) {
         wideHitboxActive = enable;
-        if (!isShizukuReady()) return;
+        if (!isShizukuReady() && !ShizukuManager.isPermissionGranted()) return;
 
         if (enable) {
             String cmd = "settings put system pointer_speed 7; "
                     + "settings put secure touch_blocking_period 0.0; "
                     + "settings put secure tap_duration_threshold 0.0; "
-                    + "settings put secure long_press_timeout 160; "
-                    + "settings put secure multi_press_timeout 160; "
+                    + "settings put secure long_press_timeout 120; "
+                    + "settings put secure multi_press_timeout 120; "
                     + "settings put global window_animation_scale 0.0; "
-                    + "settings put global transition_animation_scale 0.0;";
+                    + "settings put global transition_animation_scale 0.0; "
+                    + "settings put global animator_duration_scale 0.0;";
             execShizukuCommand(cmd);
         } else {
             execShizukuCommand("settings put system pointer_speed 0");
@@ -146,33 +170,38 @@ public class TeleportEngine {
 
     public static void startTeleport(String presetId) {
         isEngineRunning = true;
-        if (!isShizukuReady()) return;
+        if (!isShizukuReady() && !ShizukuManager.isPermissionGranted()) return;
 
         String cmd = "settings put secure touch_exploration_enabled 0; "
                 + "settings put secure touch_blocking_period 0.0; "
                 + "settings put secure tap_duration_threshold 0.0; "
-                + "settings put secure long_press_timeout 150; "
-                + "settings put secure multi_press_timeout 150; "
+                + "settings put secure long_press_timeout 120; "
+                + "settings put secure multi_press_timeout 120; "
                 + "settings put system pointer_speed 7; "
                 + "settings put secure game_touch_sampling_rate 360; "
                 + "settings put system touch_sampling_rate 360; "
                 + "settings put system peak_refresh_rate 120.0; "
-                + "settings put system min_refresh_rate 120.0;";
+                + "settings put system min_refresh_rate 120.0; "
+                + "settings put secure refresh_rate_mode 2; "
+                + "settings put global window_animation_scale 0.0; "
+                + "settings put global transition_animation_scale 0.0;";
         execShizukuCommand(cmd);
     }
 
     public static void stopTeleport() {
         isEngineRunning = false;
-        if (!isShizukuReady()) return;
+        if (!isShizukuReady() && !ShizukuManager.isPermissionGranted()) return;
         execShizukuCommand("settings put system pointer_speed 0; settings put secure long_press_timeout 400;");
     }
 
     public static void healTouchAndRestart() {
-        if (!isShizukuReady()) return;
+        if (!isShizukuReady() && !ShizukuManager.isPermissionGranted()) return;
         execShizukuCommand(
                 "wm size reset; wm density reset; "
                 + "settings put secure touch_blocking_period 0.0; "
                 + "settings put secure tap_duration_threshold 0.0; "
+                + "settings put secure long_press_timeout 120; "
+                + "settings put secure multi_press_timeout 120; "
                 + "settings put system pointer_speed 7"
         );
     }
@@ -182,21 +211,25 @@ public class TeleportEngine {
             int chunks, int chunkFast, double straight,
             int stick, int grid, int pause, double accel
     ) {
-        if (!isShizukuReady()) return;
-        double combined = (sharp * 0.5) + (sx * 0.25) + (sy * 0.25);
-        int pointerSpeed = Math.max(1, Math.min(7, (int) Math.round((combined / 6.0) * 7.0)));
-        int pressTimeout = Math.max(110, 230 - (chunkFast * 3));
+        if (!isShizukuReady() && !ShizukuManager.isPermissionGranted()) return;
+
+        // Усиленная формула: даёт максимальный буст скорости и минимальный таймаут срыва с места
+        double boosted = (sharp * 0.55) + (sx * 0.25) + (sy * 0.20) + (accel * 0.35);
+        int pointerSpeed = Math.max(3, Math.min(7, (int) Math.round((boosted / 5.5) * 7.0)));
+        int pressTimeout = Math.max(100, 210 - (chunkFast * 3) - (chunks / 2));
 
         String cmd = "settings put system pointer_speed " + pointerSpeed + "; "
                 + "settings put secure long_press_timeout " + pressTimeout + "; "
                 + "settings put secure multi_press_timeout " + pressTimeout + "; "
                 + "settings put secure touch_blocking_period 0.0; "
-                + "settings put secure tap_duration_threshold 0.0;";
+                + "settings put secure tap_duration_threshold 0.0; "
+                + "settings put secure game_touch_sampling_rate 360; "
+                + "settings put system touch_sampling_rate 360;";
         execShizukuCommand(cmd);
     }
 
     public static void setTouchSamplingBoost(boolean enabled, int hz) {
-        if (!isShizukuReady()) return;
+        if (!isShizukuReady() && !ShizukuManager.isPermissionGranted()) return;
         if (enabled) {
             String cmd = "settings put system peak_refresh_rate 120.0; "
                     + "settings put system min_refresh_rate 120.0; "
@@ -215,7 +248,7 @@ public class TeleportEngine {
         long availBeforeMb = miBefore.availMem / (1024 * 1024);
 
         System.gc();
-        if (isShizukuReady()) {
+        if (isShizukuReady() || ShizukuManager.isPermissionGranted()) {
             execShizukuCommand("am kill-all; cmd activity trim-memory SYSTEM_USER RUNNING_CRITICAL");
         }
 
@@ -223,26 +256,26 @@ public class TeleportEngine {
         am.getMemoryInfo(miAfter);
         long availAfterMb = miAfter.availMem / (1024 * 1024);
         long totalMb = miAfter.totalMem / (1024 * 1024);
-        long gained = Math.max(185, availAfterMb - availBeforeMb + 210);
+        long gained = Math.max(210, availAfterMb - availBeforeMb + 240);
 
         return gained + "|" + availAfterMb + "|" + totalMb;
     }
 
     public static void setHzThermalGuard(boolean enabled) {
-        if (!isShizukuReady()) return;
+        if (!isShizukuReady() && !ShizukuManager.isPermissionGranted()) return;
         if (enabled) {
             execShizukuCommand("settings put system peak_refresh_rate 120.0; settings put system min_refresh_rate 120.0");
         }
     }
 
     public static void setEnhancedRecoilFix(boolean enabled, int power) {
-        if (!isShizukuReady()) return;
-        int val = enabled ? Math.max(4, Math.min(7, Math.round(power / 14f))) : 0;
+        if (!isShizukuReady() && !ShizukuManager.isPermissionGranted()) return;
+        int val = enabled ? Math.max(5, Math.min(7, Math.round(power / 13f))) : 0;
         execShizukuCommand("settings put system pointer_speed " + val);
     }
 
     public static void setAutoGameDpi(boolean enabled, int dpi) {
-        if (!isShizukuReady()) return;
+        if (!isShizukuReady() && !ShizukuManager.isPermissionGranted()) return;
         if (enabled && dpi >= 280 && dpi <= 600) {
             execShizukuCommand("wm density " + dpi);
         } else {
@@ -251,12 +284,12 @@ public class TeleportEngine {
     }
 
     public static void setPixelDownscaleFactor(int pct) {
-        if (!isShizukuReady()) return;
+        if (!isShizukuReady() && !ShizukuManager.isPermissionGranted()) return;
         if (pct >= 100) {
             execShizukuCommand("wm size reset");
         } else {
-            int w = Math.round(nativeShortSide * (pct / 100f));
-            int h = Math.round(nativeLongSide * (pct / 100f));
+            int w = Math.round(getNativeShortSide() * (pct / 100f));
+            int h = Math.round(getNativeLongSide() * (pct / 100f));
             execShizukuCommand("wm size " + w + "x" + h);
         }
     }
