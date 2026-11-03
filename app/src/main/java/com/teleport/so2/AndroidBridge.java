@@ -40,8 +40,8 @@ public class AndroidBridge {
     private WindowManager.LayoutParams stretchParams;
     private WindowManager.LayoutParams trashParams;
     private boolean isStretchOverlayShown = false;
-    private boolean isScreenCurrentlyStretched = false;
-    private String selectedStretchRatio = "16:9";
+    private boolean isBoxBarsActive = false;
+    private String selectedStretchRatio = "4:3";
 
     private CrosshairOverlayView crosshairView;
     private WindowManager.LayoutParams crosshairParams;
@@ -71,7 +71,7 @@ public class AndroidBridge {
         mainHandler.post(() -> {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && !Settings.canDrawOverlays(context)) {
                 try {
-                    Toast.makeText(context, "Выдайте разрешение «Поверх других окон» для кнопки Растяга «T»!", Toast.LENGTH_LONG).show();
+                    Toast.makeText(context, "Выдайте разрешение «Поверх других окон» для кнопки «TP»!", Toast.LENGTH_LONG).show();
                     Intent intent = new Intent(
                             Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
                             Uri.parse("package:" + context.getPackageName())
@@ -84,12 +84,12 @@ public class AndroidBridge {
                     context.startActivity(fallback);
                 }
             } else {
-                Toast.makeText(context, "✅ Разрешение «Поверх других окон» уже активно!", Toast.LENGTH_SHORT).show();
+                Toast.makeText(context, "✅ Разрешение «Поверх других окон» активно!", Toast.LENGTH_SHORT).show();
             }
         });
     }
 
-    // ================= АКТИВАЦИЯ ПЛАВАЮЩЕЙ КНОПКИ «T» С КОРЗИНОЙ =================
+    // ================= ПЛАВАЮЩАЯ КНОПКА «TP» С ДВУХШАГОВЫМ РАСТЯГОМ И КОРЗИНОЙ =================
 
     @JavascriptInterface
     public String activateStretchFloatingButton(String ratio) {
@@ -117,7 +117,7 @@ public class AndroidBridge {
 
                 if (isStretchOverlayShown && floatingStretchBtn != null) {
                     updateFloatingBtnAppearance();
-                    Toast.makeText(context, "⚡ Формат кнопки «T» обновлён на " + selectedStretchRatio, Toast.LENGTH_SHORT).show();
+                    Toast.makeText(context, "⚡ Кнопка «TP» обновлена на формат " + selectedStretchRatio, Toast.LENGTH_SHORT).show();
                     return;
                 }
 
@@ -125,9 +125,10 @@ public class AndroidBridge {
                         ? WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY
                         : WindowManager.LayoutParams.TYPE_PHONE;
 
+                // Нижняя корзина для удаления кнопки «TP»
                 trashContainer = new FrameLayout(context);
                 trashPillView = new BridgeTrashView(context);
-                FrameLayout.LayoutParams pillLp = new FrameLayout.LayoutParams(dpToPx(240), dpToPx(52), Gravity.CENTER);
+                FrameLayout.LayoutParams pillLp = new FrameLayout.LayoutParams(dpToPx(250), dpToPx(52), Gravity.CENTER);
                 trashContainer.addView(trashPillView, pillLp);
                 trashContainer.setVisibility(View.GONE);
 
@@ -141,7 +142,7 @@ public class AndroidBridge {
 
                 trashParams = new WindowManager.LayoutParams(
                         WindowManager.LayoutParams.MATCH_PARENT,
-                        dpToPx(84),
+                        dpToPx(86),
                         overlayType,
                         trashFlags,
                         PixelFormat.TRANSLUCENT
@@ -149,10 +150,11 @@ public class AndroidBridge {
                 trashParams.gravity = Gravity.BOTTOM | Gravity.CENTER_HORIZONTAL;
                 trashParams.y = dpToPx(16);
 
+                // Сама плавающая кнопка с надписью TP
                 floatingStretchBtn = new TextView(context);
-                floatingStretchBtn.setText("T\n" + selectedStretchRatio);
+                floatingStretchBtn.setText("TP\n" + selectedStretchRatio);
                 floatingStretchBtn.setTextColor(Color.WHITE);
-                floatingStretchBtn.setTextSize(12f);
+                floatingStretchBtn.setTextSize(11.5f);
                 floatingStretchBtn.setGravity(Gravity.CENTER);
                 floatingStretchBtn.setIncludeFontPadding(false);
 
@@ -173,15 +175,16 @@ public class AndroidBridge {
                 );
                 stretchParams.gravity = Gravity.TOP | Gravity.START;
                 stretchParams.x = dpToPx(20);
-                stretchParams.y = dpToPx(160);
+                stretchParams.y = dpToPx(150);
 
+                isBoxBarsActive = false;
                 updateFloatingBtnAppearance();
 
                 floatingStretchBtn.setOnTouchListener(new View.OnTouchListener() {
                     private int initialX, initialY;
                     private float initialTouchX, initialTouchY;
                     private boolean isDragging = false;
-                    private final int touchSlop = dpToPx(12);
+                    private final int touchSlop = dpToPx(11);
 
                     @Override
                     public boolean onTouch(View v, MotionEvent event) {
@@ -234,12 +237,13 @@ public class AndroidBridge {
                                 }
 
                                 if (droppedInTrash) {
-                                    resetResolution();
+                                    // Удаляем только саму кнопку TP с экрана, чтобы готовый растяг в игре остался!
+                                    removeFloatingTpButtonOnly();
                                     return true;
                                 }
 
                                 if (!isDragging) {
-                                    toggleScreenStretchAction();
+                                    toggleTwoStepStretchAction();
                                 }
                                 return true;
                         }
@@ -250,9 +254,9 @@ public class AndroidBridge {
                 windowManager.addView(trashContainer, trashParams);
                 windowManager.addView(floatingStretchBtn, stretchParams);
                 isStretchOverlayShown = true;
-                Toast.makeText(context, "⚡ Кнопка «T» (" + selectedStretchRatio + ") запущена!", Toast.LENGTH_SHORT).show();
+                Toast.makeText(context, "⚡ Кнопка «TP» (" + selectedStretchRatio + ") запущена!", Toast.LENGTH_SHORT).show();
             } catch (Exception e) {
-                Toast.makeText(context, "Ошибка кнопки: " + e.getMessage(), Toast.LENGTH_LONG).show();
+                Toast.makeText(context, "Ошибка кнопки TP: " + e.getMessage(), Toast.LENGTH_LONG).show();
             }
         });
 
@@ -281,59 +285,64 @@ public class AndroidBridge {
         return rawY >= (screenH - dpToPx(105));
     }
 
-    // Двухшаговый механизм из твоего видео:
-    // 1-й тап (на чёрном экране запуска) -> wm size 1440x1920 (появление полос по бокам/краям).
-    // 2-й тап (в игре/меню) -> wm size reset (полный растяг на весь экран без полос).
-    private void toggleScreenStretchAction() {
+    // Двухшаговая механика растяга Standoff 2:
+    // 1-е нажатие (во время запуска игры): сужает экран (появляются чёрные полосы по бокам).
+    // 2-е нажатие (когда игра загрузилась в меню): разворачивает игру во весь экран (чистый растяг)!
+    private void toggleTwoStepStretchAction() {
         boolean shizukuOk = TeleportEngine.isShizukuReady() || ShizukuManager.isPermissionGranted();
         if (!shizukuOk) {
-            Toast.makeText(context, "⚠️ Включите и разрешите Shizuku для работы растяга!", Toast.LENGTH_SHORT).show();
+            Toast.makeText(context, "⚠️ Разрешите доступ в Shizuku для работы растяга!", Toast.LENGTH_SHORT).show();
             TeleportEngine.requestShizukuPermissionIfNeeded();
             return;
         }
 
-        isScreenCurrentlyStretched = !isScreenCurrentlyStretched;
-        if (isScreenCurrentlyStretched) {
-            applyStep1BoxStretch();
-            Toast.makeText(context, "🔥 Шаг 1: Полосы применены (запусти Standoff 2)", Toast.LENGTH_SHORT).show();
+        if (!isBoxBarsActive) {
+            boolean ok = TeleportEngine.applyAspectRatioStretch(selectedStretchRatio);
+            if (ok) {
+                isBoxBarsActive = true;
+                Toast.makeText(context, "⬛ Шаг 1: Чёрные полосы (" + selectedStretchRatio + ") включены! Дождись загрузки и нажми TP снова", Toast.LENGTH_SHORT).show();
+            }
         } else {
-            applyStep2FullStretch();
-            Toast.makeText(context, "🔥 Шаг 2: Экран полностью растянут!", Toast.LENGTH_SHORT).show();
+            TeleportEngine.releaseBoxToFullStretch();
+            isBoxBarsActive = false;
+            Toast.makeText(context, "🔥 Шаг 2: Экран растянут! Теперь перетяни кнопку TP вниз в корзину", Toast.LENGTH_SHORT).show();
         }
         updateFloatingBtnAppearance();
     }
 
-    private void applyStep1BoxStretch() {
-        new Thread(() -> {
-            String cmd = "wm size 1440x1920; "
-                    + "settings put system peak_refresh_rate 120.0; "
-                    + "settings put system min_refresh_rate 120.0;";
-            ShizukuManager.execCommand(cmd);
-        }).start();
-    }
-
-    private void applyStep2FullStretch() {
-        new Thread(() -> {
-            String cmd = "wm size reset; "
-                    + "settings put system peak_refresh_rate 120.0; "
-                    + "settings put system min_refresh_rate 120.0;";
-            ShizukuManager.execCommand(cmd);
-        }).start();
+    private void removeFloatingTpButtonOnly() {
+        mainHandler.post(() -> {
+            if (isBoxBarsActive) {
+                // Если пользователь забыл нажать 2-й раз и сразу кинул в корзину — автоматически завершаем растяг
+                TeleportEngine.releaseBoxToFullStretch();
+                isBoxBarsActive = false;
+            }
+            if (floatingStretchBtn != null && windowManager != null) {
+                try { windowManager.removeView(floatingStretchBtn); } catch (Exception ignored) {}
+                floatingStretchBtn = null;
+            }
+            if (trashContainer != null && windowManager != null) {
+                try { windowManager.removeView(trashContainer); } catch (Exception ignored) {}
+                trashContainer = null;
+                trashPillView = null;
+            }
+            isStretchOverlayShown = false;
+            Toast.makeText(context, "🗑️ Кнопка «TP» удалена, приятной катки!", Toast.LENGTH_SHORT).show();
+        });
     }
 
     private void updateFloatingBtnAppearance() {
         if (floatingStretchBtn == null) return;
         GradientDrawable bg = new GradientDrawable();
-        bg.setShape(GradientDrawable.RECTANGLE);
-        bg.setCornerRadius(dpToPx(16));
-        if (isScreenCurrentlyStretched) {
+        bg.setShape(GradientDrawable.OVAL);
+        if (isBoxBarsActive) {
             bg.setColor(Color.parseColor("#E610B981"));
             bg.setStroke(dpToPx(2), Color.WHITE);
             floatingStretchBtn.setText("ON\n" + selectedStretchRatio);
         } else {
-            bg.setColor(Color.parseColor("#D90B1622"));
+            bg.setColor(Color.parseColor("#E60B1622"));
             bg.setStroke(dpToPx(2), Color.parseColor("#00E5FF"));
-            floatingStretchBtn.setText("T\n" + selectedStretchRatio);
+            floatingStretchBtn.setText("TP\n" + selectedStretchRatio);
         }
         floatingStretchBtn.setBackground(bg);
     }
@@ -350,10 +359,8 @@ public class AndroidBridge {
             if (activity instanceof MainActivity) {
                 ((MainActivity) activity).toggleFloatingButton(false);
             }
-            new Thread(() -> {
-                ShizukuManager.execCommand("wm size reset; wm density reset;");
-            }).start();
-            isScreenCurrentlyStretched = false;
+            TeleportEngine.resetResolutionToNative();
+            isBoxBarsActive = false;
 
             if (floatingStretchBtn != null && windowManager != null) {
                 try { windowManager.removeView(floatingStretchBtn); } catch (Exception ignored) {}
@@ -365,9 +372,11 @@ public class AndroidBridge {
                 trashPillView = null;
             }
             isStretchOverlayShown = false;
-            Toast.makeText(context, "🗑️ Кнопка «T» убрана, экран сброшен", Toast.LENGTH_SHORT).show();
+            Toast.makeText(context, "🔄 Кнопка «TP» убрана, родное разрешение возвращено", Toast.LENGTH_SHORT).show();
         });
     }
+
+    // ================= СОХРАНЕНИЕ ВСЕХ НАСТРОЕК В ПАМЯТЬ =================
 
     @JavascriptInterface
     public boolean saveFullConfigJson(String jsonConfig) {
@@ -398,6 +407,8 @@ public class AndroidBridge {
             return "OFF";
         }
     }
+
+    // ================= МЕТОДЫ TELEPORT ENGINE =================
 
     @JavascriptInterface
     public boolean isShizukuReady() {
@@ -464,12 +475,13 @@ public class AndroidBridge {
         return TeleportEngine.runSmartDeviceScan(context);
     }
 
+    // ================= РАСШИРЕННЫЙ КАСТОМНЫЙ ПРИЦЕЛ (PRO BUILDER) =================
+
     @JavascriptInterface
     public void updateCrosshair(String type) {
         mainHandler.post(() -> {
             if (activity instanceof MainActivity) {
-                ((MainActivity) activity).updateCrosshair(type);
-                return;
+                ((MainActivity) activity).updateCrosshair("off");
             }
             if ("off".equalsIgnoreCase(type)) {
                 if (isCrosshairShown && crosshairView != null && windowManager != null) {
@@ -488,12 +500,16 @@ public class AndroidBridge {
                 int overlayType = (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O)
                         ? WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY
                         : WindowManager.LayoutParams.TYPE_PHONE;
+                int flags = WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE
+                        | WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE
+                        | WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN;
+                if (stealthOverlayFlag) {
+                    flags |= WindowManager.LayoutParams.FLAG_SECURE;
+                }
                 crosshairParams = new WindowManager.LayoutParams(
-                        dpToPx(90), dpToPx(90),
+                        dpToPx(120), dpToPx(120),
                         overlayType,
-                        WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE
-                                | WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE
-                                | WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN,
+                        flags,
                         PixelFormat.TRANSLUCENT
                 );
                 crosshairParams.gravity = Gravity.CENTER;
@@ -511,12 +527,26 @@ public class AndroidBridge {
     @JavascriptInterface
     public void updateCrosshairStyle(int scalePct, int opacityPct, String hexColor) {
         mainHandler.post(() -> {
-            if (activity instanceof MainActivity) {
-                ((MainActivity) activity).updateCrosshairStyle(scalePct, opacityPct, hexColor);
-                return;
-            }
             if (crosshairView != null) {
                 crosshairView.setStyle(scalePct, opacityPct, hexColor);
+            }
+        });
+    }
+
+    @JavascriptInterface
+    public void updateCrosshairAdvanced(
+            String type, String hexColor, int opacityPct,
+            int lengthDp, int thicknessDp, int gapDp,
+            int dotSizeDp, boolean showOutline
+    ) {
+        if ("off".equalsIgnoreCase(type)) {
+            updateCrosshair("off");
+            return;
+        }
+        updateCrosshair(type);
+        mainHandler.post(() -> {
+            if (crosshairView != null) {
+                crosshairView.setAdvancedConfig(type, hexColor, opacityPct, lengthDp, thicknessDp, gapDp, dotSizeDp, showOutline);
             }
         });
     }
@@ -525,18 +555,17 @@ public class AndroidBridge {
     public void updateOverlayStealthFlag(boolean stealth) {
         this.stealthOverlayFlag = stealth;
         legacyPrefs.edit().putBoolean("stealth_overlays", stealth).apply();
-        if (activity instanceof MainActivity) {
-            ((MainActivity) activity).updateOverlayStealthFlag(stealth);
-        }
         mainHandler.post(() -> {
             try {
                 if (isStretchOverlayShown && floatingStretchBtn != null && stretchParams != null) {
-                    if (stealth) {
-                        stretchParams.flags |= WindowManager.LayoutParams.FLAG_SECURE;
-                    } else {
-                        stretchParams.flags &= ~WindowManager.LayoutParams.FLAG_SECURE;
-                    }
+                    if (stealth) stretchParams.flags |= WindowManager.LayoutParams.FLAG_SECURE;
+                    else stretchParams.flags &= ~WindowManager.LayoutParams.FLAG_SECURE;
                     windowManager.updateViewLayout(floatingStretchBtn, stretchParams);
+                }
+                if (isCrosshairShown && crosshairView != null && crosshairParams != null) {
+                    if (stealth) crosshairParams.flags |= WindowManager.LayoutParams.FLAG_SECURE;
+                    else crosshairParams.flags &= ~WindowManager.LayoutParams.FLAG_SECURE;
+                    windowManager.updateViewLayout(crosshairView, crosshairParams);
                 }
             } catch (Exception ignored) {}
         });
@@ -550,10 +579,9 @@ public class AndroidBridge {
 
     @JavascriptInterface
     public String getDeviceHardwareInfo() {
-        DisplayMetrics dm = context.getResources().getDisplayMetrics();
         String model = Build.MODEL;
-        int shortPx = Math.min(dm.widthPixels, dm.heightPixels);
-        int longPx = Math.max(dm.widthPixels, dm.heightPixels);
+        int shortPx = TeleportEngine.getNativeShortSide();
+        int longPx = TeleportEngine.getNativeLongSide();
         return model + "|" + shortPx + "x" + longPx + " (120 Гц)";
     }
 
@@ -600,6 +628,7 @@ public class AndroidBridge {
         return Math.round(dp * context.getResources().getDisplayMetrics().density);
     }
 
+    // Нижняя неоновая корзина удаления кнопки «TP»
     private static class BridgeTrashView extends View {
         private final Paint bgPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
         private final Paint borderPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
@@ -613,7 +642,7 @@ public class AndroidBridge {
             borderPaint.setStyle(Paint.Style.STROKE);
             borderPaint.setStrokeWidth(2f * d);
             textPaint.setColor(Color.WHITE);
-            textPaint.setTextSize(12.5f * d);
+            textPaint.setTextSize(12f * d);
             textPaint.setFakeBoldText(true);
             textPaint.setTextAlign(Paint.Align.CENTER);
         }
@@ -643,23 +672,30 @@ public class AndroidBridge {
             canvas.drawRoundRect(rect, 999f, 999f, bgPaint);
             canvas.drawRoundRect(rect, 999f, 999f, borderPaint);
 
-            String label = hovered ? "🗑️ ОТПУСТИТЕ ДЛЯ УДАЛЕНИЯ" : "🗑️ УДАЛИТЬ КНОПКУ «T»";
+            String label = hovered ? "🗑️ ОТПУСТИТЕ ДЛЯ УДАЛЕНИЯ" : "🗑️ УДАЛИТЬ КНОПКУ «TP»";
             Paint.FontMetrics fm = textPaint.getFontMetrics();
             float cy = getHeight() / 2f - (fm.ascent + fm.descent) / 2f;
             canvas.drawText(label, getWidth() / 2f, cy, textPaint);
         }
     }
 
+    // Оверлей кастомного прицела с поддержкой тонкой настройки (Длина, Толщина, Зазор, Точка, Обводка)
     private static class CrosshairOverlayView extends View {
-        private String type = "dot";
-        private int scale = 50;
+        private String type = "cross";
         private int opacity = 100;
-        private int color = Color.parseColor("#00F0FF");
+        private int lengthDp = 12;
+        private int thicknessDp = 3;
+        private int gapDp = 4;
+        private int dotSizeDp = 3;
+        private boolean outline = true;
+        private int color = Color.parseColor("#00E5FF");
+
         private final Paint paint = new Paint(Paint.ANTI_ALIAS_FLAG);
+        private final Paint outlinePaint = new Paint(Paint.ANTI_ALIAS_FLAG);
 
         public CrosshairOverlayView(Context context) {
             super(context);
-            paint.setStrokeWidth(5f);
+            outlinePaint.setColor(Color.BLACK);
         }
 
         public void setCrosshairType(String t) {
@@ -667,9 +703,24 @@ public class AndroidBridge {
             invalidate();
         }
 
-        public void setStyle(int sc, int op, String hex) {
-            this.scale = sc;
+        public void setStyle(int scalePct, int opacityPct, String hex) {
+            this.lengthDp = Math.max(4, Math.round(4 + (scalePct / 100f) * 20f));
+            this.opacity = opacityPct;
+            try { this.color = Color.parseColor(hex); } catch (Exception ignored) {}
+            invalidate();
+        }
+
+        public void setAdvancedConfig(
+                String t, String hex, int op,
+                int len, int thick, int gap, int dot, boolean out
+        ) {
+            this.type = t;
             this.opacity = op;
+            this.lengthDp = len;
+            this.thicknessDp = thick;
+            this.gapDp = gap;
+            this.dotSizeDp = dot;
+            this.outline = out;
             try { this.color = Color.parseColor(hex); } catch (Exception ignored) {}
             invalidate();
         }
@@ -678,30 +729,92 @@ public class AndroidBridge {
         protected void onDraw(Canvas canvas) {
             super.onDraw(canvas);
             if ("off".equalsIgnoreCase(type)) return;
-            paint.setColor(color);
-            paint.setAlpha(Math.max(25, Math.min(255, (int) (opacity * 2.55f))));
+
+            float d = getResources().getDisplayMetrics().density;
             float cx = getWidth() / 2f;
             float cy = getHeight() / 2f;
-            float size = 8f + (scale / 100f) * 24f;
-            float gap = 4f + (scale / 100f) * 8f;
+
+            float lenPx = lengthDp * d;
+            float thickPx = Math.max(1.5f, thicknessDp * 0.85f * d);
+            float gapPx = gapDp * d;
+            float dotRadPx = Math.max(1.5f, dotSizeDp * 0.75f * d);
+
+            int alpha = Math.max(25, Math.min(255, Math.round(opacity * 2.55f)));
+            paint.setColor(color);
+            paint.setAlpha(alpha);
+            paint.setStrokeWidth(thickPx);
+
+            outlinePaint.setAlpha(Math.min(220, alpha));
+            outlinePaint.setStrokeWidth(thickPx + 2.2f * d);
 
             if ("dot".equalsIgnoreCase(type)) {
+                if (outline) {
+                    outlinePaint.setStyle(Paint.Style.FILL);
+                    canvas.drawCircle(cx, cy, dotRadPx + 1.2f * d, outlinePaint);
+                }
                 paint.setStyle(Paint.Style.FILL);
-                canvas.drawCircle(cx, cy, Math.max(4f, size * 0.28f), paint);
-            } else if ("circle".equalsIgnoreCase(type)) {
+                canvas.drawCircle(cx, cy, dotRadPx, paint);
+                return;
+            }
+
+            if ("circle".equalsIgnoreCase(type) || "circledot".equalsIgnoreCase(type)) {
+                float rad = Math.max(4f * d, lenPx * 0.85f);
+                if (outline) {
+                    outlinePaint.setStyle(Paint.Style.STROKE);
+                    canvas.drawCircle(cx, cy, rad, outlinePaint);
+                }
                 paint.setStyle(Paint.Style.STROKE);
-                canvas.drawCircle(cx, cy, size * 0.65f, paint);
-            } else if ("tshape".equalsIgnoreCase(type)) {
+                canvas.drawCircle(cx, cy, rad, paint);
+
+                if ("circledot".equalsIgnoreCase(type)) {
+                    if (outline) {
+                        outlinePaint.setStyle(Paint.Style.FILL);
+                        canvas.drawCircle(cx, cy, dotRadPx + 1.2f * d, outlinePaint);
+                    }
+                    paint.setStyle(Paint.Style.FILL);
+                    canvas.drawCircle(cx, cy, dotRadPx, paint);
+                }
+                return;
+            }
+
+            if ("box".equalsIgnoreCase(type)) {
+                float half = Math.max(4f * d, lenPx * 0.75f);
+                if (outline) {
+                    outlinePaint.setStyle(Paint.Style.STROKE);
+                    canvas.drawRect(cx - half, cy - half, cx + half, cy + half, outlinePaint);
+                }
                 paint.setStyle(Paint.Style.STROKE);
-                canvas.drawLine(cx - size, cy, cx - gap, cy, paint);
-                canvas.drawLine(cx + gap, cy, cx + size, cy, paint);
-                canvas.drawLine(cx, cy + gap, cx, cy + size, paint);
-            } else {
-                paint.setStyle(Paint.Style.STROKE);
-                canvas.drawLine(cx - size, cy, cx - gap, cy, paint);
-                canvas.drawLine(cx + gap, cy, cx + size, cy, paint);
-                canvas.drawLine(cx, cy - size, cx, cy - gap, paint);
-                canvas.drawLine(cx, cy + gap, cx, cy + size, paint);
+                canvas.drawRect(cx - half, cy - half, cx + half, cy + half, paint);
+                return;
+            }
+
+            // Линии для cross, crossdot, tshape
+            boolean hasTop = !"tshape".equalsIgnoreCase(type);
+            if (outline) {
+                outlinePaint.setStyle(Paint.Style.STROKE);
+                canvas.drawLine(cx - gapPx - lenPx, cy, cx - gapPx, cy, outlinePaint);
+                canvas.drawLine(cx + gapPx, cy, cx + gapPx + lenPx, cy, outlinePaint);
+                canvas.drawLine(cx, cy + gapPx, cx, cy + gapPx + lenPx, outlinePaint);
+                if (hasTop) {
+                    canvas.drawLine(cx, cy - gapPx - lenPx, cx, cy - gapPx, outlinePaint);
+                }
+            }
+
+            paint.setStyle(Paint.Style.STROKE);
+            canvas.drawLine(cx - gapPx - lenPx, cy, cx - gapPx, cy, paint);
+            canvas.drawLine(cx + gapPx, cy, cx + gapPx + lenPx, cy, paint);
+            canvas.drawLine(cx, cy + gapPx, cx, cy + gapPx + lenPx, paint);
+            if (hasTop) {
+                canvas.drawLine(cx, cy - gapPx - lenPx, cx, cy - gapPx, paint);
+            }
+
+            if ("crossdot".equalsIgnoreCase(type)) {
+                if (outline) {
+                    outlinePaint.setStyle(Paint.Style.FILL);
+                    canvas.drawCircle(cx, cy, dotRadPx + 1.2f * d, outlinePaint);
+                }
+                paint.setStyle(Paint.Style.FILL);
+                canvas.drawCircle(cx, cy, dotRadPx, paint);
             }
         }
     }
