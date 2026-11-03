@@ -66,11 +66,104 @@
             font-size: 12px;
             font-weight: 800;
             box-shadow: 0 8px 25px rgba(0, 0, 0, 0.85);
-            z-index: 99999;
+            z-index: 100000;
             display: none;
             white-space: nowrap;
         }
 
+        /* ================= ОКНО АВТОРИЗАЦИИ СТРОГО ПО КЛЮЧУ БОТА ================= */
+        #authOverlay {
+            position: fixed;
+            inset: 0;
+            background: radial-gradient(circle at 50% 15%, rgba(0, 229, 255, 0.16), #04090e 70%);
+            backdrop-filter: blur(16px);
+            z-index: 99990;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .auth-card {
+            width: 100%;
+            max-width: 380px;
+            background: rgba(10, 20, 29, 0.96);
+            border: 1.5px solid var(--card-border);
+            border-radius: 26px;
+            padding: 26px 20px;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.85), 0 0 30px rgba(0, 229, 255, 0.12);
+            text-align: center;
+        }
+
+        .auth-logo-circle {
+            width: 60px;
+            height: 60px;
+            border-radius: 18px;
+            background: var(--accent-soft);
+            border: 1.5px solid var(--accent);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+            margin: 0 auto 12px auto;
+            box-shadow: 0 0 20px var(--accent-glow);
+        }
+
+        .auth-field-label {
+            text-align: left;
+            font-size: 11px;
+            font-weight: 800;
+            color: var(--text-sub);
+            text-transform: uppercase;
+            letter-spacing: 0.6px;
+            margin: 12px 0 6px 4px;
+        }
+
+        .auth-input {
+            width: 100%;
+            background: #061018;
+            border: 1px solid var(--card-border);
+            border-radius: 14px;
+            padding: 13px 14px;
+            color: #fff;
+            font-size: 14px;
+            font-weight: 700;
+            outline: none;
+            user-select: text !important;
+            -webkit-user-select: text !important;
+            transition: border-color 0.2s;
+        }
+
+        .auth-input:focus {
+            border-color: var(--accent);
+            box-shadow: 0 0 12px var(--accent-soft);
+        }
+
+        .auth-error {
+            color: #fda4af;
+            background: rgba(244, 63, 94, 0.14);
+            border: 1px solid rgba(244, 63, 94, 0.4);
+            border-radius: 12px;
+            padding: 10px 12px;
+            font-size: 11.5px;
+            font-weight: 700;
+            margin-top: 12px;
+            display: none;
+            line-height: 1.35;
+        }
+
+        .auth-hwid-pill {
+            margin-top: 14px;
+            padding: 8px 12px;
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px dashed rgba(255, 255, 255, 0.15);
+            border-radius: 12px;
+            font-size: 11px;
+            color: var(--text-sub);
+            cursor: pointer;
+        }
+
+        /* ================= ОСНОВНОЙ ИНТЕРФЕЙС ================= */
         .top-bar {
             display: flex;
             justify-content: space-between;
@@ -377,7 +470,6 @@
             background: #03151a;
         }
 
-        /* АККУРАТНЫЕ КАРТОЧКИ ПОЛЗУНКОВ И КОНФИГОВ */
         .slider-grid-2 {
             display: grid;
             grid-template-columns: 1fr 1fr;
@@ -443,7 +535,6 @@
             line-height: 1.3;
         }
 
-        /* КАРТОЧКИ ГОТОВЫХ КОНФИГОВ С МИНИ-ЧИПАМИ СЕНСЫ */
         .cfg-pack-card {
             background: linear-gradient(145deg, rgba(12, 25, 36, 0.95), rgba(7, 15, 23, 0.95));
             border: 1px solid rgba(0, 229, 255, 0.2);
@@ -689,6 +780,40 @@
 
     <div id="toastBanner">💾 Все настройки сохранены!</div>
 
+    <!-- ================= ПОЛНОЭКРАННОЕ ОКНО АВТОРИЗАЦИИ (СТРОГО ЧЕРЕЗ СЕРВЕР ТГ-БОТА) ================= -->
+    <div id="authOverlay">
+        <div class="auth-card">
+            <div class="auth-logo-circle">⚡</div>
+            <div style="font-size:23px;font-weight:900;color:#fff;">SO2Teleport PRO</div>
+            <div style="font-size:10.5px;font-weight:800;color:var(--accent);letter-spacing:0.8px;margin-top:3px;">
+                QUANTUM ENGINE V408 • ЗАЩИТА ТГ-БОТА
+            </div>
+            <div style="font-size:12px;color:var(--text-sub);margin-top:8px;line-height:1.4;">
+                Введите ваш игровой никнейм и лицензионный ключ, выданный в официальном Telegram-боте
+            </div>
+
+            <div class="auth-field-label">👤 Ваш логин (Игровой ник):</div>
+            <input type="text" id="authNickInput" class="auth-input" placeholder="Например: dare" maxlength="24">
+
+            <div class="auth-field-label">🔑 Лицензионный ключ из бота:</div>
+            <input type="text" id="authKeyInput" class="auth-input" placeholder="Введите ваш ключ..." style="text-transform:uppercase;font-family:monospace;">
+
+            <div id="authErrorBox" class="auth-error">❌ Неверный лицензионный ключ</div>
+
+            <button type="button" class="cyber-btn" id="btnSubmitAuth" style="margin-top:16px;" onclick="submitLicenseAuth()">
+                ⚡ ПРОВЕРИТЬ КЛЮЧ И ВОЙТИ
+            </button>
+
+            <button type="button" class="cyber-btn secondary" style="margin-top:10px;" onclick="openTgBotFromAuth()">
+                💎 ПОЛУЧИТЬ / ПРОДЛИТЬ КЛЮЧ В БОТЕ
+            </button>
+
+            <div class="auth-hwid-pill" onclick="copyHwidToClipboard()">
+                HWID устройства: <b id="authHwidText" style="color:var(--accent);">загрузка...</b> (нажми для копирования)
+            </div>
+        </div>
+    </div>
+
     <!-- ВЕРХНЯЯ ШАПКА -->
     <div class="top-bar">
         <div>
@@ -706,7 +831,7 @@
 
     <div class="player-pill">
         <span class="status-dot"></span>
-        <span>Игрок: <b id="playerNickText">dare</b></span>
+        <span>Игрок: <b id="playerNickText">Игрок</b></span>
     </div>
 
     <!-- ================= ГЛАВНЫЙ ЭКРАН (6 КАРТОЧЕК) ================= -->
@@ -724,7 +849,6 @@
         </div>
 
         <div class="bento-grid">
-            <!-- 1. Сенса -->
             <div class="bento-card" onclick="openScreen('screenSensa', true)">
                 <div class="bento-top">
                     <div class="bento-icon">⚡</div>
@@ -742,7 +866,6 @@
                 </div>
             </div>
 
-            <!-- 2. Готовые конфиги -->
             <div class="bento-card" onclick="openScreen('screenConfigs')">
                 <div class="bento-top">
                     <div class="bento-icon">🔥</div>
@@ -754,7 +877,6 @@
                 </div>
             </div>
 
-            <!-- 3. Растяг -->
             <div class="bento-card" onclick="openScreen('screenStretch')">
                 <div class="bento-top">
                     <div class="bento-icon">📐</div>
@@ -766,7 +888,6 @@
                 </div>
             </div>
 
-            <!-- 4. Кастомный прицел -->
             <div class="bento-card" onclick="openScreen('screenCrosshair')">
                 <div class="bento-top">
                     <div class="bento-icon">🎯</div>
@@ -778,7 +899,6 @@
                 </div>
             </div>
 
-            <!-- 5. Настройки -->
             <div class="bento-card" onclick="openScreen('screenSettings')">
                 <div class="bento-top">
                     <div class="bento-icon">🚀</div>
@@ -790,7 +910,6 @@
                 </div>
             </div>
 
-            <!-- 6. Профиль -->
             <div class="bento-card" onclick="openScreen('screenProfile')">
                 <div class="bento-top">
                     <div class="bento-icon">🛡️</div>
@@ -866,7 +985,6 @@
             </div>
         </div>
 
-        <!-- МГНОВЕННЫЙ МИКРО-ФЛИК -->
         <div class="panel-card">
             <div style="display:flex;justify-content:space-between;align-items:center;">
                 <div style="padding-right:10px;">
@@ -880,7 +998,6 @@
             </div>
         </div>
 
-        <!-- ОСТРОТА (В ВИДЕ КАРТОЧЕК) -->
         <div class="panel-card">
             <div class="panel-head">
                 <span class="panel-title">ОСТРОТА И СЕНСА ОСЕЙ</span>
@@ -908,7 +1025,6 @@
             </div>
         </div>
 
-        <!-- ТОЧНОСТЬ И ПРИЛИПАНИЕ (КАРТОЧНАЯ СЕТКА) -->
         <div class="panel-card">
             <div class="panel-head">
                 <span class="panel-title">ТОЧНОСТЬ И ПРИЛИПАНИЕ К ХИТБОКСУ</span>
@@ -952,7 +1068,6 @@
             </div>
         </div>
 
-        <!-- КВАНТОВЫЕ КУСКИ И РАЗГОН -->
         <div class="panel-card">
             <div class="panel-head">
                 <span class="panel-title">КВАНТОВЫЕ КУСКИ И ДОВОДКА (PRO)</span>
@@ -1010,7 +1125,7 @@
         </div>
     </div>
 
-    <!-- ================= ЭКРАН 2: ГОТОВЫЕ КИБЕР-КОНФИГИ (АККУРАТНЫЕ КАРТОЧКИ С ПАРАМЕТРАМИ) ================= -->
+    <!-- ================= ЭКРАН 2: ГОТОВЫЕ КИБЕР-КОНФИГИ ================= -->
     <div id="screenConfigs" class="screen-view">
         <div class="back-bar" onclick="openScreen('screenHome')">
             <span>←</span>
@@ -1136,7 +1251,7 @@
         </div>
     </div>
 
-    <!-- ================= ЭКРАН 3: РАСТЯГ ЭКРАНА (КНОПКА «TP» В 2 ШАГА + КОРЗИНА) ================= -->
+    <!-- ================= ЭКРАН 3: РАСТЯГ ЭКРАНА «TP» ================= -->
     <div id="screenStretch" class="screen-view">
         <div class="back-bar" onclick="openScreen('screenHome')">
             <span>←</span>
@@ -1154,7 +1269,7 @@
             </div>
 
             <div class="step-guide-box">
-                <b>Как работает кнопка «TP» (как на видео):</b><br>
+                <b>Как работает кнопка «TP»:</b><br>
                 1. Активируй кнопку <b>«TP»</b> ниже и запусти Standoff 2.<br>
                 2. Во время запуска (на заставке Axlebolt) нажми на <b>«TP»</b> 1-й раз — появятся <b>чёрные полосы по бокам</b>.<br>
                 3. Когда игра загрузилась в меню — нажми на <b>«TP»</b> 2-й раз, и экран мгновенно <b>растянется во весь дисплей</b>!<br>
@@ -1196,7 +1311,6 @@
                 <canvas id="crossPreviewCanvas" width="130" height="130"></canvas>
             </div>
 
-            <!-- 8 кнопок выбора любой формы -->
             <div class="pill-grid-4">
                 <div class="opt-btn active" data-ctype="off" onclick="setCrosshairShape('off')">ВЫКЛ</div>
                 <div class="opt-btn" data-ctype="dot" onclick="setCrosshairShape('dot')">ТОЧКА</div>
@@ -1222,7 +1336,6 @@
                 <input type="color" id="inpCustomCrossColor" value="#00E5FF" onchange="setCrosshairColor(this.value)" style="width:44px;height:28px;border:none;background:transparent;cursor:pointer;">
             </div>
 
-            <!-- Тонкая кастомизация геометрии прицела -->
             <div class="slider-grid-2">
                 <div class="slider-card">
                     <div class="slider-top"><span class="slider-name">Длина линий</span><span class="slider-badge" id="v_cLen">12</span></div>
@@ -1388,15 +1501,15 @@
 
             <div class="info-row">
                 <span style="color:var(--text-sub);">Ваш логин:</span>
-                <b id="profNick">dare</b>
+                <b id="profNick">Игрок</b>
             </div>
             <div class="info-row">
                 <span style="color:var(--text-sub);">Статус подписки:</span>
-                <b style="color:var(--green);">АКТИВНА (89 дн. 7 ч.)</b>
+                <b id="profStatus" style="color:var(--green);">ПРОВЕРКА...</b>
             </div>
             <div class="info-row">
                 <span style="color:var(--text-sub);">Лицензионный ключ:</span>
-                <b id="profKey" style="color:var(--accent);">TP90D-HHG-125841</b>
+                <b id="profKey" style="color:var(--accent);">-</b>
             </div>
             <div class="info-row">
                 <span style="color:var(--text-sub);">Модель устройства:</span>
@@ -1411,8 +1524,8 @@
                 <b id="profHwid" style="color:var(--accent);">39e220a438dedb68</b>
             </div>
 
-            <button type="button" class="cyber-btn secondary" style="color:#fda4af;border-color:rgba(244,63,94,0.4);" onclick="changeLoginOrKey()">
-                Сменить логин или лицензионный ключ
+            <button type="button" class="cyber-btn secondary" style="color:#fda4af;border-color:rgba(244,63,94,0.4);" onclick="logoutAndOpenAuthWindow()">
+                Выйти / Сменить лицензионный ключ
             </button>
         </div>
     </div>
@@ -1447,8 +1560,10 @@
     <script>
         const STORAGE_KEY = "SO2Teleport_FullConfig_V408";
         const MY_PRESETS_KEY = "SO2Teleport_MySavedPresets_V408";
+
         let calibShownOnce = false;
         let paramDebounceTimer = null;
+        let isAuthorizedNow = false;
 
         function getBridge() {
             return window.AndroidBridge || window.Android || null;
@@ -1507,7 +1622,172 @@
             }, 2300);
         }
 
+        // ================= СТРОГАЯ АВТОРИЗАЦИЯ И ЖИВОЙ СТОРОЖ КЛЮЧА =================
+
+        function forceShowKickScreen(reasonMsg) {
+            isAuthorizedNow = false;
+            appState.teleportOn = false;
+            document.getElementById("chkHomeTeleport").checked = false;
+            document.getElementById("chkInnerTeleport").checked = false;
+            document.getElementById("homeSensaStateTxt").textContent = "ВЫКЛ";
+            document.getElementById("profKey").textContent = "-";
+            document.getElementById("profStatus").textContent = "НЕ АКТИВНА";
+            document.getElementById("profStatus").style.color = "var(--danger)";
+
+            const errEl = document.getElementById("authErrorBox");
+            if (reasonMsg) {
+                errEl.textContent = "⛔ " + reasonMsg;
+                errEl.style.display = "block";
+            }
+            document.getElementById("authKeyInput").value = "";
+            document.getElementById("authOverlay").style.display = "flex";
+        }
+
+        function checkAuthSessionOnBoot() {
+            const br = getBridge();
+            if (!br || typeof br.getSavedKey !== "function") {
+                forceShowKickScreen("Откройте приложение на устройстве Android");
+                return;
+            }
+
+            const savedKey = (br.getSavedKey() || "").trim().toUpperCase();
+            const savedNick = (typeof br.getSavedNickname === "function" ? br.getSavedNickname() : "") || "dare";
+
+            if (!savedKey || savedKey.length < 5) {
+                document.getElementById("authNickInput").value = savedNick;
+                document.getElementById("authOverlay").style.display = "flex";
+                return;
+            }
+
+            // Живая проверка сохранённого ключа на сервере ТГ-бота при запуске
+            const verifyRes = br.verifyLicenseKey(savedKey) || "";
+            if (verifyRes.startsWith("OK|")) {
+                const subText = verifyRes.split("|")[1] || "АКТИВНА (PRO ДОСТУП)";
+                applyAuthorizedUser(savedNick, savedKey, subText);
+            } else if (verifyRes.startsWith("OFFLINE|")) {
+                applyAuthorizedUser(savedNick, savedKey, "АКТИВНА (ПРОВЕРКА СЕТИ)");
+            } else {
+                const kickMsg = verifyRes.includes("|") ? verifyRes.split("|")[1] : "Срок действия ключа закончился!";
+                forceShowKickScreen(kickMsg);
+            }
+        }
+
+        // Каждые 12 секунд проверяем, не кикнул ли AndroidBridge игрока по окончании ключа
+        function runFrontendLicenseHeartbeat() {
+            if (!isAuthorizedNow) return;
+            const br = getBridge();
+            if (!br || typeof br.getSavedKey !== "function") return;
+
+            const currentSavedKey = (br.getSavedKey() || "").trim();
+            if (!currentSavedKey) {
+                // Значит фоновый сторож в AndroidBridge уже стёр ключ и кикнул пользователя!
+                forceShowKickScreen("Срок действия вашего ключа закончился или он был сброшен в боте!");
+                return;
+            }
+
+            if (typeof br.verifyLicenseKey === "function") {
+                const v = br.verifyLicenseKey(currentSavedKey) || "";
+                if (v.startsWith("EXPIRED|")) {
+                    const msg = v.split("|")[1] || "Срок действия ключа истёк!";
+                    forceShowKickScreen(msg);
+                } else if (v.startsWith("OK|")) {
+                    document.getElementById("profStatus").textContent = v.split("|")[1] || "АКТИВНА (PRO ДОСТУП)";
+                    document.getElementById("profStatus").style.color = "var(--green)";
+                }
+            }
+        }
+
+        function submitLicenseAuth() {
+            const nickEl = document.getElementById("authNickInput");
+            const keyEl = document.getElementById("authKeyInput");
+            const errEl = document.getElementById("authErrorBox");
+            const btn = document.getElementById("btnSubmitAuth");
+
+            const nick = (nickEl.value || "").trim() || "Player";
+            const cleanKey = (keyEl.value || "").trim().toUpperCase();
+
+            errEl.style.display = "none";
+
+            if (cleanKey.length < 5) {
+                errEl.textContent = "❌ Введите лицензионный ключ из Telegram-бота!";
+                errEl.style.display = "block";
+                return;
+            }
+
+            const br = getBridge();
+            if (!br || typeof br.activateLicenseKey !== "function") {
+                errEl.textContent = "❌ Ошибка системного моста AndroidBridge!";
+                errEl.style.display = "block";
+                return;
+            }
+
+            btn.textContent = "⏳ ПРОВЕРКА КЛЮЧА В БАЗЕ БОТА...";
+
+            setTimeout(() => {
+                if (typeof br.savePlayerNickname === "function") {
+                    br.savePlayerNickname(nick);
+                }
+
+                const res = br.activateLicenseKey(cleanKey) || "";
+                btn.textContent = "⚡ ПРОВЕРИТЬ КЛЮЧ И ВОЙТИ";
+
+                if (res.startsWith("OK|")) {
+                    const statusText = res.split("|")[1] || "АКТИВНА (PRO ДОСТУП)";
+                    applyAuthorizedUser(nick, cleanKey, statusText);
+                    showToast("✅ Ключ подтверждён! Добро пожаловать, " + nick);
+                } else {
+                    const msg = res.includes("|") ? res.split("|")[1] : "Ключ не найден в базе Telegram-бота или истёк!";
+                    errEl.textContent = "⛔ " + msg;
+                    errEl.style.display = "block";
+                }
+            }, 60);
+        }
+
+        function applyAuthorizedUser(nick, key, subStatus) {
+            isAuthorizedNow = true;
+            document.getElementById("playerNickText").textContent = nick;
+            document.getElementById("profNick").textContent = nick;
+            document.getElementById("profKey").textContent = key;
+            document.getElementById("profStatus").textContent = subStatus || "АКТИВНА (PRO ДОСТУП)";
+            document.getElementById("profStatus").style.color = "var(--green)";
+            document.getElementById("authNickInput").value = nick;
+            document.getElementById("authKeyInput").value = key;
+            document.getElementById("authErrorBox").style.display = "none";
+            document.getElementById("authOverlay").style.display = "none";
+        }
+
+        function logoutAndOpenAuthWindow() {
+            const br = getBridge();
+            if (br && typeof br.logoutLicenseKey === "function") {
+                try { br.logoutLicenseKey(); } catch (e) {}
+            }
+            forceShowKickScreen("Введите новый лицензионный ключ из Telegram-бота");
+        }
+
+        function openTgBotFromAuth() {
+            const br = getBridge();
+            if (br && typeof br.openTelegramBot === "function") {
+                br.openTelegramBot();
+            } else {
+                window.open("https://t.me/SO2TeleportShop_bot", "_blank");
+            }
+        }
+
+        function copyHwidToClipboard() {
+            const hwid = document.getElementById("authHwidText").textContent;
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(hwid).catch(() => {});
+            }
+            showToast("📋 HWID скопирован: " + hwid);
+        }
+
+        // ================= НАВИГАЦИЯ И ОСНОВНЫЕ ФУНКЦИИ =================
+
         function openScreen(screenId, askCalib) {
+            if (!isAuthorizedNow) {
+                forceShowKickScreen("Сначала активируйте лицензионный ключ!");
+                return;
+            }
             document.querySelectorAll(".screen-view").forEach(s => s.classList.remove("active"));
             const target = document.getElementById(screenId);
             if (target) target.classList.add("active");
@@ -1526,6 +1806,9 @@
         }
 
         window.handleSystemBack = function() {
+            if (document.getElementById("authOverlay").style.display !== "none") {
+                return false;
+            }
             const home = document.getElementById("screenHome");
             if (!home.classList.contains("active")) {
                 openScreen("screenHome");
@@ -1556,6 +1839,10 @@
         }
 
         function toggleTeleportMaster(enabled) {
+            if (enabled && !isAuthorizedNow) {
+                forceShowKickScreen("Лицензионный ключ не активен!");
+                return;
+            }
             appState.teleportOn = !!enabled;
             document.getElementById("chkHomeTeleport").checked = appState.teleportOn;
             document.getElementById("chkInnerTeleport").checked = appState.teleportOn;
@@ -1704,8 +1991,6 @@
             }
         }
 
-        // ================= ПЛАВАЮЩАЯ КНОПКА РАСТЯГА «TP» =================
-
         function selectStretchRatio(ratio) {
             appState.stretchRatio = ratio;
             document.getElementById("stretchHeaderRatio").textContent = ratio;
@@ -1721,17 +2006,17 @@
         function spawnStretchButtonNow() {
             saveFullConfigNow(false);
             const br = getBridge();
-            if (!br) {
-                showToast("⚡ Кнопка «TP» (" + appState.stretchRatio + ") выведена!");
-                return;
-            }
+            if (!br) return;
+
             if (typeof br.hasOverlayPermission === "function" && !br.hasOverlayPermission()) {
                 br.requestOverlayPermission();
                 showToast("⚠️ Выдайте разрешение «Поверх других окон»!");
                 return;
             }
             const res = br.activateStretchFloatingButton(appState.stretchRatio);
-            if (res === "NEED_PERMISSION") {
+            if (res === "NEED_AUTH") {
+                forceShowKickScreen("Ваш ключ истёк! Введите активный ключ из бота.");
+            } else if (res === "NEED_PERMISSION") {
                 showToast("⚠️ Разрешите показ поверх других окон!");
             } else {
                 showToast("⚡ Кнопка «TP» (" + appState.stretchRatio + ") запущена!");
@@ -1745,8 +2030,6 @@
             }
             showToast("🔄 Кнопка «TP» убрана, экран сброшен");
         }
-
-        // ================= КОНСТРУКТОР КАСТОМНОГО ПРИЦЕЛА PRO =================
 
         function setCrosshairShape(shape) {
             appState.crossShape = shape;
@@ -1783,22 +2066,17 @@
             drawCrosshairPreview();
 
             const br = getBridge();
-            if (br) {
-                if (typeof br.updateCrosshairAdvanced === "function") {
-                    br.updateCrosshairAdvanced(
-                        appState.crossShape,
-                        appState.crossColor,
-                        appState.crossOpacity,
-                        appState.crossLen,
-                        appState.crossThick,
-                        appState.crossGap,
-                        appState.crossDot,
-                        appState.crossOutline
-                    );
-                } else if (typeof br.updateCrosshair === "function") {
-                    br.updateCrosshair(appState.crossShape);
-                    br.updateCrosshairStyle(appState.crossLen * 4, appState.crossOpacity, appState.crossColor);
-                }
+            if (br && typeof br.updateCrosshairAdvanced === "function") {
+                br.updateCrosshairAdvanced(
+                    appState.crossShape,
+                    appState.crossColor,
+                    appState.crossOpacity,
+                    appState.crossLen,
+                    appState.crossThick,
+                    appState.crossGap,
+                    appState.crossDot,
+                    appState.crossOutline
+                );
             }
             saveFullConfigNow(false);
         }
@@ -1879,8 +2157,6 @@
                 fillDot();
             }
         }
-
-        // ================= НАСТРОЙКИ СИСТЕМЫ =================
 
         function selectTouchHz(hz) {
             appState.touchHz = hz;
@@ -1969,15 +2245,6 @@
             const ok = br.isShizukuReady();
             document.getElementById("shizukuHeaderTxt").textContent = ok ? "Shizuku: АКТИВЕН" : "Shizuku: ВЫКЛ";
             document.getElementById("shizukuDot").style.background = ok ? "var(--accent)" : "var(--danger)";
-        }
-
-        function changeLoginOrKey() {
-            const newNick = prompt("Введите ваш игровой ник:", document.getElementById("profNick").textContent);
-            if (newNick && newNick.trim()) {
-                document.getElementById("profNick").textContent = newNick.trim();
-                document.getElementById("playerNickText").textContent = newNick.trim();
-                saveFullConfigNow(true);
-            }
         }
 
         // ================= КОМПАКТНАЯ ССЫЛКА КОНФИГА + СОХРАНЕНИЕ В ПАМЯТЬ =================
@@ -2250,14 +2517,12 @@
             document.getElementById("chkAutoDpi").checked = !!appState.autoDpi;
             document.getElementById("chkStealthMode").checked = !!appState.stealthMode;
 
-            toggleTeleportMaster(!!appState.teleportOn);
+            if (isAuthorizedNow) {
+                toggleTeleportMaster(!!appState.teleportOn);
+            }
         }
 
         window.addEventListener("DOMContentLoaded", () => {
-            loadSavedStateOnBoot();
-            refreshShizukuBadge();
-            setInterval(refreshShizukuBadge, 4000);
-
             const br = getBridge();
             if (br) {
                 try {
@@ -2267,10 +2532,19 @@
                         if (hw[1]) document.getElementById("profScreen").textContent = hw[1];
                     }
                     if (typeof br.getDeviceHwid === "function") {
-                        document.getElementById("profHwid").textContent = br.getDeviceHwid().toLowerCase();
+                        const hwid = br.getDeviceHwid().toLowerCase();
+                        document.getElementById("profHwid").textContent = hwid;
+                        document.getElementById("authHwidText").textContent = hwid;
                     }
                 } catch (e) {}
             }
+
+            checkAuthSessionOnBoot();
+            loadSavedStateOnBoot();
+            refreshShizukuBadge();
+
+            setInterval(refreshShizukuBadge, 4000);
+            setInterval(runFrontendLicenseHeartbeat, 12000);
         });
     </script>
 </body>
