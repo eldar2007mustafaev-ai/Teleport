@@ -6,9 +6,6 @@ import android.content.pm.PackageManager;
 import android.os.Build;
 import android.util.DisplayMetrics;
 
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
-
 import rikka.shizuku.Shizuku;
 
 public class TeleportEngine {
@@ -29,6 +26,7 @@ public class TeleportEngine {
     public static boolean isShizukuReady() {
         try {
             if (Shizuku.isPreV11()) return false;
+            if (!Shizuku.pingBinder()) return false;
             if (Shizuku.checkSelfPermission() != PackageManager.PERMISSION_GRANTED) {
                 return false;
             }
@@ -41,7 +39,8 @@ public class TeleportEngine {
 
     public static void requestShizukuPermissionIfNeeded() {
         try {
-            if (!Shizuku.isPreV11() && Shizuku.checkSelfPermission() != PackageManager.PERMISSION_GRANTED) {
+            if (!Shizuku.isPreV11() && Shizuku.pingBinder()
+                    && Shizuku.checkSelfPermission() != PackageManager.PERMISSION_GRANTED) {
                 Shizuku.requestPermission(1001);
             }
         } catch (Throwable ignored) {}
@@ -51,8 +50,7 @@ public class TeleportEngine {
         if (!isShizukuReady()) return;
         new Thread(() -> {
             try {
-                Process p = Shizuku.newProcess(new String[]{"sh", "-c", cmd}, null, null);
-                p.waitFor();
+                ShizukuManager.execCommand(cmd);
             } catch (Throwable ignored) {}
         }).start();
     }
@@ -86,7 +84,6 @@ public class TeleportEngine {
                 break;
         }
 
-        // Округляем до чётного числа пикселей для стабильности рендера
         if (targetLong % 2 != 0) targetLong++;
 
         String cmd = "wm size " + baseShort + "x" + targetLong;
@@ -158,7 +155,7 @@ public class TeleportEngine {
         if (enabled) {
             String cmd = "settings put system peak_refresh_rate 120.0; "
                     + "settings put system min_refresh_rate 120.0; "
-                    + "settings put secure game_ touch_sampling_rate " + hz + "; "
+                    + "settings put secure game_touch_sampling_rate " + hz + "; "
                     + "settings put system touch_sampling_rate " + hz + ";";
             execShizukuCommand(cmd);
         } else {
