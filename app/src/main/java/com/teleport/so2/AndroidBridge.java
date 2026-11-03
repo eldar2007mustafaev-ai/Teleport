@@ -25,6 +25,8 @@ import android.widget.FrameLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import org.json.JSONObject;
+
 public class AndroidBridge {
 
     private final Context context;
@@ -56,6 +58,69 @@ public class AndroidBridge {
         this.windowManager = (WindowManager) context.getSystemService(Context.WINDOW_SERVICE);
         TeleportEngine.init(context);
         TeleportEngine.requestShizukuPermissionIfNeeded();
+        startLicenseWatchdog();
+    }
+
+    // Фоновый сторож: каждые 20 секунд проверяет на сервере ТГ-бота, не истёк ли ключ,
+    // чтобы сразу убрать кнопку TP, прицел и телепорт даже во время игры
+    private void startLicenseWatchdog() {
+        mainHandler.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                final String savedKey = prefs.getString("saved_license_key", "");
+                if (!savedKey.isEmpty()) {
+                    new Thread(() -> {
+                        String raw = ApiManager.verifyLicense(savedKey, getDeviceHwid());
+                        try {
+                            JSONObject res = new JSONObject(raw);
+                            String status = res.optString("status", "");
+                            boolean blocked = res.optBoolean("blocked", false)
+                                    || "expired".equalsIgnoreCase(status)
+                                    || "blocked".equalsIgnoreCase(status)
+                                    || "need_auth".equalsIgnoreCase(status);
+                            boolean ok = res.optBoolean("ok", false)
+                                    || "ok".equalsIgnoreCase(status)
+                                    || "active".equalsIgnoreCase(status);
+
+                            if (blocked || (!ok && !raw.contains("Нет связи"))) {
+                                forceKickExpiredUser(res.optString("message", "Срок действия ключа истёк!"));
+                            }
+                        } catch (Exception ignored) {}
+                    }).start();
+                }
+                mainHandler.postDelayed(this, 20000);
+            }
+        }, 10000);
+    }
+
+    private void forceKickExpiredUser(String reason) {
+        prefs.edit().remove("saved_license_key").apply();
+        ApiManager.invalidateSession();
+        TeleportEngine.stopTeleport();
+
+        mainHandler.post(() -> {
+            if (floatingStretchBtn != null && windowManager != null) {
+                try { windowManager.removeView(floatingStretchBtn); } catch (Exception ignored) {}
+                floatingStretchBtn = null;
+            }
+            if (trashContainer != null && windowManager != null) {
+                try { windowManager.removeView(trashContainer); } catch (Exception ignored) {}
+                trashContainer = null;
+                trashPillView = null;
+            }
+            isStretchOverlayShown = false;
+
+            if (isCrosshairShown && crosshairView != null && windowManager != null) {
+                try { windowManager.removeView(crosshairView); } catch (Exception ignored) {}
+                crosshairView = null;
+                isCrosshairShown = false;
+            }
+            if (activity instanceof MainActivity) {
+                ((MainActivity) activity).toggleFloatingButton(false);
+                ((MainActivity) activity).updateCrosshair("off");
+            }
+            Toast.makeText(context, "⛔ " + reason, Toast.LENGTH_LONG).show();
+        });
     }
 
     @JavascriptInterface
@@ -93,6 +158,9 @@ public class AndroidBridge {
 
     @JavascriptInterface
     public String activateStretchFloatingButton(String ratio) {
+        if (getSavedKey().isEmpty()) {
+            return "NEED_AUTH";
+        }
         if (ratio != null && !ratio.trim().isEmpty()) {
             this.selectedStretchRatio = ratio.trim();
         }
@@ -125,7 +193,6 @@ public class AndroidBridge {
                         ? WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY
                         : WindowManager.LayoutParams.TYPE_PHONE;
 
-                // Нижняя корзина для удаления кнопки «TP»
                 trashContainer = new FrameLayout(context);
                 trashPillView = new BridgeTrashView(context);
                 FrameLayout.LayoutParams pillLp = new FrameLayout.LayoutParams(dpToPx(250), dpToPx(52), Gravity.CENTER);
@@ -150,7 +217,6 @@ public class AndroidBridge {
                 trashParams.gravity = Gravity.BOTTOM | Gravity.CENTER_HORIZONTAL;
                 trashParams.y = dpToPx(16);
 
-                // Сама плавающая кнопка с надписью TP
                 floatingStretchBtn = new TextView(context);
                 floatingStretchBtn.setText("TP\n" + selectedStretchRatio);
                 floatingStretchBtn.setTextColor(Color.WHITE);
@@ -237,7 +303,6 @@ public class AndroidBridge {
                                 }
 
                                 if (droppedInTrash) {
-                                    // Удаляем только саму кнопку TP с экрана, чтобы готовый растяг в игре остался!
                                     removeFloatingTpButtonOnly();
                                     return true;
                                 }
@@ -285,10 +350,11 @@ public class AndroidBridge {
         return rawY >= (screenH - dpToPx(105));
     }
 
-    // Двухшаговая механика растяга Standoff 2:
-    // 1-е нажатие (во время запуска игры): сужает экран (появляются чёрные полосы по бокам).
-    // 2-е нажатие (когда игра загрузилась в меню): разворачивает игру во весь экран (чистый растяг)!
     private void toggleTwoStepStretchAction() {
+        if (getSavedKey().isEmpty()) {
+            forceKickExpiredUser("Ключ не активен!");
+            return;
+        }
         boolean shizukuOk = TeleportEngine.isShizukuReady() || ShizukuManager.isPermissionGranted();
         if (!shizukuOk) {
             Toast.makeText(context, "⚠️ Разрешите доступ в Shizuku для работы растяга!", Toast.LENGTH_SHORT).show();
@@ -313,7 +379,6 @@ public class AndroidBridge {
     private void removeFloatingTpButtonOnly() {
         mainHandler.post(() -> {
             if (isBoxBarsActive) {
-                // Если пользователь забыл нажать 2-й раз и сразу кинул в корзину — автоматически завершаем растяг
                 TeleportEngine.releaseBoxToFullStretch();
                 isBoxBarsActive = false;
             }
@@ -392,6 +457,7 @@ public class AndroidBridge {
 
     @JavascriptInterface
     public String setWideHitboxMode(boolean enabled, String ratio) {
+        if (getSavedKey().isEmpty()) return "NEED_AUTH";
         String targetRatio = (ratio != null && !ratio.isEmpty()) ? ratio : "4:3";
         prefs.edit().putBoolean("wide_hitbox_mode", enabled).apply();
 
@@ -423,6 +489,7 @@ public class AndroidBridge {
 
     @JavascriptInterface
     public void startTeleport(String presetId) {
+        if (getSavedKey().isEmpty()) return;
         TeleportEngine.startTeleport(presetId);
     }
 
@@ -437,11 +504,13 @@ public class AndroidBridge {
             int chunks, int chunkFast, double straight,
             int stick, int grid, int pause, double accel
     ) {
+        if (getSavedKey().isEmpty()) return;
         TeleportEngine.updateParameters(sharp, sx, sy, chunks, chunkFast, straight, stick, grid, pause, accel);
     }
 
     @JavascriptInterface
     public void setTouchSamplingBoost(boolean enabled, int hz) {
+        if (getSavedKey().isEmpty()) return;
         TeleportEngine.setTouchSamplingBoost(enabled, hz);
     }
 
@@ -457,16 +526,19 @@ public class AndroidBridge {
 
     @JavascriptInterface
     public void setEnhancedRecoilFix(boolean enabled, int power) {
+        if (getSavedKey().isEmpty()) return;
         TeleportEngine.setEnhancedRecoilFix(enabled, power);
     }
 
     @JavascriptInterface
     public void setAutoGameDpi(boolean enabled, int dpi) {
+        if (getSavedKey().isEmpty()) return;
         TeleportEngine.setAutoGameDpi(enabled, dpi);
     }
 
     @JavascriptInterface
     public void setPixelDownscaleFactor(int pct) {
+        if (getSavedKey().isEmpty()) return;
         TeleportEngine.setPixelDownscaleFactor(pct);
     }
 
@@ -479,6 +551,7 @@ public class AndroidBridge {
 
     @JavascriptInterface
     public void updateCrosshair(String type) {
+        if (getSavedKey().isEmpty() && !"off".equalsIgnoreCase(type)) return;
         mainHandler.post(() -> {
             if (activity instanceof MainActivity) {
                 ((MainActivity) activity).updateCrosshair("off");
@@ -543,6 +616,7 @@ public class AndroidBridge {
             updateCrosshair("off");
             return;
         }
+        if (getSavedKey().isEmpty()) return;
         updateCrosshair(type);
         mainHandler.post(() -> {
             if (crosshairView != null) {
@@ -571,6 +645,8 @@ public class AndroidBridge {
         });
     }
 
+    // ================= АВТОРИЗАЦИЯ СТРОГО ЧЕРЕЗ ТГ-БОТА (APIMANAGER) И АВТО-КИК =================
+
     @JavascriptInterface
     public String getDeviceHwid() {
         String androidId = Settings.Secure.getString(context.getContentResolver(), Settings.Secure.ANDROID_ID);
@@ -587,30 +663,109 @@ public class AndroidBridge {
 
     @JavascriptInterface
     public String getSavedKey() {
-        return prefs.getString("saved_license_key", "TP90D-HHG-125841");
+        return prefs.getString("saved_license_key", "");
+    }
+
+    @JavascriptInterface
+    public String getSavedNickname() {
+        return prefs.getString("saved_player_nick", "");
+    }
+
+    @JavascriptInterface
+    public void savePlayerNickname(String nick) {
+        if (nick != null && !nick.trim().isEmpty()) {
+            prefs.edit().putString("saved_player_nick", nick.trim()).apply();
+        }
     }
 
     @JavascriptInterface
     public String activateLicenseKey(String key) {
         if (key == null || key.trim().length() < 5) {
-            return "ERROR|Неверный формат ключа";
+            return "ERROR|Введите ключ из Telegram-бота";
         }
         String cleanKey = key.trim().toUpperCase();
-        prefs.edit().putString("saved_license_key", cleanKey).apply();
-        return "OK|АКТИВНА (89 дн. 7 ч.)";
+        String hwid = getDeviceHwid();
+        String nick = prefs.getString("saved_player_nick", "Player");
+
+        try {
+            String raw = ApiManager.activateLicense(cleanKey, hwid, nick);
+            JSONObject res = new JSONObject(raw);
+            String status = res.optString("status", "");
+
+            if ("expired".equalsIgnoreCase(status) || "blocked".equalsIgnoreCase(status) || res.optBoolean("blocked", false)) {
+                forceKickExpiredUser("Срок действия ключа истёк или он заблокирован!");
+                return "EXPIRED|" + res.optString("message", "Срок действия ключа истёк!");
+            }
+
+            boolean ok = res.optBoolean("ok", false)
+                    || "ok".equalsIgnoreCase(status)
+                    || "active".equalsIgnoreCase(status);
+
+            if (ok) {
+                prefs.edit().putString("saved_license_key", cleanKey).apply();
+                ProfileManager.saveActivatedProfile(context, nick, cleanKey);
+                String expInfo = res.optString("expires_in", res.optString("days_left", "АКТИВНА (PRO ДОСТУП)"));
+                return "OK|" + expInfo;
+            }
+
+            return "ERROR|" + res.optString("message", "Ключ не найден в базе Telegram-бота или привязан к другому HWID!");
+        } catch (Exception e) {
+            return "ERROR|Нет связи с сервером Telegram-бота. Проверьте интернет!";
+        }
     }
 
+    /**
+     * Живая проверка статуса ключа на сервере ТГ-бота.
+     * Если ключ закончился или сброшен в боте — возвращает EXPIRED и сразу кикает пользователя!
+     */
     @JavascriptInterface
     public String verifyLicenseKey(String key) {
-        if (key == null || key.trim().length() < 5) {
-            return "ERROR|Ключ не найден";
+        String cleanKey = (key != null && !key.trim().isEmpty())
+                ? key.trim().toUpperCase()
+                : getSavedKey().trim().toUpperCase();
+
+        if (cleanKey.length() < 5) {
+            forceKickExpiredUser("Введите лицензионный ключ для входа");
+            return "EXPIRED|Введите лицензионный ключ";
         }
-        return "OK|АКТИВНА (89 дн. 7 ч.)";
+
+        try {
+            String raw = ApiManager.verifyLicense(cleanKey, getDeviceHwid());
+            JSONObject res = new JSONObject(raw);
+            String status = res.optString("status", "");
+
+            if ("expired".equalsIgnoreCase(status)
+                    || "blocked".equalsIgnoreCase(status)
+                    || "need_auth".equalsIgnoreCase(status)
+                    || res.optBoolean("blocked", false)) {
+                String msg = res.optString("message", "Срок действия вашего ключа закончился!");
+                forceKickExpiredUser(msg);
+                return "EXPIRED|" + msg;
+            }
+
+            boolean ok = res.optBoolean("ok", false)
+                    || "ok".equalsIgnoreCase(status)
+                    || "active".equalsIgnoreCase(status);
+
+            if (ok) {
+                String expInfo = res.optString("expires_in", res.optString("days_left", "АКТИВНА (PRO ДОСТУП)"));
+                return "OK|" + expInfo;
+            }
+
+            if (!raw.contains("Нет связи")) {
+                String msg = res.optString("message", "Ключ недействителен или закончился!");
+                forceKickExpiredUser(msg);
+                return "EXPIRED|" + msg;
+            }
+            return "OFFLINE|Проверка сети";
+        } catch (Exception e) {
+            return "OFFLINE|Проверка сети";
+        }
     }
 
     @JavascriptInterface
     public void logoutLicenseKey() {
-        prefs.edit().remove("saved_license_key").apply();
+        forceKickExpiredUser("Вы вышли из аккаунта");
     }
 
     @JavascriptInterface
@@ -628,7 +783,6 @@ public class AndroidBridge {
         return Math.round(dp * context.getResources().getDisplayMetrics().density);
     }
 
-    // Нижняя неоновая корзина удаления кнопки «TP»
     private static class BridgeTrashView extends View {
         private final Paint bgPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
         private final Paint borderPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
@@ -679,7 +833,6 @@ public class AndroidBridge {
         }
     }
 
-    // Оверлей кастомного прицела с поддержкой тонкой настройки (Длина, Толщина, Зазор, Точка, Обводка)
     private static class CrosshairOverlayView extends View {
         private String type = "cross";
         private int opacity = 100;
@@ -788,7 +941,6 @@ public class AndroidBridge {
                 return;
             }
 
-            // Линии для cross, crossdot, tshape
             boolean hasTop = !"tshape".equalsIgnoreCase(type);
             if (outline) {
                 outlinePaint.setStyle(Paint.Style.STROKE);
