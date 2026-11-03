@@ -34,7 +34,6 @@ public class AndroidBridge {
     private final SharedPreferences legacyPrefs;
     private final Handler mainHandler = new Handler(Looper.getMainLooper());
 
-    // Плавающая кнопка растяга «T» и нижняя корзина удаления
     private WindowManager windowManager;
     private TextView floatingStretchBtn;
     private FrameLayout trashContainer;
@@ -45,7 +44,6 @@ public class AndroidBridge {
     private boolean isScreenCurrentlyStretched = false;
     private String selectedStretchRatio = "4:3";
 
-    // Плавающий кастомный прицел
     private CrosshairOverlayView crosshairView;
     private WindowManager.LayoutParams crosshairParams;
     private boolean isCrosshairShown = false;
@@ -60,8 +58,6 @@ public class AndroidBridge {
         TeleportEngine.init(context);
         TeleportEngine.requestShizukuPermissionIfNeeded();
     }
-
-    // ================= 1. РАЗРЕШЕНИЕ ПОВЕРХ ДРУГИХ ОКОН =================
 
     @JavascriptInterface
     public boolean hasOverlayPermission() {
@@ -94,7 +90,7 @@ public class AndroidBridge {
         });
     }
 
-    // ================= 2. ПЛАВАЮЩАЯ КНОПКА РАСТЯГА «T» + КОРЗИНА УДАЛЕНИЯ СНИЗУ =================
+    // ================= ПЛАВАЮЩАЯ КНОПКА РАСТЯГА «T» + КОРЗИНА УДАЛЕНИЯ СНИЗУ =================
 
     @JavascriptInterface
     public String activateStretchFloatingButton(String ratio) {
@@ -130,7 +126,6 @@ public class AndroidBridge {
                         ? WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY
                         : WindowManager.LayoutParams.TYPE_PHONE;
 
-                // 1. Создаём нижнюю неоновую корзину удаления
                 trashContainer = new FrameLayout(context);
                 trashPillView = new BridgeTrashView(context);
                 FrameLayout.LayoutParams pillLp = new FrameLayout.LayoutParams(dpToPx(240), dpToPx(52), Gravity.CENTER);
@@ -155,7 +150,6 @@ public class AndroidBridge {
                 trashParams.gravity = Gravity.BOTTOM | Gravity.CENTER_HORIZONTAL;
                 trashParams.y = dpToPx(16);
 
-                // 2. Создаём саму плавающую кнопку «T»
                 floatingStretchBtn = new TextView(context);
                 floatingStretchBtn.setText("T\n" + selectedStretchRatio);
                 floatingStretchBtn.setTextColor(Color.WHITE);
@@ -257,7 +251,7 @@ public class AndroidBridge {
                 windowManager.addView(trashContainer, trashParams);
                 windowManager.addView(floatingStretchBtn, stretchParams);
                 isStretchOverlayShown = true;
-                Toast.makeText(context, "⚡ Кнопка «T» (" + selectedStretchRatio + ") запущена! Перетяни вниз для удаления", Toast.LENGTH_SHORT).show();
+                Toast.makeText(context, "⚡ Кнопка «T» (" + selectedStretchRatio + ") запущена!", Toast.LENGTH_SHORT).show();
             } catch (Exception e) {
                 Toast.makeText(context, "Ошибка кнопки: " + e.getMessage(), Toast.LENGTH_LONG).show();
             }
@@ -298,12 +292,12 @@ public class AndroidBridge {
 
         isScreenCurrentlyStretched = !isScreenCurrentlyStretched;
         if (isScreenCurrentlyStretched) {
-            boolean applied = applyStretchWithRotationLock(selectedStretchRatio);
+            boolean applied = applyFullScreenStretchNoBlackBars(selectedStretchRatio);
             if (applied) {
-                Toast.makeText(context, "🔥 Растяг " + selectedStretchRatio + " ВКЛЮЧЕН!", Toast.LENGTH_SHORT).show();
+                Toast.makeText(context, "🔥 Растяг " + selectedStretchRatio + " БЕЗ ЧЁРНЫХ ПОЛОС ВКЛЮЧЕН!", Toast.LENGTH_SHORT).show();
             } else {
                 isScreenCurrentlyStretched = false;
-                Toast.makeText(context, "❌ Ошибка применения растяга (проверьте Shizuku)", Toast.LENGTH_SHORT).show();
+                Toast.makeText(context, "❌ Ошибка применения растяга", Toast.LENGTH_SHORT).show();
             }
         } else {
             resetStretchOnlyKeepButton();
@@ -312,61 +306,51 @@ public class AndroidBridge {
         updateFloatingBtnAppearance();
     }
 
-    private boolean applyStretchWithRotationLock(String ratio) {
+    /**
+     * Настоящий полноэкранный растяг в Standoff 2 БЕЗ чёрных полос по бокам/сверху:
+     * Мы НЕ обрезаем длинную сторону экрана (иначе телефон рисует чёрные рамки),
+     * а расширяем короткую сторону (targetShort) относительно полной длины экрана (baseLong)!
+     * Например, при родном 1440x3120 для 4:3 ставится 2340x3120 — игра рендерит 4:3 во весь экран!
+     */
+    private boolean applyFullScreenStretchNoBlackBars(String ratio) {
         try {
-            DisplayMetrics dm = new DisplayMetrics();
-            windowManager.getDefaultDisplay().getRealMetrics(dm);
+            int savedShort = legacyPrefs.getInt("native_short_px", TeleportEngine.getNativeShortSide());
+            int savedLong = legacyPrefs.getInt("native_long_px", TeleportEngine.getNativeLongSide());
 
-            int savedShort = legacyPrefs.getInt("native_short_px", 0);
-            int savedLong = legacyPrefs.getInt("native_long_px", 0);
-            if (savedShort <= 0 || savedLong <= 0) {
-                savedShort = Math.min(dm.widthPixels, dm.heightPixels);
-                savedLong = Math.max(dm.widthPixels, dm.heightPixels);
-                legacyPrefs.edit()
-                        .putInt("native_short_px", savedShort)
-                        .putInt("native_long_px", savedLong)
-                        .apply();
-            }
-
-            int baseShort = savedShort > 0 ? savedShort : 1080;
-            int targetLong;
+            int baseLong = savedLong > 0 ? savedLong : 2400;
+            int targetShort;
             String clean = (ratio == null) ? "4:3" : ratio.trim();
+
             switch (clean) {
                 case "5:4":
-                    targetLong = Math.round(baseShort * 1.25f);
+                    targetShort = Math.round(baseLong / 1.25f);
                     break;
                 case "4:3":
-                    targetLong = Math.round(baseShort * 1.3333f);
+                    targetShort = Math.round(baseLong / 1.3333f);
                     break;
                 case "3:2":
-                    targetLong = Math.round(baseShort * 1.50f);
+                    targetShort = Math.round(baseLong / 1.50f);
                     break;
                 case "16:10":
-                    targetLong = Math.round(baseShort * 1.60f);
+                    targetShort = Math.round(baseLong / 1.60f);
                     break;
                 case "16:9":
-                    targetLong = Math.round(baseShort * 1.7777f);
+                    targetShort = Math.round(baseLong / 1.7777f);
                     break;
                 default:
-                    targetLong = Math.round(baseShort * 1.3333f);
+                    targetShort = Math.round(baseLong / 1.3333f);
                     break;
             }
-            if ((targetLong & 1) == 1) targetLong++;
+            if ((targetShort & 1) == 1) targetShort++;
 
-            int currentRot = windowManager.getDefaultDisplay().getRotation();
-            final int lockUserRot = (currentRot == Surface.ROTATION_270) ? 3 : 1;
-            final int fShort = baseShort;
-            final int fLong = targetLong;
+            final int fShort = targetShort;
+            final int fLong = baseLong;
 
             new Thread(() -> {
-                String cmd = "cmd window set-ignore-orientation-request false; "
-                        + "cmd window set-fix-to-user-rotation disabled; "
-                        + "settings put system accelerometer_rotation 0; "
-                        + "settings put system user_rotation " + lockUserRot + "; "
+                String cmd = "wm size " + fShort + "x" + fLong + "; "
                         + "settings put system peak_refresh_rate 120.0; "
                         + "settings put system min_refresh_rate 120.0; "
-                        + "settings put secure refresh_rate_mode 2; "
-                        + "wm size " + fShort + "x" + fLong;
+                        + "settings put secure refresh_rate_mode 2;";
                 ShizukuManager.execCommand(cmd);
             }).start();
             return true;
@@ -377,11 +361,7 @@ public class AndroidBridge {
 
     private void resetStretchOnlyKeepButton() {
         new Thread(() -> {
-            String cmd = "wm size reset; "
-                    + "cmd window set-ignore-orientation-request false; "
-                    + "cmd window set-fix-to-user-rotation default; "
-                    + "settings put system accelerometer_rotation 0";
-            ShizukuManager.execCommand(cmd);
+            ShizukuManager.execCommand("wm size reset");
         }).start();
     }
 
@@ -432,8 +412,6 @@ public class AndroidBridge {
         });
     }
 
-    // ================= 3. СОХРАНЕНИЕ ВСЕХ НАСТРОЕК В ПАМЯТЬ =================
-
     @JavascriptInterface
     public boolean saveFullConfigJson(String jsonConfig) {
         if (jsonConfig == null || jsonConfig.trim().isEmpty()) return false;
@@ -463,8 +441,6 @@ public class AndroidBridge {
             return "OFF";
         }
     }
-
-    // ================= 4. МЕТОДЫ TELEPORT ENGINE И SHIZUKU =================
 
     @JavascriptInterface
     public boolean isShizukuReady() {
@@ -530,8 +506,6 @@ public class AndroidBridge {
     public String runSmartDeviceScan() {
         return TeleportEngine.runSmartDeviceScan(context);
     }
-
-    // ================= 5. КАСТОМНЫЙ ПРИЦЕЛ =================
 
     @JavascriptInterface
     public void updateCrosshair(String type) {
@@ -611,8 +585,6 @@ public class AndroidBridge {
         });
     }
 
-    // ================= 6. ПРОФИЛЬ И HWID =================
-
     @JavascriptInterface
     public String getDeviceHwid() {
         String androidId = Settings.Secure.getString(context.getContentResolver(), Settings.Secure.ANDROID_ID);
@@ -671,7 +643,6 @@ public class AndroidBridge {
         return Math.round(dp * context.getResources().getDisplayMetrics().density);
     }
 
-    // Внутренний класс нижней неоновой корзины удаления кнопки «T»
     private static class BridgeTrashView extends View {
         private final Paint bgPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
         private final Paint borderPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
@@ -722,7 +693,6 @@ public class AndroidBridge {
         }
     }
 
-    // Внутренний класс кастомного прицела (Zero-Lag Canvas)
     private static class CrosshairOverlayView extends View {
         private String type = "dot";
         private int scale = 50;
@@ -759,18 +729,18 @@ public class AndroidBridge {
             float gap = 4f + (scale / 100f) * 8f;
 
             if ("dot".equalsIgnoreCase(type)) {
-                paint.setStyle(Paint.Style.FILL);
+                paint.setStyle(android.graphics.Paint.Style.FILL);
                 canvas.drawCircle(cx, cy, Math.max(4f, size * 0.28f), paint);
             } else if ("circle".equalsIgnoreCase(type)) {
-                paint.setStyle(Paint.Style.STROKE);
+                paint.setStyle(android.graphics.Paint.Style.STROKE);
                 canvas.drawCircle(cx, cy, size * 0.65f, paint);
             } else if ("tshape".equalsIgnoreCase(type)) {
-                paint.setStyle(Paint.Style.STROKE);
+                paint.setStyle(android.graphics.Paint.Style.STROKE);
                 canvas.drawLine(cx - size, cy, cx - gap, cy, paint);
                 canvas.drawLine(cx + gap, cy, cx + size, cy, paint);
                 canvas.drawLine(cx, cy + gap, cx, cy + size, paint);
             } else {
-                paint.setStyle(Paint.Style.STROKE);
+                paint.setStyle(android.graphics.Paint.Style.STROKE);
                 canvas.drawLine(cx - size, cy, cx - gap, cy, paint);
                 canvas.drawLine(cx + gap, cy, cx + size, cy, paint);
                 canvas.drawLine(cx, cy - size, cx, cy - gap, paint);
