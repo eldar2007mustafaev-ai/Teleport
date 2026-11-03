@@ -1,4 +1,4 @@
-package com.so2teleport.app;
+package com.teleport.so2;
 
 import android.app.Activity;
 import android.content.Context;
