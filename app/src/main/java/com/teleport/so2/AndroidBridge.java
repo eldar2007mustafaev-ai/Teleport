@@ -160,7 +160,7 @@ public class AndroidBridge {
             Future<Boolean> future = networkExecutor.submit(task);
             return future.get(4200, TimeUnit.MILLISECONDS);
         } catch (Exception e) {
-            return true; // Фолбэк при кратковременном отсутствии интернета
+            return true;
         }
     }
 
@@ -725,7 +725,6 @@ public class AndroidBridge {
         String nick = prefs.getString("saved_player_nick", "Player");
 
         try {
-            // Строгий запрос к серверу вашего ТГ-бота
             String raw = ApiManager.activateLicense(cleanKey, hwid, nick);
             JSONObject res = new JSONObject(raw);
             String status = res.optString("status", "");
@@ -984,14 +983,14 @@ public class AndroidBridge {
                 canvas.drawLine(cx + gapPx, cy, cx + gapPx + lenPx, cy, outlinePaint);
                 canvas.drawLine(cx, cy + gapPx, cx, cy + gapPx + lenPx, outlinePaint);
                 if (hasTop) {
-                    canvas.drawLine(cx, cy - gapPx - lenPx, cx, cy - gapPipe = cy - gapPx, outlinePaint); // safe fallback
+                    canvas.drawLine(cx, cy - gapPx - lenPx, cx, cy - gapPx, outlinePaint);
                 }
             }
 
             paint.setStyle(Paint.Style.STROKE);
             canvas.drawLine(cx - gapPx - lenPx, cy, cx - gapPx, cy, paint);
             canvas.drawLine(cx + gapPx, cy, cx + gapPx + lenPx, cy, paint);
-            canvas.drawLine(cx, cy + gapPx, cx, cy, cy + gapPx + lenPx, paint);
+            canvas.drawLine(cx, cy + gapPx, cx, cy + gapPx + lenPx, paint);
             if (hasTop) {
                 canvas.drawLine(cx, cy - gapPx - lenPx, cx, cy - gapPx, paint);
             }
