@@ -50,8 +50,6 @@ public class AndroidBridge {
         TeleportEngine.init(context);
     }
 
-    // ================= 1. РАЗРЕШЕНИЕ ПОВЕРХ ДРУГИХ ОКОН =================
-
     @JavascriptInterface
     public boolean hasOverlayPermission() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
@@ -83,7 +81,7 @@ public class AndroidBridge {
         });
     }
 
-    // ================= 2. РАБОЧАЯ ПЛАВАЮЩАЯ КНОПКА РАСТЯГА «T» =================
+    // ================= СОЗДАНИЕ И КЛИК ПЛАВАЮЩЕЙ КНОПКИ РАСТЯГА «T» =================
 
     @JavascriptInterface
     public String activateStretchFloatingButton(String ratio) {
@@ -91,30 +89,23 @@ public class AndroidBridge {
             this.selectedStretchRatio = ratio.trim();
         }
         prefs.edit().putString("saved_stretch_ratio", this.selectedStretchRatio).apply();
-        legacyPrefs.edit()
-                .putString("stretch_ratio", this.selectedStretchRatio)
-                .putBoolean("float_btn_enabled", true)
-                .apply();
+        legacyPrefs.edit().putString("stretch_ratio", this.selectedStretchRatio).apply();
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && !Settings.canDrawOverlays(context)) {
             requestOverlayPermission();
             return "NEED_PERMISSION";
         }
 
-        // Если MainActivity поддерживает фирменную кнопку с кибер-корзиной — используем её
-        if (activity instanceof MainActivity) {
-            mainHandler.post(() -> {
-                ((MainActivity) activity).toggleFloatingButton(true);
-                Toast.makeText(context, "⚡ Кнопка «T» (" + selectedStretchRatio + ") запущена! Нажми на неё в игре", Toast.LENGTH_SHORT).show();
-            });
-            return "OK";
-        }
-
         mainHandler.post(() -> {
             try {
+                // Убираем дублирующую кнопку из MainActivity, если она была открыта
+                if (activity instanceof MainActivity) {
+                    ((MainActivity) activity).toggleFloatingButton(false);
+                }
+
                 if (isStretchOverlayShown && floatingStretchBtn != null) {
                     updateFloatingBtnAppearance();
-                    Toast.makeText(context, "Кнопка «T» (" + selectedStretchRatio + ") обновлена!", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(context, "⚡ Формат кнопки «T» обновлён на " + selectedStretchRatio, Toast.LENGTH_SHORT).show();
                     return;
                 }
 
@@ -125,13 +116,18 @@ public class AndroidBridge {
                 floatingStretchBtn.setGravity(Gravity.CENTER);
                 floatingStretchBtn.setIncludeFontPadding(false);
 
-                int sizePx = dpToPx(52);
+                int sizePx = dpToPx(54);
                 int overlayType = (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O)
                         ? WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY
                         : WindowManager.LayoutParams.TYPE_PHONE;
 
                 int flags = WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE
+                        | WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL
                         | WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN;
+
+                if (stealthOverlayFlag) {
+                    flags |= WindowManager.LayoutParams.FLAG_SECURE;
+                }
 
                 stretchParams = new WindowManager.LayoutParams(
                         sizePx,
@@ -141,8 +137,8 @@ public class AndroidBridge {
                         PixelFormat.TRANSLUCENT
                 );
                 stretchParams.gravity = Gravity.TOP | Gravity.START;
-                stretchParams.x = dpToPx(18);
-                stretchParams.y = dpToPx(140);
+                stretchParams.x = dpToPx(20);
+                stretchParams.y = dpToPx(160);
 
                 updateFloatingBtnAppearance();
 
@@ -195,9 +191,9 @@ public class AndroidBridge {
 
                 windowManager.addView(floatingStretchBtn, stretchParams);
                 isStretchOverlayShown = true;
-                Toast.makeText(context, "⚡ Кнопка «T» (" + selectedStretchRatio + ") запущена! Нажми на неё в игре", Toast.LENGTH_SHORT).show();
+                Toast.makeText(context, "⚡ Кнопка «T» (" + selectedStretchRatio + ") выведена! Нажми на неё в Standoff 2", Toast.LENGTH_SHORT).show();
             } catch (Exception e) {
-                Toast.makeText(context, "Ошибка создания кнопки: " + e.getMessage(), Toast.LENGTH_LONG).show();
+                Toast.makeText(context, "Ошибка кнопки: " + e.getMessage(), Toast.LENGTH_LONG).show();
             }
         });
 
@@ -206,7 +202,7 @@ public class AndroidBridge {
 
     private void toggleScreenStretchAction() {
         if (!TeleportEngine.isShizukuReady()) {
-            Toast.makeText(context, "⚠️ Включите Shizuku для работы растяга!", Toast.LENGTH_SHORT).show();
+            Toast.makeText(context, "⚠️ Включите и разрешите Shizuku для работы растяга!", Toast.LENGTH_SHORT).show();
             TeleportEngine.requestShizukuPermissionIfNeeded();
             return;
         }
@@ -218,11 +214,11 @@ public class AndroidBridge {
                 Toast.makeText(context, "🔥 Растяг " + selectedStretchRatio + " ВКЛЮЧЕН!", Toast.LENGTH_SHORT).show();
             } else {
                 isScreenCurrentlyStretched = false;
-                Toast.makeText(context, "❌ Ошибка применения wm size (проверьте Shizuku)", Toast.LENGTH_SHORT).show();
+                Toast.makeText(context, "❌ Ошибка применения растяга", Toast.LENGTH_SHORT).show();
             }
         } else {
             TeleportEngine.resetResolutionToNative();
-            Toast.makeText(context, "🔄 Экран возвращен в родное разрешение", Toast.LENGTH_SHORT).show();
+            Toast.makeText(context, "🔄 Обычный экран восстановлен", Toast.LENGTH_SHORT).show();
         }
         updateFloatingBtnAppearance();
     }
@@ -232,12 +228,12 @@ public class AndroidBridge {
         GradientDrawable bg = new GradientDrawable();
         bg.setShape(GradientDrawable.OVAL);
         if (isScreenCurrentlyStretched) {
-            bg.setColor(Color.parseColor("#D900E676"));
+            bg.setColor(Color.parseColor("#E610B981"));
             bg.setStroke(dpToPx(2), Color.WHITE);
             floatingStretchBtn.setText("ON\n" + selectedStretchRatio);
         } else {
-            bg.setColor(Color.parseColor("#CC9333EA"));
-            bg.setStroke(dpToPx(2), Color.parseColor("#00F0FF"));
+            bg.setColor(Color.parseColor("#D90B1622"));
+            bg.setStroke(dpToPx(2), Color.parseColor("#00E5FF"));
             floatingStretchBtn.setText("T\n" + selectedStretchRatio);
         }
         floatingStretchBtn.setBackground(bg);
@@ -245,36 +241,13 @@ public class AndroidBridge {
 
     @JavascriptInterface
     public void applyStretchDirectlyNow(String ratio) {
-        if (ratio != null && !ratio.trim().isEmpty()) {
-            selectedStretchRatio = ratio.trim();
-        }
-        legacyPrefs.edit().putString("stretch_ratio", selectedStretchRatio).apply();
-        mainHandler.post(() -> {
-            if (!TeleportEngine.isShizukuReady()) {
-                Toast.makeText(context, "⚠️ Сначала запустите Shizuku!", Toast.LENGTH_SHORT).show();
-                TeleportEngine.requestShizukuPermissionIfNeeded();
-                return;
-            }
-            if (activity instanceof MainActivity) {
-                ((MainActivity) activity).applyResolutionRatio(selectedStretchRatio);
-                Toast.makeText(context, "✅ Экран растянут в " + selectedStretchRatio + "!", Toast.LENGTH_SHORT).show();
-                return;
-            }
-            boolean ok = TeleportEngine.applyAspectRatioStretch(selectedStretchRatio);
-            isScreenCurrentlyStretched = ok;
-            updateFloatingBtnAppearance();
-            if (ok) {
-                Toast.makeText(context, "✅ Экран растянут в " + selectedStretchRatio + "!", Toast.LENGTH_SHORT).show();
-            }
-        });
+        activateStretchFloatingButton(ratio);
     }
 
     @JavascriptInterface
     public void resetResolution() {
-        legacyPrefs.edit().putBoolean("float_btn_enabled", false).apply();
         mainHandler.post(() -> {
             if (activity instanceof MainActivity) {
-                ((MainActivity) activity).resetResolution();
                 ((MainActivity) activity).toggleFloatingButton(false);
             }
             TeleportEngine.resetResolutionToNative();
@@ -286,11 +259,9 @@ public class AndroidBridge {
                 floatingStretchBtn = null;
                 isStretchOverlayShown = false;
             }
-            Toast.makeText(context, "Экран сброшен к родному разрешению, кнопка «T» убрана", Toast.LENGTH_SHORT).show();
+            Toast.makeText(context, "Кнопка «T» убрана, экран сброшен", Toast.LENGTH_SHORT).show();
         });
     }
-
-    // ================= 3. СОХРАНЕНИЕ ВСЕХ НАСТРОЕК В ПАМЯТЬ ANDROID =================
 
     @JavascriptInterface
     public boolean saveFullConfigJson(String jsonConfig) {
@@ -304,8 +275,6 @@ public class AndroidBridge {
         return prefs.getString("full_user_config_v408", "");
     }
 
-    // ================= 4. РЕЖИМ ШИРОКИХ ХИТБОКСОВ (В 1 КЛИК) =================
-
     @JavascriptInterface
     public String setWideHitboxMode(boolean enabled, String ratio) {
         String targetRatio = (ratio != null && !ratio.isEmpty()) ? ratio : "4:3";
@@ -313,7 +282,7 @@ public class AndroidBridge {
 
         if (enabled) {
             TeleportEngine.setTouchSamplingBoost(true, 360);
-            TeleportEngine.setEnhancedRecoilFix(true, 92);
+            TeleportEngine.setEnhancedRecoilFix(true, 95);
             TeleportEngine.enableWideHitboxQuantization(true);
             activateStretchFloatingButton(targetRatio);
             return "OK|" + targetRatio;
@@ -323,8 +292,6 @@ public class AndroidBridge {
             return "OFF";
         }
     }
-
-    // ================= 5. ОСНОВНЫЕ МЕТОДЫ TELEPORT ENGINE И SHIZUKU =================
 
     @JavascriptInterface
     public boolean isShizukuReady() {
@@ -391,8 +358,6 @@ public class AndroidBridge {
         return TeleportEngine.runSmartDeviceScan(context);
     }
 
-    // ================= 6. КАСТОМНЫЙ ПРИЦЕЛ =================
-
     @JavascriptInterface
     public void updateCrosshair(String type) {
         mainHandler.post(() -> {
@@ -458,8 +423,6 @@ public class AndroidBridge {
             ((MainActivity) activity).updateOverlayStealthFlag(stealth);
         }
     }
-
-    // ================= 7. АВТОРИЗАЦИЯ И ПРОФИЛЬ УСТРОЙСТВА =================
 
     @JavascriptInterface
     public String getDeviceHwid() {
