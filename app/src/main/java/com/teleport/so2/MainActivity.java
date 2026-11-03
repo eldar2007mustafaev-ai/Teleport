@@ -108,7 +108,7 @@ public class MainActivity extends Activity {
             } else {
                 bgPaint.setColor(Color.parseColor("#EB140828"));
                 borderPaint.setColor(Color.parseColor("#A855F7"));
-                iconPaint.setColor(Color.parseColor("#D946EF"));
+                iconPaint.setColor(Color.parseColor("#00E5FF"));
             }
 
             canvas.drawRoundRect(pillRect, 999f, 999f, bgPaint);
@@ -152,11 +152,22 @@ public class MainActivity extends Activity {
         windowManager = (WindowManager) getSystemService(WINDOW_SERVICE);
         DisplayMetrics dm = new DisplayMetrics();
         windowManager.getDefaultDisplay().getRealMetrics(dm);
-        cachedScreenHeight = dm.heightPixels;
-
-        healBrokenTouchTimeouts();
+        cachedScreenHeight = Math.max(dm.widthPixels, dm.heightPixels);
 
         SharedPreferences prefs = getSharedPreferences("so2_teleport_prefs", Context.MODE_PRIVATE);
+        int nativeShort = Math.min(dm.widthPixels, dm.heightPixels);
+        int nativeLong = Math.max(dm.widthPixels, dm.heightPixels);
+        if ((float) nativeLong / Math.max(1, nativeShort) > 1.85f || !prefs.contains("native_short_px")) {
+            prefs.edit()
+                    .putInt("native_short_px", nativeShort)
+                    .putInt("native_long_px", nativeLong)
+                    .apply();
+        }
+
+        TeleportEngine.init(this);
+        TeleportEngine.requestShizukuPermissionIfNeeded();
+        healBrokenTouchTimeouts();
+
         stealthModeEnabled = prefs.getBoolean("stealth_overlays", false);
 
         webView = new WebView(this);
@@ -177,7 +188,7 @@ public class MainActivity extends Activity {
         ws.setMediaPlaybackRequiresUserGesture(false);
         ws.setCacheMode(WebSettings.LOAD_DEFAULT);
 
-        webView.setBackgroundColor(Color.parseColor("#070312"));
+        webView.setBackgroundColor(Color.parseColor("#050B11"));
         webView.setWebChromeClient(new WebChromeClient());
         webView.setWebViewClient(new WebViewClient());
         webView.addJavascriptInterface(new AndroidBridge(this), "AndroidBridge");
@@ -224,10 +235,6 @@ public class MainActivity extends Activity {
         return super.dispatchKeyEvent(event);
     }
 
-    /**
-     * Когда пользователь сворачивает SO2Teleport и заходит в Standoff 2,
-     * полностью замораживаем рендеринг WebView, чтобы он тратил 0% CPU и GPU!
-     */
     @Override
     protected void onPause() {
         super.onPause();
@@ -266,7 +273,7 @@ public class MainActivity extends Activity {
             if (!Settings.canDrawOverlays(this)) {
                 runOnUiThread(() -> {
                     try {
-                        Toast.makeText(this, "Разрешите показ поверх других окон для SO2Teleport!", Toast.LENGTH_LONG).show();
+                        Toast.makeText(this, "Разрешите показ поверх других окон для кнопки «T»!", Toast.LENGTH_LONG).show();
                         Intent intent = new Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
                                 Uri.parse("package:" + getPackageName()));
                         startActivity(intent);
@@ -280,6 +287,7 @@ public class MainActivity extends Activity {
 
     private int getStealthOverlayFlags(boolean nonTouchable) {
         int flags = WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE
+                | WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL
                 | WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN
                 | WindowManager.LayoutParams.FLAG_HARDWARE_ACCELERATED;
         if (nonTouchable) {
@@ -308,17 +316,13 @@ public class MainActivity extends Activity {
         });
     }
 
-    public void setQuantumOverlayStrobe(boolean enabled) {
-        // Отключено принудительное дерганье флагов окна, чтобы не вызывать просадки FPS
-    }
-
     public void updateCrosshairStyle(int scale, int opacity, String colorHex) {
         this.crosshairScale = Math.max(10, Math.min(100, scale));
         this.crosshairOpacity = Math.max(15, Math.min(100, opacity));
         try {
             this.crosshairColor = Color.parseColor(colorHex);
         } catch (Exception e) {
-            this.crosshairColor = Color.parseColor("#D946EF");
+            this.crosshairColor = Color.parseColor("#00E5FF");
         }
         runOnUiThread(() -> {
             if (crosshairView != null) crosshairView.invalidate();
@@ -373,7 +377,6 @@ public class MainActivity extends Activity {
                         }
                     }
                 };
-                // Аппаратное кэширование текстуры прицела — 0% нагрузки на FPS в игре
                 crosshairView.setLayerType(View.LAYER_TYPE_HARDWARE, null);
 
                 int overlayType = Build.VERSION.SDK_INT >= Build.VERSION_CODES.O
@@ -404,6 +407,10 @@ public class MainActivity extends Activity {
     }
 
     private boolean isOverTrashBox(float rawTouchX, float rawTouchY) {
+        DisplayMetrics m = new DisplayMetrics();
+        windowManager.getDefaultDisplay().getRealMetrics(m);
+        int curScreenH = m.heightPixels;
+
         if (cyberTrashIconView != null && trashDropView != null && trashDropView.getVisibility() == View.VISIBLE) {
             int[] boxLoc = new int[2];
             cyberTrashIconView.getLocationOnScreen(boxLoc);
@@ -415,8 +422,10 @@ public class MainActivity extends Activity {
                 return true;
             }
         }
-        return rawTouchY >= (cachedScreenHeight - 200);
+        return rawTouchY >= (curScreenH - 220);
     }
+
+    // ================= ПЛАВАЮЩАЯ КНОПКА «T» С КИБЕР-КОРЗИНОЙ СНИЗУ =================
 
     public void toggleFloatingButton(boolean enable) {
         runOnUiThread(() -> {
@@ -425,7 +434,11 @@ public class MainActivity extends Activity {
                 return;
             }
             if (!checkAndRequestOverlayPermission()) return;
-            if (floatingBtnView != null) return;
+
+            if (floatingBtnView != null) {
+                updateFloatingBubbleAppearance();
+                return;
+            }
 
             DisplayMetrics dm = new DisplayMetrics();
             windowManager.getDefaultDisplay().getRealMetrics(dm);
@@ -435,6 +448,7 @@ public class MainActivity extends Activity {
                     ? WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY
                     : WindowManager.LayoutParams.TYPE_PHONE;
 
+            // 1. Создаём нижнюю Кибер-Корзину для удаления кнопки прямо в игре
             trashDropView = new FrameLayout(this);
             cyberTrashIconView = new CyberTrashView(this);
 
@@ -453,25 +467,28 @@ public class MainActivity extends Activity {
                     PixelFormat.TRANSLUCENT
             );
             trashParams.gravity = Gravity.BOTTOM | Gravity.CENTER_HORIZONTAL;
-            trashParams.y = 20;
+            trashParams.y = 24;
 
+            // 2. Создаём саму плавающую кнопку «T»
             FrameLayout bubbleContainer = new FrameLayout(this);
             bubbleContainer.setLayerType(View.LAYER_TYPE_HARDWARE, null);
             floatingTxtView = new TextView(this);
             updateFloatingBubbleAppearance();
 
-            bubbleContainer.addView(floatingTxtView, new FrameLayout.LayoutParams(124, 124, Gravity.CENTER));
+            bubbleContainer.addView(floatingTxtView, new FrameLayout.LayoutParams(128, 128, Gravity.CENTER));
             floatingBtnView = bubbleContainer;
 
             floatBtnParams = new WindowManager.LayoutParams(
-                    138, 138,
+                    142, 142,
                     overlayType,
                     getStealthOverlayFlags(false),
                     PixelFormat.TRANSLUCENT
             );
-            floatBtnParams.gravity = Gravity.BOTTOM | Gravity.END;
-            floatBtnParams.x = 28;
-            floatBtnParams.y = 150;
+            floatBtnParams.gravity = Gravity.TOP | Gravity.START;
+            floatBtnParams.x = 40;
+            floatBtnParams.y = 260;
+
+            final int touchSlopPx = Math.round(12 * getResources().getDisplayMetrics().density);
 
             floatingBtnView.setOnTouchListener(new View.OnTouchListener() {
                 private int initX, initY;
@@ -487,35 +504,38 @@ public class MainActivity extends Activity {
                             touchX = event.getRawX();
                             touchY = event.getRawY();
                             moved = false;
+                            v.setScaleX(0.92f);
+                            v.setScaleY(0.92f);
                             return true;
 
                         case MotionEvent.ACTION_MOVE:
-                            int dx = (int) (touchX - event.getRawX());
-                            int dy = (int) (touchY - event.getRawY());
-                            if (Math.abs(dx) > 6 || Math.abs(dy) > 6) {
+                            int dx = (int) (event.getRawX() - touchX);
+                            int dy = (int) (event.getRawY() - touchY);
+                            if (Math.abs(dx) > touchSlopPx || Math.abs(dy) > touchSlopPx) {
                                 moved = true;
                                 if (trashDropView != null && trashDropView.getVisibility() != View.VISIBLE) {
-                                    DisplayMetrics m = new DisplayMetrics();
-                                    windowManager.getDefaultDisplay().getRealMetrics(m);
-                                    cachedScreenHeight = m.heightPixels;
                                     trashDropView.setAlpha(0f);
                                     trashDropView.setVisibility(View.VISIBLE);
                                     trashDropView.animate().alpha(1f).setDuration(140).start();
                                 }
                             }
-                            floatBtnParams.x = initX + dx;
-                            floatBtnParams.y = initY + dy;
-                            try {
-                                windowManager.updateViewLayout(floatingBtnView, floatBtnParams);
-                            } catch (Exception ignored) {}
+                            if (moved) {
+                                floatBtnParams.x = initX + dx;
+                                floatBtnParams.y = initY + dy;
+                                try {
+                                    windowManager.updateViewLayout(floatingBtnView, floatBtnParams);
+                                } catch (Exception ignored) {}
 
-                            if (cyberTrashIconView != null) {
-                                cyberTrashIconView.setHovered(isOverTrashBox(event.getRawX(), event.getRawY()));
+                                if (cyberTrashIconView != null) {
+                                    cyberTrashIconView.setHovered(isOverTrashBox(event.getRawX(), event.getRawY()));
+                                }
                             }
                             return true;
 
                         case MotionEvent.ACTION_UP:
                         case MotionEvent.ACTION_CANCEL:
+                            v.setScaleX(1.0f);
+                            v.setScaleY(1.0f);
                             boolean dropInTrash = moved && isOverTrashBox(event.getRawX(), event.getRawY());
                             if (cyberTrashIconView != null) {
                                 cyberTrashIconView.setHovered(false);
@@ -530,7 +550,7 @@ public class MainActivity extends Activity {
                                     resetResolution();
                                 }
                                 removeFloatingButton();
-                                Toast.makeText(MainActivity.this, "Кнопка «T» удалена", Toast.LENGTH_SHORT).show();
+                                Toast.makeText(MainActivity.this, "🗑️ Кнопка «T» удалена", Toast.LENGTH_SHORT).show();
                                 return true;
                             }
                             if (!moved) {
@@ -538,10 +558,8 @@ public class MainActivity extends Activity {
                                 String ratio = prefs.getString("stretch_ratio", "4:3");
                                 if (!isStretchedActive) {
                                     applyResolutionRatio(ratio);
-                                    Toast.makeText(MainActivity.this, "Растяг " + ratio + " ВКЛ", Toast.LENGTH_SHORT).show();
                                 } else {
                                     resetResolution();
-                                    Toast.makeText(MainActivity.this, "Стандартный экран", Toast.LENGTH_SHORT).show();
                                 }
                             }
                             return true;
@@ -557,22 +575,27 @@ public class MainActivity extends Activity {
         });
     }
 
-    private void updateFloatingBubbleAppearance() {
+    public void updateFloatingBubbleAppearance() {
         if (floatingTxtView == null) return;
-        floatingTxtView.setText("T");
+        SharedPreferences prefs = getSharedPreferences("so2_teleport_prefs", Context.MODE_PRIVATE);
+        String ratio = prefs.getString("stretch_ratio", "4:3");
+
         floatingTxtView.setTextColor(Color.WHITE);
-        floatingTxtView.setTextSize(19f);
+        floatingTxtView.setTextSize(13f);
         floatingTxtView.setGravity(Gravity.CENTER);
+        floatingTxtView.setIncludeFontPadding(false);
 
         GradientDrawable circle = new GradientDrawable();
         circle.setShape(GradientDrawable.RECTANGLE);
-        circle.setCornerRadius(36f);
+        circle.setCornerRadius(38f);
         if (isStretchedActive) {
-            circle.setColor(Color.parseColor("#E67C3AED"));
-            circle.setStroke(4, Color.parseColor("#00F0FF"));
+            floatingTxtView.setText("ON\n" + ratio);
+            circle.setColor(Color.parseColor("#E610B981"));
+            circle.setStroke(4, Color.parseColor("#FFFFFF"));
         } else {
+            floatingTxtView.setText("T\n" + ratio);
             circle.setColor(Color.parseColor("#D90B0719"));
-            circle.setStroke(3, Color.parseColor("#A855F7"));
+            circle.setStroke(3, Color.parseColor("#00E5FF"));
         }
         floatingTxtView.setBackground(circle);
     }
@@ -589,7 +612,13 @@ public class MainActivity extends Activity {
     }
 
     public void applyResolutionRatio(String ratio) {
-        if (!ShizukuManager.isPermissionGranted()) return;
+        if (!TeleportEngine.isShizukuReady() && !ShizukuManager.isPermissionGranted()) {
+            TeleportEngine.requestShizukuPermissionIfNeeded();
+            runOnUiThread(() ->
+                    Toast.makeText(MainActivity.this, "⚠️ Разрешите доступ в приложении Shizuku для работы растяга!", Toast.LENGTH_LONG).show()
+            );
+            return;
+        }
 
         SharedPreferences prefs = getSharedPreferences("so2_teleport_prefs", Context.MODE_PRIVATE);
         String cleanRatio = (ratio == null || ratio.trim().isEmpty()) ? "4:3" : ratio.trim();
@@ -631,7 +660,10 @@ public class MainActivity extends Activity {
         final int lockUserRot = (currentRot == Surface.ROTATION_270) ? 3 : 1;
 
         isStretchedActive = true;
-        runOnUiThread(this::updateFloatingBubbleAppearance);
+        runOnUiThread(() -> {
+            updateFloatingBubbleAppearance();
+            Toast.makeText(MainActivity.this, "🔥 Растяг " + cleanRatio + " ВКЛЮЧЕН!", Toast.LENGTH_SHORT).show();
+        });
 
         new Thread(() -> {
             String cmd =
@@ -648,12 +680,15 @@ public class MainActivity extends Activity {
     }
 
     public void resetResolution() {
-        if (!ShizukuManager.isPermissionGranted()) return;
         isStretchedActive = false;
-        runOnUiThread(this::updateFloatingBubbleAppearance);
+        runOnUiThread(() -> {
+            updateFloatingBubbleAppearance();
+            Toast.makeText(MainActivity.this, "🔄 Стандартный экран восстановлен", Toast.LENGTH_SHORT).show();
+        });
+
+        if (!TeleportEngine.isShizukuReady() && !ShizukuManager.isPermissionGranted()) return;
 
         new Thread(() -> {
-            // Сбрасываем только размер экрана и ориентацию (DPI контролируется отдельно тумблером Авто-DPI)
             ShizukuManager.execCommand(
                     "wm size reset; " +
                     "cmd window set-ignore-orientation-request false; " +
