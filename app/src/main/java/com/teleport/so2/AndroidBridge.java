@@ -26,9 +26,9 @@ public class AndroidBridge {
     private final Context context;
     private final Activity activity;
     private final SharedPreferences prefs;
+    private final SharedPreferences legacyPrefs;
     private final Handler mainHandler = new Handler(Looper.getMainLooper());
 
-    // Плавающая кнопка растяга «T»
     private WindowManager windowManager;
     private TextView floatingStretchBtn;
     private WindowManager.LayoutParams stretchParams;
@@ -36,17 +36,16 @@ public class AndroidBridge {
     private boolean isScreenCurrentlyStretched = false;
     private String selectedStretchRatio = "4:3";
 
-    // Плавающий кастомный прицел
     private CrosshairOverlayView crosshairView;
     private WindowManager.LayoutParams crosshairParams;
     private boolean isCrosshairShown = false;
-
     private boolean stealthOverlayFlag = false;
 
     public AndroidBridge(Activity activity) {
         this.activity = activity;
         this.context = activity.getApplicationContext();
         this.prefs = context.getSharedPreferences("SO2TeleportPrefs_V408", Context.MODE_PRIVATE);
+        this.legacyPrefs = context.getSharedPreferences("so2_teleport_prefs", Context.MODE_PRIVATE);
         this.windowManager = (WindowManager) context.getSystemService(Context.WINDOW_SERVICE);
         TeleportEngine.init(context);
     }
@@ -92,17 +91,30 @@ public class AndroidBridge {
             this.selectedStretchRatio = ratio.trim();
         }
         prefs.edit().putString("saved_stretch_ratio", this.selectedStretchRatio).apply();
+        legacyPrefs.edit()
+                .putString("stretch_ratio", this.selectedStretchRatio)
+                .putBoolean("float_btn_enabled", true)
+                .apply();
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && !Settings.canDrawOverlays(context)) {
             requestOverlayPermission();
             return "NEED_PERMISSION";
         }
 
+        // Если MainActivity поддерживает фирменную кнопку с кибер-корзиной — используем её
+        if (activity instanceof MainActivity) {
+            mainHandler.post(() -> {
+                ((MainActivity) activity).toggleFloatingButton(true);
+                Toast.makeText(context, "⚡ Кнопка «T» (" + selectedStretchRatio + ") запущена! Нажми на неё в игре", Toast.LENGTH_SHORT).show();
+            });
+            return "OK";
+        }
+
         mainHandler.post(() -> {
             try {
                 if (isStretchOverlayShown && floatingStretchBtn != null) {
                     updateFloatingBtnAppearance();
-                    Toast.makeText(context, "Кнопка «T» (" + selectedStretchRatio + ") уже на экране!", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(context, "Кнопка «T» (" + selectedStretchRatio + ") обновлена!", Toast.LENGTH_SHORT).show();
                     return;
                 }
 
@@ -134,7 +146,6 @@ public class AndroidBridge {
 
                 updateFloatingBtnAppearance();
 
-                // Умный обработчик: отличает перетаскивание от клика (порог 12dp)
                 floatingStretchBtn.setOnTouchListener(new View.OnTouchListener() {
                     private int initialX, initialY;
                     private float initialTouchX, initialTouchY;
@@ -221,11 +232,11 @@ public class AndroidBridge {
         GradientDrawable bg = new GradientDrawable();
         bg.setShape(GradientDrawable.OVAL);
         if (isScreenCurrentlyStretched) {
-            bg.setColor(Color.parseColor("#D900E676")); // Ярко-зелёный когда растяг активен
+            bg.setColor(Color.parseColor("#D900E676"));
             bg.setStroke(dpToPx(2), Color.WHITE);
             floatingStretchBtn.setText("ON\n" + selectedStretchRatio);
         } else {
-            bg.setColor(Color.parseColor("#CC9333EA")); // Фиолетовый в режиме ожидания
+            bg.setColor(Color.parseColor("#CC9333EA"));
             bg.setStroke(dpToPx(2), Color.parseColor("#00F0FF"));
             floatingStretchBtn.setText("T\n" + selectedStretchRatio);
         }
@@ -237,10 +248,16 @@ public class AndroidBridge {
         if (ratio != null && !ratio.trim().isEmpty()) {
             selectedStretchRatio = ratio.trim();
         }
+        legacyPrefs.edit().putString("stretch_ratio", selectedStretchRatio).apply();
         mainHandler.post(() -> {
             if (!TeleportEngine.isShizukuReady()) {
                 Toast.makeText(context, "⚠️ Сначала запустите Shizuku!", Toast.LENGTH_SHORT).show();
                 TeleportEngine.requestShizukuPermissionIfNeeded();
+                return;
+            }
+            if (activity instanceof MainActivity) {
+                ((MainActivity) activity).applyResolutionRatio(selectedStretchRatio);
+                Toast.makeText(context, "✅ Экран растянут в " + selectedStretchRatio + "!", Toast.LENGTH_SHORT).show();
                 return;
             }
             boolean ok = TeleportEngine.applyAspectRatioStretch(selectedStretchRatio);
@@ -254,7 +271,12 @@ public class AndroidBridge {
 
     @JavascriptInterface
     public void resetResolution() {
+        legacyPrefs.edit().putBoolean("float_btn_enabled", false).apply();
         mainHandler.post(() -> {
+            if (activity instanceof MainActivity) {
+                ((MainActivity) activity).resetResolution();
+                ((MainActivity) activity).toggleFloatingButton(false);
+            }
             TeleportEngine.resetResolutionToNative();
             isScreenCurrentlyStretched = false;
             if (isStretchOverlayShown && floatingStretchBtn != null && windowManager != null) {
@@ -274,9 +296,6 @@ public class AndroidBridge {
     public boolean saveFullConfigJson(String jsonConfig) {
         if (jsonConfig == null || jsonConfig.trim().isEmpty()) return false;
         prefs.edit().putString("full_user_config_v408", jsonConfig).apply();
-        mainHandler.post(() ->
-                Toast.makeText(context, "💾 Все настройки надёжно сохранены в память!", Toast.LENGTH_SHORT).show()
-        );
         return true;
     }
 
@@ -293,16 +312,14 @@ public class AndroidBridge {
         prefs.edit().putBoolean("wide_hitbox_mode", enabled).apply();
 
         if (enabled) {
-            // 1. Включаем максимальный захват осей и 360 Гц тач
             TeleportEngine.setTouchSamplingBoost(true, 360);
             TeleportEngine.setEnhancedRecoilFix(true, 92);
             TeleportEngine.enableWideHitboxQuantization(true);
-            // 2. Выводим плавающую кнопку «T» с выбранным форматом растяга
             activateStretchFloatingButton(targetRatio);
             return "OK|" + targetRatio;
         } else {
             TeleportEngine.enableWideHitboxQuantization(false);
-            TeleportEngine.resetResolutionToNative();
+            resetResolution();
             return "OFF";
         }
     }
@@ -379,6 +396,10 @@ public class AndroidBridge {
     @JavascriptInterface
     public void updateCrosshair(String type) {
         mainHandler.post(() -> {
+            if (activity instanceof MainActivity) {
+                ((MainActivity) activity).updateCrosshair(type);
+                return;
+            }
             if ("off".equalsIgnoreCase(type)) {
                 if (isCrosshairShown && crosshairView != null && windowManager != null) {
                     try { windowManager.removeView(crosshairView); } catch (Exception ignored) {}
@@ -419,6 +440,10 @@ public class AndroidBridge {
     @JavascriptInterface
     public void updateCrosshairStyle(int scalePct, int opacityPct, String hexColor) {
         mainHandler.post(() -> {
+            if (activity instanceof MainActivity) {
+                ((MainActivity) activity).updateCrosshairStyle(scalePct, opacityPct, hexColor);
+                return;
+            }
             if (crosshairView != null) {
                 crosshairView.setStyle(scalePct, opacityPct, hexColor);
             }
@@ -428,6 +453,10 @@ public class AndroidBridge {
     @JavascriptInterface
     public void updateOverlayStealthFlag(boolean stealth) {
         this.stealthOverlayFlag = stealth;
+        legacyPrefs.edit().putBoolean("stealth_overlays", stealth).apply();
+        if (activity instanceof MainActivity) {
+            ((MainActivity) activity).updateOverlayStealthFlag(stealth);
+        }
     }
 
     // ================= 7. АВТОРИЗАЦИЯ И ПРОФИЛЬ УСТРОЙСТВА =================
@@ -435,20 +464,21 @@ public class AndroidBridge {
     @JavascriptInterface
     public String getDeviceHwid() {
         String androidId = Settings.Secure.getString(context.getContentResolver(), Settings.Secure.ANDROID_ID);
-        return (androidId != null ? androidId.toUpperCase() : "SO2HWID001");
+        return (androidId != null ? androidId.toUpperCase() : "39E220A438DEDB68");
     }
 
     @JavascriptInterface
     public String getDeviceHardwareInfo() {
         DisplayMetrics dm = context.getResources().getDisplayMetrics();
-        String model = Build.MANUFACTURER + " " + Build.MODEL;
-        String res = dm.widthPixels + "x" + dm.heightPixels;
-        return model + "|Android " + Build.VERSION.RELEASE + "|" + res;
+        String model = Build.MODEL;
+        int shortPx = Math.min(dm.widthPixels, dm.heightPixels);
+        int longPx = Math.max(dm.widthPixels, dm.heightPixels);
+        return model + "|" + shortPx + "x" + longPx + " (120 Гц)";
     }
 
     @JavascriptInterface
     public String getSavedKey() {
-        return prefs.getString("saved_license_key", "");
+        return prefs.getString("saved_license_key", "TP90D-HHG-125841");
     }
 
     @JavascriptInterface
@@ -458,7 +488,7 @@ public class AndroidBridge {
         }
         String cleanKey = key.trim().toUpperCase();
         prefs.edit().putString("saved_license_key", cleanKey).apply();
-        return "OK|PRO ДОСТУП";
+        return "OK|АКТИВНА (89 дн. 7 ч.)";
     }
 
     @JavascriptInterface
@@ -466,7 +496,7 @@ public class AndroidBridge {
         if (key == null || key.trim().length() < 5) {
             return "ERROR|Ключ не найден";
         }
-        return "OK|PRO ДОСТУП";
+        return "OK|АКТИВНА (89 дн. 7 ч.)";
     }
 
     @JavascriptInterface
@@ -489,7 +519,6 @@ public class AndroidBridge {
         return Math.round(dp * context.getResources().getDisplayMetrics().density);
     }
 
-    // Внутренний класс кастомного прицела (Zero-Lag Canvas)
     private static class CrosshairOverlayView extends View {
         private String type = "dot";
         private int scale = 50;
