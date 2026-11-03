@@ -90,7 +90,7 @@ public class AndroidBridge {
         });
     }
 
-    // ================= ПЛАВАЮЩАЯ КНОПКА РАСТЯГА «T» + КОРЗИНА УДАЛЕНИЯ СНИЗУ =================
+    // ================= АКТИВАЦИЯ ПЛАВАЮЩЕЙ КНОПКИ «T» С КОРЗИНОЙ =================
 
     @JavascriptInterface
     public String activateStretchFloatingButton(String ratio) {
@@ -292,12 +292,12 @@ public class AndroidBridge {
 
         isScreenCurrentlyStretched = !isScreenCurrentlyStretched;
         if (isScreenCurrentlyStretched) {
-            boolean applied = applyFullScreenStretchNoBlackBars(selectedStretchRatio);
+            boolean applied = applyExactWmSizeStretch(selectedStretchRatio);
             if (applied) {
-                Toast.makeText(context, "🔥 Растяг " + selectedStretchRatio + " БЕЗ ЧЁРНЫХ ПОЛОС ВКЛЮЧЕН!", Toast.LENGTH_SHORT).show();
+                Toast.makeText(context, "🔥 Растяг " + selectedStretchRatio + " ВКЛЮЧЕН!", Toast.LENGTH_SHORT).show();
             } else {
                 isScreenCurrentlyStretched = false;
-                Toast.makeText(context, "❌ Ошибка применения растяга", Toast.LENGTH_SHORT).show();
+                Toast.makeText(context, "❌ Ошибка применения wm size", Toast.LENGTH_SHORT).show();
             }
         } else {
             resetStretchOnlyKeepButton();
@@ -306,48 +306,44 @@ public class AndroidBridge {
         updateFloatingBtnAppearance();
     }
 
-    /**
-     * Настоящий полноэкранный растяг в Standoff 2 БЕЗ чёрных полос по бокам/сверху:
-     * Мы НЕ обрезаем длинную сторону экрана (иначе телефон рисует чёрные рамки),
-     * а расширяем короткую сторону (targetShort) относительно полной длины экрана (baseLong)!
-     * Например, при родном 1440x3120 для 4:3 ставится 2340x3120 — игра рендерит 4:3 во весь экран!
-     */
-    private boolean applyFullScreenStretchNoBlackBars(String ratio) {
+    // Жесткий прямой wm size под физическое разрешение твоего телефона (1440x3120)
+    private boolean applyExactWmSizeStretch(String ratio) {
         try {
-            int savedShort = legacyPrefs.getInt("native_short_px", TeleportEngine.getNativeShortSide());
-            int savedLong = legacyPrefs.getInt("native_long_px", TeleportEngine.getNativeLongSide());
+            DisplayMetrics dm = new DisplayMetrics();
+            windowManager.getDefaultDisplay().getRealMetrics(dm);
+            int realW = Math.min(dm.widthPixels, dm.heightPixels); // 1440
+            int realH = Math.max(dm.widthPixels, dm.heightPixels); // 3120
 
-            int baseLong = savedLong > 0 ? savedLong : 2400;
             int targetShort;
             String clean = (ratio == null) ? "4:3" : ratio.trim();
 
             switch (clean) {
                 case "5:4":
-                    targetShort = Math.round(baseLong / 1.25f);
+                    targetShort = Math.round(realH / 1.25f); // ~2496
                     break;
                 case "4:3":
-                    targetShort = Math.round(baseLong / 1.3333f);
+                    targetShort = Math.round(realH / 1.3333f); // ~2340
                     break;
                 case "3:2":
-                    targetShort = Math.round(baseLong / 1.50f);
+                    targetShort = Math.round(realH / 1.50f); // ~2080
                     break;
                 case "16:10":
-                    targetShort = Math.round(baseLong / 1.60f);
+                    targetShort = Math.round(realH / 1.60f); // ~1950
                     break;
                 case "16:9":
-                    targetShort = Math.round(baseLong / 1.7777f);
+                    targetShort = Math.round(realH / 1.7777f); // ~1755
                     break;
                 default:
-                    targetShort = Math.round(baseLong / 1.3333f);
+                    targetShort = Math.round(realH / 1.3333f);
                     break;
             }
             if ((targetShort & 1) == 1) targetShort++;
 
-            final int fShort = targetShort;
-            final int fLong = baseLong;
+            final int fW = targetShort;
+            final int fH = realH;
 
             new Thread(() -> {
-                String cmd = "wm size " + fShort + "x" + fLong + "; "
+                String cmd = "wm size " + fW + "x" + fH + "; "
                         + "settings put system peak_refresh_rate 120.0; "
                         + "settings put system min_refresh_rate 120.0; "
                         + "settings put secure refresh_rate_mode 2;";
@@ -729,18 +725,18 @@ public class AndroidBridge {
             float gap = 4f + (scale / 100f) * 8f;
 
             if ("dot".equalsIgnoreCase(type)) {
-                paint.setStyle(android.graphics.Paint.Style.FILL);
+                paint.setStyle(Paint.Style.FILL);
                 canvas.drawCircle(cx, cy, Math.max(4f, size * 0.28f), paint);
             } else if ("circle".equalsIgnoreCase(type)) {
-                paint.setStyle(android.graphics.Paint.Style.STROKE);
+                paint.setStyle(Paint.Style.STROKE);
                 canvas.drawCircle(cx, cy, size * 0.65f, paint);
             } else if ("tshape".equalsIgnoreCase(type)) {
-                paint.setStyle(android.graphics.Paint.Style.STROKE);
+                paint.setStyle(Paint.Style.STROKE);
                 canvas.drawLine(cx - size, cy, cx - gap, cy, paint);
                 canvas.drawLine(cx + gap, cy, cx + size, cy, paint);
                 canvas.drawLine(cx, cy + gap, cx, cy + size, paint);
             } else {
-                paint.setStyle(android.graphics.Paint.Style.STROKE);
+                paint.setStyle(Paint.Style.STROKE);
                 canvas.drawLine(cx - size, cy, cx - gap, cy, paint);
                 canvas.drawLine(cx + gap, cy, cx + size, cy, paint);
                 canvas.drawLine(cx, cy - size, cx, cy - gap, paint);
