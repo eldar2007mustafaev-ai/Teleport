@@ -18,7 +18,6 @@ import android.provider.Settings;
 import android.util.DisplayMetrics;
 import android.view.Gravity;
 import android.view.MotionEvent;
-import android.view.Surface;
 import android.view.View;
 import android.view.WindowManager;
 import android.webkit.JavascriptInterface;
@@ -235,6 +234,7 @@ public class AndroidBridge {
                                 }
 
                                 if (droppedInTrash) {
+                                    // Полное удаление кнопки «T» при сбросе в корзину
                                     resetResolution();
                                     return true;
                                 }
@@ -282,6 +282,8 @@ public class AndroidBridge {
         return rawY >= (screenH - dpToPx(105));
     }
 
+    // Двухшаговый механизм: Нажал 1 раз (на заставке) -> wm size 1440x1920 (появились чёрные полосы).
+    // Нажал 2 раз (в игре) -> wm size reset (экран полностью растягивается на весь дисплей без полос).
     private void toggleScreenStretchAction() {
         boolean shizukuOk = TeleportEngine.isShizukuReady() || ShizukuManager.isPermissionGranted();
         if (!shizukuOk) {
@@ -292,72 +294,63 @@ public class AndroidBridge {
 
         isScreenCurrentlyStretched = !isScreenCurrentlyStretched;
         if (isScreenCurrentlyStretched) {
-            boolean applied = applyExactWmSizeStretch(selectedStretchRatio);
-            if (applied) {
-                Toast.makeText(context, "🔥 Растяг " + selectedStretchRatio + " ВКЛЮЧЕН!", Toast.LENGTH_SHORT).show();
-            } else {
-                isScreenCurrentlyStretched = false;
-                Toast.makeText(context, "❌ Ошибка применения wm size", Toast.LENGTH_SHORT).show();
-            }
+            // Шаг 1: сужаем разрешение (появление чёрных полос на заставке)
+            applyStep1BoxStretch(selectedStretchRatio);
+            Toast.makeText(context, "🔥 Шаг 1: Чёрные полосы применены (дождись загрузки игры)", Toast.LENGTH_SHORT).show();
         } else {
-            resetStretchOnlyKeepButton();
-            Toast.makeText(context, "🔄 Обычный экран восстановлен", Toast.LENGTH_SHORT).show();
+            // Шаг 2: сбрасываем wm size (чистый полноэкранный растяг в меню/катке)
+            applyStep2FullStretch();
+            Toast.makeText(context, "🔥 Шаг 2: Экран полностью растянут!", Toast.LENGTH_SHORT).show();
         }
         updateFloatingBtnAppearance();
     }
 
-    // Жесткий прямой wm size под физическое разрешение твоего телефона (1440x3120)
-    private boolean applyExactWmSizeStretch(String ratio) {
+    private void applyStep1BoxStretch(String ratio) {
         try {
             DisplayMetrics dm = new DisplayMetrics();
             windowManager.getDefaultDisplay().getRealMetrics(dm);
             int realW = Math.min(dm.widthPixels, dm.heightPixels); // 1440
-            int realH = Math.max(dm.widthPixels, dm.heightPixels); // 3120
-
-            int targetShort;
+            int targetH;
             String clean = (ratio == null) ? "4:3" : ratio.trim();
 
             switch (clean) {
                 case "5:4":
-                    targetShort = Math.round(realH / 1.25f); // ~2496
+                    targetH = Math.round(realW * 1.25f);
                     break;
                 case "4:3":
-                    targetShort = Math.round(realH / 1.3333f); // ~2340
+                    targetH = Math.round(realW * 1.3333f);
                     break;
                 case "3:2":
-                    targetShort = Math.round(realH / 1.50f); // ~2080
+                    targetH = Math.round(realW * 1.50f);
                     break;
                 case "16:10":
-                    targetShort = Math.round(realH / 1.60f); // ~1950
+                    targetH = Math.round(realW * 1.60f);
                     break;
                 case "16:9":
-                    targetShort = Math.round(realH / 1.7777f); // ~1755
+                    targetH = Math.round(realW * 1.7777f);
                     break;
                 default:
-                    targetShort = Math.round(realH / 1.3333f);
+                    targetH = Math.round(realW * 1.3333f);
                     break;
             }
-            if ((targetShort & 1) == 1) targetShort++;
+            if ((targetH & 1) == 1) targetH++;
 
-            final int fW = targetShort;
-            final int fH = realH;
-
+            final int fH = targetH;
             new Thread(() -> {
-                String cmd = "wm size " + fW + "x" + fH + "; "
+                String cmd = "wm size " + realW + "x" + fH + "; "
                         + "settings put system peak_refresh_rate 120.0; "
-                        + "settings put system min_refresh_rate 120.0; "
-                        + "settings put secure refresh_rate_mode 2;";
+                        + "settings put system min_refresh_rate 120.0;";
                 ShizukuManager.execCommand(cmd);
             }).start();
-            return true;
-        } catch (Throwable t) {
-            return TeleportEngine.applyAspectRatioStretch(ratio);
-        }
+        } catch (Throwable ignored) {}
     }
 
-    private void resetStretchOnlyKeepButton() {
+    private void applyStep2FullStretch() {
         new Thread(() -> {
-            ShizukuManager.execCommand("wm size reset");
+            String cmd = "wm size reset; "
+                    + "settings put system peak_refresh_rate 120.0; "
+                    + "settings put system min_refresh_rate 120.0;";
+            ShizukuManager.execCommand(cmd);
         }).start();
     }
 
@@ -390,8 +383,9 @@ public class AndroidBridge {
             if (activity instanceof MainActivity) {
                 ((MainActivity) activity).toggleFloatingButton(false);
             }
-            resetStretchOnlyKeepButton();
-            TeleportEngine.resetResolutionToNative();
+            new Thread(() -> {
+                ShizukuManager.execCommand("wm size reset; wm density reset;");
+            }).start();
             isScreenCurrentlyStretched = false;
 
             if (floatingStretchBtn != null && windowManager != null) {
@@ -567,18 +561,6 @@ public class AndroidBridge {
         if (activity instanceof MainActivity) {
             ((MainActivity) activity).updateOverlayStealthFlag(stealth);
         }
-        mainHandler.post(() -> {
-            try {
-                if (isStretchOverlayShown && floatingStretchBtn != null && stretchParams != null) {
-                    if (stealth) {
-                        stretchParams.flags |= WindowManager.LayoutParams.FLAG_SECURE;
-                    } else {
-                        stretchParams.flags &= ~WindowManager.LayoutParams.FLAG_SECURE;
-                    }
-                    windowManager.updateViewLayout(floatingStretchBtn, stretchParams);
-                }
-            } catch (Exception ignored) {}
-        });
     }
 
     @JavascriptInterface
