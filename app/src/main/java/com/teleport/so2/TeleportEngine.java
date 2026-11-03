@@ -29,12 +29,19 @@ public class TeleportEngine {
         }
         int curShort = Math.min(dm.widthPixels, dm.heightPixels);
         int curLong = Math.max(dm.widthPixels, dm.heightPixels);
-        // Сохраняем родное разрешение только если экран ещё не растянут
         if ((float) curLong / Math.max(1, curShort) > 1.85f || nativeShortSide == 1080) {
             nativeShortSide = curShort;
             nativeLongSide = curLong;
             nativeDpi = dm.densityDpi;
         }
+    }
+
+    public static int getNativeShortSide() {
+        return nativeShortSide;
+    }
+
+    public static int getNativeLongSide() {
+        return nativeLongSide;
     }
 
     public static boolean isShizukuReady() {
@@ -61,7 +68,7 @@ public class TeleportEngine {
     }
 
     public static void execShizukuCommand(String cmd) {
-        if (!isShizukuReady()) return;
+        if (!isShizukuReady() && !ShizukuManager.isPermissionGranted()) return;
         new Thread(() -> {
             try {
                 ShizukuManager.execCommand(cmd);
@@ -69,40 +76,43 @@ public class TeleportEngine {
         }).start();
     }
 
-    // ================= РАБОЧИЙ РАСТЯГ ЭКРАНА ДЛЯ КНОПКИ «T» =================
+    // ================= ПОЛНОЭКРАННЫЙ РАСТЯГ БЕЗ ЧЁРНЫХ ПОЛОС =================
 
     public static boolean applyAspectRatioStretch(String ratio) {
-        if (!isShizukuReady()) return false;
+        if (!isShizukuReady() && !ShizukuManager.isPermissionGranted()) return false;
 
-        int baseShort = nativeShortSide > 0 ? nativeShortSide : 1080;
-        int targetLong;
+        int baseLong = nativeLongSide > 0 ? nativeLongSide : 2400;
+        int targetShort;
         String clean = (ratio == null) ? "4:3" : ratio.trim();
 
+        // Чтобы НЕ БЫЛО чёрных полос по краям экрана (как при урезании длинной стороны),
+        // мы оставляем полную длину экрана (baseLong) и расширяем короткую сторону (targetShort)
+        // пропорционально выбранному формату 4:3 / 5:4 / 3:2!
+        // Тогда Android рендерит буфер 4:3 и скейлер дисплея вписывает его во весь экран без рамок!
         switch (clean) {
             case "5:4":
-                targetLong = Math.round(baseShort * 1.25f);
+                targetShort = Math.round(baseLong / 1.25f);
                 break;
             case "4:3":
-                targetLong = Math.round(baseShort * 1.3333f);
+                targetShort = Math.round(baseLong / 1.3333f);
                 break;
             case "3:2":
-                targetLong = Math.round(baseShort * 1.50f);
+                targetShort = Math.round(baseLong / 1.50f);
                 break;
             case "16:10":
-                targetLong = Math.round(baseShort * 1.60f);
+                targetShort = Math.round(baseLong / 1.60f);
                 break;
             case "16:9":
-                targetLong = Math.round(baseShort * 1.7777f);
+                targetShort = Math.round(baseLong / 1.7777f);
                 break;
             default:
-                targetLong = Math.round(baseShort * 1.3333f);
+                targetShort = Math.round(baseLong / 1.3333f);
                 break;
         }
 
-        if (targetLong % 2 != 0) targetLong++;
+        if (targetShort % 2 != 0) targetShort++;
 
-        // Применяем wm size вместе с фиксацией герцовки 120 Гц, чтобы игра мгновенно растянула картинку
-        String cmd = "wm size " + baseShort + "x" + targetLong + "; "
+        String cmd = "wm size " + targetShort + "x" + baseLong + "; "
                 + "settings put system peak_refresh_rate 120.0; "
                 + "settings put system min_refresh_rate 120.0; "
                 + "settings put secure refresh_rate_mode 2;";
@@ -138,7 +148,6 @@ public class TeleportEngine {
         isEngineRunning = true;
         if (!isShizukuReady()) return;
 
-        // Максимальный отклик 1 мм (Zero-Delay) + 360Hz опрос тача без урезания
         String cmd = "settings put secure touch_exploration_enabled 0; "
                 + "settings put secure touch_blocking_period 0.0; "
                 + "settings put secure tap_duration_threshold 0.0; "
@@ -174,7 +183,6 @@ public class TeleportEngine {
             int stick, int grid, int pause, double accel
     ) {
         if (!isShizukuReady()) return;
-        // Полная чувствительность без просадки: при резкости 5.0-6.0 ставится максимальный импульс 7
         double combined = (sharp * 0.5) + (sx * 0.25) + (sy * 0.25);
         int pointerSpeed = Math.max(1, Math.min(7, (int) Math.round((combined / 6.0) * 7.0)));
         int pressTimeout = Math.max(110, 230 - (chunkFast * 3));
