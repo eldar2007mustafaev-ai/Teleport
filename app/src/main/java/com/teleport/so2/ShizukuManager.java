@@ -30,17 +30,21 @@ public class ShizukuManager {
 
             String[] shellCmd = new String[]{ "sh", "-c", command };
 
-            Method newProcessMethod = Shizuku.class.getDeclaredMethod(
-                    "newProcess",
-                    String[].class,
-                    String[].class,
-                    String.class
-            );
-            newProcessMethod.setAccessible(true);
+            // Безопасный поиск метода newProcess по количеству параметров, чтобы избежать ошибки сигнатуры
+            Method targetMethod = null;
+            for (Method m : Shizuku.class.getDeclaredMethods()) {
+                if ("newProcess".equals(m.getName())) {
+                    targetMethod = m;
+                    break;
+                }
+            }
 
-            Process process = (Process) newProcessMethod.invoke(null, shellCmd, null, null);
-            if (process != null) {
-                process.waitFor();
+            if (targetMethod != null) {
+                targetMethod.setAccessible(true);
+                Process process = (Process) targetMethod.invoke(null, shellCmd, null, null);
+                if (process != null) {
+                    process.waitFor();
+                }
             }
         } catch (Throwable ignored) {}
     }
