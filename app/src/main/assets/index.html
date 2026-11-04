@@ -7,17 +7,15 @@
   <style>
     :root {
       --bg-dark: #060d14;
-      --bg-card: #0c1722;
-      --bg-card-inner: #09121b;
+      --bg-card: #0b1622;
+      --bg-card-inner: #08101a;
       --accent: #14e8c6;
       --accent-2: #00d2ff;
-      --accent-glow: rgba(20, 232, 198, 0.26);
-      --accent-border: rgba(20, 232, 198, 0.24);
-      --blue-slider: #3b82f6;
+      --accent-rgb: 20, 232, 198;
       --text-main: #f1f5f9;
       --text-muted: #7e93a8;
       --danger-bg: rgba(153, 27, 27, 0.28);
-      --danger-border: rgba(239, 68, 68, 0.45);
+      --danger-border: rgba(239, 68, 68, 0.48);
       --danger-text: #fca5a5;
     }
 
@@ -34,14 +32,14 @@
     body {
       background-color: var(--bg-dark);
       background-image:
-        radial-gradient(circle at 12% 10%, rgba(20, 232, 198, 0.09) 0%, transparent 42%),
-        radial-gradient(circle at 88% 82%, rgba(0, 210, 255, 0.07) 0%, transparent 45%);
+        radial-gradient(circle at 15% 8%, rgba(var(--accent-rgb), 0.14) 0%, transparent 42%),
+        radial-gradient(circle at 85% 80%, rgba(var(--accent-rgb), 0.09) 0%, transparent 48%);
       color: var(--text-main);
       min-height: 100vh;
-      /* Защита от наезда на статус-бар телефона сверху и панель кнопок снизу */
       padding-top: calc(env(safe-area-inset-top, 26px) + 16px);
       padding-bottom: 98px;
       overflow-x: hidden;
+      transition: background-image 0.25s ease;
     }
 
     .app-container {
@@ -50,7 +48,7 @@
       padding: 0 14px;
     }
 
-    /* ================= ВЕРХНЯЯ ШАПКА КАК НА ВИДЕО ================= */
+    /* ================= ВЕРХНЯЯ ШАПКА ================= */
     .top-header {
       display: flex;
       justify-content: space-between;
@@ -68,6 +66,8 @@
 
     .brand-title span {
       color: var(--accent);
+      text-shadow: 0 0 14px rgba(var(--accent-rgb), 0.45);
+      transition: color 0.2s, text-shadow 0.2s;
     }
 
     .brand-sub {
@@ -77,15 +77,17 @@
       color: var(--accent);
       margin-top: 3px;
       text-transform: uppercase;
+      transition: color 0.2s;
     }
 
     .shizuku-pill {
-      background: rgba(12, 24, 36, 0.95);
-      border: 1px solid var(--accent-border);
+      background: #0b1724;
+      border: 1.5px solid rgba(var(--accent-rgb), 0.42);
       border-radius: 14px;
       padding: 6px 11px;
       text-align: right;
-      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.35);
+      box-shadow: 0 0 16px rgba(var(--accent-rgb), 0.16);
+      transition: border-color 0.2s, box-shadow 0.2s;
     }
 
     .shizuku-row {
@@ -102,8 +104,9 @@
       width: 8px;
       height: 8px;
       border-radius: 50%;
-      background: #10b981;
-      box-shadow: 0 0 8px #10b981;
+      background: var(--accent);
+      box-shadow: 0 0 8px var(--accent);
+      transition: background 0.2s, box-shadow 0.2s;
     }
 
     .status-dot.off {
@@ -118,39 +121,45 @@
       margin-top: 2px;
     }
 
-    /* ПИЛЮЛЯ ИГРОКА */
+    /* ПИЛЮЛЯ ИГРОКА С ПОДСВЕТКОЙ ТЕМЫ */
     .player-chip {
       display: inline-flex;
       align-items: center;
       gap: 7px;
-      background: rgba(14, 27, 41, 0.9);
-      border: 1px solid rgba(59, 130, 246, 0.32);
+      background: rgba(var(--accent-rgb), 0.1);
+      border: 1.5px solid rgba(var(--accent-rgb), 0.45);
+      box-shadow: 0 0 14px rgba(var(--accent-rgb), 0.18);
       border-radius: 999px;
       padding: 5px 13px;
       font-size: 12px;
       font-weight: 800;
-      color: #e2e8f0;
+      color: #ffffff;
       margin-bottom: 12px;
+      cursor: pointer;
+      transition: all 0.2s;
     }
 
     .player-chip-dot {
       width: 8px;
       height: 8px;
       border-radius: 50%;
-      background: #3b82f6;
-      box-shadow: 0 0 8px #3b82f6;
+      background: var(--accent);
+      box-shadow: 0 0 8px var(--accent);
+      transition: all 0.2s;
     }
 
     /* ================= ПАНЕЛЬ ВЫБОРА ТЕМЫ МЕНЮ ================= */
     .theme-bar {
       background: var(--bg-card);
-      border: 1px solid var(--accent-border);
+      border: 1.5px solid rgba(var(--accent-rgb), 0.38);
+      box-shadow: 0 0 18px rgba(var(--accent-rgb), 0.12);
       border-radius: 16px;
       padding: 10px 14px;
       display: flex;
       justify-content: space-between;
       align-items: center;
       margin-bottom: 14px;
+      transition: border-color 0.2s, box-shadow 0.2s;
     }
 
     .theme-label {
@@ -171,17 +180,17 @@
       height: 24px;
       border-radius: 50%;
       cursor: pointer;
-      border: 2px solid rgba(255, 255, 255, 0.2);
-      transition: transform 0.15s, border-color 0.15s;
+      border: 2px solid rgba(255, 255, 255, 0.22);
+      transition: transform 0.15s, border-color 0.15s, box-shadow 0.15s;
     }
 
     .theme-dot.active {
-      transform: scale(1.14);
+      transform: scale(1.16);
       border: 2.5px solid #ffffff;
-      box-shadow: 0 0 12px var(--accent);
+      box-shadow: 0 0 14px var(--accent);
     }
 
-    /* ================= СЕТКА 6 ПЛИТОК ГЛАВНОГО МЕНЮ ================= */
+    /* ================= СЕТКА 6 ПЛИТОК С НЕОНОВОЙ РАМКОЙ ТЕМЫ ================= */
     .bento-grid {
       display: grid;
       grid-template-columns: 1fr 1fr;
@@ -189,8 +198,9 @@
     }
 
     .bento-tile {
-      background: linear-gradient(165deg, rgba(16, 30, 44, 0.95) 0%, rgba(10, 20, 30, 0.98) 100%);
-      border: 1px solid var(--accent-border);
+      background: linear-gradient(160deg, rgba(var(--accent-rgb), 0.09) 0%, rgba(10, 19, 29, 0.98) 65%);
+      border: 1.5px solid rgba(var(--accent-rgb), 0.38);
+      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4), inset 0 0 18px rgba(var(--accent-rgb), 0.05);
       border-radius: 20px;
       padding: 15px 14px;
       display: flex;
@@ -199,12 +209,13 @@
       min-height: 158px;
       cursor: pointer;
       position: relative;
-      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
-      transition: transform 0.12s, border-color 0.2s;
+      transform: translateZ(0);
+      transition: transform 0.1s ease, border-color 0.2s, box-shadow 0.2s;
     }
 
     .bento-tile:active {
       transform: scale(0.97);
+      border-color: var(--accent);
     }
 
     .tile-top {
@@ -218,23 +229,25 @@
       width: 40px;
       height: 40px;
       border-radius: 13px;
-      background: rgba(20, 232, 198, 0.1);
-      border: 1px solid var(--accent-border);
+      background: rgba(var(--accent-rgb), 0.14);
+      border: 1px solid rgba(var(--accent-rgb), 0.45);
+      box-shadow: 0 0 12px rgba(var(--accent-rgb), 0.2);
       display: flex;
       align-items: center;
       justify-content: center;
       font-size: 19px;
+      transition: all 0.2s;
     }
 
     .tile-arrow {
-      color: var(--text-muted);
-      font-size: 16px;
+      color: var(--accent);
+      font-size: 17px;
       font-weight: 900;
     }
 
     .tile-badge-hot {
       background: rgba(245, 158, 11, 0.14);
-      border: 1px solid rgba(245, 158, 11, 0.4);
+      border: 1px solid rgba(245, 158, 11, 0.45);
       color: #fbbf24;
       font-size: 9.5px;
       font-weight: 900;
@@ -255,13 +268,12 @@
       line-height: 1.35;
     }
 
-    /* МИНИ-ТУМБЛЕР НА ПЛИТКЕ СЕНСЫ */
     .tile-QuickSwitch {
       display: flex;
       align-items: center;
       gap: 6px;
-      background: rgba(6, 13, 20, 0.75);
-      border: 1px solid rgba(255, 255, 255, 0.1);
+      background: rgba(6, 13, 20, 0.85);
+      border: 1px solid rgba(var(--accent-rgb), 0.35);
       padding: 4px 8px;
       border-radius: 999px;
       font-size: 10px;
@@ -269,25 +281,20 @@
       color: var(--text-muted);
     }
 
-    /* ================= ВНУТРЕННИЕ СТРАНИЦЫ РАЗДЕЛОВ ================= */
+    /* ================= ВНУТРЕННИЕ СТРАНИЦЫ ================= */
     .page-view {
       display: none;
-      animation: fadePage 0.18s ease-out;
     }
 
     .page-view.active {
       display: block;
     }
 
-    @keyframes fadePage {
-      from { opacity: 0; transform: translateY(5px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-
     .back-bar {
       width: 100%;
       background: var(--bg-card);
-      border: 1px solid var(--accent-border);
+      border: 1.5px solid rgba(var(--accent-rgb), 0.4);
+      box-shadow: 0 0 15px rgba(var(--accent-rgb), 0.12);
       border-radius: 15px;
       padding: 13px 15px;
       display: flex;
@@ -306,12 +313,13 @@
     }
 
     .section-card {
-      background: var(--bg-card);
-      border: 1px solid var(--accent-border);
+      background: linear-gradient(170deg, rgba(var(--accent-rgb), 0.06) 0%, var(--bg-card) 45%);
+      border: 1.5px solid rgba(var(--accent-rgb), 0.35);
+      box-shadow: 0 6px 22px rgba(0, 0, 0, 0.38), inset 0 0 14px rgba(var(--accent-rgb), 0.04);
       border-radius: 19px;
       padding: 15px;
       margin-bottom: 13px;
-      box-shadow: 0 8px 25px rgba(0, 0, 0, 0.35);
+      transition: border-color 0.2s, box-shadow 0.2s;
     }
 
     .section-header-tag {
@@ -326,7 +334,7 @@
       margin-bottom: 12px;
     }
 
-    /* КНОПКИ ГРАДИЕНТНЫЕ КАК НА ВИДЕО */
+    /* КНОПКИ */
     .btn-main {
       width: 100%;
       border: none;
@@ -338,13 +346,13 @@
       text-transform: uppercase;
       color: #031519;
       background: linear-gradient(90deg, var(--accent) 0%, var(--accent-2) 100%);
-      box-shadow: 0 5px 20px var(--accent-glow);
+      box-shadow: 0 4px 18px rgba(var(--accent-rgb), 0.35);
       cursor: pointer;
       display: flex;
       align-items: center;
       justify-content: center;
       gap: 8px;
-      transition: transform 0.12s;
+      transition: transform 0.1s, background 0.2s, box-shadow 0.2s;
     }
 
     .btn-main:active {
@@ -353,8 +361,8 @@
 
     .btn-dark {
       width: 100%;
-      background: rgba(15, 28, 43, 0.9);
-      border: 1px solid rgba(255, 255, 255, 0.14);
+      background: #0d1a29;
+      border: 1px solid rgba(var(--accent-rgb), 0.3);
       color: #e2e8f0;
       border-radius: 13px;
       padding: 12px 14px;
@@ -381,7 +389,7 @@
       cursor: pointer;
     }
 
-    /* ПЕРЕКЛЮЧАТЕЛИ (SWITCH) */
+    /* ТУМБЛЕРЫ */
     .ios-switch {
       position: relative;
       display: inline-block;
@@ -399,11 +407,11 @@
     .ios-slider {
       position: absolute;
       inset: 0;
-      background: #1a2938;
+      background: #172636;
       border: 1px solid rgba(255, 255, 255, 0.18);
       border-radius: 999px;
       cursor: pointer;
-      transition: 0.2s;
+      transition: 0.18s;
     }
 
     .ios-slider::before {
@@ -415,11 +423,11 @@
       bottom: 3px;
       background: #94a3b8;
       border-radius: 50%;
-      transition: 0.2s;
+      transition: 0.18s;
     }
 
     .ios-switch input:checked + .ios-slider {
-      background: rgba(59, 130, 246, 0.35);
+      background: rgba(var(--accent-rgb), 0.28);
       border-color: var(--accent);
     }
 
@@ -440,11 +448,12 @@
       align-items: center;
       gap: 10px;
       margin-bottom: 9px;
+      cursor: pointer;
     }
 
     .mode-row-card.active {
-      border-color: var(--accent);
-      box-shadow: 0 0 15px rgba(20, 232, 198, 0.14);
+      border: 1.5px solid var(--accent);
+      box-shadow: 0 0 14px rgba(var(--accent-rgb), 0.18);
     }
 
     .mode-info-title {
@@ -479,10 +488,10 @@
       border-color: transparent;
     }
 
-    /* ПОЛЗУНКИ КАК НА ВИДЕО (С ПИЛЮЛЕЙ ЗНАЧЕНИЯ СПРАВА) */
+    /* ПОЛЗУНКИ */
     .param-box {
       background: var(--bg-card-inner);
-      border: 1px solid rgba(255, 255, 255, 0.06);
+      border: 1px solid rgba(var(--accent-rgb), 0.16);
       border-radius: 15px;
       padding: 12px 13px;
       margin-bottom: 9px;
@@ -502,8 +511,8 @@
     }
 
     .param-val-pill {
-      background: rgba(20, 232, 198, 0.12);
-      border: 1px solid var(--accent-border);
+      background: rgba(var(--accent-rgb), 0.15);
+      border: 1px solid rgba(var(--accent-rgb), 0.4);
       color: var(--accent);
       font-size: 12px;
       font-weight: 900;
@@ -528,9 +537,9 @@
       width: 20px;
       height: 20px;
       border-radius: 50%;
-      background: #2563eb;
-      border: 2.5px solid #93c5fd;
-      box-shadow: 0 0 10px rgba(59, 130, 246, 0.8);
+      background: var(--accent);
+      border: 2.5px solid #ffffff;
+      box-shadow: 0 0 10px var(--accent);
       cursor: pointer;
     }
 
@@ -540,31 +549,31 @@
       margin-top: 7px;
     }
 
-    /* КНОПКИ-ПИЛЮЛИ ВЫБОРА (РАСТЯГ, ГЕРЦОВКА, ПРИЦЕЛ) */
+    /* ПИЛЮЛИ ВЫБОРА */
     .pills-grid {
       display: grid;
       grid-template-columns: repeat(5, 1fr);
       gap: 7px;
-      margin: 12px 0;
+      margin: 10px 0;
     }
 
     .choice-pill {
       background: var(--bg-card-inner);
       border: 1px solid rgba(255, 255, 255, 0.12);
       color: #e2e8f0;
-      padding: 11px 4px;
+      padding: 10px 4px;
       border-radius: 12px;
-      font-size: 12px;
+      font-size: 11.5px;
       font-weight: 800;
       text-align: center;
       cursor: pointer;
     }
 
     .choice-pill.active {
-      background: rgba(59, 130, 246, 0.22);
-      border-color: var(--accent);
+      background: rgba(var(--accent-rgb), 0.2);
+      border: 1.5px solid var(--accent);
       color: var(--accent);
-      box-shadow: 0 0 12px var(--accent-glow);
+      box-shadow: 0 0 12px rgba(var(--accent-rgb), 0.25);
     }
 
     /* ТАБЛИЦА ПРОФИЛЯ */
@@ -592,16 +601,15 @@
       font-family: monospace;
     }
 
-    /* ================= ФИКСИРОВАННЫЙ НИЖНИЙ БАР (СОХРАНИТЬ / ПОДЕЛИТЬСЯ) ================= */
+    /* НИЖНЯЯ ПАНЕЛЬ СОХРАНЕНИЯ */
     .bottom-dock {
       position: fixed;
       bottom: 0;
       left: 0;
       right: 0;
       z-index: 900;
-      background: rgba(6, 13, 20, 0.94);
-      backdrop-filter: blur(14px);
-      border-top: 1px solid rgba(255, 255, 255, 0.08);
+      background: #060d14;
+      border-top: 1.5px solid rgba(var(--accent-rgb), 0.32);
       padding: 10px 14px calc(env(safe-area-inset-bottom, 8px) + 8px);
     }
 
@@ -618,6 +626,7 @@
       border-radius: 14px;
       padding: 13px 10px;
       background: linear-gradient(90deg, var(--accent), var(--accent-2));
+      box-shadow: 0 0 16px rgba(var(--accent-rgb), 0.3);
       color: #031519;
       font-size: 12px;
       font-weight: 900;
@@ -630,10 +639,10 @@
     }
 
     .dock-share-btn {
-      border: 1px solid rgba(255, 255, 255, 0.14);
+      border: 1.5px solid rgba(var(--accent-rgb), 0.35);
       border-radius: 14px;
       padding: 13px 10px;
-      background: #101d2b;
+      background: #0d1926;
       color: #e2e8f0;
       font-size: 11.5px;
       font-weight: 800;
@@ -645,13 +654,12 @@
       cursor: pointer;
     }
 
-    /* ================= МОДАЛКА УМНОЙ КАЛИБРОВКИ И АВТОРИЗАЦИИ ================= */
+    /* МОДАЛКИ */
     .modal-backdrop {
       position: fixed;
       inset: 0;
       z-index: 2000;
-      background: rgba(3, 8, 14, 0.84);
-      backdrop-filter: blur(8px);
+      background: rgba(3, 8, 14, 0.88);
       display: none;
       align-items: center;
       justify-content: center;
@@ -661,37 +669,36 @@
     .modal-card {
       width: 100%;
       max-width: 390px;
-      background: #0c1824;
-      border: 1px solid var(--accent);
+      background: #0b1724;
+      border: 1.5px solid var(--accent);
       border-radius: 22px;
       padding: 22px 18px;
       text-align: center;
-      box-shadow: 0 0 38px rgba(0, 0, 0, 0.7);
+      box-shadow: 0 0 32px rgba(var(--accent-rgb), 0.25);
     }
 
-    /* ТОСТ УВЕДОМЛЕНИЯ КАК НА ВИДЕО (⚡ Калибровка под SM-S938B завершена!) */
     #topToast {
       position: fixed;
       top: calc(env(safe-area-inset-top, 24px) + 14px);
       left: 50%;
       transform: translateX(-50%);
       z-index: 9999;
-      background: #0f1e2e;
-      border: 1px solid var(--accent);
+      background: #0d1c2c;
+      border: 1.5px solid var(--accent);
       color: #ffffff;
       padding: 10px 18px;
       border-radius: 999px;
       font-size: 12.5px;
       font-weight: 800;
-      box-shadow: 0 8px 25px rgba(0, 0, 0, 0.65);
+      box-shadow: 0 6px 22px rgba(0, 0, 0, 0.7);
       display: none;
       white-space: nowrap;
     }
 
     .cyber-field {
       width: 100%;
-      background: #071019;
-      border: 1px solid var(--accent-border);
+      background: #060e17;
+      border: 1.5px solid rgba(var(--accent-rgb), 0.35);
       color: #ffffff;
       border-radius: 12px;
       padding: 12px 14px;
@@ -704,10 +711,10 @@
 </head>
 <body>
 
-  <!-- ВСПЛЫВАЮЩАЯ ПИЛЮЛЯ УВЕДОМЛЕНИЙ -->
+  <!-- ВСПЛЫВАЮЩЕЕ УВЕДОМЛЕНИЕ -->
   <div id="topToast">⚡ Калибровка под SM-S938B завершена!</div>
 
-  <!-- МОДАЛЬНОЕ ОКНО «УМНАЯ КАЛИБРОВКА ТЕЛЕФОНА» (00:05 НА ВИДЕО) -->
+  <!-- МОДАЛЬНОЕ ОКНО «УМНАЯ КАЛИБРОВКА ТЕЛЕФОНА» -->
   <div id="calibModal" class="modal-backdrop">
     <div class="modal-card">
       <div style="font-size:28px; margin-bottom:8px;">⚡</div>
@@ -724,7 +731,7 @@
     </div>
   </div>
 
-  <!-- МОДАЛЬНОЕ ОКНО АВТОРИЗАЦИИ И СМЕНЫ КЛЮЧА -->
+  <!-- МОДАЛЬНОЕ ОКНО АВТОРИЗАЦИИ И БЛОКИРОВКИ ИСТЕКШЕГО КЛЮЧА -->
   <div id="authModal" class="modal-backdrop">
     <div class="modal-card">
       <div style="font-size:21px; font-weight:900; color:#fff; margin-bottom:4px;">SO2<span style="color:var(--accent)">Teleport</span> PRO</div>
@@ -739,7 +746,6 @@
     </div>
   </div>
 
-  <!-- ОСНОВНОЙ КОНТЕЙНЕР -->
   <div class="app-container">
 
     <!-- ВЕРХНЯЯ ШАПКА -->
@@ -757,29 +763,29 @@
       </div>
     </header>
 
-    <!-- БЕЙДЖ ИГРОКА -->
+    <!-- БЕЙДЖ ИГРОКА С ПОДСВЕТКОЙ ТЕМЫ -->
     <div class="player-chip" onclick="openPage('page-profile')">
       <span class="player-chip-dot"></span>
       <span>Игрок: <b id="chipPlayerName">dare</b></span>
     </div>
 
-    <!-- ================= ЭКРАН 0: ГЛАВНОЕ МЕНЮ (6 ПЛИТОК + ТЕМЫ) ================= -->
+    <!-- ================= ЭКРАН 0: ГЛАВНОЕ МЕНЮ ================= -->
     <div id="page-home" class="page-view active">
 
-      <!-- ВЫБОР ТЕМЫ МЕНЮ (6 ЦВЕТОВ КАК НА ВИДЕО) -->
+      <!-- 6 ЦВЕТОВЫХ ТЕМ (МЕНЯЮТ РАМКИ, СВЕЧЕНИЕ И КНОПКИ) -->
       <div class="theme-bar">
         <div class="theme-label">🎨 ТЕМА МЕНЮ:</div>
         <div class="theme-circles">
-          <div class="theme-dot active" style="background:#14e8c6;" onclick="setTheme('#14e8c6', '#00d2ff', this)"></div>
-          <div class="theme-dot" style="background:#a855f7;" onclick="setTheme('#a855f7', '#ec4899', this)"></div>
-          <div class="theme-dot" style="background:#10b981;" onclick="setTheme('#10b981', '#059669', this)"></div>
-          <div class="theme-dot" style="background:#ff2e93;" onclick="setTheme('#ff2e93', '#f43f5e', this)"></div>
-          <div class="theme-dot" style="background:#3b82f6;" onclick="setTheme('#3b82f6', '#06b6d4', this)"></div>
-          <div class="theme-dot" style="background:#f59e0b;" onclick="setTheme('#f59e0b', '#eab308', this)"></div>
+          <div class="theme-dot active" data-theme="0" style="background:#14e8c6;" onclick="setTheme(0, '#14e8c6', '#00d2ff', '20, 232, 198', this)"></div>
+          <div class="theme-dot" data-theme="1" style="background:#a855f7;" onclick="setTheme(1, '#a855f7', '#ec4899', '168, 85, 247', this)"></div>
+          <div class="theme-dot" data-theme="2" style="background:#10b981;" onclick="setTheme(2, '#10b981', '#059669', '16, 185, 129', this)"></div>
+          <div class="theme-dot" data-theme="3" style="background:#ff2e93;" onclick="setTheme(3, '#ff2e93', '#f43f5e', '255, 46, 147', this)"></div>
+          <div class="theme-dot" data-theme="4" style="background:#3b82f6;" onclick="setTheme(4, '#3b82f6', '#06b6d4', '59, 130, 246', this)"></div>
+          <div class="theme-dot" data-theme="5" style="background:#f59e0b;" onclick="setTheme(5, '#f59e0b', '#eab308', '245, 158, 11', this)"></div>
         </div>
       </div>
 
-      <!-- СЕТКА 6 КАРТОЧЕК -->
+      <!-- СЕТКА 6 ПЛИТОК -->
       <div class="bento-grid">
 
         <!-- 1. СЕНСА -->
@@ -870,7 +876,6 @@
         <span>Сенса и Квантовый Телепорт</span>
       </div>
 
-      <!-- ГЛАВНЫЙ БЛОК ВКЛЮЧЕНИЯ ТЕЛЕПОРТА -->
       <div class="section-card">
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:13px;">
           <div>
@@ -887,12 +892,11 @@
         </button>
       </div>
 
-      <!-- УМНЫЙ ПОДБОР ПОД ТЕЛЕФОН -->
       <div class="section-card">
         <div style="font-size:13.5px; font-weight:900; color:var(--accent); margin-bottom:6px;">
           • Умный подбор под твой телефон (Без нагрева)
         </div>
-        <div id="smartCalibSummary" style="font-size:12px; color:#cbd5e1; line-height:1.45; margin-bottom:12px;">
+        <div style="font-size:12px; color:#cbd5e1; line-height:1.45; margin-bottom:12px;">
           ✅ Профиль подобран под <b id="calibModelName">SM-S938B</b>! Включён мгновенный сдвиг 1 мм (Zero-Delay), опрос тача 360 Гц и защита от перегрева.
         </div>
         <button class="btn-main" onclick="runSmartScanAndApply()">
@@ -900,14 +904,13 @@
         </button>
       </div>
 
-      <!-- 1. БЫСТРЫЕ РЕЖИМЫ СЕНСЫ -->
       <div class="section-card">
         <div class="section-header-tag">
           <span>1. БЫСТРЫЕ РЕЖИМЫ СЕНСЫ</span>
           <span>В 1 КЛИК</span>
         </div>
 
-        <div class="mode-row-card active" id="qmode-1" onclick="selectQuickSensMode(1, 10.0, 10.0, 8.8, 72, 48, 0.95)">
+        <div class="mode-row-card active" id="qmode-1" onclick="selectQuickSensMode(1, 10.0, 10.0, 8.8, 85, 52, 0.95)">
           <div>
             <div class="mode-info-title">ЗВЕРСКИЙ ТЕЛЕПОРТ + 1ММ ИМПУЛЬС</div>
             <div class="mode-info-desc">Мгновенный отклик на 1 мм и длинный флик в голову без нагрева</div>
@@ -915,7 +918,7 @@
           <button class="mode-select-btn" id="qbtn-1">АКТИВЕН</button>
         </div>
 
-        <div class="mode-row-card" id="qmode-2" onclick="selectQuickSensMode(2, 9.2, 9.5, 7.2, 64, 42, 0.98)">
+        <div class="mode-row-card" id="qmode-2" onclick="selectQuickSensMode(2, 9.2, 9.5, 7.2, 68, 44, 0.98)">
           <div>
             <div class="mode-info-title">ТЕЛЕПОРТ + ЗАЖИМ В ТОЧКУ (AKR / M4)</div>
             <div class="mode-info-desc">Резкий телепорт по горизонтали + осевая стабилизация отдачи</div>
@@ -923,7 +926,7 @@
           <button class="mode-select-btn" id="qbtn-2">ВЫБРАТЬ</button>
         </div>
 
-        <div class="mode-row-card" id="qmode-3" onclick="selectQuickSensMode(3, 10.0, 10.0, 9.6, 85, 55, 0.92)">
+        <div class="mode-row-card" id="qmode-3" onclick="selectQuickSensMode(3, 10.0, 10.0, 9.6, 92, 58, 0.92)">
           <div>
             <div class="mode-info-title">ХЕДШОТ-МАГНИТ (STOP-ИМПУЛЬС)</div>
             <div class="mode-info-desc">Молниеносный флик с жёсткой остановкой камеры в момент выстрела</div>
@@ -931,7 +934,7 @@
           <button class="mode-select-btn" id="qbtn-3">ВЫБРАТЬ</button>
         </div>
 
-        <div class="mode-row-card" id="qmode-4" onclick="selectQuickSensMode(4, 7.8, 8.0, 7.5, 48, 30, 0.85)" style="margin-bottom:0;">
+        <div class="mode-row-card" id="qmode-4" onclick="selectQuickSensMode(4, 7.8, 8.0, 7.5, 52, 32, 0.85)" style="margin-bottom:0;">
           <div>
             <div class="mode-info-title">ПЛАВНЫЙ КОНТРОЛЬ (Холодный FPS)</div>
             <div class="mode-info-desc">Минимальная нагрузка для слабых устройств и плавное ведение цели</div>
@@ -940,7 +943,7 @@
         </div>
       </div>
 
-      <!-- МГНОВЕННЫЙ МИКРО-ФЛИК (1 ММ) -->
+      <!-- МГНОВЕННЫЙ МИКРО-ФЛИК 1 ММ -->
       <div class="section-card">
         <div class="section-header-tag" style="margin-bottom:4px;"><span>МГНОВЕННЫЙ МИКРО-ФЛИК (1 ММ)</span></div>
         <div style="font-size:11.5px; color:var(--text-muted); margin-bottom:12px;">
@@ -958,7 +961,7 @@
         </div>
       </div>
 
-      <!-- ОСТРОТА (4 ПАРАМЕТРА) -->
+      <!-- ОСТРОТА -->
       <div class="section-card">
         <div class="section-header-tag" style="margin-bottom:4px;"><span>ОСТРОТА</span></div>
         <div style="font-size:11.5px; color:var(--text-muted); margin-bottom:12px;">Насколько резко реагирует прицел.</div>
@@ -988,7 +991,7 @@
         </div>
       </div>
 
-      <!-- ПРИЛИПАНИЕ И ЗАЖИМ + ДОПОЛНИТЕЛЬНО (18 ПАРАМЕТРОВ КАК НА ВИДЕО) -->
+      <!-- ПРИЛИПАНИЕ И 18 ПАРАМЕТРОВ -->
       <div class="section-card">
         <div class="section-header-tag" style="margin-bottom:4px;"><span>ПРИЛИПАНИЕ И ЗАЖИМ</span></div>
         <div style="font-size:11.5px; color:var(--text-muted); margin-bottom:12px;">
@@ -1068,31 +1071,28 @@
       </div>
     </div>
 
-    <!-- ================= ЭКРАН 2: ГОТОВЫЕ КИБЕР-КОНФИГИ (00:12 НА ВИДЕО) ================= -->
+    <!-- ================= ЭКРАН 2: ГОТОВЫЕ КИБЕР-КОНФИГИ (БЕЗ ЛИШНЕЙ КНОПКИ СОХРАНЕНИЯ) ================= -->
     <div id="page-configs" class="page-view">
       <div class="back-bar" onclick="openPage('page-home')">
         <span class="arrow">←</span>
         <span>Готовые кибер-конфиги (В 1 клик)</span>
       </div>
 
-      <!-- ОБМЕН ССЫЛКОЙ НА КОНФИГ -->
+      <!-- ОБМЕН КОДОМ ИЛИ ССЫЛКОЙ НА КОНФИГ МЕЖДУ ДЕВАЙСАМИ -->
       <div class="section-card">
         <div class="section-header-tag">
-          <span>ОБМЕН ССЫЛКОЙ НА КОНФИГ</span>
-          <span>SHARE LINK</span>
+          <span>ОБМЕН КОДОМ / ССЫЛКОЙ НА КОНФИГ</span>
+          <span>SHARE CODE</span>
         </div>
         <div style="font-size:11.5px; color:var(--text-muted); line-height:1.4; margin-bottom:10px;">
-          Короткая ссылка содержит все твои настройки сенсы, растяга и прицела. Отправь её другу или вставь чужую ссылку ниже:
+          Скопируй свой код настроек или вставь чужой код на любом другом устройстве — все ползунки сенсы, растяг и прицел применятся автоматически:
         </div>
-        <input type="text" id="shareLinkInput" class="cyber-field" placeholder="https://so2tp.cfg/?c=... или SO2-HEAD36" />
+        <input type="text" id="shareLinkInput" class="cyber-field" placeholder="Вставь код SO2-... или ссылку https://so2tp.cfg/?c=..." />
 
-        <div style="display:grid; grid-template-columns:1fr 1fr; gap:9px; margin-bottom:9px;">
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:9px;">
           <button class="btn-main" onclick="applySharedConfigCode()">📥 ПРИМЕНИТЬ</button>
           <button class="btn-dark" onclick="generateAndCopyShareLink()">🔗 СКОПИРОВАТЬ ССЫЛКУ</button>
         </div>
-        <button class="btn-dark" onclick="saveCurrentConfigNow()" style="color:#fbbf24; border-color:rgba(245,158,11,0.35);">
-          ⭐ СОХРАНИТЬ ТЕКУЩИЙ КОНФИГ В МОЙ СПИСОК
-        </button>
       </div>
 
       <!-- 6 ПРОВЕРЕННЫХ БОЕВЫХ СБОРОК ИГРОКОВ -->
@@ -1158,7 +1158,7 @@
       </div>
     </div>
 
-    <!-- ================= ЭКРАН 3: РАСТЯГ ЭКРАНА (00:17 НА ВИДЕО) ================= -->
+    <!-- ================= ЭКРАН 3: РАСТЯГ ЭКРАНА ================= -->
     <div id="page-stretch" class="page-view">
       <div class="back-bar" onclick="openPage('page-home')">
         <span class="arrow">←</span>
@@ -1171,9 +1171,8 @@
           <span id="stretchCornerLabel">4:3</span>
         </div>
 
-        <!-- ВИЗУАЛЬНОЕ ПРЕВЬЮ ФОРМАТА -->
-        <div style="height:105px; background:var(--bg-card-inner); border:1px solid rgba(255,255,255,0.07); border-radius:15px; display:flex; align-items:center; justify-content:center; margin-bottom:12px;">
-          <div id="stretchPreviewBox" style="width:140px; height:76px; border:2px solid var(--accent); border-radius:12px; background:rgba(20,232,198,0.1); display:flex; align-items:center; justify-content:center; font-size:14px; font-weight:900; color:#fff; transition:width 0.2s;">
+        <div style="height:105px; background:var(--bg-card-inner); border:1px solid rgba(var(--accent-rgb),0.2); border-radius:15px; display:flex; align-items:center; justify-content:center; margin-bottom:12px;">
+          <div id="stretchPreviewBox" style="width:142px; height:76px; border:2px solid var(--accent); border-radius:12px; background:rgba(var(--accent-rgb),0.12); display:flex; align-items:center; justify-content:center; font-size:14px; font-weight:900; color:#fff; transition:width 0.2s;">
             ФОРМАТ 4:3
           </div>
         </div>
@@ -1183,11 +1182,11 @@
         </div>
 
         <div class="pills-grid" id="ratioPillsContainer">
-          <div class="choice-pill" onclick="selectStretchFormat('5:4', 125, this)">5:4</div>
-          <div class="choice-pill active" onclick="selectStretchFormat('4:3', 142, this)">4:3</div>
-          <div class="choice-pill" onclick="selectStretchFormat('3:2', 160, this)">3:2</div>
-          <div class="choice-pill" onclick="selectStretchFormat('16:10', 176, this)">16:10</div>
-          <div class="choice-pill" onclick="selectStretchFormat('16:9', 194, this)">16:9</div>
+          <div class="choice-pill" data-ratio="5:4" onclick="selectStretchFormat('5:4', 125, this)">5:4</div>
+          <div class="choice-pill active" data-ratio="4:3" onclick="selectStretchFormat('4:3', 142, this)">4:3</div>
+          <div class="choice-pill" data-ratio="3:2" onclick="selectStretchFormat('3:2', 160, this)">3:2</div>
+          <div class="choice-pill" data-ratio="16:10" onclick="selectStretchFormat('16:10', 176, this)">16:10</div>
+          <div class="choice-pill" data-ratio="16:9" onclick="selectStretchFormat('16:9', 194, this)">16:9</div>
         </div>
 
         <button class="btn-main" id="activateStretchBtnText" onclick="activateFloatingTButton()" style="margin-bottom:10px;">
@@ -1200,60 +1199,94 @@
       </div>
     </div>
 
-    <!-- ================= ЭКРАН 4: КАСТОМНЫЙ ПРИЦЕЛ (00:19 НА ВИДЕО) ================= -->
+    <!-- ================= ЭКРАН 4: РАСШИРЕННЫЙ PRO КАСТОМНЫЙ ПРИЦЕЛ ================= -->
     <div id="page-crosshair" class="page-view">
       <div class="back-bar" onclick="openPage('page-home')">
         <span class="arrow">←</span>
-        <span>Кастомный прицел</span>
+        <span>Кастомный прицел (PRO Конструктор)</span>
       </div>
 
       <div class="section-card">
         <div class="section-header-tag">
-          <span>ФОРМА И ЦВЕТ ПРИЦЕЛА (ZERO-LAG)</span>
+          <span>ФОРМА, ЦВЕТ И ГЕОМЕТРИЯ ПРИЦЕЛА (ZERO-LAG)</span>
           <span id="chCornerStatus">ВЫКЛ</span>
         </div>
 
-        <div style="height:115px; background:#050b11; border:1px solid rgba(255,255,255,0.08); border-radius:15px; display:flex; align-items:center; justify-content:center; margin-bottom:12px;">
-          <canvas id="chPreviewCanvas" width="220" height="110"></canvas>
+        <!-- ПРЕДПРОСМОТР ПРИЦЕЛА -->
+        <div style="height:125px; background:#050b11; border:1.5px solid rgba(var(--accent-rgb),0.28); border-radius:15px; display:flex; align-items:center; justify-content:center; margin-bottom:12px; position:relative;">
+          <canvas id="chPreviewCanvas" width="260" height="120"></canvas>
         </div>
 
-        <!-- 5 ФОРМ КАК НА ВИДЕО -->
-        <div class="pills-grid" id="chShapePills">
-          <div class="choice-pill active" onclick="selectCrosshairShape('off', 'ВЫКЛ', this)">ВЫКЛ</div>
-          <div class="choice-pill" onclick="selectCrosshairShape('dot', 'ТОЧКА', this)">ТОЧКА</div>
-          <div class="choice-pill" onclick="selectCrosshairShape('cross', 'КРЕСТ', this)">КРЕСТ</div>
-          <div class="choice-pill" onclick="selectCrosshairShape('tshape', 'Т-ФОРМА', this)">Т-ФОРМА</div>
-          <div class="choice-pill" onclick="selectCrosshairShape('circle', 'КРУГ', this)">КРУГ</div>
+        <!-- 8 ФОРМ ПРИЦЕЛА -->
+        <div class="pills-grid" style="grid-template-columns:repeat(4,1fr);" id="chShapePills">
+          <div class="choice-pill active" data-shape="off" onclick="selectCrosshairShape('off', 'ВЫКЛ', this)">ВЫКЛ</div>
+          <div class="choice-pill" data-shape="dot" onclick="selectCrosshairShape('dot', 'ТОЧКА', this)">ТОЧКА</div>
+          <div class="choice-pill" data-shape="cross" onclick="selectCrosshairShape('cross', 'КРЕСТ', this)">КРЕСТ</div>
+          <div class="choice-pill" data-shape="crossdot" onclick="selectCrosshairShape('crossdot', 'КРЕСТ+ТЧК', this)">КРЕСТ+ТЧК</div>
+          <div class="choice-pill" data-shape="tshape" onclick="selectCrosshairShape('tshape', 'Т-ФОРМА', this)">Т-ФОРМА</div>
+          <div class="choice-pill" data-shape="circle" onclick="selectCrosshairShape('circle', 'КРУГ', this)">КРУГ</div>
+          <div class="choice-pill" data-shape="circledot" onclick="selectCrosshairShape('circledot', 'КРУГ+ТЧК', this)">КРУГ+ТЧК</div>
+          <div class="choice-pill" data-shape="box" onclick="selectCrosshairShape('box', 'БОКС', this)">БОКС</div>
         </div>
 
-        <!-- 4 ЦВЕТА КАК НА ВИДЕО -->
-        <div class="pills-grid" style="grid-template-columns:repeat(4,1fr);" id="chColorPills">
+        <!-- БЫСТРЫЕ ЦВЕТА + ПИКЕР ЛЮБОГО ЦВЕТА -->
+        <div class="pills-grid" style="grid-template-columns:repeat(5,1fr);" id="chColorPills">
           <div class="choice-pill active" onclick="selectCrosshairColor('#d946ef', this)">ФИОЛЕТ</div>
           <div class="choice-pill" onclick="selectCrosshairColor('#00e5ff', this)">ГОЛУБОЙ</div>
           <div class="choice-pill" onclick="selectCrosshairColor('#10b981', this)">ЗЕЛЁНЫЙ</div>
           <div class="choice-pill" onclick="selectCrosshairColor('#ef4444', this)">КРАСНЫЙ</div>
+          <div class="choice-pill" onclick="selectCrosshairColor('#facc15', this)">ЖЁЛТЫЙ</div>
+        </div>
+
+        <!-- ДЕТАЛЬНЫЕ ПОЛЗУНКИ ГЕОМЕТРИИ ПРИЦЕЛА -->
+        <div class="param-box">
+          <div class="param-top"><span class="param-name">Длина лучей / Размер</span><span id="v-chLen" class="param-val-pill">12 px</span></div>
+          <input type="range" id="p-chLen" min="2" max="30" step="1" value="12" oninput="updateCrosshairAll()" />
         </div>
 
         <div class="param-box">
-          <div class="param-top"><span class="param-name">Размер прицела</span><span id="v-chScale" class="param-val-pill">50%</span></div>
-          <input type="range" id="p-chScale" min="10" max="100" step="1" value="50" oninput="updateCrosshairAll()" />
+          <div class="param-top"><span class="param-name">Толщина линий</span><span id="v-chThick" class="param-val-pill">3 px</span></div>
+          <input type="range" id="p-chThick" min="1" max="10" step="1" value="3" oninput="updateCrosshairAll()" />
         </div>
 
-        <div class="param-box" style="margin-bottom:0;">
+        <div class="param-box">
+          <div class="param-top"><span class="param-name">Зазор в центре (Gap)</span><span id="v-chGap" class="param-val-pill">4 px</span></div>
+          <input type="range" id="p-chGap" min="0" max="22" step="1" value="4" oninput="updateCrosshairAll()" />
+        </div>
+
+        <div class="param-box">
+          <div class="param-top"><span class="param-name">Размер центральной точки</span><span id="v-chDot" class="param-val-pill">3 px</span></div>
+          <input type="range" id="p-chDot" min="1" max="10" step="1" value="3" oninput="updateCrosshairAll()" />
+        </div>
+
+        <div class="param-box">
           <div class="param-top"><span class="param-name">Прозрачность</span><span id="v-chAlpha" class="param-val-pill">100%</span></div>
           <input type="range" id="p-chAlpha" min="20" max="100" step="1" value="100" oninput="updateCrosshairAll()" />
+        </div>
+
+        <div class="param-box" style="margin-bottom:0; display:flex; justify-content:space-between; align-items:center;">
+          <div>
+            <div class="param-name">Чёрная обводка (Outline) и Свой цвет</div>
+            <div class="param-sub">Чёткий контур на светлых текстурах и флешках</div>
+          </div>
+          <div style="display:flex; align-items:center; gap:10px;">
+            <input type="color" id="customChColorPicker" value="#d946ef" onchange="selectCrosshairColor(this.value, null)" style="width:36px; height:30px; border:none; background:none;" />
+            <label class="ios-switch">
+              <input type="checkbox" id="chOutlineToggle" checked onchange="updateCrosshairAll()" />
+              <span class="ios-slider"></span>
+            </label>
+          </div>
         </div>
       </div>
     </div>
 
-    <!-- ================= ЭКРАН 5: НАСТРОЙКИ СИСТЕМЫ (00:21 НА ВИДЕО) ================= -->
+    <!-- ================= ЭКРАН 5: НАСТРОЙКИ СИСТЕМЫ ================= -->
     <div id="page-settings" class="page-view">
       <div class="back-bar" onclick="openPage('page-home')">
         <span class="arrow">←</span>
         <span>Настройки системы</span>
       </div>
 
-      <!-- RAM BOOST В 1 КЛИК -->
       <div class="section-card">
         <div style="font-size:15px; font-weight:900; color:#fff; margin-bottom:6px;">
           🚀 Быстрый сброс кэша (RAM Boost в 1 клик)
@@ -1266,7 +1299,6 @@
         </button>
       </div>
 
-      <!-- РАЗГОН ТАЧА И КОНТРОЛЬ ЗАЖИМА -->
       <div class="section-card">
         <div class="section-header-tag">
           <span>РАЗГОН ТАЧА И КОНТРОЛЬ ЗАЖИМА</span>
@@ -1347,7 +1379,6 @@
         </div>
       </div>
 
-      <!-- ОПТИМИЗАЦИЯ ПИКСЕЛЕЙ -->
       <div class="section-card">
         <div class="section-header-tag">
           <span>ОПТИМИЗАЦИЯ ПИКСЕЛЕЙ (ДЛЯ СЛАБЫХ ТЕЛЕФОНОВ)</span>
@@ -1362,7 +1393,7 @@
       </div>
     </div>
 
-    <!-- ================= ЭКРАН 6: ПРОФИЛЬ ПОЛЬЗОВАТЕЛЯ (00:24 НА ВИДЕО) ================= -->
+    <!-- ================= ЭКРАН 6: ПРОФИЛЬ ПОЛЬЗОВАТЕЛЯ (СО СКРЫТИЕМ/ПОКАЗОМ КЛЮЧА И ВРЕМЕНЕМ) ================= -->
     <div id="page-profile" class="page-view">
       <div class="back-bar" onclick="openPage('page-home')">
         <span class="arrow">←</span>
@@ -1380,12 +1411,12 @@
           <span class="profile-val" id="profLoginVal">dare</span>
         </div>
         <div class="profile-row">
-          <span class="profile-key">Статус подписки:</span>
+          <span class="profile-key">Время до окончания:</span>
           <span class="profile-val" id="profSubVal" style="color:#10b981;">АКТИВНА (89 дн. 7 ч.)</span>
         </div>
-        <div class="profile-row">
-          <span class="profile-key">Лицензионный ключ:</span>
-          <span class="profile-val" id="profKeyVal" style="color:var(--accent);">TP90D-HHG-125841</span>
+        <div class="profile-row" onclick="toggleRevealKey()" style="cursor:pointer;">
+          <span class="profile-key">Лицензионный ключ (нажми):</span>
+          <span class="profile-val" id="profKeyVal" style="color:var(--accent); text-decoration:underline dotted;">TP90D-•••-••••41 👁️</span>
         </div>
         <div class="profile-row">
           <span class="profile-key">Модель устройства:</span>
@@ -1408,7 +1439,7 @@
 
   </div>
 
-  <!-- НИЖНЯЯ ПАНЕЛЬ (СОХРАНИТЬ НАСТРОЙКИ / ПОДЕЛИТЬСЯ ССЫЛКОЙ) -->
+  <!-- НИЖНЯЯ ФИКСИРОВАННАЯ ПАНЕЛЬ (СОХРАНИТЬ НАСТРОЙКИ / ПОДЕЛИТЬСЯ ССЫЛКОЙ) -->
   <div class="bottom-dock">
     <div class="bottom-dock-inner">
       <button class="dock-save-btn" onclick="saveCurrentConfigNow()">
@@ -1420,15 +1451,27 @@
     </div>
   </div>
 
-  <!-- ================= JAVASCRIPT ЛОГИКА И СВЯЗКА С ANDROID BRIDGE ================= -->
   <script>
     const Bridge = window.AndroidBridge || window.Android || null;
+    let currentThemeIdx = 0;
     let currentStretch = "4:3";
     let currentChShape = "off";
     let currentChColor = "#d946ef";
     let currentSamplingHz = 360;
     let currentGameDpi = 440;
     let calibShownOnce = false;
+    let fullLicenseKeyPlain = "TP90D-HHG-125841";
+    let isKeyRevealed = false;
+    let bridgeDebounceTimer = null;
+
+    const THEME_PRESETS = [
+      { accent: "#14e8c6", second: "#00d2ff", rgb: "20, 232, 198" },
+      { accent: "#a855f7", second: "#ec4899", rgb: "168, 85, 247" },
+      { accent: "#10b981", second: "#059669", rgb: "16, 185, 129" },
+      { accent: "#ff2e93", second: "#f43f5e", rgb: "255, 46, 147" },
+      { accent: "#3b82f6", second: "#06b6d4", rgb: "59, 130, 246" },
+      { accent: "#f59e0b", second: "#eab308", rgb: "245, 158, 11" }
+    ];
 
     function showTopToast(msg) {
       const t = document.getElementById("topToast");
@@ -1437,14 +1480,24 @@
       clearTimeout(window._toastTimer);
       window._toastTimer = setTimeout(() => {
         t.style.display = "none";
-      }, 2500);
+      }, 2400);
     }
 
-    function setTheme(accentHex, secondHex, dotEl) {
-      document.documentElement.style.setProperty("--accent", accentHex);
-      document.documentElement.style.setProperty("--accent-2", secondHex);
+    // Полноценная смена темы (рамки, свечение, кнопки, пилюли)
+    function setTheme(idx, accentHex, secondHex, rgbStr, dotEl) {
+      currentThemeIdx = idx;
+      const root = document.documentElement;
+      root.style.setProperty("--accent", accentHex);
+      root.style.setProperty("--accent-2", secondHex);
+      root.style.setProperty("--accent-rgb", rgbStr);
+
       document.querySelectorAll(".theme-dot").forEach(d => d.classList.remove("active"));
-      if (dotEl) dotEl.classList.add("active");
+      if (dotEl) {
+        dotEl.classList.add("active");
+      } else {
+        const targetDot = document.querySelector(`.theme-dot[data-theme="${idx}"]`);
+        if (targetDot) targetDot.classList.add("active");
+      }
       saveStateSilent();
     }
 
@@ -1452,7 +1505,7 @@
       document.querySelectorAll(".page-view").forEach(p => p.classList.remove("active"));
       const target = document.getElementById(pageId);
       if (target) target.classList.add("active");
-      window.scrollTo({ top: 0, behavior: "smooth" });
+      window.scrollTo(0, 0);
     }
 
     function openSensTile() {
@@ -1472,7 +1525,6 @@
       runSmartScanAndApply();
     }
 
-    // Системная кнопка "Назад" на телефоне возвращает на главный экран плиток
     window.handleSystemBack = function() {
       const home = document.getElementById("page-home");
       if (!home.classList.contains("active")) {
@@ -1482,15 +1534,42 @@
       return false;
     };
 
-    // Вызывается сторожем лицензии из AndroidBridge при истечении ключа
+    // Мгновенный кик при истечении времени ключа
     window.forceShowKickScreen = function(msg) {
       const modal = document.getElementById("authModal");
       const err = document.getElementById("authErrorBox");
       modal.style.display = "flex";
       err.style.display = "block";
-      err.innerText = "⛔ " + (msg || "Введите действующий лицензионный ключ!");
+      err.innerText = "⛔ " + (msg || "Срок действия ключа истёк!");
       toggleTeleportMaster(false);
     };
+
+    // Маскировка и расшифровка ключа при нажатии в профиле
+    function maskKeyString(k) {
+      if (!k || k.length < 8) return k || "—";
+      return k.substring(0, 5) + "-•••-••••" + k.substring(k.length - 2) + " 👁️";
+    }
+
+    function updateProfileKeyDisplay() {
+      const el = document.getElementById("profKeyVal");
+      if (!el) return;
+      if (isKeyRevealed) {
+        el.innerText = fullLicenseKeyPlain + " 🔓";
+      } else {
+        el.innerText = maskKeyString(fullLicenseKeyPlain);
+      }
+    }
+
+    function toggleRevealKey() {
+      isKeyRevealed = !isKeyRevealed;
+      updateProfileKeyDisplay();
+      if (isKeyRevealed) {
+        if (navigator.clipboard) navigator.clipboard.writeText(fullLicenseKeyPlain);
+        showTopToast("🔑 Ключ открыт и скопирован: " + fullLicenseKeyPlain);
+      } else {
+        showTopToast("🔒 Ключ скрыт");
+      }
+    }
 
     function openAuthSwitchModal() {
       document.getElementById("authErrorBox").style.display = "none";
@@ -1511,11 +1590,30 @@
       }
     }
 
-    // ================= ЗАГРУЗКА ДАННЫХ И ПРОВЕРКА КУПЛЕННЫХ КЛЮЧЕЙ =================
+    // Периодическая проверка времени ключа и авто-кик при окончании подписки
+    function pollLicenseExpiration() {
+      if (!Bridge || !fullLicenseKeyPlain || fullLicenseKeyPlain.length < 5) return;
+      try {
+        const verifyOut = Bridge.verifyLicenseKey(fullLicenseKeyPlain);
+        if (verifyOut.startsWith("OK|") || verifyOut.startsWith("OFFLINE|")) {
+          const subLabel = verifyOut.split("|")[1] || "АКТИВНА";
+          document.getElementById("profSubVal").innerText = subLabel;
+        } else if (verifyOut.startsWith("EXPIRED|")) {
+          window.forceShowKickScreen(verifyOut.split("|")[1] || "Время подписки истекло!");
+        }
+      } catch (e) {}
+    }
+
     function initApplication() {
       checkShizukuState();
-      setInterval(checkShizukuState, 4500);
+      setInterval(checkShizukuState, 5000);
+      setInterval(pollLicenseExpiration, 15000);
       renderCrosshairCanvas();
+
+      const localBackup = localStorage.getItem("so2tp_backup_v408");
+      if (localBackup) {
+        try { applyFullConfigObject(JSON.parse(localBackup)); } catch (e) {}
+      }
 
       if (!Bridge) return;
 
@@ -1538,8 +1636,9 @@
       document.getElementById("profLoginVal").innerText = savedNick;
 
       if (savedKey && savedKey.length >= 5) {
+        fullLicenseKeyPlain = savedKey;
         document.getElementById("loginKeyInput").value = savedKey;
-        document.getElementById("profKeyVal").innerText = savedKey;
+        updateProfileKeyDisplay();
 
         const verifyOut = Bridge.verifyLicenseKey(savedKey);
         if (verifyOut.startsWith("OK|") || verifyOut.startsWith("OFFLINE|")) {
@@ -1567,6 +1666,8 @@
       }
 
       if (!Bridge) {
+        fullLicenseKeyPlain = key;
+        updateProfileKeyDisplay();
         document.getElementById("authModal").style.display = "none";
         return;
       }
@@ -1575,9 +1676,12 @@
       const res = Bridge.activateLicenseKey(key);
       if (res.startsWith("OK|")) {
         const subLabel = res.split("|")[1] || "АКТИВНА (89 дн. 7 ч.)";
+        fullLicenseKeyPlain = key;
+        isKeyRevealed = false;
+        updateProfileKeyDisplay();
+
         document.getElementById("chipPlayerName").innerText = nick;
         document.getElementById("profLoginVal").innerText = nick;
-        document.getElementById("profKeyVal").innerText = key;
         document.getElementById("profSubVal").innerText = subLabel;
         document.getElementById("authModal").style.display = "none";
         loadSavedSettingsJson();
@@ -1588,7 +1692,7 @@
       }
     }
 
-    // ================= ЭКСТРЕМАЛЬНЫЙ ТЕЛЕПОРТ И 18 ПОЛЗУНКОВ СЕНСЫ =================
+    // ================= СЕНСА И ТЕЛЕПОРТ (БЕЗ ЛАГОВ С DEBOUNCE) =================
     function toggleTeleportMaster(enabled) {
       document.getElementById("homeTpToggle").checked = enabled;
       document.getElementById("innerTpToggle").checked = enabled;
@@ -1606,7 +1710,7 @@
           if (Bridge.setRawInputNoSmoothing) Bridge.setRawInputNoSmoothing(true);
           if (Bridge.applyUltraProTouchMatrix) Bridge.applyUltraProTouchMatrix(3);
         }
-        pushEngineParameters();
+        pushEngineParametersImmediate();
         showTopToast("⚡ Зверский Телепорт 360Hz + 1мм отклик ВКЛЮЧЕН!");
       } else {
         heading.innerText = "ТЕЛЕПОРТ: ВЫКЛЮЧЕН";
@@ -1641,12 +1745,8 @@
     }
 
     function onZeroDelayToggle(enabled) {
-      if (Bridge && Bridge.setRawInputNoSmoothing) {
-        Bridge.setRawInputNoSmoothing(enabled);
-      }
-      if (enabled && Bridge && Bridge.applyUltraProTouchMatrix) {
-        Bridge.applyUltraProTouchMatrix(3);
-      }
+      if (Bridge && Bridge.setRawInputNoSmoothing) Bridge.setRawInputNoSmoothing(enabled);
+      if (enabled && Bridge && Bridge.applyUltraProTouchMatrix) Bridge.applyUltraProTouchMatrix(3);
       showTopToast(enabled ? "⚡ Мгновенный отклик 1 мм (Zero-Delay) ВКЛ!" : "Мгновенный отклик 1 мм ВЫКЛ");
       saveStateSilent();
     }
@@ -1667,10 +1767,13 @@
         if (el && v) v.innerText = el.value;
       });
 
-      pushEngineParameters();
+      clearTimeout(bridgeDebounceTimer);
+      bridgeDebounceTimer = setTimeout(() => {
+        pushEngineParametersImmediate();
+      }, 65);
     }
 
-    function pushEngineParameters() {
+    function pushEngineParametersImmediate() {
       const sharp = parseFloat(document.getElementById("p-sharp").value);
       const sx = parseFloat(document.getElementById("p-sx").value);
       const sy = parseFloat(document.getElementById("p-sy").value);
@@ -1705,7 +1808,96 @@
       showTopToast("⚡ Матрица 1мм откалибрована (0.3 мс, 600 пакетов/сек)!");
     }
 
-    // ================= ГОТОВЫЕ КИБЕР-СБОРКИ И ОБМЕН ССЫЛКАМИ =================
+    // ================= КРОСС-ДЕВАЙС КОДЫ КОНФИГОВ (РАБОТАЮТ НА ЛЮБОМ УСТРОЙСТВЕ) =================
+    function encodePortableConfigToken() {
+      const c = collectFullConfig();
+      const packed = [
+        c.theme, c.tpOn ? 1 : 0, c.zeroSnap ? 1 : 0,
+        c.sharp, c.sx, c.sy, c.lead, c.axisStick, c.stickDelay, c.stickForce,
+        c.chunks, c.chunkFast, c.pause, c.accel, c.accelCurve, c.edge, c.straight,
+        c.grip, c.gripCap, c.stretch, c.chShape, c.chColor,
+        c.chLen, c.chThick, c.chGap, c.chDot, c.chAlpha, c.chOutline ? 1 : 0,
+        c.recoilPower
+      ].join("|");
+      return "SO2-" + btoa(unescape(encodeURIComponent(packed))).replace(/=+$/, "");
+    }
+
+    function decodePortableConfigToken(tokenStr) {
+      try {
+        let clean = tokenStr.trim();
+        if (clean.includes("c=")) clean = clean.split("c=")[1].trim();
+        if (clean.startsWith("SO2-") && clean.length > 14) {
+          const b64 = clean.substring(4);
+          const raw = decodeURIComponent(escape(atob(b64)));
+          const p = raw.split("|");
+          if (p.length >= 28) {
+            return {
+              theme: parseInt(p[0], 10) || 0,
+              tpOn: p[1] === "1",
+              zeroSnap: p[2] === "1",
+              sharp: p[3], sx: p[4], sy: p[5], lead: p[6],
+              axisStick: p[7], stickDelay: p[8], stickForce: p[9],
+              chunks: p[10], chunkFast: p[11], pause: p[12],
+              accel: p[13], accelCurve: p[14], edge: p[15], straight: p[16],
+              grip: p[17], gripCap: p[18], stretch: p[19],
+              chShape: p[20], chColor: p[21],
+              chLen: p[22], chThick: p[23], chGap: p[24], chDot: p[25], chAlpha: p[26],
+              chOutline: p[27] === "1",
+              recoilPower: p[28] || "100"
+            };
+          }
+        }
+      } catch (e) {}
+      return null;
+    }
+
+    function generateAndCopyShareLink() {
+      const portableCode = encodePortableConfigToken();
+      if (Bridge && Bridge.uploadCloudConfig) {
+        try { Bridge.uploadCloudConfig("PRO CFG", JSON.stringify(collectFullConfig())); } catch (e) {}
+      }
+      const shareUrl = "https://so2tp.cfg/?c=" + portableCode;
+      document.getElementById("shareLinkInput").value = shareUrl;
+      if (navigator.clipboard) navigator.clipboard.writeText(shareUrl);
+      showTopToast("🔗 Код-ссылка скопирована! Вставь на любом устройстве");
+    }
+
+    function applySharedConfigCode() {
+      const val = document.getElementById("shareLinkInput").value.trim();
+      if (!val) {
+        showTopToast("⚠️ Вставьте код или ссылку на конфиг!");
+        return;
+      }
+      const decoded = decodePortableConfigToken(val);
+      if (decoded) {
+        applyFullConfigObject(decoded);
+        saveCurrentConfigNow();
+        showTopToast("✅ Все настройки из кода успешно применены!");
+        return;
+      }
+      let shortCode = val.includes("c=") ? val.split("c=")[1].trim() : val;
+      if (Bridge && Bridge.downloadCloudConfig) {
+        try {
+          const raw = Bridge.downloadCloudConfig(shortCode);
+          const res = JSON.parse(raw);
+          if (res.preset) {
+            const cfg = typeof res.preset === "string" ? JSON.parse(res.preset) : res.preset;
+            applyFullConfigObject(cfg);
+            saveCurrentConfigNow();
+            showTopToast("✅ Облачный конфиг " + shortCode + " применён!");
+            return;
+          }
+        } catch (e) {}
+      }
+      toggleTeleportMaster(true);
+      showTopToast("✅ Конфиг " + shortCode.toUpperCase() + " активирован!");
+    }
+
+    function shareQuickLinkAction() {
+      openPage("page-configs");
+      generateAndCopyShareLink();
+    }
+
     function loadProCyberBuild(title, sharp, sx, sy, chunks, chunkFast, straight) {
       document.getElementById("p-sharp").value = sharp;
       document.getElementById("p-sx").value = sx;
@@ -1718,50 +1910,20 @@
       showTopToast("🔥 Сборка «" + title + "» активирована!");
     }
 
-    function generateAndCopyShareLink() {
-      const cfgJson = JSON.stringify(collectFullConfig());
-      let shareCode = "SO2-HEAD36";
-      if (Bridge && Bridge.uploadCloudConfig) {
-        try {
-          const raw = Bridge.uploadCloudConfig("PRO BUILD", cfgJson);
-          const parsed = JSON.parse(raw);
-          if (parsed.share_code) shareCode = parsed.share_code;
-        } catch (e) {}
-      }
-      const fullLink = "https://so2tp.cfg/?c=" + shareCode;
-      document.getElementById("shareLinkInput").value = fullLink;
-      if (navigator.clipboard) navigator.clipboard.writeText(fullLink);
-      showTopToast("🔗 Ссылка скопирована: " + shareCode);
-    }
-
-    function applySharedConfigCode() {
-      let val = document.getElementById("shareLinkInput").value.trim();
-      if (!val) {
-        showTopToast("⚠️ Вставьте ссылку или код SO2-XXXX");
-        return;
-      }
-      if (val.includes("c=")) val = val.split("c=")[1].trim();
-      if (Bridge && Bridge.downloadCloudConfig) {
-        Bridge.downloadCloudConfig(val);
-      }
-      toggleTeleportMaster(true);
-      showTopToast("✅ Конфиг " + val.toUpperCase() + " успешно применён!");
-    }
-
-    function shareQuickLinkAction() {
-      openPage("page-configs");
-      generateAndCopyShareLink();
-    }
-
-    // ================= РАСТЯГ ЭКРАНА (КНОПКА «T») =================
+    // ================= РАСТЯГ ЭКРАНА =================
     function selectStretchFormat(ratio, widthPx, pillEl) {
       currentStretch = ratio;
       document.querySelectorAll("#ratioPillsContainer .choice-pill").forEach(p => p.classList.remove("active"));
-      if (pillEl) pillEl.classList.add("active");
+      if (pillEl) {
+        pillEl.classList.add("active");
+      } else {
+        const found = document.querySelector(`#ratioPillsContainer .choice-pill[data-ratio="${ratio}"]`);
+        if (found) found.classList.add("active");
+      }
 
       document.getElementById("stretchCornerLabel").innerText = ratio;
       const box = document.getElementById("stretchPreviewBox");
-      box.style.width = widthPx + "px";
+      box.style.width = (widthPx || 142) + "px";
       box.innerText = "ФОРМАТ " + ratio;
       document.getElementById("activateStretchBtnText").innerText = `⚡ АКТИВИРОВАТЬ КНОПКУ РАСТЯГА «T» (${ratio})`;
       saveStateSilent();
@@ -1782,37 +1944,50 @@
       showTopToast("🔄 Кнопка «T» убрана, родной экран восстановлен");
     }
 
-    // ================= КАСТОМНЫЙ ПРИЦЕЛ =================
+    // ================= PRO КОНСТРУКТОР КАСТОМНОГО ПРИЦЕЛА =================
     function selectCrosshairShape(shape, label, el) {
       currentChShape = shape;
       document.querySelectorAll("#chShapePills .choice-pill").forEach(p => p.classList.remove("active"));
-      if (el) el.classList.add("active");
-      document.getElementById("chCornerStatus").innerText = label;
+      if (el) {
+        el.classList.add("active");
+      } else {
+        const found = document.querySelector(`#chShapePills .choice-pill[data-shape="${shape}"]`);
+        if (found) found.classList.add("active");
+      }
+      document.getElementById("chCornerStatus").innerText = label || shape.toUpperCase();
       updateCrosshairAll();
     }
 
     function selectCrosshairColor(hex, el) {
       currentChColor = hex;
+      document.getElementById("customChColorPicker").value = hex;
       document.querySelectorAll("#chColorPills .choice-pill").forEach(p => p.classList.remove("active"));
       if (el) el.classList.add("active");
       updateCrosshairAll();
     }
 
     function updateCrosshairAll() {
-      const scale = parseInt(document.getElementById("p-chScale").value, 10);
+      const len = parseInt(document.getElementById("p-chLen").value, 10);
+      const thick = parseInt(document.getElementById("p-chThick").value, 10);
+      const gap = parseInt(document.getElementById("p-chGap").value, 10);
+      const dot = parseInt(document.getElementById("p-chDot").value, 10);
       const alpha = parseInt(document.getElementById("p-chAlpha").value, 10);
-      document.getElementById("v-chScale").innerText = scale + "%";
+      const outline = document.getElementById("chOutlineToggle").checked;
+
+      document.getElementById("v-chLen").innerText = len + " px";
+      document.getElementById("v-chThick").innerText = thick + " px";
+      document.getElementById("v-chGap").innerText = gap + " px";
+      document.getElementById("v-chDot").innerText = dot + " px";
       document.getElementById("v-chAlpha").innerText = alpha + "%";
 
       renderCrosshairCanvas();
 
       if (Bridge) {
-        const len = Math.max(4, Math.round(4 + (scale / 100) * 18));
         if (Bridge.updateCrosshairAdvanced) {
-          Bridge.updateCrosshairAdvanced(currentChShape, currentChColor, alpha, len, 3, 4, 3, true);
+          Bridge.updateCrosshairAdvanced(currentChShape, currentChColor, alpha, len, thick, gap, dot, outline);
         } else if (Bridge.updateCrosshair) {
           Bridge.updateCrosshair(currentChShape);
-          Bridge.updateCrosshairStyle(scale, alpha, currentChColor);
+          Bridge.updateCrosshairStyle(len * 4, alpha, currentChColor);
         }
       }
       saveStateSilent();
@@ -1824,35 +1999,84 @@
       const ctx = canvas.getContext("2d");
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-      if (currentChShape === "off") return;
+      if (currentChShape === "off") {
+        ctx.fillStyle = "#64748b";
+        ctx.font = "bold 11px sans-serif";
+        ctx.textAlign = "center";
+        ctx.fillText("ПРИЦЕЛ ВЫКЛЮЧЕН", canvas.width / 2, canvas.height / 2 + 4);
+        return;
+      }
 
-      const scale = parseInt(document.getElementById("p-chScale").value, 10);
+      const len = parseInt(document.getElementById("p-chLen").value, 10) * 1.4;
+      const thick = parseInt(document.getElementById("p-chThick").value, 10) * 1.1;
+      const gap = parseInt(document.getElementById("p-chGap").value, 10) * 1.3;
+      const dot = parseInt(document.getElementById("p-chDot").value, 10) * 1.2;
       const alpha = parseInt(document.getElementById("p-chAlpha").value, 10) / 100;
+      const outline = document.getElementById("chOutlineToggle").checked;
+
       const cx = canvas.width / 2;
       const cy = canvas.height / 2;
-      const size = 6 + (scale / 100) * 20;
-      const gap = 4;
 
       ctx.save();
       ctx.globalAlpha = alpha;
       ctx.strokeStyle = currentChColor;
       ctx.fillStyle = currentChColor;
-      ctx.lineWidth = 3;
+      ctx.lineWidth = thick;
 
       if (currentChShape === "dot") {
-        ctx.beginPath(); ctx.arc(cx, cy, Math.max(3, size * 0.28), 0, Math.PI * 2); ctx.fill();
-      } else if (currentChShape === "circle") {
-        ctx.beginPath(); ctx.arc(cx, cy, size * 0.7, 0, Math.PI * 2); ctx.stroke();
-        ctx.beginPath(); ctx.arc(cx, cy, 2.5, 0, Math.PI * 2); ctx.fill();
-      } else {
+        if (outline) {
+          ctx.fillStyle = "#000";
+          ctx.beginPath(); ctx.arc(cx, cy, dot + 1.5, 0, Math.PI * 2); ctx.fill();
+          ctx.fillStyle = currentChColor;
+        }
+        ctx.beginPath(); ctx.arc(cx, cy, dot, 0, Math.PI * 2); ctx.fill();
+        ctx.restore();
+        return;
+      }
+
+      if (currentChShape === "circle" || currentChShape === "circledot") {
+        if (outline) {
+          ctx.strokeStyle = "#000"; ctx.lineWidth = thick + 2.2;
+          ctx.beginPath(); ctx.arc(cx, cy, len, 0, Math.PI * 2); ctx.stroke();
+          ctx.strokeStyle = currentChColor; ctx.lineWidth = thick;
+        }
+        ctx.beginPath(); ctx.arc(cx, cy, len, 0, Math.PI * 2); ctx.stroke();
+        if (currentChShape === "circledot") {
+          ctx.beginPath(); ctx.arc(cx, cy, dot, 0, Math.PI * 2); ctx.fill();
+        }
+        ctx.restore();
+        return;
+      }
+
+      if (currentChShape === "box") {
+        if (outline) {
+          ctx.strokeStyle = "#000"; ctx.lineWidth = thick + 2.2;
+          ctx.strokeRect(cx - len, cy - len, len * 2, len * 2);
+          ctx.strokeStyle = currentChColor; ctx.lineWidth = thick;
+        }
+        ctx.strokeRect(cx - len, cy - len, len * 2, len * 2);
+        ctx.restore();
+        return;
+      }
+
+      const drawCrossArms = (col, w) => {
+        ctx.strokeStyle = col;
+        ctx.lineWidth = w;
         ctx.beginPath();
-        ctx.moveTo(cx - gap - size, cy); ctx.lineTo(cx - gap, cy);
-        ctx.moveTo(cx + gap, cy); ctx.lineTo(cx + gap + size, cy);
-        ctx.moveTo(cx, cy + gap); ctx.lineTo(cx, cy + gap + size);
+        ctx.moveTo(cx - gap - len, cy); ctx.lineTo(cx - gap, cy);
+        ctx.moveTo(cx + gap, cy); ctx.lineTo(cx + gap + len, cy);
+        ctx.moveTo(cx, cy + gap); ctx.lineTo(cx, cy + gap + len);
         if (currentChShape !== "tshape") {
-          ctx.moveTo(cx, cy - gap - size); ctx.lineTo(cx, cy - gap);
+          ctx.moveTo(cx, cy - gap - len); ctx.lineTo(cx, cy - gap);
         }
         ctx.stroke();
+      };
+
+      if (outline) drawCrossArms("#000000", thick + 2.2);
+      drawCrossArms(currentChColor, thick);
+
+      if (currentChShape === "crossdot") {
+        ctx.beginPath(); ctx.arc(cx, cy, dot, 0, Math.PI * 2); ctx.fill();
       }
       ctx.restore();
     }
@@ -1879,9 +2103,7 @@
 
     function applyTouchSamplingBoost() {
       const enabled = document.getElementById("sw-touchBoost").checked;
-      if (Bridge && Bridge.setTouchSamplingBoost) {
-        Bridge.setTouchSamplingBoost(enabled, currentSamplingHz);
-      }
+      if (Bridge && Bridge.setTouchSamplingBoost) Bridge.setTouchSamplingBoost(enabled, currentSamplingHz);
       showTopToast(enabled ? `⚡ Разгон тача ${currentSamplingHz} Гц активен!` : "Разгон герцовки тача выключен");
       saveStateSilent();
     }
@@ -1896,9 +2118,7 @@
       const enabled = document.getElementById("sw-recoilPro").checked;
       const power = parseInt(document.getElementById("p-recoilPower").value, 10);
       document.getElementById("v-recoilPower").innerText = power + "%";
-      if (Bridge && Bridge.setEnhancedRecoilFix) {
-        Bridge.setEnhancedRecoilFix(enabled, power);
-      }
+      if (Bridge && Bridge.setEnhancedRecoilFix) Bridge.setEnhancedRecoilFix(enabled, power);
       saveStateSilent();
     }
 
@@ -1911,17 +2131,13 @@
 
     function applyForceDpiSetting() {
       const enabled = document.getElementById("sw-forceDpi").checked;
-      if (Bridge && Bridge.setAutoGameDpi) {
-        Bridge.setAutoGameDpi(enabled, currentGameDpi);
-      }
+      if (Bridge && Bridge.setAutoGameDpi) Bridge.setAutoGameDpi(enabled, currentGameDpi);
       showTopToast(enabled ? `📐 Игровой DPI ${currentGameDpi} активирован` : "🔄 Родной DPI восстановлен");
       saveStateSilent();
     }
 
     function toggleStealthModeFlag(enabled) {
-      if (Bridge && Bridge.updateOverlayStealthFlag) {
-        Bridge.updateOverlayStealthFlag(enabled);
-      }
+      if (Bridge && Bridge.updateOverlayStealthFlag) Bridge.updateOverlayStealthFlag(enabled);
       showTopToast(enabled ? "🕵️ Невидимость на записи (Stealth) ВКЛ" : "Stealth режим ВЫКЛ");
       saveStateSilent();
     }
@@ -1930,15 +2146,14 @@
       document.querySelectorAll("#pixelPills .choice-pill").forEach(p => p.classList.remove("active"));
       if (el) el.classList.add("active");
       document.getElementById("pixelScaleLabel").innerText = pct + "%";
-      if (Bridge && Bridge.setPixelDownscaleFactor) {
-        Bridge.setPixelDownscaleFactor(pct);
-      }
+      if (Bridge && Bridge.setPixelDownscaleFactor) Bridge.setPixelDownscaleFactor(pct);
       showTopToast(`📐 Оптимизация пикселей: ${pct}%`);
     }
 
-    // ================= СОХРАНЕНИЕ И ВОССТАНОВЛЕНИЕ КОНФИГА =================
+    // ================= СОХРАНЕНИЕ И ЗАГРУЗКА ВСЕХ НАСТРОЕК =================
     function collectFullConfig() {
       return {
+        theme: currentThemeIdx,
         tpOn: document.getElementById("innerTpToggle").checked,
         zeroSnap: document.getElementById("zeroDelaySnapToggle").checked,
         sharp: document.getElementById("p-sharp").value,
@@ -1960,22 +2175,52 @@
         stretch: currentStretch,
         chShape: currentChShape,
         chColor: currentChColor,
-        chScale: document.getElementById("p-chScale").value,
+        chLen: document.getElementById("p-chLen").value,
+        chThick: document.getElementById("p-chThick").value,
+        chGap: document.getElementById("p-chGap").value,
+        chDot: document.getElementById("p-chDot").value,
         chAlpha: document.getElementById("p-chAlpha").value,
+        chOutline: document.getElementById("chOutlineToggle").checked,
         recoilPower: document.getElementById("p-recoilPower").value,
         stealth: document.getElementById("sw-stealthMode").checked
       };
     }
 
+    function applyFullConfigObject(c) {
+      if (!c) return;
+      if (c.theme !== undefined && THEME_PRESETS[c.theme]) {
+        const t = THEME_PRESETS[c.theme];
+        setTheme(c.theme, t.accent, t.second, t.rgb, null);
+      }
+      const sliders = ["sharp", "sx", "sy", "lead", "axisStick", "stickDelay", "stickForce", "chunks", "chunkFast", "pause", "accel", "accelCurve", "edge", "straight", "grip", "gripCap", "chLen", "chThick", "chGap", "chDot", "chAlpha", "recoilPower"];
+      sliders.forEach(k => {
+        if (c[k] !== undefined && document.getElementById("p-" + k)) {
+          document.getElementById("p-" + k).value = c[k];
+        }
+      });
+      if (c.zeroSnap !== undefined) document.getElementById("zeroDelaySnapToggle").checked = !!c.zeroSnap;
+      if (c.chOutline !== undefined) document.getElementById("chOutlineToggle").checked = !!c.chOutline;
+      if (c.stealth !== undefined) document.getElementById("sw-stealthMode").checked = !!c.stealth;
+      if (c.stretch) selectStretchFormat(c.stretch, 142, null);
+      if (c.chColor) currentChColor = c.chColor;
+      if (c.chShape) selectCrosshairShape(c.chShape, c.chShape.toUpperCase(), null);
+
+      syncAllSliders();
+      updateCrosshairAll();
+      if (c.tpOn !== undefined) toggleTeleportMaster(!!c.tpOn);
+    }
+
     function saveStateSilent() {
+      const jsonStr = JSON.stringify(collectFullConfig());
+      try { localStorage.setItem("so2tp_backup_v408", jsonStr); } catch (e) {}
       if (Bridge && Bridge.saveFullConfigJson) {
-        Bridge.saveFullConfigJson(JSON.stringify(collectFullConfig()));
+        Bridge.saveFullConfigJson(jsonStr);
       }
     }
 
     function saveCurrentConfigNow() {
       saveStateSilent();
-      pushEngineParameters();
+      pushEngineParametersImmediate();
       showTopToast("💾 Все настройки успешно сохранены!");
     }
 
@@ -1984,17 +2229,7 @@
       try {
         const raw = Bridge.loadFullConfigJson();
         if (!raw) return;
-        const c = JSON.parse(raw);
-        const map = ["sharp", "sx", "sy", "lead", "axisStick", "stickDelay", "stickForce", "chunks", "chunkFast", "pause", "accel", "accelCurve", "edge", "straight", "grip", "gripCap", "chScale", "chAlpha", "recoilPower"];
-        map.forEach(k => {
-          if (c[k] !== undefined && document.getElementById("p-" + k)) {
-            document.getElementById("p-" + k).value = c[k];
-          }
-        });
-        if (c.zeroSnap !== undefined) document.getElementById("zeroDelaySnapToggle").checked = !!c.zeroSnap;
-        if (c.stealth !== undefined) document.getElementById("sw-stealthMode").checked = !!c.stealth;
-        syncAllSliders();
-        if (c.tpOn) toggleTeleportMaster(true);
+        applyFullConfigObject(JSON.parse(raw));
       } catch (e) {}
     }
 
