@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
-  <title>SO2Teleport QUANTUM ENGINE V407</title>
+  <title>SO2Teleport QUANTUM ENGINE V409</title>
   <style>
     :root {
       --bg-dark: #060d14;
@@ -39,26 +39,75 @@
       padding-top: calc(env(safe-area-inset-top, 26px) + 16px);
       padding-bottom: 98px;
       overflow-x: hidden;
-      transition: background-image 0.25s ease;
     }
 
-    /* БЛОКИРОВКА ИНТЕРФЕЙСА ДО ПРОВЕРКИ КЛЮЧА */
-    body.locked-session .app-container,
-    body.locked-session .bottom-dock {
-      pointer-events: none !important;
-      user-select: none !important;
-      filter: blur(12px);
-      opacity: 0.25;
+    /* ================= ПОЛНОЭКРАННЫЙ БЛОК АВТОРИЗАЦИИ (ОТКРЫТ ПО УМОЛЧАНИЮ) ================= */
+    #authScreen {
+      position: fixed;
+      inset: 0;
+      z-index: 99999;
+      background-color: #050b12;
+      background-image:
+        radial-gradient(circle at 50% 15%, rgba(var(--accent-rgb), 0.16) 0%, transparent 50%);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
     }
 
+    .auth-box {
+      width: 100%;
+      max-width: 395px;
+      background: #0b1622;
+      border: 1.5px solid var(--accent);
+      border-radius: 24px;
+      padding: 24px 18px;
+      text-align: center;
+      box-shadow: 0 0 40px rgba(var(--accent-rgb), 0.25);
+    }
+
+    .auth-pill-tag {
+      display: inline-block;
+      font-size: 10px;
+      font-weight: 900;
+      color: var(--accent);
+      background: rgba(var(--accent-rgb), 0.12);
+      border: 1px solid rgba(var(--accent-rgb), 0.38);
+      padding: 4px 11px;
+      border-radius: 999px;
+      margin-bottom: 10px;
+      letter-spacing: 0.6px;
+    }
+
+    .cyber-field {
+      width: 100%;
+      background: #060e17;
+      border: 1.5px solid rgba(var(--accent-rgb), 0.38);
+      color: #ffffff;
+      border-radius: 13px;
+      padding: 13px 14px;
+      font-size: 14px;
+      font-weight: 700;
+      outline: none;
+      margin-bottom: 10px;
+      user-select: text;
+      -webkit-user-select: text;
+    }
+
+    .cyber-field:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 14px rgba(var(--accent-rgb), 0.28);
+    }
+
+    /* ================= КОНТЕЙНЕР ПРИЛОЖЕНИЯ ================= */
     .app-container {
       max-width: 480px;
       margin: 0 auto;
       padding: 0 14px;
-      transition: filter 0.25s ease, opacity 0.25s ease;
     }
 
-    /* ================= ВЕРХНЯЯ ШАПКА ================= */
+    /* ВЕРХНЯЯ ШАПКА */
     .top-header {
       display: flex;
       justify-content: space-between;
@@ -77,7 +126,6 @@
     .brand-title span {
       color: var(--accent);
       text-shadow: 0 0 14px rgba(var(--accent-rgb), 0.45);
-      transition: color 0.2s, text-shadow 0.2s;
     }
 
     .brand-sub {
@@ -87,17 +135,15 @@
       color: var(--accent);
       margin-top: 3px;
       text-transform: uppercase;
-      transition: color 0.2s;
     }
 
     .shizuku-pill {
       background: #0b1724;
-      border: 1.5px solid rgba(var(--accent-rgb), 0.42);
+      border: 1.5px solid rgba(var(--accent-rgb), 0.45);
       border-radius: 14px;
       padding: 6px 11px;
       text-align: right;
       box-shadow: 0 0 16px rgba(var(--accent-rgb), 0.16);
-      transition: border-color 0.2s, box-shadow 0.2s;
     }
 
     .shizuku-row {
@@ -116,7 +162,6 @@
       border-radius: 50%;
       background: var(--accent);
       box-shadow: 0 0 8px var(--accent);
-      transition: background 0.2s, box-shadow 0.2s;
     }
 
     .status-dot.off {
@@ -136,8 +181,8 @@
       display: inline-flex;
       align-items: center;
       gap: 7px;
-      background: rgba(var(--accent-rgb), 0.1);
-      border: 1.5px solid rgba(var(--accent-rgb), 0.45);
+      background: rgba(var(--accent-rgb), 0.12);
+      border: 1.5px solid rgba(var(--accent-rgb), 0.48);
       box-shadow: 0 0 14px rgba(var(--accent-rgb), 0.18);
       border-radius: 999px;
       padding: 5px 13px;
@@ -146,7 +191,6 @@
       color: #ffffff;
       margin-bottom: 12px;
       cursor: pointer;
-      transition: all 0.2s;
     }
 
     .player-chip-dot {
@@ -155,13 +199,12 @@
       border-radius: 50%;
       background: var(--accent);
       box-shadow: 0 0 8px var(--accent);
-      transition: all 0.2s;
     }
 
-    /* ================= ПАНЕЛЬ ВЫБОРА ТЕМЫ МЕНЮ ================= */
+    /* ПАНЕЛЬ ВЫБОРА ТЕМЫ МЕНЮ */
     .theme-bar {
       background: var(--bg-card);
-      border: 1.5px solid rgba(var(--accent-rgb), 0.38);
+      border: 1.5px solid rgba(var(--accent-rgb), 0.42);
       box-shadow: 0 0 18px rgba(var(--accent-rgb), 0.12);
       border-radius: 16px;
       padding: 10px 14px;
@@ -169,7 +212,6 @@
       justify-content: space-between;
       align-items: center;
       margin-bottom: 14px;
-      transition: border-color 0.2s, box-shadow 0.2s;
     }
 
     .theme-label {
@@ -191,7 +233,7 @@
       border-radius: 50%;
       cursor: pointer;
       border: 2px solid rgba(255, 255, 255, 0.22);
-      transition: transform 0.15s, border-color 0.15s, box-shadow 0.15s;
+      transition: transform 0.15s;
     }
 
     .theme-dot.active {
@@ -200,7 +242,7 @@
       box-shadow: 0 0 14px var(--accent);
     }
 
-    /* ================= СЕТКА 6 ПЛИТОК С НЕОНОВОЙ РАМКОЙ ТЕМЫ ================= */
+    /* СЕТКА 6 ПЛИТОК С РАМКОЙ И СВЕЧЕНИЕМ ТЕМЫ */
     .bento-grid {
       display: grid;
       grid-template-columns: 1fr 1fr;
@@ -208,8 +250,8 @@
     }
 
     .bento-tile {
-      background: linear-gradient(160deg, rgba(var(--accent-rgb), 0.09) 0%, rgba(10, 19, 29, 0.98) 65%);
-      border: 1.5px solid rgba(var(--accent-rgb), 0.38);
+      background: linear-gradient(160deg, rgba(var(--accent-rgb), 0.1) 0%, rgba(10, 19, 29, 0.98) 65%);
+      border: 1.5px solid rgba(var(--accent-rgb), 0.42);
       box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4), inset 0 0 18px rgba(var(--accent-rgb), 0.05);
       border-radius: 20px;
       padding: 15px 14px;
@@ -220,7 +262,6 @@
       cursor: pointer;
       position: relative;
       transform: translateZ(0);
-      transition: transform 0.1s ease, border-color 0.2s, box-shadow 0.2s;
     }
 
     .bento-tile:active {
@@ -239,14 +280,13 @@
       width: 40px;
       height: 40px;
       border-radius: 13px;
-      background: rgba(var(--accent-rgb), 0.14);
-      border: 1px solid rgba(var(--accent-rgb), 0.45);
+      background: rgba(var(--accent-rgb), 0.15);
+      border: 1px solid rgba(var(--accent-rgb), 0.48);
       box-shadow: 0 0 12px rgba(var(--accent-rgb), 0.2);
       display: flex;
       align-items: center;
       justify-content: center;
       font-size: 19px;
-      transition: all 0.2s;
     }
 
     .tile-arrow {
@@ -283,7 +323,7 @@
       align-items: center;
       gap: 6px;
       background: rgba(6, 13, 20, 0.85);
-      border: 1px solid rgba(var(--accent-rgb), 0.35);
+      border: 1px solid rgba(var(--accent-rgb), 0.38);
       padding: 4px 8px;
       border-radius: 999px;
       font-size: 10px;
@@ -291,7 +331,7 @@
       color: var(--text-muted);
     }
 
-    /* ================= ВНУТРЕННИЕ СТРАНИЦЫ ================= */
+    /* ВНУТРЕННИЕ СТРАНИЦЫ */
     .page-view {
       display: none;
     }
@@ -303,7 +343,7 @@
     .back-bar {
       width: 100%;
       background: var(--bg-card);
-      border: 1.5px solid rgba(var(--accent-rgb), 0.4);
+      border: 1.5px solid rgba(var(--accent-rgb), 0.42);
       box-shadow: 0 0 15px rgba(var(--accent-rgb), 0.12);
       border-radius: 15px;
       padding: 13px 15px;
@@ -323,13 +363,12 @@
     }
 
     .section-card {
-      background: linear-gradient(170deg, rgba(var(--accent-rgb), 0.06) 0%, var(--bg-card) 45%);
-      border: 1.5px solid rgba(var(--accent-rgb), 0.35);
+      background: linear-gradient(170deg, rgba(var(--accent-rgb), 0.07) 0%, var(--bg-card) 45%);
+      border: 1.5px solid rgba(var(--accent-rgb), 0.38);
       box-shadow: 0 6px 22px rgba(0, 0, 0, 0.38), inset 0 0 14px rgba(var(--accent-rgb), 0.04);
       border-radius: 19px;
       padding: 15px;
       margin-bottom: 13px;
-      transition: border-color 0.2s, box-shadow 0.2s;
     }
 
     .section-header-tag {
@@ -362,7 +401,6 @@
       align-items: center;
       justify-content: center;
       gap: 8px;
-      transition: transform 0.1s, background 0.2s, box-shadow 0.2s;
     }
 
     .btn-main:active {
@@ -372,7 +410,7 @@
     .btn-dark {
       width: 100%;
       background: #0d1a29;
-      border: 1px solid rgba(var(--accent-rgb), 0.3);
+      border: 1px solid rgba(var(--accent-rgb), 0.35);
       color: #e2e8f0;
       border-radius: 13px;
       padding: 12px 14px;
@@ -501,7 +539,7 @@
     /* ПОЛЗУНКИ */
     .param-box {
       background: var(--bg-card-inner);
-      border: 1px solid rgba(var(--accent-rgb), 0.16);
+      border: 1px solid rgba(var(--accent-rgb), 0.18);
       border-radius: 15px;
       padding: 12px 13px;
       margin-bottom: 9px;
@@ -522,7 +560,7 @@
 
     .param-val-pill {
       background: rgba(var(--accent-rgb), 0.15);
-      border: 1px solid rgba(var(--accent-rgb), 0.4);
+      border: 1px solid rgba(var(--accent-rgb), 0.42);
       color: var(--accent);
       font-size: 12px;
       font-weight: 900;
@@ -580,7 +618,7 @@
     }
 
     .choice-pill.active {
-      background: rgba(var(--accent-rgb), 0.2);
+      background: rgba(var(--accent-rgb), 0.22);
       border: 1.5px solid var(--accent);
       color: var(--accent);
       box-shadow: 0 0 12px rgba(var(--accent-rgb), 0.25);
@@ -619,9 +657,8 @@
       right: 0;
       z-index: 900;
       background: #060d14;
-      border-top: 1.5px solid rgba(var(--accent-rgb), 0.32);
+      border-top: 1.5px solid rgba(var(--accent-rgb), 0.35);
       padding: 10px 14px calc(env(safe-area-inset-bottom, 8px) + 8px);
-      transition: filter 0.25s ease, opacity 0.25s ease;
     }
 
     .bottom-dock-inner {
@@ -650,7 +687,7 @@
     }
 
     .dock-share-btn {
-      border: 1.5px solid rgba(var(--accent-rgb), 0.35);
+      border: 1.5px solid rgba(var(--accent-rgb), 0.38);
       border-radius: 14px;
       padding: 13px 10px;
       background: #0d1926;
@@ -665,22 +702,16 @@
       cursor: pointer;
     }
 
-    /* МОДАЛКИ */
+    /* МОДАЛКА КАЛИБРОВКИ */
     .modal-backdrop {
       position: fixed;
       inset: 0;
       z-index: 5000;
-      background: rgba(3, 8, 14, 0.94);
+      background: rgba(3, 8, 14, 0.9);
       display: none;
       align-items: center;
       justify-content: center;
       padding: 18px;
-    }
-
-    /* ОКНО АВТОРИЗАЦИИ ОТКРЫТО С ПЕРВОЙ МИЛЛИСЕКУНДЫ ЗАПУСКА */
-    #authModal {
-      display: flex;
-      z-index: 10000;
     }
 
     .modal-card {
@@ -699,7 +730,7 @@
       top: calc(env(safe-area-inset-top, 24px) + 14px);
       left: 50%;
       transform: translateX(-50%);
-      z-index: 20000;
+      z-index: 100000;
       background: #0d1c2c;
       border: 1.5px solid var(--accent);
       color: #ffffff;
@@ -711,30 +742,42 @@
       display: none;
       white-space: nowrap;
     }
-
-    .cyber-field {
-      width: 100%;
-      background: #060e17;
-      border: 1.5px solid rgba(var(--accent-rgb), 0.35);
-      color: #ffffff;
-      border-radius: 12px;
-      padding: 12px 14px;
-      font-size: 13.5px;
-      font-weight: 700;
-      outline: none;
-      margin-bottom: 10px;
-    }
-
-    .cyber-field:focus {
-      border-color: var(--accent);
-      box-shadow: 0 0 12px rgba(var(--accent-rgb), 0.25);
-    }
   </style>
 </head>
-<body class="locked-session">
+<body>
 
   <!-- ВСПЛЫВАЮЩЕЕ УВЕДОМЛЕНИЕ -->
   <div id="topToast">⚡ Калибровка под SM-S938B завершена!</div>
+
+  <!-- ================= 1. ЭКРАН АВТОРИЗАЦИИ ПО КЛЮЧУ (ЕДИНСТВЕННЫЙ ВИДИМЫЙ ПРИ СТАРТЕ) ================= -->
+  <div id="authScreen">
+    <div class="auth-box">
+      <div class="auth-pill-tag">QUANTUM ENGINE V409 • LICENSE GUARD</div>
+      <div style="font-size:24px; font-weight:900; color:#fff; margin-bottom:5px;">
+        SO2<span style="color:var(--accent)">Teleport</span> PRO
+      </div>
+      <div style="font-size:12px; color:var(--text-muted); margin-bottom:16px; line-height:1.45;">
+        Введите ваш игровой логин и лицензионный ключ из Telegram-бота для входа в приложение
+      </div>
+
+      <div id="authErrorBox" style="display:none; background:var(--danger-bg); border:1px solid var(--danger-border); color:var(--danger-text); padding:10px 12px; border-radius:12px; font-size:12px; font-weight:800; margin-bottom:12px;"></div>
+
+      <input type="text" id="loginNickInput" class="cyber-field" placeholder="Ваш логин / ник (напр. dare)" autocomplete="off" />
+      <input type="text" id="loginKeyInput" class="cyber-field" placeholder="Ваш ключ (TP-...)" style="text-transform:uppercase; font-family:monospace;" autocomplete="off" />
+
+      <button class="btn-main" id="loginBtnAction" onclick="submitKeyLogin()" style="margin-top:4px; margin-bottom:10px;">
+        ⚡ АКТИВИРОВАТЬ КЛЮЧ И ВОЙТИ
+      </button>
+
+      <button class="btn-dark" onclick="openTgBot()">
+        🤖 КУПИТЬ / ПОЛУЧИТЬ КЛЮЧ В TELEGRAM
+      </button>
+
+      <div style="margin-top:14px; font-size:11px; color:var(--text-muted);">
+        HWID устройства: <span id="authHwidLabel" style="color:var(--accent); font-family:monospace; font-weight:800;">загрузка...</span>
+      </div>
+    </div>
+  </div>
 
   <!-- МОДАЛЬНОЕ ОКНО «УМНАЯ КАЛИБРОВКА ТЕЛЕФОНА» -->
   <div id="calibModal" class="modal-backdrop">
@@ -753,36 +796,8 @@
     </div>
   </div>
 
-  <!-- ЖЁСТКОЕ ОКНО АВТОРИЗАЦИИ ПРИ ПЕРВОМ ВХОДЕ И ИСТЕЧЕНИИ КЛЮЧА -->
-  <div id="authModal" class="modal-backdrop">
-    <div class="modal-card">
-      <div style="display:inline-block; font-size:10px; font-weight:900; color:var(--accent); background:rgba(var(--accent-rgb),0.12); border:1px solid rgba(var(--accent-rgb),0.35); padding:4px 10px; border-radius:999px; margin-bottom:8px;">
-        ЗАЩИТА ЛИЦЕНЗИИ • QUANTUM V407
-      </div>
-      <div style="font-size:22px; font-weight:900; color:#fff; margin-bottom:4px;">SO2<span style="color:var(--accent)">Teleport</span> PRO</div>
-      <div style="font-size:11.5px; color:var(--text-muted); margin-bottom:14px; line-height:1.4;">
-        Для доступа к функциям введите ваш игровой никнейм и лицензионный ключ из Telegram-бота
-      </div>
-
-      <div id="authErrorBox" style="display:none; background:var(--danger-bg); border:1px solid var(--danger-border); color:var(--danger-text); padding:10px; border-radius:11px; font-size:12px; font-weight:800; margin-bottom:12px;"></div>
-
-      <input type="text" id="loginNickInput" class="cyber-field" placeholder="Введите ваш никнейм (напр. dare)" autocomplete="off" />
-      <input type="text" id="loginKeyInput" class="cyber-field" placeholder="Лицензионный ключ (TP-...)" style="text-transform:uppercase; font-family:monospace;" autocomplete="off" />
-
-      <button class="btn-main" id="authSubmitBtn" onclick="submitKeyLogin()" style="margin-bottom:9px;">
-        ⚡ ВОЙТИ И АКТИВИРОВАТЬ КЛЮЧ
-      </button>
-      <button class="btn-dark" onclick="openTgBot()">
-        🤖 КУПИТЬ / ПОЛУЧИТЬ КЛЮЧ В БОТЕ
-      </button>
-
-      <div style="margin-top:12px; font-size:10.5px; color:var(--text-muted);">
-        HWID: <span id="authModalHwid" style="color:var(--accent); font-family:monospace;">определение...</span>
-      </div>
-    </div>
-  </div>
-
-  <div class="app-container">
+  <!-- ================= 2. ГЛАВНЫЙ ИНТЕРФЕЙС (СКРЫТ ДО ВВОДА ДЕЙСТВУЮЩЕГО КЛЮЧА) ================= -->
+  <div id="mainAppRoot" class="app-container" style="display:none;">
 
     <!-- ВЕРХНЯЯ ШАПКА -->
     <header class="top-header">
@@ -799,16 +814,15 @@
       </div>
     </header>
 
-    <!-- БЕЙДЖ ИГРОКА С ПОДСВЕТКОЙ ТЕМЫ -->
+    <!-- БЕЙДЖ ИГРОКА -->
     <div class="player-chip" onclick="openPage('page-profile')">
       <span class="player-chip-dot"></span>
-      <span>Игрок: <b id="chipPlayerName">Гость</b></span>
+      <span>Игрок: <b id="chipPlayerName">dare</b></span>
     </div>
 
     <!-- ================= ЭКРАН 0: ГЛАВНОЕ МЕНЮ ================= -->
     <div id="page-home" class="page-view active">
 
-      <!-- 6 ЦВЕТОВЫХ ТЕМ (МЕНЯЮТ РАМКИ, СВЕЧЕНИЕ И КНОПКИ) -->
       <div class="theme-bar">
         <div class="theme-label">🎨 ТЕМА МЕНЮ:</div>
         <div class="theme-circles">
@@ -821,7 +835,6 @@
         </div>
       </div>
 
-      <!-- СЕТКА 6 ПЛИТОК -->
       <div class="bento-grid">
 
         <!-- 1. СЕНСА -->
@@ -1233,7 +1246,7 @@
       </div>
     </div>
 
-    <!-- ================= ЭКРАН 4: РАСШИРЕННЫЙ PRO КАСТОМНЫЙ ПРИЦЕЛ ================= -->
+    <!-- ================= ЭКРАН 4: PRO КОНСТРУКТОР КАСТОМНОГО ПРИЦЕЛА ================= -->
     <div id="page-crosshair" class="page-view">
       <div class="back-bar" onclick="openPage('page-home')">
         <span class="arrow">←</span>
@@ -1246,7 +1259,7 @@
           <span id="chCornerStatus">ВЫКЛ</span>
         </div>
 
-        <div style="height:125px; background:#050b11; border:1.5px solid rgba(var(--accent-rgb),0.28); border-radius:15px; display:flex; align-items:center; justify-content:center; margin-bottom:12px; position:relative;">
+        <div style="height:125px; background:#050b11; border:1.5px solid rgba(var(--accent-rgb),0.28); border-radius:15px; display:flex; align-items:center; justify-content:center; margin-bottom:12px;">
           <canvas id="chPreviewCanvas" width="260" height="120"></canvas>
         </div>
 
@@ -1433,20 +1446,20 @@
       <div class="section-card">
         <div class="section-header-tag">
           <span>ДАННЫЕ АККАУНТА SO2TELEPORT</span>
-          <span>PRO V407</span>
+          <span>PRO V409</span>
         </div>
 
         <div class="profile-row">
           <span class="profile-key">Ваш логин:</span>
-          <span class="profile-val" id="profLoginVal">Гость</span>
+          <span class="profile-val" id="profLoginVal">—</span>
         </div>
         <div class="profile-row">
           <span class="profile-key">Время до окончания:</span>
-          <span class="profile-val" id="profSubVal" style="color:#10b981;">ПРОВЕРКА...</span>
+          <span class="profile-val" id="profSubVal" style="color:#10b981;">—</span>
         </div>
         <div class="profile-row" onclick="toggleRevealKey()" style="cursor:pointer;">
           <span class="profile-key">Лицензионный ключ (нажми):</span>
-          <span class="profile-val" id="profKeyVal" style="color:var(--accent); text-decoration:underline dotted;">НЕ АКТИВИРОВАН 👁️</span>
+          <span class="profile-val" id="profKeyVal" style="color:var(--accent); text-decoration:underline dotted;">СКРЫТ 👁️</span>
         </div>
         <div class="profile-row">
           <span class="profile-key">Модель устройства:</span>
@@ -1469,8 +1482,8 @@
 
   </div>
 
-  <!-- НИЖНЯЯ ФИКСИРОВАННАЯ ПАНЕЛЬ (СОХРАНИТЬ НАСТРОЙКИ / ПОДЕЛИТЬСЯ ССЫЛКОЙ) -->
-  <div class="bottom-dock">
+  <!-- НИЖНЯЯ ФИКСИРОВАННАЯ ПАНЕЛЬ (СКРЫТА ДО АВТОРИЗАЦИИ) -->
+  <div id="bottomDockBar" class="bottom-dock" style="display:none;">
     <div class="bottom-dock-inner">
       <button class="dock-save-btn" onclick="saveCurrentConfigNow()">
         💾 СОХРАНИТЬ НАСТРОЙКИ
@@ -1531,7 +1544,7 @@
         const targetDot = document.querySelector(`.theme-dot[data-theme="${idx}"]`);
         if (targetDot) targetDot.classList.add("active");
       }
-      saveStateSilent();
+      if (isSessionAuthorized) saveStateSilent();
     }
 
     function openPage(pageId) {
@@ -1576,14 +1589,16 @@
       return false;
     };
 
-    // ================= ЖЁСТКАЯ БЛОКИРОВКА И РАЗБЛОКИРОВКА КЛЮЧА =================
+    // ================= ЖЁСТКОЕ УПРАВЛЕНИЕ ЭКРАНОМ АВТОРИЗАЦИИ =================
     function unlockAuthorizedSession(nick, cleanKey, subStatusText) {
       isSessionAuthorized = true;
       fullLicenseKeyPlain = cleanKey;
       isKeyRevealed = false;
 
-      document.body.classList.remove("locked-session");
-      document.getElementById("authModal").style.display = "none";
+      // Скрываем экран ввода ключа и открываем приложение
+      document.getElementById("authScreen").style.display = "none";
+      document.getElementById("mainAppRoot").style.display = "block";
+      document.getElementById("bottomDockBar").style.display = "block";
       document.getElementById("authErrorBox").style.display = "none";
 
       document.getElementById("chipPlayerName").innerText = nick;
@@ -1595,16 +1610,21 @@
     window.forceShowKickScreen = function(msg) {
       isSessionAuthorized = false;
       fullLicenseKeyPlain = "";
-      document.body.classList.add("locked-session");
 
-      const modal = document.getElementById("authModal");
+      // Полностью прячем главное меню и показываем только полноэкранное окно ключа
+      document.getElementById("mainAppRoot").style.display = "none";
+      document.getElementById("bottomDockBar").style.display = "none";
+      document.getElementById("calibModal").style.display = "none";
+      document.getElementById("authScreen").style.display = "flex";
+
       const err = document.getElementById("authErrorBox");
-      modal.style.display = "flex";
-      if (msg) {
+      if (msg && msg.trim().length > 0) {
         err.style.display = "block";
         err.innerText = "⛔ " + msg;
+      } else {
+        err.style.display = "none";
       }
-      // Выключаем активные функции
+
       document.getElementById("homeTpToggle").checked = false;
       document.getElementById("innerTpToggle").checked = false;
       document.getElementById("tileTpLabel").innerText = "ВЫКЛ";
@@ -1618,11 +1638,11 @@
         B.logoutLicenseKey();
       }
       document.getElementById("loginKeyInput").value = "";
-      window.forceShowKickScreen("Введите новый логин и лицензионный ключ");
+      window.forceShowKickScreen("Введите ваш логин и лицензионный ключ");
     }
 
     function maskKeyString(k) {
-      if (!k || k.length < 8) return "НЕ АКТИВИРОВАН 👁️";
+      if (!k || k.length < 8) return "СКРЫТ 👁️";
       return k.substring(0, 5) + "-•••-••••" + k.substring(k.length - 2) + " 👁️";
     }
 
@@ -1642,9 +1662,9 @@
       updateProfileKeyDisplay();
       if (isKeyRevealed) {
         if (navigator.clipboard) navigator.clipboard.writeText(fullLicenseKeyPlain);
-        showTopToast("🔑 Ключ открыт и скопирован: " + fullLicenseKeyPlain);
+        showTopToast("🔑 Ключ расшифрован и скопирован: " + fullLicenseKeyPlain);
       } else {
-        showTopToast("🔒 Ключ скрыт");
+        showTopToast("🔒 Ключ скрыт звёздочками");
       }
     }
 
@@ -1664,7 +1684,7 @@
       }
     }
 
-    // Проверка времени подписки каждые 10 секунд + авто-кик
+    // Проверка времени подписки каждые 10 секунд + мгновенный кик при окончании
     function pollLicenseExpiration() {
       const B = getBridge();
       if (!B || !isSessionAuthorized) return;
@@ -1674,34 +1694,33 @@
       }
       try {
         const verifyOut = B.verifyLicenseKey(fullLicenseKeyPlain);
-        if (verifyOut.startsWith("OK|") || verifyOut.startsWith("OFFLINE|")) {
+        if (verifyOut.startsWith("OK|")) {
           const subLabel = verifyOut.split("|")[1] || "АКТИВНА";
           document.getElementById("profSubVal").innerText = subLabel;
         } else {
-          const reason = verifyOut.split("|")[1] || "Срок действия вашего ключа истёк!";
+          const reason = verifyOut.split("|")[1] || "Время действия вашего ключа истекло!";
           window.forceShowKickScreen(reason);
         }
       } catch (e) {}
     }
 
-    // Жёсткая инициализация при первом и последующих запусках
+    // Старт приложения: проверяем мост с поддержкой ретрая, если WebView загрузился быстрее
     function initApplication() {
       checkShizukuState();
       setInterval(checkShizukuState, 4500);
       setInterval(pollLicenseExpiration, 10000);
       renderCrosshairCanvas();
 
-      // По умолчанию держим окно ключа открытым, пока мост не подтвердит действующий ключ
-      document.body.classList.add("locked-session");
-      document.getElementById("authModal").style.display = "flex";
-
-      const localBackup = localStorage.getItem("so2tp_backup_v408");
-      if (localBackup) {
-        try { applyFullConfigObject(JSON.parse(localBackup), true); } catch (e) {}
-      }
+      // Гарантируем, что при старте открыто только окно ввода ключа
+      document.getElementById("mainAppRoot").style.display = "none";
+      document.getElementById("bottomDockBar").style.display = "none";
+      document.getElementById("authScreen").style.display = "flex";
 
       const B = getBridge();
-      if (!B) return;
+      if (!B) {
+        document.getElementById("authHwidLabel").innerText = "WEB-MODE";
+        return;
+      }
 
       const hwid = B.getDeviceHwid ? B.getDeviceHwid() : "39e220a438dedb68";
       const hwRaw = B.getDeviceHardwareInfo ? B.getDeviceHardwareInfo() : "SM-S938B|1440x3120 (120 Гц)";
@@ -1713,7 +1732,7 @@
       document.getElementById("profModelVal").innerText = modelName;
       document.getElementById("profScreenVal").innerText = screenSpec;
       document.getElementById("profHwidVal").innerText = hwid;
-      document.getElementById("authModalHwid").innerText = hwid;
+      document.getElementById("authHwidLabel").innerText = hwid;
 
       const savedNick = (B.getSavedNickname && B.getSavedNickname()) ? B.getSavedNickname().trim() : "";
       const savedKey = (B.getSavedKey && B.getSavedKey()) ? B.getSavedKey().trim().toUpperCase() : "";
@@ -1722,22 +1741,21 @@
         document.getElementById("loginNickInput").value = savedNick;
       }
 
-      // Если это первый вход и ключа в памяти нет — оставляем окно ввода ключа открытым!
+      // При первом входе getSavedKey() в твоём AndroidBridge возвращает "" -> остаёмся на экране ввода ключа
       if (!savedKey || savedKey.length < 5) {
         window.forceShowKickScreen("");
-        document.getElementById("authErrorBox").style.display = "none";
         return;
       }
 
-      // Если ключ уже был сохранён ранее — проверяем его через сервер и базу покупателей
+      // Если пользователь уже вводил ключ ранее — проверяем его на сервере
       document.getElementById("loginKeyInput").value = savedKey;
       const verifyOut = B.verifyLicenseKey(savedKey);
-      if (verifyOut.startsWith("OK|") || verifyOut.startsWith("OFFLINE|")) {
-        const subLabel = verifyOut.split("|")[1] || "АКТИВНА (89 дн. 7 ч.)";
-        unlockAuthorizedSession(savedNick || "dare", savedKey, subLabel);
+      if (verifyOut.startsWith("OK|")) {
+        const subLabel = verifyOut.split("|")[1] || "АКТИВНА (PRO)";
+        unlockAuthorizedSession(savedNick || "Player", savedKey, subLabel);
         loadSavedSettingsJson();
       } else {
-        const errMsg = verifyOut.split("|")[1] || "Срок действия ключа истёк! Введите новый ключ.";
+        const errMsg = verifyOut.split("|")[1] || "Введите ваш логин и лицензионный ключ";
         window.forceShowKickScreen(errMsg);
       }
     }
@@ -1746,10 +1764,11 @@
       const nickInput = document.getElementById("loginNickInput").value.trim();
       const keyInput = document.getElementById("loginKeyInput").value.trim().toUpperCase();
       const errBox = document.getElementById("authErrorBox");
+      const btn = document.getElementById("loginBtnAction");
 
       if (!nickInput) {
         errBox.style.display = "block";
-        errBox.innerText = "⚠️ Введите ваш игровой никнейм!";
+        errBox.innerText = "⚠️ Введите ваш игровой логин / никнейм!";
         return;
       }
 
@@ -1761,31 +1780,35 @@
 
       const B = getBridge();
       if (!B) {
-        unlockAuthorizedSession(nickInput, keyInput, "ДЕМО РЕЖИМ");
+        unlockAuthorizedSession(nickInput, keyInput, "АКТИВНА (DEMO)");
         return;
       }
 
-      B.savePlayerNickname(nickInput);
-      const res = B.activateLicenseKey(keyInput);
-      if (res.startsWith("OK|")) {
-        const subLabel = res.split("|")[1] || "АКТИВНА (89 дн. 7 ч.)";
-        unlockAuthorizedSession(nickInput, keyInput, subLabel);
-        loadSavedSettingsJson();
-        showTopToast("✅ Ключ активирован! Добро пожаловать, " + nickInput);
-      } else {
-        errBox.style.display = "block";
-        errBox.innerText = "⛔ " + (res.split("|")[1] || "Ключ недействителен или привязан к другому телефону!");
-      }
+      btn.innerText = "⏳ ПРОВЕРКА КЛЮЧА НА СЕРВЕРЕ...";
+      setTimeout(() => {
+        B.savePlayerNickname(nickInput);
+        const res = B.activateLicenseKey(keyInput);
+        btn.innerText = "⚡ АКТИВИРОВАТЬ КЛЮЧ И ВОЙТИ";
+
+        if (res.startsWith("OK|")) {
+          const subLabel = res.split("|")[1] || "АКТИВНА (PRO)";
+          unlockAuthorizedSession(nickInput, keyInput, subLabel);
+          loadSavedSettingsJson();
+          showTopToast("✅ Ключ активирован! Добро пожаловать, " + nickInput);
+        } else {
+          errBox.style.display = "block";
+          errBox.innerText = "⛔ " + (res.split("|")[1] || "Ключ не найден, истёк или привязан к другому устройству!");
+        }
+      }, 60);
     }
 
-    // При возврате в приложение из свёрнутого состояния сразу проверяем, не истёк ли ключ
     document.addEventListener("visibilitychange", () => {
-      if (!document.hidden) pollLicenseExpiration();
+      if (!document.hidden && isSessionAuthorized) pollLicenseExpiration();
     });
 
     // ================= СЕНСА И ТЕЛЕПОРТ =================
     function toggleTeleportMaster(enabled) {
-      if (!isSessionAuthorized && enabled) {
+      if (!isSessionAuthorized) {
         window.forceShowKickScreen("Сначала активируйте лицензионный ключ!");
         return;
       }
@@ -1972,7 +1995,7 @@
       }
       const decoded = decodePortableConfigToken(val);
       if (decoded) {
-        applyFullConfigObject(decoded, false);
+        applyFullConfigObject(decoded);
         saveCurrentConfigNow();
         showTopToast("✅ Все настройки из кода успешно применены!");
         return;
@@ -1985,7 +2008,7 @@
           const res = JSON.parse(raw);
           if (res.preset) {
             const cfg = typeof res.preset === "string" ? JSON.parse(res.preset) : res.preset;
-            applyFullConfigObject(cfg, false);
+            applyFullConfigObject(cfg);
             saveCurrentConfigNow();
             showTopToast("✅ Облачный конфиг " + shortCode + " применён!");
             return;
@@ -2029,7 +2052,7 @@
       box.style.width = (widthPx || 142) + "px";
       box.innerText = "ФОРМАТ " + ratio;
       document.getElementById("activateStretchBtnText").innerText = `⚡ АКТИВИРОВАТЬ КНОПКУ РАСТЯГА «T» (${ratio})`;
-      saveStateSilent();
+      if (isSessionAuthorized) saveStateSilent();
     }
 
     function activateFloatingTButton() {
@@ -2266,7 +2289,7 @@
       showTopToast(`📐 Оптимизация пикселей: ${pct}%`);
     }
 
-    // ================= СОХРАНЕНИЕ И ЗАГРУЗКА ВСЕХ НАСТРОЕК =================
+    // ================= СОХРАНЕНИЕ И ЗАГРУЗКА НАСТРОЕК =================
     function collectFullConfig() {
       return {
         theme: currentThemeIdx,
@@ -2302,7 +2325,7 @@
       };
     }
 
-    function applyFullConfigObject(c, visualOnly) {
+    function applyFullConfigObject(c) {
       if (!c) return;
       if (c.theme !== undefined && THEME_PRESETS[c.theme]) {
         const t = THEME_PRESETS[c.theme];
@@ -2323,14 +2346,15 @@
 
       syncAllSliders();
       updateCrosshairAll();
-      if (!visualOnly && c.tpOn !== undefined && isSessionAuthorized) {
+      if (c.tpOn !== undefined && isSessionAuthorized) {
         toggleTeleportMaster(!!c.tpOn);
       }
     }
 
     function saveStateSilent() {
+      if (!isSessionAuthorized) return;
       const jsonStr = JSON.stringify(collectFullConfig());
-      try { localStorage.setItem("so2tp_backup_v408", jsonStr); } catch (e) {}
+      try { localStorage.setItem("so2tp_backup_v409", jsonStr); } catch (e) {}
       const B = getBridge();
       if (B && B.saveFullConfigJson) {
         B.saveFullConfigJson(jsonStr);
@@ -2338,6 +2362,7 @@
     }
 
     function saveCurrentConfigNow() {
+      if (!isSessionAuthorized) return;
       saveStateSilent();
       pushEngineParametersImmediate();
       showTopToast("💾 Все настройки успешно сохранены!");
@@ -2347,9 +2372,10 @@
       const B = getBridge();
       if (!B || !B.loadFullConfigJson) return;
       try {
-        const raw = B.loadFullConfigJson();
+        let raw = B.loadFullConfigJson();
+        if (!raw) raw = localStorage.getItem("so2tp_backup_v409");
         if (!raw) return;
-        applyFullConfigObject(JSON.parse(raw), false);
+        applyFullConfigObject(JSON.parse(raw));
       } catch (e) {}
     }
 
