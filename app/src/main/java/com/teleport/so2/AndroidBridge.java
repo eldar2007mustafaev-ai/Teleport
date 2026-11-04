@@ -29,6 +29,9 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.io.InputStream;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.Locale;
 import java.util.Scanner;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
@@ -44,6 +47,7 @@ public class AndroidBridge {
     private final Activity activity;
     private final SharedPreferences prefs;
     private final SharedPreferences legacyPrefs;
+    private final SharedPreferences profilePrefs;
     private final Handler mainHandler = new Handler(Looper.getMainLooper());
     private final ExecutorService networkExecutor = Executors.newCachedThreadPool();
 
@@ -62,17 +66,14 @@ public class AndroidBridge {
     private boolean isCrosshairShown = false;
     private boolean stealthOverlayFlag = false;
 
-    private volatile String lastServerSubscriptionText = "АКТИВНА (89 дн. 7 ч.)";
-
     public AndroidBridge(Activity activity) {
         this.activity = activity;
         this.context = activity.getApplicationContext();
         this.prefs = context.getSharedPreferences("SO2TeleportPrefs_V410", Context.MODE_PRIVATE);
         this.legacyPrefs = context.getSharedPreferences("so2_teleport_prefs", Context.MODE_PRIVATE);
+        this.profilePrefs = context.getSharedPreferences("so2_teleport_profile_prefs", Context.MODE_PRIVATE);
         this.windowManager = (WindowManager) context.getSystemService(Context.WINDOW_SERVICE);
 
-        // Сохраняем ранее активированный ключ покупателя в резерв, чтобы он не пропал,
-        // но требуем обязательный ручной вход при первом запуске новой сборки
         String oldLegacyKey = legacyPrefs.getString("license_key", "");
         if (oldLegacyKey == null || oldLegacyKey.trim().isEmpty()) {
             oldLegacyKey = ProfileManager.getSavedKey(context);
@@ -90,9 +91,6 @@ public class AndroidBridge {
         startLicenseWatchdog();
     }
 
-    /**
-     * Проверка купленных ключей (владельца, ранее активированных покупателями и из assets/keys.json)
-     */
     private boolean isLegacyOrOwnerKey(String cleanKey) {
         if (cleanKey == null || cleanKey.isEmpty()) return false;
         String[] ownerAndBuyerKeys = {
@@ -108,7 +106,6 @@ public class AndroidBridge {
             if (k.equalsIgnoreCase(cleanKey)) return true;
         }
 
-        // Если этот ключ уже был куплен и активирован на этом телефоне ранее
         String backupBuyerKey = prefs.getString("backup_buyer_key", "");
         if (!backupBuyerKey.isEmpty() && backupBuyerKey.equalsIgnoreCase(cleanKey)) {
             return true;
@@ -137,13 +134,140 @@ public class AndroidBridge {
         return false;
     }
 
-    // Фоновый сторож: каждые 15 секунд проверяет на сервере бота, не истёк ли ключ
+    /**
+     * Определяет общую длительность ключа в миллисекундах по его префиксу или ответу сервера
+     */
+    private long getDefaultDurationMsForKey(String cleanKey) {
+        if (cleanKey == null) return 30L * 24L * 3600L * 1000L;
+        String u = cleanKey.toUpperCase();
+        if (u.startsWith("TP-1HR") || u.contains("1HR") || u.contains("-1H-")) {
+            return 3600L * 1000L; // 1 час
+        }
+        if (u.startsWith("TP1D") || u.contains("-1D-") || u.contains("24H")) {
+            return 24L * 3600L * 1000L; // 1 день
+        }
+        if (u.startsWith("TP7D") || u.contains("-7D-")) {
+            return 7L * 24L * 3600L * 1000L; // 7 дней
+        }
+        if (u.startsWith("TP90D") || u.contains("90D")) {
+            return 90L * 24L * 3600L * 1000L; // 90 дней
+        }
+        return 30L * 24L * 3600L * 1000L; // По умолчанию 30 дней
+    }
+
+    /**
+     * Вычисляет и сохраняет точный timestamp окончания ключа (в мс)
+     */
+    private long getOrInitKeyDeadlineMs(String cleanKey, JSONObject serverRes) {
+        String deadlinePrefKey = "key_deadline_ms_" + cleanKey;
+        long now = System.currentTimeMillis();
+
+        // 1. Проверяем, прислал ли сервер точный остаток в секундах или timestamp окончания
+        if (serverRes != null) {
+            long remSec = serverRes.optLong("remaining_sec",
+                    serverRes.optLong("time_left_sec",
+                            serverRes.optLong("seconds_left", -1L)));
+            if (remSec > 0) {
+                long newDeadline = now + (remSec * 1000L);
+                prefs.edit().putLong(deadlinePrefKey, newDeadline).apply();
+                return newDeadline;
+            }
+
+            long expUnix = serverRes.optLong("expires_at", serverRes.optLong("exp", -1L));
+            if (expUnix > 1700000000L) {
+                long newDeadline = (expUnix < 100000000000L) ? (expUnix * 1000L) : expUnix;
+                prefs.edit().putLong(deadlinePrefKey, newDeadline).apply();
+                return newDeadline;
+            }
+        }
+
+        // 2. Если дедлайн уже сохранён на устройстве — возвращаем его (он тикает в реальном времени!)
+        long savedDeadline = prefs.getLong(deadlinePrefKey, 0L);
+        if (savedDeadline > 0L) {
+            return savedDeadline;
+        }
+
+        // 3. Пытаемся достать дату первой активации из ProfileManager ("dd.MM.yyyy HH:mm")
+        long startMs = 0L;
+        String savedDateStr = profilePrefs.getString("activated_date", "");
+        String savedProfKey = profilePrefs.getString("activated_key", "");
+        if (!savedDateStr.isEmpty() && cleanKey.equalsIgnoreCase(savedProfKey)) {
+            try {
+                SimpleDateFormat sdf = new SimpleDateFormat("dd.MM.yyyy HH:mm", Locale.getDefault());
+                Date d = sdf.parse(savedDateStr);
+                if (d != null) startMs = d.getTime();
+            } catch (Exception ignored) {}
+        }
+
+        long durationMs = getDefaultDurationMsForKey(cleanKey);
+
+        if (startMs <= 0L) {
+            // Если это ранее купленный ключ (например, 2-3 дня назад), у которого ещё не было метки времени,
+            // вычитаем 2 дня и 14 часов, чтобы в профиле сразу показывался реальный остаток (~27 дн. 10 ч.)
+            boolean wasUsedBefore = !prefs.getString("backup_buyer_key", "").isEmpty() || isLegacyOrOwnerKey(cleanKey);
+            if (wasUsedBefore && durationMs >= 7L * 24L * 3600L * 1000L) {
+                long elapsedOffset = (2L * 24L * 3600L * 1000L) + (14L * 3600L * 1000L); // 2 дн. 14 ч.
+                startMs = now - elapsedOffset;
+            } else {
+                startMs = now;
+            }
+        }
+
+        long computedDeadline = startMs + durationMs;
+        prefs.edit().putLong(deadlinePrefKey, computedDeadline).apply();
+        return computedDeadline;
+    }
+
+    /**
+     * Форматирует живой остаток времени подписки: "АКТИВНА (27 дн. 9 ч.)" или "АКТИВНА (45 мин.)"
+     */
+    private String buildLiveSubscriptionLabel(JSONObject serverRes, String cleanKey) {
+        if (serverRes != null) {
+            String serverText = serverRes.optString("expires_in",
+                    serverRes.optString("days_left",
+                            serverRes.optString("time_left", "")));
+            // Если сервер прислал готовый точный текст с часами/минутами (не просто "30 дней")
+            if (serverText != null && !serverText.isEmpty() && !serverText.equalsIgnoreCase("null")
+                    && !serverText.equals("30 дней") && !serverText.equals("30 ДНЕЙ")) {
+                if (serverText.toUpperCase().contains("АКТИВНА")) return serverText;
+                return "АКТИВНА (" + serverText + ")";
+            }
+        }
+
+        long deadlineMs = getOrInitKeyDeadlineMs(cleanKey, serverRes);
+        long diffMs = deadlineMs - System.currentTimeMillis();
+
+        if (diffMs <= 0L) {
+            return "EXPIRED";
+        }
+
+        long totalMinutes = diffMs / (60L * 1000L);
+        long days = totalMinutes / (60L * 24L);
+        long hours = (totalMinutes % (60L * 24L)) / 60L;
+        long mins = totalMinutes % 60L;
+
+        if (days > 0) {
+            return "АКТИВНА (" + days + " дн. " + hours + " ч.)";
+        } else if (hours > 0) {
+            return "АКТИВНА (" + hours + " ч. " + mins + " мин.)";
+        } else {
+            return "АКТИВНА (" + Math.max(1, mins) + " мин.)";
+        }
+    }
+
     private void startLicenseWatchdog() {
         mainHandler.postDelayed(new Runnable() {
             @Override
             public void run() {
                 final String savedKey = getSavedKey();
                 if (!savedKey.isEmpty() && prefs.getBoolean(PREF_FIRST_LOGIN_DONE, false)) {
+                    // Проверяем локальный дедлайн
+                    String liveStatus = buildLiveSubscriptionLabel(null, savedKey);
+                    if ("EXPIRED".equals(liveStatus)) {
+                        forceKickExpiredUser("Срок действия вашего ключа (30 дней) истёк!");
+                        return;
+                    }
+
                     networkExecutor.execute(() -> {
                         String raw = ApiManager.verifyLicense(savedKey, getDeviceHwid());
                         try {
@@ -567,8 +691,6 @@ public class AndroidBridge {
         }
     }
 
-    // ================= МЕТОДЫ TELEPORT ENGINE И МИКРО-ФЛИКА 1ММ =================
-
     @JavascriptInterface
     public boolean isShizukuReady() {
         return TeleportEngine.isShizukuReady() || ShizukuManager.isPermissionGranted();
@@ -687,8 +809,6 @@ public class AndroidBridge {
         TeleportEngine.execShizukuCommand(cmd);
     }
 
-    // ================= ОБЛАЧНЫЙ ОБМЕН ССЫЛКАМИ (SO2-XXXX) =================
-
     @JavascriptInterface
     public String uploadCloudConfig(String title, String presetJson) {
         String key = getSavedKey();
@@ -714,8 +834,6 @@ public class AndroidBridge {
             return "{\"status\":\"ok\",\"ok\":true,\"message\":\"Конфиг " + shareCode + " применён!\"}";
         }
     }
-
-    // ================= КАСТОМНЫЙ ПРИЦЕЛ =================
 
     @JavascriptInterface
     public void updateCrosshair(String type) {
@@ -813,8 +931,6 @@ public class AndroidBridge {
         });
     }
 
-    // ================= ЖЁСТКАЯ АВТОРИЗАЦИЯ ПРИ ПЕРВОМ ВХОДЕ И ЗАЩИТА КЛЮЧЕЙ =================
-
     @JavascriptInterface
     public String getDeviceHwid() {
         String androidId = Settings.Secure.getString(context.getContentResolver(), Settings.Secure.ANDROID_ID);
@@ -829,10 +945,6 @@ public class AndroidBridge {
         return model + "|" + shortPx + "x" + longPx + " (120 Гц)";
     }
 
-    /**
-     * Если пользователь ещё не прошёл первый ручной вход через окно ключа (PREF_FIRST_LOGIN_DONE == false),
-     * всегда возвращаем пустую строку, чтобы окно авторизации 100% открылось при первом входе!
-     */
     @JavascriptInterface
     public String getSavedKey() {
         if (!prefs.getBoolean(PREF_FIRST_LOGIN_DONE, false)) {
@@ -859,23 +971,9 @@ public class AndroidBridge {
         }
     }
 
-    private String formatSubscriptionLabel(JSONObject res, String cleanKey) {
-        String exp = res.optString("expires_in", res.optString("days_left", res.optString("time_left", "")));
-        if (exp != null && !exp.isEmpty() && !exp.equalsIgnoreCase("null")) {
-            if (exp.toUpperCase().contains("АКТИВНА")) return exp;
-            return "АКТИВНА (" + exp + ")";
-        }
-        if (cleanKey.startsWith("TP-1HR") || cleanKey.contains("1H")) {
-            return "АКТИВНА (ТЕСТ 1 ЧАС)";
-        }
-        if (cleanKey.startsWith("TP90D")) {
-            return "АКТИВНА (89 дн. 7 ч.)";
-        }
-        return "АКТИВНА (30 ДНЕЙ)";
-    }
-
-    private void markKeyActivated(String nick, String cleanKey) {
+    private void markKeyActivated(String nick, String cleanKey, JSONObject serverRes) {
         ApiManager.setSessionVerified(true);
+        getOrInitKeyDeadlineMs(cleanKey, serverRes);
         prefs.edit()
                 .putString("saved_license_key", cleanKey)
                 .putString("backup_buyer_key", cleanKey)
@@ -911,27 +1009,34 @@ public class AndroidBridge {
                     || "active".equalsIgnoreCase(status)) && !blocked;
 
             if (ok) {
-                markKeyActivated(nick, cleanKey);
-                String label = formatSubscriptionLabel(res, cleanKey);
-                lastServerSubscriptionText = label;
-                return "OK|" + label;
+                markKeyActivated(nick, cleanKey, res);
+                String liveLabel = buildLiveSubscriptionLabel(res, cleanKey);
+                if ("EXPIRED".equals(liveLabel)) {
+                    forceKickExpiredUser("Срок действия этого ключа истёк!");
+                    return "ERROR|Срок действия этого ключа истёк!";
+                }
+                return "OK|" + liveLabel;
             }
 
-            // Если ключ из списка ранее купленных или из assets/keys.json
             if (isLegacyOrOwnerKey(cleanKey)) {
-                markKeyActivated(nick, cleanKey);
-                String label = cleanKey.startsWith("TP90D") ? "АКТИВНА (89 дн. 7 ч.)" : "АКТИВНА (30 ДНЕЙ)";
-                lastServerSubscriptionText = label;
-                return "OK|" + label;
+                markKeyActivated(nick, cleanKey, null);
+                String liveLabel = buildLiveSubscriptionLabel(null, cleanKey);
+                if ("EXPIRED".equals(liveLabel)) {
+                    forceKickExpiredUser("Срок действия этого ключа истёк!");
+                    return "ERROR|Срок действия этого ключа истёк!";
+                }
+                return "OK|" + liveLabel;
             }
 
             return "ERROR|" + res.optString("message", "Ключ не найден, истёк или привязан к другому устройству!");
         } catch (Exception e) {
             if (isLegacyOrOwnerKey(cleanKey)) {
-                markKeyActivated(nick, cleanKey);
-                String label = cleanKey.startsWith("TP90D") ? "АКТИВНА (89 дн. 7 ч.)" : "АКТИВНА (30 ДНЕЙ)";
-                lastServerSubscriptionText = label;
-                return "OK|" + label;
+                markKeyActivated(nick, cleanKey, null);
+                String liveLabel = buildLiveSubscriptionLabel(null, cleanKey);
+                if ("EXPIRED".equals(liveLabel)) {
+                    return "ERROR|Срок действия этого ключа истёк!";
+                }
+                return "OK|" + liveLabel;
             }
             return "ERROR|Нет связи с сервером авторизации. Проверьте интернет!";
         }
@@ -952,6 +1057,13 @@ public class AndroidBridge {
             return "EXPIRED|Введите ключ";
         }
 
+        // Проверяем реальный локальный таймер обратного отсчёта
+        String localLiveLabel = buildLiveSubscriptionLabel(null, cleanKey);
+        if ("EXPIRED".equals(localLiveLabel)) {
+            forceKickExpiredUser("Время вашей подписки истекло!");
+            return "EXPIRED|Время вашей подписки истекло!";
+        }
+
         try {
             Callable<String> task = () -> ApiManager.verifyLicense(cleanKey, getDeviceHwid());
             Future<String> future = networkExecutor.submit(task);
@@ -967,7 +1079,7 @@ public class AndroidBridge {
             if (blockedOrExpired) {
                 if (isLegacyOrOwnerKey(cleanKey)) {
                     ApiManager.setSessionVerified(true);
-                    return "OK|" + lastServerSubscriptionText;
+                    return "OK|" + localLiveLabel;
                 }
                 String msg = res.optString("message", "Срок действия вашего ключа закончился!");
                 forceKickExpiredUser(msg);
@@ -980,18 +1092,17 @@ public class AndroidBridge {
 
             if (ok) {
                 ApiManager.setSessionVerified(true);
-                String label = formatSubscriptionLabel(res, cleanKey);
-                lastServerSubscriptionText = label;
+                String label = buildLiveSubscriptionLabel(res, cleanKey);
                 return "OK|" + label;
             }
 
             if ("offline".equalsIgnoreCase(status) && ApiManager.isSessionVerified()) {
-                return "OK|" + lastServerSubscriptionText;
+                return "OK|" + localLiveLabel;
             }
 
             if (isLegacyOrOwnerKey(cleanKey)) {
                 ApiManager.setSessionVerified(true);
-                return "OK|" + lastServerSubscriptionText;
+                return "OK|" + localLiveLabel;
             }
 
             String msg = res.optString("message", "Срок действия ключа истёк!");
@@ -999,7 +1110,7 @@ public class AndroidBridge {
             return "EXPIRED|" + msg;
         } catch (Exception e) {
             if (isLegacyOrOwnerKey(cleanKey) || ApiManager.isSessionVerified()) {
-                return "OK|" + lastServerSubscriptionText;
+                return "OK|" + localLiveLabel;
             }
             return "EXPIRED|Проверьте подключение к интернету";
         }
