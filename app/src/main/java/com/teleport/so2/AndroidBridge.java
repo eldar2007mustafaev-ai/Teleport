@@ -25,11 +25,14 @@ import android.widget.FrameLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import org.json.JSONArray;
 import org.json.JSONObject;
 
+import java.io.InputStream;
+import java.util.Scanner;
 import java.util.concurrent.Callable;
-import java.util.concurrent.Executors;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
@@ -70,26 +73,70 @@ public class AndroidBridge {
         startLicenseWatchdog();
     }
 
-    // Фоновый сторож: каждые 15 секунд проверяет ключ на сервере. Если истёк или привязан к другому — моментальный кик!
+    /**
+     * Список твоих личных и ранее выданных ключей из assets/keys.json,
+     * чтобы ни один существующий покупатель не потерял доступ при обновлении APK.
+     */
+    private boolean isLegacyOrOwnerKey(String cleanKey) {
+        String[] ownerKeys = {
+                "TP90D-HHG-125841",
+                "TP-EOW-371500",
+                "TP-YRE-133700",
+                "TP-SO2-999999",
+                "TP-PRO-777888",
+                "TP-VIP-100200",
+                "TP-RAH-404213"
+        };
+        for (String k : ownerKeys) {
+            if (k.equalsIgnoreCase(cleanKey)) return true;
+        }
+        try {
+            InputStream is = context.getAssets().open("keys.json");
+            Scanner s = new Scanner(is).useDelimiter("\\A");
+            String jsonStr = s.hasNext() ? s.next() : "";
+            is.close();
+            JSONObject obj = new JSONObject(jsonStr);
+            JSONArray arr = obj.optJSONArray("valid_keys");
+            if (arr != null) {
+                for (int i = 0; i < arr.length(); i++) {
+                    if (cleanKey.equalsIgnoreCase(arr.getString(i).trim())) {
+                        return true;
+                    }
+                }
+            }
+        } catch (Exception ignored) {}
+        return false;
+    }
+
+    // Фоновый сторож: каждые 20 секунд проверяет на сервере ТГ-бота, не закончился ли ключ
     private void startLicenseWatchdog() {
         mainHandler.postDelayed(new Runnable() {
             @Override
             public void run() {
                 final String savedKey = prefs.getString("saved_license_key", "");
                 if (savedKey != null && !savedKey.trim().isEmpty()) {
-                    new Thread(() -> {
-                        boolean valid = checkKeyOnServerBlocking(savedKey.trim());
-                        if (!valid) {
-                            forceгиеКик("⛔ Доступ заблокирован: ключ истёк или используется на другом устройстве!");
-                        }
-                    }).start();
+                    networkExecutor.execute(() -> {
+                        String raw = ApiManager.verifyLicense(savedKey.trim(), getDeviceHwid());
+                        try {
+                            JSONObject res = new JSONObject(raw);
+                            String status = res.optString("status", "");
+                            boolean explicitlyExpiredOrBlocked = "expired".equalsIgnoreCase(status)
+                                    || "blocked".equalsIgnoreCase(status)
+                                    || "device_mismatch".equalsIgnoreCase(status)
+                                    || res.optBoolean("blocked", false);
+
+                            if (explicitlyExpiredOrBlocked && !isLegacyOrOwnerKey(savedKey.trim())) {
+                                forceKickExpiredUser(res.optString("message", "Срок действия вашего ключа истёк!"));
+                            }
+                        } catch (Exception ignored) {}
+                    });
                 }
-                mainHandler.postDelayed(this, 15000);
+                mainHandler.postDelayed(this, 20000);
             }
-        }, 15000);
+        }, 20000);
     }
 
-    private void forceгиеКик(String reasonToast) {
+    private void forceKickExpiredUser(String reasonToast) {
         prefs.edit().remove("saved_license_key").apply();
         ApiManager.invalidateSession();
         TeleportEngine.stopTeleport();
@@ -112,7 +159,12 @@ public class AndroidBridge {
                 isCrosshairShown = false;
             }
 
-            Toast.makeText(context, reasonToast, Toast.LENGTH_LONG).show();
+            if (activity instanceof MainActivity) {
+                ((MainActivity) activity).toggleFloatingButton(false);
+                ((MainActivity) activity).updateCrosshair("off");
+            }
+
+            Toast.makeText(context, "⛔ " + reasonToast, Toast.LENGTH_LONG).show();
 
             if (activity != null && !activity.isFinishing()) {
                 try {
@@ -121,12 +173,9 @@ public class AndroidBridge {
                         android.view.ViewGroup vg = (android.view.ViewGroup) content;
                         if (vg.getChildCount() > 0 && vg.getChildAt(0) instanceof android.webkit.WebView) {
                             android.webkit.WebView wv = (android.webkit.WebView) vg.getChildAt(0);
+                            String safeMsg = reasonToast.replace("'", "").replace("\"", "");
                             wv.evaluateJavascript(
-                                    "try { localStorage.removeItem('SO2Teleport_AuthLicense_V408'); "
-                                    + "if(typeof toggleTeleportMaster==='function') toggleTeleportMaster(false); "
-                                    + "var err=document.getElementById('authErrorBox'); "
-                                    + "if(err){err.textContent='" + reasonToast + "';err.style.display='block';} "
-                                    + "document.getElementById('authOverlay').style.display='flex'; } catch(e){}",
+                                    "try { if(typeof forceShowKickScreen==='function') forceShowKickScreen('" + safeMsg + "'); } catch(e){}",
                                     null
                             );
                         }
@@ -134,36 +183,6 @@ public class AndroidBridge {
                 } catch (Exception ignored) {}
             }
         });
-    }
-
-    private boolean checkKeyOnServerBlocking(String cleanKey) {
-        try {
-            final String hwid = getDeviceHwid();
-            Callable<Boolean> task = () -> {
-                String raw = ApiManager.verifyLicense(cleanKey, hwid);
-                JSONObject res = new JSONObject(raw);
-                String status = res.optString("status", "");
-                boolean blocked = res.optBoolean("blocked", false)
-                        || "expired".equalsIgnoreCase(status)
-                        || "blocked".equalsIgnoreCase(status)
-                        || "device_mismatch".equalsIgnoreCase(status);
-                boolean ok = (res.optBoolean("ok", false)
-                        || "ok".equalsIgnoreCase(status)
-                        || "active".equalsIgnoreCase(status)) && !blocked;
-
-                if (ok) {
-                    String rem = res.optString("expires_in", res.optString("days_left", ""));
-                    if (rem != null && !rem.isEmpty() && !rem.equals("null")) {
-                        lastServerSubscriptionText = rem;
-                    }
-                }
-                return ok;
-            };
-            Future<Boolean> future = networkExecutor.submit(task);
-            return future.get(4200, TimeUnit.MILLISECONDS);
-        } catch (Exception e) {
-            return true;
-        }
     }
 
     @JavascriptInterface
@@ -197,7 +216,7 @@ public class AndroidBridge {
         });
     }
 
-    // ================= ПЛАВАЮЩАЯ КНОПКА «TP» =================
+    // ================= ПЛАВАЮЩАЯ КНОПКА «TP» С ДВУХШАГОВЫМ РАСТЯГОМ И КОРЗИНОЙ =================
 
     @JavascriptInterface
     public String activateStretchFloatingButton(String ratio) {
@@ -395,7 +414,7 @@ public class AndroidBridge {
 
     private void toggleTwoStepStretchAction() {
         if (getSavedKey().isEmpty()) {
-            forceгиеКик("Ключ не активен!");
+            forceKickExpiredUser("Ключ не активен!");
             return;
         }
         boolean shizukuOk = TeleportEngine.isShizukuReady() || ShizukuManager.isPermissionGranted();
@@ -515,6 +534,8 @@ public class AndroidBridge {
         }
     }
 
+    // ================= МЕТОДЫ TELEPORT ENGINE И НОВЫЕ УЛУЧШАЙЗЕРЫ =================
+
     @JavascriptInterface
     public boolean isShizukuReady() {
         return TeleportEngine.isShizukuReady() || ShizukuManager.isPermissionGranted();
@@ -545,6 +566,24 @@ public class AndroidBridge {
     ) {
         if (getSavedKey().isEmpty()) return;
         TeleportEngine.updateParameters(sharp, sx, sy, chunks, chunkFast, straight, stick, grid, pause, accel);
+    }
+
+    @JavascriptInterface
+    public void setRawInputNoSmoothing(boolean enabled) {
+        if (getSavedKey().isEmpty()) return;
+        TeleportEngine.setRawInputNoSmoothing(enabled);
+    }
+
+    @JavascriptInterface
+    public void setVulkanGpuTurbo(boolean enabled) {
+        if (getSavedKey().isEmpty()) return;
+        TeleportEngine.setVulkanGpuTurbo(enabled);
+    }
+
+    @JavascriptInterface
+    public void setNetPingStabilizer(boolean enabled) {
+        if (getSavedKey().isEmpty()) return;
+        TeleportEngine.setNetPingStabilizer(enabled);
     }
 
     @JavascriptInterface
@@ -585,6 +624,8 @@ public class AndroidBridge {
     public String runSmartDeviceScan() {
         return TeleportEngine.runSmartDeviceScan(context);
     }
+
+    // ================= PRO КАСТОМНЫЙ ПРИЦЕЛ =================
 
     @JavascriptInterface
     public void updateCrosshair(String type) {
@@ -682,12 +723,12 @@ public class AndroidBridge {
         });
     }
 
-    // ================= АВТОРИЗАЦИЯ СТРОГО ЧЕРЕЗ СЕРВЕР ТГ-БОТА С ПРИВЯЗКОЙ К 1 УСТРОЙСТВУ =================
+    // ================= АВТОРИЗАЦИЯ: СЕРВЕР БОТА + ЗАЩИТА СТАРЫХ КЛЮЧЕЙ ПОКУПАТЕЛЕЙ =================
 
     @JavascriptInterface
     public String getDeviceHwid() {
         String androidId = Settings.Secure.getString(context.getContentResolver(), Settings.Secure.ANDROID_ID);
-        return (androidId != null ? androidId.toUpperCase() : "SO2HWID001");
+        return (androidId != null ? androidId.trim().toLowerCase() : "39e220a438dedb68");
     }
 
     @JavascriptInterface
@@ -701,20 +742,46 @@ public class AndroidBridge {
     @JavascriptInterface
     public String getSavedKey() {
         String savedKey = prefs.getString("saved_license_key", "");
-        if (savedKey == null || savedKey.trim().isEmpty()) return "";
-        return savedKey.trim();
+        if (savedKey == null || savedKey.trim().isEmpty()) {
+            // Подхватываем ключ из старого хранилища при обновлении поверх старой версии APK
+            savedKey = legacyPrefs.getString("license_key", "");
+            if (savedKey != null && !savedKey.trim().isEmpty()) {
+                prefs.edit().putString("saved_license_key", savedKey.trim().toUpperCase()).apply();
+            }
+        }
+        return savedKey == null ? "" : savedKey.trim().toUpperCase();
     }
 
     @JavascriptInterface
     public String getSavedNickname() {
-        return prefs.getString("saved_player_nick", "");
+        String nick = prefs.getString("saved_player_nick", "");
+        if (nick == null || nick.trim().isEmpty()) {
+            nick = legacyPrefs.getString("nickname", "");
+        }
+        return nick == null ? "" : nick.trim();
     }
 
     @JavascriptInterface
     public void savePlayerNickname(String nick) {
         if (nick != null && !nick.trim().isEmpty()) {
             prefs.edit().putString("saved_player_nick", nick.trim()).apply();
+            legacyPrefs.edit().putString("nickname", nick.trim()).apply();
         }
+    }
+
+    private String formatSubscriptionLabel(JSONObject res, String cleanKey) {
+        String exp = res.optString("expires_in", res.optString("days_left", res.optString("time_left", "")));
+        if (exp != null && !exp.isEmpty() && !exp.equalsIgnoreCase("null")) {
+            if (exp.toUpperCase().contains("АКТИВНА")) return exp;
+            return "АКТИВНА (" + exp + ")";
+        }
+        if (cleanKey.startsWith("TP-1HR") || cleanKey.contains("1H")) {
+            return "АКТИВНА (ТЕСТ 1 ЧАС)";
+        }
+        if (cleanKey.startsWith("TP90D")) {
+            return "АКТИВНА (90 ДНЕЙ)";
+        }
+        return "АКТИВНА (30 ДНЕЙ)";
     }
 
     @JavascriptInterface
@@ -722,67 +789,86 @@ public class AndroidBridge {
         if (key == null || key.trim().length() < 5) {
             return "ERROR|Введите лицензионный ключ из Telegram-бота";
         }
-        String cleanKey = key.trim().toUpperCase();
-        String hwid = getDeviceHwid();
-        String nick = prefs.getString("saved_player_nick", "Player");
+        final String cleanKey = key.trim().toUpperCase();
+        final String hwid = getDeviceHwid();
+        final String nick = getSavedNickname().isEmpty() ? "Player" : getSavedNickname();
 
         try {
-            // Отправляем ключ и HWID на сервер бота: сервер сам проверит привязку к 1 устройству
-            String raw = ApiManager.activateLicense(cleanKey, hwid, nick);
+            Callable<String> task = () -> ApiManager.activateLicense(cleanKey, hwid, nick);
+            Future<String> future = networkExecutor.submit(task);
+            String raw = future.get(4500, TimeUnit.MILLISECONDS);
             JSONObject res = new JSONObject(raw);
             String status = res.optString("status", "");
-
-            boolean blocked = res.optBoolean("blocked", false)
-                    || "expired".equalsIgnoreCase(status)
-                    || "blocked".equalsIgnoreCase(status)
-                    || "device_mismatch".equalsIgnoreCase(status);
-
-            if (blocked) {
-                String msg = res.optString("message", "Ключ привязан к другому устройству или истёк!");
-                return "ERROR|" + msg;
-            }
 
             boolean ok = res.optBoolean("ok", false)
                     || "ok".equalsIgnoreCase(status)
                     || "active".equalsIgnoreCase(status);
 
-            if (ok) {
+            if (ok && !res.optBoolean("blocked", false)) {
                 ApiManager.setSessionVerified(true);
                 prefs.edit().putString("saved_license_key", cleanKey).apply();
                 ProfileManager.saveActivatedProfile(context, nick, cleanKey);
-                String expInfo = res.optString("expires_in", res.optString("days_left", "АКТИВНА (PRO ДОСТУП)"));
-                return "OK|" + expInfo;
+                String label = formatSubscriptionLabel(res, cleanKey);
+                lastServerSubscriptionText = label;
+                return "OK|" + label;
             }
 
-            return "ERROR|" + res.optString("message", "Ключ привязан к другому устройству или недействителен!");
+            // Если это твой ключ или ключ из старой базы покупателей, не блокируем вход
+            if (isLegacyOrOwnerKey(cleanKey)) {
+                ApiManager.setSessionVerified(true);
+                prefs.edit().putString("saved_license_key", cleanKey).apply();
+                ProfileManager.saveActivatedProfile(context, nick, cleanKey);
+                String label = cleanKey.startsWith("TP90D") ? "АКТИВНА (90 ДНЕЙ)" : "АКТИВНА (30 ДНЕЙ)";
+                lastServerSubscriptionText = label;
+                return "OK|" + label;
+            }
+
+            return "ERROR|" + res.optString("message", "Ключ не найден или привязан к другому устройству!");
         } catch (Exception e) {
+            if (isLegacyOrOwnerKey(cleanKey)) {
+                ApiManager.setSessionVerified(true);
+                prefs.edit().putString("saved_license_key", cleanKey).apply();
+                ProfileManager.saveActivatedProfile(context, nick, cleanKey);
+                return "OK|АКТИВНА (30 ДНЕЙ)";
+            }
             return "ERROR|Нет связи с сервером Telegram-бота. Проверьте интернет!";
         }
     }
 
     @JavascriptInterface
     public String verifyLicenseKey(String key) {
-        String cleanKey = (key != null && !key.trim().isEmpty())
+        final String cleanKey = (key != null && !key.trim().isEmpty())
                 ? key.trim().toUpperCase()
-                : getSavedKey().trim().toUpperCase();
+                : getSavedKey();
 
         if (cleanKey.length() < 5) {
-            forceгиеКик("Введите лицензионный ключ");
+            forceKickExpiredUser("Введите лицензионный ключ");
             return "EXPIRED|Введите ключ";
         }
 
         try {
-            String raw = ApiManager.verifyLicense(cleanKey, getDeviceHwid());
+            Callable<String> task = () -> ApiManager.verifyLicense(cleanKey, getDeviceHwid());
+            Future<String> future = networkExecutor.submit(task);
+            String raw = future.get(4200, TimeUnit.MILLISECONDS);
             JSONObject res = new JSONObject(raw);
             String status = res.optString("status", "");
 
-            if ("expired".equalsIgnoreCase(status)
+            if ("offline".equalsIgnoreCase(status)) {
+                return "OFFLINE|" + lastServerSubscriptionText;
+            }
+
+            boolean blockedOrExpired = "expired".equalsIgnoreCase(status)
                     || "blocked".equalsIgnoreCase(status)
-                    || "need_auth".equalsIgnoreCase(status)
                     || "device_mismatch".equalsIgnoreCase(status)
-                    || res.optBoolean("blocked", false)) {
-                String msg = res.optString("message", "Срок действия ключа истёк или он привязан к другому устройству!");
-                forceгиеКик(msg);
+                    || res.optBoolean("blocked", false);
+
+            if (blockedOrExpired) {
+                if (isLegacyOrOwnerKey(cleanKey)) {
+                    ApiManager.setSessionVerified(true);
+                    return "OK|" + lastServerSubscriptionText;
+                }
+                String msg = res.optString("message", "Срок действия вашего ключа закончился!");
+                forceKickExpiredUser(msg);
                 return "EXPIRED|" + msg;
             }
 
@@ -792,17 +878,19 @@ public class AndroidBridge {
 
             if (ok) {
                 ApiManager.setSessionVerified(true);
-                String expInfo = res.optString("expires_in", res.optString("days_left", "АКТИВНА (PRO ДОСТУП)"));
-                lastServerSubscriptionText = expInfo;
-                return "OK|" + expInfo;
+                String label = formatSubscriptionLabel(res, cleanKey);
+                lastServerSubscriptionText = label;
+                return "OK|" + label;
             }
 
-            if (!raw.contains("Нет связи")) {
-                String msg = res.optString("message", "Ключ недействителен или закончился!");
-                forceгиеКик(msg);
-                return "EXPIRED|" + msg;
+            if (isLegacyOrOwnerKey(cleanKey)) {
+                ApiManager.setSessionVerified(true);
+                return "OK|" + lastServerSubscriptionText;
             }
-            return "OFFLINE|" + lastServerSubscriptionText;
+
+            String msg = res.optString("message", "Срок действия ключа истёк!");
+            forceKickExpiredUser(msg);
+            return "EXPIRED|" + msg;
         } catch (Exception e) {
             return "OFFLINE|" + lastServerSubscriptionText;
         }
@@ -810,7 +898,7 @@ public class AndroidBridge {
 
     @JavascriptInterface
     public void logoutLicenseKey() {
-        forceгиеКик("Вы вышли из аккаунта");
+        forceKickExpiredUser("Вы вышли из аккаунта");
     }
 
     @JavascriptInterface
@@ -991,7 +1079,7 @@ public class AndroidBridge {
                 outlinePaint.setStyle(Paint.Style.STROKE);
                 canvas.drawLine(cx - gapPx - lenPx, cy, cx - gapPx, cy, outlinePaint);
                 canvas.drawLine(cx + gapPx, cy, cx + gapPx + lenPx, cy, outlinePaint);
-                canvas.drawLine(cx, cy + gapPx, cx, cx, cy + gapPx + lenPx, outlinePaint);
+                canvas.drawLine(cx, cy + gapPx, cx, cy + gapPx + lenPx, outlinePaint);
                 if (hasTop) {
                     canvas.drawLine(cx, cy - gapPx - lenPx, cx, cy - gapPx, outlinePaint);
                 }
@@ -1000,7 +1088,7 @@ public class AndroidBridge {
             paint.setStyle(Paint.Style.STROKE);
             canvas.drawLine(cx - gapPx - lenPx, cy, cx - gapPx, cy, paint);
             canvas.drawLine(cx + gapPx, cy, cx + gapPx + lenPx, cy, paint);
-            canvas.drawLine(cx, cy + gapPx, cx, cx, cy + gapPx + lenPx, paint);
+            canvas.drawLine(cx, cy + gapPx, cx, cy + gapPx + lenPx, paint);
             if (hasTop) {
                 canvas.drawLine(cx, cy - gapPx - lenPx, cx, cy - gapPx, paint);
             }
