@@ -127,7 +127,7 @@ public class MainActivity extends Activity {
             canvas.drawLine(cx - 22f, cy - 11f + lidOffsetY, cx + 22f, cy - 11f + lidOffsetY, iconPaint);
             canvas.drawLine(cx - 8f, cy - 17f + lidOffsetY, cx + 8f, cy - 17f + lidOffsetY, iconPaint);
 
-            String label = hovered ? "ОТПУСТИТЕ ДЛЯ УДАЛЕНИЯ" : "УДАЛИТЬ КНОПКУ «T»";
+            String label = hovered ? "ОТПУСТИТЕ ДЛЯ УДАЛЕНИЯ" : "УДАЛИТЬ КНОПКУ «TP»";
             Paint.FontMetrics fm = textPaint.getFontMetrics();
             float textY = cy - (fm.ascent + fm.descent) / 2f;
             textPaint.setColor(hovered ? Color.parseColor("#FFE4E6") : Color.parseColor("#F3E8FF"));
@@ -238,10 +238,7 @@ public class MainActivity extends Activity {
     @Override
     protected void onPause() {
         super.onPause();
-        if (webView != null) {
-            webView.onPause();
-            webView.pauseTimers();
-        }
+        // Не вызываем pauseTimers(), чтобы фоновый сторож и JS-мост не засыпали во время катки
     }
 
     @Override
@@ -255,13 +252,14 @@ public class MainActivity extends Activity {
     }
 
     public void healBrokenTouchTimeouts() {
-        if (!ShizukuManager.isPermissionGranted()) return;
+        if (!TeleportEngine.isShizukuReady() && !ShizukuManager.isPermissionGranted()) return;
         new Thread(() -> {
             ShizukuManager.execCommand(
-                    "settings put secure long_press_timeout 400; " +
-                    "settings put secure multi_press_timeout 250; " +
-                    "settings delete secure tap_duration_threshold; " +
-                    "settings delete secure touch_blocking_period; " +
+                    "settings put secure long_press_timeout 100; " +
+                    "settings put secure multi_press_timeout 100; " +
+                    "settings put secure tap_duration_threshold 0.0; " +
+                    "settings put secure touch_blocking_period 0.0; " +
+                    "settings put system pointer_speed 7; " +
                     "settings put system pointer_location 0; " +
                     "settings put system show_touches 0"
             );
@@ -273,7 +271,7 @@ public class MainActivity extends Activity {
             if (!Settings.canDrawOverlays(this)) {
                 runOnUiThread(() -> {
                     try {
-                        Toast.makeText(this, "Разрешите показ поверх других окон для кнопки «T»!", Toast.LENGTH_LONG).show();
+                        Toast.makeText(this, "Разрешите показ поверх других окон для кнопки «TP»!", Toast.LENGTH_LONG).show();
                         Intent intent = new Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
                                 Uri.parse("package:" + getPackageName()));
                         startActivity(intent);
@@ -425,8 +423,6 @@ public class MainActivity extends Activity {
         return rawTouchY >= (curScreenH - 220);
     }
 
-    // ================= ПЛАВАЮЩАЯ КНОПКА «T» С КИБЕР-КОРЗИНОЙ СНИЗУ =================
-
     public void toggleFloatingButton(boolean enable) {
         runOnUiThread(() -> {
             if (!enable) {
@@ -448,7 +444,6 @@ public class MainActivity extends Activity {
                     ? WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY
                     : WindowManager.LayoutParams.TYPE_PHONE;
 
-            // 1. Создаём нижнюю Кибер-Корзину для удаления кнопки прямо в игре
             trashDropView = new FrameLayout(this);
             cyberTrashIconView = new CyberTrashView(this);
 
@@ -469,7 +464,6 @@ public class MainActivity extends Activity {
             trashParams.gravity = Gravity.BOTTOM | Gravity.CENTER_HORIZONTAL;
             trashParams.y = 24;
 
-            // 2. Создаём саму плавающую кнопку «T»
             FrameLayout bubbleContainer = new FrameLayout(this);
             bubbleContainer.setLayerType(View.LAYER_TYPE_HARDWARE, null);
             floatingTxtView = new TextView(this);
@@ -550,7 +544,7 @@ public class MainActivity extends Activity {
                                     resetResolution();
                                 }
                                 removeFloatingButton();
-                                Toast.makeText(MainActivity.this, "🗑️ Кнопка «T» удалена", Toast.LENGTH_SHORT).show();
+                                Toast.makeText(MainActivity.this, "🗑️ Кнопка «TP» удалена", Toast.LENGTH_SHORT).show();
                                 return true;
                             }
                             if (!moved) {
@@ -593,7 +587,7 @@ public class MainActivity extends Activity {
             circle.setColor(Color.parseColor("#E610B981"));
             circle.setStroke(4, Color.parseColor("#FFFFFF"));
         } else {
-            floatingTxtView.setText("T\n" + ratio);
+            floatingTxtView.setText("TP\n" + ratio);
             circle.setColor(Color.parseColor("#D90B0719"));
             circle.setStroke(3, Color.parseColor("#00E5FF"));
         }
