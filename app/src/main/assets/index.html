@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
-  <title>SO2Teleport QUANTUM ENGINE V409</title>
+  <title>SO2Teleport QUANTUM ENGINE V410</title>
   <style>
     :root {
       --bg-dark: #060d14;
@@ -41,14 +41,24 @@
       overflow-x: hidden;
     }
 
+    /* ЖЁСТКОЕ СКРЫТИЕ ИНТЕРФЕЙСА ДО ПРОХОЖДЕНИЯ АВТОРИЗАЦИИ */
+    .auth-locked {
+      display: none !important;
+    }
+
     /* ================= ПОЛНОЭКРАННЫЙ БЛОК АВТОРИЗАЦИИ (ОТКРЫТ ПО УМОЛЧАНИЮ) ================= */
     #authScreen {
       position: fixed;
-      inset: 0;
-      z-index: 99999;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 999999;
       background-color: #050b12;
       background-image:
-        radial-gradient(circle at 50% 15%, rgba(var(--accent-rgb), 0.16) 0%, transparent 50%);
+        radial-gradient(circle at 50% 18%, rgba(var(--accent-rgb), 0.18) 0%, transparent 55%);
       display: flex;
       flex-direction: column;
       align-items: center;
@@ -64,7 +74,7 @@
       border-radius: 24px;
       padding: 24px 18px;
       text-align: center;
-      box-shadow: 0 0 40px rgba(var(--accent-rgb), 0.25);
+      box-shadow: 0 0 42px rgba(var(--accent-rgb), 0.28);
     }
 
     .auth-pill-tag {
@@ -705,7 +715,12 @@
     /* МОДАЛКА КАЛИБРОВКИ */
     .modal-backdrop {
       position: fixed;
-      inset: 0;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      width: 100%;
+      height: 100%;
       z-index: 5000;
       background: rgba(3, 8, 14, 0.9);
       display: none;
@@ -730,7 +745,7 @@
       top: calc(env(safe-area-inset-top, 24px) + 14px);
       left: 50%;
       transform: translateX(-50%);
-      z-index: 100000;
+      z-index: 2000000;
       background: #0d1c2c;
       border: 1.5px solid var(--accent);
       color: #ffffff;
@@ -752,7 +767,7 @@
   <!-- ================= 1. ЭКРАН АВТОРИЗАЦИИ ПО КЛЮЧУ (ЕДИНСТВЕННЫЙ ВИДИМЫЙ ПРИ СТАРТЕ) ================= -->
   <div id="authScreen">
     <div class="auth-box">
-      <div class="auth-pill-tag">QUANTUM ENGINE V409 • LICENSE GUARD</div>
+      <div class="auth-pill-tag">QUANTUM ENGINE V410 • LICENSE GUARD</div>
       <div style="font-size:24px; font-weight:900; color:#fff; margin-bottom:5px;">
         SO2<span style="color:var(--accent)">Teleport</span> PRO
       </div>
@@ -774,7 +789,7 @@
       </button>
 
       <div style="margin-top:14px; font-size:11px; color:var(--text-muted);">
-        HWID устройства: <span id="authHwidLabel" style="color:var(--accent); font-family:monospace; font-weight:800;">загрузка...</span>
+        HWID устройства: <span id="authHwidLabel" style="color:var(--accent); font-family:monospace; font-weight:800;">определение...</span>
       </div>
     </div>
   </div>
@@ -796,8 +811,8 @@
     </div>
   </div>
 
-  <!-- ================= 2. ГЛАВНЫЙ ИНТЕРФЕЙС (СКРЫТ ДО ВВОДА ДЕЙСТВУЮЩЕГО КЛЮЧА) ================= -->
-  <div id="mainAppRoot" class="app-container" style="display:none;">
+  <!-- ================= 2. ГЛАВНЫЙ ИНТЕРФЕЙС (СКРЫТ КЛАССОМ auth-locked ДО ВВОДА КЛЮЧА) ================= -->
+  <div id="mainAppRoot" class="app-container auth-locked">
 
     <!-- ВЕРХНЯЯ ШАПКА -->
     <header class="top-header">
@@ -1446,7 +1461,7 @@
       <div class="section-card">
         <div class="section-header-tag">
           <span>ДАННЫЕ АККАУНТА SO2TELEPORT</span>
-          <span>PRO V409</span>
+          <span>PRO V410</span>
         </div>
 
         <div class="profile-row">
@@ -1483,7 +1498,7 @@
   </div>
 
   <!-- НИЖНЯЯ ФИКСИРОВАННАЯ ПАНЕЛЬ (СКРЫТА ДО АВТОРИЗАЦИИ) -->
-  <div id="bottomDockBar" class="bottom-dock" style="display:none;">
+  <div id="bottomDockBar" class="bottom-dock auth-locked">
     <div class="bottom-dock-inner">
       <button class="dock-save-btn" onclick="saveCurrentConfigNow()">
         💾 СОХРАНИТЬ НАСТРОЙКИ
@@ -1495,6 +1510,8 @@
   </div>
 
   <script>
+    const CLIENT_LOGIN_GATE_KEY = "so2tp_manual_login_v412";
+
     function getBridge() {
       return window.AndroidBridge || window.Android || null;
     }
@@ -1549,7 +1566,7 @@
 
     function openPage(pageId) {
       if (!isSessionAuthorized) {
-        window.forceShowKickScreen("Сначала войдите по лицензионному ключу!");
+        window.forceShowKickScreen("Сначала активируйте лицензионный ключ!");
         return;
       }
       document.querySelectorAll(".page-view").forEach(p => p.classList.remove("active"));
@@ -1560,7 +1577,7 @@
 
     function openSensTile() {
       if (!isSessionAuthorized) {
-        window.forceShowKickScreen("Сначала войдите по лицензионному ключу!");
+        window.forceShowKickScreen("Сначала активируйте лицензионный ключ!");
         return;
       }
       openPage("page-sens");
@@ -1595,10 +1612,15 @@
       fullLicenseKeyPlain = cleanKey;
       isKeyRevealed = false;
 
-      // Скрываем экран ввода ключа и открываем приложение
+      try {
+        localStorage.setItem(CLIENT_LOGIN_GATE_KEY, "1");
+        localStorage.setItem("so2tp_active_key_v412", cleanKey);
+        localStorage.setItem("so2tp_active_nick_v412", nick);
+      } catch (e) {}
+
       document.getElementById("authScreen").style.display = "none";
-      document.getElementById("mainAppRoot").style.display = "block";
-      document.getElementById("bottomDockBar").style.display = "block";
+      document.getElementById("mainAppRoot").classList.remove("auth-locked");
+      document.getElementById("bottomDockBar").classList.remove("auth-locked");
       document.getElementById("authErrorBox").style.display = "none";
 
       document.getElementById("chipPlayerName").innerText = nick;
@@ -1611,9 +1633,13 @@
       isSessionAuthorized = false;
       fullLicenseKeyPlain = "";
 
-      // Полностью прячем главное меню и показываем только полноэкранное окно ключа
-      document.getElementById("mainAppRoot").style.display = "none";
-      document.getElementById("bottomDockBar").style.display = "none";
+      try {
+        localStorage.removeItem(CLIENT_LOGIN_GATE_KEY);
+        localStorage.removeItem("so2tp_active_key_v412");
+      } catch (e) {}
+
+      document.getElementById("mainAppRoot").classList.add("auth-locked");
+      document.getElementById("bottomDockBar").classList.add("auth-locked");
       document.getElementById("calibModal").style.display = "none";
       document.getElementById("authScreen").style.display = "flex";
 
@@ -1694,7 +1720,7 @@
       }
       try {
         const verifyOut = B.verifyLicenseKey(fullLicenseKeyPlain);
-        if (verifyOut.startsWith("OK|")) {
+        if (verifyOut.startsWith("OK|") || verifyOut.startsWith("OFFLINE|")) {
           const subLabel = verifyOut.split("|")[1] || "АКТИВНА";
           document.getElementById("profSubVal").innerText = subLabel;
         } else {
@@ -1704,16 +1730,16 @@
       } catch (e) {}
     }
 
-    // Старт приложения: проверяем мост с поддержкой ретрая, если WebView загрузился быстрее
+    // Старт приложения: жёсткая проверка первого входа
     function initApplication() {
       checkShizukuState();
       setInterval(checkShizukuState, 4500);
       setInterval(pollLicenseExpiration, 10000);
       renderCrosshairCanvas();
 
-      // Гарантируем, что при старте открыто только окно ввода ключа
-      document.getElementById("mainAppRoot").style.display = "none";
-      document.getElementById("bottomDockBar").style.display = "none";
+      // По умолчанию интерфейс всегда заблокирован, а окно ввода ключа открыто
+      document.getElementById("mainAppRoot").classList.add("auth-locked");
+      document.getElementById("bottomDockBar").classList.add("auth-locked");
       document.getElementById("authScreen").style.display = "flex";
 
       const B = getBridge();
@@ -1735,27 +1761,35 @@
       document.getElementById("authHwidLabel").innerText = hwid;
 
       const savedNick = (B.getSavedNickname && B.getSavedNickname()) ? B.getSavedNickname().trim() : "";
-      const savedKey = (B.getSavedKey && B.getSavedKey()) ? B.getSavedKey().trim().toUpperCase() : "";
-
       if (savedNick) {
         document.getElementById("loginNickInput").value = savedNick;
       }
 
-      // При первом входе getSavedKey() в твоём AndroidBridge возвращает "" -> остаёмся на экране ввода ключа
-      if (!savedKey || savedKey.length < 5) {
-        window.forceShowKickScreen("");
+      // ЖЁСТКИЙ ЗАМОК ПЕРВОГО ВХОДА:
+      // Пока пользователь лично не нажал кнопку «АКТИВИРОВАТЬ КЛЮЧ И ВОЙТИ» в этой сборке,
+      // мы НЕ пускаем его автоматически, даже если в старом кэше лежал ключ!
+      let manualGatePassed = false;
+      let gateKey = "";
+      try {
+        manualGatePassed = localStorage.getItem(CLIENT_LOGIN_GATE_KEY) === "1";
+        gateKey = (localStorage.getItem("so2tp_active_key_v412") || "").trim().toUpperCase();
+      } catch (e) {}
+
+      if (!manualGatePassed || gateKey.length < 5) {
+        // Остаёмся на экране ввода ключа!
+        document.getElementById("loginKeyInput").value = "";
         return;
       }
 
-      // Если пользователь уже вводил ключ ранее — проверяем его на сервере
-      document.getElementById("loginKeyInput").value = savedKey;
-      const verifyOut = B.verifyLicenseKey(savedKey);
-      if (verifyOut.startsWith("OK|")) {
+      // Если пользователь уже вводил ключ вручную — проверяем на сервере, не истёк ли он
+      document.getElementById("loginKeyInput").value = gateKey;
+      const verifyOut = B.verifyLicenseKey(gateKey);
+      if (verifyOut.startsWith("OK|") || verifyOut.startsWith("OFFLINE|")) {
         const subLabel = verifyOut.split("|")[1] || "АКТИВНА (PRO)";
-        unlockAuthorizedSession(savedNick || "Player", savedKey, subLabel);
+        unlockAuthorizedSession(savedNick || "dare", gateKey, subLabel);
         loadSavedSettingsJson();
       } else {
-        const errMsg = verifyOut.split("|")[1] || "Введите ваш логин и лицензионный ключ";
+        const errMsg = verifyOut.split("|")[1] || "Срок действия ключа истёк! Введите действующий ключ.";
         window.forceShowKickScreen(errMsg);
       }
     }
@@ -2354,7 +2388,7 @@
     function saveStateSilent() {
       if (!isSessionAuthorized) return;
       const jsonStr = JSON.stringify(collectFullConfig());
-      try { localStorage.setItem("so2tp_backup_v409", jsonStr); } catch (e) {}
+      try { localStorage.setItem("so2tp_backup_v410", jsonStr); } catch (e) {}
       const B = getBridge();
       if (B && B.saveFullConfigJson) {
         B.saveFullConfigJson(jsonStr);
@@ -2373,7 +2407,7 @@
       if (!B || !B.loadFullConfigJson) return;
       try {
         let raw = B.loadFullConfigJson();
-        if (!raw) raw = localStorage.getItem("so2tp_backup_v409");
+        if (!raw) raw = localStorage.getItem("so2tp_backup_v410");
         if (!raw) return;
         applyFullConfigObject(JSON.parse(raw));
       } catch (e) {}
