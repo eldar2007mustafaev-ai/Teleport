@@ -54,35 +54,45 @@ public class ApiManager {
 
     public static String activateLicense(String key, String androidId, String nickname) {
         try {
+            String cleanKey = key == null ? "" : key.trim().toUpperCase();
+            String cleanHwid = androidId == null ? "" : androidId.trim().toLowerCase();
+
             JSONObject payload = new JSONObject();
             payload.put("action", "activate");
-            payload.put("key", key);
-            payload.put("android_id", androidId);
-            payload.put("nickname", nickname);
+            payload.put("key", cleanKey);
+            payload.put("android_id", cleanHwid);
+            payload.put("nickname", nickname == null ? "Player" : nickname.trim());
             payload.put("build_version", CLIENT_BUILD_VERSION);
-            payload.put("sign", sha256(key + ":" + androidId + ":" + CLIENT_BUILD_VERSION + ":" + CLIENT_SALT));
+            payload.put("sign", sha256(cleanKey + ":" + cleanHwid + ":" + CLIENT_BUILD_VERSION + ":" + CLIENT_SALT));
 
             String raw = postWithFallback("/activate", payload.toString());
             JSONObject res = new JSONObject(raw);
 
-            boolean ok = res.optBoolean("ok", false)
-                    || "ok".equalsIgnoreCase(res.optString("status"))
-                    || "active".equalsIgnoreCase(res.optString("status"));
+            String status = res.optString("status", "");
+            boolean blocked = res.optBoolean("blocked", false)
+                    || "expired".equalsIgnoreCase(status)
+                    || "blocked".equalsIgnoreCase(status);
 
-            if (ok && !res.optBoolean("blocked", false)) {
+            boolean ok = (res.optBoolean("ok", false)
+                    || "ok".equalsIgnoreCase(status)
+                    || "active".equalsIgnoreCase(status)) && !blocked;
+
+            if (ok) {
                 sessionVerified = true;
-                JSONObject successOut = new JSONObject();
-                successOut.put("status", "ok");
-                successOut.put("ok", true);
-                successOut.put("message", "Добро пожаловать в SO2Teleport!");
-                return successOut.toString();
+                // Сохраняем все поля от сервера (включая expires_in / days_left / message)
+                res.put("status", "ok");
+                res.put("ok", true);
+                if (!res.has("expires_in") && res.has("days_left")) {
+                    res.put("expires_in", res.optString("days_left"));
+                }
+                return res.toString();
             }
 
             sessionVerified = false;
             return raw;
         } catch (Exception e) {
             sessionVerified = false;
-            return "{\"status\":\"error\",\"ok\":false,\"message\":\"Нет связи с сервером авторизации. Проверьте интернет.\"}";
+            return "{\"status\":\"network_error\",\"ok\":false,\"message\":\"Нет связи с сервером авторизации. Проверьте интернет.\"}";
         }
     }
 
@@ -93,34 +103,44 @@ public class ApiManager {
                 return "{\"status\":\"need_auth\",\"ok\":false,\"blocked\":false,\"message\":\"Введите логин и ключ для входа\"}";
             }
 
+            String cleanKey = key.trim().toUpperCase();
+            String cleanHwid = androidId == null ? "" : androidId.trim().toLowerCase();
+
             JSONObject payload = new JSONObject();
             payload.put("action", "verify");
-            payload.put("key", key);
-            payload.put("android_id", androidId);
+            payload.put("key", cleanKey);
+            payload.put("android_id", cleanHwid);
             payload.put("build_version", CLIENT_BUILD_VERSION);
-            payload.put("sign", sha256(key + ":" + androidId + ":" + CLIENT_BUILD_VERSION + ":" + CLIENT_SALT));
+            payload.put("sign", sha256(cleanKey + ":" + cleanHwid + ":" + CLIENT_BUILD_VERSION + ":" + CLIENT_SALT));
 
             String raw = postWithFallback("/verify", payload.toString());
             JSONObject res = new JSONObject(raw);
 
             String status = res.optString("status", "");
-            if ("expired".equalsIgnoreCase(status) || "blocked".equalsIgnoreCase(status) || res.optBoolean("blocked", false)) {
+            if ("expired".equalsIgnoreCase(status)
+                    || "blocked".equalsIgnoreCase(status)
+                    || "device_mismatch".equalsIgnoreCase(status)
+                    || res.optBoolean("blocked", false)) {
                 sessionVerified = false;
                 TeleportEngine.stopTeleport();
-                return "{\"status\":\"blocked\",\"ok\":false,\"blocked\":true,\"message\":\"Срок действия ключа истёк или он был сброшен.\"}";
+                String msg = res.optString("message", "Срок действия ключа истёк или он привязан к другому устройству.");
+                return "{\"status\":\"blocked\",\"ok\":false,\"blocked\":true,\"message\":\"" + msg.replace("\"", "'") + "\"}";
             }
 
-            boolean ok = res.optBoolean("ok", false) || "ok".equalsIgnoreCase(status) || "active".equalsIgnoreCase(status);
+            boolean ok = res.optBoolean("ok", false)
+                    || "ok".equalsIgnoreCase(status)
+                    || "active".equalsIgnoreCase(status);
+
             sessionVerified = ok;
             if (!ok) {
                 TeleportEngine.stopTeleport();
-                return "{\"status\":\"need_auth\",\"ok\":false,\"blocked\":false,\"message\":\"Введите ваш логин и лицензионный ключ\"}";
+                String msg = res.optString("message", "Ключ недействителен или время подписки вышло.");
+                return "{\"status\":\"expired\",\"ok\":false,\"blocked\":true,\"message\":\"" + msg.replace("\"", "'") + "\"}";
             }
             return raw;
         } catch (Exception e) {
-            sessionVerified = false;
-            TeleportEngine.stopTeleport();
-            return "{\"status\":\"need_auth\",\"ok\":false,\"blocked\":false,\"message\":\"Введите логин и ключ для авторизации\"}";
+            // При кратковременном обрыве связи возвращаем offline, чтобы не кикать активного игрока из катки
+            return "{\"status\":\"offline\",\"ok\":true,\"blocked\":false,\"message\":\"Проверка сети\"}";
         }
     }
 
