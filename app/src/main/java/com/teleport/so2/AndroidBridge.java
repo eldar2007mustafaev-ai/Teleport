@@ -912,6 +912,79 @@ public class AndroidBridge {
         });
     }
 
+        // ================= ОБЛАКО КОНФИГОВ (SO2-XXXX), ЗАПУСК ИГРЫ И ULTRA MATRIX =================
+
+    @JavascriptInterface
+    public String uploadCloudConfig(String title, String presetJson) {
+        String key = getSavedKey();
+        if (key.isEmpty()) return "{\"status\":\"error\",\"ok\":false,\"message\":\"Сначала активируйте ключ\"}";
+        try {
+            Callable<String> task = () -> ApiManager.uploadCloudPreset(key, getDeviceHwid(), title, presetJson);
+            Future<String> future = networkExecutor.submit(task);
+            return future.get(4000, TimeUnit.MILLISECONDS);
+        } catch (Exception e) {
+            return "{\"status\":\"error\",\"ok\":false,\"message\":\"Ошибка сети при выгрузке конфига\"}";
+        }
+    }
+
+    @JavascriptInterface
+    public String downloadCloudConfig(String shareCode) {
+        String key = getSavedKey();
+        if (key.isEmpty()) return "{\"status\":\"error\",\"ok\":false,\"message\":\"Сначала активируйте ключ\"}";
+        try {
+            Callable<String> task = () -> ApiManager.downloadCloudPresetByCode(key, getDeviceHwid(), shareCode);
+            Future<String> future = networkExecutor.submit(task);
+            return future.get(4000, TimeUnit.MILLISECONDS);
+        } catch (Exception e) {
+            return "{\"status\":\"error\",\"ok\":false,\"message\":\"Конфиг не найден или сервер недоступен\"}";
+        }
+    }
+
+    @JavascriptInterface
+    public void applyUltraProTouchMatrix(int modeLevel) {
+        if (getSavedKey().isEmpty()) return;
+        ProfileManager.addTeleportCountToTotal(context, 1);
+        if (!TeleportEngine.isShizukuReady() && !ShizukuManager.isPermissionGranted()) return;
+
+        int maxEv = (modeLevel >= 3) ? 600 : (modeLevel == 2 ? 520 : 420);
+        String cmd = "settings put system pointer_speed 7; "
+                + "settings put secure touch_blocking_period 0.0; "
+                + "settings put secure tap_duration_threshold 0.0; "
+                + "settings put secure ignore_repeat_click_timeout 0; "
+                + "settings put secure long_press_timeout 90; "
+                + "settings put secure multi_press_timeout 90; "
+                + "settings put system touch_sensitivity 1; "
+                + "settings put secure game_touch_sampling_rate 360; "
+                + "settings put system touch_sampling_rate 360; "
+                + "setprop debug.touch.slop 0; "
+                + "setprop view.touch.slop 0; "
+                + "setprop ro.min_pointer_dur 1; "
+                + "setprop windowsmgr.max_events_per_sec " + maxEv + "; "
+                + "setprop debug.sf.latch_unsignaled 1; "
+                + "setprop debug.sf.disable_backpressure 1;";
+        TeleportEngine.execShizukuCommand(cmd);
+    }
+
+    @JavascriptInterface
+    public boolean launchStandoffGame() {
+        mainHandler.post(() -> {
+            try {
+                Intent launchIntent = context.getPackageManager().getLaunchIntentForPackage("com.axlebolt.standoff2");
+                if (launchIntent != null) {
+                    launchIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                    context.startActivity(launchIntent);
+                    Toast.makeText(context, "🚀 Запуск Standoff 2 с активным SO2Teleport!", Toast.LENGTH_SHORT).show();
+                } else {
+                    Toast.makeText(context, "⚠️ Standoff 2 не найден на устройстве", Toast.LENGTH_SHORT).show();
+                }
+            } catch (Exception e) {
+                Toast.makeText(context, "Ошибка запуска игры", Toast.LENGTH_SHORT).show();
+            }
+        });
+        return true;
+    }
+
+
     private int dpToPx(int dp) {
         return Math.round(dp * context.getResources().getDisplayMetrics().density);
     }
