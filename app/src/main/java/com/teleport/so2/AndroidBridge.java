@@ -65,6 +65,8 @@ public class AndroidBridge {
     private WindowManager.LayoutParams crosshairParams;
     private boolean isCrosshairShown = false;
     private boolean stealthOverlayFlag = false;
+    private int crosshairOffsetXDp = 0;
+    private int crosshairOffsetYDp = 0;
 
     public AndroidBridge(Activity activity) {
         this.activity = activity;
@@ -134,35 +136,28 @@ public class AndroidBridge {
         return false;
     }
 
-    /**
-     * Определяет общую длительность ключа в миллисекундах по его префиксу или ответу сервера
-     */
     private long getDefaultDurationMsForKey(String cleanKey) {
         if (cleanKey == null) return 30L * 24L * 3600L * 1000L;
         String u = cleanKey.toUpperCase();
         if (u.startsWith("TP-1HR") || u.contains("1HR") || u.contains("-1H-")) {
-            return 3600L * 1000L; // 1 час
+            return 3600L * 1000L;
         }
         if (u.startsWith("TP1D") || u.contains("-1D-") || u.contains("24H")) {
-            return 24L * 3600L * 1000L; // 1 день
+            return 24L * 3600L * 1000L;
         }
         if (u.startsWith("TP7D") || u.contains("-7D-")) {
-            return 7L * 24L * 3600L * 1000L; // 7 дней
+            return 7L * 24L * 3600L * 1000L;
         }
         if (u.startsWith("TP90D") || u.contains("90D")) {
-            return 90L * 24L * 3600L * 1000L; // 90 дней
+            return 90L * 24L * 3600L * 1000L;
         }
-        return 30L * 24L * 3600L * 1000L; // По умолчанию 30 дней
+        return 30L * 24L * 3600L * 1000L;
     }
 
-    /**
-     * Вычисляет и сохраняет точный timestamp окончания ключа (в мс)
-     */
     private long getOrInitKeyDeadlineMs(String cleanKey, JSONObject serverRes) {
         String deadlinePrefKey = "key_deadline_ms_" + cleanKey;
         long now = System.currentTimeMillis();
 
-        // 1. Проверяем, прислал ли сервер точный остаток в секундах или timestamp окончания
         if (serverRes != null) {
             long remSec = serverRes.optLong("remaining_sec",
                     serverRes.optLong("time_left_sec",
@@ -181,13 +176,11 @@ public class AndroidBridge {
             }
         }
 
-        // 2. Если дедлайн уже сохранён на устройстве — возвращаем его (он тикает в реальном времени!)
         long savedDeadline = prefs.getLong(deadlinePrefKey, 0L);
         if (savedDeadline > 0L) {
             return savedDeadline;
         }
 
-        // 3. Пытаемся достать дату первой активации из ProfileManager ("dd.MM.yyyy HH:mm")
         long startMs = 0L;
         String savedDateStr = profilePrefs.getString("activated_date", "");
         String savedProfKey = profilePrefs.getString("activated_key", "");
@@ -202,11 +195,9 @@ public class AndroidBridge {
         long durationMs = getDefaultDurationMsForKey(cleanKey);
 
         if (startMs <= 0L) {
-            // Если это ранее купленный ключ (например, 2-3 дня назад), у которого ещё не было метки времени,
-            // вычитаем 2 дня и 14 часов, чтобы в профиле сразу показывался реальный остаток (~27 дн. 10 ч.)
             boolean wasUsedBefore = !prefs.getString("backup_buyer_key", "").isEmpty() || isLegacyOrOwnerKey(cleanKey);
             if (wasUsedBefore && durationMs >= 7L * 24L * 3600L * 1000L) {
-                long elapsedOffset = (2L * 24L * 3600L * 1000L) + (14L * 3600L * 1000L); // 2 дн. 14 ч.
+                long elapsedOffset = (2L * 24L * 3600L * 1000L) + (14L * 3600L * 1000L);
                 startMs = now - elapsedOffset;
             } else {
                 startMs = now;
@@ -218,15 +209,11 @@ public class AndroidBridge {
         return computedDeadline;
     }
 
-    /**
-     * Форматирует живой остаток времени подписки: "АКТИВНА (27 дн. 9 ч.)" или "АКТИВНА (45 мин.)"
-     */
     private String buildLiveSubscriptionLabel(JSONObject serverRes, String cleanKey) {
         if (serverRes != null) {
             String serverText = serverRes.optString("expires_in",
                     serverRes.optString("days_left",
                             serverRes.optString("time_left", "")));
-            // Если сервер прислал готовый точный текст с часами/минутами (не просто "30 дней")
             if (serverText != null && !serverText.isEmpty() && !serverText.equalsIgnoreCase("null")
                     && !serverText.equals("30 дней") && !serverText.equals("30 ДНЕЙ")) {
                 if (serverText.toUpperCase().contains("АКТИВНА")) return serverText;
@@ -261,10 +248,9 @@ public class AndroidBridge {
             public void run() {
                 final String savedKey = getSavedKey();
                 if (!savedKey.isEmpty() && prefs.getBoolean(PREF_FIRST_LOGIN_DONE, false)) {
-                    // Проверяем локальный дедлайн
                     String liveStatus = buildLiveSubscriptionLabel(null, savedKey);
                     if ("EXPIRED".equals(liveStatus)) {
-                        forceKickExpiredUser("Срок действия вашего ключа (30 дней) истёк!");
+                        forceKickExpiredUser("Срок действия вашего ключа истёк!");
                         return;
                     }
 
@@ -680,7 +666,7 @@ public class AndroidBridge {
 
         if (enabled) {
             TeleportEngine.setTouchSamplingBoost(true, 360);
-            TeleportEngine.setEnhancedRecoilFix(true, 95);
+            TeleportEngine.setEnhancedRecoilFix(true, 100);
             TeleportEngine.enableWideHitboxQuantization(true);
             activateStretchFloatingButton(targetRatio);
             return "OK|" + targetRatio;
@@ -769,8 +755,7 @@ public class AndroidBridge {
 
     @JavascriptInterface
     public void setAutoGameDpi(boolean enabled, int dpi) {
-        if (getSavedKey().isEmpty()) return;
-        TeleportEngine.setAutoGameDpi(enabled, dpi);
+        // Убрано, чтобы не уменьшался интерфейс телефона
     }
 
     @JavascriptInterface
@@ -790,18 +775,20 @@ public class AndroidBridge {
         ProfileManager.addTeleportCountToTotal(context, 1);
         if (!TeleportEngine.isShizukuReady() && !ShizukuManager.isPermissionGranted()) return;
 
-        int maxEv = (modeLevel >= 3) ? 600 : (modeLevel == 2 ? 520 : 420);
+        int maxEv = (modeLevel >= 3) ? 850 : (modeLevel == 2 ? 650 : 500);
         String cmd = "settings put system pointer_speed 7; "
                 + "settings put secure touch_blocking_period 0.0; "
                 + "settings put secure tap_duration_threshold 0.0; "
                 + "settings put secure ignore_repeat_click_timeout 0; "
-                + "settings put secure long_press_timeout 90; "
-                + "settings put secure multi_press_timeout 90; "
+                + "settings put secure long_press_timeout 80; "
+                + "settings put secure multi_press_timeout 80; "
                 + "settings put system touch_sensitivity 1; "
                 + "settings put secure game_touch_sampling_rate 360; "
                 + "settings put system touch_sampling_rate 360; "
                 + "setprop debug.touch.slop 0; "
                 + "setprop view.touch_slop 0; "
+                + "setprop view.scroll_friction 0; "
+                + "setprop debug.input.touch.prediction 0; "
                 + "setprop ro.min_pointer_dur 1; "
                 + "setprop windowsmgr.max_events_per_sec " + maxEv + "; "
                 + "setprop debug.sf.latch_unsignaled 1; "
@@ -872,6 +859,8 @@ public class AndroidBridge {
                         PixelFormat.TRANSLUCENT
                 );
                 crosshairParams.gravity = Gravity.CENTER;
+                crosshairParams.x = dpToPx(crosshairOffsetXDp);
+                crosshairParams.y = dpToPx(crosshairOffsetYDp);
                 try {
                     windowManager.addView(crosshairView, crosshairParams);
                     isCrosshairShown = true;
@@ -879,6 +868,21 @@ public class AndroidBridge {
             }
             if (crosshairView != null) {
                 crosshairView.setCrosshairType(type);
+            }
+        });
+    }
+
+    @JavascriptInterface
+    public void setCrosshairOffset(int offsetXDp, int offsetYDp) {
+        this.crosshairOffsetXDp = Math.max(-30, Math.min(30, offsetXDp));
+        this.crosshairOffsetYDp = Math.max(-30, Math.min(30, offsetYDp));
+        mainHandler.post(() -> {
+            if (isCrosshairShown && crosshairView != null && crosshairParams != null && windowManager != null) {
+                crosshairParams.x = dpToPx(this.crosshairOffsetXDp);
+                crosshairParams.y = dpToPx(this.crosshairOffsetYDp);
+                try {
+                    windowManager.updateViewLayout(crosshairView, crosshairParams);
+                } catch (Exception ignored) {}
             }
         });
     }
@@ -1057,7 +1061,6 @@ public class AndroidBridge {
             return "EXPIRED|Введите ключ";
         }
 
-        // Проверяем реальный локальный таймер обратного отсчёта
         String localLiveLabel = buildLiveSubscriptionLabel(null, cleanKey);
         if ("EXPIRED".equals(localLiveLabel)) {
             forceKickExpiredUser("Время вашей подписки истекло!");
@@ -1189,9 +1192,9 @@ public class AndroidBridge {
     private static class CrosshairOverlayView extends View {
         private String type = "cross";
         private int opacity = 100;
-        private int lengthDp = 12;
+        private int lengthDp = 10;
         private int thicknessDp = 3;
-        private int gapDp = 4;
+        private int gapDp = 3;
         private int dotSizeDp = 3;
         private boolean outline = true;
         private int color = Color.parseColor("#00E5FF");
@@ -1202,6 +1205,8 @@ public class AndroidBridge {
         public CrosshairOverlayView(Context context) {
             super(context);
             outlinePaint.setColor(Color.BLACK);
+            paint.setStrokeCap(Paint.Cap.ROUND);
+            outlinePaint.setStrokeCap(Paint.Cap.ROUND);
         }
 
         public void setCrosshairType(String t) {
@@ -1210,7 +1215,7 @@ public class AndroidBridge {
         }
 
         public void setStyle(int scalePct, int opacityPct, String hex) {
-            this.lengthDp = Math.max(4, Math.round(4 + (scalePct / 100f) * 20f));
+            this.lengthDp = Math.max(3, Math.round(3 + (scalePct / 100f) * 18f));
             this.opacity = opacityPct;
             try { this.color = Color.parseColor(hex); } catch (Exception ignored) {}
             invalidate();
@@ -1241,9 +1246,9 @@ public class AndroidBridge {
             float cy = getHeight() / 2f;
 
             float lenPx = lengthDp * d;
-            float thickPx = Math.max(1.5f, thicknessDp * 0.85f * d);
+            float thickPx = Math.max(1.2f, thicknessDp * 0.78f * d);
             float gapPx = gapDp * d;
-            float dotRadPx = Math.max(1.5f, dotSizeDp * 0.75f * d);
+            float dotRadPx = Math.max(1.3f, dotSizeDp * 0.68f * d);
 
             int alpha = Math.max(25, Math.min(255, Math.round(opacity * 2.55f)));
             paint.setColor(color);
@@ -1251,12 +1256,12 @@ public class AndroidBridge {
             paint.setStrokeWidth(thickPx);
 
             outlinePaint.setAlpha(Math.min(220, alpha));
-            outlinePaint.setStrokeWidth(thickPx + 2.2f * d);
+            outlinePaint.setStrokeWidth(thickPx + 2.0f * d);
 
             if ("dot".equalsIgnoreCase(type)) {
                 if (outline) {
                     outlinePaint.setStyle(Paint.Style.FILL);
-                    canvas.drawCircle(cx, cy, dotRadPx + 1.2f * d, outlinePaint);
+                    canvas.drawCircle(cx, cy, dotRadPx + 1.1f * d, outlinePaint);
                 }
                 paint.setStyle(Paint.Style.FILL);
                 canvas.drawCircle(cx, cy, dotRadPx, paint);
@@ -1264,7 +1269,7 @@ public class AndroidBridge {
             }
 
             if ("circle".equalsIgnoreCase(type) || "circledot".equalsIgnoreCase(type)) {
-                float rad = Math.max(4f * d, lenPx * 0.85f);
+                float rad = Math.max(3.5f * d, lenPx * 0.65f);
                 if (outline) {
                     outlinePaint.setStyle(Paint.Style.STROKE);
                     canvas.drawCircle(cx, cy, rad, outlinePaint);
@@ -1278,14 +1283,54 @@ public class AndroidBridge {
                 return;
             }
 
+            // Компактный квадратик под размер головы
             if ("box".equalsIgnoreCase(type)) {
-                float half = Math.max(4f * d, lenPx * 0.75f);
+                float half = Math.max(2.0f * d, lenPx * 0.30f);
                 if (outline) {
                     outlinePaint.setStyle(Paint.Style.STROKE);
                     canvas.drawRect(cx - half, cy - half, cx + half, cy + half, outlinePaint);
                 }
                 paint.setStyle(Paint.Style.STROKE);
                 canvas.drawRect(cx - half, cy - half, cx + half, cy + half, paint);
+                return;
+            }
+
+            // Новая форма: ШЕВРОН (Галочка ^ для ваншотов в голову)
+            if ("chevron".equalsIgnoreCase(type)) {
+                float arm = Math.max(3.5f * d, lenPx * 0.55f);
+                if (outline) {
+                    outlinePaint.setStyle(Paint.Style.STROKE);
+                    canvas.drawLine(cx, cy - gapPx * 0.4f, cx - arm, cy + arm, outlinePaint);
+                    canvas.drawLine(cx, cy - gapPx * 0.4f, cx + arm, cy + arm, outlinePaint);
+                }
+                paint.setStyle(Paint.Style.STROKE);
+                canvas.drawLine(cx, cy - gapPx * 0.4f, cx - arm, cy + arm, paint);
+                canvas.drawLine(cx, cy - gapPx * 0.4f, cx + arm, cy + arm, paint);
+                return;
+            }
+
+            // Новая форма: СНАЙПЕРСКИЕ УГОЛКИ (Corners)
+            if ("corners".equalsIgnoreCase(type)) {
+                float dist = Math.max(4f * d, (gapPx + lenPx) * 0.48f);
+                float leg = Math.max(2.5f * d, lenPx * 0.32f);
+                Paint[] layers = outline ? new Paint[]{outlinePaint, paint} : new Paint[]{paint};
+                for (Paint p : layers) {
+                    p.setStyle(Paint.Style.STROKE);
+                    // Верхний левый
+                    canvas.drawLine(cx - dist, cy - dist, cx - dist + leg, cy - dist, p);
+                    canvas.drawLine(cx - dist, cy - dist, cx - dist, cy - dist + leg, p);
+                    // Верхний правый
+                    canvas.drawLine(cx + dist, cy - dist, cx + dist - leg, cy - dist, p);
+                    canvas.drawLine(cx + dist, cy - dist, cx + dist, cy - dist + leg, p);
+                    // Нижний левый
+                    canvas.drawLine(cx - dist, cy + dist, cx - dist + leg, cy + dist, p);
+                    canvas.drawLine(cx - dist, cy + dist, cx - dist, cy + dist - leg, p);
+                    // Нижний правый
+                    canvas.drawLine(cx + dist, cy + dist, cx + dist - leg, cy + dist, p);
+                    canvas.drawLine(cx + dist, cy + dist, cx + dist, cy + dist - leg, p);
+                }
+                paint.setStyle(Paint.Style.FILL);
+                canvas.drawCircle(cx, cy, dotRadPx * 0.85f, paint);
                 return;
             }
 
