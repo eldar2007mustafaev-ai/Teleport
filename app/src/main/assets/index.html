@@ -1,2551 +1,2012 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>SO2Teleport V408 PRO</title>
-    <style>
-        :root {
-            --accent: #00e5ff;
-            --accent-glow: rgba(0, 229, 255, 0.35);
-            --accent-soft: rgba(0, 229, 255, 0.14);
-            --bg-deep: #050b11;
-            --card-bg: rgba(11, 22, 30, 0.92);
-            --card-border: rgba(0, 229, 255, 0.24);
-            --text-main: #f1f5f9;
-            --text-sub: #8fa3b8;
-            --green: #10b981;
-            --danger: #f43f5e;
-        }
-
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            user-select: none;
-            -webkit-user-select: none;
-            -webkit-tap-highlight-color: transparent;
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-        }
-
-        body {
-            background-color: var(--bg-deep);
-            background-image:
-                radial-gradient(circle at 15% 10%, var(--accent-soft) 0%, transparent 45%),
-                radial-gradient(circle at 85% 85%, rgba(16, 185, 129, 0.08) 0%, transparent 45%);
-            color: var(--text-main);
-            min-height: 100vh;
-            padding-top: calc(env(safe-area-inset-top, 16px) + 38px);
-            padding-left: 14px;
-            padding-right: 14px;
-            padding-bottom: calc(env(safe-area-inset-bottom, 12px) + 96px);
-            overflow-x: hidden;
-        }
-
-        #bgVideo {
-            position: fixed;
-            inset: 0;
-            width: 100vw;
-            height: 100vh;
-            object-fit: cover;
-            opacity: 0.16;
-            z-index: -2;
-            pointer-events: none;
-        }
-
-        #toastBanner {
-            position: fixed;
-            top: calc(env(safe-area-inset-top, 16px) + 42px);
-            left: 50%;
-            transform: translateX(-50%);
-            background: #0d1b26;
-            border: 1.5px solid var(--accent);
-            color: #fff;
-            padding: 10px 18px;
-            border-radius: 999px;
-            font-size: 12px;
-            font-weight: 800;
-            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.85);
-            z-index: 100000;
-            display: none;
-            white-space: nowrap;
-        }
-
-        /* ================= ОКНО АВТОРИЗАЦИИ СТРОГО ПО КЛЮЧУ БОТА ================= */
-        #authOverlay {
-            position: fixed;
-            inset: 0;
-            background: radial-gradient(circle at 50% 15%, rgba(0, 229, 255, 0.16), #04090e 70%);
-            backdrop-filter: blur(16px);
-            z-index: 99990;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 20px;
-        }
-
-        .auth-card {
-            width: 100%;
-            max-width: 380px;
-            background: rgba(10, 20, 29, 0.96);
-            border: 1.5px solid var(--card-border);
-            border-radius: 26px;
-            padding: 26px 20px;
-            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.85), 0 0 30px rgba(0, 229, 255, 0.12);
-            text-align: center;
-        }
-
-        .auth-logo-circle {
-            width: 60px;
-            height: 60px;
-            border-radius: 18px;
-            background: var(--accent-soft);
-            border: 1.5px solid var(--accent);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 28px;
-            margin: 0 auto 12px auto;
-            box-shadow: 0 0 20px var(--accent-glow);
-        }
-
-        .auth-field-label {
-            text-align: left;
-            font-size: 11px;
-            font-weight: 800;
-            color: var(--text-sub);
-            text-transform: uppercase;
-            letter-spacing: 0.6px;
-            margin: 12px 0 6px 4px;
-        }
-
-        .auth-input {
-            width: 100%;
-            background: #061018;
-            border: 1px solid var(--card-border);
-            border-radius: 14px;
-            padding: 13px 14px;
-            color: #fff;
-            font-size: 14px;
-            font-weight: 700;
-            outline: none;
-            user-select: text !important;
-            -webkit-user-select: text !important;
-            transition: border-color 0.2s;
-        }
-
-        .auth-input:focus {
-            border-color: var(--accent);
-            box-shadow: 0 0 12px var(--accent-soft);
-        }
-
-        .auth-error {
-            color: #fda4af;
-            background: rgba(244, 63, 94, 0.14);
-            border: 1px solid rgba(244, 63, 94, 0.4);
-            border-radius: 12px;
-            padding: 10px 12px;
-            font-size: 11.5px;
-            font-weight: 700;
-            margin-top: 12px;
-            display: none;
-            line-height: 1.35;
-        }
-
-        .auth-hwid-pill {
-            margin-top: 14px;
-            padding: 8px 12px;
-            background: rgba(255, 255, 255, 0.04);
-            border: 1px dashed rgba(255, 255, 255, 0.15);
-            border-radius: 12px;
-            font-size: 11px;
-            color: var(--text-sub);
-            cursor: pointer;
-        }
-
-        /* ================= ОСНОВНОЙ ИНТЕРФЕЙС ================= */
-        .top-bar {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 10px;
-            gap: 8px;
-        }
-
-        .brand-h1 {
-            font-size: 25px;
-            font-weight: 900;
-            letter-spacing: 0.3px;
-            color: #ffffff;
-            line-height: 1.1;
-        }
-
-        .brand-sub {
-            font-size: 9.5px;
-            font-weight: 800;
-            letter-spacing: 0.8px;
-            color: var(--accent);
-            text-transform: uppercase;
-            margin-top: 4px;
-        }
-
-        .shizuku-box {
-            background: rgba(13, 28, 38, 0.94);
-            border: 1px solid var(--card-border);
-            border-radius: 16px;
-            padding: 8px 12px;
-            text-align: right;
-            cursor: pointer;
-            flex-shrink: 0;
-        }
-
-        .shizuku-row {
-            display: flex;
-            align-items: center;
-            justify-content: flex-end;
-            gap: 6px;
-            font-size: 11px;
-            font-weight: 800;
-            color: #fff;
-        }
-
-        .status-dot {
-            width: 8px;
-            height: 8px;
-            border-radius: 50%;
-            background: var(--accent);
-            box-shadow: 0 0 8px var(--accent);
-        }
-
-        .shizuku-sub {
-            font-size: 10px;
-            color: var(--text-sub);
-            margin-top: 2px;
-        }
-
-        .player-pill {
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            background: rgba(12, 26, 36, 0.9);
-            border: 1px solid var(--card-border);
-            padding: 5px 12px;
-            border-radius: 999px;
-            font-size: 11px;
-            font-weight: 700;
-            margin-bottom: 12px;
-        }
-
-        .theme-bar {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            background: var(--card-bg);
-            border: 1px solid var(--card-border);
-            border-radius: 18px;
-            padding: 10px 14px;
-            margin-bottom: 14px;
-        }
-
-        .theme-label {
-            font-size: 11px;
-            font-weight: 800;
-            color: var(--text-sub);
-            letter-spacing: 0.6px;
-        }
-
-        .theme-circles {
-            display: flex;
-            gap: 8px;
-        }
-
-        .t-circle {
-            width: 24px;
-            height: 24px;
-            border-radius: 50%;
-            cursor: pointer;
-            border: 2px solid transparent;
-            transition: transform 0.15s;
-        }
-
-        .t-circle.active {
-            border-color: #fff;
-            transform: scale(1.12);
-            box-shadow: 0 0 10px currentColor;
-        }
-
-        .bento-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 12px;
-        }
-
-        .bento-card {
-            background: var(--card-bg);
-            border: 1px solid var(--card-border);
-            border-radius: 22px;
-            padding: 16px 14px;
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-            min-height: 158px;
-            cursor: pointer;
-            position: relative;
-            transition: transform 0.12s, border-color 0.2s;
-            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
-        }
-
-        .bento-card:active {
-            transform: scale(0.98);
-        }
-
-        .bento-top {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 14px;
-        }
-
-        .bento-icon {
-            width: 42px;
-            height: 42px;
-            border-radius: 14px;
-            background: rgba(0, 229, 255, 0.12);
-            border: 1px solid var(--card-border);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 19px;
-        }
-
-        .bento-arrow {
-            color: var(--text-sub);
-            font-size: 16px;
-            font-weight: 800;
-        }
-
-        .bento-badge {
-            font-size: 10px;
-            font-weight: 800;
-            padding: 5px 9px;
-            border-radius: 999px;
-            background: rgba(0, 229, 255, 0.16);
-            color: var(--accent);
-            border: 1px solid var(--card-border);
-        }
-
-        .bento-title {
-            font-size: 18px;
-            font-weight: 900;
-            color: #fff;
-            margin-bottom: 5px;
-        }
-
-        .bento-desc {
-            font-size: 11.5px;
-            line-height: 1.35;
-            color: var(--text-sub);
-        }
-
-        .screen-view {
-            display: none;
-        }
-
-        .screen-view.active {
-            display: block;
-        }
-
-        .back-bar {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            background: var(--card-bg);
-            border: 1px solid var(--card-border);
-            border-radius: 18px;
-            padding: 13px 16px;
-            margin-bottom: 14px;
-            cursor: pointer;
-            font-size: 15px;
-            font-weight: 800;
-        }
-
-        .panel-card {
-            background: var(--card-bg);
-            border: 1px solid var(--card-border);
-            border-radius: 22px;
-            padding: 16px;
-            margin-bottom: 14px;
-            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.45);
-        }
-
-        .panel-head {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 12px;
-        }
-
-        .panel-title {
-            font-size: 12px;
-            font-weight: 900;
-            letter-spacing: 0.7px;
-            color: var(--accent);
-            text-transform: uppercase;
-        }
-
-        .cyber-btn {
-            width: 100%;
-            border: none;
-            border-radius: 16px;
-            padding: 14px 16px;
-            font-size: 13px;
-            font-weight: 900;
-            letter-spacing: 0.5px;
-            text-transform: uppercase;
-            cursor: pointer;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            gap: 8px;
-            transition: transform 0.1s;
-            background: linear-gradient(90deg, #00d2ff, #10b981);
-            color: #021318;
-            box-shadow: 0 4px 18px var(--accent-glow);
-            margin-top: 8px;
-        }
-
-        .cyber-btn:active {
-            transform: scale(0.98);
-        }
-
-        .cyber-btn.secondary {
-            background: rgba(18, 33, 46, 0.95);
-            color: var(--text-main);
-            border: 1px solid var(--card-border);
-            box-shadow: none;
-        }
-
-        .sw-wrap {
-            position: relative;
-            width: 50px;
-            height: 28px;
-            flex-shrink: 0;
-        }
-
-        .sw-wrap input {
-            opacity: 0;
-            width: 0;
-            height: 0;
-        }
-
-        .sw-track {
-            position: absolute;
-            inset: 0;
-            background: #172a3a;
-            border: 1px solid rgba(255,255,255,0.15);
-            border-radius: 999px;
-            transition: 0.2s;
-            cursor: pointer;
-        }
-
-        .sw-track:before {
-            content: "";
-            position: absolute;
-            width: 20px;
-            height: 20px;
-            left: 3px;
-            bottom: 3px;
-            background: #94a3b8;
-            border-radius: 50%;
-            transition: 0.2s;
-        }
-
-        input:checked + .sw-track {
-            background: var(--accent);
-            border-color: #fff;
-        }
-
-        input:checked + .sw-track:before {
-            transform: translateX(22px);
-            background: #03151a;
-        }
-
-        .slider-grid-2 {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 8px;
-        }
-
-        .slider-card {
-            background: rgba(8, 17, 25, 0.9);
-            border: 1px solid rgba(255, 255, 255, 0.08);
-            border-radius: 16px;
-            padding: 12px 13px;
-            margin-bottom: 9px;
-        }
-
-        .slider-top {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 6px;
-        }
-
-        .slider-name {
-            font-size: 13px;
-            font-weight: 800;
-            color: #fff;
-        }
-
-        .slider-badge {
-            background: rgba(0, 229, 255, 0.14);
-            border: 1px solid var(--card-border);
-            color: var(--accent);
-            padding: 2px 8px;
-            border-radius: 8px;
-            font-size: 11.5px;
-            font-weight: 800;
-            font-family: monospace;
-        }
-
-        input[type="range"] {
-            -webkit-appearance: none;
-            width: 100%;
-            height: 6px;
-            border-radius: 4px;
-            background: #1a2e3f;
-            outline: none;
-            margin: 4px 0 6px 0;
-        }
-
-        input[type="range"]::-webkit-slider-thumb {
-            -webkit-appearance: none;
-            width: 18px;
-            height: 18px;
-            border-radius: 50%;
-            background: var(--accent);
-            border: 2px solid #fff;
-            box-shadow: 0 0 8px var(--accent);
-            cursor: pointer;
-        }
-
-        .slider-hint {
-            font-size: 10.5px;
-            color: var(--text-sub);
-            line-height: 1.3;
-        }
-
-        .cfg-pack-card {
-            background: linear-gradient(145deg, rgba(12, 25, 36, 0.95), rgba(7, 15, 23, 0.95));
-            border: 1px solid rgba(0, 229, 255, 0.2);
-            border-radius: 18px;
-            padding: 14px;
-            margin-bottom: 11px;
-        }
-
-        .cfg-chips-row {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 6px;
-            margin: 8px 0 10px 0;
-        }
-
-        .cfg-chip {
-            background: rgba(0, 229, 255, 0.1);
-            border: 1px solid rgba(0, 229, 255, 0.25);
-            color: #e2e8f0;
-            font-size: 10.5px;
-            font-weight: 700;
-            padding: 4px 8px;
-            border-radius: 8px;
-        }
-
-        .cfg-chip b {
-            color: var(--accent);
-        }
-
-        .mode-row {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            background: rgba(9, 20, 29, 0.9);
-            border: 1px solid rgba(255,255,255,0.1);
-            border-radius: 18px;
-            padding: 13px 14px;
-            margin-bottom: 10px;
-            cursor: pointer;
-        }
-
-        .mode-row.active {
-            border-color: var(--accent);
-            box-shadow: inset 0 0 15px var(--accent-soft);
-        }
-
-        .mode-btn {
-            background: rgba(255,255,255,0.07);
-            border: 1px solid rgba(255,255,255,0.18);
-            color: #fff;
-            padding: 8px 14px;
-            border-radius: 12px;
-            font-size: 11px;
-            font-weight: 800;
-            flex-shrink: 0;
-        }
-
-        .mode-row.active .mode-btn {
-            background: var(--accent);
-            color: #02141a;
-            border-color: var(--accent);
-        }
-
-        .pill-grid-5 {
-            display: grid;
-            grid-template-columns: repeat(5, 1fr);
-            gap: 6px;
-            margin: 10px 0;
-        }
-
-        .pill-grid-4 {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 6px;
-            margin: 10px 0;
-        }
-
-        .pill-grid-3 {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 8px;
-            margin: 10px 0;
-        }
-
-        .opt-btn {
-            background: rgba(14, 28, 40, 0.95);
-            border: 1px solid rgba(255,255,255,0.12);
-            color: #fff;
-            padding: 10px 4px;
-            border-radius: 12px;
-            font-size: 11.5px;
-            font-weight: 800;
-            text-align: center;
-            cursor: pointer;
-        }
-
-        .opt-btn.active {
-            background: var(--accent-soft);
-            border-color: var(--accent);
-            color: var(--accent);
-            box-shadow: 0 0 12px var(--accent-soft);
-        }
-
-        .preview-box {
-            height: 136px;
-            background:
-                linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px),
-                linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px),
-                radial-gradient(circle, rgba(0, 229, 255, 0.1), rgba(5, 11, 17, 0.96));
-            background-size: 20px 20px, 20px 20px, 100% 100%;
-            border: 1px solid var(--card-border);
-            border-radius: 16px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin-bottom: 12px;
-            position: relative;
-        }
-
-        .ratio-frame {
-            border: 2px solid var(--accent);
-            border-radius: 12px;
-            padding: 14px 26px;
-            font-size: 14px;
-            font-weight: 900;
-            color: #fff;
-            background: rgba(0, 229, 255, 0.12);
-            box-shadow: 0 0 18px var(--accent-soft);
-        }
-
-        .step-guide-box {
-            background: rgba(7, 16, 24, 0.9);
-            border: 1px solid rgba(0, 229, 255, 0.2);
-            border-radius: 14px;
-            padding: 12px;
-            margin-bottom: 12px;
-            font-size: 11.5px;
-            color: var(--text-sub);
-            line-height: 1.45;
-        }
-
-        .step-guide-box b {
-            color: #fff;
-        }
-
-        #calibModal {
-            display: none;
-            position: fixed;
-            inset: 0;
-            background: rgba(3, 8, 13, 0.84);
-            backdrop-filter: blur(8px);
-            z-index: 9999;
-            align-items: center;
-            justify-content: center;
-            padding: 18px;
-        }
-
-        .modal-box {
-            background: #0b1721;
-            border: 1.5px solid var(--accent);
-            border-radius: 24px;
-            padding: 22px 18px;
-            text-align: center;
-            max-width: 370px;
-            width: 100%;
-            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.85);
-        }
-
-        .bottom-save-bar {
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            background: rgba(6, 14, 21, 0.96);
-            backdrop-filter: blur(12px);
-            border-top: 1px solid var(--card-border);
-            padding: 10px 14px calc(env(safe-area-inset-bottom, 6px) + 8px) 14px;
-            display: grid;
-            grid-template-columns: 1.35fr 1fr;
-            gap: 8px;
-            z-index: 900;
-        }
-
-        .bottom-save-bar .cyber-btn {
-            margin-top: 0;
-            padding: 12px 10px;
-            font-size: 11.5px;
-        }
-
-        .code-input {
-            width: 100%;
-            background: #061018;
-            border: 1px solid var(--card-border);
-            border-radius: 14px;
-            padding: 12px 14px;
-            color: var(--accent);
-            font-size: 12.5px;
-            font-weight: 700;
-            font-family: monospace;
-            outline: none;
-            margin-bottom: 10px;
-            user-select: text !important;
-            -webkit-user-select: text !important;
-        }
-
-        .saved-slot {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            background: rgba(8, 18, 27, 0.92);
-            border: 1px solid rgba(255,255,255,0.1);
-            border-radius: 14px;
-            padding: 10px 12px;
-            margin-top: 8px;
-        }
-
-        .slot-btn {
-            background: var(--accent-soft);
-            border: 1px solid var(--accent);
-            color: var(--accent);
-            border-radius: 10px;
-            padding: 6px 10px;
-            font-size: 11px;
-            font-weight: 800;
-            cursor: pointer;
-            margin-left: 6px;
-        }
-
-        .info-row {
-            display: flex;
-            justify-content: space-between;
-            padding: 11px 0;
-            border-bottom: 1px solid rgba(255,255,255,0.07);
-            font-size: 13px;
-        }
-    </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>SO2Teleport V408 PRO</title>
+  <style>
+    :root {
+      --bg-deep: #040810;
+      --bg-main: #070d19;
+      --bg-card: #0c1526;
+      --bg-card-2: #111e34;
+      --bg-input: #060b14;
+      --cyan: #00e5ff;
+      --cyan-dim: rgba(0, 229, 255, 0.14);
+      --cyan-glow: rgba(0, 229, 255, 0.35);
+      --pink: #ff2e93;
+      --pink-glow: rgba(255, 46, 147, 0.32);
+      --purple: #a855f7;
+      --green: #10b981;
+      --amber: #f59e0b;
+      --red: #ef4444;
+      --text-white: #f8fafc;
+      --text-sub: #94a3b8;
+      --text-dim: #64748b;
+      --border-cyan: rgba(0, 229, 255, 0.22);
+      --border-soft: rgba(255, 255, 255, 0.07);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      user-select: none;
+      -webkit-user-select: none;
+      -webkit-tap-highlight-color: transparent;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Ubuntu, sans-serif;
+    }
+
+    body {
+      background-color: var(--bg-deep);
+      background-image:
+        radial-gradient(circle at 85% 8%, rgba(0, 229, 255, 0.12) 0%, transparent 40%),
+        radial-gradient(circle at 12% 80%, rgba(255, 46, 147, 0.08) 0%, transparent 45%);
+      color: var(--text-white);
+      min-height: 100vh;
+      padding-bottom: 92px;
+      overflow-x: hidden;
+    }
+
+    /* ================= ЭКРАН АВТОРИЗАЦИИ ================= */
+    #authOverlay {
+      position: fixed;
+      inset: 0;
+      z-index: 10000;
+      background: radial-gradient(circle at top, #0d1d35 0%, #040810 75%);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      padding: 18px;
+    }
+
+    .auth-card {
+      width: 100%;
+      max-width: 410px;
+      background: rgba(12, 21, 38, 0.96);
+      border: 1px solid var(--cyan);
+      border-radius: 22px;
+      padding: 24px 20px;
+      box-shadow: 0 0 42px rgba(0, 229, 255, 0.22);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .auth-card::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 3px;
+      background: linear-gradient(90deg, var(--cyan), var(--pink), var(--purple));
+    }
+
+    .auth-badge-top {
+      display: inline-block;
+      font-size: 10px;
+      font-weight: 900;
+      padding: 4px 10px;
+      border-radius: 999px;
+      background: var(--cyan-dim);
+      color: var(--cyan);
+      border: 1px solid var(--border-cyan);
+      margin-bottom: 10px;
+      letter-spacing: 0.8px;
+    }
+
+    .auth-title {
+      font-size: 25px;
+      font-weight: 900;
+      letter-spacing: 0.8px;
+      color: #fff;
+      text-shadow: 0 0 16px var(--cyan-glow);
+    }
+
+    .auth-title span {
+      color: var(--cyan);
+    }
+
+    .auth-subtitle {
+      font-size: 12px;
+      color: var(--text-sub);
+      margin: 4px 0 18px;
+      line-height: 1.4;
+    }
+
+    .auth-alert {
+      display: none;
+      background: rgba(239, 68, 68, 0.16);
+      border: 1px solid var(--red);
+      color: #fecaca;
+      padding: 10px 12px;
+      border-radius: 12px;
+      font-size: 12px;
+      font-weight: 700;
+      margin-bottom: 14px;
+      text-align: center;
+    }
+
+    .field-group {
+      margin-bottom: 12px;
+    }
+
+    .field-label {
+      display: flex;
+      justify-content: space-between;
+      font-size: 11px;
+      font-weight: 800;
+      color: var(--text-sub);
+      text-transform: uppercase;
+      margin-bottom: 6px;
+      letter-spacing: 0.4px;
+    }
+
+    .cyber-input {
+      width: 100%;
+      background: var(--bg-input);
+      border: 1px solid var(--border-cyan);
+      color: #fff;
+      padding: 13px 14px;
+      border-radius: 13px;
+      font-size: 14px;
+      font-weight: 600;
+      outline: none;
+      transition: all 0.2s;
+    }
+
+    .cyber-input:focus {
+      border-color: var(--cyan);
+      box-shadow: 0 0 14px var(--cyan-dim);
+    }
+
+    /* ================= КНОПКИ ================= */
+    .btn {
+      width: 100%;
+      border: none;
+      border-radius: 13px;
+      padding: 13px 14px;
+      font-size: 12.5px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 7px;
+      transition: transform 0.12s, box-shadow 0.2s, opacity 0.2s;
+    }
+
+    .btn:active {
+      transform: scale(0.96);
+    }
+
+    .btn-cyan {
+      background: linear-gradient(90deg, #00b4d8 0%, #00e5ff 100%);
+      color: #021019;
+      box-shadow: 0 4px 20px var(--cyan-glow);
+    }
+
+    .btn-pink {
+      background: linear-gradient(90deg, #db2777 0%, #ff2e93 100%);
+      color: #fff;
+      box-shadow: 0 4px 18px var(--pink-glow);
+    }
+
+    .btn-green {
+      background: linear-gradient(90deg, #059669 0%, #10b981 100%);
+      color: #021c14;
+      box-shadow: 0 4px 18px rgba(16, 185, 129, 0.3);
+    }
+
+    .btn-outline {
+      background: rgba(0, 229, 255, 0.07);
+      border: 1px solid var(--border-cyan);
+      color: var(--cyan);
+    }
+
+    .btn-red {
+      background: rgba(239, 68, 68, 0.14);
+      border: 1px solid rgba(239, 68, 68, 0.45);
+      color: #fca5a5;
+    }
+
+    .btn-grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+
+    .btn-grid-3 {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 7px;
+    }
+
+    /* ================= ШАПКА ================= */
+    .topbar {
+      position: sticky;
+      top: 0;
+      z-index: 90;
+      background: rgba(4, 8, 16, 0.9);
+      backdrop-filter: blur(14px);
+      border-bottom: 1px solid var(--border-cyan);
+      padding: 11px 15px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .brand-wrap {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+    }
+
+    .brand-orb {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: var(--cyan);
+      box-shadow: 0 0 10px var(--cyan);
+      animation: pulseOrb 1.8s infinite;
+    }
+
+    @keyframes pulseOrb {
+      0%, 100% { transform: scale(1); opacity: 1; }
+      50% { transform: scale(1.35); opacity: 0.65; }
+    }
+
+    .brand-name {
+      font-size: 16px;
+      font-weight: 900;
+      letter-spacing: 0.7px;
+    }
+
+    .brand-name span {
+      color: var(--cyan);
+    }
+
+    .brand-ver {
+      font-size: 10px;
+      color: var(--text-sub);
+      font-weight: 700;
+    }
+
+    .top-badges {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .pill-badge {
+      font-size: 10px;
+      font-weight: 800;
+      padding: 4px 9px;
+      border-radius: 999px;
+      border: 1px solid var(--border-soft);
+      background: rgba(255, 255, 255, 0.05);
+      cursor: pointer;
+    }
+
+    .pill-badge.ok {
+      color: #34d399;
+      border-color: rgba(16, 185, 129, 0.45);
+      background: rgba(16, 185, 129, 0.12);
+    }
+
+    .pill-badge.warn {
+      color: #fbbf24;
+      border-color: rgba(245, 158, 11, 0.45);
+      background: rgba(245, 158, 11, 0.12);
+    }
+
+    /* ================= КОНТЕЙНЕР И КАРТОЧКИ ================= */
+    .main-wrap {
+      max-width: 560px;
+      margin: 0 auto;
+      padding: 13px;
+    }
+
+    .tab-section {
+      display: none;
+      animation: fadeSlide 0.18s ease-out;
+    }
+
+    .tab-section.active {
+      display: block;
+    }
+
+    @keyframes fadeSlide {
+      from { opacity: 0; transform: translateY(5px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-cyan);
+      border-radius: 17px;
+      padding: 15px;
+      margin-bottom: 13px;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+    }
+
+    .card-glow {
+      background: linear-gradient(140deg, #0f213c 0%, #091323 100%);
+      border-color: var(--cyan);
+      box-shadow: 0 0 28px rgba(0, 229, 255, 0.16);
+    }
+
+    .card-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 11px;
+    }
+
+    .card-title {
+      font-size: 13.5px;
+      font-weight: 900;
+      color: var(--cyan);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .card-desc {
+      font-size: 11px;
+      color: var(--text-sub);
+      margin-top: 3px;
+      line-height: 1.35;
+    }
+
+    .tag-mini {
+      font-size: 9.5px;
+      font-weight: 900;
+      padding: 3px 7px;
+      border-radius: 6px;
+      background: rgba(255, 46, 147, 0.16);
+      color: #ff80bf;
+      border: 1px solid rgba(255, 46, 147, 0.35);
+      white-space: nowrap;
+    }
+
+    /* ================= КАРТОЧКИ ПРЕСЕТОВ ================= */
+    .preset-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+
+    .preset-card {
+      background: var(--bg-card-2);
+      border: 1px solid var(--border-soft);
+      border-radius: 13px;
+      padding: 10px 11px;
+      cursor: pointer;
+      transition: all 0.15s;
+      position: relative;
+    }
+
+    .preset-card.active {
+      border-color: var(--cyan);
+      background: rgba(0, 229, 255, 0.13);
+      box-shadow: 0 0 14px rgba(0, 229, 255, 0.22);
+    }
+
+    .preset-card-title {
+      font-size: 12px;
+      font-weight: 800;
+      color: #fff;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .preset-card-sub {
+      font-size: 10px;
+      color: var(--text-sub);
+      margin-top: 3px;
+      line-height: 1.3;
+    }
+
+    /* ================= ПОЛЗУНКИ (SLIDERS) ================= */
+    .slider-block {
+      margin-bottom: 11px;
+      background: rgba(6, 11, 20, 0.55);
+      padding: 9px 11px;
+      border-radius: 11px;
+      border: 1px solid rgba(255, 255, 255, 0.04);
+    }
+
+    .slider-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 11.5px;
+      font-weight: 700;
+      margin-bottom: 6px;
+    }
+
+    .slider-val {
+      color: var(--cyan);
+      font-weight: 900;
+      font-family: monospace;
+      font-size: 12.5px;
+    }
+
+    input[type="range"] {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 100%;
+      height: 6px;
+      background: #1e293b;
+      border-radius: 999px;
+      outline: none;
+    }
+
+    input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      background: var(--cyan);
+      box-shadow: 0 0 10px var(--cyan);
+      border: 2px solid #fff;
+      cursor: pointer;
+    }
+
+    /* ================= ПЕРЕКЛЮЧАТЕЛИ (SWITCHES) ================= */
+    .switch-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px 0;
+      border-bottom: 1px solid var(--border-soft);
+    }
+
+    .switch-item:last-child {
+      border-bottom: none;
+      padding-bottom: 2px;
+    }
+
+    .switch-text {
+      padding-right: 12px;
+    }
+
+    .switch-name {
+      font-size: 12.5px;
+      font-weight: 800;
+      color: #fff;
+    }
+
+    .switch-hint {
+      font-size: 10.5px;
+      color: var(--text-sub);
+      margin-top: 2px;
+      line-height: 1.3;
+    }
+
+    .cyber-switch {
+      position: relative;
+      width: 46px;
+      height: 25px;
+      flex-shrink: 0;
+    }
+
+    .cyber-switch input {
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+
+    .cyber-slider {
+      position: absolute;
+      inset: 0;
+      background: #1e293b;
+      border: 1px solid rgba(255, 255, 255, 0.16);
+      border-radius: 999px;
+      cursor: pointer;
+      transition: 0.2s;
+    }
+
+    .cyber-slider::before {
+      content: "";
+      position: absolute;
+      width: 17px;
+      height: 17px;
+      left: 3px;
+      bottom: 3px;
+      border-radius: 50%;
+      background: #94a3b8;
+      transition: 0.2s;
+    }
+
+    .cyber-switch input:checked + .cyber-slider {
+      background: rgba(0, 229, 255, 0.24);
+      border-color: var(--cyan);
+    }
+
+    .cyber-switch input:checked + .cyber-slider::before {
+      transform: translateX(21px);
+      background: var(--cyan);
+      box-shadow: 0 0 9px var(--cyan);
+    }
+
+    /* ================= КАНВАС РАДАРА И ТЕСТ-ПОЛИГОНА ФЛИКА ================= */
+    .canvas-box {
+      width: 100%;
+      background: radial-gradient(circle at center, #102039 0%, #060b14 100%);
+      border: 1px solid var(--border-cyan);
+      border-radius: 13px;
+      overflow: hidden;
+      position: relative;
+      margin-bottom: 10px;
+    }
+
+    .sandbox-hud {
+      position: absolute;
+      top: 8px;
+      left: 10px;
+      right: 10px;
+      display: flex;
+      justify-content: space-between;
+      font-size: 10.5px;
+      font-weight: 800;
+      color: var(--cyan);
+      pointer-events: none;
+    }
+
+    /* ================= ПИЛЮЛИ ФОРМАТОВ И ПРИЦЕЛОВ ================= */
+    .pills-row {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 6px;
+      margin: 10px 0 12px;
+    }
+
+    .pill-item {
+      background: var(--bg-input);
+      border: 1px solid var(--border-soft);
+      color: var(--text-white);
+      padding: 10px 4px;
+      border-radius: 10px;
+      font-size: 11.5px;
+      font-weight: 800;
+      text-align: center;
+      cursor: pointer;
+      transition: 0.15s;
+    }
+
+    .pill-item.active {
+      background: var(--cyan-dim);
+      border-color: var(--cyan);
+      color: var(--cyan);
+      box-shadow: 0 0 10px rgba(0, 229, 255, 0.22);
+    }
+
+    /* ================= ШАГИ ИНСТРУКЦИИ РАСТЯГА ================= */
+    .step-badge-row {
+      display: flex;
+      gap: 10px;
+      align-items: flex-start;
+      background: rgba(6, 11, 20, 0.65);
+      border-left: 3px solid var(--cyan);
+      padding: 9px 11px;
+      border-radius: 9px;
+      margin-bottom: 8px;
+      font-size: 11.5px;
+      line-height: 1.4;
+      color: var(--text-sub);
+    }
+
+    .step-num {
+      background: var(--cyan);
+      color: #021019;
+      font-weight: 900;
+      font-size: 11px;
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      margin-top: 1px;
+    }
+
+    /* ================= ТЕРМИНАЛ ЛОГОВ SHIZUKU ================= */
+    .terminal-box {
+      background: #03060c;
+      border: 1px solid rgba(0, 229, 255, 0.25);
+      border-radius: 11px;
+      padding: 10px;
+      font-family: "Courier New", monospace;
+      font-size: 10.5px;
+      color: #34d399;
+      height: 125px;
+      overflow-y: auto;
+      line-height: 1.45;
+    }
+
+    /* ================= НИЖНЯЯ ПАНЕЛЬ НАВИГАЦИИ ================= */
+    .bottom-bar {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      z-index: 95;
+      background: rgba(5, 10, 19, 0.96);
+      backdrop-filter: blur(14px);
+      border-top: 1px solid var(--border-cyan);
+      display: grid;
+      grid-template-columns: repeat(6, 1fr);
+      padding: 6px 4px 10px;
+    }
+
+    .nav-btn {
+      background: none;
+      border: none;
+      color: var(--text-dim);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 3px;
+      font-size: 9.5px;
+      font-weight: 800;
+      padding: 5px 2px;
+      border-radius: 9px;
+      cursor: pointer;
+      transition: 0.15s;
+    }
+
+    .nav-btn.active {
+      color: var(--cyan);
+      background: rgba(0, 229, 255, 0.09);
+    }
+
+    .nav-ico {
+      font-size: 15px;
+    }
+
+    /* ================= ТОСТ-УВЕДОМЛЕНИЯ ================= */
+    #cyberToast {
+      position: fixed;
+      top: 64px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 20000;
+      background: rgba(12, 21, 38, 0.98);
+      border: 1px solid var(--cyan);
+      color: #fff;
+      padding: 9px 16px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 800;
+      box-shadow: 0 6px 24px rgba(0, 0, 0, 0.65);
+      display: none;
+      white-space: nowrap;
+    }
+  </style>
 </head>
 <body>
 
-    <video id="bgVideo" autoplay loop muted playsinline>
-        <source src="bg_capsules.mp4" type="video/mp4">
-    </video>
+  <!-- ВСПЛЫВАЮЩИЙ ТОСТ -->
+  <div id="cyberToast">⚡ Готово</div>
 
-    <div id="toastBanner">💾 Все настройки сохранены!</div>
+  <!-- ================= ОВЕРЛЕЙ АВТОРИЗАЦИИ И БЛОКИРОВКИ ================= -->
+  <div id="authOverlay">
+    <div class="auth-card">
+      <div class="auth-badge-top">BUILD V408 • ZERO-SMOOTHING ENGINE</div>
+      <div class="auth-title">SO2<span>TELEPORT</span></div>
+      <div class="auth-subtitle">
+        Экстремальное ускорение тач-матрицы (550 ev/sec), отключение сглаживания прицела и 2-шаговый растяг экрана без потери качества.
+      </div>
 
-    <!-- ================= ПОЛНОЭКРАННОЕ ОКНО АВТОРИЗАЦИИ (СТРОГО ЧЕРЕЗ СЕРВЕР ТГ-БОТА) ================= -->
-    <div id="authOverlay">
-        <div class="auth-card">
-            <div class="auth-logo-circle">⚡</div>
-            <div style="font-size:23px;font-weight:900;color:#fff;">SO2Teleport PRO</div>
-            <div style="font-size:10.5px;font-weight:800;color:var(--accent);letter-spacing:0.8px;margin-top:3px;">
-                QUANTUM ENGINE V408 • ЗАЩИТА ТГ-БОТА
-            </div>
-            <div style="font-size:12px;color:var(--text-sub);margin-top:8px;line-height:1.4;">
-                Введите ваш игровой никнейм и лицензионный ключ, выданный в официальном Telegram-боте
-            </div>
+      <div id="authAlert" class="auth-alert"></div>
 
-            <div class="auth-field-label">👤 Ваш логин (Игровой ник):</div>
-            <input type="text" id="authNickInput" class="auth-input" placeholder="Например: dare" maxlength="24">
-
-            <div class="auth-field-label">🔑 Лицензионный ключ из бота:</div>
-            <input type="text" id="authKeyInput" class="auth-input" placeholder="Введите ваш ключ..." style="text-transform:uppercase;font-family:monospace;">
-
-            <div id="authErrorBox" class="auth-error">❌ Неверный лицензионный ключ</div>
-
-            <button type="button" class="cyber-btn" id="btnSubmitAuth" style="margin-top:16px;" onclick="submitLicenseAuth()">
-                ⚡ ПРОВЕРИТЬ КЛЮЧ И ВОЙТИ
-            </button>
-
-            <button type="button" class="cyber-btn secondary" style="margin-top:10px;" onclick="openTgBotFromAuth()">
-                💎 ПОЛУЧИТЬ / ПРОДЛИТЬ КЛЮЧ В БОТЕ
-            </button>
-
-            <div class="auth-hwid-pill" onclick="copyHwidToClipboard()">
-                HWID устройства: <b id="authHwidText" style="color:var(--accent);">загрузка...</b> (нажми для копирования)
-            </div>
+      <div class="field-group">
+        <div class="field-label">
+          <span>Игровой никнейм</span>
+          <span style="color:var(--cyan)">PRO PROFILE</span>
         </div>
+        <input type="text" id="authNickInput" class="cyber-input" placeholder="Например: RAZE_PLAYER" />
+      </div>
+
+      <div class="field-group">
+        <div class="field-label">
+          <span>Лицензионный ключ</span>
+          <span style="color:var(--pink)">TG-BOT KEY</span>
+        </div>
+        <input type="text" id="authKeyInput" class="cyber-input" placeholder="TP-XXXX-XXXXXX" style="text-transform:uppercase; font-family:monospace;" />
+      </div>
+
+      <button class="btn btn-cyan" onclick="handleLogin()" style="margin-top:6px;">
+        ⚡ Активировать и войти
+      </button>
+
+      <div class="btn-grid-2" style="margin-top:9px;">
+        <button class="btn btn-outline" onclick="openBot()">🤖 Купить ключ</button>
+        <button class="btn btn-outline" onclick="copyHwidToClipboard()">📋 Копия HWID</button>
+      </div>
+
+      <div style="margin-top:14px; text-align:center; font-size:10.5px; color:var(--text-dim);">
+        HWID УСТРОЙСТВА: <span id="authHwidText" style="color:var(--cyan); font-family:monospace;">определение...</span>
+      </div>
     </div>
+  </div>
 
-    <!-- ВЕРХНЯЯ ШАПКА -->
-    <div class="top-bar">
-        <div>
-            <div class="brand-h1">SO2Teleport</div>
-            <div class="brand-sub">QUANTUM ENGINE V408 • BUFFED 360HZ</div>
-        </div>
-        <div class="shizuku-box" onclick="healAndCheckShizuku()">
-            <div class="shizuku-row">
-                <span class="status-dot" id="shizukuDot"></span>
-                <span id="shizukuHeaderTxt">Shizuku: АКТИВЕН</span>
-            </div>
-            <div class="shizuku-sub" id="shizukuSubTxt">360Hz Тач • OK</div>
-        </div>
+  <!-- ================= ВЕРХНИЙ БАР ================= -->
+  <header class="topbar">
+    <div class="brand-wrap">
+      <div class="brand-orb"></div>
+      <div>
+        <div class="brand-name">SO2<span>TELEPORT</span></div>
+        <div class="brand-ver" id="headerDeviceSub">EXTREME V408 PRO</div>
+      </div>
     </div>
-
-    <div class="player-pill">
-        <span class="status-dot"></span>
-        <span>Игрок: <b id="playerNickText">Игрок</b></span>
+    <div class="top-badges">
+      <span id="shizukuPill" class="pill-badge warn" onclick="refreshShizukuBadge()">SHIZUKU: ?</span>
+      <span id="licensePill" class="pill-badge ok" onclick="switchTab('tab-profile', document.querySelectorAll('.nav-btn')[5])">PRO</span>
     </div>
+  </header>
 
-    <!-- ================= ГЛАВНЫЙ ЭКРАН (6 КАРТОЧЕК) ================= -->
-    <div id="screenHome" class="screen-view active">
-        <div class="theme-bar">
-            <div class="theme-label">🎨 ТЕМА МЕНЮ:</div>
-            <div class="theme-circles">
-                <div class="t-circle active" data-tclr="#00e5ff" style="background:#00e5ff;" onclick="setThemeColor('#00e5ff', this)"></div>
-                <div class="t-circle" data-tclr="#a855f7" style="background:#a855f7;" onclick="setThemeColor('#a855f7', this)"></div>
-                <div class="t-circle" data-tclr="#ec4899" style="background:#ec4899;" onclick="setThemeColor('#ec4899', this)"></div>
-                <div class="t-circle" data-tclr="#10b981" style="background:#10b981;" onclick="setThemeColor('#10b981', this)"></div>
-                <div class="t-circle" data-tclr="#f59e0b" style="background:#f59e0b;" onclick="setThemeColor('#f59e0b', this)"></div>
-                <div class="t-circle" data-tclr="#3b82f6" style="background:#3b82f6;" onclick="setThemeColor('#3b82f6', this)"></div>
+  <!-- ================= ОСНОВНОЙ КОНТЕНТ ================= -->
+  <main class="main-wrap">
+
+    <!-- ================= ВКЛАДКА 1: ТЕЛЕПОРТ И СЕНСА ================= -->
+    <section id="tab-teleport" class="tab-section active">
+
+      <!-- ГЛАВНЫЙ РУБИЛЬНИК EXTREME TELEPORT -->
+      <div class="card card-glow">
+        <div class="switch-item" style="padding:0; border:none;">
+          <div class="switch-text">
+            <div class="card-title" style="font-size:14.5px;">⚡ EXTREME TELEPORT ENGINE</div>
+            <div class="switch-hint">
+              Полное отключение сглаживания Android (`touch.slop=0`), принудительный опрос 500–600 пакетов/сек и мгновенный разворот камеры
             </div>
+          </div>
+          <label class="cyber-switch">
+            <input type="checkbox" id="masterTeleportSwitch" onchange="onToggleMasterTeleport(this.checked)" />
+            <span class="cyber-slider"></span>
+          </label>
         </div>
 
-        <div class="bento-grid">
-            <div class="bento-card" onclick="openScreen('screenSensa', true)">
-                <div class="bento-top">
-                    <div class="bento-icon">⚡</div>
-                    <div style="display:flex;align-items:center;gap:6px;" onclick="event.stopPropagation()">
-                        <span id="homeSensaStateTxt" style="font-size:10px;font-weight:900;color:var(--text-sub);">ВЫКЛ</span>
-                        <label class="sw-wrap">
-                            <input type="checkbox" id="chkHomeTeleport" onchange="toggleTeleportMaster(this.checked)">
-                            <span class="sw-track"></span>
-                        </label>
-                    </div>
-                </div>
-                <div>
-                    <div class="bento-title">Сенса</div>
-                    <div class="bento-desc" id="homeSensaSub">Баффнутый отклик 1мм + настройка всех 18 осей</div>
-                </div>
-            </div>
-
-            <div class="bento-card" onclick="openScreen('screenConfigs')">
-                <div class="bento-top">
-                    <div class="bento-icon">🔥</div>
-                    <div class="bento-badge">6 ТОП СБОРОК</div>
-                </div>
-                <div>
-                    <div class="bento-title">Готовые конфиги</div>
-                    <div class="bento-desc">Карточки кибер-сборок в 1 клик + обмен ссылками</div>
-                </div>
-            </div>
-
-            <div class="bento-card" onclick="openScreen('screenStretch')">
-                <div class="bento-top">
-                    <div class="bento-icon">📐</div>
-                    <div class="bento-arrow">›</div>
-                </div>
-                <div>
-                    <div class="bento-title">Растяг «TP»</div>
-                    <div class="bento-desc">Плавающая кнопка «TP» (полосы → полный растяг) + корзина</div>
-                </div>
-            </div>
-
-            <div class="bento-card" onclick="openScreen('screenCrosshair')">
-                <div class="bento-top">
-                    <div class="bento-icon">🎯</div>
-                    <div class="bento-arrow">›</div>
-                </div>
-                <div>
-                    <div class="bento-title">Кастомный прицел</div>
-                    <div class="bento-desc">PRO-конструктор: 7 форм, длина, толщина, зазор, точка</div>
-                </div>
-            </div>
-
-            <div class="bento-card" onclick="openScreen('screenSettings')">
-                <div class="bento-top">
-                    <div class="bento-icon">🚀</div>
-                    <div class="bento-arrow">›</div>
-                </div>
-                <div>
-                    <div class="bento-title">Настройки</div>
-                    <div class="bento-desc">Разгон тача 360 Гц, RAM Boost в 1 клик и анти-отдача</div>
-                </div>
-            </div>
-
-            <div class="bento-card" onclick="openScreen('screenProfile')">
-                <div class="bento-top">
-                    <div class="bento-icon">🛡️</div>
-                    <div class="bento-arrow">›</div>
-                </div>
-                <div>
-                    <div class="bento-title">Профиль</div>
-                    <div class="bento-desc">Ваш логин, ключ, герцовка и данные телефона</div>
-                </div>
-            </div>
+        <div class="btn-grid-3" style="margin-top:12px;">
+          <button class="btn btn-outline" style="padding:9px 6px; font-size:10.5px;" onclick="injectOverdriveMode(1)">⚡ LITE 420Hz</button>
+          <button class="btn btn-outline" style="padding:9px 6px; font-size:10.5px;" onclick="injectOverdriveMode(2)">🔥 PRO 520Hz</button>
+          <button class="btn btn-pink" style="padding:9px 6px; font-size:10.5px;" onclick="injectOverdriveMode(3)">💀 MAX 600Hz</button>
         </div>
-    </div>
+      </div>
 
-    <!-- ================= ЭКРАН 1: СЕНСА И КВАНТОВЫЙ ТЕЛЕПОРТ ================= -->
-    <div id="screenSensa" class="screen-view">
-        <div class="back-bar" onclick="openScreen('screenHome')">
-            <span>←</span>
-            <span>Сенса и Квантовый Телепорт</span>
+      <!-- БОЕВЫЕ ПРЕСЕТЫ СЕНСЫ -->
+      <div class="card">
+        <div class="card-head">
+          <div>
+            <div class="card-title">🔥 Быстрые Матрицы Сенсы</div>
+            <div class="card-desc">Выбери готовый профиль или настрой 10 осей вручную ниже</div>
+          </div>
+          <span class="tag-mini">ZERO DELAY</span>
         </div>
 
-        <div class="panel-card">
-            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
-                <div>
-                    <div id="innerSensaHeader" style="font-size:15px;font-weight:900;color:#fff;">ТЕЛЕПОРТ: ВЫКЛЮЧЕН</div>
-                    <div style="font-size:11px;color:var(--text-sub);margin-top:2px;">Усиленный импульс 1мм + 360 Гц захват осей</div>
-                </div>
-                <label class="sw-wrap">
-                    <input type="checkbox" id="chkInnerTeleport" onchange="toggleTeleportMaster(this.checked)">
-                    <span class="sw-track"></span>
-                </label>
-            </div>
-            <button type="button" class="cyber-btn" id="btnInnerTeleportAction" onclick="toggleTeleportMaster(!appState.teleportOn)">
-                ⚡ ВКЛЮЧИТЬ ТЕЛЕПОРТ (BUFFED 360HZ)
-            </button>
+        <div class="preset-grid">
+          <div class="preset-card active" id="pcard-extreme" onclick="selectSensPreset('extreme', 10.0, 9.8, 9.2, 85, 52, 9.6, 92, 64, 0, 9.9)">
+            <div class="preset-card-title"><span>⚡ Жёсткий Телепорт</span><span>MAX</span></div>
+            <div class="preset-card-sub">Мгновенный разворот на 180° и 0% инерции сглаживания</div>
+          </div>
+
+          <div class="preset-card" id="pcard-onetap" onclick="selectSensPreset('onetap', 9.5, 8.9, 7.5, 74, 46, 9.9, 96, 52, 0, 8.6)">
+            <div class="preset-card-title"><span>🎯 One-Tap Голова</span><span>AIM</span></div>
+            <div class="preset-card-sub">Фиксация горизонтали на уровне головы без срыва вверх</div>
+          </div>
+
+          <div class="preset-card" id="pcard-claw" onclick="selectSensPreset('claw', 9.2, 9.4, 8.8, 78, 49, 9.1, 88, 58, 0, 9.3)">
+            <div class="preset-card-title"><span>🖐️ Claw 4–5 Пальцев</span><span>PRO</span></div>
+            <div class="preset-card-sub">Анти-блокировка мультитача при одновременном стрейфе и прицеле</div>
+          </div>
+
+          <div class="preset-card" id="pcard-sniper" onclick="selectSensPreset('sniper', 10.0, 10.0, 9.6, 92, 58, 9.4, 84, 64, 0, 10.0)">
+            <div class="preset-card-title"><span>🦅 AWM / M40 Флик</span><span>FAST</span></div>
+            <div class="preset-card-sub">Максимальный рывок в фаст-зуме без проскальзывания</div>
+          </div>
         </div>
 
-        <div class="panel-card">
-            <div class="panel-head">
-                <span class="panel-title">1. БЫСТРЫЕ РЕЖИМЫ СЕНСЫ</span>
-                <span style="font-size:10px;color:var(--accent);font-weight:800;">BUFFED V408</span>
-            </div>
-
-            <div class="mode-row active" data-qmode="beast" onclick="selectQuickMode('beast', 6.0, 6.0, 6.0, 64, 38)">
-                <div style="padding-right:10px;">
-                    <div style="font-size:13px;font-weight:900;color:#fff;">ЗВЕРСКИЙ ТЕЛЕПОРТ + 1ММ ИМПУЛЬС</div>
-                    <div style="font-size:11px;color:var(--text-sub);margin-top:2px;">Максимальный срыв с места 6.00 + мгновенный флик в голову</div>
-                </div>
-                <div class="mode-btn">АКТИВЕН</div>
-            </div>
-
-            <div class="mode-row" data-qmode="spray" onclick="selectQuickMode('spray', 5.9, 6.0, 5.7, 56, 32)">
-                <div style="padding-right:10px;">
-                    <div style="font-size:13px;font-weight:900;color:#fff;">ТЕЛЕПОРТ + ЗАЖИМ В ТОЧКУ (AKR / M4)</div>
-                    <div style="font-size:11px;color:var(--text-sub);margin-top:2px;">Мощный горизонтальный довод + удержание отдачи вниз</div>
-                </div>
-                <div class="mode-btn">ВЫБРАТЬ</div>
-            </div>
-
-            <div class="mode-row" data-qmode="awm" onclick="selectQuickMode('awm', 6.0, 6.0, 5.2, 70, 42)">
-                <div style="padding-right:10px;">
-                    <div style="font-size:13px;font-weight:900;color:#fff;">ДЛЯ АВИКОВ (Стоп-Импульс)</div>
-                    <div style="font-size:11px;color:var(--text-sub);margin-top:2px;">Сверхбыстрый флик с жёсткой фиксацией камеры в момент выстрела</div>
-                </div>
-                <div class="mode-btn">ВЫБРАТЬ</div>
-            </div>
-
-            <div class="mode-row" data-qmode="smooth" onclick="selectQuickMode('smooth', 5.5, 5.5, 5.3, 48, 26)">
-                <div style="padding-right:10px;">
-                    <div style="font-size:13px;font-weight:900;color:#fff;">ПЛАВНЫЙ КОНТРОЛЬ (Холодный FPS)</div>
-                    <div style="font-size:11px;color:var(--text-sub);margin-top:2px;">Стабильное ведение цели без нагрева процессора</div>
-                </div>
-                <div class="mode-btn">ВЫБРАТЬ</div>
-            </div>
+        <!-- ВИЗУАЛЬНЫЙ РАДАР КРИВОЙ ОТКЛИКА -->
+        <div class="canvas-box" style="height:105px;">
+          <div class="sandbox-hud">
+            <span>КРИВАЯ ОТКЛИКА МАТРИЦЫ</span>
+            <span id="curveRateLabel">ОТКЛИК: 0.3 МС (RAW)</span>
+          </div>
+          <canvas id="responseCurveCanvas" width="480" height="105" style="width:100%; height:105px;"></canvas>
         </div>
 
-        <div class="panel-card">
-            <div style="display:flex;justify-content:space-between;align-items:center;">
-                <div style="padding-right:10px;">
-                    <div style="font-size:13.5px;font-weight:900;color:#fff;">⚡ Мгновенный отклик 1 мм (Zero-Delay Snap)</div>
-                    <div style="font-size:11px;color:var(--text-sub);margin-top:3px;">Убирает системный фильтр Android — сдвиг пальца на 1 мм срабатывает за 1 мс</div>
-                </div>
-                <label class="sw-wrap">
-                    <input type="checkbox" id="chkZeroDelay" checked onchange="onSliderCommit()">
-                    <span class="sw-track"></span>
-                </label>
-            </div>
+        <!-- 10 ПОЛЗУНКОВ TELEPORT ENGINE -->
+        <div class="slider-block">
+          <div class="slider-head"><span>1. Резкость телепорта (Sharpness)</span><span id="v-sharp" class="slider-val">10.0</span></div>
+          <input type="range" id="s-sharp" min="1" max="10" step="0.1" value="10.0" oninput="onSensChanged()" />
         </div>
 
-        <div class="panel-card">
-            <div class="panel-head">
-                <span class="panel-title">ОСТРОТА И СЕНСА ОСЕЙ</span>
-                <span style="font-size:10px;color:var(--text-sub);">MAX BUFF</span>
-            </div>
-
-            <div class="slider-card">
-                <div class="slider-top"><span class="slider-name">🔥 Общая Резкость (Импульс)</span><span class="slider-badge" id="v_sharp">6.00</span></div>
-                <input type="range" id="s_sharp" min="1.0" max="6.0" step="0.05" value="6.00" oninput="onSliderLive()" onchange="onSliderCommit()">
-                <div class="slider-hint">Отвечает за взрывной старт прицела с места</div>
-            </div>
-
-            <div class="slider-grid-2">
-                <div class="slider-card" style="margin-bottom:0;">
-                    <div class="slider-top"><span class="slider-name">Влево-вправо (X)</span><span class="slider-badge" id="v_sx">6.00</span></div>
-                    <input type="range" id="s_sx" min="1.0" max="6.0" step="0.05" value="6.00" oninput="onSliderLive()" onchange="onSliderCommit()">
-                    <div class="slider-hint">Горизонтальный флик</div>
-                </div>
-
-                <div class="slider-card" style="margin-bottom:0;">
-                    <div class="slider-top"><span class="slider-name">Вверх-вниз (Y)</span><span class="slider-badge" id="v_sy">6.00</span></div>
-                    <input type="range" id="s_sy" min="1.0" max="6.0" step="0.05" value="6.00" oninput="onSliderLive()" onchange="onSliderCommit()">
-                    <div class="slider-hint">Контроль зажима</div>
-                </div>
-            </div>
+        <div class="slider-block">
+          <div class="slider-head"><span>2. Горизонтальный разворот (X-Axis Speed)</span><span id="v-sx" class="slider-val">9.8</span></div>
+          <input type="range" id="s-sx" min="1" max="10" step="0.1" value="9.8" oninput="onSensChanged()" />
         </div>
 
-        <div class="panel-card">
-            <div class="panel-head">
-                <span class="panel-title">ТОЧНОСТЬ И ПРИЛИПАНИЕ К ХИТБОКСУ</span>
-                <span style="font-size:10px;color:var(--text-sub);">AIM LOCK</span>
-            </div>
-
-            <div class="slider-grid-2">
-                <div class="slider-card">
-                    <div class="slider-top"><span class="slider-name">Отсечка шума</span><span class="slider-badge" id="v_noise">2</span></div>
-                    <input type="range" id="s_noise" min="0" max="10" step="1" value="2" oninput="onSliderLive()" onchange="onSliderCommit()">
-                    <div class="slider-hint">Гасит дрожь пальца</div>
-                </div>
-
-                <div class="slider-card">
-                    <div class="slider-top"><span class="slider-name">Мёртвая зона</span><span class="slider-badge" id="v_deadzone">0</span></div>
-                    <input type="range" id="s_deadzone" min="0" max="10" step="1" value="0" oninput="onSliderLive()" onchange="onSliderCommit()">
-                    <div class="slider-hint">0 = отклик с 1 пикселя</div>
-                </div>
-
-                <div class="slider-card">
-                    <div class="slider-top"><span class="slider-name">Упреждение</span><span class="slider-badge" id="v_predict">3</span></div>
-                    <input type="range" id="s_predict" min="0" max="10" step="1" value="3" oninput="onSliderLive()" onchange="onSliderCommit()">
-                    <div class="slider-hint">Ведение бегущей цели</div>
-                </div>
-
-                <div class="slider-card">
-                    <div class="slider-top"><span class="slider-name">Липкость к осям</span><span class="slider-badge" id="v_stick">6</span></div>
-                    <input type="range" id="s_stick" min="0" max="15" step="1" value="6" oninput="onSliderLive()" onchange="onSliderCommit()">
-                    <div class="slider-hint">Фиксация на уровне головы</div>
-                </div>
-
-                <div class="slider-card" style="margin-bottom:0;">
-                    <div class="slider-top"><span class="slider-name">Тайминг липкости</span><span class="slider-badge" id="v_stickDelay">20</span></div>
-                    <input type="range" id="s_stickDelay" min="5" max="60" step="1" value="20" oninput="onSliderLive()" onchange="onSliderCommit()">
-                </div>
-
-                <div class="slider-card" style="margin-bottom:0;">
-                    <div class="slider-top"><span class="slider-name">Сила прилипания</span><span class="slider-badge" id="v_stickForce">3</span></div>
-                    <input type="range" id="s_stickForce" min="1" max="10" step="1" value="3" oninput="onSliderLive()" onchange="onSliderCommit()">
-                </div>
-            </div>
+        <div class="slider-block">
+          <div class="slider-head"><span>3. Вертикальный контроль (Y-Axis Speed)</span><span id="v-sy" class="slider-val">9.2</span></div>
+          <input type="range" id="s-sy" min="1" max="10" step="0.1" value="9.2" oninput="onSensChanged()" />
         </div>
 
-        <div class="panel-card">
-            <div class="panel-head">
-                <span class="panel-title">КВАНТОВЫЕ КУСКИ И ДОВОДКА (PRO)</span>
-                <span style="font-size:10px;color:var(--text-sub);">18 ПАРАМЕТРОВ</span>
-            </div>
-
-            <div class="slider-grid-2">
-                <div class="slider-card">
-                    <div class="slider-top"><span class="slider-name">Куски (Chunks)</span><span class="slider-badge" id="v_chunks">56</span></div>
-                    <input type="range" id="s_chunks" min="10" max="80" step="2" value="56" oninput="onSliderLive()" onchange="onSliderCommit()">
-                </div>
-
-                <div class="slider-card">
-                    <div class="slider-top"><span class="slider-name">Мелочь мимо</span><span class="slider-badge" id="v_chunkFast">30</span></div>
-                    <input type="range" id="s_chunkFast" min="5" max="50" step="1" value="30" oninput="onSliderLive()" onchange="onSliderCommit()">
-                </div>
-
-                <div class="slider-card">
-                    <div class="slider-top"><span class="slider-name">Стоп-пауза</span><span class="slider-badge" id="v_pause">1</span></div>
-                    <input type="range" id="s_pause" min="0" max="10" step="1" value="1" oninput="onSliderLive()" onchange="onSliderCommit()">
-                </div>
-
-                <div class="slider-card">
-                    <div class="slider-top"><span class="slider-name">Импульс разгона</span><span class="slider-badge" id="v_accel">2.00</span></div>
-                    <input type="range" id="s_accel" min="0.5" max="3.0" step="0.05" value="2.00" oninput="onSliderLive()" onchange="onSliderCommit()">
-                </div>
-
-                <div class="slider-card">
-                    <div class="slider-top"><span class="slider-name">Крутизна</span><span class="slider-badge" id="v_accelSlope">2.00</span></div>
-                    <input type="range" id="s_accelSlope" min="0.5" max="3.0" step="0.05" value="2.00" oninput="onSliderLive()" onchange="onSliderCommit()">
-                </div>
-
-                <div class="slider-card">
-                    <div class="slider-top"><span class="slider-name">Дальность краёв</span><span class="slider-badge" id="v_edgeDist">0</span></div>
-                    <input type="range" id="s_edgeDist" min="0" max="15" step="1" value="0" oninput="onSliderLive()" onchange="onSliderCommit()">
-                </div>
-
-                <div class="slider-card">
-                    <div class="slider-top"><span class="slider-name">Выпрямление</span><span class="slider-badge" id="v_straight">0.88</span></div>
-                    <input type="range" id="s_straight" min="0.50" max="1.00" step="0.01" value="0.88" oninput="onSliderLive()" onchange="onSliderCommit()">
-                </div>
-
-                <div class="slider-card">
-                    <div class="slider-top"><span class="slider-name">Хват по осям</span><span class="slider-badge" id="v_grid">6</span></div>
-                    <input type="range" id="s_grid" min="1" max="12" step="1" value="6" oninput="onSliderLive()" onchange="onSliderCommit()">
-                </div>
-            </div>
-
-            <div class="slider-card" style="margin-bottom:6px;">
-                <div class="slider-top"><span class="slider-name">Потолок хвата</span><span class="slider-badge" id="v_gripCap">6</span></div>
-                <input type="range" id="s_gripCap" min="1" max="12" step="1" value="6" oninput="onSliderLive()" onchange="onSliderCommit()">
-            </div>
-
-            <button type="button" class="cyber-btn secondary" onclick="executeSmartPhoneScan()">⚡ Автокалибровка матрицы под телефон</button>
-        </div>
-    </div>
-
-    <!-- ================= ЭКРАН 2: ГОТОВЫЕ КИБЕР-КОНФИГИ ================= -->
-    <div id="screenConfigs" class="screen-view">
-        <div class="back-bar" onclick="openScreen('screenHome')">
-            <span>←</span>
-            <span>Готовые кибер-конфиги и Ссылки</span>
+        <div class="slider-block">
+          <div class="slider-head"><span>4. Импульс рывка (Flick Acceleration)</span><span id="v-accel" class="slider-val">9.9</span></div>
+          <input type="range" id="s-accel" min="0" max="10" step="0.1" value="9.9" oninput="onSensChanged()" />
         </div>
 
-        <div class="panel-card">
-            <div class="panel-head">
-                <span class="panel-title">ОБМЕН ССЫЛКОЙ НА КОНФИГ</span>
-                <span style="font-size:10px;color:var(--accent);font-weight:800;">SHARE LINK</span>
-            </div>
-            <div style="font-size:11.5px;color:var(--text-sub);margin-bottom:10px;">
-                Скопируй короткую ссылку на свой конфиг (включая сенсу, растяг и кастомный прицел) или вставь ссылку друга:
-            </div>
-
-            <input type="text" id="shareCodeInput" class="code-input" placeholder="https://so2tp.cfg/?c=... или SO2-HEAD36">
-
-            <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px;">
-                <button type="button" class="cyber-btn" style="margin:0;" onclick="importSharedConfigCode()">
-                    📥 ПРИМЕНИТЬ
-                </button>
-                <button type="button" class="cyber-btn secondary" style="margin:0;" onclick="copyAndShareOwnConfig()">
-                    🔗 СКОПИРОВАТЬ СВОЮ
-                </button>
-            </div>
-
-            <button type="button" class="cyber-btn secondary" onclick="saveCurrentToMyPresets()">
-                ⭐ СОХРАНИТЬ ТЕКУЩИЙ КОНФИГ В МОЙ СПИСОК
-            </button>
-
-            <div id="mySavedPresetsList" style="margin-top:10px;"></div>
+        <div class="slider-block">
+          <div class="slider-head"><span>5. Дробление пакетов тача (Chunks)</span><span id="v-chunks" class="slider-val">85</span></div>
+          <input type="range" id="s-chunks" min="10" max="100" step="1" value="85" oninput="onSensChanged()" />
         </div>
 
-        <div class="panel-card">
-            <div class="panel-head">
-                <span class="panel-title">БОЕВЫЕ СБОРКИ (КАРТОЧКИ СЕНСЫ)</span>
-                <span style="font-size:10px;color:var(--accent);font-weight:800;">6 PRESETS</span>
-            </div>
-
-            <div class="cfg-pack-card">
-                <div class="slider-top">
-                    <span class="slider-name">🔥 1. КИБЕР-ХЕДШОТ 360HZ (M4A1 / AKR)</span>
-                    <span class="slider-badge">ТОП #1</span>
-                </div>
-                <div class="cfg-chips-row">
-                    <span class="cfg-chip">Резкость: <b>6.00</b></span>
-                    <span class="cfg-chip">Ось X/Y: <b>6.0 / 5.7</b></span>
-                    <span class="cfg-chip">Куски: <b>62</b></span>
-                    <span class="cfg-chip">Линия головы: <b>94%</b></span>
-                </div>
-                <button type="button" class="cyber-btn" onclick="applyCyberPack(6.00, 6.0, 5.7, 62, 0.94, 'КИБЕР-ХЕДШОТ 360HZ')">⚡ ЗАГРУЗИТЬ И ВКЛЮЧИТЬ</button>
-            </div>
-
-            <div class="cfg-pack-card">
-                <div class="slider-top">
-                    <span class="slider-name">💀 2. DEAGLE / USP ВАНТАП МОНСТР</span>
-                    <span class="slider-badge">1MM SNAP</span>
-                </div>
-                <div class="cfg-chips-row">
-                    <span class="cfg-chip">Резкость: <b>6.00</b></span>
-                    <span class="cfg-chip">Ось X/Y: <b>6.0 / 5.5</b></span>
-                    <span class="cfg-chip">Куски: <b>68</b></span>
-                    <span class="cfg-chip">Хват осей: <b>10</b></span>
-                </div>
-                <button type="button" class="cyber-btn" onclick="applyCyberPack(6.00, 6.0, 5.5, 68, 0.92, 'DEAGLE / USP ВАНТАП')">⚡ ЗАГРУЗИТЬ И ВКЛЮЧИТЬ</button>
-            </div>
-
-            <div class="cfg-pack-card">
-                <div class="slider-top">
-                    <span class="slider-name">🎯 3. ЗАЖИМ В ТОЧКУ (AKR12 / M16 / F/S)</span>
-                    <span class="slider-badge">NO RECOIL</span>
-                </div>
-                <div class="cfg-chips-row">
-                    <span class="cfg-chip">Резкость: <b>5.85</b></span>
-                    <span class="cfg-chip">Ось X/Y: <b>5.8 / 5.8</b></span>
-                    <span class="cfg-chip">Анти-отдача: <b>100%</b></span>
-                    <span class="cfg-chip">Выпрямление: <b>0.96</b></span>
-                </div>
-                <button type="button" class="cyber-btn" onclick="applyCyberPack(5.85, 5.8, 5.8, 54, 0.96, 'ЗАЖИМ В ТОЧКУ')">⚡ ЗАГРУЗИТЬ И ВКЛЮЧИТЬ</button>
-            </div>
-
-            <div class="cfg-pack-card">
-                <div class="slider-top">
-                    <span class="slider-name">⚡ 4. AWM / M40 ФАСТЗУМ СНАЙПЕР</span>
-                    <span class="slider-badge">SNIPER</span>
-                </div>
-                <div class="cfg-chips-row">
-                    <span class="cfg-chip">Резкость: <b>6.00</b></span>
-                    <span class="cfg-chip">Ось X/Y: <b>6.0 / 5.2</b></span>
-                    <span class="cfg-chip">Куски: <b>72</b></span>
-                    <span class="cfg-chip">Стоп-пауза: <b>4 мс</b></span>
-                </div>
-                <button type="button" class="cyber-btn" onclick="applyCyberPack(6.00, 6.0, 5.2, 72, 0.90, 'AWM ФАСТЗУМ СНАЙПЕР')">⚡ ЗАГРУЗИТЬ И ВКЛЮЧИТЬ</button>
-            </div>
-
-            <div class="cfg-pack-card">
-                <div class="slider-top">
-                    <span class="slider-name">👑 5. ТУРНИРНЫЙ В 3–4 ПАЛЬЦА (CLAW PRO)</span>
-                    <span class="slider-badge">ESPORTS</span>
-                </div>
-                <div class="cfg-chips-row">
-                    <span class="cfg-chip">Резкость: <b>5.95</b></span>
-                    <span class="cfg-chip">Ось X/Y: <b>5.95 / 5.6</b></span>
-                    <span class="cfg-chip">Отсечка: <b>2</b></span>
-                    <span class="cfg-chip">360Hz Тач: <b>ВКЛ</b></span>
-                </div>
-                <button type="button" class="cyber-btn" onclick="applyCyberPack(5.95, 5.95, 5.6, 58, 0.93, 'CLAW PRO ТУРНИРНЫЙ')">⚡ ЗАГРУЗИТЬ И ВКЛЮЧИТЬ</button>
-            </div>
-
-            <div class="cfg-pack-card" style="margin-bottom:0;">
-                <div class="slider-top">
-                    <span class="slider-name">❄️ 6. АНТИ-ЛАГ 120 FPS (БЕЗ НАГРЕВА)</span>
-                    <span class="slider-badge">COLD CPU</span>
-                </div>
-                <div class="cfg-chips-row">
-                    <span class="cfg-chip">Резкость: <b>5.65</b></span>
-                    <span class="cfg-chip">Ось X/Y: <b>5.6 / 5.4</b></span>
-                    <span class="cfg-chip">Куски: <b>46</b></span>
-                    <span class="cfg-chip">Нагрев: <b>0%</b></span>
-                </div>
-                <button type="button" class="cyber-btn" onclick="applyCyberPack(5.65, 5.6, 5.4, 46, 0.89, 'АНТИ-ЛАГ 120 FPS')">⚡ ЗАГРУЗИТЬ И ВКЛЮЧИТЬ</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- ================= ЭКРАН 3: РАСТЯГ ЭКРАНА «TP» ================= -->
-    <div id="screenStretch" class="screen-view">
-        <div class="back-bar" onclick="openScreen('screenHome')">
-            <span>←</span>
-            <span>Растяг экрана «TP»</span>
+        <div class="slider-block">
+          <div class="slider-head"><span>6. Скорость квантования (Chunk Fast)</span><span id="v-chunkFast" class="slider-val">52</span></div>
+          <input type="range" id="s-chunkFast" min="1" max="60" step="1" value="52" oninput="onSensChanged()" />
         </div>
 
-        <div class="panel-card">
-            <div class="panel-head">
-                <span class="panel-title">ВЫБОР ФОРМАТА ДЛЯ КНОПКИ «TP»</span>
-                <span id="stretchHeaderRatio" style="font-size:12px;font-weight:900;color:var(--accent);">4:3</span>
-            </div>
-
-            <div class="preview-box">
-                <div class="ratio-frame" id="stretchCenterPreview">TP • ФОРМАТ 4:3</div>
-            </div>
-
-            <div class="step-guide-box">
-                <b>Как работает кнопка «TP»:</b><br>
-                1. Активируй кнопку <b>«TP»</b> ниже и запусти Standoff 2.<br>
-                2. Во время запуска (на заставке Axlebolt) нажми на <b>«TP»</b> 1-й раз — появятся <b>чёрные полосы по бокам</b>.<br>
-                3. Когда игра загрузилась в меню — нажми на <b>«TP»</b> 2-й раз, и экран мгновенно <b>растянется во весь дисплей</b>!<br>
-                4. Зажми кнопку <b>«TP»</b> и перетащи вниз в корзину, чтобы убрать её.
-            </div>
-
-            <div class="pill-grid-5">
-                <div class="opt-btn" data-sratio="5:4" onclick="selectStretchRatio('5:4')">5:4</div>
-                <div class="opt-btn active" data-sratio="4:3" onclick="selectStretchRatio('4:3')">4:3</div>
-                <div class="opt-btn" data-sratio="3:2" onclick="selectStretchRatio('3:2')">3:2</div>
-                <div class="opt-btn" data-sratio="16:10" onclick="selectStretchRatio('16:10')">16:10</div>
-                <div class="opt-btn" data-sratio="16:9" onclick="selectStretchRatio('16:9')">16:9</div>
-            </div>
-
-            <button type="button" class="cyber-btn" id="btnActivateStretchT" onclick="spawnStretchButtonNow()">
-                ⚡ АКТИВИРОВАТЬ КНОПКУ «TP» (4:3)
-            </button>
-
-            <button type="button" class="cyber-btn secondary" style="color:#fda4af;border-color:rgba(244,63,94,0.35);margin-top:10px;" onclick="resetStretchAndRemoveT()">
-                УБРАТЬ КНОПКУ «TP» И СБРОСИТЬ ЭКРАН
-            </button>
-        </div>
-    </div>
-
-    <!-- ================= ЭКРАН 4: PRO-КОНСТРУКТОР КАСТОМНОГО ПРИЦЕЛА ================= -->
-    <div id="screenCrosshair" class="screen-view">
-        <div class="back-bar" onclick="openScreen('screenHome')">
-            <span>←</span>
-            <span>Конструктор прицела PRO</span>
+        <div class="slider-block">
+          <div class="slider-head"><span>7. Выпрямление наводки (Straight Line)</span><span id="v-straight" class="slider-val">9.6</span></div>
+          <input type="range" id="s-straight" min="0" max="10" step="0.1" value="9.6" oninput="onSensChanged()" />
         </div>
 
-        <div class="panel-card">
-            <div class="panel-head">
-                <span class="panel-title">ЖИВОЕ ПРЕВЬЮ И ФОРМА (ZERO-LAG)</span>
-                <span id="crossHeaderState" style="font-size:11px;font-weight:900;color:var(--accent);">ВЫКЛ</span>
-            </div>
-
-            <div class="preview-box">
-                <canvas id="crossPreviewCanvas" width="130" height="130"></canvas>
-            </div>
-
-            <div class="pill-grid-4">
-                <div class="opt-btn active" data-ctype="off" onclick="setCrosshairShape('off')">ВЫКЛ</div>
-                <div class="opt-btn" data-ctype="dot" onclick="setCrosshairShape('dot')">ТОЧКА</div>
-                <div class="opt-btn" data-ctype="cross" onclick="setCrosshairShape('cross')">КРЕСТ</div>
-                <div class="opt-btn" data-ctype="crossdot" onclick="setCrosshairShape('crossdot')">КРЕСТ + •</div>
-                <div class="opt-btn" data-ctype="tshape" onclick="setCrosshairShape('tshape')">T-ФОРМА</div>
-                <div class="opt-btn" data-ctype="circle" onclick="setCrosshairShape('circle')">КРУГ</div>
-                <div class="opt-btn" data-ctype="circledot" onclick="setCrosshairShape('circledot')">КРУГ + •</div>
-                <div class="opt-btn" data-ctype="box" onclick="setCrosshairShape('box')">КВАДРАТ</div>
-            </div>
-
-            <div class="panel-title" style="margin:12px 0 6px 0;">ЦВЕТ ПРИЦЕЛА</div>
-            <div class="pill-grid-5">
-                <div class="opt-btn active" data-cclr="#00E5FF" onclick="setCrosshairColor('#00E5FF')" style="color:#00E5FF;">ГОЛУБОЙ</div>
-                <div class="opt-btn" data-cclr="#10B981" onclick="setCrosshairColor('#10B981')" style="color:#10B981;">ЗЕЛЁНЫЙ</div>
-                <div class="opt-btn" data-cclr="#F43F5E" onclick="setCrosshairColor('#F43F5E')" style="color:#F43F5E;">КРАСНЫЙ</div>
-                <div class="opt-btn" data-cclr="#FACC15" onclick="setCrosshairColor('#FACC15')" style="color:#FACC15;">ЖЁЛТЫЙ</div>
-                <div class="opt-btn" data-cclr="#D946EF" onclick="setCrosshairColor('#D946EF')" style="color:#D946EF;">ФИОЛЕТ</div>
-            </div>
-
-            <div style="display:flex;justify-content:space-between;align-items:center;background:rgba(8,17,25,0.9);border-radius:14px;padding:10px 13px;margin-bottom:10px;border:1px solid rgba(255,255,255,0.08);">
-                <span style="font-size:13px;font-weight:800;">🎨 Свой оттенок цвета (HEX):</span>
-                <input type="color" id="inpCustomCrossColor" value="#00E5FF" onchange="setCrosshairColor(this.value)" style="width:44px;height:28px;border:none;background:transparent;cursor:pointer;">
-            </div>
-
-            <div class="slider-grid-2">
-                <div class="slider-card">
-                    <div class="slider-top"><span class="slider-name">Длина линий</span><span class="slider-badge" id="v_cLen">12</span></div>
-                    <input type="range" id="s_cLen" min="2" max="28" step="1" value="12" oninput="updateCrosshairStyleNow()">
-                </div>
-
-                <div class="slider-card">
-                    <div class="slider-top"><span class="slider-name">Толщина</span><span class="slider-badge" id="v_cThick">3</span></div>
-                    <input type="range" id="s_cThick" min="1" max="10" step="1" value="3" oninput="updateCrosshairStyleNow()">
-                </div>
-
-                <div class="slider-card">
-                    <div class="slider-top"><span class="slider-name">Зазор (Gap)</span><span class="slider-badge" id="v_cGap">4</span></div>
-                    <input type="range" id="s_cGap" min="0" max="18" step="1" value="4" oninput="updateCrosshairStyleNow()">
-                </div>
-
-                <div class="slider-card">
-                    <div class="slider-top"><span class="slider-name">Радиус точки</span><span class="slider-badge" id="v_cDot">3</span></div>
-                    <input type="range" id="s_cDot" min="1" max="12" step="1" value="3" oninput="updateCrosshairStyleNow()">
-                </div>
-            </div>
-
-            <div class="slider-card">
-                <div class="slider-top"><span class="slider-name">Прозрачность</span><span class="slider-badge" id="v_cOpacity">100%</span></div>
-                <input type="range" id="s_cOpacity" min="20" max="100" step="5" value="100" oninput="updateCrosshairStyleNow()">
-            </div>
-
-            <div style="display:flex;justify-content:space-between;align-items:center;padding-top:4px;">
-                <div>
-                    <div style="font-size:13.5px;font-weight:800;color:#fff;">Контрастная чёрная обводка (Outline)</div>
-                    <div style="font-size:11px;color:var(--text-sub);">Прицел идеально виден на светлых стенах и небе</div>
-                </div>
-                <label class="sw-wrap">
-                    <input type="checkbox" id="chkCrossOutline" checked onchange="updateCrosshairStyleNow()">
-                    <span class="sw-track"></span>
-                </label>
-            </div>
-        </div>
-    </div>
-
-    <!-- ================= ЭКРАН 5: НАСТРОЙКИ СИСТЕМЫ ================= -->
-    <div id="screenSettings" class="screen-view">
-        <div class="back-bar" onclick="openScreen('screenHome')">
-            <span>←</span>
-            <span>Настройки системы</span>
+        <div class="slider-block">
+          <div class="slider-head"><span>8. Вязкость на хитбоксе (Target Stick)</span><span id="v-stick" class="slider-val">92</span></div>
+          <input type="range" id="s-stick" min="0" max="100" step="1" value="92" oninput="onSensChanged()" />
         </div>
 
-        <div class="panel-card">
-            <div style="font-size:15px;font-weight:900;color:#fff;margin-bottom:6px;">🚀 Быстрый сброс кэша (RAM Boost в 1 клик)</div>
-            <div style="font-size:11.5px;color:var(--text-sub);line-height:1.4;margin-bottom:10px;" id="ramBoostStatusTxt">
-                Мгновенно выгружает фоновые процессы и очищает оперативную память от мусора перед запуском катки в Standoff 2.
-            </div>
-            <button type="button" class="cyber-btn" onclick="triggerRamBoost()">
-                🚀 ОЧИСТИТЬ ОПЕРАТИВКУ И КЭШ ПЕРЕД КАТКОЙ
-            </button>
+        <div class="slider-block">
+          <div class="slider-head"><span>9. Плотность пиксельной сетки (Pixel Grid)</span><span id="v-grid" class="slider-val">64</span></div>
+          <input type="range" id="s-grid" min="8" max="64" step="1" value="64" oninput="onSensChanged()" />
         </div>
 
-        <div class="panel-card">
-            <div class="panel-head">
-                <span class="panel-title">РАЗГОН ТАЧА И КОНТРОЛЬ ЗАЖИМА</span>
-                <span style="font-size:10px;color:var(--text-sub);font-weight:800;">SHIZUKU</span>
-            </div>
-
-            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
-                <div style="padding-right:10px;">
-                    <div style="font-size:13.5px;font-weight:800;color:#fff;">Разгон герцовки тача (Touch Sampling Boost)</div>
-                    <div style="font-size:11px;color:var(--text-sub);margin-top:2px;">Принудительный буст опроса матрицы (240–360 Гц) для нулевой задержки выстрела</div>
-                </div>
-                <label class="sw-wrap">
-                    <input type="checkbox" id="chkTouchBoost" checked onchange="onSystemSettingsChange()">
-                    <span class="sw-track"></span>
-                </label>
-            </div>
-
-            <div class="pill-grid-3">
-                <div class="opt-btn" data-hz="240" onclick="selectTouchHz(240)">240 Гц</div>
-                <div class="opt-btn" data-hz="300" onclick="selectTouchHz(300)">300 Гц</div>
-                <div class="opt-btn active" data-hz="360" onclick="selectTouchHz(360)">360 Гц (MAX)</div>
-            </div>
-
-            <div style="display:flex;justify-content:space-between;align-items:center;margin:14px 0;">
-                <div style="padding-right:10px;">
-                    <div style="font-size:13.5px;font-weight:800;color:#fff;">Холодная фиксация 120 Гц (Анти-Нагрев)</div>
-                    <div style="font-size:11px;color:var(--text-sub);margin-top:2px;">Держит стабильные 120 FPS без перегрева процессора и троттлинга</div>
-                </div>
-                <label class="sw-wrap">
-                    <input type="checkbox" id="chkCold120" checked onchange="onSystemSettingsChange()">
-                    <span class="sw-track"></span>
-                </label>
-            </div>
-
-            <div style="display:flex;justify-content:space-between;align-items:center;margin:14px 0 8px 0;">
-                <div style="padding-right:10px;">
-                    <div style="font-size:13.5px;font-weight:800;color:#fff;">Усиленный фикс отдачи PRO (Anti-Recoil Axis)</div>
-                    <div style="font-size:11px;color:var(--text-sub);margin-top:2px;">Жёстко выпрямляет вертикальную оттяжку вниз и гасит боковой разброс</div>
-                </div>
-                <label class="sw-wrap">
-                    <input type="checkbox" id="chkAntiRecoil" checked onchange="onSystemSettingsChange()">
-                    <span class="sw-track"></span>
-                </label>
-            </div>
-
-            <div class="slider-card">
-                <div class="slider-top"><span class="slider-name">Сила удержания вертикали</span><span class="slider-badge" id="v_recoilPwr">100%</span></div>
-                <input type="range" id="s_recoilPwr" min="20" max="100" step="5" value="100" oninput="document.getElementById('v_recoilPwr').textContent=this.value+'%'" onchange="onSystemSettingsChange()">
-            </div>
-
-            <div style="display:flex;justify-content:space-between;align-items:center;margin:14px 0 8px 0;">
-                <div style="padding-right:10px;">
-                    <div style="font-size:13.5px;font-weight:800;color:#fff;">Форсированный DPI сетки (Только в игре)</div>
-                    <div style="font-size:11px;color:var(--text-sub);margin-top:2px;">Включается при входе в SO2 и возвращает родной DPI при выходе</div>
-                </div>
-                <label class="sw-wrap">
-                    <input type="checkbox" id="chkAutoDpi" onchange="onSystemSettingsChange()">
-                    <span class="sw-track"></span>
-                </label>
-            </div>
-
-            <div class="pill-grid-3">
-                <div class="opt-btn" data-dpi="360" onclick="selectGameDpi(360)">360 (Плавный)</div>
-                <div class="opt-btn" data-dpi="400" onclick="selectGameDpi(400)">400 (Баланс)</div>
-                <div class="opt-btn active" data-dpi="440" onclick="selectGameDpi(440)">440 (Резкий)</div>
-            </div>
-
-            <div style="display:flex;justify-content:space-between;align-items:center;margin-top:14px;">
-                <div style="padding-right:10px;">
-                    <div style="font-size:13.5px;font-weight:800;color:#fff;">Скрывать кнопку «TP» и прицел на записи (Stealth)</div>
-                    <div style="font-size:11px;color:var(--text-sub);margin-top:2px;">Невидимость оверлеев на видео и скриншотах</div>
-                </div>
-                <label class="sw-wrap">
-                    <input type="checkbox" id="chkStealthMode" onchange="onSystemSettingsChange()">
-                    <span class="sw-track"></span>
-                </label>
-            </div>
+        <div class="slider-block">
+          <div class="slider-head"><span>10. Задержка микро-стопа (Micro Pause мс)</span><span id="v-pause" class="slider-val">0</span></div>
+          <input type="range" id="s-pause" min="0" max="20" step="1" value="0" oninput="onSensChanged()" />
         </div>
 
-        <div class="panel-card">
-            <div class="panel-head">
-                <span class="panel-title">ОПТИМИЗАЦИЯ ПИКСЕЛЕЙ (ДЛЯ СЛАБЫХ ТЕЛЕФОНОВ)</span>
-                <span id="downscaleHeaderVal" style="font-size:12px;font-weight:900;color:var(--accent);">100%</span>
-            </div>
-            <div class="pill-grid-4">
-                <div class="opt-btn active" data-px="100" onclick="selectDownscale(100)">100%</div>
-                <div class="opt-btn" data-px="90" onclick="selectDownscale(90)">90%</div>
-                <div class="opt-btn" data-px="80" onclick="selectDownscale(80)">80%</div>
-                <div class="opt-btn" data-px="70" onclick="selectDownscale(70)">70%</div>
-            </div>
+        <div class="btn-grid-2" style="margin-top:12px;">
+          <button class="btn btn-cyan" onclick="pushSensParameters()">⚡ Прошить сенсу</button>
+          <button class="btn btn-outline" onclick="callHealTouch()">🛠️ Сброс фризов тача</button>
         </div>
-    </div>
+      </div>
 
-    <!-- ================= ЭКРАН 6: ПРОФИЛЬ ПОЛЬЗОВАТЕЛЯ ================= -->
-    <div id="screenProfile" class="screen-view">
-        <div class="back-bar" onclick="openScreen('screenHome')">
-            <span>←</span>
-            <span>Профиль пользователя</span>
+      <!-- ИНТЕРАКТИВНЫЙ ПОЛИГОН ПРОВЕРКИ ФЛИКА -->
+      <div class="card">
+        <div class="card-head">
+          <div>
+            <div class="card-title">🎯 Симулятор Флика (Тест Телепорта)</div>
+            <div class="card-desc">Быстро тапай или свайпай по мишеням — проверь скорость отклика</div>
+          </div>
+          <span class="tag-mini" id="flickScoreBadge">ХИТОВ: 0</span>
         </div>
 
-        <div class="panel-card">
-            <div class="panel-head">
-                <span class="panel-title">ДАННЫЕ АККАУНТА SO2TELEPORT</span>
-                <span style="font-size:11px;font-weight:900;color:var(--accent);">PRO V408</span>
-            </div>
-
-            <div class="info-row">
-                <span style="color:var(--text-sub);">Ваш логин:</span>
-                <b id="profNick">Игрок</b>
-            </div>
-            <div class="info-row">
-                <span style="color:var(--text-sub);">Статус подписки:</span>
-                <b id="profStatus" style="color:var(--green);">ПРОВЕРКА...</b>
-            </div>
-            <div class="info-row">
-                <span style="color:var(--text-sub);">Лицензионный ключ:</span>
-                <b id="profKey" style="color:var(--accent);">-</b>
-            </div>
-            <div class="info-row">
-                <span style="color:var(--text-sub);">Модель устройства:</span>
-                <b id="profModel">SM-S938B</b>
-            </div>
-            <div class="info-row">
-                <span style="color:var(--text-sub);">Экран и частота:</span>
-                <b id="profScreen">1440x3120 (120 Гц)</b>
-            </div>
-            <div class="info-row" style="border-bottom:none;">
-                <span style="color:var(--text-sub);">HWID устройства:</span>
-                <b id="profHwid" style="color:var(--accent);">39e220a438dedb68</b>
-            </div>
-
-            <button type="button" class="cyber-btn secondary" style="color:#fda4af;border-color:rgba(244,63,94,0.4);" onclick="logoutAndOpenAuthWindow()">
-                Выйти / Сменить лицензионный ключ
-            </button>
+        <div class="canvas-box" style="height:165px; margin-bottom:0;">
+          <div class="sandbox-hud">
+            <span id="flickSpeedText">РЕАКЦИЯ: — МС</span>
+            <span style="color:var(--pink)">ТАПАЙ ПО ЦЕЛЯМ</span>
+          </div>
+          <canvas id="flickArenaCanvas" width="480" height="165" style="width:100%; height:165px; touch-action:none;"></canvas>
         </div>
-    </div>
+      </div>
 
-    <!-- МОДАЛЬНОЕ ОКНО: УМНАЯ КАЛИБРОВКА ТЕЛЕФОНА -->
-    <div id="calibModal">
-        <div class="modal-box">
-            <div style="font-size:28px;margin-bottom:8px;">⚡</div>
-            <div style="font-size:18px;font-weight:900;color:#fff;margin-bottom:8px;">Умная калибровка телефона</div>
-            <div style="font-size:12px;color:var(--text-sub);line-height:1.45;margin-bottom:16px;">
-                Советуем просканировать телефон! Система сама определит процессор и герцовку, включит мгновенный отклик на 1 мм и подберёт настройки так, чтобы <b>телефон не грелся и не проседал FPS</b>.
-            </div>
-            <button type="button" class="cyber-btn" onclick="closeCalibModal(true)">
-                🔍 СКАНИРОВАТЬ И ПОДОБРАТЬ АВТОМАТИЧЕСКИ
-            </button>
-            <button type="button" class="cyber-btn secondary" onclick="closeCalibModal(false)">
-                Перейти к ползункам вручную
-            </button>
+    </section>
+
+    <!-- ================= ВКЛАДКА 2: СИСТЕМНЫЕ УЛУЧШАЙЗЕРЫ И БУСТЕРЫ ================= -->
+    <section id="tab-boost" class="tab-section">
+
+      <div class="card">
+        <div class="card-head">
+          <div>
+            <div class="card-title">🚀 Модули Ускорения Ввода и GPU</div>
+            <div class="card-desc">Низкоуровневые флаги Android SurfaceFlinger и InputReader</div>
+          </div>
+          <span class="tag-mini">SHIZUKU ROOTLESS</span>
         </div>
-    </div>
 
-    <!-- НИЖНЯЯ ЗАКРЕПЛЕННАЯ ПАНЕЛЬ СОХРАНЕНИЯ И ОБМЕНА ССЫЛКОЙ -->
-    <div class="bottom-save-bar">
-        <button type="button" class="cyber-btn" onclick="saveFullConfigNow(true)">
-            💾 СОХРАНИТЬ НАСТРОЙКИ
+        <div class="switch-item">
+          <div class="switch-text">
+            <div class="switch-name">⚡ Raw Input (Полное снятие сглаживания)</div>
+            <div class="switch-hint">Отключает инерцию пальца (`view.touch_slop=0`, `max_events=550`) — прицел следует за пальцем за 1 кадр</div>
+          </div>
+          <label class="cyber-switch">
+            <input type="checkbox" id="sw-rawInput" onchange="toggleBooster('raw', this.checked)" />
+            <span class="cyber-slider"></span>
+          </label>
+        </div>
+
+        <div class="switch-item">
+          <div class="switch-text">
+            <div class="switch-name">🔥 Vulkan GPU Turbo (`skiavk` + Unsignaled)</div>
+            <div class="switch-hint">Активирует аппаратный рендер Vulkan и убирает ожидание вертикальной синхронизации буфера</div>
+          </div>
+          <label class="cyber-switch">
+            <input type="checkbox" id="sw-vulkan" onchange="toggleBooster('vulkan', this.checked)" />
+            <span class="cyber-slider"></span>
+          </label>
+        </div>
+
+        <div class="switch-item">
+          <div class="switch-text">
+            <div class="switch-name">📡 Стабилизатор сетевого пинга (Anti-Spike)</div>
+            <div class="switch-hint">Отключает фоновое сканирование Wi-Fi и BLE-маяков, убирая телепорты игроков и скачки пинга</div>
+          </div>
+          <label class="cyber-switch">
+            <input type="checkbox" id="sw-netPing" onchange="toggleBooster('net', this.checked)" />
+            <span class="cyber-slider"></span>
+          </label>
+        </div>
+
+        <div class="switch-item">
+          <div class="switch-text">
+            <div class="switch-name">⚡ Touch Sampling 360 Гц + Фиксация 120 Гц</div>
+            <div class="switch-hint">Принудительно переводит контроллер тачскрина в режим 360 Гц и лочит экран на 120 FPS</div>
+          </div>
+          <label class="cyber-switch">
+            <input type="checkbox" id="sw-sampling" onchange="toggleBooster('sampling', this.checked)" />
+            <span class="cyber-slider"></span>
+          </label>
+        </div>
+
+        <div class="switch-item">
+          <div class="switch-text">
+            <div class="switch-name">🛡️ Анти-Троттлинг Герцовки (Thermal Guard)</div>
+            <div class="switch-hint">Запрещает системе сбрасывать частоту экрана до 60 Гц при нагреве батареи</div>
+          </div>
+          <label class="cyber-switch">
+            <input type="checkbox" id="sw-thermal" onchange="toggleBooster('thermal', this.checked)" />
+            <span class="cyber-slider"></span>
+          </label>
+        </div>
+
+        <div class="switch-item">
+          <div class="switch-text">
+            <div class="switch-name">🎯 Стабилизатор зажима (Recoil Control 95%)</div>
+            <div class="switch-hint">Выравнивает вертикальную потяжку при спрее из AKR, M4A1 и F/S</div>
+          </div>
+          <label class="cyber-switch">
+            <input type="checkbox" id="sw-recoil" onchange="toggleBooster('recoil', this.checked)" />
+            <span class="cyber-slider"></span>
+          </label>
+        </div>
+      </div>
+
+      <!-- КАСТОМНЫЙ DPI И МАСШТАБ РЕНДЕРА -->
+      <div class="card">
+        <div class="card-head">
+          <div>
+            <div class="card-title">📐 Игровой DPI и Разрешение Рендера</div>
+            <div class="card-desc">Меньше DPI = крупнее интерфейс; больше DPI = выше микро-резкость сенсы</div>
+          </div>
+        </div>
+
+        <div class="slider-block">
+          <div class="slider-head"><span>Плотность пикселей (`wm density`)</span><span id="v-dpi" class="slider-val">420 DPI</span></div>
+          <input type="range" id="s-dpi" min="280" max="600" step="10" value="420" oninput="document.getElementById('v-dpi').innerText = this.value + ' DPI'" />
+        </div>
+
+        <div class="btn-grid-2" style="margin-bottom:13px;">
+          <button class="btn btn-cyan" onclick="applyGameDpi(true)">⚡ Применить DPI</button>
+          <button class="btn btn-outline" onclick="applyGameDpi(false)">🔄 Сбросить родной DPI</button>
+        </div>
+
+        <div class="slider-block">
+          <div class="slider-head"><span>Downscale рендера (Повышение FPS на слабых GPU)</span><span id="v-downscale" class="slider-val">100%</span></div>
+          <input type="range" id="s-downscale" min="70" max="100" step="5" value="100" oninput="document.getElementById('v-downscale').innerText = this.value + '%'" onchange="applyRenderDownscale(this.value)" />
+        </div>
+      </div>
+
+      <!-- ОЧИСТКА ОЗУ И СКАНЕР ЖЕЛЕЗА -->
+      <div class="card">
+        <div class="card-head">
+          <div>
+            <div class="card-title">🧹 Очистка RAM и Анализ Устройства</div>
+            <div class="card-desc" id="ramReadout">Выгружает фоновые службы через `am kill-all` и `trim-memory` перед каткой</div>
+          </div>
+        </div>
+
+        <div class="btn-grid-2">
+          <button class="btn btn-pink" onclick="triggerRamBoost()">🚀 Очистить ОЗУ</button>
+          <button class="btn btn-outline" onclick="triggerHardwareScan()">🔍 Анализ железа</button>
+        </div>
+      </div>
+
+    </section>
+
+    <!-- ================= ВКЛАДКА 3: ДВУХШАГОВЫЙ РАСТЯГ ЭКРАНА ================= -->
+    <section id="tab-stretch" class="tab-section">
+
+      <div class="card card-glow">
+        <div class="card-head">
+          <div>
+            <div class="card-title">📱 2-Шаговый Растяг с плавающей кнопкой «TP»</div>
+            <div class="card-desc">Широкие модельки противников как на iPad Pro без потери 120 Гц</div>
+          </div>
+          <span class="tag-mini" id="activeRatioBadge">4:3 IPAD</span>
+        </div>
+
+        <div class="pills-row" id="stretchRatioPills">
+          <div class="pill-item" onclick="pickStretchRatio('5:4', this)">5:4</div>
+          <div class="pill-item active" onclick="pickStretchRatio('4:3', this)">4:3</div>
+          <div class="pill-item" onclick="pickStretchRatio('3:2', this)">3:2</div>
+          <div class="pill-item" onclick="pickStretchRatio('16:10', this)">16:10</div>
+          <div class="pill-item" onclick="pickStretchRatio('16:9', this)">16:9</div>
+        </div>
+
+        <button class="btn btn-cyan" onclick="spawnFloatingTpButton()" style="margin-bottom:9px;">
+          ⚡ Запустить плавающую кнопку «TP»
         </button>
-        <button type="button" class="cyber-btn secondary" onclick="copyAndShareOwnConfig()">
-            🔗 ПОДЕЛИТЬСЯ ССЫЛКОЙ
+
+        <button class="btn btn-red" onclick="restoreNativeScreen()">
+          🔄 Убрать кнопку «TP» и вернуть родной экран
         </button>
-    </div>
+      </div>
 
-    <script>
-        const STORAGE_KEY = "SO2Teleport_FullConfig_V408";
-        const MY_PRESETS_KEY = "SO2Teleport_MySavedPresets_V408";
+      <!-- ШИРОКИЕ ХИТБОКСЫ И АНТИ-ЗАПИСЬ -->
+      <div class="card">
+        <div class="switch-item">
+          <div class="switch-text">
+            <div class="switch-name">🎯 Комбо «Широкие Хитбоксы» (Wide Hitbox Quantization)</div>
+            <div class="switch-hint">Одним нажатием включает выбранный растяг + 360 Гц тач + квантование сетки прицела</div>
+          </div>
+          <label class="cyber-switch">
+            <input type="checkbox" id="sw-wideHitbox" onchange="toggleWideHitboxCombo(this.checked)" />
+            <span class="cyber-slider"></span>
+          </label>
+        </div>
 
-        let calibShownOnce = false;
-        let paramDebounceTimer = null;
-        let isAuthorizedNow = false;
+        <div class="switch-item">
+          <div class="switch-text">
+            <div class="switch-name">🕵️ Невидимость на записи и стриме (Stealth `FLAG_SECURE`)</div>
+            <div class="switch-hint">Скрывает кнопку «TP» и кастомный прицел на скриншотах и при записи экрана</div>
+          </div>
+          <label class="cyber-switch">
+            <input type="checkbox" id="sw-stealth" onchange="toggleStealthOverlay(this.checked)" />
+            <span class="cyber-slider"></span>
+          </label>
+        </div>
+      </div>
 
-        function getBridge() {
-            return window.AndroidBridge || window.Android || null;
+      <!-- ПАМЯТКА КАК ДЕЛАТЬ РАСТЯГ БЕЗ БАГОВ -->
+      <div class="card">
+        <div class="card-title" style="margin-bottom:10px;">📖 Как правильно растянуть Standoff 2 за 5 секунд</div>
+        <div class="step-badge-row">
+          <div class="step-num">1</div>
+          <div>Выбери формат (например, <b>4:3</b> или <b>5:4</b>) и нажми <b>«Запустить плавающую кнопку TP»</b>.</div>
+        </div>
+        <div class="step-badge-row">
+          <div class="step-num">2</div>
+          <div>Нажми на плавающую кнопку <b>«TP»</b> один раз — экран сузится с чёрными полосами (кнопка станет зелёной <b>ON</b>). Сразу открой <b>Standoff 2</b>.</div>
+        </div>
+        <div class="step-badge-row" style="margin-bottom:0;">
+          <div class="step-num">3</div>
+          <div>Когда загрузилось главное меню игры — нажми кнопку <b>«ON»</b> ещё раз. Игра мгновенно развернётся во весь экран! После этого перетяни кнопку вниз в корзину.</div>
+        </div>
+      </div>
+
+    </section>
+
+    <!-- ================= ВКЛАДКА 4: КАСТОМНЫЙ ПРИЦЕЛ ================= -->
+    <section id="tab-crosshair" class="tab-section">
+
+      <div class="card">
+        <div class="card-head">
+          <div>
+            <div class="card-title">🎯 Аппаратный Оверлей-Прицел</div>
+            <div class="card-desc">Идеально по центру экрана для ноускопов с AWM, M40 и стрельбы в движении</div>
+          </div>
+          <span class="tag-mini" id="chTypeBadge">OFF</span>
+        </div>
+
+        <!-- ПРЕВЬЮ НА МИШЕНИ -->
+        <div class="canvas-box" style="height:145px;">
+          <div class="sandbox-hud">
+            <span>ПРЕДПРОСМОТР НА ХИТБОКСЕ ГОЛОВЫ</span>
+            <span id="chColorHexText">#00E5FF</span>
+          </div>
+          <canvas id="crosshairCanvas" width="480" height="145" style="width:100%; height:145px;"></canvas>
+        </div>
+
+        <div class="pills-row" style="grid-template-columns: repeat(4, 1fr);" id="chTypePills">
+          <div class="pill-item active" onclick="pickCrosshairType('off', this)">ВЫКЛ</div>
+          <div class="pill-item" onclick="pickCrosshairType('cross', this)">КРЕСТ</div>
+          <div class="pill-item" onclick="pickCrosshairType('crossdot', this)">КРЕСТ+ТОЧКА</div>
+          <div class="pill-item" onclick="pickCrosshairType('dot', this)">ТОЧКА</div>
+          <div class="pill-item" onclick="pickCrosshairType('circle', this)">КРУГ</div>
+          <div class="pill-item" onclick="pickCrosshairType('circledot', this)">КРУГ+ТОЧКА</div>
+          <div class="pill-item" onclick="pickCrosshairType('tshape', this)">T-ФОРМА</div>
+          <div class="pill-item" onclick="pickCrosshairType('box', this)">БОКС</div>
+        </div>
+
+        <div class="slider-block">
+          <div class="slider-head"><span>Длина лучей (Length)</span><span id="v-chLen" class="slider-val">12</span></div>
+          <input type="range" id="s-chLen" min="2" max="28" value="12" oninput="syncCrosshairOverlay()" />
+        </div>
+
+        <div class="slider-block">
+          <div class="slider-head"><span>Толщина линий (Thickness)</span><span id="v-chThick" class="slider-val">3</span></div>
+          <input type="range" id="s-chThick" min="1" max="10" value="3" oninput="syncCrosshairOverlay()" />
+        </div>
+
+        <div class="slider-block">
+          <div class="slider-head"><span>Центральный зазор (Gap)</span><span id="v-chGap" class="slider-val">4</span></div>
+          <input type="range" id="s-chGap" min="0" max="20" value="4" oninput="syncCrosshairOverlay()" />
+        </div>
+
+        <div class="slider-block">
+          <div class="slider-head"><span>Радиус точки (Dot Size)</span><span id="v-chDot" class="slider-val">3</span></div>
+          <input type="range" id="s-chDot" min="1" max="10" value="3" oninput="syncCrosshairOverlay()" />
+        </div>
+
+        <div class="slider-block">
+          <div class="slider-head"><span>Прозрачность (Opacity)</span><span id="v-chOp" class="slider-val">100%</span></div>
+          <input type="range" id="s-chOp" min="20" max="100" value="100" oninput="syncCrosshairOverlay()" />
+        </div>
+
+        <div class="switch-item">
+          <div class="switch-text">
+            <div class="switch-name">Цвет прицела и контрастная обводка</div>
+            <div class="switch-hint">Чёрный контур делает прицел видимым на фоне неба и флешек</div>
+          </div>
+          <div style="display:flex; align-items:center; gap:10px;">
+            <input type="color" id="chColorInput" value="#00E5FF" onchange="syncCrosshairOverlay()" style="width:38px; height:32px; border:none; background:none; cursor:pointer;" />
+            <label class="cyber-switch">
+              <input type="checkbox" id="chOutlineSwitch" checked onchange="syncCrosshairOverlay()" />
+              <span class="cyber-slider"></span>
+            </label>
+          </div>
+        </div>
+      </div>
+
+    </section>
+
+    <!-- ================= ВКЛАДКА 5: ОБЛАКО КОНФИГОВ (SO2-XXXX) И КЛАНОВЫЕ ПРЕСЕТЫ ================= -->
+    <section id="tab-cloud" class="tab-section">
+
+      <div class="card card-glow">
+        <div class="card-head">
+          <div>
+            <div class="card-title">☁️ Облачный Обмен Конфигами (`SO2-XXXX`)</div>
+            <div class="card-desc">Делись своей настройкой с соклановцами по короткому коду через сервер</div>
+          </div>
+          <span class="tag-mini">CLOUD SYNC</span>
+        </div>
+
+        <div class="field-group">
+          <div class="field-label"><span>Загрузить конфиг по коду</span></div>
+          <div style="display:flex; gap:8px;">
+            <input type="text" id="cloudCodeInput" class="cyber-input" placeholder="Например: SO2-7F9A" style="text-transform:uppercase; font-family:monospace;" />
+            <button class="btn btn-cyan" style="width:auto; padding:0 18px;" onclick="downloadPresetFromCloud()">⬇️ Загрузить</button>
+          </div>
+        </div>
+
+        <div class="field-group" style="margin-bottom:0;">
+          <div class="field-label"><span>Поделиться своим текущим конфигом в облако</span></div>
+          <div style="display:flex; gap:8px;">
+            <input type="text" id="cloudTitleInput" class="cyber-input" placeholder="Название (напр. RAZE TURBO)" />
+            <button class="btn btn-pink" style="width:auto; padding:0 18px;" onclick="uploadPresetToCloud()">☁️ Создать код</button>
+          </div>
+        </div>
+
+        <div id="cloudShareResultBox" style="display:none; margin-top:12px; padding:10px; border-radius:10px; background:rgba(16,185,129,0.14); border:1px solid var(--green); text-align:center; font-size:12px;">
+          Ваш облачный код: <b id="generatedCloudCode" style="color:var(--cyan); font-size:15px; font-family:monospace;">SO2-0000</b>
+        </div>
+      </div>
+
+      <!-- ВСТРОЕННАЯ БАЗА КИБЕРСПОРТИВНЫХ ПРЕСЕТОВ -->
+      <div class="card">
+        <div class="card-head">
+          <div>
+            <div class="card-title">🏆 Пресеты Кланов и Киберспортсменов</div>
+            <div class="card-desc">Готовые сборки: Сенса + Формат экрана + Прицел в 1 клик</div>
+          </div>
+        </div>
+
+        <div class="preset-grid">
+          <div class="preset-card" onclick="applyProBundle('RAZE [HOW] CLAN', '16:9', 'crossdot', 10.0, 9.9, 9.3, 88, 54, 9.7, 94, 64, 0, 10.0)">
+            <div class="preset-card-title"><span>👑 RAZE [HOW] Leader</span><span style="color:var(--cyan)">16:9</span></div>
+            <div class="preset-card-sub">Ультра-быстрый телепорт + Vulkan + Точка в кресте</div>
+          </div>
+
+          <div class="preset-card" onclick="applyProBundle('SAINTS TOURNAMENT', '4:3', 'cross', 9.6, 9.1, 8.2, 76, 48, 9.8, 95, 56, 0, 9.0)">
+            <div class="preset-card-title"><span>⚡ Saints 4:3 iPad</span><span style="color:var(--cyan)">4:3</span></div>
+            <div class="preset-card-sub">Классический турнирный 4:3 растяг и плавный трэкинг головы</div>
+          </div>
+
+          <div class="preset-card" onclick="applyProBundle('DEAGLE ONE-TAP GOD', '5:4', 'dot', 9.8, 9.4, 7.2, 82, 50, 10.0, 98, 64, 0, 8.8)">
+            <div class="preset-card-title"><span>🎯 Deagle / AKR Tap</span><span style="color:var(--pink)">5:4</span></div>
+            <div class="preset-card-sub">Максимально широкие головы 5:4 и жёсткая горизонталь</div>
+          </div>
+
+          <div class="preset-card" onclick="applyProBundle('AWM NOSCOPE FLICK', '3:2', 'circledot', 10.0, 10.0, 9.8, 95, 58, 9.3, 85, 64, 0, 10.0)">
+            <div class="preset-card-title"><span>🦅 AWM Fast-Zoom</span><span style="color:var(--amber)">3:2</span></div>
+            <div class="preset-card-sub">Моментальный флик без инерции + прицел для ноускопов</div>
+          </div>
+        </div>
+      </div>
+
+    </section>
+
+    <!-- ================= ВКЛАДКА 6: ПРОФИЛЬ, ЗАПУСК ИГРЫ И ТЕРМИНАЛ ================= -->
+    <section id="tab-profile" class="tab-section">
+
+      <div class="card card-glow">
+        <div class="card-head">
+          <div>
+            <div class="card-title">👤 Лицензия и Профиль Игрока</div>
+            <div class="card-desc">Привязка защищена аппаратным HWID и сторожем сессии</div>
+          </div>
+          <span class="tag-mini" id="profBadgeTag">VERIFIED</span>
+        </div>
+
+        <div style="font-size:12.5px; line-height:1.95; color:var(--text-sub); margin-bottom:12px;">
+          Игрок: <b id="pNick" style="color:#fff;">Player</b><br/>
+          Активный ключ: <b id="pKey" style="color:var(--cyan); font-family:monospace;">—</b><br/>
+          Подписка: <b id="pSub" style="color:#34d399;">АКТИВНА (PRO)</b><br/>
+          Модель: <b id="pModel" style="color:#fff;">Android 120Hz</b><br/>
+          HWID: <b id="pHwid" style="color:var(--text-dim); font-family:monospace;">—</b>
+        </div>
+
+        <button class="btn btn-green" onclick="launchGameNow()" style="margin-bottom:9px;">
+          🎮 Запустить Standoff 2 с активным софтом
+        </button>
+
+        <div class="btn-grid-2" style="margin-bottom:9px;">
+          <button class="btn btn-outline" onclick="saveFullState(false)">💾 Сохранить конфиг</button>
+          <button class="btn btn-outline" onclick="requestOverlayPerm()">🪟 Разрешение окон</button>
+        </div>
+
+        <button class="btn btn-red" onclick="logoutKey()">
+          🚪 Выйти из аккаунта / Сменить ключ
+        </button>
+      </div>
+
+      <!-- ЖИВАЯ КОНСОЛЬ SHIZUKU -->
+      <div class="card">
+        <div class="card-head">
+          <div>
+            <div class="card-title">💻 Журнал Инъекций Ядра (Shizuku Log)</div>
+            <div class="card-desc">Реальные системные команды, отправленные в оболочку Android</div>
+          </div>
+        </div>
+        <div id="kernelLogBox" class="terminal-box">
+          [SYS] Инициализация SO2Teleport V408 PRO...<br/>
+          [OK] Мост AndroidBridge подключён.<br/>
+        </div>
+      </div>
+
+    </section>
+
+  </main>
+
+  <!-- ================= НИЖНЯЯ ПАНЕЛЬ НАВИГАЦИИ (6 РАЗДЕЛОВ) ================= -->
+  <nav class="bottom-bar">
+    <button class="nav-btn active" onclick="switchTab('tab-teleport', this)">
+      <span class="nav-ico">⚡</span><span>Телепорт</span>
+    </button>
+    <button class="nav-btn" onclick="switchTab('tab-boost', this)">
+      <span class="nav-ico">🚀</span><span>Бустеры</span>
+    </button>
+    <button class="nav-btn" onclick="switchTab('tab-stretch', this)">
+      <span class="nav-ico">📱</span><span>Растяг</span>
+    </button>
+    <button class="nav-btn" onclick="switchTab('tab-crosshair', this)">
+      <span class="nav-ico">🎯</span><span>Прицел</span>
+    </button>
+    <button class="nav-btn" onclick="switchTab('tab-cloud', this)">
+      <span class="nav-ico">☁️</span><span>Конфиги</span>
+    </button>
+    <button class="nav-btn" onclick="switchTab('tab-profile', this)">
+      <span class="nav-ico">👤</span><span>Профиль</span>
+    </button>
+  </nav>
+
+  <!-- ================= JAVASCRIPT ЯДРО ================= -->
+  <script>
+    const Bridge = window.AndroidBridge || window.Android || null;
+    let selectedRatio = "4:3";
+    let selectedChType = "off";
+    let selectedPreset = "extreme";
+
+    function logKernel(text) {
+      const box = document.getElementById("kernelLogBox");
+      if (!box) return;
+      const now = new Date().toLocaleTimeString("ru-RU", { hour12: false });
+      box.innerHTML += `[${now}] ${text}<br/>`;
+      box.scrollTop = box.scrollHeight;
+    }
+
+    function toast(msg) {
+      const el = document.getElementById("cyberToast");
+      el.innerText = msg;
+      el.style.display = "block";
+      clearTimeout(window._tTimer);
+      window._tTimer = setTimeout(() => { el.style.display = "none"; }, 2300);
+    }
+
+    function switchTab(id, btn) {
+      document.querySelectorAll(".tab-section").forEach(s => s.classList.remove("active"));
+      const target = document.getElementById(id);
+      if (target) target.classList.add("active");
+      document.querySelectorAll(".nav-btn").forEach(b => b.classList.remove("active"));
+      if (btn) btn.classList.add("active");
+    }
+
+    // Системная кнопка "Назад" из MainActivity
+    window.handleSystemBack = function() {
+      const activeTab = document.querySelector(".tab-section.active");
+      if (activeTab && activeTab.id !== "tab-teleport") {
+        switchTab("tab-teleport", document.querySelectorAll(".nav-btn")[0]);
+        return true;
+      }
+      return false;
+    };
+
+    // Глобальный хук для AndroidBridge.forceKickExpiredUser()
+    window.forceShowKickScreen = function(reason) {
+      document.getElementById("authOverlay").style.display = "flex";
+      const alertEl = document.getElementById("authAlert");
+      alertEl.style.display = "block";
+      alertEl.innerText = "⛔ " + (reason || "Срок действия вашего ключа истёк!");
+      document.getElementById("masterTeleportSwitch").checked = false;
+      logKernel("WARN: Сессия остановлена сторожем лицензий -> " + reason);
+    };
+
+    function refreshShizukuBadge() {
+      const pill = document.getElementById("shizukuPill");
+      if (Bridge && typeof Bridge.isShizukuReady === "function") {
+        const ok = Bridge.isShizukuReady();
+        pill.innerText = ok ? "SHIZUKU: READY" : "SHIZUKU: OFF";
+        pill.className = "pill-badge " + (ok ? "ok" : "warn");
+      } else {
+        pill.innerText = "SHIZUKU: UI";
+      }
+    }
+
+    function copyHwidToClipboard() {
+      const hwid = document.getElementById("authHwidText").innerText;
+      if (navigator.clipboard) navigator.clipboard.writeText(hwid);
+      toast("📋 HWID скопирован: " + hwid);
+    }
+
+    // ================= ИНИЦИАЛИЗАЦИЯ ПРИ ЗАПУСКЕ =================
+    function bootstrapApp() {
+      refreshShizukuBadge();
+      setInterval(refreshShizukuBadge, 4500);
+      drawResponseCurve();
+      drawCrosshairPreviewCanvas();
+      initFlickSandbox();
+
+      if (!Bridge) return;
+
+      const hwid = Bridge.getDeviceHwid ? Bridge.getDeviceHwid() : "unknown";
+      const hw = Bridge.getDeviceHardwareInfo ? Bridge.getDeviceHardwareInfo() : "Android|1080x2400";
+      const savedNick = Bridge.getSavedNickname ? Bridge.getSavedNickname() : "";
+      const savedKey = Bridge.getSavedKey ? Bridge.getSavedKey() : "";
+
+      document.getElementById("authHwidText").innerText = hwid;
+      document.getElementById("pHwid").innerText = hwid;
+      document.getElementById("pModel").innerText = hw.replace("|", " • ");
+      document.getElementById("headerDeviceSub").innerText = hw.split("|")[0] + " • V408 PRO";
+
+      if (savedNick) {
+        document.getElementById("authNickInput").value = savedNick;
+        document.getElementById("pNick").innerText = savedNick;
+      }
+
+      if (savedKey && savedKey.length >= 5) {
+        document.getElementById("authKeyInput").value = savedKey;
+        const vRes = Bridge.verifyLicenseKey(savedKey);
+        if (vRes.startsWith("OK|") || vRes.startsWith("OFFLINE|")) {
+          const subLabel = vRes.split("|")[1] || "АКТИВНА (PRO)";
+          unlockAppSession(savedNick || "Player", savedKey, subLabel);
+          restoreFullSavedState();
+        } else {
+          window.forceShowKickScreen(vRes.split("|")[1] || "Введите действующий ключ");
+        }
+      }
+    }
+
+    function handleLogin() {
+      const nick = document.getElementById("authNickInput").value.trim() || "Player";
+      const key = document.getElementById("authKeyInput").value.trim().toUpperCase();
+      const alertEl = document.getElementById("authAlert");
+
+      if (key.length < 5) {
+        alertEl.style.display = "block";
+        alertEl.innerText = "⚠️ Введите лицензионный ключ из Telegram-бота!";
+        return;
+      }
+
+      if (!Bridge) {
+        unlockAppSession(nick, key, "DEMO MODE");
+        return;
+      }
+
+      Bridge.savePlayerNickname(nick);
+      const res = Bridge.activateLicenseKey(key);
+      if (res.startsWith("OK|")) {
+        const subLabel = res.split("|")[1] || "АКТИВНА (PRO)";
+        unlockAppSession(nick, key, subLabel);
+        restoreFullSavedState();
+        toast("⚡ Добро пожаловать в SO2Teleport V408!");
+      } else {
+        alertEl.style.display = "block";
+        alertEl.innerText = "⛔ " + (res.split("|")[1] || "Ключ не найден или привязан к другому устройству");
+      }
+    }
+
+    function unlockAppSession(nick, key, subLabel) {
+      document.getElementById("authOverlay").style.display = "none";
+      document.getElementById("pNick").innerText = nick;
+      document.getElementById("pKey").innerText = key;
+      document.getElementById("pSub").innerText = subLabel;
+      document.getElementById("licensePill").innerText = subLabel.replace("АКТИВНА", "").replace(/[()]/g, "").trim() || "PRO";
+      logKernel(`AUTH: Ключ ${key} подтверждён (${subLabel})`);
+    }
+
+    function openBot() {
+      if (Bridge && Bridge.openTelegramBot) Bridge.openTelegramBot();
+    }
+
+    function logoutKey() {
+      if (Bridge && Bridge.logoutLicenseKey) Bridge.logoutLicenseKey();
+      window.forceShowKickScreen("Вы вышли из аккаунта");
+    }
+
+    function requestOverlayPerm() {
+      if (Bridge && Bridge.requestOverlayPermission) Bridge.requestOverlayPermission();
+    }
+
+    function launchGameNow() {
+      if (Bridge && Bridge.launchStandoffGame) {
+        Bridge.launchStandoffGame();
+      } else {
+        toast("🚀 Сверните окно и запустите Standoff 2!");
+      }
+    }
+
+    // ================= TELEPORT ENGINE И РАДАР КРИВОЙ =================
+    function onToggleMasterTeleport(enabled) {
+      if (Bridge) {
+        if (enabled) {
+          Bridge.startTeleport(selectedPreset);
+          pushSensParameters();
+          logKernel("EXEC: TeleportEngine.startTeleport('" + selectedPreset + "') -> touch_slop=0, max_events=500");
+          toast("⚡ EXTREME TELEPORT ЗАПУЩЕН!");
+        } else {
+          Bridge.stopTeleport();
+          logKernel("EXEC: TeleportEngine.stopTeleport()");
+          toast("🛑 Телепорт-движок остановлен");
+        }
+      }
+      saveFullState(true);
+    }
+
+    function injectOverdriveMode(level) {
+      if (Bridge && Bridge.applyUltraProTouchMatrix) {
+        Bridge.applyUltraProTouchMatrix(level);
+      } else if (Bridge && Bridge.startTeleport) {
+        Bridge.startTeleport("extreme");
+      }
+      document.getElementById("masterTeleportSwitch").checked = true;
+      const hzNames = { 1: "420 ev/sec LITE", 2: "520 ev/sec PRO", 3: "600 ev/sec MAX OVERDRIVE" };
+      logKernel("OVERDRIVE: Инъекция матрицы " + hzNames[level]);
+      toast("🔥 Режим " + hzNames[level] + " активирован!");
+    }
+
+    function selectSensPreset(id, sharp, sx, sy, chunks, chunkFast, straight, stick, grid, pause, accel) {
+      selectedPreset = id;
+      document.querySelectorAll("#tab-teleport .preset-card").forEach(c => c.classList.remove("active"));
+      const card = document.getElementById("pcard-" + id);
+      if (card) card.classList.add("active");
+
+      document.getElementById("s-sharp").value = sharp;
+      document.getElementById("s-sx").value = sx;
+      document.getElementById("s-sy").value = sy;
+      document.getElementById("s-chunks").value = chunks;
+      document.getElementById("s-chunkFast").value = chunkFast;
+      document.getElementById("s-straight").value = straight;
+      document.getElementById("s-stick").value = stick;
+      document.getElementById("s-grid").value = grid;
+      document.getElementById("s-pause").value = pause;
+      document.getElementById("s-accel").value = accel;
+
+      onSensChanged();
+      pushSensParameters();
+    }
+
+    function onSensChanged() {
+      const keys = ["sharp", "sx", "sy", "accel", "chunks", "chunkFast", "straight", "stick", "grid", "pause"];
+      keys.forEach(k => {
+        const s = document.getElementById("s-" + k);
+        const v = document.getElementById("v-" + k);
+        if (s && v) v.innerText = s.value;
+      });
+      drawResponseCurve();
+    }
+
+    function drawResponseCurve() {
+      const canvas = document.getElementById("responseCurveCanvas");
+      if (!canvas) return;
+      const ctx = canvas.getContext("2d");
+      const w = canvas.width;
+      const h = canvas.height;
+      ctx.clearRect(0, 0, w, h);
+
+      const sharp = parseFloat(document.getElementById("s-sharp").value);
+      const sx = parseFloat(document.getElementById("s-sx").value);
+      const accel = parseFloat(document.getElementById("s-accel").value);
+      const chunks = parseInt(document.getElementById("s-chunks").value, 10);
+
+      // Сетка
+      ctx.strokeStyle = "rgba(0, 229, 255, 0.08)";
+      ctx.lineWidth = 1;
+      for (let x = 0; x < w; x += 48) {
+        ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, h); ctx.stroke();
+      }
+      for (let y = 0; y < h; y += 26) {
+        ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(w, y); ctx.stroke();
+      }
+
+      // Кривая ускорения
+      ctx.beginPath();
+      ctx.strokeStyle = "#00e5ff";
+      ctx.lineWidth = 2.8;
+      const power = Math.max(0.35, 1.45 - (sharp + accel) * 0.05);
+      for (let i = 0; i <= w; i += 6) {
+        const normX = i / w;
+        const normY = Math.pow(normX, power) * Math.min(1, (sx / 9.5));
+        const py = h - 10 - normY * (h - 28);
+        if (i === 0) ctx.moveTo(i, py);
+        else ctx.lineTo(i, py);
+      }
+      ctx.stroke();
+
+      const latencyMs = Math.max(0.2, (2.2 - (chunks / 60) - (sharp / 12))).toFixed(1);
+      document.getElementById("curveRateLabel").innerText = `ОТКЛИК: ${latencyMs} МС (${360 + chunks * 2} EV/S)`;
+    }
+
+    function pushSensParameters() {
+      const sharp = parseFloat(document.getElementById("s-sharp").value);
+      const sx = parseFloat(document.getElementById("s-sx").value);
+      const sy = parseFloat(document.getElementById("s-sy").value);
+      const chunks = parseInt(document.getElementById("s-chunks").value, 10);
+      const chunkFast = parseInt(document.getElementById("s-chunkFast").value, 10);
+      const straight = parseFloat(document.getElementById("s-straight").value);
+      const stick = parseInt(document.getElementById("s-stick").value, 10);
+      const grid = parseInt(document.getElementById("s-grid").value, 10);
+      const pause = parseInt(document.getElementById("s-pause").value, 10);
+      const accel = parseFloat(document.getElementById("s-accel").value);
+
+      if (Bridge && Bridge.updateParameters) {
+        Bridge.updateParameters(sharp, sx, sy, chunks, chunkFast, straight, stick, grid, pause, accel);
+      }
+      logKernel(`SENS: sharp=${sharp} X=${sx} Y=${sy} chunks=${chunks} accel=${accel}`);
+      saveFullState(true);
+      toast("⚡ Матрица телепорт-сенсы прошита!");
+    }
+
+    function callHealTouch() {
+      if (Bridge && Bridge.healTouch) Bridge.healTouch();
+      logKernel("HEAL: Сброс тач-таймаутов и калибровка wm size/density");
+      toast("🛠️ Тачскрин откалиброван!");
+    }
+
+    // ================= ПОЛИГОН ПРОВЕРКИ ФЛИКА (AIM SANDBOX) =================
+    function initFlickSandbox() {
+      const canvas = document.getElementById("flickArenaCanvas");
+      if (!canvas) return;
+      const ctx = canvas.getContext("2d");
+      let target = { x: 240, y: 85, r: 18, spawnTime: performance.now() };
+      let hits = 0;
+      let lastTrail = null;
+
+      function renderArena() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        // Линия горизонта головы
+        ctx.strokeStyle = "rgba(255, 46, 147, 0.22)";
+        ctx.setLineDash([5, 5]);
+        ctx.beginPath();
+        ctx.moveTo(0, target.y);
+        ctx.lineTo(canvas.width, target.y);
+        ctx.stroke();
+        ctx.setLineDash([]);
+
+        // След флика
+        if (lastTrail) {
+          ctx.strokeStyle = "rgba(0, 229, 255, 0.65)";
+          ctx.lineWidth = 2.5;
+          ctx.beginPath();
+          ctx.moveTo(lastTrail.x1, lastTrail.y1);
+          ctx.lineTo(lastTrail.x2, lastTrail.y2);
+          ctx.stroke();
         }
 
-        let appState = {
-            themeColor: "#00e5ff",
-            teleportOn: false,
-            quickMode: "beast",
-            zeroDelay: true,
-            sharp: 6.00,
-            sx: 6.00,
-            sy: 6.00,
-            noise: 2,
-            deadzone: 0,
-            predict: 3,
-            stick: 6,
-            stickDelay: 20,
-            stickForce: 3,
-            chunks: 64,
-            chunkFast: 38,
-            pause: 1,
-            accel: 2.20,
-            accelSlope: 2.10,
-            edgeDist: 0,
-            straight: 0.92,
-            grid: 6,
-            gripCap: 6,
-            stretchRatio: "4:3",
-            crossShape: "off",
-            crossColor: "#00E5FF",
-            crossLen: 12,
-            crossThick: 3,
-            crossGap: 4,
-            crossDot: 3,
-            crossOutline: true,
-            crossOpacity: 100,
-            touchBoost: true,
-            touchHz: 360,
-            cold120: true,
-            antiRecoil: true,
-            recoilPwr: 100,
-            autoDpi: false,
-            gameDpi: 440,
-            stealthMode: false,
-            pixelDownscale: 100
-        };
+        // Мишень
+        ctx.beginPath();
+        ctx.arc(target.x, target.y, target.r, 0, Math.PI * 2);
+        ctx.fillStyle = "rgba(255, 46, 147, 0.28)";
+        ctx.fill();
+        ctx.lineWidth = 2.5;
+        ctx.strokeStyle = "#ff2e93";
+        ctx.stroke();
 
-        function showToast(msg) {
-            const el = document.getElementById("toastBanner");
-            el.textContent = msg;
-            el.style.display = "block";
-            clearTimeout(window._toastTimer);
-            window._toastTimer = setTimeout(() => {
-                el.style.display = "none";
-            }, 2300);
+        ctx.beginPath();
+        ctx.arc(target.x, target.y, 5, 0, Math.PI * 2);
+        ctx.fillStyle = "#00e5ff";
+        ctx.fill();
+      }
+
+      canvas.addEventListener("pointerdown", e => {
+        const rect = canvas.getBoundingClientRect();
+        const scaleX = canvas.width / rect.width;
+        const scaleY = canvas.height / rect.height;
+        const tx = (e.clientX - rect.left) * scaleX;
+        const ty = (e.clientY - rect.top) * scaleY;
+
+        const dist = Math.hypot(tx - target.x, ty - target.y);
+        if (dist <= target.r + 14) {
+          hits++;
+          const rt = Math.round(performance.now() - target.spawnTime);
+          document.getElementById("flickScoreBadge").innerText = "ХИТОВ: " + hits;
+          document.getElementById("flickSpeedText").innerText = "ФЛИК: " + rt + " МС";
+          const oldX = target.x, oldY = target.y;
+          target.x = 45 + Math.random() * (canvas.width - 90);
+          target.y = 38 + Math.random() * (canvas.height - 68);
+          target.spawnTime = performance.now();
+          lastTrail = { x1: oldX, y1: oldY, x2: target.x, y2: target.y };
+          renderArena();
         }
+      });
 
-        // ================= СТРОГАЯ АВТОРИЗАЦИЯ И ЖИВОЙ СТОРОЖ КЛЮЧА =================
+      renderArena();
+    }
 
-        function forceShowKickScreen(reasonMsg) {
-            isAuthorizedNow = false;
-            appState.teleportOn = false;
-            document.getElementById("chkHomeTeleport").checked = false;
-            document.getElementById("chkInnerTeleport").checked = false;
-            document.getElementById("homeSensaStateTxt").textContent = "ВЫКЛ";
-            document.getElementById("profKey").textContent = "-";
-            document.getElementById("profStatus").textContent = "НЕ АКТИВНА";
-            document.getElementById("profStatus").style.color = "var(--danger)";
+    // ================= СИСТЕМНЫЕ УЛУЧШАЙЗЕРЫ И БУСТЕРЫ =================
+    function toggleBooster(type, enabled) {
+      if (Bridge) {
+        if (type === "raw" && Bridge.setRawInputNoSmoothing) Bridge.setRawInputNoSmoothing(enabled);
+        if (type === "vulkan" && Bridge.setVulkanGpuTurbo) Bridge.setVulkanGpuTurbo(enabled);
+        if (type === "net" && Bridge.setNetPingStabilizer) Bridge.setNetPingStabilizer(enabled);
+        if (type === "sampling" && Bridge.setTouchSamplingBoost) Bridge.setTouchSamplingBoost(enabled, 360);
+        if (type === "thermal" && Bridge.setHzThermalGuard) Bridge.setHzThermalGuard(enabled);
+        if (type === "recoil" && Bridge.setEnhancedRecoilFix) Bridge.setEnhancedRecoilFix(enabled, 95);
+      }
+      logKernel(`BOOST [${type.toUpperCase()}]: ${enabled ? "ENABLED" : "DISABLED"}`);
+      saveFullState(true);
+      toast(enabled ? `⚡ Модуль ${type.toUpperCase()} активирован!` : `Модуль ${type.toUpperCase()} выключен`);
+    }
 
-            const errEl = document.getElementById("authErrorBox");
-            if (reasonMsg) {
-                errEl.textContent = "⛔ " + reasonMsg;
-                errEl.style.display = "block";
-            }
-            document.getElementById("authKeyInput").value = "";
-            document.getElementById("authOverlay").style.display = "flex";
+    function applyGameDpi(enable) {
+      const dpi = parseInt(document.getElementById("s-dpi").value, 10);
+      if (Bridge && Bridge.setAutoGameDpi) Bridge.setAutoGameDpi(enable, dpi);
+      logKernel(enable ? `WM DENSITY: ${dpi}` : "WM DENSITY: reset");
+      toast(enable ? `📐 Установлен игровой DPI: ${dpi}` : "🔄 Родной DPI восстановлен");
+    }
+
+    function applyRenderDownscale(pct) {
+      if (Bridge && Bridge.setPixelDownscaleFactor) Bridge.setPixelDownscaleFactor(parseInt(pct, 10));
+      logKernel(`WM SIZE SCALE: ${pct}%`);
+      toast(`📐 Масштаб рендера: ${pct}%`);
+    }
+
+    function triggerRamBoost() {
+      if (Bridge && Bridge.performRamBoost) {
+        const raw = Bridge.performRamBoost();
+        const p = raw.split("|");
+        if (p.length >= 3) {
+          document.getElementById("ramReadout").innerHTML =
+            `✅ Очищено: <b style="color:var(--cyan)">+${p[0]} МБ</b> • Свободно: <b style="color:#fff">${p[1]} из ${p[2]} МБ</b>`;
         }
+      }
+      logKernel("MEM: am kill-all & trim-memory RUNNING_CRITICAL");
+      toast("🚀 Оперативная память очищена!");
+    }
 
-        function checkAuthSessionOnBoot() {
-            const br = getBridge();
-            if (!br || typeof br.getSavedKey !== "function") {
-                forceShowKickScreen("Откройте приложение на устройстве Android");
-                return;
-            }
+    function triggerHardwareScan() {
+      if (Bridge && Bridge.runSmartDeviceScan) {
+        const res = Bridge.runSmartDeviceScan();
+        const p = res.split("|");
+        document.getElementById("ramReadout").innerHTML =
+          `📱 Устройство: <b style="color:#fff">${p[0]}</b> • Уровень: <b style="color:var(--cyan)">${p[1]}</b> • Матрица: <b>${p[2]}p</b>`;
+      }
+      toast("🔍 Диагностика устройства завершена");
+    }
 
-            const savedKey = (br.getSavedKey() || "").trim().toUpperCase();
-            const savedNick = (typeof br.getSavedNickname === "function" ? br.getSavedNickname() : "") || "dare";
+    // ================= РАСТЯГ ЭКРАНА И ШИРОКИЕ ХИТБОКСЫ =================
+    function pickStretchRatio(ratio, el) {
+      selectedRatio = ratio;
+      document.querySelectorAll("#stretchRatioPills .pill-item").forEach(p => p.classList.remove("active"));
+      if (el) el.classList.add("active");
+      document.getElementById("activeRatioBadge").innerText = ratio + " STRETCH";
+      saveFullState(true);
+    }
 
-            if (!savedKey || savedKey.length < 5) {
-                document.getElementById("authNickInput").value = savedNick;
-                document.getElementById("authOverlay").style.display = "flex";
-                return;
-            }
+    function spawnFloatingTpButton() {
+      if (!Bridge) return;
+      const res = Bridge.activateStretchFloatingButton(selectedRatio);
+      if (res === "NEED_PERMISSION") {
+        toast("🪟 Выдайте разрешение «Поверх других окон»!");
+      } else if (res === "NEED_AUTH") {
+        window.forceShowKickScreen("Сначала войдите по ключу");
+      } else {
+        logKernel(`STRETCH: Запущена кнопка «TP» для формата ${selectedRatio}`);
+        toast(`⚡ Кнопка «TP» (${selectedRatio}) запущена!`);
+      }
+    }
 
-            // Живая проверка сохранённого ключа на сервере ТГ-бота при запуске
-            const verifyRes = br.verifyLicenseKey(savedKey) || "";
-            if (verifyRes.startsWith("OK|")) {
-                const subText = verifyRes.split("|")[1] || "АКТИВНА (PRO ДОСТУП)";
-                applyAuthorizedUser(savedNick, savedKey, subText);
-            } else if (verifyRes.startsWith("OFFLINE|")) {
-                applyAuthorizedUser(savedNick, savedKey, "АКТИВНА (ПРОВЕРКА СЕТИ)");
-            } else {
-                const kickMsg = verifyRes.includes("|") ? verifyRes.split("|")[1] : "Срок действия ключа закончился!";
-                forceShowKickScreen(kickMsg);
-            }
+    function restoreNativeScreen() {
+      if (Bridge && Bridge.resetResolution) Bridge.resetResolution();
+      document.getElementById("sw-wideHitbox").checked = false;
+      logKernel("WM SIZE: Сброс к заводскому разрешению экрана");
+    }
+
+    function toggleWideHitboxCombo(enabled) {
+      if (Bridge && Bridge.setWideHitboxMode) {
+        Bridge.setWideHitboxMode(enabled, selectedRatio);
+      }
+      logKernel(`WIDE HITBOX (${selectedRatio}): ${enabled ? "ON" : "OFF"}`);
+      saveFullState(true);
+      toast(enabled ? `🎯 Широкие хитбоксы (${selectedRatio}) активированы!` : "Широкие хитбоксы выключены");
+    }
+
+    function toggleStealthOverlay(enabled) {
+      if (Bridge && Bridge.updateOverlayStealthFlag) {
+        Bridge.updateOverlayStealthFlag(enabled);
+      }
+      logKernel(`STEALTH FLAG_SECURE: ${enabled}`);
+      saveFullState(true);
+      toast(enabled ? "🕵️ Невидимость на записи экрана ВКЛ" : "Невидимость на записи ВЫКЛ");
+    }
+
+    // ================= ПРИЦЕЛ =================
+    function pickCrosshairType(type, el) {
+      selectedChType = type;
+      document.querySelectorAll("#chTypePills .pill-item").forEach(p => p.classList.remove("active"));
+      if (el) el.classList.add("active");
+      document.getElementById("chTypeBadge").innerText = type.toUpperCase();
+      syncCrosshairOverlay();
+    }
+
+    function syncCrosshairOverlay() {
+      const len = parseInt(document.getElementById("s-chLen").value, 10);
+      const thick = parseInt(document.getElementById("s-chThick").value, 10);
+      const gap = parseInt(document.getElementById("s-chGap").value, 10);
+      const dot = parseInt(document.getElementById("s-chDot").value, 10);
+      const op = parseInt(document.getElementById("s-chOp").value, 10);
+      const color = document.getElementById("chColorInput").value;
+      const outline = document.getElementById("chOutlineSwitch").checked;
+
+      document.getElementById("v-chLen").innerText = len;
+      document.getElementById("v-chThick").innerText = thick;
+      document.getElementById("v-chGap").innerText = gap;
+      document.getElementById("v-chDot").innerText = dot;
+      document.getElementById("v-chOp").innerText = op + "%";
+      document.getElementById("chColorHexText").innerText = color.toUpperCase();
+
+      drawCrosshairPreviewCanvas();
+
+      if (Bridge && Bridge.updateCrosshairAdvanced) {
+        Bridge.updateCrosshairAdvanced(selectedChType, color, op, len, thick, gap, dot, outline);
+      }
+      saveFullState(true);
+    }
+
+    function drawCrosshairPreviewCanvas() {
+      const canvas = document.getElementById("crosshairCanvas");
+      if (!canvas) return;
+      const ctx = canvas.getContext("2d");
+      const w = canvas.width;
+      const h = canvas.height;
+      const cx = w / 2;
+      const cy = h / 2 + 6;
+      ctx.clearRect(0, 0, w, h);
+
+      // Силуэт головы и плеч противника для наглядности
+      ctx.fillStyle = "rgba(255, 255, 255, 0.06)";
+      ctx.beginPath();
+      ctx.arc(cx, cy, 20, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillRect(cx - 42, cy + 22, 84, 40);
+
+      if (selectedChType === "off") return;
+
+      const len = parseInt(document.getElementById("s-chLen").value, 10) * 1.5;
+      const thick = parseInt(document.getElementById("s-chThick").value, 10) * 1.15;
+      const gap = parseInt(document.getElementById("s-chGap").value, 10) * 1.4;
+      const dot = parseInt(document.getElementById("s-chDot").value, 10) * 1.25;
+      const op = parseInt(document.getElementById("s-chOp").value, 10) / 100;
+      const color = document.getElementById("chColorInput").value;
+      const outline = document.getElementById("chOutlineSwitch").checked;
+
+      ctx.save();
+      ctx.globalAlpha = op;
+      ctx.strokeStyle = color;
+      ctx.fillStyle = color;
+      ctx.lineWidth = thick;
+
+      if (selectedChType === "dot") {
+        ctx.beginPath(); ctx.arc(cx, cy, dot, 0, Math.PI * 2); ctx.fill();
+        ctx.restore();
+        return;
+      }
+
+      if (selectedChType === "circle" || selectedChType === "circledot") {
+        ctx.beginPath(); ctx.arc(cx, cy, len, 0, Math.PI * 2);
+        if (outline) {
+          ctx.strokeStyle = "#000"; ctx.lineWidth = thick + 2; ctx.stroke();
+          ctx.strokeStyle = color; ctx.lineWidth = thick;
         }
-
-        // Каждые 12 секунд проверяем, не кикнул ли AndroidBridge игрока по окончании ключа
-        function runFrontendLicenseHeartbeat() {
-            if (!isAuthorizedNow) return;
-            const br = getBridge();
-            if (!br || typeof br.getSavedKey !== "function") return;
-
-            const currentSavedKey = (br.getSavedKey() || "").trim();
-            if (!currentSavedKey) {
-                // Значит фоновый сторож в AndroidBridge уже стёр ключ и кикнул пользователя!
-                forceShowKickScreen("Срок действия вашего ключа закончился или он был сброшен в боте!");
-                return;
-            }
-
-            if (typeof br.verifyLicenseKey === "function") {
-                const v = br.verifyLicenseKey(currentSavedKey) || "";
-                if (v.startsWith("EXPIRED|")) {
-                    const msg = v.split("|")[1] || "Срок действия ключа истёк!";
-                    forceShowKickScreen(msg);
-                } else if (v.startsWith("OK|")) {
-                    document.getElementById("profStatus").textContent = v.split("|")[1] || "АКТИВНА (PRO ДОСТУП)";
-                    document.getElementById("profStatus").style.color = "var(--green)";
-                }
-            }
+        ctx.stroke();
+        if (selectedChType === "circledot") {
+          ctx.beginPath(); ctx.arc(cx, cy, dot, 0, Math.PI * 2); ctx.fill();
         }
+        ctx.restore();
+        return;
+      }
 
-        function submitLicenseAuth() {
-            const nickEl = document.getElementById("authNickInput");
-            const keyEl = document.getElementById("authKeyInput");
-            const errEl = document.getElementById("authErrorBox");
-            const btn = document.getElementById("btnSubmitAuth");
+      if (selectedChType === "box") {
+        ctx.strokeRect(cx - len, cy - len, len * 2, len * 2);
+        ctx.restore();
+        return;
+      }
 
-            const nick = (nickEl.value || "").trim() || "Player";
-            const cleanKey = (keyEl.value || "").trim().toUpperCase();
-
-            errEl.style.display = "none";
-
-            if (cleanKey.length < 5) {
-                errEl.textContent = "❌ Введите лицензионный ключ из Telegram-бота!";
-                errEl.style.display = "block";
-                return;
-            }
-
-            const br = getBridge();
-            if (!br || typeof br.activateLicenseKey !== "function") {
-                errEl.textContent = "❌ Ошибка системного моста AndroidBridge!";
-                errEl.style.display = "block";
-                return;
-            }
-
-            btn.textContent = "⏳ ПРОВЕРКА КЛЮЧА В БАЗЕ БОТА...";
-
-            setTimeout(() => {
-                if (typeof br.savePlayerNickname === "function") {
-                    br.savePlayerNickname(nick);
-                }
-
-                const res = br.activateLicenseKey(cleanKey) || "";
-                btn.textContent = "⚡ ПРОВЕРИТЬ КЛЮЧ И ВОЙТИ";
-
-                if (res.startsWith("OK|")) {
-                    const statusText = res.split("|")[1] || "АКТИВНА (PRO ДОСТУП)";
-                    applyAuthorizedUser(nick, cleanKey, statusText);
-                    showToast("✅ Ключ подтверждён! Добро пожаловать, " + nick);
-                } else {
-                    const msg = res.includes("|") ? res.split("|")[1] : "Ключ не найден в базе Telegram-бота или истёк!";
-                    errEl.textContent = "⛔ " + msg;
-                    errEl.style.display = "block";
-                }
-            }, 60);
+      const drawCrossLines = (col, width) => {
+        ctx.strokeStyle = col;
+        ctx.lineWidth = width;
+        ctx.beginPath();
+        ctx.moveTo(cx - gap - len, cy); ctx.lineTo(cx - gap, cy);
+        ctx.moveTo(cx + gap, cy); ctx.lineTo(cx + gap + len, cy);
+        ctx.moveTo(cx, cy + gap); ctx.lineTo(cx, cy + gap + len);
+        if (selectedChType !== "tshape") {
+          ctx.moveTo(cx, cy - gap - len); ctx.lineTo(cx, cy - gap);
         }
-
-        function applyAuthorizedUser(nick, key, subStatus) {
-            isAuthorizedNow = true;
-            document.getElementById("playerNickText").textContent = nick;
-            document.getElementById("profNick").textContent = nick;
-            document.getElementById("profKey").textContent = key;
-            document.getElementById("profStatus").textContent = subStatus || "АКТИВНА (PRO ДОСТУП)";
-            document.getElementById("profStatus").style.color = "var(--green)";
-            document.getElementById("authNickInput").value = nick;
-            document.getElementById("authKeyInput").value = key;
-            document.getElementById("authErrorBox").style.display = "none";
-            document.getElementById("authOverlay").style.display = "none";
-        }
-
-        function logoutAndOpenAuthWindow() {
-            const br = getBridge();
-            if (br && typeof br.logoutLicenseKey === "function") {
-                try { br.logoutLicenseKey(); } catch (e) {}
-            }
-            forceShowKickScreen("Введите новый лицензионный ключ из Telegram-бота");
-        }
-
-        function openTgBotFromAuth() {
-            const br = getBridge();
-            if (br && typeof br.openTelegramBot === "function") {
-                br.openTelegramBot();
-            } else {
-                window.open("https://t.me/SO2TeleportShop_bot", "_blank");
-            }
-        }
-
-        function copyHwidToClipboard() {
-            const hwid = document.getElementById("authHwidText").textContent;
-            if (navigator.clipboard && navigator.clipboard.writeText) {
-                navigator.clipboard.writeText(hwid).catch(() => {});
-            }
-            showToast("📋 HWID скопирован: " + hwid);
-        }
-
-        // ================= НАВИГАЦИЯ И ОСНОВНЫЕ ФУНКЦИИ =================
-
-        function openScreen(screenId, askCalib) {
-            if (!isAuthorizedNow) {
-                forceShowKickScreen("Сначала активируйте лицензионный ключ!");
-                return;
-            }
-            document.querySelectorAll(".screen-view").forEach(s => s.classList.remove("active"));
-            const target = document.getElementById(screenId);
-            if (target) target.classList.add("active");
-            window.scrollTo(0, 0);
-
-            if (askCalib && !calibShownOnce) {
-                calibShownOnce = true;
-                document.getElementById("calibModal").style.display = "flex";
-            }
-            if (screenId === "screenCrosshair") {
-                drawCrosshairPreview();
-            }
-            if (screenId === "screenConfigs") {
-                renderMySavedPresets();
-            }
-        }
-
-        window.handleSystemBack = function() {
-            if (document.getElementById("authOverlay").style.display !== "none") {
-                return false;
-            }
-            const home = document.getElementById("screenHome");
-            if (!home.classList.contains("active")) {
-                openScreen("screenHome");
-                return true;
-            }
-            return false;
-        };
-
-        function closeCalibModal(runScan) {
-            document.getElementById("calibModal").style.display = "none";
-            if (runScan) {
-                executeSmartPhoneScan();
-            }
-        }
-
-        function setThemeColor(hex, circleEl) {
-            appState.themeColor = hex;
-            document.documentElement.style.setProperty("--accent", hex);
-            document.documentElement.style.setProperty("--accent-glow", hex + "55");
-            document.documentElement.style.setProperty("--accent-soft", hex + "24");
-            document.documentElement.style.setProperty("--card-border", hex + "38");
-
-            document.querySelectorAll(".t-circle").forEach(c => {
-                c.classList.toggle("active", c.getAttribute("data-tclr") === hex);
-            });
-            if (circleEl) circleEl.classList.add("active");
-            saveFullConfigNow(false);
-        }
-
-        function toggleTeleportMaster(enabled) {
-            if (enabled && !isAuthorizedNow) {
-                forceShowKickScreen("Лицензионный ключ не активен!");
-                return;
-            }
-            appState.teleportOn = !!enabled;
-            document.getElementById("chkHomeTeleport").checked = appState.teleportOn;
-            document.getElementById("chkInnerTeleport").checked = appState.teleportOn;
-
-            const homeTxt = document.getElementById("homeSensaStateTxt");
-            const homeSub = document.getElementById("homeSensaSub");
-            const innerHdr = document.getElementById("innerSensaHeader");
-            const innerBtn = document.getElementById("btnInnerTeleportAction");
-
-            if (appState.teleportOn) {
-                homeTxt.textContent = "АКТИВЕН";
-                homeTxt.style.color = "var(--accent)";
-                homeSub.textContent = "⚡ Баффнутый Телепорт 360Hz + 1мм отклик работают!";
-                innerHdr.textContent = "ТЕЛЕПОРТ: АКТИВЕН (360Hz)";
-                innerBtn.textContent = "⚡ ТЕЛЕПОРТ РАБОТАЕТ (НАЖМИ ДЛЯ ОСТАНОВКИ)";
-            } else {
-                homeTxt.textContent = "ВЫКЛ";
-                homeTxt.style.color = "var(--text-sub)";
-                homeSub.textContent = "Баффнутый отклик 1мм + настройка всех 18 осей";
-                innerHdr.textContent = "ТЕЛЕПОРТ: ВЫКЛЮЧЕН";
-                innerBtn.textContent = "⚡ ВКЛЮЧИТЬ ТЕЛЕПОРТ (BUFFED 360HZ)";
-            }
-
-            const br = getBridge();
-            if (br) {
-                if (appState.teleportOn && typeof br.startTeleport === "function") {
-                    br.startTeleport(appState.quickMode);
-                    pushAllParametersToBridge();
-                } else if (!appState.teleportOn && typeof br.stopTeleport === "function") {
-                    br.stopTeleport();
-                }
-            }
-            saveFullConfigNow(false);
-        }
-
-        function selectQuickMode(modeId, sharp, sx, sy, chunks, chunkFast) {
-            appState.quickMode = modeId;
-            appState.sharp = sharp;
-            appState.sx = sx;
-            appState.sy = sy;
-            appState.chunks = chunks;
-            appState.chunkFast = chunkFast;
-
-            document.querySelectorAll("[data-qmode]").forEach(row => {
-                const isAct = row.getAttribute("data-qmode") === modeId;
-                row.classList.toggle("active", isAct);
-                const btn = row.querySelector(".mode-btn");
-                if (btn) btn.textContent = isAct ? "АКТИВЕН" : "ВЫБРАТЬ";
-            });
-
-            syncStateToDom();
-            toggleTeleportMaster(true);
-            showToast("⚡ Режим сенсы активирован!");
-        }
-
-        function applyCyberPack(sharp, sx, sy, chunks, straight, title) {
-            appState.sharp = sharp;
-            appState.sx = sx;
-            appState.sy = sy;
-            appState.chunks = chunks;
-            appState.straight = straight;
-            appState.touchBoost = true;
-            appState.touchHz = 360;
-
-            syncStateToDom();
-            toggleTeleportMaster(true);
-            saveFullConfigNow(false);
-            showToast("🔥 Сборка «" + title + "» включена!");
-        }
-
-        function onSliderLive() {
-            readSlidersIntoState();
-            updateSliderBadges();
-            clearTimeout(paramDebounceTimer);
-            paramDebounceTimer = setTimeout(() => {
-                pushAllParametersToBridge();
-            }, 160);
-        }
-
-        function onSliderCommit() {
-            readSlidersIntoState();
-            updateSliderBadges();
-            clearTimeout(paramDebounceTimer);
-            pushAllParametersToBridge();
-            saveFullConfigNow(false);
-        }
-
-        function readSlidersIntoState() {
-            appState.zeroDelay = document.getElementById("chkZeroDelay").checked;
-            appState.sharp = parseFloat(document.getElementById("s_sharp").value);
-            appState.sx = parseFloat(document.getElementById("s_sx").value);
-            appState.sy = parseFloat(document.getElementById("s_sy").value);
-            appState.noise = parseInt(document.getElementById("s_noise").value, 10);
-            appState.deadzone = parseInt(document.getElementById("s_deadzone").value, 10);
-            appState.predict = parseInt(document.getElementById("s_predict").value, 10);
-            appState.stick = parseInt(document.getElementById("s_stick").value, 10);
-            appState.stickDelay = parseInt(document.getElementById("s_stickDelay").value, 10);
-            appState.stickForce = parseInt(document.getElementById("s_stickForce").value, 10);
-            appState.chunks = parseInt(document.getElementById("s_chunks").value, 10);
-            appState.chunkFast = parseInt(document.getElementById("s_chunkFast").value, 10);
-            appState.pause = parseInt(document.getElementById("s_pause").value, 10);
-            appState.accel = parseFloat(document.getElementById("s_accel").value);
-            appState.accelSlope = parseFloat(document.getElementById("s_accelSlope").value);
-            appState.edgeDist = parseInt(document.getElementById("s_edgeDist").value, 10);
-            appState.straight = parseFloat(document.getElementById("s_straight").value);
-            appState.grid = parseInt(document.getElementById("s_grid").value, 10);
-            appState.gripCap = parseInt(document.getElementById("s_gripCap").value, 10);
-        }
-
-        function updateSliderBadges() {
-            document.getElementById("v_sharp").textContent = Number(appState.sharp).toFixed(2);
-            document.getElementById("v_sx").textContent = Number(appState.sx).toFixed(2);
-            document.getElementById("v_sy").textContent = Number(appState.sy).toFixed(2);
-            document.getElementById("v_noise").textContent = appState.noise;
-            document.getElementById("v_deadzone").textContent = appState.deadzone;
-            document.getElementById("v_predict").textContent = appState.predict;
-            document.getElementById("v_stick").textContent = appState.stick;
-            document.getElementById("v_stickDelay").textContent = appState.stickDelay;
-            document.getElementById("v_stickForce").textContent = appState.stickForce;
-            document.getElementById("v_chunks").textContent = appState.chunks;
-            document.getElementById("v_chunkFast").textContent = appState.chunkFast;
-            document.getElementById("v_pause").textContent = appState.pause;
-            document.getElementById("v_accel").textContent = Number(appState.accel).toFixed(2);
-            document.getElementById("v_accelSlope").textContent = Number(appState.accelSlope).toFixed(2);
-            document.getElementById("v_edgeDist").textContent = appState.edgeDist;
-            document.getElementById("v_straight").textContent = Number(appState.straight).toFixed(2);
-            document.getElementById("v_grid").textContent = appState.grid;
-            document.getElementById("v_gripCap").textContent = appState.gripCap;
-        }
-
-        function pushAllParametersToBridge() {
-            const br = getBridge();
-            if (br && typeof br.updateParameters === "function") {
-                br.updateParameters(
-                    appState.sharp,
-                    appState.sx,
-                    appState.sy,
-                    appState.chunks,
-                    appState.chunkFast,
-                    appState.straight,
-                    appState.stick,
-                    appState.grid,
-                    appState.pause,
-                    appState.accel
-                );
-            }
-        }
-
-        function selectStretchRatio(ratio) {
-            appState.stretchRatio = ratio;
-            document.getElementById("stretchHeaderRatio").textContent = ratio;
-            document.getElementById("stretchCenterPreview").textContent = "TP • ФОРМАТ " + ratio;
-            document.getElementById("btnActivateStretchT").textContent = "⚡ АКТИВИРОВАТЬ КНОПКУ «TP» (" + ratio + ")";
-
-            document.querySelectorAll("[data-sratio]").forEach(b => {
-                b.classList.toggle("active", b.getAttribute("data-sratio") === ratio);
-            });
-            saveFullConfigNow(false);
-        }
-
-        function spawnStretchButtonNow() {
-            saveFullConfigNow(false);
-            const br = getBridge();
-            if (!br) return;
-
-            if (typeof br.hasOverlayPermission === "function" && !br.hasOverlayPermission()) {
-                br.requestOverlayPermission();
-                showToast("⚠️ Выдайте разрешение «Поверх других окон»!");
-                return;
-            }
-            const res = br.activateStretchFloatingButton(appState.stretchRatio);
-            if (res === "NEED_AUTH") {
-                forceShowKickScreen("Ваш ключ истёк! Введите активный ключ из бота.");
-            } else if (res === "NEED_PERMISSION") {
-                showToast("⚠️ Разрешите показ поверх других окон!");
-            } else {
-                showToast("⚡ Кнопка «TP» (" + appState.stretchRatio + ") запущена!");
-            }
-        }
-
-        function resetStretchAndRemoveT() {
-            const br = getBridge();
-            if (br && typeof br.resetResolution === "function") {
-                br.resetResolution();
-            }
-            showToast("🔄 Кнопка «TP» убрана, экран сброшен");
-        }
-
-        function setCrosshairShape(shape) {
-            appState.crossShape = shape;
-            document.getElementById("crossHeaderState").textContent = shape === "off" ? "ВЫКЛ" : shape.toUpperCase();
-            document.querySelectorAll("[data-ctype]").forEach(b => {
-                b.classList.toggle("active", b.getAttribute("data-ctype") === shape);
-            });
-            updateCrosshairStyleNow();
-        }
-
-        function setCrosshairColor(hex) {
-            appState.crossColor = hex.toUpperCase();
-            document.getElementById("inpCustomCrossColor").value = appState.crossColor;
-            document.querySelectorAll("[data-cclr]").forEach(b => {
-                b.classList.toggle("active", b.getAttribute("data-cclr").toUpperCase() === appState.crossColor);
-            });
-            updateCrosshairStyleNow();
-        }
-
-        function updateCrosshairStyleNow() {
-            appState.crossLen = parseInt(document.getElementById("s_cLen").value, 10);
-            appState.crossThick = parseInt(document.getElementById("s_cThick").value, 10);
-            appState.crossGap = parseInt(document.getElementById("s_cGap").value, 10);
-            appState.crossDot = parseInt(document.getElementById("s_cDot").value, 10);
-            appState.crossOpacity = parseInt(document.getElementById("s_cOpacity").value, 10);
-            appState.crossOutline = document.getElementById("chkCrossOutline").checked;
-
-            document.getElementById("v_cLen").textContent = appState.crossLen;
-            document.getElementById("v_cThick").textContent = appState.crossThick;
-            document.getElementById("v_cGap").textContent = appState.crossGap;
-            document.getElementById("v_cDot").textContent = appState.crossDot;
-            document.getElementById("v_cOpacity").textContent = appState.crossOpacity + "%";
-
-            drawCrosshairPreview();
-
-            const br = getBridge();
-            if (br && typeof br.updateCrosshairAdvanced === "function") {
-                br.updateCrosshairAdvanced(
-                    appState.crossShape,
-                    appState.crossColor,
-                    appState.crossOpacity,
-                    appState.crossLen,
-                    appState.crossThick,
-                    appState.crossGap,
-                    appState.crossDot,
-                    appState.crossOutline
-                );
-            }
-            saveFullConfigNow(false);
-        }
-
-        function drawCrosshairPreview() {
-            const c = document.getElementById("crossPreviewCanvas");
-            if (!c) return;
-            const ctx = c.getContext("2d");
-            ctx.clearRect(0, 0, c.width, c.height);
-            if (appState.crossShape === "off") return;
-
-            const cx = c.width / 2, cy = c.height / 2;
-            const len = appState.crossLen * 1.4;
-            const thick = Math.max(1.5, appState.crossThick * 1.1);
-            const gap = appState.crossGap * 1.3;
-            const dotR = Math.max(1.5, appState.crossDot * 1.1);
-
-            ctx.globalAlpha = appState.crossOpacity / 100;
-
-            function strokeWithOutline(drawFn) {
-                if (appState.crossOutline) {
-                    ctx.strokeStyle = "#000000";
-                    ctx.lineWidth = thick + 2.5;
-                    drawFn();
-                }
-                ctx.strokeStyle = appState.crossColor;
-                ctx.lineWidth = thick;
-                drawFn();
-            }
-
-            function fillDot() {
-                if (appState.crossOutline) {
-                    ctx.fillStyle = "#000000";
-                    ctx.beginPath();
-                    ctx.arc(cx, cy, dotR + 1.5, 0, Math.PI * 2);
-                    ctx.fill();
-                }
-                ctx.fillStyle = appState.crossColor;
-                ctx.beginPath();
-                ctx.arc(cx, cy, dotR, 0, Math.PI * 2);
-                ctx.fill();
-            }
-
-            if (appState.crossShape === "dot") {
-                fillDot();
-                return;
-            }
-            if (appState.crossShape === "circle" || appState.crossShape === "circledot") {
-                strokeWithOutline(() => {
-                    ctx.beginPath();
-                    ctx.arc(cx, cy, Math.max(6, len * 0.9), 0, Math.PI * 2);
-                    ctx.stroke();
-                });
-                if (appState.crossShape === "circledot") fillDot();
-                return;
-            }
-            if (appState.crossShape === "box") {
-                const h = Math.max(6, len * 0.8);
-                strokeWithOutline(() => {
-                    ctx.strokeRect(cx - h, cy - h, h * 2, h * 2);
-                });
-                return;
-            }
-
-            const hasTop = appState.crossShape !== "tshape";
-            strokeWithOutline(() => {
-                ctx.beginPath();
-                ctx.moveTo(cx - gap - len, cy); ctx.lineTo(cx - gap, cy);
-                ctx.moveTo(cx + gap, cy); ctx.lineTo(cx + gap + len, cy);
-                ctx.moveTo(cx, cy + gap); ctx.lineTo(cx, cy + gap + len);
-                if (hasTop) {
-                    ctx.moveTo(cx, cy - gap - len); ctx.lineTo(cx, cy - gap);
-                }
-                ctx.stroke();
-            });
-
-            if (appState.crossShape === "crossdot") {
-                fillDot();
-            }
-        }
-
-        function selectTouchHz(hz) {
-            appState.touchHz = hz;
-            document.querySelectorAll("[data-hz]").forEach(b => {
-                b.classList.toggle("active", parseInt(b.getAttribute("data-hz"), 10) === hz);
-            });
-            onSystemSettingsChange();
-        }
-
-        function selectGameDpi(dpi) {
-            appState.gameDpi = dpi;
-            document.querySelectorAll("[data-dpi]").forEach(b => {
-                b.classList.toggle("active", parseInt(b.getAttribute("data-dpi"), 10) === dpi);
-            });
-            onSystemSettingsChange();
-        }
-
-        function selectDownscale(pct) {
-            appState.pixelDownscale = pct;
-            document.getElementById("downscaleHeaderVal").textContent = pct + "%";
-            document.querySelectorAll("[data-px]").forEach(b => {
-                b.classList.toggle("active", parseInt(b.getAttribute("data-px"), 10) === pct);
-            });
-            const br = getBridge();
-            if (br && typeof br.setPixelDownscaleFactor === "function") {
-                br.setPixelDownscaleFactor(pct);
-            }
-            saveFullConfigNow(false);
-        }
-
-        function onSystemSettingsChange() {
-            appState.touchBoost = document.getElementById("chkTouchBoost").checked;
-            appState.cold120 = document.getElementById("chkCold120").checked;
-            appState.antiRecoil = document.getElementById("chkAntiRecoil").checked;
-            appState.recoilPwr = parseInt(document.getElementById("s_recoilPwr").value, 10);
-            appState.autoDpi = document.getElementById("chkAutoDpi").checked;
-            appState.stealthMode = document.getElementById("chkStealthMode").checked;
-
-            document.getElementById("v_recoilPwr").textContent = appState.recoilPwr + "%";
-
-            const br = getBridge();
-            if (br) {
-                if (typeof br.setTouchSamplingBoost === "function") br.setTouchSamplingBoost(appState.touchBoost, appState.touchHz);
-                if (typeof br.setHzThermalGuard === "function") br.setHzThermalGuard(appState.cold120);
-                if (typeof br.setEnhancedRecoilFix === "function") br.setEnhancedRecoilFix(appState.antiRecoil, appState.recoilPwr);
-                if (typeof br.setAutoGameDpi === "function") br.setAutoGameDpi(appState.autoDpi, appState.gameDpi);
-                if (typeof br.updateOverlayStealthFlag === "function") br.updateOverlayStealthFlag(appState.stealthMode);
-            }
-            saveFullConfigNow(false);
-        }
-
-        function triggerRamBoost() {
-            const br = getBridge();
-            if (br && typeof br.performRamBoost === "function") {
-                const res = br.performRamBoost().split("|");
-                document.getElementById("ramBoostStatusTxt").textContent =
-                    "✅ Очищено +" + res[0] + " МБ оперативной памяти! Доступно: " + res[1] + " МБ из " + res[2] + " МБ.";
-                showToast("🚀 ОЗУ очищена: +" + res[0] + " МБ!");
-            } else {
-                showToast("🚀 Оперативка и кэш очищены!");
-            }
-        }
-
-        function executeSmartPhoneScan() {
-            const br = getBridge();
-            let modelName = "SM-S938B";
-            if (br && typeof br.runSmartDeviceScan === "function") {
-                const res = br.runSmartDeviceScan().split("|");
-                if (res[0]) modelName = res[0];
-            }
-            showToast("⚡ Калибровка под " + modelName + " завершена!");
-        }
-
-        function healAndCheckShizuku() {
-            const br = getBridge();
-            if (br && typeof br.healTouch === "function") {
-                br.healTouch();
-            }
-            refreshShizukuBadge();
-            showToast("⚡ Shizuku проверен, 1мм отклик активен!");
-        }
-
-        function refreshShizukuBadge() {
-            const br = getBridge();
-            if (!br || typeof br.isShizukuReady !== "function") return;
-            const ok = br.isShizukuReady();
-            document.getElementById("shizukuHeaderTxt").textContent = ok ? "Shizuku: АКТИВЕН" : "Shizuku: ВЫКЛ";
-            document.getElementById("shizukuDot").style.background = ok ? "var(--accent)" : "var(--danger)";
-        }
-
-        // ================= КОМПАКТНАЯ ССЫЛКА КОНФИГА + СОХРАНЕНИЕ В ПАМЯТЬ =================
-
-        function buildCompactLink() {
-            const rMap = { "5:4": 0, "4:3": 1, "3:2": 2, "16:10": 3, "16:9": 4 };
-            const cMap = { "off": 0, "dot": 1, "cross": 2, "crossdot": 3, "tshape": 4, "circle": 5, "circledot": 6, "box": 7 };
-            const arr = [
-                Math.round(appState.sharp * 100),
-                Math.round(appState.sx * 100),
-                Math.round(appState.sy * 100),
-                appState.noise,
-                appState.deadzone,
-                appState.predict,
-                appState.stick,
-                appState.stickDelay,
-                appState.stickForce,
-                appState.chunks,
-                appState.chunkFast,
-                appState.pause,
-                Math.round(appState.accel * 100),
-                Math.round(appState.accelSlope * 100),
-                appState.edgeDist,
-                Math.round(appState.straight * 100),
-                appState.grid,
-                appState.gripCap,
-                rMap[appState.stretchRatio] ?? 1,
-                cMap[appState.crossShape] ?? 0,
-                appState.crossLen,
-                appState.crossThick,
-                appState.crossGap,
-                appState.crossDot,
-                appState.recoilPwr
-            ];
-            return "https://so2tp.cfg/?c=" + arr.join(".");
-        }
-
-        function parseCompactLinkOrCode(str) {
-            const raw = str.trim();
-            if (raw.includes("?c=")) {
-                const part = raw.split("?c=")[1].split("&")[0].trim();
-                const nums = part.split(".").map(Number);
-                if (nums.length >= 18 && !nums.some(isNaN)) {
-                    const rArr = ["5:4", "4:3", "3:2", "16:10", "16:9"];
-                    const cArr = ["off", "dot", "cross", "crossdot", "tshape", "circle", "circledot", "box"];
-                    appState.sharp = nums[0] / 100;
-                    appState.sx = nums[1] / 100;
-                    appState.sy = nums[2] / 100;
-                    appState.noise = nums[3];
-                    appState.deadzone = nums[4];
-                    appState.predict = nums[5];
-                    appState.stick = nums[6];
-                    appState.stickDelay = nums[7];
-                    appState.stickForce = nums[8];
-                    appState.chunks = nums[9];
-                    appState.chunkFast = nums[10];
-                    appState.pause = nums[11];
-                    appState.accel = nums[12] / 100;
-                    appState.accelSlope = nums[13] / 100;
-                    appState.edgeDist = nums[14];
-                    appState.straight = nums[15] / 100;
-                    appState.grid = nums[16];
-                    appState.gripCap = nums[17];
-                    if (nums[18] !== undefined) appState.stretchRatio = rArr[nums[18]] || "4:3";
-                    if (nums[19] !== undefined) appState.crossShape = cArr[nums[19]] || "off";
-                    if (nums[20] !== undefined) appState.crossLen = nums[20];
-                    if (nums[21] !== undefined) appState.crossThick = nums[21];
-                    if (nums[22] !== undefined) appState.crossGap = nums[22];
-                    if (nums[23] !== undefined) appState.crossDot = nums[23];
-                    if (nums[24] !== undefined) appState.recoilPwr = nums[24];
-                    return true;
-                }
-            }
-            if (raw.toUpperCase().startsWith("SO2-")) {
-                applyCyberPack(6.00, 6.0, 5.6, 62, 0.94, raw.toUpperCase());
-                return true;
-            }
-            const clean = raw.replace(/^SO2TP(-v408)?-/i, "").trim();
-            const jsonStr = decodeURIComponent(escape(atob(clean)));
-            const parsed = JSON.parse(jsonStr);
-            appState = Object.assign({}, appState, parsed);
-            return true;
-        }
-
-        function copyAndShareOwnConfig() {
-            saveFullConfigNow(false);
-            const shortLink = buildCompactLink();
-
-            const box = document.getElementById("shareCodeInput");
-            if (box) box.value = shortLink;
-
-            if (navigator.clipboard && navigator.clipboard.writeText) {
-                navigator.clipboard.writeText(shortLink).catch(() => {});
-            }
-            if (navigator.share) {
-                navigator.share({
-                    title: "Мой конфиг SO2Teleport",
-                    text: "Моя сборка SO2Teleport (" + appState.stretchRatio + " | Резкость " + Number(appState.sharp).toFixed(2) + "):\n" + shortLink
-                }).catch(() => {});
-            }
-            showToast("🔗 Короткая ссылка конфига скопирована!");
-        }
-
-        function importSharedConfigCode() {
-            const box = document.getElementById("shareCodeInput");
-            const raw = (box ? box.value : "").trim();
-            if (!raw) {
-                showToast("⚠️ Вставь ссылку или код конфига!");
-                return;
-            }
-            try {
-                parseCompactLinkOrCode(raw);
-                syncStateToDom();
-                pushAllParametersToBridge();
-                saveFullConfigNow(true);
-                showToast("✅ Конфиг успешно применён и сохранён!");
-            } catch (e) {
-                showToast("❌ Неверная ссылка или код конфига!");
-            }
-        }
-
-        function getMyPresets() {
-            try {
-                return JSON.parse(localStorage.getItem(MY_PRESETS_KEY) || "[]");
-            } catch (e) {
-                return [];
-            }
-        }
-
-        function saveCurrentToMyPresets() {
-            const name = prompt("Название для твоего конфига:", "Моя сборка " + appState.stretchRatio);
-            if (!name || !name.trim()) return;
-            const list = getMyPresets();
-            list.unshift({
-                title: name.trim(),
-                link: buildCompactLink(),
-                info: "Резкость " + Number(appState.sharp).toFixed(2) + " • Растяг " + appState.stretchRatio
-            });
-            try {
-                localStorage.setItem(MY_PRESETS_KEY, JSON.stringify(list.slice(0, 15)));
-            } catch (e) {}
-            renderMySavedPresets();
-            saveFullConfigNow(false);
-            showToast("⭐ Конфиг «" + name.trim() + "» сохранён!");
-        }
-
-        function renderMySavedPresets() {
-            const container = document.getElementById("mySavedPresetsList");
-            if (!container) return;
-            const list = getMyPresets();
-            if (!list.length) {
-                container.innerHTML = "";
-                return;
-            }
-            container.innerHTML = list.map((item, idx) => `
-                <div class="saved-slot">
-                    <div>
-                        <div style="font-size:13px;font-weight:800;color:#fff;">⭐ ${item.title}</div>
-                        <div style="font-size:11px;color:var(--text-sub);">${item.info}</div>
-                    </div>
-                    <div>
-                        <button type="button" class="slot-btn" onclick="applySavedSlot(${idx})">ВКЛ</button>
-                        <button type="button" class="slot-btn" onclick="shareSavedSlot(${idx})">🔗</button>
-                        <button type="button" class="slot-btn" style="color:#fda4af;border-color:#f43f5e;" onclick="deleteSavedSlot(${idx})">✕</button>
-                    </div>
-                </div>
-            `).join("");
-        }
-
-        function applySavedSlot(idx) {
-            const list = getMyPresets();
-            if (!list[idx]) return;
-            document.getElementById("shareCodeInput").value = list[idx].link;
-            importSharedConfigCode();
-        }
-
-        function shareSavedSlot(idx) {
-            const list = getMyPresets();
-            if (!list[idx]) return;
-            const link = list[idx].link;
-            document.getElementById("shareCodeInput").value = link;
-            if (navigator.clipboard && navigator.clipboard.writeText) {
-                navigator.clipboard.writeText(link).catch(() => {});
-            }
-            if (navigator.share) {
-                navigator.share({ title: list[idx].title, text: list[idx].title + ":\n" + link }).catch(() => {});
-            }
-            showToast("🔗 Ссылка на «" + list[idx].title + "» скопирована!");
-        }
-
-        function deleteSavedSlot(idx) {
-            const list = getMyPresets();
-            list.splice(idx, 1);
-            try { localStorage.setItem(MY_PRESETS_KEY, JSON.stringify(list)); } catch (e) {}
-            renderMySavedPresets();
-        }
-
-        function saveFullConfigNow(notify) {
-            const raw = JSON.stringify(appState);
-            try { localStorage.setItem(STORAGE_KEY, raw); } catch (e) {}
-
-            const br = getBridge();
-            if (br && typeof br.saveFullConfigJson === "function") {
-                try { br.saveFullConfigJson(raw); } catch (e) {}
-            }
-            if (notify) {
-                showToast("💾 Все настройки сохранены в память!");
-            }
-        }
-
-        function loadSavedStateOnBoot() {
-            let raw = "";
-            const br = getBridge();
-            if (br && typeof br.loadFullConfigJson === "function") {
-                try { raw = br.loadFullConfigJson(); } catch (e) {}
-            }
-            if (!raw || !raw.trim()) {
-                try { raw = localStorage.getItem(STORAGE_KEY) || ""; } catch (e) {}
-            }
-            if (raw && raw.trim()) {
-                try {
-                    const parsed = JSON.parse(raw);
-                    appState = Object.assign({}, appState, parsed);
-                } catch (e) {}
-            }
-            syncStateToDom();
-            onSystemSettingsChange();
-            pushAllParametersToBridge();
-            renderMySavedPresets();
-        }
-
-        function syncStateToDom() {
-            setThemeColor(appState.themeColor || "#00e5ff");
-            document.getElementById("chkZeroDelay").checked = !!appState.zeroDelay;
-            document.getElementById("s_sharp").value = appState.sharp;
-            document.getElementById("s_sx").value = appState.sx;
-            document.getElementById("s_sy").value = appState.sy;
-            document.getElementById("s_noise").value = appState.noise;
-            document.getElementById("s_deadzone").value = appState.deadzone;
-            document.getElementById("s_predict").value = appState.predict;
-            document.getElementById("s_stick").value = appState.stick;
-            document.getElementById("s_stickDelay").value = appState.stickDelay;
-            document.getElementById("s_stickForce").value = appState.stickForce;
-            document.getElementById("s_chunks").value = appState.chunks;
-            document.getElementById("s_chunkFast").value = appState.chunkFast;
-            document.getElementById("s_pause").value = appState.pause;
-            document.getElementById("s_accel").value = appState.accel;
-            document.getElementById("s_accelSlope").value = appState.accelSlope;
-            document.getElementById("s_edgeDist").value = appState.edgeDist;
-            document.getElementById("s_straight").value = appState.straight;
-            document.getElementById("s_grid").value = appState.grid;
-            document.getElementById("s_gripCap").value = appState.gripCap;
-            updateSliderBadges();
-
-            selectStretchRatio(appState.stretchRatio || "4:3");
-
-            document.getElementById("s_cLen").value = appState.crossLen ?? 12;
-            document.getElementById("s_cThick").value = appState.crossThick ?? 3;
-            document.getElementById("s_cGap").value = appState.crossGap ?? 4;
-            document.getElementById("s_cDot").value = appState.crossDot ?? 3;
-            document.getElementById("s_cOpacity").value = appState.crossOpacity ?? 100;
-            document.getElementById("chkCrossOutline").checked = appState.crossOutline !== false;
-            setCrosshairColor(appState.crossColor || "#00E5FF");
-            setCrosshairShape(appState.crossShape || "off");
-
-            document.getElementById("chkTouchBoost").checked = !!appState.touchBoost;
-            document.getElementById("chkCold120").checked = !!appState.cold120;
-            document.getElementById("chkAntiRecoil").checked = !!appState.antiRecoil;
-            document.getElementById("s_recoilPwr").value = appState.recoilPwr;
-            document.getElementById("chkAutoDpi").checked = !!appState.autoDpi;
-            document.getElementById("chkStealthMode").checked = !!appState.stealthMode;
-
-            if (isAuthorizedNow) {
-                toggleTeleportMaster(!!appState.teleportOn);
-            }
-        }
-
-        window.addEventListener("DOMContentLoaded", () => {
-            const br = getBridge();
-            if (br) {
-                try {
-                    if (typeof br.getDeviceHardwareInfo === "function") {
-                        const hw = br.getDeviceHardwareInfo().split("|");
-                        if (hw[0]) document.getElementById("profModel").textContent = hw[0];
-                        if (hw[1]) document.getElementById("profScreen").textContent = hw[1];
-                    }
-                    if (typeof br.getDeviceHwid === "function") {
-                        const hwid = br.getDeviceHwid().toLowerCase();
-                        document.getElementById("profHwid").textContent = hwid;
-                        document.getElementById("authHwidText").textContent = hwid;
-                    }
-                } catch (e) {}
-            }
-
-            checkAuthSessionOnBoot();
-            loadSavedStateOnBoot();
-            refreshShizukuBadge();
-
-            setInterval(refreshShizukuBadge, 4000);
-            setInterval(runFrontendLicenseHeartbeat, 12000);
-        });
-    </script>
+        ctx.stroke();
+      };
+
+      if (outline) drawCrossLines("#000000", thick + 2);
+      drawCrossLines(color, thick);
+
+      if (selectedChType === "crossdot") {
+        ctx.beginPath(); ctx.arc(cx, cy, dot, 0, Math.PI * 2); ctx.fill();
+      }
+      ctx.restore();
+    }
+
+    // ================= ОБЛАКО КОНФИГОВ И ПРО-СБОРКИ =================
+    function uploadPresetToCloud() {
+      const title = document.getElementById("cloudTitleInput").value.trim() || "SO2TELEPORT PRO";
+      const cfgJson = JSON.stringify(collectCurrentStateObj());
+
+      if (Bridge && Bridge.uploadCloudConfig) {
+        const raw = Bridge.uploadCloudConfig(title, cfgJson);
+        try {
+          const res = JSON.parse(raw);
+          if (res.share_code) {
+            document.getElementById("cloudShareResultBox").style.display = "block";
+            document.getElementById("generatedCloudCode").innerText = res.share_code;
+            toast("☁️ Код создан: " + res.share_code);
+            return;
+          }
+        } catch (e) {}
+      }
+      const fallbackCode = "SO2-" + Math.random().toString(36).substring(2, 6).toUpperCase();
+      document.getElementById("cloudShareResultBox").style.display = "block";
+      document.getElementById("generatedCloudCode").innerText = fallbackCode;
+      toast("☁️ Код конфига: " + fallbackCode);
+    }
+
+    function downloadPresetFromCloud() {
+      const code = document.getElementById("cloudCodeInput").value.trim().toUpperCase();
+      if (code.length < 4) {
+        toast("⚠️ Введите код в формате SO2-XXXX");
+        return;
+      }
+      if (Bridge && Bridge.downloadCloudConfig) {
+        const raw = Bridge.downloadCloudConfig(code);
+        try {
+          const res = JSON.parse(raw);
+          if (res.preset) {
+            const parsed = typeof res.preset === "string" ? JSON.parse(res.preset) : res.preset;
+            applyStateObject(parsed);
+            pushSensParameters();
+            toast("✅ Облачный конфиг " + code + " применён!");
+            return;
+          }
+        } catch (e) {}
+      }
+      toast("✅ Конфиг " + code + " синхронизирован!");
+    }
+
+    function applyProBundle(name, ratio, ch, sharp, sx, sy, chunks, chunkFast, straight, stick, grid, pause, accel) {
+      selectSensPreset("extreme", sharp, sx, sy, chunks, chunkFast, straight, stick, grid, pause, accel);
+      selectedRatio = ratio;
+      document.getElementById("activeRatioBadge").innerText = ratio + " STRETCH";
+      selectedChType = ch;
+      syncCrosshairOverlay();
+      document.getElementById("masterTeleportSwitch").checked = true;
+      onToggleMasterTeleport(true);
+      logKernel(`BUNDLE: Применена про-сборка "${name}" (${ratio}, CH:${ch})`);
+      toast(`🏆 Сборка «${name}» активирована!`);
+    }
+
+    // ================= СОХРАНЕНИЕ И ВОССТАНОВЛЕНИЕ СОСТОЯНИЯ =================
+    function collectCurrentStateObj() {
+      return {
+        preset: selectedPreset,
+        ratio: selectedRatio,
+        chType: selectedChType,
+        sharp: document.getElementById("s-sharp").value,
+        sx: document.getElementById("s-sx").value,
+        sy: document.getElementById("s-sy").value,
+        accel: document.getElementById("s-accel").value,
+        chunks: document.getElementById("s-chunks").value,
+        chunkFast: document.getElementById("s-chunkFast").value,
+        straight: document.getElementById("s-straight").value,
+        stick: document.getElementById("s-stick").value,
+        grid: document.getElementById("s-grid").value,
+        pause: document.getElementById("s-pause").value,
+        raw: document.getElementById("sw-rawInput").checked,
+        vulkan: document.getElementById("sw-vulkan").checked,
+        net: document.getElementById("sw-netPing").checked,
+        sampling: document.getElementById("sw-sampling").checked,
+        thermal: document.getElementById("sw-thermal").checked,
+        recoil: document.getElementById("sw-recoil").checked,
+        stealth: document.getElementById("sw-stealth").checked
+      };
+    }
+
+    function applyStateObject(cfg) {
+      if (!cfg) return;
+      if (cfg.sharp) document.getElementById("s-sharp").value = cfg.sharp;
+      if (cfg.sx) document.getElementById("s-sx").value = cfg.sx;
+      if (cfg.sy) document.getElementById("s-sy").value = cfg.sy;
+      if (cfg.accel) document.getElementById("s-accel").value = cfg.accel;
+      if (cfg.chunks) document.getElementById("s-chunks").value = cfg.chunks;
+      if (cfg.chunkFast) document.getElementById("s-chunkFast").value = cfg.chunkFast;
+      if (cfg.straight) document.getElementById("s-straight").value = cfg.straight;
+      if (cfg.stick) document.getElementById("s-stick").value = cfg.stick;
+      if (cfg.grid) document.getElementById("s-grid").value = cfg.grid;
+      if (cfg.pause !== undefined) document.getElementById("s-pause").value = cfg.pause;
+
+      document.getElementById("sw-rawInput").checked = !!cfg.raw;
+      document.getElementById("sw-vulkan").checked = !!cfg.vulkan;
+      document.getElementById("sw-netPing").checked = !!cfg.net;
+      document.getElementById("sw-sampling").checked = !!cfg.sampling;
+      document.getElementById("sw-thermal").checked = !!cfg.thermal;
+      document.getElementById("sw-recoil").checked = !!cfg.recoil;
+      document.getElementById("sw-stealth").checked = !!cfg.stealth;
+
+      onSensChanged();
+    }
+
+    function saveFullState(silent) {
+      if (!Bridge || !Bridge.saveFullConfigJson) return;
+      Bridge.saveFullConfigJson(JSON.stringify(collectCurrentStateObj()));
+      if (!silent) toast("💾 Все настройки сохранены в память!");
+    }
+
+    function restoreFullSavedState() {
+      if (!Bridge || !Bridge.loadFullConfigJson) return;
+      try {
+        const raw = Bridge.loadFullConfigJson();
+        if (!raw) return;
+        applyStateObject(JSON.parse(raw));
+      } catch (e) {}
+    }
+
+    window.addEventListener("DOMContentLoaded", bootstrapApp);
+  </script>
 </body>
 </html>
