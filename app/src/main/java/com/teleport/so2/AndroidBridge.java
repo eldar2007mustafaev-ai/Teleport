@@ -38,6 +38,8 @@ import java.util.concurrent.TimeUnit;
 
 public class AndroidBridge {
 
+    private static final String PREF_FIRST_LOGIN_DONE = "v410_manual_login_done";
+
     private final Context context;
     private final Activity activity;
     private final SharedPreferences prefs;
@@ -65,16 +67,31 @@ public class AndroidBridge {
     public AndroidBridge(Activity activity) {
         this.activity = activity;
         this.context = activity.getApplicationContext();
-        this.prefs = context.getSharedPreferences("SO2TeleportPrefs_V408", Context.MODE_PRIVATE);
+        this.prefs = context.getSharedPreferences("SO2TeleportPrefs_V410", Context.MODE_PRIVATE);
         this.legacyPrefs = context.getSharedPreferences("so2_teleport_prefs", Context.MODE_PRIVATE);
         this.windowManager = (WindowManager) context.getSystemService(Context.WINDOW_SERVICE);
+
+        // Сохраняем ранее активированный ключ покупателя в резерв, чтобы он не пропал,
+        // но требуем обязательный ручной вход при первом запуске новой сборки
+        String oldLegacyKey = legacyPrefs.getString("license_key", "");
+        if (oldLegacyKey == null || oldLegacyKey.trim().isEmpty()) {
+            oldLegacyKey = ProfileManager.getSavedKey(context);
+        }
+        if (oldLegacyKey != null && !oldLegacyKey.trim().isEmpty()) {
+            prefs.edit().putString("backup_buyer_key", oldLegacyKey.trim().toUpperCase()).apply();
+        }
+
+        if (!prefs.getBoolean(PREF_FIRST_LOGIN_DONE, false)) {
+            ApiManager.invalidateSession();
+        }
+
         TeleportEngine.init(context);
         TeleportEngine.requestShizukuPermissionIfNeeded();
         startLicenseWatchdog();
     }
 
     /**
-     * Защита ранее купленных ключей и ключей из assets/keys.json
+     * Проверка купленных ключей (владельца, ранее активированных покупателями и из assets/keys.json)
      */
     private boolean isLegacyOrOwnerKey(String cleanKey) {
         if (cleanKey == null || cleanKey.isEmpty()) return false;
@@ -90,11 +107,18 @@ public class AndroidBridge {
         for (String k : ownerAndBuyerKeys) {
             if (k.equalsIgnoreCase(cleanKey)) return true;
         }
-        // Если ключ уже был успешно активирован ранее на этом устройстве в старой версии
+
+        // Если этот ключ уже был куплен и активирован на этом телефоне ранее
+        String backupBuyerKey = prefs.getString("backup_buyer_key", "");
+        if (!backupBuyerKey.isEmpty() && backupBuyerKey.equalsIgnoreCase(cleanKey)) {
+            return true;
+        }
+
         String previouslyActivated = ProfileManager.getSavedKey(context);
         if (!previouslyActivated.isEmpty() && previouslyActivated.equalsIgnoreCase(cleanKey)) {
             return true;
         }
+
         try {
             InputStream is = context.getAssets().open("keys.json");
             Scanner s = new Scanner(is).useDelimiter("\\A");
@@ -113,12 +137,13 @@ public class AndroidBridge {
         return false;
     }
 
+    // Фоновый сторож: каждые 15 секунд проверяет на сервере бота, не истёк ли ключ
     private void startLicenseWatchdog() {
         mainHandler.postDelayed(new Runnable() {
             @Override
             public void run() {
                 final String savedKey = getSavedKey();
-                if (!savedKey.isEmpty()) {
+                if (!savedKey.isEmpty() && prefs.getBoolean(PREF_FIRST_LOGIN_DONE, false)) {
                     networkExecutor.execute(() -> {
                         String raw = ApiManager.verifyLicense(savedKey, getDeviceHwid());
                         try {
@@ -135,13 +160,16 @@ public class AndroidBridge {
                         } catch (Exception ignored) {}
                     });
                 }
-                mainHandler.postDelayed(this, 20000);
+                mainHandler.postDelayed(this, 15000);
             }
-        }, 20000);
+        }, 15000);
     }
 
     private void forceKickExpiredUser(String reasonToast) {
-        prefs.edit().remove("saved_license_key").apply();
+        prefs.edit()
+                .remove("saved_license_key")
+                .putBoolean(PREF_FIRST_LOGIN_DONE, false)
+                .apply();
         ApiManager.invalidateSession();
         TeleportEngine.stopTeleport();
 
@@ -168,7 +196,9 @@ public class AndroidBridge {
                 ((MainActivity) activity).updateCrosshair("off");
             }
 
-            Toast.makeText(context, "⛔ " + reasonToast, Toast.LENGTH_LONG).show();
+            if (reasonToast != null && !reasonToast.isEmpty()) {
+                Toast.makeText(context, "⛔ " + reasonToast, Toast.LENGTH_LONG).show();
+            }
 
             if (activity != null && !activity.isFinishing()) {
                 try {
@@ -177,7 +207,8 @@ public class AndroidBridge {
                         android.view.ViewGroup vg = (android.view.ViewGroup) content;
                         if (vg.getChildCount() > 0 && vg.getChildAt(0) instanceof android.webkit.WebView) {
                             android.webkit.WebView wv = (android.webkit.WebView) vg.getChildAt(0);
-                            String safeMsg = reasonToast.replace("'", "").replace("\"", "");
+                            String safeMsg = (reasonToast == null ? "Введите лицензионный ключ" : reasonToast)
+                                    .replace("'", "").replace("\"", "");
                             wv.evaluateJavascript(
                                     "try { if(typeof forceShowKickScreen==='function') forceShowKickScreen('" + safeMsg + "'); } catch(e){}",
                                     null
@@ -508,13 +539,13 @@ public class AndroidBridge {
     @JavascriptInterface
     public boolean saveFullConfigJson(String jsonConfig) {
         if (jsonConfig == null || jsonConfig.trim().isEmpty()) return false;
-        prefs.edit().putString("full_user_config_v408", jsonConfig).apply();
+        prefs.edit().putString("full_user_config_v410", jsonConfig).apply();
         return true;
     }
 
     @JavascriptInterface
     public String loadFullConfigJson() {
-        return prefs.getString("full_user_config_v408", "");
+        return prefs.getString("full_user_config_v410", "");
     }
 
     @JavascriptInterface
@@ -782,7 +813,7 @@ public class AndroidBridge {
         });
     }
 
-    // ================= АВТОРИЗАЦИЯ И ЗАЩИТА КЛЮЧЕЙ ПОКУПАТЕЛЕЙ =================
+    // ================= ЖЁСТКАЯ АВТОРИЗАЦИЯ ПРИ ПЕРВОМ ВХОДЕ И ЗАЩИТА КЛЮЧЕЙ =================
 
     @JavascriptInterface
     public String getDeviceHwid() {
@@ -798,18 +829,16 @@ public class AndroidBridge {
         return model + "|" + shortPx + "x" + longPx + " (120 Гц)";
     }
 
+    /**
+     * Если пользователь ещё не прошёл первый ручной вход через окно ключа (PREF_FIRST_LOGIN_DONE == false),
+     * всегда возвращаем пустую строку, чтобы окно авторизации 100% открылось при первом входе!
+     */
     @JavascriptInterface
     public String getSavedKey() {
+        if (!prefs.getBoolean(PREF_FIRST_LOGIN_DONE, false)) {
+            return "";
+        }
         String savedKey = prefs.getString("saved_license_key", "");
-        if (savedKey == null || savedKey.trim().isEmpty()) {
-            savedKey = legacyPrefs.getString("license_key", "");
-        }
-        if (savedKey == null || savedKey.trim().isEmpty()) {
-            savedKey = ProfileManager.getSavedKey(context);
-        }
-        if (savedKey != null && !savedKey.trim().isEmpty()) {
-            prefs.edit().putString("saved_license_key", savedKey.trim().toUpperCase()).apply();
-        }
         return savedKey == null ? "" : savedKey.trim().toUpperCase();
     }
 
@@ -845,6 +874,17 @@ public class AndroidBridge {
         return "АКТИВНА (30 ДНЕЙ)";
     }
 
+    private void markKeyActivated(String nick, String cleanKey) {
+        ApiManager.setSessionVerified(true);
+        prefs.edit()
+                .putString("saved_license_key", cleanKey)
+                .putString("backup_buyer_key", cleanKey)
+                .putBoolean(PREF_FIRST_LOGIN_DONE, true)
+                .apply();
+        legacyPrefs.edit().putString("license_key", cleanKey).apply();
+        ProfileManager.saveActivatedProfile(context, nick, cleanKey);
+    }
+
     @JavascriptInterface
     public String activateLicenseKey(String key) {
         if (key == null || key.trim().length() < 5) {
@@ -861,38 +901,37 @@ public class AndroidBridge {
             JSONObject res = new JSONObject(raw);
             String status = res.optString("status", "");
 
-            boolean ok = res.optBoolean("ok", false)
-                    || "ok".equalsIgnoreCase(status)
-                    || "active".equalsIgnoreCase(status);
+            boolean blocked = res.optBoolean("blocked", false)
+                    || "expired".equalsIgnoreCase(status)
+                    || "blocked".equalsIgnoreCase(status)
+                    || "device_mismatch".equalsIgnoreCase(status);
 
-            if (ok && !res.optBoolean("blocked", false)) {
-                ApiManager.setSessionVerified(true);
-                prefs.edit().putString("saved_license_key", cleanKey).apply();
-                legacyPrefs.edit().putString("license_key", cleanKey).apply();
-                ProfileManager.saveActivatedProfile(context, nick, cleanKey);
+            boolean ok = (res.optBoolean("ok", false)
+                    || "ok".equalsIgnoreCase(status)
+                    || "active".equalsIgnoreCase(status)) && !blocked;
+
+            if (ok) {
+                markKeyActivated(nick, cleanKey);
                 String label = formatSubscriptionLabel(res, cleanKey);
                 lastServerSubscriptionText = label;
                 return "OK|" + label;
             }
 
+            // Если ключ из списка ранее купленных или из assets/keys.json
             if (isLegacyOrOwnerKey(cleanKey)) {
-                ApiManager.setSessionVerified(true);
-                prefs.edit().putString("saved_license_key", cleanKey).apply();
-                legacyPrefs.edit().putString("license_key", cleanKey).apply();
-                ProfileManager.saveActivatedProfile(context, nick, cleanKey);
+                markKeyActivated(nick, cleanKey);
                 String label = cleanKey.startsWith("TP90D") ? "АКТИВНА (89 дн. 7 ч.)" : "АКТИВНА (30 ДНЕЙ)";
                 lastServerSubscriptionText = label;
                 return "OK|" + label;
             }
 
-            return "ERROR|" + res.optString("message", "Ключ не найден или привязан к другому устройству!");
+            return "ERROR|" + res.optString("message", "Ключ не найден, истёк или привязан к другому устройству!");
         } catch (Exception e) {
             if (isLegacyOrOwnerKey(cleanKey)) {
-                ApiManager.setSessionVerified(true);
-                prefs.edit().putString("saved_license_key", cleanKey).apply();
-                legacyPrefs.edit().putString("license_key", cleanKey).apply();
-                ProfileManager.saveActivatedProfile(context, nick, cleanKey);
-                return "OK|АКТИВНА (89 дн. 7 ч.)";
+                markKeyActivated(nick, cleanKey);
+                String label = cleanKey.startsWith("TP90D") ? "АКТИВНА (89 дн. 7 ч.)" : "АКТИВНА (30 ДНЕЙ)";
+                lastServerSubscriptionText = label;
+                return "OK|" + label;
             }
             return "ERROR|Нет связи с сервером авторизации. Проверьте интернет!";
         }
@@ -900,6 +939,10 @@ public class AndroidBridge {
 
     @JavascriptInterface
     public String verifyLicenseKey(String key) {
+        if (!prefs.getBoolean(PREF_FIRST_LOGIN_DONE, false)) {
+            return "EXPIRED|Введите ваш логин и лицензионный ключ";
+        }
+
         final String cleanKey = (key != null && !key.trim().isEmpty())
                 ? key.trim().toUpperCase()
                 : getSavedKey();
@@ -915,10 +958,6 @@ public class AndroidBridge {
             String raw = future.get(4200, TimeUnit.MILLISECONDS);
             JSONObject res = new JSONObject(raw);
             String status = res.optString("status", "");
-
-            if ("offline".equalsIgnoreCase(status)) {
-                return "OFFLINE|" + lastServerSubscriptionText;
-            }
 
             boolean blockedOrExpired = "expired".equalsIgnoreCase(status)
                     || "blocked".equalsIgnoreCase(status)
@@ -946,6 +985,10 @@ public class AndroidBridge {
                 return "OK|" + label;
             }
 
+            if ("offline".equalsIgnoreCase(status) && ApiManager.isSessionVerified()) {
+                return "OK|" + lastServerSubscriptionText;
+            }
+
             if (isLegacyOrOwnerKey(cleanKey)) {
                 ApiManager.setSessionVerified(true);
                 return "OK|" + lastServerSubscriptionText;
@@ -955,7 +998,10 @@ public class AndroidBridge {
             forceKickExpiredUser(msg);
             return "EXPIRED|" + msg;
         } catch (Exception e) {
-            return "OFFLINE|" + lastServerSubscriptionText;
+            if (isLegacyOrOwnerKey(cleanKey) || ApiManager.isSessionVerified()) {
+                return "OK|" + lastServerSubscriptionText;
+            }
+            return "EXPIRED|Проверьте подключение к интернету";
         }
     }
 
@@ -1114,8 +1160,21 @@ public class AndroidBridge {
                 }
                 paint.setStyle(Paint.Style.STROKE);
                 canvas.drawCircle(cx, cy, rad, paint);
-                paint.setStyle(Paint.Style.FILL);
-                canvas.drawCircle(cx, cy, dotRadPx * 0.8f, paint);
+                if ("circledot".equalsIgnoreCase(type)) {
+                    paint.setStyle(Paint.Style.FILL);
+                    canvas.drawCircle(cx, cy, dotRadPx, paint);
+                }
+                return;
+            }
+
+            if ("box".equalsIgnoreCase(type)) {
+                float half = Math.max(4f * d, lenPx * 0.75f);
+                if (outline) {
+                    outlinePaint.setStyle(Paint.Style.STROKE);
+                    canvas.drawRect(cx - half, cy - half, cx + half, cy + half, outlinePaint);
+                }
+                paint.setStyle(Paint.Style.STROKE);
+                canvas.drawRect(cx - half, cy - half, cx + half, cy + half, paint);
                 return;
             }
 
@@ -1136,6 +1195,11 @@ public class AndroidBridge {
             canvas.drawLine(cx, cy + gapPx, cx, cy + gapPx + lenPx, paint);
             if (hasTop) {
                 canvas.drawLine(cx, cy - gapPx - lenPx, cx, cy - gapPx, paint);
+            }
+
+            if ("crossdot".equalsIgnoreCase(type)) {
+                paint.setStyle(Paint.Style.FILL);
+                canvas.drawCircle(cx, cy, dotRadPx, paint);
             }
         }
     }
