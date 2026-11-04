@@ -42,10 +42,20 @@
       transition: background-image 0.25s ease;
     }
 
+    /* БЛОКИРОВКА ИНТЕРФЕЙСА ДО ПРОВЕРКИ КЛЮЧА */
+    body.locked-session .app-container,
+    body.locked-session .bottom-dock {
+      pointer-events: none !important;
+      user-select: none !important;
+      filter: blur(12px);
+      opacity: 0.25;
+    }
+
     .app-container {
       max-width: 480px;
       margin: 0 auto;
       padding: 0 14px;
+      transition: filter 0.25s ease, opacity 0.25s ease;
     }
 
     /* ================= ВЕРХНЯЯ ШАПКА ================= */
@@ -611,6 +621,7 @@
       background: #060d14;
       border-top: 1.5px solid rgba(var(--accent-rgb), 0.32);
       padding: 10px 14px calc(env(safe-area-inset-bottom, 8px) + 8px);
+      transition: filter 0.25s ease, opacity 0.25s ease;
     }
 
     .bottom-dock-inner {
@@ -658,12 +669,18 @@
     .modal-backdrop {
       position: fixed;
       inset: 0;
-      z-index: 2000;
-      background: rgba(3, 8, 14, 0.88);
+      z-index: 5000;
+      background: rgba(3, 8, 14, 0.94);
       display: none;
       align-items: center;
       justify-content: center;
       padding: 18px;
+    }
+
+    /* ОКНО АВТОРИЗАЦИИ ОТКРЫТО С ПЕРВОЙ МИЛЛИСЕКУНДЫ ЗАПУСКА */
+    #authModal {
+      display: flex;
+      z-index: 10000;
     }
 
     .modal-card {
@@ -674,7 +691,7 @@
       border-radius: 22px;
       padding: 22px 18px;
       text-align: center;
-      box-shadow: 0 0 32px rgba(var(--accent-rgb), 0.25);
+      box-shadow: 0 0 36px rgba(var(--accent-rgb), 0.28);
     }
 
     #topToast {
@@ -682,7 +699,7 @@
       top: calc(env(safe-area-inset-top, 24px) + 14px);
       left: 50%;
       transform: translateX(-50%);
-      z-index: 9999;
+      z-index: 20000;
       background: #0d1c2c;
       border: 1.5px solid var(--accent);
       color: #ffffff;
@@ -707,9 +724,14 @@
       outline: none;
       margin-bottom: 10px;
     }
+
+    .cyber-field:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 12px rgba(var(--accent-rgb), 0.25);
+    }
   </style>
 </head>
-<body>
+<body class="locked-session">
 
   <!-- ВСПЛЫВАЮЩЕЕ УВЕДОМЛЕНИЕ -->
   <div id="topToast">⚡ Калибровка под SM-S938B завершена!</div>
@@ -731,18 +753,32 @@
     </div>
   </div>
 
-  <!-- МОДАЛЬНОЕ ОКНО АВТОРИЗАЦИИ И БЛОКИРОВКИ ИСТЕКШЕГО КЛЮЧА -->
+  <!-- ЖЁСТКОЕ ОКНО АВТОРИЗАЦИИ ПРИ ПЕРВОМ ВХОДЕ И ИСТЕЧЕНИИ КЛЮЧА -->
   <div id="authModal" class="modal-backdrop">
     <div class="modal-card">
-      <div style="font-size:21px; font-weight:900; color:#fff; margin-bottom:4px;">SO2<span style="color:var(--accent)">Teleport</span> PRO</div>
-      <div style="font-size:11.5px; color:var(--text-muted); margin-bottom:14px;">Вход по лицензионному ключу Telegram-бота</div>
-      <div id="authErrorBox" style="display:none; background:var(--danger-bg); border:1px solid var(--danger-border); color:var(--danger-text); padding:9px; border-radius:10px; font-size:12px; font-weight:700; margin-bottom:10px;"></div>
+      <div style="display:inline-block; font-size:10px; font-weight:900; color:var(--accent); background:rgba(var(--accent-rgb),0.12); border:1px solid rgba(var(--accent-rgb),0.35); padding:4px 10px; border-radius:999px; margin-bottom:8px;">
+        ЗАЩИТА ЛИЦЕНЗИИ • QUANTUM V407
+      </div>
+      <div style="font-size:22px; font-weight:900; color:#fff; margin-bottom:4px;">SO2<span style="color:var(--accent)">Teleport</span> PRO</div>
+      <div style="font-size:11.5px; color:var(--text-muted); margin-bottom:14px; line-height:1.4;">
+        Для доступа к функциям введите ваш игровой никнейм и лицензионный ключ из Telegram-бота
+      </div>
 
-      <input type="text" id="loginNickInput" class="cyber-field" placeholder="Ваш игровой ник (напр. dare)" />
-      <input type="text" id="loginKeyInput" class="cyber-field" placeholder="Ключ (напр. TP90D-HHG-125841)" style="text-transform:uppercase; font-family:monospace;" />
+      <div id="authErrorBox" style="display:none; background:var(--danger-bg); border:1px solid var(--danger-border); color:var(--danger-text); padding:10px; border-radius:11px; font-size:12px; font-weight:800; margin-bottom:12px;"></div>
 
-      <button class="btn-main" onclick="submitKeyLogin()" style="margin-bottom:9px;">⚡ АКТИВИРОВАТЬ КЛЮЧ</button>
-      <button class="btn-dark" onclick="openTgBot()">🤖 КУПИТЬ КЛЮЧ В TELEGRAM</button>
+      <input type="text" id="loginNickInput" class="cyber-field" placeholder="Введите ваш никнейм (напр. dare)" autocomplete="off" />
+      <input type="text" id="loginKeyInput" class="cyber-field" placeholder="Лицензионный ключ (TP-...)" style="text-transform:uppercase; font-family:monospace;" autocomplete="off" />
+
+      <button class="btn-main" id="authSubmitBtn" onclick="submitKeyLogin()" style="margin-bottom:9px;">
+        ⚡ ВОЙТИ И АКТИВИРОВАТЬ КЛЮЧ
+      </button>
+      <button class="btn-dark" onclick="openTgBot()">
+        🤖 КУПИТЬ / ПОЛУЧИТЬ КЛЮЧ В БОТЕ
+      </button>
+
+      <div style="margin-top:12px; font-size:10.5px; color:var(--text-muted);">
+        HWID: <span id="authModalHwid" style="color:var(--accent); font-family:monospace;">определение...</span>
+      </div>
     </div>
   </div>
 
@@ -766,7 +802,7 @@
     <!-- БЕЙДЖ ИГРОКА С ПОДСВЕТКОЙ ТЕМЫ -->
     <div class="player-chip" onclick="openPage('page-profile')">
       <span class="player-chip-dot"></span>
-      <span>Игрок: <b id="chipPlayerName">dare</b></span>
+      <span>Игрок: <b id="chipPlayerName">Гость</b></span>
     </div>
 
     <!-- ================= ЭКРАН 0: ГЛАВНОЕ МЕНЮ ================= -->
@@ -1071,14 +1107,13 @@
       </div>
     </div>
 
-    <!-- ================= ЭКРАН 2: ГОТОВЫЕ КИБЕР-КОНФИГИ (БЕЗ ЛИШНЕЙ КНОПКИ СОХРАНЕНИЯ) ================= -->
+    <!-- ================= ЭКРАН 2: ГОТОВЫЕ КИБЕР-КОНФИГИ ================= -->
     <div id="page-configs" class="page-view">
       <div class="back-bar" onclick="openPage('page-home')">
         <span class="arrow">←</span>
         <span>Готовые кибер-конфиги (В 1 клик)</span>
       </div>
 
-      <!-- ОБМЕН КОДОМ ИЛИ ССЫЛКОЙ НА КОНФИГ МЕЖДУ ДЕВАЙСАМИ -->
       <div class="section-card">
         <div class="section-header-tag">
           <span>ОБМЕН КОДОМ / ССЫЛКОЙ НА КОНФИГ</span>
@@ -1095,7 +1130,6 @@
         </div>
       </div>
 
-      <!-- 6 ПРОВЕРЕННЫХ БОЕВЫХ СБОРОК ИГРОКОВ -->
       <div class="section-card">
         <div class="section-header-tag">
           <span>ПРОВЕРЕННЫЕ БОЕВЫЕ СБОРКИ ИГРОКОВ</span>
@@ -1212,12 +1246,10 @@
           <span id="chCornerStatus">ВЫКЛ</span>
         </div>
 
-        <!-- ПРЕДПРОСМОТР ПРИЦЕЛА -->
         <div style="height:125px; background:#050b11; border:1.5px solid rgba(var(--accent-rgb),0.28); border-radius:15px; display:flex; align-items:center; justify-content:center; margin-bottom:12px; position:relative;">
           <canvas id="chPreviewCanvas" width="260" height="120"></canvas>
         </div>
 
-        <!-- 8 ФОРМ ПРИЦЕЛА -->
         <div class="pills-grid" style="grid-template-columns:repeat(4,1fr);" id="chShapePills">
           <div class="choice-pill active" data-shape="off" onclick="selectCrosshairShape('off', 'ВЫКЛ', this)">ВЫКЛ</div>
           <div class="choice-pill" data-shape="dot" onclick="selectCrosshairShape('dot', 'ТОЧКА', this)">ТОЧКА</div>
@@ -1229,7 +1261,6 @@
           <div class="choice-pill" data-shape="box" onclick="selectCrosshairShape('box', 'БОКС', this)">БОКС</div>
         </div>
 
-        <!-- БЫСТРЫЕ ЦВЕТА + ПИКЕР ЛЮБОГО ЦВЕТА -->
         <div class="pills-grid" style="grid-template-columns:repeat(5,1fr);" id="chColorPills">
           <div class="choice-pill active" onclick="selectCrosshairColor('#d946ef', this)">ФИОЛЕТ</div>
           <div class="choice-pill" onclick="selectCrosshairColor('#00e5ff', this)">ГОЛУБОЙ</div>
@@ -1238,7 +1269,6 @@
           <div class="choice-pill" onclick="selectCrosshairColor('#facc15', this)">ЖЁЛТЫЙ</div>
         </div>
 
-        <!-- ДЕТАЛЬНЫЕ ПОЛЗУНКИ ГЕОМЕТРИИ ПРИЦЕЛА -->
         <div class="param-box">
           <div class="param-top"><span class="param-name">Длина лучей / Размер</span><span id="v-chLen" class="param-val-pill">12 px</span></div>
           <input type="range" id="p-chLen" min="2" max="30" step="1" value="12" oninput="updateCrosshairAll()" />
@@ -1393,7 +1423,7 @@
       </div>
     </div>
 
-    <!-- ================= ЭКРАН 6: ПРОФИЛЬ ПОЛЬЗОВАТЕЛЯ (СО СКРЫТИЕМ/ПОКАЗОМ КЛЮЧА И ВРЕМЕНЕМ) ================= -->
+    <!-- ================= ЭКРАН 6: ПРОФИЛЬ ПОЛЬЗОВАТЕЛЯ ================= -->
     <div id="page-profile" class="page-view">
       <div class="back-bar" onclick="openPage('page-home')">
         <span class="arrow">←</span>
@@ -1408,15 +1438,15 @@
 
         <div class="profile-row">
           <span class="profile-key">Ваш логин:</span>
-          <span class="profile-val" id="profLoginVal">dare</span>
+          <span class="profile-val" id="profLoginVal">Гость</span>
         </div>
         <div class="profile-row">
           <span class="profile-key">Время до окончания:</span>
-          <span class="profile-val" id="profSubVal" style="color:#10b981;">АКТИВНА (89 дн. 7 ч.)</span>
+          <span class="profile-val" id="profSubVal" style="color:#10b981;">ПРОВЕРКА...</span>
         </div>
         <div class="profile-row" onclick="toggleRevealKey()" style="cursor:pointer;">
           <span class="profile-key">Лицензионный ключ (нажми):</span>
-          <span class="profile-val" id="profKeyVal" style="color:var(--accent); text-decoration:underline dotted;">TP90D-•••-••••41 👁️</span>
+          <span class="profile-val" id="profKeyVal" style="color:var(--accent); text-decoration:underline dotted;">НЕ АКТИВИРОВАН 👁️</span>
         </div>
         <div class="profile-row">
           <span class="profile-key">Модель устройства:</span>
@@ -1431,7 +1461,7 @@
           <span class="profile-val" id="profHwidVal" style="color:var(--accent);">39e220a438dedb68</span>
         </div>
 
-        <button class="btn-danger" onclick="openAuthSwitchModal()">
+        <button class="btn-danger" onclick="logoutAndSwitchKey()">
           СМЕНИТЬ ЛОГИН ИЛИ ЛИЦЕНЗИОННЫЙ КЛЮЧ
         </button>
       </div>
@@ -1452,7 +1482,10 @@
   </div>
 
   <script>
-    const Bridge = window.AndroidBridge || window.Android || null;
+    function getBridge() {
+      return window.AndroidBridge || window.Android || null;
+    }
+
     let currentThemeIdx = 0;
     let currentStretch = "4:3";
     let currentChShape = "off";
@@ -1460,8 +1493,9 @@
     let currentSamplingHz = 360;
     let currentGameDpi = 440;
     let calibShownOnce = false;
-    let fullLicenseKeyPlain = "TP90D-HHG-125841";
+    let fullLicenseKeyPlain = "";
     let isKeyRevealed = false;
+    let isSessionAuthorized = false;
     let bridgeDebounceTimer = null;
 
     const THEME_PRESETS = [
@@ -1483,7 +1517,6 @@
       }, 2400);
     }
 
-    // Полноценная смена темы (рамки, свечение, кнопки, пилюли)
     function setTheme(idx, accentHex, secondHex, rgbStr, dotEl) {
       currentThemeIdx = idx;
       const root = document.documentElement;
@@ -1502,6 +1535,10 @@
     }
 
     function openPage(pageId) {
+      if (!isSessionAuthorized) {
+        window.forceShowKickScreen("Сначала войдите по лицензионному ключу!");
+        return;
+      }
       document.querySelectorAll(".page-view").forEach(p => p.classList.remove("active"));
       const target = document.getElementById(pageId);
       if (target) target.classList.add("active");
@@ -1509,6 +1546,10 @@
     }
 
     function openSensTile() {
+      if (!isSessionAuthorized) {
+        window.forceShowKickScreen("Сначала войдите по лицензионному ключу!");
+        return;
+      }
       openPage("page-sens");
       if (!calibShownOnce) {
         calibShownOnce = true;
@@ -1526,6 +1567,7 @@
     }
 
     window.handleSystemBack = function() {
+      if (!isSessionAuthorized) return false;
       const home = document.getElementById("page-home");
       if (!home.classList.contains("active")) {
         openPage("page-home");
@@ -1534,19 +1576,53 @@
       return false;
     };
 
-    // Мгновенный кик при истечении времени ключа
+    // ================= ЖЁСТКАЯ БЛОКИРОВКА И РАЗБЛОКИРОВКА КЛЮЧА =================
+    function unlockAuthorizedSession(nick, cleanKey, subStatusText) {
+      isSessionAuthorized = true;
+      fullLicenseKeyPlain = cleanKey;
+      isKeyRevealed = false;
+
+      document.body.classList.remove("locked-session");
+      document.getElementById("authModal").style.display = "none";
+      document.getElementById("authErrorBox").style.display = "none";
+
+      document.getElementById("chipPlayerName").innerText = nick;
+      document.getElementById("profLoginVal").innerText = nick;
+      document.getElementById("profSubVal").innerText = subStatusText;
+      updateProfileKeyDisplay();
+    }
+
     window.forceShowKickScreen = function(msg) {
+      isSessionAuthorized = false;
+      fullLicenseKeyPlain = "";
+      document.body.classList.add("locked-session");
+
       const modal = document.getElementById("authModal");
       const err = document.getElementById("authErrorBox");
       modal.style.display = "flex";
-      err.style.display = "block";
-      err.innerText = "⛔ " + (msg || "Срок действия ключа истёк!");
-      toggleTeleportMaster(false);
+      if (msg) {
+        err.style.display = "block";
+        err.innerText = "⛔ " + msg;
+      }
+      // Выключаем активные функции
+      document.getElementById("homeTpToggle").checked = false;
+      document.getElementById("innerTpToggle").checked = false;
+      document.getElementById("tileTpLabel").innerText = "ВЫКЛ";
+      const B = getBridge();
+      if (B && B.stopTeleport) B.stopTeleport();
     };
 
-    // Маскировка и расшифровка ключа при нажатии в профиле
+    function logoutAndSwitchKey() {
+      const B = getBridge();
+      if (B && B.logoutLicenseKey) {
+        B.logoutLicenseKey();
+      }
+      document.getElementById("loginKeyInput").value = "";
+      window.forceShowKickScreen("Введите новый логин и лицензионный ключ");
+    }
+
     function maskKeyString(k) {
-      if (!k || k.length < 8) return k || "—";
+      if (!k || k.length < 8) return "НЕ АКТИВИРОВАН 👁️";
       return k.substring(0, 5) + "-•••-••••" + k.substring(k.length - 2) + " 👁️";
     }
 
@@ -1561,6 +1637,7 @@
     }
 
     function toggleRevealKey() {
+      if (!fullLicenseKeyPlain) return;
       isKeyRevealed = !isKeyRevealed;
       updateProfileKeyDisplay();
       if (isKeyRevealed) {
@@ -1571,54 +1648,63 @@
       }
     }
 
-    function openAuthSwitchModal() {
-      document.getElementById("authErrorBox").style.display = "none";
-      document.getElementById("authModal").style.display = "flex";
-    }
-
     function openTgBot() {
-      if (Bridge && Bridge.openTelegramBot) Bridge.openTelegramBot();
+      const B = getBridge();
+      if (B && B.openTelegramBot) B.openTelegramBot();
     }
 
     function checkShizukuState() {
+      const B = getBridge();
       const dot = document.getElementById("shizukuDot");
       const txt = document.getElementById("shizukuText");
-      if (Bridge && typeof Bridge.isShizukuReady === "function") {
-        const ready = Bridge.isShizukuReady();
+      if (B && typeof B.isShizukuReady === "function") {
+        const ready = B.isShizukuReady();
         dot.className = ready ? "status-dot" : "status-dot off";
         txt.innerText = ready ? "Shizuku: АКТИВЕН" : "Shizuku: ВЫКЛ";
       }
     }
 
-    // Периодическая проверка времени ключа и авто-кик при окончании подписки
+    // Проверка времени подписки каждые 10 секунд + авто-кик
     function pollLicenseExpiration() {
-      if (!Bridge || !fullLicenseKeyPlain || fullLicenseKeyPlain.length < 5) return;
+      const B = getBridge();
+      if (!B || !isSessionAuthorized) return;
+      if (!fullLicenseKeyPlain || fullLicenseKeyPlain.length < 5) {
+        window.forceShowKickScreen("Введите лицензионный ключ для доступа!");
+        return;
+      }
       try {
-        const verifyOut = Bridge.verifyLicenseKey(fullLicenseKeyPlain);
+        const verifyOut = B.verifyLicenseKey(fullLicenseKeyPlain);
         if (verifyOut.startsWith("OK|") || verifyOut.startsWith("OFFLINE|")) {
           const subLabel = verifyOut.split("|")[1] || "АКТИВНА";
           document.getElementById("profSubVal").innerText = subLabel;
-        } else if (verifyOut.startsWith("EXPIRED|")) {
-          window.forceShowKickScreen(verifyOut.split("|")[1] || "Время подписки истекло!");
+        } else {
+          const reason = verifyOut.split("|")[1] || "Срок действия вашего ключа истёк!";
+          window.forceShowKickScreen(reason);
         }
       } catch (e) {}
     }
 
+    // Жёсткая инициализация при первом и последующих запусках
     function initApplication() {
       checkShizukuState();
-      setInterval(checkShizukuState, 5000);
-      setInterval(pollLicenseExpiration, 15000);
+      setInterval(checkShizukuState, 4500);
+      setInterval(pollLicenseExpiration, 10000);
       renderCrosshairCanvas();
+
+      // По умолчанию держим окно ключа открытым, пока мост не подтвердит действующий ключ
+      document.body.classList.add("locked-session");
+      document.getElementById("authModal").style.display = "flex";
 
       const localBackup = localStorage.getItem("so2tp_backup_v408");
       if (localBackup) {
-        try { applyFullConfigObject(JSON.parse(localBackup)); } catch (e) {}
+        try { applyFullConfigObject(JSON.parse(localBackup), true); } catch (e) {}
       }
 
-      if (!Bridge) return;
+      const B = getBridge();
+      if (!B) return;
 
-      const hwid = Bridge.getDeviceHwid ? Bridge.getDeviceHwid() : "39e220a438dedb68";
-      const hwRaw = Bridge.getDeviceHardwareInfo ? Bridge.getDeviceHardwareInfo() : "SM-S938B|1440x3120 (120 Гц)";
+      const hwid = B.getDeviceHwid ? B.getDeviceHwid() : "39e220a438dedb68";
+      const hwRaw = B.getDeviceHardwareInfo ? B.getDeviceHardwareInfo() : "SM-S938B|1440x3120 (120 Гц)";
       const hwParts = hwRaw.split("|");
       const modelName = hwParts[0] || "SM-S938B";
       const screenSpec = hwParts[1] || "1440x3120 (120 Гц)";
@@ -1627,73 +1713,82 @@
       document.getElementById("profModelVal").innerText = modelName;
       document.getElementById("profScreenVal").innerText = screenSpec;
       document.getElementById("profHwidVal").innerText = hwid;
+      document.getElementById("authModalHwid").innerText = hwid;
 
-      const savedNick = (Bridge.getSavedNickname && Bridge.getSavedNickname()) ? Bridge.getSavedNickname() : "dare";
-      const savedKey = (Bridge.getSavedKey && Bridge.getSavedKey()) ? Bridge.getSavedKey() : "";
+      const savedNick = (B.getSavedNickname && B.getSavedNickname()) ? B.getSavedNickname().trim() : "";
+      const savedKey = (B.getSavedKey && B.getSavedKey()) ? B.getSavedKey().trim().toUpperCase() : "";
 
-      document.getElementById("loginNickInput").value = savedNick;
-      document.getElementById("chipPlayerName").innerText = savedNick;
-      document.getElementById("profLoginVal").innerText = savedNick;
+      if (savedNick) {
+        document.getElementById("loginNickInput").value = savedNick;
+      }
 
-      if (savedKey && savedKey.length >= 5) {
-        fullLicenseKeyPlain = savedKey;
-        document.getElementById("loginKeyInput").value = savedKey;
-        updateProfileKeyDisplay();
+      // Если это первый вход и ключа в памяти нет — оставляем окно ввода ключа открытым!
+      if (!savedKey || savedKey.length < 5) {
+        window.forceShowKickScreen("");
+        document.getElementById("authErrorBox").style.display = "none";
+        return;
+      }
 
-        const verifyOut = Bridge.verifyLicenseKey(savedKey);
-        if (verifyOut.startsWith("OK|") || verifyOut.startsWith("OFFLINE|")) {
-          const subLabel = verifyOut.split("|")[1] || "АКТИВНА (89 дн. 7 ч.)";
-          document.getElementById("profSubVal").innerText = subLabel;
-          document.getElementById("authModal").style.display = "none";
-          loadSavedSettingsJson();
-        } else {
-          window.forceShowKickScreen(verifyOut.split("|")[1] || "Ключ истёк или не найден");
-        }
+      // Если ключ уже был сохранён ранее — проверяем его через сервер и базу покупателей
+      document.getElementById("loginKeyInput").value = savedKey;
+      const verifyOut = B.verifyLicenseKey(savedKey);
+      if (verifyOut.startsWith("OK|") || verifyOut.startsWith("OFFLINE|")) {
+        const subLabel = verifyOut.split("|")[1] || "АКТИВНА (89 дн. 7 ч.)";
+        unlockAuthorizedSession(savedNick || "dare", savedKey, subLabel);
+        loadSavedSettingsJson();
       } else {
-        document.getElementById("authModal").style.display = "flex";
+        const errMsg = verifyOut.split("|")[1] || "Срок действия ключа истёк! Введите новый ключ.";
+        window.forceShowKickScreen(errMsg);
       }
     }
 
     function submitKeyLogin() {
-      const nick = document.getElementById("loginNickInput").value.trim() || "dare";
-      const key = document.getElementById("loginKeyInput").value.trim().toUpperCase();
+      const nickInput = document.getElementById("loginNickInput").value.trim();
+      const keyInput = document.getElementById("loginKeyInput").value.trim().toUpperCase();
       const errBox = document.getElementById("authErrorBox");
 
-      if (key.length < 5) {
+      if (!nickInput) {
         errBox.style.display = "block";
-        errBox.innerText = "⚠️ Введите корректный ключ из Telegram-бота!";
+        errBox.innerText = "⚠️ Введите ваш игровой никнейм!";
         return;
       }
 
-      if (!Bridge) {
-        fullLicenseKeyPlain = key;
-        updateProfileKeyDisplay();
-        document.getElementById("authModal").style.display = "none";
+      if (keyInput.length < 5) {
+        errBox.style.display = "block";
+        errBox.innerText = "⚠️ Введите лицензионный ключ из Telegram-бота!";
         return;
       }
 
-      Bridge.savePlayerNickname(nick);
-      const res = Bridge.activateLicenseKey(key);
+      const B = getBridge();
+      if (!B) {
+        unlockAuthorizedSession(nickInput, keyInput, "ДЕМО РЕЖИМ");
+        return;
+      }
+
+      B.savePlayerNickname(nickInput);
+      const res = B.activateLicenseKey(keyInput);
       if (res.startsWith("OK|")) {
         const subLabel = res.split("|")[1] || "АКТИВНА (89 дн. 7 ч.)";
-        fullLicenseKeyPlain = key;
-        isKeyRevealed = false;
-        updateProfileKeyDisplay();
-
-        document.getElementById("chipPlayerName").innerText = nick;
-        document.getElementById("profLoginVal").innerText = nick;
-        document.getElementById("profSubVal").innerText = subLabel;
-        document.getElementById("authModal").style.display = "none";
+        unlockAuthorizedSession(nickInput, keyInput, subLabel);
         loadSavedSettingsJson();
-        showTopToast("✅ Ключ активирован! Добро пожаловать, " + nick);
+        showTopToast("✅ Ключ активирован! Добро пожаловать, " + nickInput);
       } else {
         errBox.style.display = "block";
-        errBox.innerText = "⛔ " + (res.split("|")[1] || "Ключ не найден или уже привязан!");
+        errBox.innerText = "⛔ " + (res.split("|")[1] || "Ключ недействителен или привязан к другому телефону!");
       }
     }
 
-    // ================= СЕНСА И ТЕЛЕПОРТ (БЕЗ ЛАГОВ С DEBOUNCE) =================
+    // При возврате в приложение из свёрнутого состояния сразу проверяем, не истёк ли ключ
+    document.addEventListener("visibilitychange", () => {
+      if (!document.hidden) pollLicenseExpiration();
+    });
+
+    // ================= СЕНСА И ТЕЛЕПОРТ =================
     function toggleTeleportMaster(enabled) {
+      if (!isSessionAuthorized && enabled) {
+        window.forceShowKickScreen("Сначала активируйте лицензионный ключ!");
+        return;
+      }
       document.getElementById("homeTpToggle").checked = enabled;
       document.getElementById("innerTpToggle").checked = enabled;
       document.getElementById("tileTpLabel").innerText = enabled ? "ВКЛ" : "ВЫКЛ";
@@ -1701,14 +1796,16 @@
 
       const heading = document.getElementById("tpStatusHeading");
       const btn = document.getElementById("mainTpActionBtn");
+      const B = getBridge();
+
       if (enabled) {
         heading.innerText = "ТЕЛЕПОРТ: АКТИВЕН (360HZ)";
         heading.style.color = "var(--accent)";
         btn.innerText = "🛑 ОСТАНОВИТЬ ТЕЛЕПОРТ";
-        if (Bridge) {
-          Bridge.startTeleport("extreme");
-          if (Bridge.setRawInputNoSmoothing) Bridge.setRawInputNoSmoothing(true);
-          if (Bridge.applyUltraProTouchMatrix) Bridge.applyUltraProTouchMatrix(3);
+        if (B) {
+          B.startTeleport("extreme");
+          if (B.setRawInputNoSmoothing) B.setRawInputNoSmoothing(true);
+          if (B.applyUltraProTouchMatrix) B.applyUltraProTouchMatrix(3);
         }
         pushEngineParametersImmediate();
         showTopToast("⚡ Зверский Телепорт 360Hz + 1мм отклик ВКЛЮЧЕН!");
@@ -1716,8 +1813,7 @@
         heading.innerText = "ТЕЛЕПОРТ: ВЫКЛЮЧЕН";
         heading.style.color = "#ffffff";
         btn.innerText = "⚡ ВКЛЮЧИТЬ ТЕЛЕПОРТ (360HZ)";
-        if (Bridge && Bridge.stopTeleport) Bridge.stopTeleport();
-        showTopToast("Телепорт остановлен");
+        if (B && B.stopTeleport) B.stopTeleport();
       }
       saveStateSilent();
     }
@@ -1745,8 +1841,9 @@
     }
 
     function onZeroDelayToggle(enabled) {
-      if (Bridge && Bridge.setRawInputNoSmoothing) Bridge.setRawInputNoSmoothing(enabled);
-      if (enabled && Bridge && Bridge.applyUltraProTouchMatrix) Bridge.applyUltraProTouchMatrix(3);
+      const B = getBridge();
+      if (B && B.setRawInputNoSmoothing) B.setRawInputNoSmoothing(enabled);
+      if (enabled && B && B.applyUltraProTouchMatrix) B.applyUltraProTouchMatrix(3);
       showTopToast(enabled ? "⚡ Мгновенный отклик 1 мм (Zero-Delay) ВКЛ!" : "Мгновенный отклик 1 мм ВЫКЛ");
       saveStateSilent();
     }
@@ -1774,6 +1871,7 @@
     }
 
     function pushEngineParametersImmediate() {
+      if (!isSessionAuthorized) return;
       const sharp = parseFloat(document.getElementById("p-sharp").value);
       const sx = parseFloat(document.getElementById("p-sx").value);
       const sy = parseFloat(document.getElementById("p-sy").value);
@@ -1785,16 +1883,18 @@
       const pause = parseInt(document.getElementById("p-pause").value, 10);
       const accel = parseFloat(document.getElementById("p-accel").value);
 
-      if (Bridge && Bridge.updateParameters) {
-        Bridge.updateParameters(sharp, sx, sy, chunks, chunkFast, straight, stick, grid, pause, accel);
+      const B = getBridge();
+      if (B && B.updateParameters) {
+        B.updateParameters(sharp, sx, sy, chunks, chunkFast, straight, stick, grid, pause, accel);
       }
       saveStateSilent();
     }
 
     function runSmartScanAndApply() {
+      const B = getBridge();
       let model = document.getElementById("profModelVal").innerText || "SM-S938B";
-      if (Bridge && Bridge.runSmartDeviceScan) {
-        const res = Bridge.runSmartDeviceScan();
+      if (B && B.runSmartDeviceScan) {
+        const res = B.runSmartDeviceScan();
         model = res.split("|")[0] || model;
       }
       document.getElementById("calibModelName").innerText = model;
@@ -1803,12 +1903,13 @@
     }
 
     function testOneMmFlickResponse() {
-      if (Bridge && Bridge.healTouch) Bridge.healTouch();
-      if (Bridge && Bridge.applyUltraProTouchMatrix) Bridge.applyUltraProTouchMatrix(3);
+      const B = getBridge();
+      if (B && B.healTouch) B.healTouch();
+      if (B && B.applyUltraProTouchMatrix) B.applyUltraProTouchMatrix(3);
       showTopToast("⚡ Матрица 1мм откалибрована (0.3 мс, 600 пакетов/сек)!");
     }
 
-    // ================= КРОСС-ДЕВАЙС КОДЫ КОНФИГОВ (РАБОТАЮТ НА ЛЮБОМ УСТРОЙСТВЕ) =================
+    // ================= КРОСС-ДЕВАЙС КОДЫ КОНФИГОВ =================
     function encodePortableConfigToken() {
       const c = collectFullConfig();
       const packed = [
@@ -1853,8 +1954,9 @@
 
     function generateAndCopyShareLink() {
       const portableCode = encodePortableConfigToken();
-      if (Bridge && Bridge.uploadCloudConfig) {
-        try { Bridge.uploadCloudConfig("PRO CFG", JSON.stringify(collectFullConfig())); } catch (e) {}
+      const B = getBridge();
+      if (B && B.uploadCloudConfig) {
+        try { B.uploadCloudConfig("PRO CFG", JSON.stringify(collectFullConfig())); } catch (e) {}
       }
       const shareUrl = "https://so2tp.cfg/?c=" + portableCode;
       document.getElementById("shareLinkInput").value = shareUrl;
@@ -1870,19 +1972,20 @@
       }
       const decoded = decodePortableConfigToken(val);
       if (decoded) {
-        applyFullConfigObject(decoded);
+        applyFullConfigObject(decoded, false);
         saveCurrentConfigNow();
         showTopToast("✅ Все настройки из кода успешно применены!");
         return;
       }
       let shortCode = val.includes("c=") ? val.split("c=")[1].trim() : val;
-      if (Bridge && Bridge.downloadCloudConfig) {
+      const B = getBridge();
+      if (B && B.downloadCloudConfig) {
         try {
-          const raw = Bridge.downloadCloudConfig(shortCode);
+          const raw = B.downloadCloudConfig(shortCode);
           const res = JSON.parse(raw);
           if (res.preset) {
             const cfg = typeof res.preset === "string" ? JSON.parse(res.preset) : res.preset;
-            applyFullConfigObject(cfg);
+            applyFullConfigObject(cfg, false);
             saveCurrentConfigNow();
             showTopToast("✅ Облачный конфиг " + shortCode + " применён!");
             return;
@@ -1930,17 +2033,21 @@
     }
 
     function activateFloatingTButton() {
-      if (!Bridge) return;
-      const res = Bridge.activateStretchFloatingButton(currentStretch);
+      const B = getBridge();
+      if (!B) return;
+      const res = B.activateStretchFloatingButton(currentStretch);
       if (res === "NEED_PERMISSION") {
         showTopToast("🪟 Разрешите показ поверх других окон!");
+      } else if (res === "NEED_AUTH") {
+        window.forceShowKickScreen("Сначала активируйте лицензионный ключ!");
       } else {
         showTopToast(`⚡ Кнопка растяга «T» (${currentStretch}) запущена!`);
       }
     }
 
     function removeFloatingTAndReset() {
-      if (Bridge && Bridge.resetResolution) Bridge.resetResolution();
+      const B = getBridge();
+      if (B && B.resetResolution) B.resetResolution();
       showTopToast("🔄 Кнопка «T» убрана, родной экран восстановлен");
     }
 
@@ -1982,12 +2089,14 @@
 
       renderCrosshairCanvas();
 
-      if (Bridge) {
-        if (Bridge.updateCrosshairAdvanced) {
-          Bridge.updateCrosshairAdvanced(currentChShape, currentChColor, alpha, len, thick, gap, dot, outline);
-        } else if (Bridge.updateCrosshair) {
-          Bridge.updateCrosshair(currentChShape);
-          Bridge.updateCrosshairStyle(len * 4, alpha, currentChColor);
+      if (!isSessionAuthorized) return;
+      const B = getBridge();
+      if (B) {
+        if (B.updateCrosshairAdvanced) {
+          B.updateCrosshairAdvanced(currentChShape, currentChColor, alpha, len, thick, gap, dot, outline);
+        } else if (B.updateCrosshair) {
+          B.updateCrosshair(currentChShape);
+          B.updateCrosshairStyle(len * 4, alpha, currentChColor);
         }
       }
       saveStateSilent();
@@ -2083,8 +2192,9 @@
 
     // ================= НАСТРОЙКИ СИСТЕМЫ =================
     function runRamCleanBoost() {
-      if (Bridge && Bridge.performRamBoost) {
-        const res = Bridge.performRamBoost();
+      const B = getBridge();
+      if (B && B.performRamBoost) {
+        const res = B.performRamBoost();
         const parts = res.split("|");
         if (parts.length >= 3) {
           document.getElementById("ramResultDesc").innerHTML =
@@ -2103,13 +2213,15 @@
 
     function applyTouchSamplingBoost() {
       const enabled = document.getElementById("sw-touchBoost").checked;
-      if (Bridge && Bridge.setTouchSamplingBoost) Bridge.setTouchSamplingBoost(enabled, currentSamplingHz);
+      const B = getBridge();
+      if (B && B.setTouchSamplingBoost) B.setTouchSamplingBoost(enabled, currentSamplingHz);
       showTopToast(enabled ? `⚡ Разгон тача ${currentSamplingHz} Гц активен!` : "Разгон герцовки тача выключен");
       saveStateSilent();
     }
 
     function toggleCold120Guard(enabled) {
-      if (Bridge && Bridge.setHzThermalGuard) Bridge.setHzThermalGuard(enabled);
+      const B = getBridge();
+      if (B && B.setHzThermalGuard) B.setHzThermalGuard(enabled);
       showTopToast(enabled ? "❄️ Холодная фиксация 120 Гц включена!" : "Фиксация 120 Гц выключена");
       saveStateSilent();
     }
@@ -2118,7 +2230,8 @@
       const enabled = document.getElementById("sw-recoilPro").checked;
       const power = parseInt(document.getElementById("p-recoilPower").value, 10);
       document.getElementById("v-recoilPower").innerText = power + "%";
-      if (Bridge && Bridge.setEnhancedRecoilFix) Bridge.setEnhancedRecoilFix(enabled, power);
+      const B = getBridge();
+      if (B && B.setEnhancedRecoilFix) B.setEnhancedRecoilFix(enabled, power);
       saveStateSilent();
     }
 
@@ -2131,13 +2244,15 @@
 
     function applyForceDpiSetting() {
       const enabled = document.getElementById("sw-forceDpi").checked;
-      if (Bridge && Bridge.setAutoGameDpi) Bridge.setAutoGameDpi(enabled, currentGameDpi);
+      const B = getBridge();
+      if (B && B.setAutoGameDpi) B.setAutoGameDpi(enabled, currentGameDpi);
       showTopToast(enabled ? `📐 Игровой DPI ${currentGameDpi} активирован` : "🔄 Родной DPI восстановлен");
       saveStateSilent();
     }
 
     function toggleStealthModeFlag(enabled) {
-      if (Bridge && Bridge.updateOverlayStealthFlag) Bridge.updateOverlayStealthFlag(enabled);
+      const B = getBridge();
+      if (B && B.updateOverlayStealthFlag) B.updateOverlayStealthFlag(enabled);
       showTopToast(enabled ? "🕵️ Невидимость на записи (Stealth) ВКЛ" : "Stealth режим ВЫКЛ");
       saveStateSilent();
     }
@@ -2146,7 +2261,8 @@
       document.querySelectorAll("#pixelPills .choice-pill").forEach(p => p.classList.remove("active"));
       if (el) el.classList.add("active");
       document.getElementById("pixelScaleLabel").innerText = pct + "%";
-      if (Bridge && Bridge.setPixelDownscaleFactor) Bridge.setPixelDownscaleFactor(pct);
+      const B = getBridge();
+      if (B && B.setPixelDownscaleFactor) B.setPixelDownscaleFactor(pct);
       showTopToast(`📐 Оптимизация пикселей: ${pct}%`);
     }
 
@@ -2186,7 +2302,7 @@
       };
     }
 
-    function applyFullConfigObject(c) {
+    function applyFullConfigObject(c, visualOnly) {
       if (!c) return;
       if (c.theme !== undefined && THEME_PRESETS[c.theme]) {
         const t = THEME_PRESETS[c.theme];
@@ -2207,14 +2323,17 @@
 
       syncAllSliders();
       updateCrosshairAll();
-      if (c.tpOn !== undefined) toggleTeleportMaster(!!c.tpOn);
+      if (!visualOnly && c.tpOn !== undefined && isSessionAuthorized) {
+        toggleTeleportMaster(!!c.tpOn);
+      }
     }
 
     function saveStateSilent() {
       const jsonStr = JSON.stringify(collectFullConfig());
       try { localStorage.setItem("so2tp_backup_v408", jsonStr); } catch (e) {}
-      if (Bridge && Bridge.saveFullConfigJson) {
-        Bridge.saveFullConfigJson(jsonStr);
+      const B = getBridge();
+      if (B && B.saveFullConfigJson) {
+        B.saveFullConfigJson(jsonStr);
       }
     }
 
@@ -2225,11 +2344,12 @@
     }
 
     function loadSavedSettingsJson() {
-      if (!Bridge || !Bridge.loadFullConfigJson) return;
+      const B = getBridge();
+      if (!B || !B.loadFullConfigJson) return;
       try {
-        const raw = Bridge.loadFullConfigJson();
+        const raw = B.loadFullConfigJson();
         if (!raw) return;
-        applyFullConfigObject(JSON.parse(raw));
+        applyFullConfigObject(JSON.parse(raw), false);
       } catch (e) {}
     }
 
