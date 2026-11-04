@@ -41,12 +41,11 @@
       overflow-x: hidden;
     }
 
-    /* ЖЁСТКОЕ СКРЫТИЕ ИНТЕРФЕЙСА ДО ПРОХОЖДЕНИЯ АВТОРИЗАЦИИ */
     .auth-locked {
       display: none !important;
     }
 
-    /* ================= ПОЛНОЭКРАННЫЙ БЛОК АВТОРИЗАЦИИ (ОТКРЫТ ПО УМОЛЧАНИЮ) ================= */
+    /* ================= ПОЛНОЭКРАННЫЙ БЛОК АВТОРИЗАЦИИ ================= */
     #authScreen {
       position: fixed;
       top: 0;
@@ -110,7 +109,6 @@
       box-shadow: 0 0 14px rgba(var(--accent-rgb), 0.28);
     }
 
-    /* ================= КОНТЕЙНЕР ПРИЛОЖЕНИЯ ================= */
     .app-container {
       max-width: 480px;
       margin: 0 auto;
@@ -186,7 +184,6 @@
       margin-top: 2px;
     }
 
-    /* ПИЛЮЛЯ ИГРОКА С ПОДСВЕТКОЙ ТЕМЫ */
     .player-chip {
       display: inline-flex;
       align-items: center;
@@ -211,7 +208,6 @@
       box-shadow: 0 0 8px var(--accent);
     }
 
-    /* ПАНЕЛЬ ВЫБОРА ТЕМЫ МЕНЮ */
     .theme-bar {
       background: var(--bg-card);
       border: 1.5px solid rgba(var(--accent-rgb), 0.42);
@@ -252,7 +248,6 @@
       box-shadow: 0 0 14px var(--accent);
     }
 
-    /* СЕТКА 6 ПЛИТОК С РАМКОЙ И СВЕЧЕНИЕМ ТЕМЫ */
     .bento-grid {
       display: grid;
       grid-template-columns: 1fr 1fr;
@@ -341,7 +336,6 @@
       color: var(--text-muted);
     }
 
-    /* ВНУТРЕННИЕ СТРАНИЦЫ */
     .page-view {
       display: none;
     }
@@ -393,7 +387,6 @@
       margin-bottom: 12px;
     }
 
-    /* КНОПКИ */
     .btn-main {
       width: 100%;
       border: none;
@@ -447,7 +440,6 @@
       cursor: pointer;
     }
 
-    /* ТУМБЛЕРЫ */
     .ios-switch {
       position: relative;
       display: inline-block;
@@ -495,7 +487,6 @@
       box-shadow: 0 0 10px var(--accent);
     }
 
-    /* КАРТОЧКИ БЫСТРЫХ РЕЖИМОВ СЕНСЫ */
     .mode-row-card {
       background: var(--bg-card-inner);
       border: 1px solid rgba(255, 255, 255, 0.08);
@@ -546,7 +537,6 @@
       border-color: transparent;
     }
 
-    /* ПОЛЗУНКИ */
     .param-box {
       background: var(--bg-card-inner);
       border: 1px solid rgba(var(--accent-rgb), 0.18);
@@ -605,12 +595,12 @@
       font-size: 11px;
       color: var(--text-muted);
       margin-top: 7px;
+      line-height: 1.35;
     }
 
-    /* ПИЛЮЛИ ВЫБОРА */
     .pills-grid {
       display: grid;
-      grid-template-columns: repeat(5, 1fr);
+      grid-template-columns: repeat(4, 1fr);
       gap: 7px;
       margin: 10px 0;
     }
@@ -634,7 +624,6 @@
       box-shadow: 0 0 12px rgba(var(--accent-rgb), 0.25);
     }
 
-    /* ТАБЛИЦА ПРОФИЛЯ */
     .profile-row {
       display: flex;
       justify-content: space-between;
@@ -659,7 +648,6 @@
       font-family: monospace;
     }
 
-    /* НИЖНЯЯ ПАНЕЛЬ СОХРАНЕНИЯ */
     .bottom-dock {
       position: fixed;
       bottom: 0;
@@ -712,7 +700,6 @@
       cursor: pointer;
     }
 
-    /* МОДАЛКА КАЛИБРОВКИ */
     .modal-backdrop {
       position: fixed;
       top: 0;
@@ -762,9 +749,9 @@
 <body>
 
   <!-- ВСПЛЫВАЮЩЕЕ УВЕДОМЛЕНИЕ -->
-  <div id="topToast">⚡ Калибровка под SM-S938B завершена!</div>
+  <div id="topToast">⚡ Экстремальный Телепорт 850Hz активирован!</div>
 
-  <!-- ================= 1. ЭКРАН АВТОРИЗАЦИИ ПО КЛЮЧУ (ЕДИНСТВЕННЫЙ ВИДИМЫЙ ПРИ СТАРТЕ) ================= -->
+  <!-- ================= 1. ЭКРАН АВТОРИЗАЦИИ ПО КЛЮЧУ ================= -->
   <div id="authScreen">
     <div class="auth-box">
       <div class="auth-pill-tag">QUANTUM ENGINE V410 • LICENSE GUARD</div>
@@ -794,42 +781,40 @@
     </div>
   </div>
 
-  <!-- МОДАЛЬНОЕ ОКНО «УМНАЯ КАЛИБРОВКА ТЕЛЕФОНА» -->
+  <!-- МОДАЛЬНОЕ ОКНО «УМНАЯ КАЛИБРОВКА ТЕЛЕФОНА» (ВЫЖИМАЕТ МАКСИМУМ) -->
   <div id="calibModal" class="modal-backdrop">
     <div class="modal-card">
       <div style="font-size:28px; margin-bottom:8px;">⚡</div>
-      <div style="font-size:18px; font-weight:900; color:#fff; margin-bottom:8px;">Умная калибровка телефона</div>
+      <div style="font-size:18px; font-weight:900; color:#fff; margin-bottom:8px;">Максимальный разгон сенсы</div>
       <div style="font-size:12.5px; color:var(--text-muted); line-height:1.45; margin-bottom:18px;">
-        Советуем просканировать телефон! Система сама определит процессор и герцовку, включит мгновенный отклик на 1 мм и подберёт настройки так, чтобы телефон не грелся и не проседал FPS.
+        Просканировать телефон и включить <b>Extreme Linear Teleport (850 пакетов/сек)</b>? Прицел будет перемещаться от старта до цели мгновенно по идеально ровной линии горизонта без шатаний.
       </div>
       <button class="btn-main" onclick="runAutoCalibrationModal()" style="margin-bottom:10px;">
-        🔍 СКАНИРОВАТЬ И ПОДОБРАТЬ АВТОМАТИЧЕСКИ
+        🔥 ВЫЖАТЬ МАКСИМУМ (850HZ + РОВНАЯ ЛИНИЯ)
       </button>
       <button class="btn-dark" onclick="closeCalibModal()">
-        ПЕРЕЙТИ К ПОЛЗУНКАМ ВРУЧНУЮ
+        НАСТРОИТЬ ВРУЧНУЮ
       </button>
     </div>
   </div>
 
-  <!-- ================= 2. ГЛАВНЫЙ ИНТЕРФЕЙС (СКРЫТ КЛАССОМ auth-locked ДО ВВОДА КЛЮЧА) ================= -->
+  <!-- ================= 2. ГЛАВНЫЙ ИНТЕРФЕЙС ================= -->
   <div id="mainAppRoot" class="app-container auth-locked">
 
-    <!-- ВЕРХНЯЯ ШАПКА -->
     <header class="top-header">
       <div>
         <div class="brand-title">SO2<span>Teleport</span></div>
-        <div class="brand-sub">QUANTUM ENGINE V407 • 360HZ TOUCH</div>
+        <div class="brand-sub">QUANTUM ENGINE V410 • 850EV/S LINEAR</div>
       </div>
       <div class="shizuku-pill" onclick="checkShizukuState()">
         <div class="shizuku-row">
           <span id="shizukuDot" class="status-dot"></span>
           <span id="shizukuText">Shizuku: АКТИВЕН</span>
         </div>
-        <div class="shizuku-sub">360Гц Тач • ОК</div>
+        <div class="shizuku-sub">360Гц Тач • 850 ev/s</div>
       </div>
     </header>
 
-    <!-- БЕЙДЖ ИГРОКА -->
     <div class="player-chip" onclick="openPage('page-profile')">
       <span class="player-chip-dot"></span>
       <span>Игрок: <b id="chipPlayerName">dare</b></span>
@@ -866,7 +851,7 @@
           </div>
           <div>
             <div class="tile-title">Сенса</div>
-            <div class="tile-desc">Нажми тумблер для пуска или открой настройку 1мм отклика</div>
+            <div class="tile-desc">Мгновенный флик 1мм по ровной линии без шатаний</div>
           </div>
         </div>
 
@@ -874,11 +859,11 @@
         <div class="bento-tile" onclick="openPage('page-configs')">
           <div class="tile-top">
             <div class="tile-icon-box">🔥</div>
-            <div class="tile-badge-hot">🔥 6 ТОП СБОРОК</div>
+            <div class="tile-badge-hot">🔥 6 PRO СБОРОК</div>
           </div>
           <div>
             <div class="tile-title">Готовые конфиги</div>
-            <div class="tile-desc">Реальные сборки киберспортсменов в 1 клик + обмен ссылками</div>
+            <div class="tile-desc">Боевые связки «Телепорт + Растяг + Прицел» в 1 клик</div>
           </div>
         </div>
 
@@ -889,8 +874,8 @@
             <div class="tile-arrow">›</div>
           </div>
           <div>
-            <div class="tile-title">Растяг</div>
-            <div class="tile-desc">Чёткий растяг 4:3 / 5:4 / 16:9 и кнопка «T» поверх игры</div>
+            <div class="tile-title">Растяг (7 видов)</div>
+            <div class="tile-desc">Форматы 4:3, 5:4, 1:1, 21:10 и широкие хитбоксы с кнопкой «T»</div>
           </div>
         </div>
 
@@ -902,7 +887,7 @@
           </div>
           <div>
             <div class="tile-title">Кастомный прицел</div>
-            <div class="tile-desc">Точка, крест, круг без нагрузки на FPS</div>
+            <div class="tile-desc">10 форм (Шеврон, Уголки, Бокс, Крест) + сдвиг по осям X/Y</div>
           </div>
         </div>
 
@@ -914,7 +899,7 @@
           </div>
           <div>
             <div class="tile-title">Настройки</div>
-            <div class="tile-desc">Разгон тача 360 Гц, RAM Boost в 1 клик и анти-отдача</div>
+            <div class="tile-desc">Vulkan GPU Turbo, стабилизатор пинга, 360 Гц и RAM Boost</div>
           </div>
         </div>
 
@@ -926,25 +911,26 @@
           </div>
           <div>
             <div class="tile-title">Профиль</div>
-            <div class="tile-desc">Ваш логин, ключ, герцовка и данные телефона</div>
+            <div class="tile-desc">Ваш логин, остаток времени ключа и данные телефона</div>
           </div>
         </div>
 
       </div>
     </div>
 
-    <!-- ================= ЭКРАН 1: СЕНСА И КВАНТОВЫЙ ТЕЛЕПОРТ ================= -->
+    <!-- ================= ЭКРАН 1: ЧИСТАЯ И ПОНЯТНАЯ СЕНСА (ТОЛЬКО РАБОЧИЕ ОСИ ТЕЛЕПОРТА) ================= -->
     <div id="page-sens" class="page-view">
       <div class="back-bar" onclick="openPage('page-home')">
         <span class="arrow">←</span>
-        <span>Сенса и Квантовый Телепорт</span>
+        <span>Сенса и Линейный Телепорт</span>
       </div>
 
+      <!-- ГЛАВНЫЙ ПУСК -->
       <div class="section-card">
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:13px;">
           <div>
             <div id="tpStatusHeading" style="font-size:15px; font-weight:900; color:#fff;">ТЕЛЕПОРТ: ВЫКЛЮЧЕН</div>
-            <div style="font-size:11.5px; color:var(--text-muted); margin-top:2px;">Нулевая задержка 1мм + квантование осей работают в фоне</div>
+            <div style="font-size:11.5px; color:var(--text-muted); margin-top:2px;">Отключает инерцию Android (`scroll_friction=0`, 850 пакетов/сек)</div>
           </div>
           <label class="ios-switch">
             <input type="checkbox" id="innerTpToggle" onchange="toggleTeleportMaster(this.checked)" />
@@ -952,194 +938,127 @@
           </label>
         </div>
         <button class="btn-main" id="mainTpActionBtn" onclick="toggleTeleportMaster(!document.getElementById('innerTpToggle').checked)">
-          ⚡ ВКЛЮЧИТЬ ТЕЛЕПОРТ (360HZ)
+          ⚡ ВКЛЮЧИТЬ ТЕЛЕПОРТ (850 EV/SEC)
         </button>
       </div>
 
+      <!-- АВТО-РАЗГОН НА МАКСИМУМ -->
       <div class="section-card">
         <div style="font-size:13.5px; font-weight:900; color:var(--accent); margin-bottom:6px;">
-          • Умный подбор под твой телефон (Без нагрева)
+          • Максимальный разгон под <span id="calibModelName">SM-S938B</span>
         </div>
         <div style="font-size:12px; color:#cbd5e1; line-height:1.45; margin-bottom:12px;">
-          ✅ Профиль подобран под <b id="calibModelName">SM-S938B</b>! Включён мгновенный сдвиг 1 мм (Zero-Delay), опрос тача 360 Гц и защита от перегрева.
+          Одним нажатием выставляет 100% скорость рывка, убирает вертикальное шатание прицела и включает мгновенный отклик на 1 мм сдвига пальца.
         </div>
         <button class="btn-main" onclick="runSmartScanAndApply()">
-          🔍 ПРОСКАНИРОВАТЬ ТЕЛЕФОН И ПОДОБРАТЬ НАСТРОЙКИ
+          🔥 ВЫЖАТЬ МАКСИМУМ ИЗ СЕНСОРА (БЕЗ ШАТАНИЯ)
         </button>
       </div>
 
+      <!-- 3 ПОНЯТНЫХ БОЕВЫХ РЕЖИМА -->
       <div class="section-card">
         <div class="section-header-tag">
-          <span>1. БЫСТРЫЕ РЕЖИМЫ СЕНСЫ</span>
+          <span>БЫСТРЫЕ РЕЖИМЫ ТЕЛЕПОРТА</span>
           <span>В 1 КЛИК</span>
         </div>
 
-        <div class="mode-row-card active" id="qmode-1" onclick="selectQuickSensMode(1, 10.0, 10.0, 8.8, 85, 52, 0.95)">
+        <div class="mode-row-card active" id="qmode-1" onclick="selectQuickSensMode(1, 10.0, 10.0, 8.2, 100, 95, 100)">
           <div>
-            <div class="mode-info-title">ЗВЕРСКИЙ ТЕЛЕПОРТ + 1ММ ИМПУЛЬС</div>
-            <div class="mode-info-desc">Мгновенный отклик на 1 мм и длинный флик в голову без нагрева</div>
+            <div class="mode-info-title">⚡ 1. ПРЯМОЙ РЕЛЬСОВЫЙ ТЕЛЕПОРТ (В ГОЛОВУ)</div>
+            <div class="mode-info-desc">Прицел летит вбок строго по ровной линии головы без шатания вверх-вниз</div>
           </div>
           <button class="mode-select-btn" id="qbtn-1">АКТИВЕН</button>
         </div>
 
-        <div class="mode-row-card" id="qmode-2" onclick="selectQuickSensMode(2, 9.2, 9.5, 7.2, 68, 44, 0.98)">
+        <div class="mode-row-card" id="qmode-2" onclick="selectQuickSensMode(2, 10.0, 10.0, 9.5, 90, 98, 100)">
           <div>
-            <div class="mode-info-title">ТЕЛЕПОРТ + ЗАЖИМ В ТОЧКУ (AKR / M4)</div>
-            <div class="mode-info-desc">Резкий телепорт по горизонтали + осевая стабилизация отдачи</div>
+            <div class="mode-info-title">💀 2. РАЗВОРОТ НА 180° ЗА 1 МС (AWM / DEAGLE)</div>
+            <div class="mode-info-desc">Мгновенный переброс камеры от начальной до конечной точки с жёстким стопом</div>
           </div>
           <button class="mode-select-btn" id="qbtn-2">ВЫБРАТЬ</button>
         </div>
 
-        <div class="mode-row-card" id="qmode-3" onclick="selectQuickSensMode(3, 10.0, 10.0, 9.6, 92, 58, 0.92)">
+        <div class="mode-row-card" id="qmode-3" onclick="selectQuickSensMode(3, 9.5, 9.6, 7.5, 100, 92, 95)" style="margin-bottom:0;">
           <div>
-            <div class="mode-info-title">ХЕДШОТ-МАГНИТ (STOP-ИМПУЛЬС)</div>
-            <div class="mode-info-desc">Молниеносный флик с жёсткой остановкой камеры в момент выстрела</div>
+            <div class="mode-info-title">🎯 3. ТЕЛЕПОРТ + ЗАЖИМ В ТОЧКУ (AKR / M4A1)</div>
+            <div class="mode-info-desc">Резкая наводка по горизонтали + удержание спрея в одной точке без тряски</div>
           </div>
           <button class="mode-select-btn" id="qbtn-3">ВЫБРАТЬ</button>
         </div>
-
-        <div class="mode-row-card" id="qmode-4" onclick="selectQuickSensMode(4, 7.8, 8.0, 7.5, 52, 32, 0.85)" style="margin-bottom:0;">
-          <div>
-            <div class="mode-info-title">ПЛАВНЫЙ КОНТРОЛЬ (Холодный FPS)</div>
-            <div class="mode-info-desc">Минимальная нагрузка для слабых устройств и плавное ведение цели</div>
-          </div>
-          <button class="mode-select-btn" id="qbtn-4">ВЫБРАТЬ</button>
-        </div>
       </div>
 
-      <!-- МГНОВЕННЫЙ МИКРО-ФЛИК 1 ММ -->
+      <!-- 6 ГЛАВНЫХ И ПОНЯТНЫХ НАСТРОЕК СЕНСЫ (БЕЗ ЛИШНЕГО МУСОРА) -->
       <div class="section-card">
-        <div class="section-header-tag" style="margin-bottom:4px;"><span>МГНОВЕННЫЙ МИКРО-ФЛИК (1 ММ)</span></div>
-        <div style="font-size:11.5px; color:var(--text-muted); margin-bottom:12px;">
-          Убирает системную задержку Android в начале движения пальца.
+        <div class="section-header-tag">
+          <span>ТОЧНАЯ НАСТРОЙКА РЫВКА И ЛИНИИ</span>
+          <span>6 ОСЕЙ</span>
         </div>
-        <div class="param-box" style="margin-bottom:0; display:flex; justify-content:space-between; align-items:center;">
+
+        <!-- 0. Тумблер 1мм -->
+        <div class="param-box" style="display:flex; justify-content:space-between; align-items:center;">
           <div style="padding-right:10px;">
-            <div class="param-name">Мгновенный отклик 1 мм (Zero-Delay Snap)</div>
-            <div class="param-sub" style="margin-top:3px;">Даже 1 мм сдвига пальца и длинный флик срабатывают за 1 миллисекунду</div>
+            <div class="param-name">⚡ Мгновенный отклик 1 мм (Zero-Delay)</div>
+            <div class="param-sub" style="margin-top:3px;">Убирает мёртвую зону Android (`touch.slop=0`) — прицел срывается с места за 1 мс</div>
           </div>
           <label class="ios-switch">
             <input type="checkbox" id="zeroDelaySnapToggle" checked onchange="onZeroDelayToggle(this.checked)" />
             <span class="ios-slider"></span>
           </label>
         </div>
-      </div>
 
-      <!-- ОСТРОТА -->
-      <div class="section-card">
-        <div class="section-header-tag" style="margin-bottom:4px;"><span>ОСТРОТА</span></div>
-        <div style="font-size:11.5px; color:var(--text-muted); margin-bottom:12px;">Насколько резко реагирует прицел.</div>
-
+        <!-- 1. Скорость телепорта -->
         <div class="param-box">
-          <div class="param-top"><span class="param-name">Резкость</span><span id="v-sharp" class="param-val-pill">10.00</span></div>
+          <div class="param-top"><span class="param-name">1. Скорость телепорта (Резкость)</span><span id="v-sharp" class="param-val-pill">10.0</span></div>
           <input type="range" id="p-sharp" min="1" max="10" step="0.1" value="10.0" oninput="syncAllSliders()" />
-          <div class="param-sub">Больше — чувствительнее, мгновенный срыв с места</div>
+          <div class="param-sub">Отвечает за то, насколько моментально прицел перелетает от старта к цели</div>
         </div>
 
+        <!-- 2. Горизонтальный флик -->
         <div class="param-box">
-          <div class="param-top"><span class="param-name">Влево-вправо</span><span id="v-sx" class="param-val-pill">10.00</span></div>
+          <div class="param-top"><span class="param-name">2. Горизонтальный флик (Влево-вправо)</span><span id="v-sx" class="param-val-pill">10.0</span></div>
           <input type="range" id="p-sx" min="1" max="10" step="0.1" value="10.0" oninput="syncAllSliders()" />
-          <div class="param-sub">Только горизонталь — прицел по врагам в стороне</div>
+          <div class="param-sub">Скорость бокового разворота камеры на 90° и 180°</div>
         </div>
 
+        <!-- 3. Вертикальный контроль -->
         <div class="param-box">
-          <div class="param-top"><span class="param-name">Вверх-вниз</span><span id="v-sy" class="param-val-pill">8.80</span></div>
-          <input type="range" id="p-sy" min="1" max="10" step="0.1" value="8.8" oninput="syncAllSliders()" />
-          <div class="param-sub">Вертикальный контроль отдачи и наводки</div>
+          <div class="param-top"><span class="param-name">3. Вертикальный контроль (Вверх-вниз)</span><span id="v-sy" class="param-val-pill">8.2</span></div>
+          <input type="range" id="p-sy" min="1" max="10" step="0.1" value="8.2" oninput="syncAllSliders()" />
+          <div class="param-sub">Ставь 7.5–8.5, чтобы при резком флике вбок прицел не взлетал выше головы</div>
         </div>
 
-        <div class="param-box" style="margin-bottom:0;">
-          <div class="param-top"><span class="param-name">Упреждение</span><span id="v-lead" class="param-val-pill">8</span></div>
-          <input type="range" id="p-lead" min="0" max="10" step="1" value="8" oninput="syncAllSliders()" />
-          <div class="param-sub">Прицел ведёт цель — попадать легче</div>
-        </div>
-      </div>
-
-      <!-- ПРИЛИПАНИЕ И 18 ПАРАМЕТРОВ -->
-      <div class="section-card">
-        <div class="section-header-tag" style="margin-bottom:4px;"><span>ПРИЛИПАНИЕ И ЗАЖИМ</span></div>
-        <div style="font-size:11.5px; color:var(--text-muted); margin-bottom:12px;">
-          Прицел держится на линиях и гасит боковой разброс при зажиме.
-        </div>
-
+        <!-- 4. Выпрямление линии (Анти-шатание) -->
         <div class="param-box">
-          <div class="param-top"><span class="param-name">Прилипание к осям</span><span id="v-axisStick" class="param-val-pill">8</span></div>
-          <input type="range" id="p-axisStick" min="0" max="10" step="1" value="8" oninput="syncAllSliders()" />
-          <div class="param-sub">Притягивает прицел к горизонтали головы и вертикали зажима</div>
+          <div class="param-top"><span class="param-name">4. Ровная линия горизонта (Без шатания)</span><span id="v-straight" class="param-val-pill">100%</span></div>
+          <input type="range" id="p-straight" min="20" max="100" step="5" value="100" oninput="syncAllSliders()" />
+          <div class="param-sub">Держит траекторию флика строго по прямой линии, убирая виляние пальца</div>
         </div>
 
+        <!-- 5. Стоп-фиксация на цели -->
         <div class="param-box">
-          <div class="param-top"><span class="param-name">Через сколько липнуть</span><span id="v-stickDelay" class="param-val-pill">10</span></div>
-          <input type="range" id="p-stickDelay" min="0" max="50" step="1" value="10" oninput="syncAllSliders()" />
-          <div class="param-sub">Сколько держать палец спокойно, чтобы включилось</div>
+          <div class="param-top"><span class="param-name">5. Стоп-фиксация на модельке (Магнит)</span><span id="v-stickForce" class="param-val-pill">95%</span></div>
+          <input type="range" id="p-stickForce" min="10" max="100" step="5" value="95" oninput="syncAllSliders()" />
+          <div class="param-sub">Гасит инерцию в конце свайпа, чтобы прицел останавливался ровно на враге</div>
         </div>
 
-        <div class="section-header-tag" style="margin: 14px 0 10px;"><span>ДОПОЛНИТЕЛЬНО (18 ПАРАМЕТРОВ)</span></div>
-
-        <div class="param-box">
-          <div class="param-top"><span class="param-name">Сила прилипания</span><span id="v-stickForce" class="param-val-pill">8</span></div>
-          <input type="range" id="p-stickForce" min="0" max="10" step="1" value="8" oninput="syncAllSliders()" />
+        <!-- 6. Частота пакетов тача -->
+        <div class="param-box" style="margin-bottom:12px;">
+          <div class="param-top"><span class="param-name">6. Мощность потока тача (Квантование)</span><span id="v-chunks" class="param-val-pill">100%</span></div>
+          <input type="range" id="p-chunks" min="20" max="100" step="5" value="100" oninput="syncAllSliders()" />
+          <div class="param-sub">На 100% разгоняет обработку касаний до 850–900 пакетов в секунду</div>
         </div>
 
-        <div class="param-box">
-          <div class="param-top"><span class="param-name">Куски (Chunks)</span><span id="v-chunks" class="param-val-pill">85</span></div>
-          <input type="range" id="p-chunks" min="10" max="100" step="1" value="85" oninput="syncAllSliders()" />
-        </div>
-
-        <div class="param-box">
-          <div class="param-top"><span class="param-name">Мелочь мимо кусков</span><span id="v-chunkFast" class="param-val-pill">52</span></div>
-          <input type="range" id="p-chunkFast" min="1" max="60" step="1" value="52" oninput="syncAllSliders()" />
-        </div>
-
-        <div class="param-box">
-          <div class="param-top"><span class="param-name">Пауза тача в мс</span><span id="v-pause" class="param-val-pill">0</span></div>
-          <input type="range" id="p-pause" min="0" max="20" step="1" value="0" oninput="syncAllSliders()" />
-        </div>
-
-        <div class="param-box">
-          <div class="param-top"><span class="param-name">Разгон</span><span id="v-accel" class="param-val-pill">9.80</span></div>
-          <input type="range" id="p-accel" min="0" max="10" step="0.1" value="9.8" oninput="syncAllSliders()" />
-        </div>
-
-        <div class="param-box">
-          <div class="param-top"><span class="param-name">Крутизна разгона</span><span id="v-accelCurve" class="param-val-pill">8.50</span></div>
-          <input type="range" id="p-accelCurve" min="1" max="10" step="0.1" value="8.5" oninput="syncAllSliders()" />
-        </div>
-
-        <div class="param-box">
-          <div class="param-top"><span class="param-name">Дальность краёв</span><span id="v-edge" class="param-val-pill">0</span></div>
-          <input type="range" id="p-edge" min="0" max="10" step="1" value="0" oninput="syncAllSliders()" />
-        </div>
-
-        <div class="param-box">
-          <div class="param-top"><span class="param-name">Выпрямление</span><span id="v-straight" class="param-val-pill">0.95</span></div>
-          <input type="range" id="p-straight" min="0" max="1" step="0.01" value="0.95" oninput="syncAllSliders()" />
-        </div>
-
-        <div class="param-box">
-          <div class="param-top"><span class="param-name">Хват по осям</span><span id="v-grip" class="param-val-pill">9</span></div>
-          <input type="range" id="p-grip" min="1" max="10" step="1" value="9" oninput="syncAllSliders()" />
-        </div>
-
-        <div class="param-box">
-          <div class="param-top"><span class="param-name">Потолок хвата</span><span id="v-gripCap" class="param-val-pill">10</span></div>
-          <input type="range" id="p-gripCap" min="1" max="10" step="1" value="10" oninput="syncAllSliders()" />
-        </div>
-
-        <button class="btn-dark" onclick="runSmartScanAndApply()" style="margin-top:10px; margin-bottom:8px;">
-          👆 ОПРЕДЕЛИТЬ МАТРИЦУ ЭКРАНА ВРУЧНУЮ
-        </button>
         <button class="btn-dark" onclick="testOneMmFlickResponse()">
-          👆 ПРОВЕРИТЬ КАСАНИЯ И 1ММ ОТКЛИК
+          🛠️ СБРОСИТЬ ФРИЗЫ ТАЧА И ПЕРЕЗАПУСТИТЬ 850 EV/S
         </button>
       </div>
     </div>
 
-    <!-- ================= ЭКРАН 2: ГОТОВЫЕ КИБЕР-КОНФИГИ ================= -->
+    <!-- ================= ЭКРАН 2: РЕАЛЬНО РАБОЧИЕ PRO КОНФИГИ ================= -->
     <div id="page-configs" class="page-view">
       <div class="back-bar" onclick="openPage('page-home')">
         <span class="arrow">←</span>
-        <span>Готовые кибер-конфиги (В 1 клик)</span>
+        <span>Готовые PRO-конфиги (Комплексные сборки)</span>
       </div>
 
       <div class="section-card">
@@ -1148,107 +1067,142 @@
           <span>SHARE CODE</span>
         </div>
         <div style="font-size:11.5px; color:var(--text-muted); line-height:1.4; margin-bottom:10px;">
-          Скопируй свой код настроек или вставь чужой код на любом другом устройстве — все ползунки сенсы, растяг и прицел применятся автоматически:
+          Скопируй свой код настроек или вставь чужой код на любом другом устройстве — сенса, растяг и прицел применятся автоматически:
         </div>
         <input type="text" id="shareLinkInput" class="cyber-field" placeholder="Вставь код SO2-... или ссылку https://so2tp.cfg/?c=..." />
 
         <div style="display:grid; grid-template-columns:1fr 1fr; gap:9px;">
           <button class="btn-main" onclick="applySharedConfigCode()">📥 ПРИМЕНИТЬ</button>
-          <button class="btn-dark" onclick="generateAndCopyShareLink()">🔗 СКОПИРОВАТЬ ССЫЛКУ</button>
+          <button class="btn-dark" onclick="generateAndCopyShareLink()">🔗 СКОПИРОВАТЬ КОД</button>
         </div>
       </div>
 
       <div class="section-card">
         <div class="section-header-tag">
-          <span>ПРОВЕРЕННЫЕ БОЕВЫЕ СБОРКИ ИГРОКОВ</span>
-          <span>READY</span>
+          <span>БОЕВЫЕ СБОРКИ (СЕНСА + БУСТЕРЫ + ПРИЦЕЛ)</span>
+          <span>6 PRO BUILDS</span>
         </div>
 
         <div class="param-box">
           <div class="param-top">
-            <span class="param-name">🔥 1. КИБЕР-ХЕДШОТ 360HZ (M4A1 / AKR)</span>
-            <span class="param-val-pill">ТОП #1</span>
+            <span class="param-name">⚡ 1. РЕЛЬСОВЫЙ ТЕЛЕПОРТ В ГОЛОВУ (M4A1 / AKR)</span>
+            <span class="param-val-pill">100% LINE</span>
           </div>
-          <div class="param-sub" style="margin-bottom:10px;">Идеальное прилипание к линии головы (94% выпрямление траектории) + 0 мёртвая зона для мгновенных ваншотов.</div>
-          <button class="btn-main" onclick="loadProCyberBuild('КИБЕР-ХЕДШОТ 360HZ', 10.0, 10.0, 8.6, 88, 54, 0.94)">⚡ ЗАГРУЗИТЬ И ВКЛЮЧИТЬ</button>
-        </div>
-
-        <div class="param-box">
-          <div class="param-top">
-            <span class="param-name">💀 2. DEAGLE / USP ВАНТАП МОНСТР</span>
-            <span class="param-val-pill">1MM SNAP</span>
+          <div class="param-sub" style="margin-bottom:10px;">
+            Включает: <b>Скорость 10.0</b>, <b>Выпрямление линии 100%</b>, <b>Анти-отдачу 100%</b> + прицел «Точка». Прицел идёт строго горизонтально по линии головы без шатаний.
           </div>
-          <div class="param-sub" style="margin-bottom:10px;">Максимальный микро-импульс на 1 мм сдвига пальца с жёсткой фиксацией прицела в точке остановки.</div>
-          <button class="btn-main" onclick="loadProCyberBuild('DEAGLE ВАНТАП МОНСТР', 10.0, 10.0, 7.8, 92, 58, 0.98)">⚡ ЗАГРУЗИТЬ И ВКЛЮЧИТЬ</button>
+          <button class="btn-main" onclick="loadFullProBundle('РЕЛЬСОВЫЙ ТЕЛЕПОРТ В ГОЛОВУ', 10.0, 10.0, 8.0, 100, 95, 100, 'dot', '#14e8c6', true)">
+            🔥 ВКЛЮЧИТЬ СБОРКУ #1
+          </button>
         </div>
 
         <div class="param-box">
           <div class="param-top">
-            <span class="param-name">🎯 3. ЗАЖИМ В ТОЧКУ (AKR12 / M16 / F/S)</span>
+            <span class="param-name">💀 2. DEAGLE / USP ВАНТАП-МАГНИТ (1MM SNAP)</span>
+            <span class="param-val-pill">STOP 100%</span>
+          </div>
+          <div class="param-sub" style="margin-bottom:10px;">
+            Включает: <b>Мгновенный срыв 1мм</b>, <b>Стоп-фиксацию 100%</b>, <b>850 пакетов/сек</b> + новый прицел «Шеврон ^» ровно под макушку головы.
+          </div>
+          <button class="btn-main" onclick="loadFullProBundle('DEAGLE ВАНТАП-МАГНИТ', 10.0, 10.0, 7.6, 100, 100, 100, 'chevron', '#00e5ff', false)">
+            🔥 ВКЛЮЧИТЬ СБОРКУ #2
+          </button>
+        </div>
+
+        <div class="param-box">
+          <div class="param-top">
+            <span class="param-name">🦅 3. AWM / M40 МОМЕНТАЛЬНЫЙ ФАСТЗУМ</span>
+            <span class="param-val-pill">FLICK 180°</span>
+          </div>
+          <div class="param-sub" style="margin-bottom:10px;">
+            Включает: <b>Горизонталь 10.0 + Вертикаль 9.8</b> для мгновенных фликов через весь экран + прицел «Снайперские Уголки» для ноускопов вплотную.
+          </div>
+          <button class="btn-main" onclick="loadFullProBundle('AWM ФАСТЗУМ СНАЙПЕР', 10.0, 10.0, 9.8, 90, 95, 100, 'corners', '#facc15', false)">
+            🔥 ВКЛЮЧИТЬ СБОРКУ #3
+          </button>
+        </div>
+
+        <div class="param-box">
+          <div class="param-top">
+            <span class="param-name">🎯 4. ЛАЗЕРНЫЙ ЗАЖИМ В ТОЧКУ (AKR12 / F/S)</span>
             <span class="param-val-pill">NO RECOIL</span>
           </div>
-          <div class="param-sub" style="margin-bottom:10px;">Гасит горизонтальную тряску при зажиме и усиливает вертикальную оттяжку вниз вместе с Anti-Recoil 95%.</div>
-          <button class="btn-main" onclick="loadProCyberBuild('ЗАЖИМ В ТОЧКУ NO-RECOIL', 9.4, 9.2, 9.6, 78, 48, 0.96)">⚡ ЗАГРУЗИТЬ И ВКЛЮЧИТЬ</button>
-        </div>
-
-        <div class="param-box">
-          <div class="param-top">
-            <span class="param-name">⚡ 4. AWM / M40 ФАСТЗУМ СНАЙПЕР</span>
-            <span class="param-val-pill">SNIPER</span>
+          <div class="param-sub" style="margin-bottom:10px;">
+            Включает: <b>Усиленный фикс отдачи 100%</b>, гашение бокового разброса + компактный прицел «Бокс» для контроля спрея на дальней дистанции.
           </div>
-          <div class="param-sub" style="margin-bottom:10px;">Длинный телепорт-флик через весь экран со стоп-паузой в момент выстрела, чтобы прицел не срывался.</div>
-          <button class="btn-main" onclick="loadProCyberBuild('AWM ФАСТЗУМ СНАЙПЕР', 10.0, 10.0, 9.8, 96, 60, 0.92)">⚡ ЗАГРУЗИТЬ И ВКЛЮЧИТЬ</button>
+          <button class="btn-main" onclick="loadFullProBundle('ЛАЗЕРНЫЙ ЗАЖИМ В ТОЧКУ', 9.5, 9.5, 7.4, 100, 95, 95, 'box', '#10b981', true)">
+            🔥 ВКЛЮЧИТЬ СБОРКУ #4
+          </button>
         </div>
 
         <div class="param-box">
           <div class="param-top">
-            <span class="param-name">👑 5. ТУРНИРНЫЙ В 3–4 ПАЛЬЦА (CLAW PRO)</span>
+            <span class="param-name">👑 5. ТУРНИРНЫЙ CLAW 4–5 ПАЛЬЦЕВ + VULKAN</span>
             <span class="param-val-pill">ESPORTS</span>
           </div>
-          <div class="param-sub" style="margin-bottom:10px;">Специальная калибровка без конфликтов мультитача при одновременном приседе, стрейфе и стрельбе.</div>
-          <button class="btn-main" onclick="loadProCyberBuild('ТУРНИРНЫЙ CLAW PRO', 9.6, 9.8, 9.0, 84, 52, 0.93)">⚡ ЗАГРУЗИТЬ И ВКЛЮЧИТЬ</button>
+          <div class="param-sub" style="margin-bottom:10px;">
+            Включает: <b>Защиту от залипаний мультитача (`multi_press=80ms`)</b>, <b>Vulkan GPU Turbo</b>, <b>Стабилизатор пинга</b> + классический «Крест».
+          </div>
+          <button class="btn-main" onclick="loadFullProBundle('ТУРНИРНЫЙ CLAW PRO', 10.0, 10.0, 8.6, 95, 90, 100, 'cross', '#d946ef', true)">
+            🔥 ВКЛЮЧИТЬ СБОРКУ #5
+          </button>
         </div>
 
         <div class="param-box" style="margin-bottom:0;">
           <div class="param-top">
-            <span class="param-name">❄️ 6. АНТИ-ЛАГ 120 FPS (ДЛЯ СЛАБЫХ ТЕЛ)</span>
-            <span class="param-val-pill">COLD CPU</span>
+            <span class="param-name">❄️ 6. МАКСИМУМ 120 FPS + ОЧИСТКА ОЗУ</span>
+            <span class="param-val-pill">TURBO FPS</span>
           </div>
-          <div class="param-sub" style="margin-bottom:10px;">Облегчённая частота пакетов без нагрузки на процессор + чистка ОЗУ для стабильных 120 кадров без нагрева.</div>
-          <button class="btn-main" onclick="loadProCyberBuild('АНТИ-ЛАГ 120 FPS', 8.8, 9.0, 8.4, 60, 38, 0.90)">⚡ ЗАГРУЗИТЬ И ВКЛЮЧИТЬ</button>
+          <div class="param-sub" style="margin-bottom:10px;">
+            Автоматически очищает ОЗУ, включает <b>Холодную фиксацию 120 Гц</b>, <b>Vulkan рендер</b> и быструю сенсу без нагрева процессора.
+          </div>
+          <button class="btn-main" onclick="loadFullProBundle('МАКСИМУМ 120 FPS TURBO', 9.6, 9.8, 8.4, 95, 90, 90, 'dot', '#00e5ff', true); runRamCleanBoost();">
+            🔥 ВКЛЮЧИТЬ СБОРКУ #6
+          </button>
         </div>
       </div>
     </div>
 
-    <!-- ================= ЭКРАН 3: РАСТЯГ ЭКРАНА ================= -->
+    <!-- ================= ЭКРАН 3: РАСТЯГ ЭКРАНА (7 ФОРМАТОВ + ШИРОКИЕ ХИТБОКСЫ) ================= -->
     <div id="page-stretch" class="page-view">
       <div class="back-bar" onclick="openPage('page-home')">
         <span class="arrow">←</span>
-        <span>Растяг экрана</span>
+        <span>Растяг экрана и Широкие Хитбоксы</span>
       </div>
 
       <div class="section-card">
         <div class="section-header-tag">
-          <span>ВЫБОР ФОРМАТА ДЛЯ КНОПКИ «T»</span>
+          <span>ВЫБОР ФОРМАТА ДЛЯ КНОПКИ «T» (7 РЕЖИМОВ)</span>
           <span id="stretchCornerLabel">4:3</span>
         </div>
 
         <div style="height:105px; background:var(--bg-card-inner); border:1px solid rgba(var(--accent-rgb),0.2); border-radius:15px; display:flex; align-items:center; justify-content:center; margin-bottom:12px;">
-          <div id="stretchPreviewBox" style="width:142px; height:76px; border:2px solid var(--accent); border-radius:12px; background:rgba(var(--accent-rgb),0.12); display:flex; align-items:center; justify-content:center; font-size:14px; font-weight:900; color:#fff; transition:width 0.2s;">
-            ФОРМАТ 4:3
+          <div id="stretchPreviewBox" style="width:142px; height:76px; border:2px solid var(--accent); border-radius:12px; background:rgba(var(--accent-rgb),0.12); display:flex; align-items:center; justify-content:center; font-size:13px; font-weight:900; color:#fff; transition:width 0.2s;">
+            ФОРМАТ 4:3 (IPAD)
           </div>
         </div>
 
-        <div style="font-size:12px; color:var(--text-muted); text-align:center; line-height:1.45; margin-bottom:12px;">
-          Выбери нужный формат ниже и нажми кнопку активации — поверх экрана появится плавающая кнопка «T». Зайди в Standoff 2 и нажми на кнопку «T», чтобы мгновенно включить или выключить растяг прямо в катке!
+        <!-- 7 ФОРМАТОВ РАСТЯГА ВКЛЮЧАЯ 1:1 И 21:10 -->
+        <div class="pills-grid" style="grid-template-columns:repeat(4, 1fr);" id="ratioPillsContainer">
+          <div class="choice-pill" data-ratio="1:1" onclick="selectStretchFormat('1:1', 108, '1:1 (ULTRA WIDE)', this)">1:1 MAX</div>
+          <div class="choice-pill" data-ratio="5:4" onclick="selectStretchFormat('5:4', 124, '5:4 (PRO HEAD)', this)">5:4</div>
+          <div class="choice-pill active" data-ratio="4:3" onclick="selectStretchFormat('4:3', 142, '4:3 (IPAD)', this)">4:3 IPAD</div>
+          <div class="choice-pill" data-ratio="3:2" onclick="selectStretchFormat('3:2', 158, '3:2 (BALANCED)', this)">3:2</div>
+          <div class="choice-pill" data-ratio="16:10" onclick="selectStretchFormat('16:10', 174, '16:10 (WIDE)', this)">16:10</div>
+          <div class="choice-pill" data-ratio="16:9" onclick="selectStretchFormat('16:9', 190, '16:9 (FAST)', this)">16:9</div>
+          <div class="choice-pill" data-ratio="21:10" style="grid-column: span 2;" onclick="selectStretchFormat('21:10', 210, '21:10 (SOFT STRETCH)', this)">21:10 КИБЕР</div>
         </div>
 
-        <div class="pills-grid" id="ratioPillsContainer">
-          <div class="choice-pill" data-ratio="5:4" onclick="selectStretchFormat('5:4', 125, this)">5:4</div>
-          <div class="choice-pill active" data-ratio="4:3" onclick="selectStretchFormat('4:3', 142, this)">4:3</div>
-          <div class="choice-pill" data-ratio="3:2" onclick="selectStretchFormat('3:2', 160, this)">3:2</div>
-          <div class="choice-pill" data-ratio="16:10" onclick="selectStretchFormat('16:10', 176, this)">16:10</div>
-          <div class="choice-pill" data-ratio="16:9" onclick="selectStretchFormat('16:9', 194, this)">16:9</div>
+        <!-- КОМБО ШИРОКИЕ ХИТБОКСЫ -->
+        <div class="param-box" style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+          <div style="padding-right:10px;">
+            <div class="param-name">🎯 Режим «Широкие Хитбоксы» (Wide Hitbox)</div>
+            <div class="param-sub">Включает выбранный растяг + 850 пакетов/сек + фиксацию на голове</div>
+          </div>
+          <label class="ios-switch">
+            <input type="checkbox" id="sw-wideHitboxMode" onchange="toggleWideHitboxFeature(this.checked)" />
+            <span class="ios-slider"></span>
+          </label>
         </div>
 
         <button class="btn-main" id="activateStretchBtnText" onclick="activateFloatingTButton()" style="margin-bottom:10px;">
@@ -1261,7 +1215,7 @@
       </div>
     </div>
 
-    <!-- ================= ЭКРАН 4: PRO КОНСТРУКТОР КАСТОМНОГО ПРИЦЕЛА ================= -->
+    <!-- ================= ЭКРАН 4: PRO ПРИЦЕЛ (10 ФОРМ + СДВИГ X/Y) ================= -->
     <div id="page-crosshair" class="page-view">
       <div class="back-bar" onclick="openPage('page-home')">
         <span class="arrow">←</span>
@@ -1270,7 +1224,7 @@
 
       <div class="section-card">
         <div class="section-header-tag">
-          <span>ФОРМА, ЦВЕТ И ГЕОМЕТРИЯ ПРИЦЕЛА (ZERO-LAG)</span>
+          <span>10 ФОРМ ПРИЦЕЛА + ТОЧНАЯ ЦЕНТРОВКА</span>
           <span id="chCornerStatus">ВЫКЛ</span>
         </div>
 
@@ -1278,7 +1232,8 @@
           <canvas id="chPreviewCanvas" width="260" height="120"></canvas>
         </div>
 
-        <div class="pills-grid" style="grid-template-columns:repeat(4,1fr);" id="chShapePills">
+        <!-- 10 ФОРМ ВКЛЮЧАЯ ШЕВРОН И СНАЙПЕРСКИЕ УГОЛКИ -->
+        <div class="pills-grid" style="grid-template-columns:repeat(5,1fr);" id="chShapePills">
           <div class="choice-pill active" data-shape="off" onclick="selectCrosshairShape('off', 'ВЫКЛ', this)">ВЫКЛ</div>
           <div class="choice-pill" data-shape="dot" onclick="selectCrosshairShape('dot', 'ТОЧКА', this)">ТОЧКА</div>
           <div class="choice-pill" data-shape="cross" onclick="selectCrosshairShape('cross', 'КРЕСТ', this)">КРЕСТ</div>
@@ -1287,6 +1242,8 @@
           <div class="choice-pill" data-shape="circle" onclick="selectCrosshairShape('circle', 'КРУГ', this)">КРУГ</div>
           <div class="choice-pill" data-shape="circledot" onclick="selectCrosshairShape('circledot', 'КРУГ+ТЧК', this)">КРУГ+ТЧК</div>
           <div class="choice-pill" data-shape="box" onclick="selectCrosshairShape('box', 'БОКС', this)">БОКС</div>
+          <div class="choice-pill" data-shape="chevron" onclick="selectCrosshairShape('chevron', 'ШЕВРОН ^', this)">ШЕВРОН ^</div>
+          <div class="choice-pill" data-shape="corners" onclick="selectCrosshairShape('corners', 'УГОЛКИ', this)">УГОЛКИ</div>
         </div>
 
         <div class="pills-grid" style="grid-template-columns:repeat(5,1fr);" id="chColorPills">
@@ -1298,23 +1255,23 @@
         </div>
 
         <div class="param-box">
-          <div class="param-top"><span class="param-name">Длина лучей / Размер</span><span id="v-chLen" class="param-val-pill">12 px</span></div>
-          <input type="range" id="p-chLen" min="2" max="30" step="1" value="12" oninput="updateCrosshairAll()" />
+          <div class="param-top"><span class="param-name">Размер / Длина лучей</span><span id="v-chLen" class="param-val-pill">10 px</span></div>
+          <input type="range" id="p-chLen" min="2" max="26" step="1" value="10" oninput="updateCrosshairAll()" />
         </div>
 
         <div class="param-box">
           <div class="param-top"><span class="param-name">Толщина линий</span><span id="v-chThick" class="param-val-pill">3 px</span></div>
-          <input type="range" id="p-chThick" min="1" max="10" step="1" value="3" oninput="updateCrosshairAll()" />
+          <input type="range" id="p-chThick" min="1" max="8" step="1" value="3" oninput="updateCrosshairAll()" />
         </div>
 
         <div class="param-box">
-          <div class="param-top"><span class="param-name">Зазор в центре (Gap)</span><span id="v-chGap" class="param-val-pill">4 px</span></div>
-          <input type="range" id="p-chGap" min="0" max="22" step="1" value="4" oninput="updateCrosshairAll()" />
+          <div class="param-top"><span class="param-name">Зазор в центре (Gap)</span><span id="v-chGap" class="param-val-pill">3 px</span></div>
+          <input type="range" id="p-chGap" min="0" max="18" step="1" value="3" oninput="updateCrosshairAll()" />
         </div>
 
         <div class="param-box">
           <div class="param-top"><span class="param-name">Размер центральной точки</span><span id="v-chDot" class="param-val-pill">3 px</span></div>
-          <input type="range" id="p-chDot" min="1" max="10" step="1" value="3" oninput="updateCrosshairAll()" />
+          <input type="range" id="p-chDot" min="1" max="8" step="1" value="3" oninput="updateCrosshairAll()" />
         </div>
 
         <div class="param-box">
@@ -1322,9 +1279,27 @@
           <input type="range" id="p-chAlpha" min="20" max="100" step="1" value="100" oninput="updateCrosshairAll()" />
         </div>
 
+        <!-- НОВАЯ ФИШКА: СДВИГ ПРИЦЕЛА ПО X / Y ДЛЯ ИДЕАЛЬНОЙ ЦЕНТРОВКИ ПРИ РАСТЯГЕ -->
+        <div class="param-box">
+          <div class="param-top">
+            <span class="param-name">Сдвиг по горизонтали / вертикали (X / Y)</span>
+            <span id="v-chOffset" class="param-val-pill">0 / 0</span>
+          </div>
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+            <div>
+              <div style="font-size:10px; color:var(--text-muted); margin-bottom:4px;">ОСЬ X (Влево/Вправо)</div>
+              <input type="range" id="p-chOffX" min="-25" max="25" step="1" value="0" oninput="updateCrosshairOffset()" />
+            </div>
+            <div>
+              <div style="font-size:10px; color:var(--text-muted); margin-bottom:4px;">ОСЬ Y (Вверх/Вниз)</div>
+              <input type="range" id="p-chOffY" min="-25" max="25" step="1" value="0" oninput="updateCrosshairOffset()" />
+            </div>
+          </div>
+        </div>
+
         <div class="param-box" style="margin-bottom:0; display:flex; justify-content:space-between; align-items:center;">
           <div>
-            <div class="param-name">Чёрная обводка (Outline) и Свой цвет</div>
+            <div class="param-name">Чёрная обводка (Outline) и Палитра</div>
             <div class="param-sub">Чёткий контур на светлых текстурах и флешках</div>
           </div>
           <div style="display:flex; align-items:center; gap:10px;">
@@ -1338,11 +1313,11 @@
       </div>
     </div>
 
-    <!-- ================= ЭКРАН 5: НАСТРОЙКИ СИСТЕМЫ ================= -->
+    <!-- ================= ЭКРАН 5: НАСТРОЙКИ СИСТЕМЫ (БЕЗ ЛОМАЮЩЕГО ИНТЕРФЕЙС DPI!) ================= -->
     <div id="page-settings" class="page-view">
       <div class="back-bar" onclick="openPage('page-home')">
         <span class="arrow">←</span>
-        <span>Настройки системы</span>
+        <span>Настройки системы и Бустеры</span>
       </div>
 
       <div class="section-card">
@@ -1359,15 +1334,16 @@
 
       <div class="section-card">
         <div class="section-header-tag">
-          <span>РАЗГОН ТАЧА И КОНТРОЛЬ ЗАЖИМА</span>
+          <span>СИСТЕМНЫЕ БУСТЕРЫ И КОНТРОЛЬ ЗАЖИМА</span>
           <span>SHIZUKU</span>
         </div>
 
+        <!-- 1. Разгон герцовки тача -->
         <div class="param-box">
           <div style="display:flex; justify-content:space-between; align-items:center;">
             <div style="padding-right:10px;">
-              <div class="param-name">Разгон герцовки тача (Touch Sampling Boost)</div>
-              <div class="param-sub">Принудительный буст опроса матрицы (240–360 Гц) для нулевой задержки выстрела</div>
+              <div class="param-name">⚡ Разгон герцовки тача (360 Гц MAX)</div>
+              <div class="param-sub">Принудительный буст опроса матрицы для нулевой задержки выстрела</div>
             </div>
             <label class="ios-switch">
               <input type="checkbox" id="sw-touchBoost" checked onchange="applyTouchSamplingBoost()" />
@@ -1381,10 +1357,35 @@
           </div>
         </div>
 
+        <!-- 2. Vulkan GPU Turbo -->
         <div class="param-box" style="display:flex; justify-content:space-between; align-items:center;">
           <div style="padding-right:10px;">
-            <div class="param-name">Холодная фиксация 120 Гц (Анти-Нагрев)</div>
-            <div class="param-sub">Держит стабильные 120 FPS без перегрева процессора и троттлинга</div>
+            <div class="param-name">🔥 Ускоритель графики Vulkan GPU Turbo</div>
+            <div class="param-sub">Включает движок `skiavk` и снимает буферную задержку кадров в Standoff 2</div>
+          </div>
+          <label class="ios-switch">
+            <input type="checkbox" id="sw-vulkanGpu" checked onchange="toggleVulkanGpu(this.checked)" />
+            <span class="ios-slider"></span>
+          </label>
+        </div>
+
+        <!-- 3. Стабилизатор пинга -->
+        <div class="param-box" style="display:flex; justify-content:space-between; align-items:center;">
+          <div style="padding-right:10px;">
+            <div class="param-name">📡 Стабилизатор пинга и регистрации урона</div>
+            <div class="param-sub">Блокирует фоновый поиск Wi-Fi и BLE во время стрельбы</div>
+          </div>
+          <label class="ios-switch">
+            <input type="checkbox" id="sw-netStabilizer" checked onchange="toggleNetPingBoost(this.checked)" />
+            <span class="ios-slider"></span>
+          </label>
+        </div>
+
+        <!-- 4. Холодная фиксация 120 Гц -->
+        <div class="param-box" style="display:flex; justify-content:space-between; align-items:center;">
+          <div style="padding-right:10px;">
+            <div class="param-name">❄️ Холодная фиксация 120 Гц (Анти-Троттлинг)</div>
+            <div class="param-sub">Держит стабильные 120 FPS без сброса герцовки при нагреве</div>
           </div>
           <label class="ios-switch">
             <input type="checkbox" id="sw-cold120" checked onchange="toggleCold120Guard(this.checked)" />
@@ -1392,11 +1393,12 @@
           </label>
         </div>
 
+        <!-- 5. Усиленный фикс отдачи -->
         <div class="param-box">
           <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
             <div style="padding-right:10px;">
-              <div class="param-name">Усиленный фикс отдачи PRO (Anti-Recoil Axis)</div>
-              <div class="param-sub">Жёстко выпрямляет вертикальную оттяжку вниз и гасит боковой разброс</div>
+              <div class="param-name">🎯 Усиленный фикс отдачи PRO (Anti-Recoil)</div>
+              <div class="param-sub">Выпрямляет вертикальную оттяжку вниз и гасит боковой разброс</div>
             </div>
             <label class="ios-switch">
               <input type="checkbox" id="sw-recoilPro" checked onchange="applyRecoilProSettings()" />
@@ -1407,46 +1409,16 @@
           <input type="range" id="p-recoilPower" min="20" max="100" step="5" value="100" oninput="applyRecoilProSettings()" />
         </div>
 
-        <div class="param-box">
-          <div style="display:flex; justify-content:space-between; align-items:center;">
-            <div style="padding-right:10px;">
-              <div class="param-name">Форсированный DPI сетки (Только в игре)</div>
-              <div class="param-sub">Включается при входе в SO2 и возвращает родной DPI при выходе</div>
-            </div>
-            <label class="ios-switch">
-              <input type="checkbox" id="sw-forceDpi" onchange="applyForceDpiSetting()" />
-              <span class="ios-slider"></span>
-            </label>
-          </div>
-          <div class="pills-grid" style="grid-template-columns:repeat(3,1fr); margin-bottom:0;" id="dpiPills">
-            <div class="choice-pill" onclick="pickGameDpi(360, this)">360 (Плавный)</div>
-            <div class="choice-pill" onclick="pickGameDpi(400, this)">400 (Баланс)</div>
-            <div class="choice-pill active" onclick="pickGameDpi(440, this)">440 (Резкий)</div>
-          </div>
-        </div>
-
+        <!-- 6. Невидимость на записи -->
         <div class="param-box" style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0;">
           <div style="padding-right:10px;">
-            <div class="param-name">Скрывать кнопку «T» и прицел на записи (Stealth)</div>
-            <div class="param-sub">Невидимость оверлеев на видео и скриншотах</div>
+            <div class="param-name">🕵️ Скрывать кнопку «T» и прицел на записи (Stealth)</div>
+            <div class="param-sub">Полная невидимость оверлеев на видео и скриншотах</div>
           </div>
           <label class="ios-switch">
             <input type="checkbox" id="sw-stealthMode" onchange="toggleStealthModeFlag(this.checked)" />
             <span class="ios-slider"></span>
           </label>
-        </div>
-      </div>
-
-      <div class="section-card">
-        <div class="section-header-tag">
-          <span>ОПТИМИЗАЦИЯ ПИКСЕЛЕЙ (ДЛЯ СЛАБЫХ ТЕЛЕФОНОВ)</span>
-          <span id="pixelScaleLabel">100%</span>
-        </div>
-        <div class="pills-grid" style="grid-template-columns:repeat(4,1fr); margin-bottom:0;" id="pixelPills">
-          <div class="choice-pill active" onclick="pickPixelScale(100, this)">100%</div>
-          <div class="choice-pill" onclick="pickPixelScale(90, this)">90%</div>
-          <div class="choice-pill" onclick="pickPixelScale(80, this)">80%</div>
-          <div class="choice-pill" onclick="pickPixelScale(70, this)">70%</div>
         </div>
       </div>
     </div>
@@ -1497,7 +1469,7 @@
 
   </div>
 
-  <!-- НИЖНЯЯ ФИКСИРОВАННАЯ ПАНЕЛЬ (СКРЫТА ДО АВТОРИЗАЦИИ) -->
+  <!-- НИЖНЯЯ ФИКСИРОВАННАЯ ПАНЕЛЬ -->
   <div id="bottomDockBar" class="bottom-dock auth-locked">
     <div class="bottom-dock-inner">
       <button class="dock-save-btn" onclick="saveCurrentConfigNow()">
@@ -1521,7 +1493,6 @@
     let currentChShape = "off";
     let currentChColor = "#d946ef";
     let currentSamplingHz = 360;
-    let currentGameDpi = 440;
     let calibShownOnce = false;
     let fullLicenseKeyPlain = "";
     let isKeyRevealed = false;
@@ -1606,7 +1577,7 @@
       return false;
     };
 
-    // ================= ЖЁСТКОЕ УПРАВЛЕНИЕ ЭКРАНОМ АВТОРИЗАЦИИ =================
+    // ================= АВТОРИЗАЦИЯ И ЗАЩИТА КЛЮЧЕЙ =================
     function unlockAuthorizedSession(nick, cleanKey, subStatusText) {
       isSessionAuthorized = true;
       fullLicenseKeyPlain = cleanKey;
@@ -1710,7 +1681,6 @@
       }
     }
 
-    // Проверка времени подписки каждые 10 секунд + мгновенный кик при окончании
     function pollLicenseExpiration() {
       const B = getBridge();
       if (!B || !isSessionAuthorized) return;
@@ -1730,14 +1700,12 @@
       } catch (e) {}
     }
 
-    // Старт приложения: жёсткая проверка первого входа
     function initApplication() {
       checkShizukuState();
       setInterval(checkShizukuState, 4500);
       setInterval(pollLicenseExpiration, 10000);
       renderCrosshairCanvas();
 
-      // По умолчанию интерфейс всегда заблокирован, а окно ввода ключа открыто
       document.getElementById("mainAppRoot").classList.add("auth-locked");
       document.getElementById("bottomDockBar").classList.add("auth-locked");
       document.getElementById("authScreen").style.display = "flex";
@@ -1765,9 +1733,6 @@
         document.getElementById("loginNickInput").value = savedNick;
       }
 
-      // ЖЁСТКИЙ ЗАМОК ПЕРВОГО ВХОДА:
-      // Пока пользователь лично не нажал кнопку «АКТИВИРОВАТЬ КЛЮЧ И ВОЙТИ» в этой сборке,
-      // мы НЕ пускаем его автоматически, даже если в старом кэше лежал ключ!
       let manualGatePassed = false;
       let gateKey = "";
       try {
@@ -1776,12 +1741,10 @@
       } catch (e) {}
 
       if (!manualGatePassed || gateKey.length < 5) {
-        // Остаёмся на экране ввода ключа!
         document.getElementById("loginKeyInput").value = "";
         return;
       }
 
-      // Если пользователь уже вводил ключ вручную — проверяем на сервере, не истёк ли он
       document.getElementById("loginKeyInput").value = gateKey;
       const verifyOut = B.verifyLicenseKey(gateKey);
       if (verifyOut.startsWith("OK|") || verifyOut.startsWith("OFFLINE|")) {
@@ -1840,7 +1803,7 @@
       if (!document.hidden && isSessionAuthorized) pollLicenseExpiration();
     });
 
-    // ================= СЕНСА И ТЕЛЕПОРТ =================
+    // ================= ЭКСТРЕМАЛЬНЫЙ ЛИНЕЙНЫЙ ТЕЛЕПОРТ (БЕЗ ШАТАНИЯ) =================
     function toggleTeleportMaster(enabled) {
       if (!isSessionAuthorized) {
         window.forceShowKickScreen("Сначала активируйте лицензионный ключ!");
@@ -1856,29 +1819,32 @@
       const B = getBridge();
 
       if (enabled) {
-        heading.innerText = "ТЕЛЕПОРТ: АКТИВЕН (360HZ)";
+        heading.innerText = "ТЕЛЕПОРТ: АКТИВЕН (850 EV/S)";
         heading.style.color = "var(--accent)";
         btn.innerText = "🛑 ОСТАНОВИТЬ ТЕЛЕПОРТ";
         if (B) {
           B.startTeleport("extreme");
           if (B.setRawInputNoSmoothing) B.setRawInputNoSmoothing(true);
           if (B.applyUltraProTouchMatrix) B.applyUltraProTouchMatrix(3);
+          if (B.setVulkanGpuTurbo && document.getElementById("sw-vulkanGpu").checked) B.setVulkanGpuTurbo(true);
+          if (B.setNetPingStabilizer && document.getElementById("sw-netStabilizer").checked) B.setNetPingStabilizer(true);
         }
         pushEngineParametersImmediate();
-        showTopToast("⚡ Зверский Телепорт 360Hz + 1мм отклик ВКЛЮЧЕН!");
+        showTopToast("⚡ Линейный Телепорт 850Hz + 1мм отклик ВКЛЮЧЕН!");
       } else {
         heading.innerText = "ТЕЛЕПОРТ: ВЫКЛЮЧЕН";
         heading.style.color = "#ffffff";
-        btn.innerText = "⚡ ВКЛЮЧИТЬ ТЕЛЕПОРТ (360HZ)";
+        btn.innerText = "⚡ ВКЛЮЧИТЬ ТЕЛЕПОРТ (850 EV/SEC)";
         if (B && B.stopTeleport) B.stopTeleport();
       }
       saveStateSilent();
     }
 
-    function selectQuickSensMode(idx, sharp, sx, sy, chunks, chunkFast, straight) {
-      for (let i = 1; i <= 4; i++) {
+    function selectQuickSensMode(idx, sharp, sx, sy, straightPct, stickPct, chunksPct) {
+      for (let i = 1; i <= 3; i++) {
         const card = document.getElementById("qmode-" + i);
         const b = document.getElementById("qbtn-" + i);
+        if (!card || !b) continue;
         if (i === idx) {
           card.classList.add("active");
           b.innerText = "АКТИВЕН";
@@ -1890,9 +1856,9 @@
       document.getElementById("p-sharp").value = sharp;
       document.getElementById("p-sx").value = sx;
       document.getElementById("p-sy").value = sy;
-      document.getElementById("p-chunks").value = chunks;
-      document.getElementById("p-chunkFast").value = chunkFast;
-      document.getElementById("p-straight").value = straight;
+      document.getElementById("p-straight").value = straightPct;
+      document.getElementById("p-stickForce").value = stickPct;
+      document.getElementById("p-chunks").value = chunksPct;
       syncAllSliders();
       toggleTeleportMaster(true);
     }
@@ -1906,25 +1872,24 @@
     }
 
     function syncAllSliders() {
-      const floatIds = ["sharp", "sx", "sy", "accel", "accelCurve", "straight"];
-      const intIds = ["lead", "axisStick", "stickDelay", "stickForce", "chunks", "chunkFast", "pause", "edge", "grip", "gripCap"];
+      const sharp = parseFloat(document.getElementById("p-sharp").value).toFixed(1);
+      const sx = parseFloat(document.getElementById("p-sx").value).toFixed(1);
+      const sy = parseFloat(document.getElementById("p-sy").value).toFixed(1);
+      const straight = document.getElementById("p-straight").value;
+      const stick = document.getElementById("p-stickForce").value;
+      const chunks = document.getElementById("p-chunks").value;
 
-      floatIds.forEach(k => {
-        const el = document.getElementById("p-" + k);
-        const v = document.getElementById("v-" + k);
-        if (el && v) v.innerText = parseFloat(el.value).toFixed(2);
-      });
-
-      intIds.forEach(k => {
-        const el = document.getElementById("p-" + k);
-        const v = document.getElementById("v-" + k);
-        if (el && v) v.innerText = el.value;
-      });
+      document.getElementById("v-sharp").innerText = sharp;
+      document.getElementById("v-sx").innerText = sx;
+      document.getElementById("v-sy").innerText = sy;
+      document.getElementById("v-straight").innerText = straight + "%";
+      document.getElementById("v-stickForce").innerText = stick + "%";
+      document.getElementById("v-chunks").innerText = chunks + "%";
 
       clearTimeout(bridgeDebounceTimer);
       bridgeDebounceTimer = setTimeout(() => {
         pushEngineParametersImmediate();
-      }, 65);
+      }, 55);
     }
 
     function pushEngineParametersImmediate() {
@@ -1933,12 +1898,12 @@
       const sx = parseFloat(document.getElementById("p-sx").value);
       const sy = parseFloat(document.getElementById("p-sy").value);
       const chunks = parseInt(document.getElementById("p-chunks").value, 10);
-      const chunkFast = parseInt(document.getElementById("p-chunkFast").value, 10);
-      const straight = parseFloat(document.getElementById("p-straight").value) * 10.0;
-      const stick = parseInt(document.getElementById("p-stickForce").value, 10) * 10;
-      const grid = parseInt(document.getElementById("p-gripCap").value, 10) * 6;
-      const pause = parseInt(document.getElementById("p-pause").value, 10);
-      const accel = parseFloat(document.getElementById("p-accel").value);
+      const chunkFast = 60; // Всегда максимальная скорость квантования
+      const straight = parseFloat(document.getElementById("p-straight").value) / 10.0;
+      const stick = parseInt(document.getElementById("p-stickForce").value, 10);
+      const grid = 64; // Максимальная плотность пиксельной сетки
+      const pause = 0; // 0 мс задержки
+      const accel = 10.0; // Мгновенный импульс от старта к концу
 
       const B = getBridge();
       if (B && B.updateParameters) {
@@ -1947,6 +1912,7 @@
       saveStateSilent();
     }
 
+    // Сканер теперь всегда выжимает 100% максимум из железа (850 ev/s + ровная линия)!
     function runSmartScanAndApply() {
       const B = getBridge();
       let model = document.getElementById("profModelVal").innerText || "SM-S938B";
@@ -1955,26 +1921,49 @@
         model = res.split("|")[0] || model;
       }
       document.getElementById("calibModelName").innerText = model;
-      selectQuickSensMode(1, 10.0, 10.0, 8.8, 88, 54, 0.95);
-      showTopToast("⚡ Калибровка под " + model + " завершена!");
+      document.getElementById("zeroDelaySnapToggle").checked = true;
+      selectQuickSensMode(1, 10.0, 10.0, 8.2, 100, 95, 100);
+      if (B && B.applyUltraProTouchMatrix) B.applyUltraProTouchMatrix(3);
+      showTopToast("🔥 Выжат максимум для " + model + " (850 ev/s + Ровная линия)!");
     }
 
     function testOneMmFlickResponse() {
       const B = getBridge();
       if (B && B.healTouch) B.healTouch();
       if (B && B.applyUltraProTouchMatrix) B.applyUltraProTouchMatrix(3);
-      showTopToast("⚡ Матрица 1мм откалибрована (0.3 мс, 600 пакетов/сек)!");
+      showTopToast("⚡ Сенсор сброшен и разогнан до 850 пакетов/сек!");
     }
 
-    // ================= КРОСС-ДЕВАЙС КОДЫ КОНФИГОВ =================
+    // ================= КРОСС-ДЕВАЙС КОДЫ И КОМПЛЕКСНЫЕ СБОРКИ =================
+    function loadFullProBundle(title, sharp, sx, sy, straightPct, stickPct, chunksPct, chShape, chHex, recoilOn) {
+      document.getElementById("p-sharp").value = sharp;
+      document.getElementById("p-sx").value = sx;
+      document.getElementById("p-sy").value = sy;
+      document.getElementById("p-straight").value = straightPct;
+      document.getElementById("p-stickForce").value = stickPct;
+      document.getElementById("p-chunks").value = chunksPct;
+      document.getElementById("zeroDelaySnapToggle").checked = true;
+
+      document.getElementById("sw-recoilPro").checked = !!recoilOn;
+      applyRecoilProSettings();
+
+      currentChColor = chHex;
+      document.getElementById("customChColorPicker").value = chHex;
+      selectCrosshairShape(chShape, chShape.toUpperCase(), null);
+
+      syncAllSliders();
+      toggleTeleportMaster(true);
+      showTopToast("🔥 Сборка «" + title + "» включена!");
+    }
+
     function encodePortableConfigToken() {
       const c = collectFullConfig();
       const packed = [
         c.theme, c.tpOn ? 1 : 0, c.zeroSnap ? 1 : 0,
-        c.sharp, c.sx, c.sy, c.lead, c.axisStick, c.stickDelay, c.stickForce,
-        c.chunks, c.chunkFast, c.pause, c.accel, c.accelCurve, c.edge, c.straight,
-        c.grip, c.gripCap, c.stretch, c.chShape, c.chColor,
-        c.chLen, c.chThick, c.chGap, c.chDot, c.chAlpha, c.chOutline ? 1 : 0,
+        c.sharp, c.sx, c.sy, c.straight, c.stickForce, c.chunks,
+        c.stretch, c.chShape, c.chColor,
+        c.chLen, c.chThick, c.chGap, c.chDot, c.chAlpha,
+        c.chOffX, c.chOffY, c.chOutline ? 1 : 0,
         c.recoilPower
       ].join("|");
       return "SO2-" + btoa(unescape(encodeURIComponent(packed))).replace(/=+$/, "");
@@ -1984,24 +1973,22 @@
       try {
         let clean = tokenStr.trim();
         if (clean.includes("c=")) clean = clean.split("c=")[1].trim();
-        if (clean.startsWith("SO2-") && clean.length > 14) {
+        if (clean.startsWith("SO2-") && clean.length > 12) {
           const b64 = clean.substring(4);
           const raw = decodeURIComponent(escape(atob(b64)));
           const p = raw.split("|");
-          if (p.length >= 28) {
+          if (p.length >= 20) {
             return {
               theme: parseInt(p[0], 10) || 0,
               tpOn: p[1] === "1",
               zeroSnap: p[2] === "1",
-              sharp: p[3], sx: p[4], sy: p[5], lead: p[6],
-              axisStick: p[7], stickDelay: p[8], stickForce: p[9],
-              chunks: p[10], chunkFast: p[11], pause: p[12],
-              accel: p[13], accelCurve: p[14], edge: p[15], straight: p[16],
-              grip: p[17], gripCap: p[18], stretch: p[19],
-              chShape: p[20], chColor: p[21],
-              chLen: p[22], chThick: p[23], chGap: p[24], chDot: p[25], chAlpha: p[26],
-              chOutline: p[27] === "1",
-              recoilPower: p[28] || "100"
+              sharp: p[3], sx: p[4], sy: p[5],
+              straight: p[6], stickForce: p[7], chunks: p[8],
+              stretch: p[9], chShape: p[10], chColor: p[11],
+              chLen: p[12], chThick: p[13], chGap: p[14], chDot: p[15], chAlpha: p[16],
+              chOffX: p[17] || "0", chOffY: p[18] || "0",
+              chOutline: p[19] === "1",
+              recoilPower: p[20] || "100"
             };
           }
         }
@@ -2018,7 +2005,7 @@
       const shareUrl = "https://so2tp.cfg/?c=" + portableCode;
       document.getElementById("shareLinkInput").value = shareUrl;
       if (navigator.clipboard) navigator.clipboard.writeText(shareUrl);
-      showTopToast("🔗 Код-ссылка скопирована! Вставь на любом устройстве");
+      showTopToast("🔗 Код скопирован! Отправь другу или вставь на другом телефоне");
     }
 
     function applySharedConfigCode() {
@@ -2058,20 +2045,8 @@
       generateAndCopyShareLink();
     }
 
-    function loadProCyberBuild(title, sharp, sx, sy, chunks, chunkFast, straight) {
-      document.getElementById("p-sharp").value = sharp;
-      document.getElementById("p-sx").value = sx;
-      document.getElementById("p-sy").value = sy;
-      document.getElementById("p-chunks").value = chunks;
-      document.getElementById("p-chunkFast").value = chunkFast;
-      document.getElementById("p-straight").value = straight;
-      syncAllSliders();
-      toggleTeleportMaster(true);
-      showTopToast("🔥 Сборка «" + title + "» активирована!");
-    }
-
-    // ================= РАСТЯГ ЭКРАНА =================
-    function selectStretchFormat(ratio, widthPx, pillEl) {
+    // ================= РАСТЯГ ЭКРАНА (7 ФОРМАТОВ + ШИРОКИЕ ХИТБОКСЫ) =================
+    function selectStretchFormat(ratio, widthPx, titleText, pillEl) {
       currentStretch = ratio;
       document.querySelectorAll("#ratioPillsContainer .choice-pill").forEach(p => p.classList.remove("active"));
       if (pillEl) {
@@ -2084,9 +2059,22 @@
       document.getElementById("stretchCornerLabel").innerText = ratio;
       const box = document.getElementById("stretchPreviewBox");
       box.style.width = (widthPx || 142) + "px";
-      box.innerText = "ФОРМАТ " + ratio;
+      box.innerText = "ФОРМАТ " + (titleText || ratio);
       document.getElementById("activateStretchBtnText").innerText = `⚡ АКТИВИРОВАТЬ КНОПКУ РАСТЯГА «T» (${ratio})`;
       if (isSessionAuthorized) saveStateSilent();
+    }
+
+    function toggleWideHitboxFeature(enabled) {
+      const B = getBridge();
+      if (B && B.setWideHitboxMode) {
+        const res = B.setWideHitboxMode(enabled, currentStretch);
+        if (res === "NEED_AUTH") {
+          window.forceShowKickScreen("Сначала активируйте ключ!");
+          return;
+        }
+      }
+      showTopToast(enabled ? `🎯 Широкие Хитбоксы (${currentStretch}) + 850Hz ВКЛ!` : "Широкие Хитбоксы ВЫКЛ");
+      saveStateSilent();
     }
 
     function activateFloatingTButton() {
@@ -2103,12 +2091,13 @@
     }
 
     function removeFloatingTAndReset() {
+      document.getElementById("sw-wideHitboxMode").checked = false;
       const B = getBridge();
       if (B && B.resetResolution) B.resetResolution();
       showTopToast("🔄 Кнопка «T» убрана, родной экран восстановлен");
     }
 
-    // ================= PRO КОНСТРУКТОР КАСТОМНОГО ПРИЦЕЛА =================
+    // ================= PRO КОНСТРУКТОР ПРИЦЕЛА (10 ФОРМ + OFFSET X/Y) =================
     function selectCrosshairShape(shape, label, el) {
       currentChShape = shape;
       document.querySelectorAll("#chShapePills .choice-pill").forEach(p => p.classList.remove("active"));
@@ -2128,6 +2117,17 @@
       document.querySelectorAll("#chColorPills .choice-pill").forEach(p => p.classList.remove("active"));
       if (el) el.classList.add("active");
       updateCrosshairAll();
+    }
+
+    function updateCrosshairOffset() {
+      const offX = parseInt(document.getElementById("p-chOffX").value, 10) || 0;
+      const offY = parseInt(document.getElementById("p-chOffY").value, 10) || 0;
+      document.getElementById("v-chOffset").innerText = `${offX} / ${offY}`;
+      const B = getBridge();
+      if (B && B.setCrosshairOffset) {
+        B.setCrosshairOffset(offX, offY);
+      }
+      saveStateSilent();
     }
 
     function updateCrosshairAll() {
@@ -2173,10 +2173,10 @@
         return;
       }
 
-      const len = parseInt(document.getElementById("p-chLen").value, 10) * 1.4;
-      const thick = parseInt(document.getElementById("p-chThick").value, 10) * 1.1;
-      const gap = parseInt(document.getElementById("p-chGap").value, 10) * 1.3;
-      const dot = parseInt(document.getElementById("p-chDot").value, 10) * 1.2;
+      const len = parseInt(document.getElementById("p-chLen").value, 10) * 1.35;
+      const thick = parseInt(document.getElementById("p-chThick").value, 10) * 1.05;
+      const gap = parseInt(document.getElementById("p-chGap").value, 10) * 1.25;
+      const dot = parseInt(document.getElementById("p-chDot").value, 10) * 1.15;
       const alpha = parseInt(document.getElementById("p-chAlpha").value, 10) / 100;
       const outline = document.getElementById("chOutlineToggle").checked;
 
@@ -2188,6 +2188,7 @@
       ctx.strokeStyle = currentChColor;
       ctx.fillStyle = currentChColor;
       ctx.lineWidth = thick;
+      ctx.lineCap = "round";
 
       if (currentChShape === "dot") {
         if (outline) {
@@ -2201,12 +2202,13 @@
       }
 
       if (currentChShape === "circle" || currentChShape === "circledot") {
+        const rad = Math.max(4, len * 0.65);
         if (outline) {
-          ctx.strokeStyle = "#000"; ctx.lineWidth = thick + 2.2;
-          ctx.beginPath(); ctx.arc(cx, cy, len, 0, Math.PI * 2); ctx.stroke();
+          ctx.strokeStyle = "#000"; ctx.lineWidth = thick + 2.0;
+          ctx.beginPath(); ctx.arc(cx, cy, rad, 0, Math.PI * 2); ctx.stroke();
           ctx.strokeStyle = currentChColor; ctx.lineWidth = thick;
         }
-        ctx.beginPath(); ctx.arc(cx, cy, len, 0, Math.PI * 2); ctx.stroke();
+        ctx.beginPath(); ctx.arc(cx, cy, rad, 0, Math.PI * 2); ctx.stroke();
         if (currentChShape === "circledot") {
           ctx.beginPath(); ctx.arc(cx, cy, dot, 0, Math.PI * 2); ctx.fill();
         }
@@ -2215,12 +2217,48 @@
       }
 
       if (currentChShape === "box") {
+        const boxHalf = Math.max(2.5, len * 0.30);
         if (outline) {
-          ctx.strokeStyle = "#000"; ctx.lineWidth = thick + 2.2;
-          ctx.strokeRect(cx - len, cy - len, len * 2, len * 2);
+          ctx.strokeStyle = "#000"; ctx.lineWidth = thick + 2.0;
+          ctx.strokeRect(cx - boxHalf, cy - boxHalf, boxHalf * 2, boxHalf * 2);
           ctx.strokeStyle = currentChColor; ctx.lineWidth = thick;
         }
-        ctx.strokeRect(cx - len, cy - len, len * 2, len * 2);
+        ctx.strokeRect(cx - boxHalf, cy - boxHalf, boxHalf * 2, boxHalf * 2);
+        ctx.restore();
+        return;
+      }
+
+      if (currentChShape === "chevron") {
+        const arm = Math.max(4, len * 0.55);
+        const drawChev = (col, w) => {
+          ctx.strokeStyle = col; ctx.lineWidth = w;
+          ctx.beginPath();
+          ctx.moveTo(cx - arm, cy + arm);
+          ctx.lineTo(cx, cy - gap * 0.4);
+          ctx.lineTo(cx + arm, cy + arm);
+          ctx.stroke();
+        };
+        if (outline) drawChev("#000", thick + 2.0);
+        drawChev(currentChColor, thick);
+        ctx.restore();
+        return;
+      }
+
+      if (currentChShape === "corners") {
+        const dist = Math.max(5, (gap + len) * 0.48);
+        const leg = Math.max(3, len * 0.32);
+        const drawCorners = (col, w) => {
+          ctx.strokeStyle = col; ctx.lineWidth = w;
+          ctx.beginPath();
+          ctx.moveTo(cx - dist, cy - dist + leg); ctx.lineTo(cx - dist, cy - dist); ctx.lineTo(cx - dist + leg, cy - dist);
+          ctx.moveTo(cx + dist - leg, cy - dist); ctx.lineTo(cx + dist, cy - dist); ctx.lineTo(cx + dist, cy - dist + leg);
+          ctx.moveTo(cx - dist, cy + dist - leg); ctx.lineTo(cx - dist, cy + dist); ctx.lineTo(cx - dist + leg, cy + dist);
+          ctx.moveTo(cx + dist - leg, cy + dist); ctx.lineTo(cx + dist, cy + dist); ctx.lineTo(cx + dist, cy + dist - leg);
+          ctx.stroke();
+        };
+        if (outline) drawCorners("#000", thick + 2.0);
+        drawCorners(currentChColor, thick);
+        ctx.beginPath(); ctx.arc(cx, cy, dot * 0.85, 0, Math.PI * 2); ctx.fill();
         ctx.restore();
         return;
       }
@@ -2238,7 +2276,7 @@
         ctx.stroke();
       };
 
-      if (outline) drawCrossArms("#000000", thick + 2.2);
+      if (outline) drawCrossArms("#000000", thick + 2.0);
       drawCrossArms(currentChColor, thick);
 
       if (currentChShape === "crossdot") {
@@ -2247,7 +2285,7 @@
       ctx.restore();
     }
 
-    // ================= НАСТРОЙКИ СИСТЕМЫ =================
+    // ================= НАСТРОЙКИ СИСТЕМЫ И БУСТЕРЫ =================
     function runRamCleanBoost() {
       const B = getBridge();
       if (B && B.performRamBoost) {
@@ -2276,6 +2314,20 @@
       saveStateSilent();
     }
 
+    function toggleVulkanGpu(enabled) {
+      const B = getBridge();
+      if (B && B.setVulkanGpuTurbo) B.setVulkanGpuTurbo(enabled);
+      showTopToast(enabled ? "🔥 Ускоритель графики Vulkan GPU Turbo ВКЛ!" : "Vulkan GPU Turbo ВЫКЛ");
+      saveStateSilent();
+    }
+
+    function toggleNetPingBoost(enabled) {
+      const B = getBridge();
+      if (B && B.setNetPingStabilizer) B.setNetPingStabilizer(enabled);
+      showTopToast(enabled ? "📡 Стабилизатор пинга и пакетов ВКЛ!" : "Стабилизатор пинга ВЫКЛ");
+      saveStateSilent();
+    }
+
     function toggleCold120Guard(enabled) {
       const B = getBridge();
       if (B && B.setHzThermalGuard) B.setHzThermalGuard(enabled);
@@ -2292,35 +2344,11 @@
       saveStateSilent();
     }
 
-    function pickGameDpi(dpi, el) {
-      currentGameDpi = dpi;
-      document.querySelectorAll("#dpiPills .choice-pill").forEach(p => p.classList.remove("active"));
-      if (el) el.classList.add("active");
-      applyForceDpiSetting();
-    }
-
-    function applyForceDpiSetting() {
-      const enabled = document.getElementById("sw-forceDpi").checked;
-      const B = getBridge();
-      if (B && B.setAutoGameDpi) B.setAutoGameDpi(enabled, currentGameDpi);
-      showTopToast(enabled ? `📐 Игровой DPI ${currentGameDpi} активирован` : "🔄 Родной DPI восстановлен");
-      saveStateSilent();
-    }
-
     function toggleStealthModeFlag(enabled) {
       const B = getBridge();
       if (B && B.updateOverlayStealthFlag) B.updateOverlayStealthFlag(enabled);
       showTopToast(enabled ? "🕵️ Невидимость на записи (Stealth) ВКЛ" : "Stealth режим ВЫКЛ");
       saveStateSilent();
-    }
-
-    function pickPixelScale(pct, el) {
-      document.querySelectorAll("#pixelPills .choice-pill").forEach(p => p.classList.remove("active"));
-      if (el) el.classList.add("active");
-      document.getElementById("pixelScaleLabel").innerText = pct + "%";
-      const B = getBridge();
-      if (B && B.setPixelDownscaleFactor) B.setPixelDownscaleFactor(pct);
-      showTopToast(`📐 Оптимизация пикселей: ${pct}%`);
     }
 
     // ================= СОХРАНЕНИЕ И ЗАГРУЗКА НАСТРОЕК =================
@@ -2332,19 +2360,9 @@
         sharp: document.getElementById("p-sharp").value,
         sx: document.getElementById("p-sx").value,
         sy: document.getElementById("p-sy").value,
-        lead: document.getElementById("p-lead").value,
-        axisStick: document.getElementById("p-axisStick").value,
-        stickDelay: document.getElementById("p-stickDelay").value,
+        straight: document.getElementById("p-straight").value,
         stickForce: document.getElementById("p-stickForce").value,
         chunks: document.getElementById("p-chunks").value,
-        chunkFast: document.getElementById("p-chunkFast").value,
-        pause: document.getElementById("p-pause").value,
-        accel: document.getElementById("p-accel").value,
-        accelCurve: document.getElementById("p-accelCurve").value,
-        edge: document.getElementById("p-edge").value,
-        straight: document.getElementById("p-straight").value,
-        grip: document.getElementById("p-grip").value,
-        gripCap: document.getElementById("p-gripCap").value,
         stretch: currentStretch,
         chShape: currentChShape,
         chColor: currentChColor,
@@ -2353,8 +2371,12 @@
         chGap: document.getElementById("p-chGap").value,
         chDot: document.getElementById("p-chDot").value,
         chAlpha: document.getElementById("p-chAlpha").value,
+        chOffX: document.getElementById("p-chOffX").value,
+        chOffY: document.getElementById("p-chOffY").value,
         chOutline: document.getElementById("chOutlineToggle").checked,
         recoilPower: document.getElementById("p-recoilPower").value,
+        vulkan: document.getElementById("sw-vulkanGpu").checked,
+        netBoost: document.getElementById("sw-netStabilizer").checked,
         stealth: document.getElementById("sw-stealthMode").checked
       };
     }
@@ -2365,7 +2387,7 @@
         const t = THEME_PRESETS[c.theme];
         setTheme(c.theme, t.accent, t.second, t.rgb, null);
       }
-      const sliders = ["sharp", "sx", "sy", "lead", "axisStick", "stickDelay", "stickForce", "chunks", "chunkFast", "pause", "accel", "accelCurve", "edge", "straight", "grip", "gripCap", "chLen", "chThick", "chGap", "chDot", "chAlpha", "recoilPower"];
+      const sliders = ["sharp", "sx", "sy", "straight", "stickForce", "chunks", "chLen", "chThick", "chGap", "chDot", "chAlpha", "chOffX", "chOffY", "recoilPower"];
       sliders.forEach(k => {
         if (c[k] !== undefined && document.getElementById("p-" + k)) {
           document.getElementById("p-" + k).value = c[k];
@@ -2373,12 +2395,15 @@
       });
       if (c.zeroSnap !== undefined) document.getElementById("zeroDelaySnapToggle").checked = !!c.zeroSnap;
       if (c.chOutline !== undefined) document.getElementById("chOutlineToggle").checked = !!c.chOutline;
+      if (c.vulkan !== undefined) document.getElementById("sw-vulkanGpu").checked = !!c.vulkan;
+      if (c.netBoost !== undefined) document.getElementById("sw-netStabilizer").checked = !!c.netBoost;
       if (c.stealth !== undefined) document.getElementById("sw-stealthMode").checked = !!c.stealth;
-      if (c.stretch) selectStretchFormat(c.stretch, 142, null);
+      if (c.stretch) selectStretchFormat(c.stretch, 142, c.stretch, null);
       if (c.chColor) currentChColor = c.chColor;
       if (c.chShape) selectCrosshairShape(c.chShape, c.chShape.toUpperCase(), null);
 
       syncAllSliders();
+      updateCrosshairOffset();
       updateCrosshairAll();
       if (c.tpOn !== undefined && isSessionAuthorized) {
         toggleTeleportMaster(!!c.tpOn);
