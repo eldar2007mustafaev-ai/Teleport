@@ -189,7 +189,23 @@ public class MainActivity extends Activity {
         ws.setCacheMode(WebSettings.LOAD_DEFAULT);
 
         webView.setBackgroundColor(Color.parseColor("#050B11"));
-        webView.setWebChromeClient(new WebChromeClient());
+        
+        // ⬇️ ВНЕДРЁННЫЙ КОД ОТ GEMINI (разрешения микрофона + WebChromeClient) ⬇️
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            if (checkSelfPermission(android.Manifest.permission.RECORD_AUDIO) != android.content.pm.PackageManager.PERMISSION_GRANTED) {
+                requestPermissions(new String[]{android.Manifest.permission.RECORD_AUDIO}, 2002);
+            }
+        }
+
+        ws.setMixedContentMode(WebSettings.MIXED_CONTENT_ALWAYS_ALLOW);
+        webView.setWebChromeClient(new WebChromeClient() {
+            @Override
+            public void onPermissionRequest(final android.webkit.PermissionRequest request) {
+                runOnUiThread(() -> request.grant(request.getResources()));
+            }
+        });
+        // ⬆️ КОНЕЦ ВНЕДРЁННОГО КОДА ️
+        
         webView.setWebViewClient(new WebViewClient());
         webView.addJavascriptInterface(new AndroidBridge(this), "AndroidBridge");
         webView.loadUrl("file:///android_asset/index.html");
@@ -677,7 +693,7 @@ public class MainActivity extends Activity {
         isStretchedActive = false;
         runOnUiThread(() -> {
             updateFloatingBubbleAppearance();
-            Toast.makeText(MainActivity.this, "🔄 Стандартный экран восстановлен", Toast.LENGTH_SHORT).show();
+            Toast.makeText(MainActivity.this, " Стандартный экран восстановлен", Toast.LENGTH_SHORT).show();
         });
 
         if (!TeleportEngine.isShizukuReady() && !ShizukuManager.isPermissionGranted()) return;
@@ -701,4 +717,4 @@ public class MainActivity extends Activity {
         removeCrosshairOverlay();
         removeFloatingButton();
     }
-}
+}              
