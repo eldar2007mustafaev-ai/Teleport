@@ -184,6 +184,14 @@
       margin-top: 2px;
     }
 
+    .top-chips-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+
     .player-chip {
       display: inline-flex;
       align-items: center;
@@ -196,7 +204,6 @@
       font-size: 12px;
       font-weight: 800;
       color: #ffffff;
-      margin-bottom: 12px;
       cursor: pointer;
     }
 
@@ -206,6 +213,20 @@
       border-radius: 50%;
       background: var(--accent);
       box-shadow: 0 0 8px var(--accent);
+    }
+
+    .voice-live-chip {
+      display: none;
+      align-items: center;
+      gap: 6px;
+      background: rgba(16, 185, 129, 0.16);
+      border: 1.5px solid #10b981;
+      border-radius: 999px;
+      padding: 5px 11px;
+      font-size: 11px;
+      font-weight: 900;
+      color: #34d399;
+      cursor: pointer;
     }
 
     .theme-bar {
@@ -263,10 +284,15 @@
       display: flex;
       flex-direction: column;
       justify-content: space-between;
-      min-height: 158px;
+      min-height: 154px;
       cursor: pointer;
       position: relative;
       transform: translateZ(0);
+    }
+
+    .bento-tile.wide-tile {
+      grid-column: span 2;
+      min-height: 118px;
     }
 
     .bento-tile:active {
@@ -278,7 +304,7 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-bottom: 12px;
+      margin-bottom: 10px;
     }
 
     .tile-icon-box {
@@ -310,11 +336,21 @@
       border-radius: 999px;
     }
 
+    .tile-badge-voice {
+      background: rgba(var(--accent-rgb), 0.15);
+      border: 1px solid rgba(var(--accent-rgb), 0.48);
+      color: var(--accent);
+      font-size: 9.5px;
+      font-weight: 900;
+      padding: 4px 9px;
+      border-radius: 999px;
+    }
+
     .tile-title {
       font-size: 17px;
       font-weight: 900;
       color: #ffffff;
-      margin-bottom: 5px;
+      margin-bottom: 4px;
     }
 
     .tile-desc {
@@ -648,6 +684,129 @@
       font-family: monospace;
     }
 
+    /* ================= СТИЛИ ХАБА «ДРУЗЬЯ И ВОЙС» ================= */
+    .friend-item {
+      background: var(--bg-card-inner);
+      border: 1px solid rgba(var(--accent-rgb), 0.22);
+      border-radius: 14px;
+      padding: 11px 12px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 8px;
+    }
+
+    .friend-item:last-child {
+      margin-bottom: 0;
+    }
+
+    .friend-meta {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+    }
+
+    .online-dot {
+      width: 9px;
+      height: 9px;
+      border-radius: 50%;
+      background: #64748b;
+      flex-shrink: 0;
+    }
+
+    .online-dot.on {
+      background: #10b981;
+      box-shadow: 0 0 8px #10b981;
+    }
+
+    .friend-nick {
+      font-size: 13.5px;
+      font-weight: 900;
+      color: #ffffff;
+    }
+
+    .friend-code-sub {
+      font-size: 10.5px;
+      color: var(--text-muted);
+      font-family: monospace;
+      margin-top: 2px;
+    }
+
+    .friend-actions {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .mini-act-btn {
+      border: 1px solid rgba(var(--accent-rgb), 0.4);
+      background: rgba(var(--accent-rgb), 0.14);
+      color: var(--accent);
+      border-radius: 9px;
+      padding: 7px 10px;
+      font-size: 10.5px;
+      font-weight: 900;
+      cursor: pointer;
+    }
+
+    .mini-act-btn.del {
+      border-color: rgba(239, 68, 68, 0.4);
+      background: rgba(239, 68, 68, 0.14);
+      color: #fca5a5;
+    }
+
+    .voice-member-pill {
+      background: var(--bg-card-inner);
+      border: 1.5px solid rgba(255, 255, 255, 0.1);
+      border-radius: 13px;
+      padding: 10px 12px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 7px;
+      transition: border-color 0.15s, box-shadow 0.15s;
+    }
+
+    .voice-member-pill.speaking {
+      border-color: #10b981;
+      box-shadow: 0 0 14px rgba(16, 185, 129, 0.35);
+    }
+
+    .vu-bar-wrap {
+      width: 100%;
+      height: 8px;
+      background: #050b11;
+      border-radius: 999px;
+      overflow: hidden;
+      border: 1px solid rgba(var(--accent-rgb), 0.25);
+      margin-top: 8px;
+    }
+
+    .vu-bar-fill {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, #10b981, var(--accent));
+      transition: width 0.06s linear;
+    }
+
+    /* ВСПЛЫВАЮЩИЙ ИНВАЙТ В ВОЙС */
+    #voiceInviteBanner {
+      position: fixed;
+      top: calc(env(safe-area-inset-top, 24px) + 54px);
+      left: 14px;
+      right: 14px;
+      max-width: 452px;
+      margin: 0 auto;
+      z-index: 1500000;
+      background: #0b1826;
+      border: 2px solid var(--accent);
+      border-radius: 18px;
+      padding: 13px 14px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.8);
+      display: none;
+    }
+
     .bottom-dock {
       position: fixed;
       bottom: 0;
@@ -751,6 +910,20 @@
   <!-- ВСПЛЫВАЮЩЕЕ УВЕДОМЛЕНИЕ -->
   <div id="topToast">⚡ Экстремальный Телепорт 850Hz активирован!</div>
 
+  <!-- ВСПЛЫВАЮЩЕЕ ПРИГЛАШЕНИЕ В ГОЛОСОВОЙ ЧАТ ОТ ДРУГА -->
+  <div id="voiceInviteBanner">
+    <div style="font-size:13px; font-weight:900; color:#fff; margin-bottom:4px;">
+      🎙️ Приглашение в Войс от <span id="invFromNick" style="color:var(--accent)">Друга</span>
+    </div>
+    <div style="font-size:11px; color:var(--text-muted); margin-bottom:10px;">
+      Комната отряда: <b id="invRoomCode" style="color:#fff; font-family:monospace;">SQUAD-0000</b>
+    </div>
+    <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px;">
+      <button class="btn-main" style="padding:9px;" onclick="acceptVoiceInviteBanner()">⚡ ВОЙТИ В ВОЙС</button>
+      <button class="btn-dark" style="padding:9px;" onclick="document.getElementById('voiceInviteBanner').style.display='none'">СКРЫТЬ</button>
+    </div>
+  </div>
+
   <!-- ================= 1. ЭКРАН АВТОРИЗАЦИИ ПО КЛЮЧУ ================= -->
   <div id="authScreen">
     <div class="auth-box">
@@ -781,7 +954,7 @@
     </div>
   </div>
 
-  <!-- МОДАЛЬНОЕ ОКНО «УМНАЯ КАЛИБРОВКА ТЕЛЕФОНА» (ВЫЖИМАЕТ МАКСИМУМ) -->
+  <!-- МОДАЛЬНОЕ ОКНО «УМНАЯ КАЛИБРОВКА ТЕЛЕФОНА» -->
   <div id="calibModal" class="modal-backdrop">
     <div class="modal-card">
       <div style="font-size:28px; margin-bottom:8px;">⚡</div>
@@ -815,9 +988,14 @@
       </div>
     </header>
 
-    <div class="player-chip" onclick="openPage('page-profile')">
-      <span class="player-chip-dot"></span>
-      <span>Игрок: <b id="chipPlayerName">dare</b></span>
+    <div class="top-chips-row">
+      <div class="player-chip" onclick="openPage('page-profile')">
+        <span class="player-chip-dot"></span>
+        <span>Игрок: <b id="chipPlayerName">dare</b> <span id="chipFriendCode" style="color:var(--accent); font-family:monospace; font-size:11px;"></span></span>
+      </div>
+      <div id="topVoiceLiveChip" class="voice-live-chip" onclick="openPage('page-friends')">
+        <span>🎙️ В ЭФИРЕ</span>
+      </div>
     </div>
 
     <!-- ================= ЭКРАН 0: ГЛАВНОЕ МЕНЮ ================= -->
@@ -891,7 +1069,19 @@
           </div>
         </div>
 
-        <!-- 5. НАСТРОЙКИ -->
+        <!-- 5. ДРУЗЬЯ И ВОЙС (НОВАЯ ПЛИТКА НА ВЕСЬ РЯД) -->
+        <div class="bento-tile wide-tile" onclick="openFriendsTile()">
+          <div class="tile-top" style="margin-bottom:6px;">
+            <div class="tile-icon-box">🎙️</div>
+            <div id="friendsTileBadge" class="tile-badge-voice">PRO ШУМОДАВ • SQUAD VOICE</div>
+          </div>
+          <div>
+            <div class="tile-title">Друзья и Командный Войс</div>
+            <div class="tile-desc">Поиск тиммейтов по ID (SO2-XXXX), голосовые комнаты без лагов и фильтр шумов выстрелов</div>
+          </div>
+        </div>
+
+        <!-- 6. НАСТРОЙКИ -->
         <div class="bento-tile" onclick="openPage('page-settings')">
           <div class="tile-top">
             <div class="tile-icon-box">🚀</div>
@@ -903,7 +1093,7 @@
           </div>
         </div>
 
-        <!-- 6. ПРОФИЛЬ -->
+        <!-- 7. ПРОФИЛЬ -->
         <div class="bento-tile" onclick="openPage('page-profile')">
           <div class="tile-top">
             <div class="tile-icon-box">👤</div>
@@ -918,14 +1108,13 @@
       </div>
     </div>
 
-    <!-- ================= ЭКРАН 1: ЧИСТАЯ И ПОНЯТНАЯ СЕНСА (ТОЛЬКО РАБОЧИЕ ОСИ ТЕЛЕПОРТА) ================= -->
+    <!-- ================= ЭКРАН 1: СЕНСА И ЛИНЕЙНЫЙ ТЕЛЕПОРТ ================= -->
     <div id="page-sens" class="page-view">
       <div class="back-bar" onclick="openPage('page-home')">
         <span class="arrow">←</span>
         <span>Сенса и Линейный Телепорт</span>
       </div>
 
-      <!-- ГЛАВНЫЙ ПУСК -->
       <div class="section-card">
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:13px;">
           <div>
@@ -942,7 +1131,6 @@
         </button>
       </div>
 
-      <!-- АВТО-РАЗГОН НА МАКСИМУМ -->
       <div class="section-card">
         <div style="font-size:13.5px; font-weight:900; color:var(--accent); margin-bottom:6px;">
           • Максимальный разгон под <span id="calibModelName">SM-S938B</span>
@@ -955,7 +1143,6 @@
         </button>
       </div>
 
-      <!-- 3 ПОНЯТНЫХ БОЕВЫХ РЕЖИМА -->
       <div class="section-card">
         <div class="section-header-tag">
           <span>БЫСТРЫЕ РЕЖИМЫ ТЕЛЕПОРТА</span>
@@ -987,14 +1174,12 @@
         </div>
       </div>
 
-      <!-- 6 ГЛАВНЫХ И ПОНЯТНЫХ НАСТРОЕК СЕНСЫ (БЕЗ ЛИШНЕГО МУСОРА) -->
       <div class="section-card">
         <div class="section-header-tag">
           <span>ТОЧНАЯ НАСТРОЙКА РЫВКА И ЛИНИИ</span>
           <span>6 ОСЕЙ</span>
         </div>
 
-        <!-- 0. Тумблер 1мм -->
         <div class="param-box" style="display:flex; justify-content:space-between; align-items:center;">
           <div style="padding-right:10px;">
             <div class="param-name">⚡ Мгновенный отклик 1 мм (Zero-Delay)</div>
@@ -1006,42 +1191,36 @@
           </label>
         </div>
 
-        <!-- 1. Скорость телепорта -->
         <div class="param-box">
           <div class="param-top"><span class="param-name">1. Скорость телепорта (Резкость)</span><span id="v-sharp" class="param-val-pill">10.0</span></div>
           <input type="range" id="p-sharp" min="1" max="10" step="0.1" value="10.0" oninput="syncAllSliders()" />
           <div class="param-sub">Отвечает за то, насколько моментально прицел перелетает от старта к цели</div>
         </div>
 
-        <!-- 2. Горизонтальный флик -->
         <div class="param-box">
           <div class="param-top"><span class="param-name">2. Горизонтальный флик (Влево-вправо)</span><span id="v-sx" class="param-val-pill">10.0</span></div>
           <input type="range" id="p-sx" min="1" max="10" step="0.1" value="10.0" oninput="syncAllSliders()" />
           <div class="param-sub">Скорость бокового разворота камеры на 90° и 180°</div>
         </div>
 
-        <!-- 3. Вертикальный контроль -->
         <div class="param-box">
           <div class="param-top"><span class="param-name">3. Вертикальный контроль (Вверх-вниз)</span><span id="v-sy" class="param-val-pill">8.2</span></div>
           <input type="range" id="p-sy" min="1" max="10" step="0.1" value="8.2" oninput="syncAllSliders()" />
           <div class="param-sub">Ставь 7.5–8.5, чтобы при резком флике вбок прицел не взлетал выше головы</div>
         </div>
 
-        <!-- 4. Выпрямление линии (Анти-шатание) -->
         <div class="param-box">
           <div class="param-top"><span class="param-name">4. Ровная линия горизонта (Без шатания)</span><span id="v-straight" class="param-val-pill">100%</span></div>
           <input type="range" id="p-straight" min="20" max="100" step="5" value="100" oninput="syncAllSliders()" />
           <div class="param-sub">Держит траекторию флика строго по прямой линии, убирая виляние пальца</div>
         </div>
 
-        <!-- 5. Стоп-фиксация на цели -->
         <div class="param-box">
           <div class="param-top"><span class="param-name">5. Стоп-фиксация на модельке (Магнит)</span><span id="v-stickForce" class="param-val-pill">95%</span></div>
           <input type="range" id="p-stickForce" min="10" max="100" step="5" value="95" oninput="syncAllSliders()" />
           <div class="param-sub">Гасит инерцию в конце свайпа, чтобы прицел останавливался ровно на враге</div>
         </div>
 
-        <!-- 6. Частота пакетов тача -->
         <div class="param-box" style="margin-bottom:12px;">
           <div class="param-top"><span class="param-name">6. Мощность потока тача (Квантование)</span><span id="v-chunks" class="param-val-pill">100%</span></div>
           <input type="range" id="p-chunks" min="20" max="100" step="5" value="100" oninput="syncAllSliders()" />
@@ -1054,7 +1233,7 @@
       </div>
     </div>
 
-    <!-- ================= ЭКРАН 2: РЕАЛЬНО РАБОЧИЕ PRO КОНФИГИ ================= -->
+    <!-- ================= ЭКРАН 2: ГОТОВЫЕ PRO КОНФИГИ ================= -->
     <div id="page-configs" class="page-view">
       <div class="back-bar" onclick="openPage('page-home')">
         <span class="arrow">←</span>
@@ -1163,7 +1342,7 @@
       </div>
     </div>
 
-    <!-- ================= ЭКРАН 3: РАСТЯГ ЭКРАНА (7 ФОРМАТОВ + ШИРОКИЕ ХИТБОКСЫ) ================= -->
+    <!-- ================= ЭКРАН 3: РАСТЯГ ЭКРАНА ================= -->
     <div id="page-stretch" class="page-view">
       <div class="back-bar" onclick="openPage('page-home')">
         <span class="arrow">←</span>
@@ -1182,7 +1361,6 @@
           </div>
         </div>
 
-        <!-- 7 ФОРМАТОВ РАСТЯГА ВКЛЮЧАЯ 1:1 И 21:10 -->
         <div class="pills-grid" style="grid-template-columns:repeat(4, 1fr);" id="ratioPillsContainer">
           <div class="choice-pill" data-ratio="1:1" onclick="selectStretchFormat('1:1', 108, '1:1 (ULTRA WIDE)', this)">1:1 MAX</div>
           <div class="choice-pill" data-ratio="5:4" onclick="selectStretchFormat('5:4', 124, '5:4 (PRO HEAD)', this)">5:4</div>
@@ -1193,7 +1371,6 @@
           <div class="choice-pill" data-ratio="21:10" style="grid-column: span 2;" onclick="selectStretchFormat('21:10', 210, '21:10 (SOFT STRETCH)', this)">21:10 КИБЕР</div>
         </div>
 
-        <!-- КОМБО ШИРОКИЕ ХИТБОКСЫ -->
         <div class="param-box" style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
           <div style="padding-right:10px;">
             <div class="param-name">🎯 Режим «Широкие Хитбоксы» (Wide Hitbox)</div>
@@ -1215,7 +1392,7 @@
       </div>
     </div>
 
-    <!-- ================= ЭКРАН 4: PRO ПРИЦЕЛ (10 ФОРМ + СДВИГ X/Y) ================= -->
+    <!-- ================= ЭКРАН 4: PRO ПРИЦЕЛ ================= -->
     <div id="page-crosshair" class="page-view">
       <div class="back-bar" onclick="openPage('page-home')">
         <span class="arrow">←</span>
@@ -1232,7 +1409,6 @@
           <canvas id="chPreviewCanvas" width="260" height="120"></canvas>
         </div>
 
-        <!-- 10 ФОРМ ВКЛЮЧАЯ ШЕВРОН И СНАЙПЕРСКИЕ УГОЛКИ -->
         <div class="pills-grid" style="grid-template-columns:repeat(5,1fr);" id="chShapePills">
           <div class="choice-pill active" data-shape="off" onclick="selectCrosshairShape('off', 'ВЫКЛ', this)">ВЫКЛ</div>
           <div class="choice-pill" data-shape="dot" onclick="selectCrosshairShape('dot', 'ТОЧКА', this)">ТОЧКА</div>
@@ -1279,7 +1455,6 @@
           <input type="range" id="p-chAlpha" min="20" max="100" step="1" value="100" oninput="updateCrosshairAll()" />
         </div>
 
-        <!-- НОВАЯ ФИШКА: СДВИГ ПРИЦЕЛА ПО X / Y ДЛЯ ИДЕАЛЬНОЙ ЦЕНТРОВКИ ПРИ РАСТЯГЕ -->
         <div class="param-box">
           <div class="param-top">
             <span class="param-name">Сдвиг по горизонтали / вертикали (X / Y)</span>
@@ -1313,7 +1488,133 @@
       </div>
     </div>
 
-    <!-- ================= ЭКРАН 5: НАСТРОЙКИ СИСТЕМЫ (БЕЗ ЛОМАЮЩЕГО ИНТЕРФЕЙС DPI!) ================= -->
+    <!-- ================= ЭКРАН 5: ХАБ «ДРУЗЬЯ И КОМАНДНЫЙ ВОЙС С DSP-ШУМОДАВОМ» ================= -->
+    <div id="page-friends" class="page-view">
+      <div class="back-bar" onclick="openPage('page-home')">
+        <span class="arrow">←</span>
+        <span>Друзья и Командный Войс (DSP)</span>
+      </div>
+
+      <!-- КАРТОЧКА ТВОЕГО ID -->
+      <div class="section-card">
+        <div class="section-header-tag">
+          <span>ВАШ ЛИЧНЫЙ ID ИГРОКА</span>
+          <span>FRIEND CODE</span>
+        </div>
+        <div style="display:flex; justify-content:space-between; align-items:center; background:var(--bg-card-inner); border:1.5px solid rgba(var(--accent-rgb),0.35); border-radius:14px; padding:12px 14px;">
+          <div>
+            <div style="font-size:10.5px; color:var(--text-muted);">Отправь этот ID другу для добавления:</div>
+            <div id="myFriendCodeDisplay" style="font-size:19px; font-weight:900; color:var(--accent); font-family:monospace; margin-top:2px;">SO2-....</div>
+          </div>
+          <button class="btn-dark" style="width:auto; padding:9px 14px;" onclick="copyMyFriendCode()">📋 КОПИЯ</button>
+        </div>
+      </div>
+
+      <!-- ГОЛОСОВОЙ КАНАЛ И DSP ШУМОДАВ КАК В DISCORD -->
+      <div class="section-card">
+        <div class="section-header-tag">
+          <span>ГОЛОСОВОЙ КАНАЛ ОТРЯДА (ZERO-LAG)</span>
+          <span id="voiceStatePill" style="color:var(--text-muted);">ОТКЛЮЧЕН</span>
+        </div>
+
+        <div style="display:grid; grid-template-columns:1.25fr 1fr; gap:8px; margin-bottom:10px;">
+          <input type="text" id="voiceRoomInput" class="cyber-field" style="margin-bottom:0; text-transform:uppercase; font-family:monospace;" placeholder="КОМНАТА (SQUAD-1)" value="SQUAD-MAIN" />
+          <button class="btn-dark" onclick="setMyOwnRoomCode()">🎲 МОЯ КОМНАТА</button>
+        </div>
+
+        <div id="voiceActionRow" style="display:grid; grid-template-columns:1fr; gap:8px; margin-bottom:12px;">
+          <button class="btn-main" id="btnJoinVoice" onclick="toggleVoiceConnection()">
+            🎙️ ПОДКЛЮЧИТЬСЯ К ВОЙСУ (С ШУМОДАВОМ)
+          </button>
+        </div>
+
+        <div id="voiceControlsActive" style="display:none; grid-template-columns:1fr 1fr; gap:8px; margin-bottom:12px;">
+          <button class="btn-dark" id="btnMuteMic" onclick="toggleMicMute()">🎤 МИКРОФОН: ВКЛ</button>
+          <button class="btn-danger" onclick="leaveVoiceRoom()">🔇 ВЫЙТИ ИЗ ВОЙСА</button>
+        </div>
+
+        <!-- ИНДИКАТОР АКТИВНОСТИ ГОЛОСА И DSP НАСТРОЙКИ -->
+        <div class="param-box">
+          <div style="display:flex; justify-content:space-between; align-items:center;">
+            <div style="padding-right:10px;">
+              <div class="param-name">🛡️ Krisp DSP Шумодав + Выделение речи</div>
+              <div class="param-sub">Глушит выстрелы, кулеры, дыхание и усиливает чёткость инфы в перестрелках</div>
+            </div>
+            <label class="ios-switch">
+              <input type="checkbox" id="sw-dspNoiseGate" checked onchange="updateVoiceDspParams()" />
+              <span class="ios-slider"></span>
+            </label>
+          </div>
+          <div class="vu-bar-wrap">
+            <div id="micVuMeterFill" class="vu-bar-fill"></div>
+          </div>
+        </div>
+
+        <div class="param-box">
+          <div class="param-top">
+            <span class="param-name">Усиление чёткости голоса (Mic Boost)</span>
+            <span id="v-micGain" class="param-val-pill">180%</span>
+          </div>
+          <input type="range" id="p-micGain" min="80" max="300" step="10" value="180" oninput="updateVoiceDspParams()" />
+          <div class="param-sub">Поднимает громкость твоего микрофона, чтобы тиммейты слышали каждое слово</div>
+        </div>
+
+        <div class="param-box" style="margin-bottom:10px;">
+          <div class="param-top">
+            <span class="param-name">Порог отсечения шума (Noise Gate)</span>
+            <span id="v-noiseGate" class="param-val-pill">18%</span>
+          </div>
+          <input type="range" id="p-noiseGate" min="0" max="55" step="1" value="18" oninput="updateVoiceDspParams()" />
+          <div class="param-sub">Всё, что тише этого порога (клики, фоновый шум), полностью блокируется</div>
+        </div>
+
+        <!-- СПИСОК УЧАСТНИКОВ В ГОЛОСОВОЙ КОМНАТЕ -->
+        <div style="font-size:11px; font-weight:900; color:var(--accent); text-transform:uppercase; margin-bottom:7px;">
+          УЧАСТНИКИ В КОМНАТЕ (<span id="voiceRosterCount">0</span>):
+        </div>
+        <div id="voiceRosterList">
+          <div style="font-size:11.5px; color:var(--text-muted); text-align:center; padding:8px 0;">
+            Нажмите «Подключиться к войсу», чтобы войти в эфир
+          </div>
+        </div>
+      </div>
+
+      <!-- ДОБАВЛЕНИЕ ДРУГА ПО ID -->
+      <div class="section-card">
+        <div class="section-header-tag">
+          <span>ДОБАВИТЬ ТИММЕЙТА ПО ID ИЛИ НИКУ</span>
+          <span>ADD FRIEND</span>
+        </div>
+        <div style="display:grid; grid-template-columns:1.4fr 1fr; gap:8px;">
+          <input type="text" id="friendTargetInput" class="cyber-field" style="margin-bottom:0; text-transform:uppercase;" placeholder="SO2-1234 или Ник" />
+          <button class="btn-main" onclick="sendAddFriendAction()">➕ ДОБАВИТЬ</button>
+        </div>
+      </div>
+
+      <!-- ВХОДЯЩИЕ ЗАЯВКИ В ДРУЗЬЯ -->
+      <div id="incomingRequestsCard" class="section-card" style="display:none;">
+        <div class="section-header-tag">
+          <span>ВХОДЯЩИЕ ЗАЯВКИ В ДРУЗЬЯ</span>
+          <span id="incomingCountTag">0</span>
+        </div>
+        <div id="incomingRequestsList"></div>
+      </div>
+
+      <!-- СПИСОК ДРУЗЕЙ -->
+      <div class="section-card">
+        <div class="section-header-tag">
+          <span>МОИ ДРУЗЬЯ И ОТРЯД</span>
+          <span onclick="syncFriendsHubData(true)" style="cursor:pointer; text-decoration:underline;">🔄 ОБНОВИТЬ</span>
+        </div>
+        <div id="friendsContainerList">
+          <div style="font-size:12px; color:var(--text-muted); text-align:center; padding:12px 0;">
+            Список друзей пуст. Введите ID друга выше!
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ================= ЭКРАН 6: НАСТРОЙКИ СИСТЕМЫ ================= -->
     <div id="page-settings" class="page-view">
       <div class="back-bar" onclick="openPage('page-home')">
         <span class="arrow">←</span>
@@ -1338,7 +1639,6 @@
           <span>SHIZUKU</span>
         </div>
 
-        <!-- 1. Разгон герцовки тача -->
         <div class="param-box">
           <div style="display:flex; justify-content:space-between; align-items:center;">
             <div style="padding-right:10px;">
@@ -1357,7 +1657,6 @@
           </div>
         </div>
 
-        <!-- 2. Vulkan GPU Turbo -->
         <div class="param-box" style="display:flex; justify-content:space-between; align-items:center;">
           <div style="padding-right:10px;">
             <div class="param-name">🔥 Ускоритель графики Vulkan GPU Turbo</div>
@@ -1369,7 +1668,6 @@
           </label>
         </div>
 
-        <!-- 3. Стабилизатор пинга -->
         <div class="param-box" style="display:flex; justify-content:space-between; align-items:center;">
           <div style="padding-right:10px;">
             <div class="param-name">📡 Стабилизатор пинга и регистрации урона</div>
@@ -1381,7 +1679,6 @@
           </label>
         </div>
 
-        <!-- 4. Холодная фиксация 120 Гц -->
         <div class="param-box" style="display:flex; justify-content:space-between; align-items:center;">
           <div style="padding-right:10px;">
             <div class="param-name">❄️ Холодная фиксация 120 Гц (Анти-Троттлинг)</div>
@@ -1393,7 +1690,6 @@
           </label>
         </div>
 
-        <!-- 5. Усиленный фикс отдачи -->
         <div class="param-box">
           <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
             <div style="padding-right:10px;">
@@ -1409,7 +1705,6 @@
           <input type="range" id="p-recoilPower" min="20" max="100" step="5" value="100" oninput="applyRecoilProSettings()" />
         </div>
 
-        <!-- 6. Невидимость на записи -->
         <div class="param-box" style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0;">
           <div style="padding-right:10px;">
             <div class="param-name">🕵️ Скрывать кнопку «T» и прицел на записи (Stealth)</div>
@@ -1423,7 +1718,7 @@
       </div>
     </div>
 
-    <!-- ================= ЭКРАН 6: ПРОФИЛЬ ПОЛЬЗОВАТЕЛЯ ================= -->
+    <!-- ================= ЭКРАН 7: ПРОФИЛЬ ПОЛЬЗОВАТЕЛЯ ================= -->
     <div id="page-profile" class="page-view">
       <div class="back-bar" onclick="openPage('page-home')">
         <span class="arrow">←</span>
@@ -1439,6 +1734,10 @@
         <div class="profile-row">
           <span class="profile-key">Ваш логин:</span>
           <span class="profile-val" id="profLoginVal">—</span>
+        </div>
+        <div class="profile-row">
+          <span class="profile-key">Личный ID для друзей:</span>
+          <span class="profile-val" id="profFriendIdVal" style="color:var(--accent);">SO2-....</span>
         </div>
         <div class="profile-row">
           <span class="profile-key">Время до окончания:</span>
@@ -1483,6 +1782,7 @@
 
   <script>
     const CLIENT_LOGIN_GATE_KEY = "so2tp_manual_login_v412";
+    const VOICE_WS_URL = "ws://45.10.165.75:8080/ws/voice";
 
     function getBridge() {
       return window.AndroidBridge || window.Android || null;
@@ -1498,6 +1798,19 @@
     let isKeyRevealed = false;
     let isSessionAuthorized = false;
     let bridgeDebounceTimer = null;
+
+    // Данные друзей и войса
+    let myFriendCode = "";
+    let pendingInviteRoom = "";
+    let voiceWs = null;
+    let isVoiceConnected = false;
+    let isMicMuted = false;
+    let voiceAudioCtx = null;
+    let micStream = null;
+    let micProcessorNode = null;
+    let micGainNode = null;
+    let nextPlaybackTime = 0;
+    let speakingTimers = {};
 
     const THEME_PRESETS = [
       { accent: "#14e8c6", second: "#00d2ff", rgb: "20, 232, 198" },
@@ -1558,6 +1871,15 @@
       }
     }
 
+    function openFriendsTile() {
+      if (!isSessionAuthorized) {
+        window.forceShowKickScreen("Сначала активируйте лицензионный ключ!");
+        return;
+      }
+      openPage("page-friends");
+      syncFriendsHubData(false);
+    }
+
     function closeCalibModal() {
       document.getElementById("calibModal").style.display = "none";
     }
@@ -1598,11 +1920,14 @@
       document.getElementById("profLoginVal").innerText = nick;
       document.getElementById("profSubVal").innerText = subStatusText;
       updateProfileKeyDisplay();
+
+      setTimeout(() => { syncFriendsHubData(false); }, 300);
     }
 
     window.forceShowKickScreen = function(msg) {
       isSessionAuthorized = false;
       fullLicenseKeyPlain = "";
+      leaveVoiceRoom();
 
       try {
         localStorage.removeItem(CLIENT_LOGIN_GATE_KEY);
@@ -1704,6 +2029,9 @@
       checkShizukuState();
       setInterval(checkShizukuState, 4500);
       setInterval(pollLicenseExpiration, 10000);
+      setInterval(() => {
+        if (isSessionAuthorized) syncFriendsHubData(false);
+      }, 8000);
       renderCrosshairCanvas();
 
       document.getElementById("mainAppRoot").classList.add("auth-locked");
@@ -1803,7 +2131,479 @@
       if (!document.hidden && isSessionAuthorized) pollLicenseExpiration();
     });
 
-    // ================= ЭКСТРЕМАЛЬНЫЙ ЛИНЕЙНЫЙ ТЕЛЕПОРТ (БЕЗ ШАТАНИЯ) =================
+    // ================= СИСТЕМА ДРУЗЕЙ ЧЕРЕЗ AndroidBridge.requestFriendsHub =================
+    function callFriendsApiAction(payloadObj) {
+      const B = getBridge();
+      if (!B || typeof B.requestFriendsHub !== "function") return null;
+      const hwid = B.getDeviceHwid ? B.getDeviceHwid() : "";
+      const nick = B.getSavedNickname ? B.getSavedNickname() : (document.getElementById("chipPlayerName").innerText || "Player");
+      const req = Object.assign({ android_id: hwid, nickname: nick }, payloadObj);
+      try {
+        const raw = B.requestFriendsHub(JSON.stringify(req));
+        return JSON.parse(raw);
+      } catch (e) {
+        return null;
+      }
+    }
+
+    function syncFriendsHubData(showToastFeedback) {
+      const data = callFriendsApiAction({ action: "sync" });
+      if (!data || !data.ok) {
+        if (showToastFeedback) showTopToast("⚠️ Не удалось обновить список друзей");
+        return;
+      }
+
+      if (data.my_code) {
+        myFriendCode = data.my_code;
+        document.getElementById("myFriendCodeDisplay").innerText = data.my_code;
+        document.getElementById("profFriendIdVal").innerText = data.my_code;
+        document.getElementById("chipFriendCode").innerText = "• " + data.my_code;
+      }
+
+      const incoming = data.incoming || [];
+      const incCard = document.getElementById("incomingRequestsCard");
+      const incList = document.getElementById("incomingRequestsList");
+      document.getElementById("incomingCountTag").innerText = incoming.length;
+      if (incoming.length > 0) {
+        incCard.style.display = "block";
+        incList.innerHTML = incoming.map(item => `
+          <div class="friend-item">
+            <div class="friend-meta">
+              <span class="online-dot on"></span>
+              <div>
+                <div class="friend-nick">${escapeHtml(item.nick)}</div>
+                <div class="friend-code-sub">${escapeHtml(item.code)}</div>
+              </div>
+            </div>
+            <div class="friend-actions">
+              <button class="mini-act-btn" onclick="acceptFriendReq('${item.code}')">✅ ПРИНЯТЬ</button>
+              <button class="mini-act-btn del" onclick="removeFriendEntry('${item.code}')">✖</button>
+            </div>
+          </div>
+        `).join("");
+      } else {
+        incCard.style.display = "none";
+      }
+
+      const friends = data.friends || [];
+      const fContainer = document.getElementById("friendsContainerList");
+      const onlineCount = friends.filter(f => f.online).length;
+      document.getElementById("friendsTileBadge").innerText =
+        incoming.length > 0 ? `🔔 ЗАЯВОК: ${incoming.length}` : `ОНЛАЙН: ${onlineCount} • PRO ВОЙС`;
+
+      if (friends.length === 0) {
+        fContainer.innerHTML = `
+          <div style="font-size:12px; color:var(--text-muted); text-align:center; padding:12px 0;">
+            Список друзей пуст. Скопируйте свой ID выше или введите ID друга!
+          </div>`;
+      } else {
+        fContainer.innerHTML = friends.map(f => {
+          const statusSub = f.room
+            ? `🎙️ В комнате: ${escapeHtml(f.room)}`
+            : (f.online ? "🟢 В сети" : "⚪ Не в сети");
+          const roomJoinBtn = f.room
+            ? `<button class="mini-act-btn" onclick="joinSpecificRoom('${escapeHtml(f.room)}')">⚡ К НЕМУ</button>`
+            : `<button class="mini-act-btn" onclick="inviteFriendToMyVoice('${escapeHtml(f.code)}')">🎙️ ЗВАТЬ</button>`;
+          return `
+            <div class="friend-item">
+              <div class="friend-meta">
+                <span class="online-dot ${f.online ? 'on' : ''}"></span>
+                <div>
+                  <div class="friend-nick">${escapeHtml(f.nick)} <span style="font-size:10px; color:var(--accent); font-family:monospace;">(${escapeHtml(f.code)})</span></div>
+                  <div class="friend-code-sub">${statusSub}</div>
+                </div>
+              </div>
+              <div class="friend-actions">
+                ${roomJoinBtn}
+                <button class="mini-act-btn del" onclick="removeFriendEntry('${escapeHtml(f.code)}')">🗑️</button>
+              </div>
+            </div>
+          `;
+        }).join("");
+      }
+
+      const invites = data.invites || [];
+      if (invites.length > 0) {
+        const lastInv = invites[invites.length - 1];
+        pendingInviteRoom = lastInv.room || "SQUAD-MAIN";
+        document.getElementById("invFromNick").innerText = `${lastInv.from_nick} (${lastInv.from_code})`;
+        document.getElementById("invRoomCode").innerText = pendingInviteRoom;
+        document.getElementById("voiceInviteBanner").style.display = "block";
+      }
+
+      if (showToastFeedback) showTopToast("✅ Список друзей синхронизирован!");
+    }
+
+    function sendAddFriendAction() {
+      const val = document.getElementById("friendTargetInput").value.trim().toUpperCase();
+      if (val.length < 2) {
+        showTopToast("⚠️ Введите ID (SO2-XXXX) или никнейм друга!");
+        return;
+      }
+      const res = callFriendsApiAction({ action: "add", target_code: val });
+      if (res && res.ok) {
+        document.getElementById("friendTargetInput").value = "";
+        showTopToast("✅ " + (res.message || "Заявка отправлена!"));
+        syncFriendsHubData(false);
+      } else {
+        showTopToast("⛔ " + ((res && res.message) ? res.message : "Игрок не найден"));
+      }
+    }
+
+    function acceptFriendReq(targetCode) {
+      const res = callFriendsApiAction({ action: "accept", target_code: targetCode });
+      if (res && res.ok) {
+        showTopToast("🤝 Друг добавлен в ваш отряд!");
+        syncFriendsHubData(false);
+      }
+    }
+
+    function removeFriendEntry(targetCode) {
+      callFriendsApiAction({ action: "remove", target_code: targetCode });
+      syncFriendsHubData(false);
+      showTopToast("🗑️ Контакт удалён");
+    }
+
+    function inviteFriendToMyVoice(targetCode) {
+      let room = document.getElementById("voiceRoomInput").value.trim().toUpperCase();
+      if (!room) {
+        room = myFriendCode ? ("SQUAD-" + myFriendCode.slice(-4)) : "SQUAD-MAIN";
+        document.getElementById("voiceRoomInput").value = room;
+      }
+      const res = callFriendsApiAction({
+        action: "invite_voice",
+        target_code: targetCode,
+        room_code: room
+      });
+      if (res && res.ok) {
+        showTopToast("📨 " + res.message);
+        if (!isVoiceConnected) toggleVoiceConnection();
+      } else {
+        showTopToast("⚠️ Ошибка отправки приглашения");
+      }
+    }
+
+    function acceptVoiceInviteBanner() {
+      document.getElementById("voiceInviteBanner").style.display = "none";
+      if (pendingInviteRoom) {
+        openPage("page-friends");
+        joinSpecificRoom(pendingInviteRoom);
+      }
+    }
+
+    function joinSpecificRoom(roomCode) {
+      document.getElementById("voiceRoomInput").value = roomCode;
+      if (isVoiceConnected) {
+        leaveVoiceRoom();
+      }
+      setTimeout(() => { toggleVoiceConnection(); }, 120);
+    }
+
+    function setMyOwnRoomCode() {
+      const suffix = myFriendCode ? myFriendCode.slice(-4) : Math.floor(1000 + Math.random() * 9000);
+      document.getElementById("voiceRoomInput").value = "SQUAD-" + suffix;
+      showTopToast("🎲 Код комнаты: SQUAD-" + suffix);
+    }
+
+    function copyMyFriendCode() {
+      if (!myFriendCode) return;
+      if (navigator.clipboard) navigator.clipboard.writeText(myFriendCode);
+      showTopToast("📋 Ваш ID скопирован: " + myFriendCode);
+    }
+
+    function escapeHtml(str) {
+      return String(str || "").replace(/[&<>"']/g, s => ({
+        "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"
+      }[s]));
+    }
+
+    // ================= ВОЙС-ЧАТ С KRISP DSP ШУМОДАВОМ И БЕЗЛАГОВОЙ ОЧЕРЕДЬЮ =================
+    async function toggleVoiceConnection() {
+      if (isVoiceConnected) {
+        leaveVoiceRoom();
+        return;
+      }
+
+      const roomName = (document.getElementById("voiceRoomInput").value.trim() || "SQUAD-MAIN").toUpperCase();
+      document.getElementById("voiceRoomInput").value = roomName;
+
+      try {
+        micStream = await navigator.mediaDevices.getUserMedia({
+          audio: {
+            echoCancellation: true,
+            noiseSuppression: true,
+            autoGainControl: true,
+            channelCount: 1,
+            sampleRate: 16000
+          },
+          video: false
+        });
+      } catch (err) {
+        showTopToast("⚠️ Разрешите доступ к микрофону для голосового чата!");
+        return;
+      }
+
+      try {
+        const AudioCtx = window.AudioContext || window.webkitAudioContext;
+        voiceAudioCtx = new AudioCtx({ sampleRate: 16000 });
+        if (voiceAudioCtx.state === "suspended") {
+          await voiceAudioCtx.resume();
+        }
+
+        const source = voiceAudioCtx.createMediaStreamSource(micStream);
+
+        // 1. High-Pass фильтр 85 Гц (убирает гул кулера, дыхание и низкочастотный шум)
+        const highPass = voiceAudioCtx.createBiquadFilter();
+        highPass.type = "highpass";
+        highPass.frequency.value = 85;
+
+        // 2. Low-Pass фильтр 7200 Гц (срезает высокочастотный треск и шипение)
+        const lowPass = voiceAudioCtx.createBiquadFilter();
+        lowPass.type = "lowpass";
+        lowPass.frequency.value = 7200;
+
+        // 3. Динамический компрессор (выравнивает громкость речи во время стрельбы)
+        const compressor = voiceAudioCtx.createDynamicsCompressor();
+        compressor.threshold.value = -26;
+        compressor.knee.value = 24;
+        compressor.ratio.value = 10;
+        compressor.attack.value = 0.003;
+        compressor.release.value = 0.20;
+
+        // 4. Усилитель четкости речи (Mic Gain Boost)
+        micGainNode = voiceAudioCtx.createGain();
+        const gainPct = parseInt(document.getElementById("p-micGain").value, 10) || 180;
+        micGainNode.gain.value = gainPct / 100.0;
+
+        micProcessorNode = voiceAudioCtx.createScriptProcessor(2048, 1, 1);
+
+        source.connect(highPass);
+        highPass.connect(lowPass);
+        lowPass.connect(compressor);
+        compressor.connect(micGainNode);
+        micGainNode.connect(micProcessorNode);
+        micProcessorNode.connect(voiceAudioCtx.destination);
+
+        micProcessorNode.onaudioprocess = function(e) {
+          if (!isVoiceConnected || isMicMuted || !voiceWs || voiceWs.readyState !== WebSocket.OPEN) {
+            document.getElementById("micVuMeterFill").style.width = "0%";
+            return;
+          }
+
+          const input = e.inputBuffer.getChannelData(0);
+          let sumSq = 0;
+          for (let i = 0; i < input.length; i++) {
+            sumSq += input[i] * input[i];
+          }
+          const rms = Math.sqrt(sumSq / input.length);
+          const vuPct = Math.min(100, Math.round(rms * 380));
+          document.getElementById("micVuMeterFill").style.width = vuPct + "%";
+
+          const dspOn = document.getElementById("sw-dspNoiseGate").checked;
+          const gateSlider = parseInt(document.getElementById("p-noiseGate").value, 10) || 18;
+          const rmsThreshold = dspOn ? (gateSlider * 0.0011) : 0.0005;
+
+          // Если звук тише порога шумодава — не отправляем фоновый шум в эфир
+          if (rms < rmsThreshold) return;
+
+          const pcm16 = new Int16Array(input.length);
+          for (let i = 0; i < input.length; i++) {
+            const s = Math.max(-1, Math.min(1, input[i]));
+            pcm16[i] = s < 0 ? s * 0x8000 : s * 0x7FFF;
+          }
+
+          const bytes = new Uint8Array(pcm16.buffer);
+          let binary = "";
+          for (let i = 0; i < bytes.byteLength; i++) {
+            binary += String.fromCharCode(bytes[i]);
+          }
+          const b64Pcm = btoa(binary);
+
+          voiceWs.send(JSON.stringify({
+            type: "audio",
+            pcm: b64Pcm,
+            rate: voiceAudioCtx.sampleRate
+          }));
+
+          highlightSpeakingMember(myFriendCode);
+        };
+
+        connectVoiceWebSocket(roomName);
+      } catch (e) {
+        showTopToast("⚠️ Ошибка инициализации аудио-движка");
+      }
+    }
+
+    function connectVoiceWebSocket(roomName) {
+      const B = getBridge();
+      const hwid = (B && B.getDeviceHwid) ? B.getDeviceHwid() : "web_hwid";
+      const nick = (B && B.getSavedNickname && B.getSavedNickname())
+        ? B.getSavedNickname()
+        : (document.getElementById("chipPlayerName").innerText || "Player");
+
+      try {
+        voiceWs = new WebSocket(VOICE_WS_URL);
+      } catch (e) {
+        showTopToast("⚠️ Не удалось подключиться к голосовому серверу");
+        return;
+      }
+
+      voiceWs.onopen = function() {
+        isVoiceConnected = true;
+        isMicMuted = false;
+        nextPlaybackTime = 0;
+
+        document.getElementById("voiceActionRow").style.display = "none";
+        document.getElementById("voiceControlsActive").style.display = "grid";
+        document.getElementById("voiceStatePill").innerText = "В ЭФИРЕ • " + roomName;
+        document.getElementById("voiceStatePill").style.color = "#10b981";
+        document.getElementById("topVoiceLiveChip").style.display = "inline-flex";
+
+        voiceWs.send(JSON.stringify({
+          type: "join",
+          hwid: hwid,
+          room: roomName,
+          nick: nick
+        }));
+        showTopToast("🎙️ Вы вошли в голосовой канал " + roomName);
+      };
+
+      voiceWs.onmessage = function(evt) {
+        try {
+          const msg = JSON.parse(evt.data);
+          if (msg.type === "roster") {
+            renderVoiceRoomRoster(msg.members || []);
+          } else if (msg.type === "audio" && msg.pcm) {
+            playIncomingPcmAudio(msg.pcm, msg.rate || 16000);
+            if (msg.from_code) highlightSpeakingMember(msg.from_code);
+          }
+        } catch (e) {}
+      };
+
+      voiceWs.onclose = function() {
+        if (isVoiceConnected) {
+          leaveVoiceRoom();
+        }
+      };
+    }
+
+    function playIncomingPcmAudio(b64Str, sampleRate) {
+      if (!voiceAudioCtx) return;
+      try {
+        const binary = atob(b64Str);
+        const len = binary.length;
+        const bytes = new Uint8Array(len);
+        for (let i = 0; i < len; i++) {
+          bytes[i] = binary.charCodeAt(i);
+        }
+        const int16 = new Int16Array(bytes.buffer);
+        const float32 = new Float32Array(int16.length);
+        for (let i = 0; i < int16.length; i++) {
+          float32[i] = int16[i] / 32768.0;
+        }
+
+        const audioBuffer = voiceAudioCtx.createBuffer(1, float32.length, sampleRate || 16000);
+        audioBuffer.getChannelData(0).set(float32);
+
+        const src = voiceAudioCtx.createBufferSource();
+        src.buffer = audioBuffer;
+        src.connect(voiceAudioCtx.destination);
+
+        const now = voiceAudioCtx.currentTime;
+        if (nextPlaybackTime < now || (nextPlaybackTime - now) > 0.35) {
+          nextPlaybackTime = now + 0.02;
+        }
+        src.start(nextPlaybackTime);
+        nextPlaybackTime += audioBuffer.duration;
+      } catch (e) {}
+    }
+
+    function highlightSpeakingMember(code) {
+      const el = document.getElementById("vmember-" + code);
+      if (!el) return;
+      el.classList.add("speaking");
+      clearTimeout(speakingTimers[code]);
+      speakingTimers[code] = setTimeout(() => {
+        el.classList.remove("speaking");
+      }, 360);
+    }
+
+    function renderVoiceRoomRoster(members) {
+      document.getElementById("voiceRosterCount").innerText = members.length;
+      const box = document.getElementById("voiceRosterList");
+      if (!members.length) {
+        box.innerHTML = `<div style="font-size:11.5px; color:var(--text-muted); text-align:center; padding:8px 0;">Никого нет в комнате</div>`;
+        return;
+      }
+      box.innerHTML = members.map(m => `
+        <div class="voice-member-pill" id="vmember-${escapeHtml(m.code)}">
+          <div style="display:flex; align-items:center; gap:8px;">
+            <span class="online-dot on"></span>
+            <span style="font-size:13px; font-weight:900; color:#fff;">${escapeHtml(m.nick)}</span>
+            <span style="font-size:10.5px; color:var(--accent); font-family:monospace;">${escapeHtml(m.code)}</span>
+          </div>
+          <span style="font-size:12px; font-weight:800; color:${m.muted ? '#ef4444' : '#10b981'};">
+            ${m.muted ? '🔇 MUTE' : '🎙️ LIVE'}
+          </span>
+        </div>
+      `).join("");
+    }
+
+    function toggleMicMute() {
+      isMicMuted = !isMicMuted;
+      const btn = document.getElementById("btnMuteMic");
+      btn.innerText = isMicMuted ? "🔇 МИКРОФОН: ВЫКЛ" : "🎤 МИКРОФОН: ВКЛ";
+      btn.style.color = isMicMuted ? "#fca5a5" : "#e2e8f0";
+      if (voiceWs && voiceWs.readyState === WebSocket.OPEN) {
+        voiceWs.send(JSON.stringify({ type: "mute", muted: isMicMuted }));
+      }
+    }
+
+    function leaveVoiceRoom() {
+      isVoiceConnected = false;
+      isMicMuted = false;
+
+      if (voiceWs) {
+        try { voiceWs.close(); } catch (e) {}
+        voiceWs = null;
+      }
+      if (micProcessorNode) {
+        try { micProcessorNode.disconnect(); } catch (e) {}
+        micProcessorNode = null;
+      }
+      if (micStream) {
+        try { micStream.getTracks().forEach(t => t.stop()); } catch (e) {}
+        micStream = null;
+      }
+      if (voiceAudioCtx) {
+        try { voiceAudioCtx.close(); } catch (e) {}
+        voiceAudioCtx = null;
+      }
+
+      document.getElementById("voiceActionRow").style.display = "grid";
+      document.getElementById("voiceControlsActive").style.display = "none";
+      document.getElementById("voiceStatePill").innerText = "ОТКЛЮЧЕН";
+      document.getElementById("voiceStatePill").style.color = "var(--text-muted)";
+      document.getElementById("topVoiceLiveChip").style.display = "none";
+      document.getElementById("micVuMeterFill").style.width = "0%";
+      document.getElementById("voiceRosterCount").innerText = "0";
+      document.getElementById("voiceRosterList").innerHTML = `
+        <div style="font-size:11.5px; color:var(--text-muted); text-align:center; padding:8px 0;">
+          Нажмите «Подключиться к войсу», чтобы войти в эфир
+        </div>`;
+    }
+
+    function updateVoiceDspParams() {
+      const gainPct = parseInt(document.getElementById("p-micGain").value, 10) || 180;
+      const gatePct = parseInt(document.getElementById("p-noiseGate").value, 10) || 18;
+      document.getElementById("v-micGain").innerText = gainPct + "%";
+      document.getElementById("v-noiseGate").innerText = gatePct + "%";
+      if (micGainNode) {
+        micGainNode.gain.value = gainPct / 100.0;
+      }
+    }
+
+    // ================= ЭКСТРЕМАЛЬНЫЙ ЛИНЕЙНЫЙ ТЕЛЕПОРТ =================
     function toggleTeleportMaster(enabled) {
       if (!isSessionAuthorized) {
         window.forceShowKickScreen("Сначала активируйте лицензионный ключ!");
@@ -1898,12 +2698,12 @@
       const sx = parseFloat(document.getElementById("p-sx").value);
       const sy = parseFloat(document.getElementById("p-sy").value);
       const chunks = parseInt(document.getElementById("p-chunks").value, 10);
-      const chunkFast = 60; // Всегда максимальная скорость квантования
+      const chunkFast = 60;
       const straight = parseFloat(document.getElementById("p-straight").value) / 10.0;
       const stick = parseInt(document.getElementById("p-stickForce").value, 10);
-      const grid = 64; // Максимальная плотность пиксельной сетки
-      const pause = 0; // 0 мс задержки
-      const accel = 10.0; // Мгновенный импульс от старта к концу
+      const grid = 64;
+      const pause = 0;
+      const accel = 10.0;
 
       const B = getBridge();
       if (B && B.updateParameters) {
@@ -1912,7 +2712,6 @@
       saveStateSilent();
     }
 
-    // Сканер теперь всегда выжимает 100% максимум из железа (850 ev/s + ровная линия)!
     function runSmartScanAndApply() {
       const B = getBridge();
       let model = document.getElementById("profModelVal").innerText || "SM-S938B";
@@ -2045,7 +2844,7 @@
       generateAndCopyShareLink();
     }
 
-    // ================= РАСТЯГ ЭКРАНА (7 ФОРМАТОВ + ШИРОКИЕ ХИТБОКСЫ) =================
+    // ================= РАСТЯГ ЭКРАНА =================
     function selectStretchFormat(ratio, widthPx, titleText, pillEl) {
       currentStretch = ratio;
       document.querySelectorAll("#ratioPillsContainer .choice-pill").forEach(p => p.classList.remove("active"));
@@ -2097,7 +2896,7 @@
       showTopToast("🔄 Кнопка «T» убрана, родной экран восстановлен");
     }
 
-    // ================= PRO КОНСТРУКТОР ПРИЦЕЛА (10 ФОРМ + OFFSET X/Y) =================
+    // ================= PRO КОНСТРУКТОР ПРИЦЕЛА =================
     function selectCrosshairShape(shape, label, el) {
       currentChShape = shape;
       document.querySelectorAll("#chShapePills .choice-pill").forEach(p => p.classList.remove("active"));
