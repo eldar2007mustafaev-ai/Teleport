@@ -2168,61 +2168,6 @@
       return false;
     };
 
-    // ================= АВТОРИЗАЦИЯ И ЗАЩИТА КЛЮЧЕЙ =================
-    function unlockAuthorizedSession(nick, cleanKey, subStatusText) {
-      isSessionAuthorized = true;
-      fullLicenseKeyPlain = cleanKey;
-      isKeyRevealed = false;
-
-      try {
-        localStorage.setItem(CLIENT_LOGIN_GATE_KEY, "1");
-        localStorage.setItem("so2tp_active_key_v412", cleanKey);
-        localStorage.setItem("so2tp_active_nick_v412", nick);
-      } catch (e) {}
-
-      document.getElementById("authScreen").style.display = "none";
-      document.getElementById("mainAppRoot").classList.remove("auth-locked");
-      document.getElementById("bottomDockBar").classList.remove("auth-locked");
-      document.getElementById("authErrorBox").style.display = "none";
-
-      document.getElementById("chipPlayerName").innerText = nick;
-      document.getElementById("profLoginVal").innerText = nick;
-      document.getElementById("profSubVal").innerText = subStatusText;
-      updateProfileKeyDisplay();
-
-      setTimeout(() => { syncFriendsHubData(false); }, 300);
-    }
-
-    window.forceShowKickScreen = function(msg) {
-      isSessionAuthorized = false;
-      fullLicenseKeyPlain = "";
-      leaveVoiceRoom();
-
-      try {
-        localStorage.removeItem(CLIENT_LOGIN_GATE_KEY);
-        localStorage.removeItem("so2tp_active_key_v412");
-      } catch (e) {}
-
-      document.getElementById("mainAppRoot").classList.add("auth-locked");
-      document.getElementById("bottomDockBar").classList.add("auth-locked");
-      document.getElementById("calibModal").style.display = "none";
-      document.getElementById("authScreen").style.display = "flex";
-
-      const err = document.getElementById("authErrorBox");
-      if (msg && msg.trim().length > 0) {
-        err.style.display = "block";
-        err.innerText = "⛔ " + msg;
-      } else {
-        err.style.display = "none";
-      }
-
-      document.getElementById("homeTpToggle").checked = false;
-      document.getElementById("innerTpToggle").checked = false;
-      document.getElementById("tileTpLabel").innerText = "ВЫКЛ";
-      const B = getBridge();
-      try { if (B && B.stopTeleport) B.stopTeleport(); } catch (e) {}
-    };
-
         // ================= ЖЁСТКАЯ АВТОРИЗАЦИЯ БЕЗ АВТО-ПРОПУСКА =================
     function unlockAuthorizedSession(nick, cleanKey, subStatusText) {
       if (!cleanKey || cleanKey.length < 5) return;
