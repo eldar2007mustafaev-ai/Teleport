@@ -2319,77 +2319,64 @@
       }, 8000);
       renderCrosshairCanvas();
 
+      // ЖЕПЕЗОБЕТОННО ЗАПИРАЕМ ИНТЕРФЕЙС НА ЭКРАНЕ ВХОДА ДО УСПЕШНОЙ ВАЛИДАЦИИ КЛЮЧА
+      isSessionAuthorized = false;
       document.getElementById("mainAppRoot").classList.add("auth-locked");
       document.getElementById("bottomDockBar").classList.add("auth-locked");
       document.getElementById("authScreen").style.display = "flex";
 
       const B = getBridge();
-      if (!B) {
-        document.getElementById("authHwidLabel").innerText = "WEB-MODE";
-        return;
-      }
-
       let hwid = "39e220a438dedb68";
-      let modelName = "SM-S938B";
-      let screenSpec = "1440x3120 (120 Гц)";
-
-      try {
-        if (typeof B.getDeviceHwid === "function") {
-          hwid = B.getDeviceHwid() || hwid;
-        }
-      } catch (e) {}
-
-      try {
-        if (typeof B.getDeviceHardwareInfo === "function") {
-          const hwRaw = String(B.getDeviceHardwareInfo() || "");
-          const hwParts = hwRaw.split("|");
-          modelName = hwParts[0] || modelName;
-          screenSpec = hwParts[1] || screenSpec;
-        }
-      } catch (e) {}
-
-      document.getElementById("calibModelName").innerText = modelName;
-      document.getElementById("profModelVal").innerText = modelName;
-      document.getElementById("profScreenVal").innerText = screenSpec;
-      document.getElementById("profHwidVal").innerText = hwid;
+      try { if (B && B.getDeviceHwid) hwid = B.getDeviceHwid() || hwid; } catch (e) {}
       document.getElementById("authHwidLabel").innerText = hwid;
+      document.getElementById("profHwidVal").innerText = hwid;
 
       let savedNick = "";
       try {
-        if (B.getSavedNickname) {
-          savedNick = String(B.getSavedNickname() || "").trim();
-        }
+        if (B && B.getSavedNickname) savedNick = String(B.getSavedNickname() || "").trim();
+        if (!savedNick) savedNick = localStorage.getItem("so2tp_active_nick_v412") || "";
       } catch (e) {}
+      if (savedNick) document.getElementById("loginNickInput").value = savedNick;
 
-      if (savedNick) {
-        document.getElementById("loginNickInput").value = savedNick;
-      }
-
-      let manualGatePassed = false;
+      // Читаем ключ из памяти устройства
       let gateKey = "";
       try {
-        manualGatePassed = localStorage.getItem(CLIENT_LOGIN_GATE_KEY) === "1";
         gateKey = (localStorage.getItem("so2tp_active_key_v412") || "").trim().toUpperCase();
       } catch (e) {}
 
-      if (!manualGatePassed || gateKey.length < 5) {
+      // ЕСЛИ КЛЮЧА НЕТ ИЛИ ОН КОРОТКИЙ — НАМЕРТВО БЛОКИРУЕМ ВХОД И ТРЕБУЕМ ВВОД
+      if (!gateKey || gateKey.length < 5) {
         document.getElementById("loginKeyInput").value = "";
+        window.forceShowKickScreen("Доступ заблокирован! Введите лицензионный ключ для входа.");
         return;
       }
 
       document.getElementById("loginKeyInput").value = gateKey;
+
+      // ЖЕСТКАЯ ПРОВЕРКА КЛЮЧА ЧЕРЕЗ СИСТЕМУ БЕЗОПАСНОСТИ МОСТА
+      let verifiedOk = false;
       try {
-        const verifyOut = String(B.verifyLicenseKey(gateKey) || "");
-        if (verifyOut.startsWith("OK|") || verifyOut.startsWith("OFFLINE|")) {
-          const subLabel = verifyOut.split("|")[1] || "АКТИВНА (PRO)";
-          unlockAuthorizedSession(savedNick || "dare", gateKey, subLabel);
-          loadSavedSettingsJson();
-        } else {
-          const errMsg = verifyOut.includes("|") ? verifyOut.split("|")[1] : "Срок действия ключа истёк! Введите действующий ключ.";
-          window.forceShowKickScreen(errMsg);
+        if (B && typeof B.verifyLicenseKey === "function") {
+          const verifyOut = String(B.verifyLicenseKey(gateKey) || "");
+          if (verifyOut.startsWith("OK|") || verifyOut.startsWith("OFFLINE|")) {
+            const subLabel = verifyOut.split("|")[1] || "АКТИВНА (PRO)";
+            unlockAuthorizedSession(savedNick || "dare", gateKey, subLabel);
+            loadSavedSettingsJson();
+            verifiedOk = true;
+          }
         }
       } catch (e) {}
+
+      // ЕСЛИ СЕРВЕР/МОСТ ОТВЕТИЛ, ЧТО КЛЮЧ НЕДЕЙСТВИТЕЛЕН — СБРАСЫВАЕМ ВСЁ И ДЕРЖИМ ЗАМОК ЗАКРЫТЫМ
+      if (!verifiedOk) {
+        try {
+          localStorage.removeItem(CLIENT_LOGIN_GATE_KEY);
+          localStorage.removeItem("so2tp_active_key_v412");
+        } catch (e) {}
+        window.forceShowKickScreen("Лицензия не подтверждена или истекла! Введите действующий ключ.");
+      }
     }
+
 
     function submitKeyLogin() {
       const nickInput = (document.getElementById("loginNickInput").value || "").trim();
