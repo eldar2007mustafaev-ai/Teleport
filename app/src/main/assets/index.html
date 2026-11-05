@@ -2868,6 +2868,11 @@
       const krispBtn = document.getElementById("btnKrispQuick");
       document.getElementById("lblKrispState").innerText = krispOn ? "Krisp ВКЛ" : "Krisp ВЫКЛ";
       krispBtn.className = "dc-ctrl-btn " + (krispOn ? "active-on" : "");
+
+      const B = getBridge();
+      if (B && B.updateVoiceCallNotification && isVoiceConnected) {
+        const room = document.getElementById("voiceRoomInput").value.trim().toUpperCase() || "SQUAD-MAIN";
+        B.updateVoiceCallNotification(room, isMicMuted, isSpeakerDeafened);
     }
 
     function toggleMicMute() {
@@ -2938,6 +2943,10 @@
         <div style="grid-column: span 2; font-size:12px; color:var(--text-muted); text-align:center; padding:18px 6px;">
           Нажми «Войти в голосовой канал» ниже, чтобы начать звонок без шума и задержек
         </div>`;
+    
+      const B = getBridge();
+      if (B && B.cancelVoiceCallNotification) {
+        B.cancelVoiceCallNotification();
     }
 
     function updateVoiceDspParams() {
