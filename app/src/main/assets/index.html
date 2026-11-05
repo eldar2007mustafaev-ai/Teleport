@@ -18,7 +18,6 @@
       --danger-border: rgba(239, 68, 68, 0.48);
       --danger-text: #fca5a5;
     }
-
     * {
       box-sizing: border-box;
       margin: 0;
@@ -28,7 +27,6 @@
       -webkit-tap-highlight-color: transparent;
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
     }
-
     body {
       background-color: var(--bg-dark);
       background-image:
@@ -40,1121 +38,332 @@
       padding-bottom: 98px;
       overflow-x: hidden;
     }
-
-    .auth-locked {
-      display: none !important;
-    }
-
-    /* ================= ПОЛНОЭКРАННЫЙ БЛОК АВТОРИЗАЦИИ ================= */
+    .auth-locked { display: none !important; }
     #authScreen {
-      position: fixed;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      width: 100%;
-      height: 100%;
-      z-index: 999999;
+      position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+      width: 100%; height: 100%; z-index: 999999;
       background-color: #050b12;
-      background-image:
-        radial-gradient(circle at 50% 18%, rgba(var(--accent-rgb), 0.18) 0%, transparent 55%);
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      padding: 20px;
+      background-image: radial-gradient(circle at 50% 18%, rgba(var(--accent-rgb), 0.18) 0%, transparent 55%);
+      display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px;
     }
-
     .auth-box {
-      width: 100%;
-      max-width: 395px;
-      background: #0b1622;
-      border: 1.5px solid var(--accent);
-      border-radius: 24px;
-      padding: 24px 18px;
-      text-align: center;
+      width: 100%; max-width: 395px; background: #0b1622;
+      border: 1.5px solid var(--accent); border-radius: 24px;
+      padding: 24px 18px; text-align: center;
       box-shadow: 0 0 42px rgba(var(--accent-rgb), 0.28);
     }
-
     .auth-pill-tag {
-      display: inline-block;
-      font-size: 10px;
-      font-weight: 900;
-      color: var(--accent);
-      background: rgba(var(--accent-rgb), 0.12);
-      border: 1px solid rgba(var(--accent-rgb), 0.38);
-      padding: 4px 11px;
-      border-radius: 999px;
-      margin-bottom: 10px;
-      letter-spacing: 0.6px;
+      display: inline-block; font-size: 10px; font-weight: 900; color: var(--accent);
+      background: rgba(var(--accent-rgb), 0.12); border: 1px solid rgba(var(--accent-rgb), 0.38);
+      padding: 4px 11px; border-radius: 999px; margin-bottom: 10px; letter-spacing: 0.6px;
     }
-
     .cyber-field {
-      width: 100%;
-      background: #060e17;
-      border: 1.5px solid rgba(var(--accent-rgb), 0.38);
-      color: #ffffff;
-      border-radius: 13px;
-      padding: 13px 14px;
-      font-size: 14px;
-      font-weight: 700;
-      outline: none;
-      margin-bottom: 10px;
-      user-select: text;
-      -webkit-user-select: text;
+      width: 100%; background: #060e17; border: 1.5px solid rgba(var(--accent-rgb), 0.38);
+      color: #ffffff; border-radius: 13px; padding: 13px 14px; font-size: 14px;
+      font-weight: 700; outline: none; margin-bottom: 10px;
+      user-select: text; -webkit-user-select: text;
     }
-
-    .cyber-field:focus {
-      border-color: var(--accent);
-      box-shadow: 0 0 14px rgba(var(--accent-rgb), 0.28);
-    }
-
-    .app-container {
-      max-width: 480px;
-      margin: 0 auto;
-      padding: 0 14px;
-    }
-
-    /* ВЕРХНЯЯ ШАПКА */
-    .top-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: flex-start;
-      margin-bottom: 10px;
-    }
-
-    .brand-title {
-      font-size: 23px;
-      font-weight: 900;
-      letter-spacing: 0.3px;
-      color: #ffffff;
-      line-height: 1.15;
-    }
-
-    .brand-title span {
-      color: var(--accent);
-      text-shadow: 0 0 14px rgba(var(--accent-rgb), 0.45);
-    }
-
-    .brand-sub {
-      font-size: 10px;
-      font-weight: 800;
-      letter-spacing: 0.7px;
-      color: var(--accent);
-      margin-top: 3px;
-      text-transform: uppercase;
-    }
-
+    .cyber-field:focus { border-color: var(--accent); box-shadow: 0 0 14px rgba(var(--accent-rgb), 0.28); }
+    .app-container { max-width: 480px; margin: 0 auto; padding: 0 14px; }
+    .top-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px; }
+    .brand-title { font-size: 23px; font-weight: 900; letter-spacing: 0.3px; color: #ffffff; line-height: 1.15; }
+    .brand-title span { color: var(--accent); text-shadow: 0 0 14px rgba(var(--accent-rgb), 0.45); }
+    .brand-sub { font-size: 10px; font-weight: 800; letter-spacing: 0.7px; color: var(--accent); margin-top: 3px; text-transform: uppercase; }
     .shizuku-pill {
-      background: #0b1724;
-      border: 1.5px solid rgba(var(--accent-rgb), 0.45);
-      border-radius: 14px;
-      padding: 6px 11px;
-      text-align: right;
+      background: #0b1724; border: 1.5px solid rgba(var(--accent-rgb), 0.45);
+      border-radius: 14px; padding: 6px 11px; text-align: right;
       box-shadow: 0 0 16px rgba(var(--accent-rgb), 0.16);
     }
-
-    .shizuku-row {
-      display: flex;
-      align-items: center;
-      justify-content: flex-end;
-      gap: 6px;
-      font-size: 11.5px;
-      font-weight: 800;
-      color: #ffffff;
-    }
-
-    .status-dot {
-      width: 8px;
-      height: 8px;
-      border-radius: 50%;
-      background: var(--accent);
-      box-shadow: 0 0 8px var(--accent);
-    }
-
-    .status-dot.off {
-      background: #f59e0b;
-      box-shadow: 0 0 8px #f59e0b;
-    }
-
-    .shizuku-sub {
-      font-size: 10px;
-      color: var(--text-muted);
-      font-weight: 700;
-      margin-top: 2px;
-    }
-
-    .top-chips-row {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 8px;
-      margin-bottom: 12px;
-    }
-
+    .shizuku-row { display: flex; align-items: center; justify-content: flex-end; gap: 6px; font-size: 11.5px; font-weight: 800; color: #ffffff; }
+    .status-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 8px var(--accent); }
+    .status-dot.off { background: #f59e0b; box-shadow: 0 0 8px #f59e0b; }
+    .shizuku-sub { font-size: 10px; color: var(--text-muted); font-weight: 700; margin-top: 2px; }
+    .top-chips-row { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 12px; }
     .player-chip {
-      display: inline-flex;
-      align-items: center;
-      gap: 7px;
-      background: rgba(var(--accent-rgb), 0.12);
-      border: 1.5px solid rgba(var(--accent-rgb), 0.48);
-      box-shadow: 0 0 14px rgba(var(--accent-rgb), 0.18);
-      border-radius: 999px;
-      padding: 5px 13px;
-      font-size: 12px;
-      font-weight: 800;
-      color: #ffffff;
-      cursor: pointer;
+      display: inline-flex; align-items: center; gap: 7px;
+      background: rgba(var(--accent-rgb), 0.12); border: 1.5px solid rgba(var(--accent-rgb), 0.48);
+      box-shadow: 0 0 14px rgba(var(--accent-rgb), 0.18); border-radius: 999px;
+      padding: 5px 13px; font-size: 12px; font-weight: 800; color: #ffffff; cursor: pointer;
     }
-
-    .player-chip-dot {
-      width: 8px;
-      height: 8px;
-      border-radius: 50%;
-      background: var(--accent);
-      box-shadow: 0 0 8px var(--accent);
-    }
-
+    .player-chip-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 8px var(--accent); }
     .voice-live-chip {
-      display: none;
-      align-items: center;
-      gap: 6px;
-      background: rgba(16, 185, 129, 0.16);
-      border: 1.5px solid #10b981;
-      border-radius: 999px;
-      padding: 5px 11px;
-      font-size: 11px;
-      font-weight: 900;
-      color: #34d399;
-      cursor: pointer;
-      box-shadow: 0 0 12px rgba(16, 185, 129, 0.25);
+      display: none; align-items: center; gap: 6px;
+      background: rgba(16, 185, 129, 0.16); border: 1.5px solid #10b981;
+      border-radius: 999px; padding: 5px 11px; font-size: 11px; font-weight: 900;
+      color: #34d399; cursor: pointer; box-shadow: 0 0 12px rgba(16, 185, 129, 0.25);
     }
-
     .theme-bar {
-      background: var(--bg-card);
-      border: 1.5px solid rgba(var(--accent-rgb), 0.42);
-      box-shadow: 0 0 18px rgba(var(--accent-rgb), 0.12);
-      border-radius: 16px;
-      padding: 10px 14px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 14px;
+      background: var(--bg-card); border: 1.5px solid rgba(var(--accent-rgb), 0.42);
+      box-shadow: 0 0 18px rgba(var(--accent-rgb), 0.12); border-radius: 16px;
+      padding: 10px 14px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;
     }
-
-    .theme-label {
-      font-size: 11.5px;
-      font-weight: 800;
-      color: var(--text-muted);
-      letter-spacing: 0.5px;
-    }
-
-    .theme-circles {
-      display: flex;
-      align-items: center;
-      gap: 9px;
-    }
-
-    .theme-dot {
-      width: 24px;
-      height: 24px;
-      border-radius: 50%;
-      cursor: pointer;
-      border: 2px solid rgba(255, 255, 255, 0.22);
-      transition: transform 0.15s;
-    }
-
-    .theme-dot.active {
-      transform: scale(1.16);
-      border: 2.5px solid #ffffff;
-      box-shadow: 0 0 14px var(--accent);
-    }
-
-    .bento-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 11px;
-    }
-
+    .theme-label { font-size: 11.5px; font-weight: 800; color: var(--text-muted); letter-spacing: 0.5px; }
+    .theme-circles { display: flex; align-items: center; gap: 9px; }
+    .theme-dot { width: 24px; height: 24px; border-radius: 50%; cursor: pointer; border: 2px solid rgba(255, 255, 255, 0.22); transition: transform 0.15s; }
+    .theme-dot.active { transform: scale(1.16); border: 2.5px solid #ffffff; box-shadow: 0 0 14px var(--accent); }
+    .bento-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 11px; }
     .bento-tile {
       background: linear-gradient(160deg, rgba(var(--accent-rgb), 0.1) 0%, rgba(10, 19, 29, 0.98) 65%);
       border: 1.5px solid rgba(var(--accent-rgb), 0.42);
       box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4), inset 0 0 18px rgba(var(--accent-rgb), 0.05);
-      border-radius: 20px;
-      padding: 15px 14px;
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
-      min-height: 154px;
-      cursor: pointer;
-      position: relative;
-      transform: translateZ(0);
+      border-radius: 20px; padding: 15px 14px; display: flex; flex-direction: column;
+      justify-content: space-between; min-height: 154px; cursor: pointer; position: relative;
     }
-
-    .bento-tile.wide-tile {
-      grid-column: span 2;
-      min-height: 118px;
-    }
-
-    .bento-tile:active {
-      transform: scale(0.97);
-      border-color: var(--accent);
-    }
-
-    .tile-top {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 10px;
-    }
-
+    .bento-tile.wide-tile { grid-column: span 2; min-height: 118px; }
+    .bento-tile:active { transform: scale(0.97); border-color: var(--accent); }
+    .tile-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
     .tile-icon-box {
-      width: 40px;
-      height: 40px;
-      border-radius: 13px;
-      background: rgba(var(--accent-rgb), 0.15);
-      border: 1px solid rgba(var(--accent-rgb), 0.48);
+      width: 40px; height: 40px; border-radius: 13px;
+      background: rgba(var(--accent-rgb), 0.15); border: 1px solid rgba(var(--accent-rgb), 0.48);
       box-shadow: 0 0 12px rgba(var(--accent-rgb), 0.2);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 19px;
+      display: flex; align-items: center; justify-content: center; font-size: 19px;
     }
-
-    .tile-arrow {
-      color: var(--accent);
-      font-size: 17px;
-      font-weight: 900;
-    }
-
+    .tile-arrow { color: var(--accent); font-size: 17px; font-weight: 900; }
     .tile-badge-hot {
-      background: rgba(245, 158, 11, 0.14);
-      border: 1px solid rgba(245, 158, 11, 0.45);
-      color: #fbbf24;
-      font-size: 9.5px;
-      font-weight: 900;
-      padding: 4px 8px;
-      border-radius: 999px;
+      background: rgba(245, 158, 11, 0.14); border: 1px solid rgba(245, 158, 11, 0.45);
+      color: #fbbf24; font-size: 9.5px; font-weight: 900; padding: 4px 8px; border-radius: 999px;
     }
-
     .tile-badge-voice {
-      background: rgba(var(--accent-rgb), 0.15);
-      border: 1px solid rgba(var(--accent-rgb), 0.48);
-      color: var(--accent);
-      font-size: 9.5px;
-      font-weight: 900;
-      padding: 4px 9px;
-      border-radius: 999px;
+      background: rgba(var(--accent-rgb), 0.15); border: 1px solid rgba(var(--accent-rgb), 0.48);
+      color: var(--accent); font-size: 9.5px; font-weight: 900; padding: 4px 9px; border-radius: 999px;
     }
-
-    .tile-title {
-      font-size: 17px;
-      font-weight: 900;
-      color: #ffffff;
-      margin-bottom: 4px;
-    }
-
-    .tile-desc {
-      font-size: 11.5px;
-      color: var(--text-muted);
-      line-height: 1.35;
-    }
-
+    .tile-title { font-size: 17px; font-weight: 900; color: #ffffff; margin-bottom: 4px; }
+    .tile-desc { font-size: 11.5px; color: var(--text-muted); line-height: 1.35; }
     .tile-QuickSwitch {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      background: rgba(6, 13, 20, 0.85);
-      border: 1px solid rgba(var(--accent-rgb), 0.38);
-      padding: 4px 8px;
-      border-radius: 999px;
-      font-size: 10px;
-      font-weight: 800;
-      color: var(--text-muted);
+      display: flex; align-items: center; gap: 6px;
+      background: rgba(6, 13, 20, 0.85); border: 1px solid rgba(var(--accent-rgb), 0.38);
+      padding: 4px 8px; border-radius: 999px; font-size: 10px; font-weight: 800; color: var(--text-muted);
     }
-
-    .page-view {
-      display: none;
-    }
-
-    .page-view.active {
-      display: block;
-    }
-
+    .page-view { display: none; }
+    .page-view.active { display: block; }
     .back-bar {
-      width: 100%;
-      background: var(--bg-card);
-      border: 1.5px solid rgba(var(--accent-rgb), 0.42);
-      box-shadow: 0 0 15px rgba(var(--accent-rgb), 0.12);
-      border-radius: 15px;
-      padding: 13px 15px;
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      color: #ffffff;
-      font-size: 14.5px;
-      font-weight: 800;
-      cursor: pointer;
-      margin-bottom: 13px;
+      width: 100%; background: var(--bg-card); border: 1.5px solid rgba(var(--accent-rgb), 0.42);
+      box-shadow: 0 0 15px rgba(var(--accent-rgb), 0.12); border-radius: 15px;
+      padding: 13px 15px; display: flex; align-items: center; gap: 10px;
+      color: #ffffff; font-size: 14.5px; font-weight: 800; cursor: pointer; margin-bottom: 13px;
     }
-
-    .back-bar span.arrow {
-      color: var(--accent);
-      font-size: 17px;
-    }
-
+    .back-bar span.arrow { color: var(--accent); font-size: 17px; }
     .section-card {
       background: linear-gradient(170deg, rgba(var(--accent-rgb), 0.07) 0%, var(--bg-card) 45%);
       border: 1.5px solid rgba(var(--accent-rgb), 0.38);
       box-shadow: 0 6px 22px rgba(0, 0, 0, 0.38), inset 0 0 14px rgba(var(--accent-rgb), 0.04);
-      border-radius: 19px;
-      padding: 15px;
-      margin-bottom: 13px;
+      border-radius: 19px; padding: 15px; margin-bottom: 13px;
     }
-
     .section-header-tag {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      font-size: 11px;
-      font-weight: 900;
-      letter-spacing: 0.6px;
-      color: var(--accent);
-      text-transform: uppercase;
-      margin-bottom: 12px;
+      display: flex; justify-content: space-between; align-items: center;
+      font-size: 11px; font-weight: 900; letter-spacing: 0.6px;
+      color: var(--accent); text-transform: uppercase; margin-bottom: 12px;
     }
-
     .btn-main {
-      width: 100%;
-      border: none;
-      border-radius: 14px;
-      padding: 14px 16px;
-      font-size: 13px;
-      font-weight: 900;
-      letter-spacing: 0.5px;
-      text-transform: uppercase;
-      color: #031519;
-      background: linear-gradient(90deg, var(--accent) 0%, var(--accent-2) 100%);
-      box-shadow: 0 4px 18px rgba(var(--accent-rgb), 0.35);
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 8px;
+      width: 100%; border: none; border-radius: 14px; padding: 14px 16px;
+      font-size: 13px; font-weight: 900; letter-spacing: 0.5px; text-transform: uppercase;
+      color: #031519; background: linear-gradient(90deg, var(--accent) 0%, var(--accent-2) 100%);
+      box-shadow: 0 4px 18px rgba(var(--accent-rgb), 0.35); cursor: pointer;
+      display: flex; align-items: center; justify-content: center; gap: 8px;
     }
-
-    .btn-main:active {
-      transform: scale(0.97);
-    }
-
+    .btn-main:active { transform: scale(0.97); }
     .btn-dark {
-      width: 100%;
-      background: #0d1a29;
-      border: 1px solid rgba(var(--accent-rgb), 0.35);
-      color: #e2e8f0;
-      border-radius: 13px;
-      padding: 12px 14px;
-      font-size: 12px;
-      font-weight: 800;
-      text-transform: uppercase;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 7px;
+      width: 100%; background: #0d1a29; border: 1px solid rgba(var(--accent-rgb), 0.35);
+      color: #e2e8f0; border-radius: 13px; padding: 12px 14px; font-size: 12px;
+      font-weight: 800; text-transform: uppercase; cursor: pointer;
+      display: flex; align-items: center; justify-content: center; gap: 7px;
     }
-
     .btn-danger {
-      width: 100%;
-      background: var(--danger-bg);
-      border: 1px solid var(--danger-border);
-      color: var(--danger-text);
-      border-radius: 14px;
-      padding: 13px 15px;
-      font-size: 12.5px;
-      font-weight: 900;
-      text-transform: uppercase;
-      cursor: pointer;
+      width: 100%; background: var(--danger-bg); border: 1px solid var(--danger-border);
+      color: var(--danger-text); border-radius: 14px; padding: 13px 15px;
+      font-size: 12.5px; font-weight: 900; text-transform: uppercase; cursor: pointer;
     }
-
-    .ios-switch {
-      position: relative;
-      display: inline-block;
-      width: 48px;
-      height: 27px;
-      flex-shrink: 0;
-    }
-
-    .ios-switch input {
-      opacity: 0;
-      width: 0;
-      height: 0;
-    }
-
+    .ios-switch { position: relative; display: inline-block; width: 48px; height: 27px; flex-shrink: 0; }
+    .ios-switch input { opacity: 0; width: 0; height: 0; }
     .ios-slider {
-      position: absolute;
-      inset: 0;
-      background: #172636;
-      border: 1px solid rgba(255, 255, 255, 0.18);
-      border-radius: 999px;
-      cursor: pointer;
-      transition: 0.18s;
+      position: absolute; inset: 0; background: #172636;
+      border: 1px solid rgba(255, 255, 255, 0.18); border-radius: 999px;
+      cursor: pointer; transition: 0.18s;
     }
-
     .ios-slider::before {
-      content: "";
-      position: absolute;
-      width: 19px;
-      height: 19px;
-      left: 3px;
-      bottom: 3px;
-      background: #94a3b8;
-      border-radius: 50%;
-      transition: 0.18s;
+      content: ""; position: absolute; width: 19px; height: 19px;
+      left: 3px; bottom: 3px; background: #94a3b8; border-radius: 50%; transition: 0.18s;
     }
-
-    .ios-switch input:checked + .ios-slider {
-      background: rgba(var(--accent-rgb), 0.28);
-      border-color: var(--accent);
-    }
-
-    .ios-switch input:checked + .ios-slider::before {
-      transform: translateX(21px);
-      background: var(--accent);
-      box-shadow: 0 0 10px var(--accent);
-    }
-
+    .ios-switch input:checked + .ios-slider { background: rgba(var(--accent-rgb), 0.28); border-color: var(--accent); }
+    .ios-switch input:checked + .ios-slider::before { transform: translateX(21px); background: var(--accent); box-shadow: 0 0 10px var(--accent); }
     .mode-row-card {
-      background: var(--bg-card-inner);
-      border: 1px solid rgba(255, 255, 255, 0.08);
-      border-radius: 15px;
-      padding: 13px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: 10px;
-      margin-bottom: 9px;
-      cursor: pointer;
+      background: var(--bg-card-inner); border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 15px; padding: 13px; display: flex; justify-content: space-between;
+      align-items: center; gap: 10px; margin-bottom: 9px; cursor: pointer;
     }
-
-    .mode-row-card.active {
-      border: 1.5px solid var(--accent);
-      box-shadow: 0 0 14px rgba(var(--accent-rgb), 0.18);
-    }
-
-    .mode-info-title {
-      font-size: 13px;
-      font-weight: 900;
-      color: #ffffff;
-      text-transform: uppercase;
-    }
-
-    .mode-info-desc {
-      font-size: 11px;
-      color: var(--text-muted);
-      margin-top: 3px;
-      line-height: 1.3;
-    }
-
+    .mode-row-card.active { border: 1.5px solid var(--accent); box-shadow: 0 0 14px rgba(var(--accent-rgb), 0.18); }
+    .mode-info-title { font-size: 13px; font-weight: 900; color: #ffffff; text-transform: uppercase; }
+    .mode-info-desc { font-size: 11px; color: var(--text-muted); margin-top: 3px; line-height: 1.3; }
     .mode-select-btn {
-      background: rgba(255, 255, 255, 0.06);
-      border: 1px solid rgba(255, 255, 255, 0.18);
-      color: #ffffff;
-      border-radius: 10px;
-      padding: 8px 13px;
-      font-size: 11px;
-      font-weight: 900;
-      cursor: pointer;
-      white-space: nowrap;
+      background: rgba(255, 255, 255, 0.06); border: 1px solid rgba(255, 255, 255, 0.18);
+      color: #ffffff; border-radius: 10px; padding: 8px 13px; font-size: 11px;
+      font-weight: 900; cursor: pointer; white-space: nowrap;
     }
-
     .mode-row-card.active .mode-select-btn {
       background: linear-gradient(90deg, var(--accent), var(--accent-2));
-      color: #031519;
-      border-color: transparent;
+      color: #031519; border-color: transparent;
     }
-
-    .param-box {
-      background: var(--bg-card-inner);
-      border: 1px solid rgba(var(--accent-rgb), 0.18);
-      border-radius: 15px;
-      padding: 12px 13px;
-      margin-bottom: 9px;
-    }
-
-    .param-top {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 8px;
-    }
-
-    .param-name {
-      font-size: 13.5px;
-      font-weight: 800;
-      color: #ffffff;
-    }
-
+    .param-box { background: var(--bg-card-inner); border: 1px solid rgba(var(--accent-rgb), 0.18); border-radius: 15px; padding: 12px 13px; margin-bottom: 9px; }
+    .param-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+    .param-name { font-size: 13.5px; font-weight: 800; color: #ffffff; }
     .param-val-pill {
-      background: rgba(var(--accent-rgb), 0.15);
-      border: 1px solid rgba(var(--accent-rgb), 0.42);
-      color: var(--accent);
-      font-size: 12px;
-      font-weight: 900;
-      padding: 2px 10px;
-      border-radius: 8px;
-      font-family: monospace;
+      background: rgba(var(--accent-rgb), 0.15); border: 1px solid rgba(var(--accent-rgb), 0.42);
+      color: var(--accent); font-size: 12px; font-weight: 900; padding: 2px 10px;
+      border-radius: 8px; font-family: monospace;
     }
-
     input[type="range"] {
-      -webkit-appearance: none;
-      appearance: none;
-      width: 100%;
-      height: 6px;
-      background: #1c2d3e;
-      border-radius: 999px;
-      outline: none;
+      -webkit-appearance: none; appearance: none; width: 100%; height: 6px;
+      background: #1c2d3e; border-radius: 999px; outline: none;
     }
-
     input[type="range"]::-webkit-slider-thumb {
-      -webkit-appearance: none;
-      appearance: none;
-      width: 20px;
-      height: 20px;
-      border-radius: 50%;
-      background: var(--accent);
-      border: 2.5px solid #ffffff;
-      box-shadow: 0 0 10px var(--accent);
-      cursor: pointer;
+      -webkit-appearance: none; appearance: none; width: 20px; height: 20px;
+      border-radius: 50%; background: var(--accent); border: 2.5px solid #ffffff;
+      box-shadow: 0 0 10px var(--accent); cursor: pointer;
     }
-
-    .param-sub {
-      font-size: 11px;
-      color: var(--text-muted);
-      margin-top: 7px;
-      line-height: 1.35;
-    }
-
-    .pills-grid {
-      display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      gap: 7px;
-      margin: 10px 0;
-    }
-
+    .param-sub { font-size: 11px; color: var(--text-muted); margin-top: 7px; line-height: 1.35; }
+    .pills-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 7px; margin: 10px 0; }
     .choice-pill {
-      background: var(--bg-card-inner);
-      border: 1px solid rgba(255, 255, 255, 0.12);
-      color: #e2e8f0;
-      padding: 10px 4px;
-      border-radius: 12px;
-      font-size: 11.5px;
-      font-weight: 800;
-      text-align: center;
-      cursor: pointer;
+      background: var(--bg-card-inner); border: 1px solid rgba(255, 255, 255, 0.12);
+      color: #e2e8f0; padding: 10px 4px; border-radius: 12px; font-size: 11.5px;
+      font-weight: 800; text-align: center; cursor: pointer;
     }
-
     .choice-pill.active {
-      background: rgba(var(--accent-rgb), 0.22);
-      border: 1.5px solid var(--accent);
-      color: var(--accent);
-      box-shadow: 0 0 12px rgba(var(--accent-rgb), 0.25);
+      background: rgba(var(--accent-rgb), 0.22); border: 1.5px solid var(--accent);
+      color: var(--accent); box-shadow: 0 0 12px rgba(var(--accent-rgb), 0.25);
     }
-
-    .profile-row {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 12px 0;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.06);
-      font-size: 13px;
-    }
-
-    .profile-row:last-child {
-      border-bottom: none;
-    }
-
-    .profile-key {
-      color: var(--text-muted);
-      font-weight: 600;
-    }
-
-    .profile-val {
-      color: #ffffff;
-      font-weight: 900;
-      font-family: monospace;
-    }
-
-    /* ================= DISCORD-STYLE VOICE CALL & FRIENDS HUB ================= */
+    .profile-row { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid rgba(255, 255, 255, 0.06); font-size: 13px; }
+    .profile-row:last-child { border-bottom: none; }
+    .profile-key { color: var(--text-muted); font-weight: 600; }
+    .profile-val { color: #ffffff; font-weight: 900; font-family: monospace; }
     .dc-call-stage {
       background: radial-gradient(circle at 50% 0%, rgba(var(--accent-rgb), 0.13) 0%, #060d15 75%);
-      border: 1.5px solid rgba(var(--accent-rgb), 0.35);
-      border-radius: 18px;
-      padding: 14px 12px;
-      margin-bottom: 12px;
+      border: 1.5px solid rgba(var(--accent-rgb), 0.35); border-radius: 18px; padding: 14px 12px; margin-bottom: 12px;
     }
-
-    .dc-stage-top {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 12px;
-    }
-
+    .dc-stage-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
     .dc-room-badge {
-      display: inline-flex;
-      align-items: center;
-      gap: 7px;
-      background: rgba(var(--accent-rgb), 0.12);
-      border: 1px solid rgba(var(--accent-rgb), 0.4);
-      border-radius: 999px;
-      padding: 4px 11px;
-      font-size: 11.5px;
-      font-weight: 900;
-      color: #fff;
-      font-family: monospace;
+      display: inline-flex; align-items: center; gap: 7px;
+      background: rgba(var(--accent-rgb), 0.12); border: 1px solid rgba(var(--accent-rgb), 0.4);
+      border-radius: 999px; padding: 4px 11px; font-size: 11.5px; font-weight: 900; color: #fff; font-family: monospace;
     }
-
     .dc-ping-tag {
-      font-size: 10.5px;
-      font-weight: 800;
-      color: #10b981;
-      background: rgba(16, 185, 129, 0.12);
-      border: 1px solid rgba(16, 185, 129, 0.35);
-      padding: 3px 9px;
-      border-radius: 999px;
+      font-size: 10.5px; font-weight: 800; color: #10b981;
+      background: rgba(16, 185, 129, 0.12); border: 1px solid rgba(16, 185, 129, 0.35);
+      padding: 3px 9px; border-radius: 999px;
     }
-
-    .dc-avatars-grid {
-      display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 9px;
-      margin-bottom: 13px;
-    }
-
+    .dc-avatars-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 9px; margin-bottom: 13px; }
     .dc-user-tile {
-      background: #09131e;
-      border: 1.5px solid rgba(255, 255, 255, 0.08);
-      border-radius: 16px;
-      padding: 13px 10px;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      position: relative;
+      background: #09131e; border: 1.5px solid rgba(255, 255, 255, 0.08);
+      border-radius: 16px; padding: 13px 10px; display: flex; flex-direction: column;
+      align-items: center; justify-content: center; position: relative;
       transition: border-color 0.12s, box-shadow 0.12s, transform 0.12s;
     }
-
-    .dc-user-tile.speaking {
-      border-color: #10b981;
-      box-shadow: 0 0 18px rgba(16, 185, 129, 0.35), inset 0 0 12px rgba(16, 185, 129, 0.12);
-    }
-
+    .dc-user-tile.speaking { border-color: #10b981; box-shadow: 0 0 18px rgba(16, 185, 129, 0.35), inset 0 0 12px rgba(16, 185, 129, 0.12); }
     .dc-avatar-circle {
-      width: 48px;
-      height: 48px;
-      border-radius: 50%;
+      width: 48px; height: 48px; border-radius: 50%;
       background: linear-gradient(135deg, var(--accent), var(--accent-2));
-      color: #031519;
-      font-size: 19px;
-      font-weight: 900;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      margin-bottom: 7px;
-      border: 2.5px solid transparent;
-      transition: box-shadow 0.12s, border-color 0.12s;
-      position: relative;
+      color: #031519; font-size: 19px; font-weight: 900;
+      display: flex; align-items: center; justify-content: center; margin-bottom: 7px;
+      border: 2.5px solid transparent; transition: box-shadow 0.12s, border-color 0.12s; position: relative;
     }
-
-    .dc-user-tile.speaking .dc-avatar-circle {
-      border-color: #ffffff;
-      box-shadow: 0 0 0 3px #10b981, 0 0 16px #10b981;
-    }
-
-    .dc-user-name {
-      font-size: 13px;
-      font-weight: 900;
-      color: #ffffff;
-      max-width: 120px;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
-    }
-
-    .dc-user-code {
-      font-size: 10px;
-      font-family: monospace;
-      color: var(--accent);
-      margin-top: 2px;
-      font-weight: 800;
-    }
-
-    .dc-user-status-pill {
-      margin-top: 6px;
-      font-size: 10px;
-      font-weight: 900;
-      padding: 2px 8px;
-      border-radius: 999px;
-      background: rgba(16, 185, 129, 0.15);
-      color: #34d399;
-    }
-
-    .dc-user-status-pill.muted {
-      background: rgba(239, 68, 68, 0.18);
-      color: #fca5a5;
-    }
-
-    /* ДОК КНОПОК ЗВОНКА КАК В DISCORD */
-    .dc-controls-bar {
-      display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      gap: 8px;
-      background: #050b12;
-      border: 1px solid rgba(var(--accent-rgb), 0.25);
-      border-radius: 16px;
-      padding: 9px;
-    }
-
+    .dc-user-tile.speaking .dc-avatar-circle { border-color: #ffffff; box-shadow: 0 0 0 3px #10b981, 0 0 16px #10b981; }
+    .dc-user-name { font-size: 13px; font-weight: 900; color: #ffffff; max-width: 120px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .dc-user-code { font-size: 10px; font-family: monospace; color: var(--accent); margin-top: 2px; font-weight: 800; }
+    .dc-user-status-pill { margin-top: 6px; font-size: 10px; font-weight: 900; padding: 2px 8px; border-radius: 999px; background: rgba(16, 185, 129, 0.15); color: #34d399; }
+    .dc-user-status-pill.muted { background: rgba(239, 68, 68, 0.18); color: #fca5a5; }
+    .dc-controls-bar { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; background: #050b12; border: 1px solid rgba(var(--accent-rgb), 0.25); border-radius: 16px; padding: 9px; }
     .dc-ctrl-btn {
-      border: 1px solid rgba(255, 255, 255, 0.12);
-      background: #0e1b2a;
-      color: #ffffff;
-      border-radius: 13px;
-      padding: 10px 4px;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      gap: 4px;
-      font-size: 10px;
-      font-weight: 800;
-      cursor: pointer;
-      transition: 0.15s;
+      border: 1px solid rgba(255, 255, 255, 0.12); background: #0e1b2a; color: #ffffff;
+      border-radius: 13px; padding: 10px 4px; display: flex; flex-direction: column;
+      align-items: center; justify-content: center; gap: 4px; font-size: 10px; font-weight: 800; cursor: pointer; transition: 0.15s;
     }
-
-    .dc-ctrl-btn span.ico {
-      font-size: 17px;
-      line-height: 1;
-    }
-
-    .dc-ctrl-btn.active-on {
-      background: rgba(var(--accent-rgb), 0.2);
-      border-color: var(--accent);
-      color: var(--accent);
-    }
-
-    .dc-ctrl-btn.muted-off {
-      background: rgba(239, 68, 68, 0.22);
-      border-color: rgba(239, 68, 68, 0.55);
-      color: #fca5a5;
-    }
-
-    .dc-ctrl-btn.hangup {
-      background: #dc2626;
-      border-color: #ef4444;
-      color: #ffffff;
-      box-shadow: 0 0 14px rgba(220, 38, 38, 0.45);
-    }
-
-    .vu-bar-wrap {
-      width: 100%;
-      height: 7px;
-      background: #050b11;
-      border-radius: 999px;
-      overflow: hidden;
-      border: 1px solid rgba(var(--accent-rgb), 0.25);
-      margin-top: 8px;
-    }
-
-    .vu-bar-fill {
-      height: 100%;
-      width: 0%;
-      background: linear-gradient(90deg, #10b981, var(--accent));
-      transition: width 0.05s linear;
-    }
-
-    .friend-item {
-      background: var(--bg-card-inner);
-      border: 1px solid rgba(var(--accent-rgb), 0.22);
-      border-radius: 14px;
-      padding: 11px 12px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: 8px;
-      margin-bottom: 8px;
-    }
-
-    .friend-item:last-child {
-      margin-bottom: 0;
-    }
-
-    .friend-meta {
-      display: flex;
-      align-items: center;
-      gap: 9px;
-    }
-
-    .online-dot {
-      width: 9px;
-      height: 9px;
-      border-radius: 50%;
-      background: #64748b;
-      flex-shrink: 0;
-    }
-
-    .online-dot.on {
-      background: #10b981;
-      box-shadow: 0 0 8px #10b981;
-    }
-
-    .friend-nick {
-      font-size: 13.5px;
-      font-weight: 900;
-      color: #ffffff;
-    }
-
-    .friend-code-sub {
-      font-size: 10.5px;
-      color: var(--text-muted);
-      font-family: monospace;
-      margin-top: 2px;
-    }
-
-    .friend-actions {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-    }
-
-    .mini-act-btn {
-      border: 1px solid rgba(var(--accent-rgb), 0.4);
-      background: rgba(var(--accent-rgb), 0.14);
-      color: var(--accent);
-      border-radius: 9px;
-      padding: 7px 10px;
-      font-size: 10.5px;
-      font-weight: 900;
-      cursor: pointer;
-    }
-
-    .mini-act-btn.del {
-      border-color: rgba(239, 68, 68, 0.4);
-      background: rgba(239, 68, 68, 0.14);
-      color: #fca5a5;
-    }
-
+    .dc-ctrl-btn span.ico { font-size: 17px; line-height: 1; }
+    .dc-ctrl-btn.active-on { background: rgba(var(--accent-rgb), 0.2); border-color: var(--accent); color: var(--accent); }
+    .dc-ctrl-btn.muted-off { background: rgba(239, 68, 68, 0.22); border-color: rgba(239, 68, 68, 0.55); color: #fca5a5; }
+    .dc-ctrl-btn.hangup { background: #dc2626; border-color: #ef4444; color: #ffffff; box-shadow: 0 0 14px rgba(220, 38, 38, 0.45); }
+    .vu-bar-wrap { width: 100%; height: 7px; background: #050b11; border-radius: 999px; overflow: hidden; border: 1px solid rgba(var(--accent-rgb), 0.25); margin-top: 8px; }
+    .vu-bar-fill { height: 100%; width: 0%; background: linear-gradient(90deg, #10b981, var(--accent)); transition: width 0.05s linear; }
+    .friend-item { background: var(--bg-card-inner); border: 1px solid rgba(var(--accent-rgb), 0.22); border-radius: 14px; padding: 11px 12px; display: flex; justify-content: space-between; align-items: center; gap: 8px; margin-bottom: 8px; }
+    .friend-item:last-child { margin-bottom: 0; }
+    .friend-meta { display: flex; align-items: center; gap: 9px; }
+    .online-dot { width: 9px; height: 9px; border-radius: 50%; background: #64748b; flex-shrink: 0; }
+    .online-dot.on { background: #10b981; box-shadow: 0 0 8px #10b981; }
+    .friend-nick { font-size: 13.5px; font-weight: 900; color: #ffffff; }
+    .friend-code-sub { font-size: 10.5px; color: var(--text-muted); font-family: monospace; margin-top: 2px; }
+    .friend-actions { display: flex; align-items: center; gap: 6px; }
+    .mini-act-btn { border: 1px solid rgba(var(--accent-rgb), 0.4); background: rgba(var(--accent-rgb), 0.14); color: var(--accent); border-radius: 9px; padding: 7px 10px; font-size: 10.5px; font-weight: 900; cursor: pointer; }
+    .mini-act-btn.del { border-color: rgba(239, 68, 68, 0.4); background: rgba(239, 68, 68, 0.14); color: #fca5a5; }
     #voiceInviteBanner {
-      position: fixed;
-      top: calc(env(safe-area-inset-top, 24px) + 54px);
-      left: 14px;
-      right: 14px;
-      max-width: 452px;
-      margin: 0 auto;
-      z-index: 1500000;
-      background: #0b1826;
-      border: 2px solid var(--accent);
-      border-radius: 18px;
-      padding: 13px 14px;
-      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.85);
-      display: none;
+      position: fixed; top: calc(env(safe-area-inset-top, 24px) + 54px); left: 14px; right: 14px;
+      max-width: 452px; margin: 0 auto; z-index: 1500000;
+      background: #0b1826; border: 2px solid var(--accent); border-radius: 18px;
+      padding: 13px 14px; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.85); display: none;
     }
-
-    .bottom-dock {
-      position: fixed;
-      bottom: 0;
-      left: 0;
-      right: 0;
-      z-index: 900;
-      background: #060d14;
-      border-top: 1.5px solid rgba(var(--accent-rgb), 0.35);
-      padding: 10px 14px calc(env(safe-area-inset-bottom, 8px) + 8px);
-    }
-
-    .bottom-dock-inner {
-      max-width: 480px;
-      margin: 0 auto;
-      display: grid;
-      grid-template-columns: 1.25fr 1fr;
-      gap: 10px;
-    }
-
-    .dock-save-btn {
-      border: none;
-      border-radius: 14px;
-      padding: 13px 10px;
-      background: linear-gradient(90deg, var(--accent), var(--accent-2));
-      box-shadow: 0 0 16px rgba(var(--accent-rgb), 0.3);
-      color: #031519;
-      font-size: 12px;
-      font-weight: 900;
-      text-transform: uppercase;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 6px;
-      cursor: pointer;
-    }
-
-    .dock-share-btn {
-      border: 1.5px solid rgba(var(--accent-rgb), 0.38);
-      border-radius: 14px;
-      padding: 13px 10px;
-      background: #0d1926;
-      color: #e2e8f0;
-      font-size: 11.5px;
-      font-weight: 800;
-      text-transform: uppercase;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 6px;
-      cursor: pointer;
-    }
-
-    .modal-backdrop {
-      position: fixed;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      width: 100%;
-      height: 100%;
-      z-index: 5000;
-      background: rgba(3, 8, 14, 0.9);
-      display: none;
-      align-items: center;
-      justify-content: center;
-      padding: 18px;
-    }
-
-    .modal-card {
-      width: 100%;
-      max-width: 390px;
-      background: #0b1724;
-      border: 1.5px solid var(--accent);
-      border-radius: 22px;
-      padding: 22px 18px;
-      text-align: center;
-      box-shadow: 0 0 36px rgba(var(--accent-rgb), 0.28);
-    }
-
+    .bottom-dock { position: fixed; bottom: 0; left: 0; right: 0; z-index: 900; background: #060d14; border-top: 1.5px solid rgba(var(--accent-rgb), 0.35); padding: 10px 14px calc(env(safe-area-inset-bottom, 8px) + 8px); }
+    .bottom-dock-inner { max-width: 480px; margin: 0 auto; display: grid; grid-template-columns: 1.25fr 1fr; gap: 10px; }
+    .dock-save-btn { border: none; border-radius: 14px; padding: 13px 10px; background: linear-gradient(90deg, var(--accent), var(--accent-2)); box-shadow: 0 0 16px rgba(var(--accent-rgb), 0.3); color: #031519; font-size: 12px; font-weight: 900; text-transform: uppercase; display: flex; align-items: center; justify-content: center; gap: 6px; cursor: pointer; }
+    .dock-share-btn { border: 1.5px solid rgba(var(--accent-rgb), 0.38); border-radius: 14px; padding: 13px 10px; background: #0d1926; color: #e2e8f0; font-size: 11.5px; font-weight: 800; text-transform: uppercase; display: flex; align-items: center; justify-content: center; gap: 6px; cursor: pointer; }
+    .modal-backdrop { position: fixed; top: 0; left: 0; right: 0; bottom: 0; width: 100%; height: 100%; z-index: 5000; background: rgba(3, 8, 14, 0.9); display: none; align-items: center; justify-content: center; padding: 18px; }
+    .modal-card { width: 100%; max-width: 390px; background: #0b1724; border: 1.5px solid var(--accent); border-radius: 22px; padding: 22px 18px; text-align: center; box-shadow: 0 0 36px rgba(var(--accent-rgb), 0.28); }
     #topToast {
-      position: fixed;
-      top: calc(env(safe-area-inset-top, 24px) + 14px);
-      left: 50%;
-      transform: translateX(-50%);
-      z-index: 2000000;
-      background: #0d1c2c;
-      border: 1.5px solid var(--accent);
-      color: #ffffff;
-      padding: 10px 18px;
-      border-radius: 999px;
-      font-size: 12.5px;
-      font-weight: 800;
-      box-shadow: 0 6px 22px rgba(0, 0, 0, 0.7);
-      display: none;
-      white-space: nowrap;
+      position: fixed; top: calc(env(safe-area-inset-top, 24px) + 14px); left: 50%;
+      transform: translateX(-50%); z-index: 2000000;
+      background: #0d1c2c; border: 1.5px solid var(--accent); color: #ffffff;
+      padding: 10px 18px; border-radius: 999px; font-size: 12.5px; font-weight: 800;
+      box-shadow: 0 6px 22px rgba(0, 0, 0, 0.7); display: none; white-space: nowrap;
     }
   </style>
 </head>
 <body>
-
-  <!-- ВСПЛЫВАЮЩЕЕ УВЕДОМЛЕНИЕ -->
   <div id="topToast">⚡ Экстремальный Телепорт 850Hz активирован!</div>
-
-  <!-- ВСПЛЫВАЮЩЕЕ ПРИГЛАШЕНИЕ В ГОЛОСОВОЙ ЧАТ ОТ ДРУГА -->
   <div id="voiceInviteBanner">
-    <div style="font-size:13px; font-weight:900; color:#fff; margin-bottom:4px;">
-      📞 Звонок в Войс от <span id="invFromNick" style="color:var(--accent)">Друга</span>
-    </div>
-    <div style="font-size:11px; color:var(--text-muted); margin-bottom:10px;">
-      Голосовая комната: <b id="invRoomCode" style="color:#fff; font-family:monospace;">SQUAD-0000</b>
-    </div>
+    <div style="font-size:13px; font-weight:900; color:#fff; margin-bottom:4px;">📞 Звонок в Войс от <span id="invFromNick" style="color:var(--accent)">Друга</span></div>
+    <div style="font-size:11px; color:var(--text-muted); margin-bottom:10px;">Голосовая комната: <b id="invRoomCode" style="color:#fff; font-family:monospace;">SQUAD-0000</b></div>
     <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px;">
       <button class="btn-main" style="padding:9px;" onclick="acceptVoiceInviteBanner()">🎙️ ПРИНЯТЬ</button>
       <button class="btn-dark" style="padding:9px;" onclick="document.getElementById('voiceInviteBanner').style.display='none'">ОТКЛОНИТЬ</button>
     </div>
   </div>
-
-  <!-- ================= 1. ЭКРАН АВТОРИЗАЦИИ ПО КЛЮЧУ ================= -->
   <div id="authScreen">
     <div class="auth-box">
       <div class="auth-pill-tag">QUANTUM ENGINE V410 • LICENSE GUARD</div>
-      <div style="font-size:24px; font-weight:900; color:#fff; margin-bottom:5px;">
-        SO2<span style="color:var(--accent)">Teleport</span> PRO
-      </div>
-      <div style="font-size:12px; color:var(--text-muted); margin-bottom:16px; line-height:1.45;">
-        Введите ваш игровой логин и лицензионный ключ из Telegram-бота для входа в приложение
-      </div>
-
+      <div style="font-size:24px; font-weight:900; color:#fff; margin-bottom:5px;">SO2<span style="color:var(--accent)">Teleport</span> PRO</div>
+      <div style="font-size:12px; color:var(--text-muted); margin-bottom:16px; line-height:1.45;">Введите ваш игровой логин и лицензионный ключ из Telegram-бота для входа в приложение</div>
       <div id="authErrorBox" style="display:none; background:var(--danger-bg); border:1px solid var(--danger-border); color:var(--danger-text); padding:10px 12px; border-radius:12px; font-size:12px; font-weight:800; margin-bottom:12px;"></div>
-
       <input type="text" id="loginNickInput" class="cyber-field" placeholder="Ваш логин / ник (напр. dare)" autocomplete="off" />
       <input type="text" id="loginKeyInput" class="cyber-field" placeholder="Ваш ключ (TP-...)" style="text-transform:uppercase; font-family:monospace;" autocomplete="off" />
-
-      <button class="btn-main" id="loginBtnAction" onclick="submitKeyLogin()" style="margin-top:4px; margin-bottom:10px;">
-        ⚡ АКТИВИРОВАТЬ КЛЮЧ И ВОЙТИ
-      </button>
-
-      <button class="btn-dark" onclick="openTgBot()">
-        🤖 КУПИТЬ / ПОЛУЧИТЬ КЛЮЧ В TELEGRAM
-      </button>
-
-      <div style="margin-top:14px; font-size:11px; color:var(--text-muted);">
-        HWID устройства: <span id="authHwidLabel" style="color:var(--accent); font-family:monospace; font-weight:800;">определение...</span>
-      </div>
+      <button class="btn-main" id="loginBtnAction" onclick="submitKeyLogin()" style="margin-top:4px; margin-bottom:10px;">⚡ АКТИВИРОВАТЬ КЛЮЧ И ВОЙТИ</button>
+      <button class="btn-dark" onclick="openTgBot()">🤖 КУПИТЬ / ПОЛУЧИТЬ КЛЮЧ В TELEGRAM</button>
+      <div style="margin-top:14px; font-size:11px; color:var(--text-muted);">HWID устройства: <span id="authHwidLabel" style="color:var(--accent); font-family:monospace; font-weight:800;">определение...</span></div>
     </div>
   </div>
-
-  <!-- МОДАЛЬНОЕ ОКНО «УМНАЯ КАЛИБРОВКА ТЕЛЕФОНА» -->
   <div id="calibModal" class="modal-backdrop">
     <div class="modal-card">
       <div style="font-size:28px; margin-bottom:8px;">⚡</div>
       <div style="font-size:18px; font-weight:900; color:#fff; margin-bottom:8px;">Максимальный разгон сенсы</div>
-      <div style="font-size:12.5px; color:var(--text-muted); line-height:1.45; margin-bottom:18px;">
-        Просканировать телефон и включить <b>Extreme Linear Teleport (850 пакетов/сек)</b>? Прицел будет перемещаться от старта до цели мгновенно по идеально ровной линии горизонта без шатаний.
-      </div>
-      <button class="btn-main" onclick="runAutoCalibrationModal()" style="margin-bottom:10px;">
-        🔥 ВЫЖАТЬ МАКСИМУМ (850HZ + РОВНАЯ ЛИНИЯ)
-      </button>
-      <button class="btn-dark" onclick="closeCalibModal()">
-        НАСТРОИТЬ ВРУЧНУЮ
-      </button>
+      <div style="font-size:12.5px; color:var(--text-muted); line-height:1.45; margin-bottom:18px;">Просканировать телефон и включить <b>Extreme Linear Teleport (850 пакетов/сек)</b>? Прицел будет перемещаться от старта до цели мгновенно по идеально ровной линии горизонта без шатаний.</div>
+      <button class="btn-main" onclick="runAutoCalibrationModal()" style="margin-bottom:10px;">🔥 ВЫЖАТЬ МАКСИМУМ (850HZ + РОВНАЯ ЛИНИЯ)</button>
+      <button class="btn-dark" onclick="closeCalibModal()">НАСТРОИТЬ ВРУЧНУЮ</button>
     </div>
   </div>
-
-  <!-- ================= 2. ГЛАВНЫЙ ИНТЕРФЕЙС ================= -->
   <div id="mainAppRoot" class="app-container auth-locked">
-
     <header class="top-header">
       <div>
         <div class="brand-title">SO2<span>Teleport</span></div>
         <div class="brand-sub">QUANTUM ENGINE V410 • 850EV/S LINEAR</div>
       </div>
       <div class="shizuku-pill" onclick="checkShizukuState()">
-        <div class="shizuku-row">
-          <span id="shizukuDot" class="status-dot"></span>
-          <span id="shizukuText">Shizuku: АКТИВЕН</span>
-        </div>
+        <div class="shizuku-row"><span id="shizukuDot" class="status-dot"></span><span id="shizukuText">Shizuku: АКТИВЕН</span></div>
         <div class="shizuku-sub">360Гц Тач • 850 ev/s</div>
       </div>
     </header>
-
     <div class="top-chips-row">
       <div class="player-chip" onclick="openPage('page-profile')">
         <span class="player-chip-dot"></span>
         <span>Игрок: <b id="chipPlayerName">dare</b> <span id="chipFriendCode" style="color:var(--accent); font-family:monospace; font-size:11px;"></span></span>
       </div>
-      <div id="topVoiceLiveChip" class="voice-live-chip" onclick="openPage('page-friends')">
-        <span>🟢 В ГОЛОСОВОМ КАНАЛЕ</span>
-      </div>
+      <div id="topVoiceLiveChip" class="voice-live-chip" onclick="openPage('page-friends')"><span>🟢 В ГОЛОСОВОМ КАНАЛЕ</span></div>
     </div>
-
-    <!-- ================= ЭКРАН 0: ГЛАВНОЕ МЕНЮ ================= -->
     <div id="page-home" class="page-view active">
-
       <div class="theme-bar">
         <div class="theme-label">🎨 ТЕМА МЕНЮ:</div>
         <div class="theme-circles">
@@ -1166,10 +375,7 @@
           <div class="theme-dot" data-theme="5" style="background:#f59e0b;" onclick="setTheme(5, '#f59e0b', '#eab308', '245, 158, 11', this)"></div>
         </div>
       </div>
-
       <div class="bento-grid">
-
-        <!-- 1. СЕНСА -->
         <div class="bento-tile" onclick="openSensTile()">
           <div class="tile-top">
             <div class="tile-icon-box">⚡</div>
@@ -1181,340 +387,163 @@
               </label>
             </div>
           </div>
-          <div>
-            <div class="tile-title">Сенса</div>
-            <div class="tile-desc">Мгновенный флик 1мм по ровной линии без шатаний</div>
-          </div>
+          <div><div class="tile-title">Сенса</div><div class="tile-desc">Мгновенный флик 1мм по ровной линии без шатаний</div></div>
         </div>
-
-        <!-- 2. ГОТОВЫЕ КОНФИГИ -->
         <div class="bento-tile" onclick="openPage('page-configs')">
-          <div class="tile-top">
-            <div class="tile-icon-box">🔥</div>
-            <div class="tile-badge-hot">🔥 6 PRO СБОРОК</div>
-          </div>
-          <div>
-            <div class="tile-title">Готовые конфиги</div>
-            <div class="tile-desc">Боевые связки «Телепорт + Растяг + Прицел» в 1 клик</div>
-          </div>
+          <div class="tile-top"><div class="tile-icon-box">🔥</div><div class="tile-badge-hot">🔥 6 PRO СБОРОК</div></div>
+          <div><div class="tile-title">Готовые конфиги</div><div class="tile-desc">Боевые связки «Телепорт + Растяг + Прицел» в 1 клик</div></div>
         </div>
-
-        <!-- 3. РАСТЯГ -->
         <div class="bento-tile" onclick="openPage('page-stretch')">
-          <div class="tile-top">
-            <div class="tile-icon-box">📐</div>
-            <div class="tile-arrow">›</div>
-          </div>
-          <div>
-            <div class="tile-title">Растяг (7 видов)</div>
-            <div class="tile-desc">Форматы 4:3, 5:4, 1:1, 21:10 и широкие хитбоксы с кнопкой «T»</div>
-          </div>
+          <div class="tile-top"><div class="tile-icon-box">📐</div><div class="tile-arrow">›</div></div>
+          <div><div class="tile-title">Растяг (7 видов)</div><div class="tile-desc">Форматы 4:3, 5:4, 1:1, 21:10 и широкие хитбоксы с кнопкой «T»</div></div>
         </div>
-
-        <!-- 4. КАСТОМНЫЙ ПРИЦЕЛ -->
         <div class="bento-tile" onclick="openPage('page-crosshair')">
-          <div class="tile-top">
-            <div class="tile-icon-box">🎯</div>
-            <div class="tile-arrow">›</div>
-          </div>
-          <div>
-            <div class="tile-title">Кастомный прицел</div>
-            <div class="tile-desc">10 форм (Шеврон, Уголки, Бокс, Крест) + сдвиг по осям X/Y</div>
-          </div>
+          <div class="tile-top"><div class="tile-icon-box">🎯</div><div class="tile-arrow">›</div></div>
+          <div><div class="tile-title">Кастомный прицел</div><div class="tile-desc">10 форм (Шеврон, Уголки, Бокс, Крест) + сдвиг по осям X/Y</div></div>
         </div>
-
-        <!-- 5. ДРУЗЬЯ И ВОЙС (DISCORD STYLE) -->
         <div class="bento-tile wide-tile" onclick="openFriendsTile()">
           <div class="tile-top" style="margin-bottom:6px;">
             <div class="tile-icon-box">🎧</div>
             <div id="friendsTileBadge" class="tile-badge-voice">DISCORD VOICE • ЧИСТЫЙ ЗВУК</div>
           </div>
-          <div>
-            <div class="tile-title">Друзья и Голосовой Чат</div>
-            <div class="tile-desc">Поиск тиммейтов по ID (SO2-XXXX), звонки без фонового шума и эха прямо в катке</div>
-          </div>
+          <div><div class="tile-title">Друзья и Голосовой Чат</div><div class="tile-desc">Поиск тиммейтов по ID (SO2-XXXX), звонки без фонового шума и эха прямо в катке</div></div>
         </div>
-
-        <!-- 6. НАСТРОЙКИ -->
         <div class="bento-tile" onclick="openPage('page-settings')">
-          <div class="tile-top">
-            <div class="tile-icon-box">🚀</div>
-            <div class="tile-arrow">›</div>
-          </div>
-          <div>
-            <div class="tile-title">Настройки</div>
-            <div class="tile-desc">Vulkan GPU Turbo, стабилизатор пинга, 360 Гц и RAM Boost</div>
-          </div>
+          <div class="tile-top"><div class="tile-icon-box">🚀</div><div class="tile-arrow">›</div></div>
+          <div><div class="tile-title">Настройки</div><div class="tile-desc">Vulkan GPU Turbo, стабилизатор пинга, 360 Гц и RAM Boost</div></div>
         </div>
-
-        <!-- 7. ПРОФИЛЬ -->
         <div class="bento-tile" onclick="openPage('page-profile')">
-          <div class="tile-top">
-            <div class="tile-icon-box">👤</div>
-            <div class="tile-arrow">›</div>
-          </div>
-          <div>
-            <div class="tile-title">Профиль</div>
-            <div class="tile-desc">Ваш логин, остаток времени ключа и данные телефона</div>
-          </div>
+          <div class="tile-top"><div class="tile-icon-box">👤</div><div class="tile-arrow">›</div></div>
+          <div><div class="tile-title">Профиль</div><div class="tile-desc">Ваш логин, остаток времени ключа и данные телефона</div></div>
         </div>
-
       </div>
     </div>
-
-    <!-- ================= ЭКРАН 1: СЕНСА И ЛИНЕЙНЫЙ ТЕЛЕПОРТ ================= -->
     <div id="page-sens" class="page-view">
-      <div class="back-bar" onclick="openPage('page-home')">
-        <span class="arrow">←</span>
-        <span>Сенса и Линейный Телепорт</span>
-      </div>
-
+      <div class="back-bar" onclick="openPage('page-home')"><span class="arrow">←</span><span>Сенса и Линейный Телепорт</span></div>
       <div class="section-card">
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:13px;">
           <div>
             <div id="tpStatusHeading" style="font-size:15px; font-weight:900; color:#fff;">ТЕЛЕПОРТ: ВЫКЛЮЧЕН</div>
-            <div style="font-size:11.5px; color:var(--text-muted); margin-top:2px;">Отключает инерцию Android (`scroll_friction=0`, 850 пакетов/сек)</div>
+            <div style="font-size:11.5px; color:var(--text-muted); margin-top:2px;">Отключает инерцию Android (scroll_friction=0, 850 пакетов/сек)</div>
           </div>
-          <label class="ios-switch">
-            <input type="checkbox" id="innerTpToggle" onchange="toggleTeleportMaster(this.checked)" />
-            <span class="ios-slider"></span>
-          </label>
+          <label class="ios-switch"><input type="checkbox" id="innerTpToggle" onchange="toggleTeleportMaster(this.checked)" /><span class="ios-slider"></span></label>
         </div>
-        <button class="btn-main" id="mainTpActionBtn" onclick="toggleTeleportMaster(!document.getElementById('innerTpToggle').checked)">
-          ⚡ ВКЛЮЧИТЬ ТЕЛЕПОРТ (850 EV/SEC)
-        </button>
+        <button class="btn-main" id="mainTpActionBtn" onclick="toggleTeleportMaster(!document.getElementById('innerTpToggle').checked)">⚡ ВКЛЮЧИТЬ ТЕЛЕПОРТ (850 EV/SEC)</button>
       </div>
-
       <div class="section-card">
-        <div style="font-size:13.5px; font-weight:900; color:var(--accent); margin-bottom:6px;">
-          • Максимальный разгон под <span id="calibModelName">SM-S938B</span>
-        </div>
-        <div style="font-size:12px; color:#cbd5e1; line-height:1.45; margin-bottom:12px;">
-          Одним нажатием выставляет 100% скорость рывка, убирает вертикальное шатание прицела и включает мгновенный отклик на 1 мм сдвига пальца.
-        </div>
-        <button class="btn-main" onclick="runSmartScanAndApply()">
-          🔥 ВЫЖАТЬ МАКСИМУМ ИЗ СЕНСОРА (БЕЗ ШАТАНИЯ)
-        </button>
+        <div style="font-size:13.5px; font-weight:900; color:var(--accent); margin-bottom:6px;">• Максимальный разгон под <span id="calibModelName">SM-S938B</span></div>
+        <div style="font-size:12px; color:#cbd5e1; line-height:1.45; margin-bottom:12px;">Одним нажатием выставляет 100% скорость рывка, убирает вертикальное шатание прицела и включает мгновенный отклик на 1 мм сдвига пальца.</div>
+        <button class="btn-main" onclick="runSmartScanAndApply()">🔥 ВЫЖАТЬ МАКСИМУМ ИЗ СЕНСОРА (БЕЗ ШАТАНИЯ)</button>
       </div>
-
       <div class="section-card">
-        <div class="section-header-tag">
-          <span>БЫСТРЫЕ РЕЖИМЫ ТЕЛЕПОРТА</span>
-          <span>В 1 КЛИК</span>
-        </div>
-
+        <div class="section-header-tag"><span>БЫСТРЫЕ РЕЖИМЫ ТЕЛЕПОРТА</span><span>В 1 КЛИК</span></div>
         <div class="mode-row-card active" id="qmode-1" onclick="selectQuickSensMode(1, 10.0, 10.0, 8.2, 100, 95, 100)">
-          <div>
-            <div class="mode-info-title">⚡ 1. ПРЯМОЙ РЕЛЬСОВЫЙ ТЕЛЕПОРТ (В ГОЛОВУ)</div>
-            <div class="mode-info-desc">Прицел летит вбок строго по ровной линии головы без шатания вверх-вниз</div>
-          </div>
+          <div><div class="mode-info-title">⚡ 1. ПРЯМОЙ РЕЛЬСОВЫЙ ТЕЛЕПОРТ (В ГОЛОВУ)</div><div class="mode-info-desc">Прицел летит вбок строго по ровной линии головы без шатания вверх-вниз</div></div>
           <button class="mode-select-btn" id="qbtn-1">АКТИВЕН</button>
         </div>
-
         <div class="mode-row-card" id="qmode-2" onclick="selectQuickSensMode(2, 10.0, 10.0, 9.5, 90, 98, 100)">
-          <div>
-            <div class="mode-info-title">💀 2. РАЗВОРОТ НА 180° ЗА 1 МС (AWM / DEAGLE)</div>
-            <div class="mode-info-desc">Мгновенный переброс камеры от начальной до конечной точки с жёстким стопом</div>
-          </div>
+          <div><div class="mode-info-title">💀 2. РАЗВОРОТ НА 180° ЗА 1 МС (AWM / DEAGLE)</div><div class="mode-info-desc">Мгновенный переброс камеры от начальной до конечной точки с жёстким стопом</div></div>
           <button class="mode-select-btn" id="qbtn-2">ВЫБРАТЬ</button>
         </div>
-
         <div class="mode-row-card" id="qmode-3" onclick="selectQuickSensMode(3, 9.5, 9.6, 7.5, 100, 92, 95)" style="margin-bottom:0;">
-          <div>
-            <div class="mode-info-title">🎯 3. ТЕЛЕПОРТ + ЗАЖИМ В ТОЧКУ (AKR / M4A1)</div>
-            <div class="mode-info-desc">Резкая наводка по горизонтали + удержание спрея в одной точке без тряски</div>
-          </div>
+          <div><div class="mode-info-title">🎯 3. ТЕЛЕПОРТ + ЗАЖИМ В ТОЧКУ (AKR / M4A1)</div><div class="mode-info-desc">Резкая наводка по горизонтали + удержание спрея в одной точке без тряски</div></div>
           <button class="mode-select-btn" id="qbtn-3">ВЫБРАТЬ</button>
         </div>
       </div>
-
       <div class="section-card">
-        <div class="section-header-tag">
-          <span>ТОЧНАЯ НАСТРОЙКА РЫВКА И ЛИНИИ</span>
-          <span>6 ОСЕЙ</span>
-        </div>
-
+        <div class="section-header-tag"><span>ТОЧНАЯ НАСТРОЙКА РЫВКА И ЛИНИИ</span><span>6 ОСЕЙ</span></div>
         <div class="param-box" style="display:flex; justify-content:space-between; align-items:center;">
           <div style="padding-right:10px;">
             <div class="param-name">⚡ Мгновенный отклик 1 мм (Zero-Delay)</div>
-            <div class="param-sub" style="margin-top:3px;">Убирает мёртвую зону Android (`touch.slop=0`) — прицел срывается с места за 1 мс</div>
+            <div class="param-sub" style="margin-top:3px;">Убирает мёртвую зону Android (touch.slop=0) — прицел срывается с места за 1 мс</div>
           </div>
-          <label class="ios-switch">
-            <input type="checkbox" id="zeroDelaySnapToggle" checked onchange="onZeroDelayToggle(this.checked)" />
-            <span class="ios-slider"></span>
-          </label>
+          <label class="ios-switch"><input type="checkbox" id="zeroDelaySnapToggle" checked onchange="onZeroDelayToggle(this.checked)" /><span class="ios-slider"></span></label>
         </div>
-
         <div class="param-box">
           <div class="param-top"><span class="param-name">1. Скорость телепорта (Резкость)</span><span id="v-sharp" class="param-val-pill">10.0</span></div>
           <input type="range" id="p-sharp" min="1" max="10" step="0.1" value="10.0" oninput="syncAllSliders()" />
           <div class="param-sub">Отвечает за то, насколько моментально прицел перелетает от старта к цели</div>
         </div>
-
         <div class="param-box">
           <div class="param-top"><span class="param-name">2. Горизонтальный флик (Влево-вправо)</span><span id="v-sx" class="param-val-pill">10.0</span></div>
           <input type="range" id="p-sx" min="1" max="10" step="0.1" value="10.0" oninput="syncAllSliders()" />
           <div class="param-sub">Скорость бокового разворота камеры на 90° и 180°</div>
         </div>
-
         <div class="param-box">
           <div class="param-top"><span class="param-name">3. Вертикальный контроль (Вверх-вниз)</span><span id="v-sy" class="param-val-pill">8.2</span></div>
           <input type="range" id="p-sy" min="1" max="10" step="0.1" value="8.2" oninput="syncAllSliders()" />
           <div class="param-sub">Ставь 7.5–8.5, чтобы при резком флике вбок прицел не взлетал выше головы</div>
         </div>
-
         <div class="param-box">
           <div class="param-top"><span class="param-name">4. Ровная линия горизонта (Без шатания)</span><span id="v-straight" class="param-val-pill">100%</span></div>
           <input type="range" id="p-straight" min="20" max="100" step="5" value="100" oninput="syncAllSliders()" />
           <div class="param-sub">Держит траекторию флика строго по прямой линии, убирая виляние пальца</div>
         </div>
-
         <div class="param-box">
           <div class="param-top"><span class="param-name">5. Стоп-фиксация на модельке (Магнит)</span><span id="v-stickForce" class="param-val-pill">95%</span></div>
           <input type="range" id="p-stickForce" min="10" max="100" step="5" value="95" oninput="syncAllSliders()" />
           <div class="param-sub">Гасит инерцию в конце свайпа, чтобы прицел останавливался ровно на враге</div>
         </div>
-
         <div class="param-box" style="margin-bottom:12px;">
           <div class="param-top"><span class="param-name">6. Мощность потока тача (Квантование)</span><span id="v-chunks" class="param-val-pill">100%</span></div>
           <input type="range" id="p-chunks" min="20" max="100" step="5" value="100" oninput="syncAllSliders()" />
           <div class="param-sub">На 100% разгоняет обработку касаний до 850–900 пакетов в секунду</div>
         </div>
-
-        <button class="btn-dark" onclick="testOneMmFlickResponse()">
-          🛠️ СБРОСИТЬ ФРИЗЫ ТАЧА И ПЕРЕЗАПУСТИТЬ 850 EV/S
-        </button>
+        <button class="btn-dark" onclick="testOneMmFlickResponse()">🛠️ СБРОСИТЬ ФРИЗЫ ТАЧА И ПЕРЕЗАПУСТИТЬ 850 EV/S</button>
       </div>
     </div>
-
-    <!-- ================= ЭКРАН 2: ГОТОВЫЕ PRO КОНФИГИ ================= -->
     <div id="page-configs" class="page-view">
-      <div class="back-bar" onclick="openPage('page-home')">
-        <span class="arrow">←</span>
-        <span>Готовые PRO-конфиги (Комплексные сборки)</span>
-      </div>
-
+      <div class="back-bar" onclick="openPage('page-home')"><span class="arrow">←</span><span>Готовые PRO-конфиги (Комплексные сборки)</span></div>
       <div class="section-card">
-        <div class="section-header-tag">
-          <span>ОБМЕН КОДОМ / ССЫЛКОЙ НА КОНФИГ</span>
-          <span>SHARE CODE</span>
-        </div>
-        <div style="font-size:11.5px; color:var(--text-muted); line-height:1.4; margin-bottom:10px;">
-          Скопируй свой код настроек или вставь чужой код на любом другом устройстве — сенса, растяг и прицел применятся автоматически:
-        </div>
+        <div class="section-header-tag"><span>ОБМЕН КОДОМ / ССЫЛКОЙ НА КОНФИГ</span><span>SHARE CODE</span></div>
+        <div style="font-size:11.5px; color:var(--text-muted); line-height:1.4; margin-bottom:10px;">Скопируй свой код настроек или вставь чужой код на любом другом устройстве — сенса, растяг и прицел применятся автоматически:</div>
         <input type="text" id="shareLinkInput" class="cyber-field" placeholder="Вставь код SO2-... или ссылку https://so2tp.cfg/?c=..." />
-
         <div style="display:grid; grid-template-columns:1fr 1fr; gap:9px;">
           <button class="btn-main" onclick="applySharedConfigCode()">📥 ПРИМЕНИТЬ</button>
           <button class="btn-dark" onclick="generateAndCopyShareLink()">🔗 СКОПИРОВАТЬ КОД</button>
         </div>
       </div>
-
       <div class="section-card">
-        <div class="section-header-tag">
-          <span>БОЕВЫЕ СБОРКИ (СЕНСА + БУСТЕРЫ + ПРИЦЕЛ)</span>
-          <span>6 PRO BUILDS</span>
-        </div>
-
+        <div class="section-header-tag"><span>БОЕВЫЕ СБОРКИ (СЕНСА + БУСТЕРЫ + ПРИЦЕЛ)</span><span>6 PRO BUILDS</span></div>
         <div class="param-box">
-          <div class="param-top">
-            <span class="param-name">⚡ 1. РЕЛЬСОВЫЙ ТЕЛЕПОРТ В ГОЛОВУ (M4A1 / AKR)</span>
-            <span class="param-val-pill">100% LINE</span>
-          </div>
-          <div class="param-sub" style="margin-bottom:10px;">
-            Включает: <b>Скорость 10.0</b>, <b>Выпрямление линии 100%</b>, <b>Анти-отдачу 100%</b> + прицел «Точка». Прицел идёт строго горизонтально по линии головы без шатаний.
-          </div>
-          <button class="btn-main" onclick="loadFullProBundle('РЕЛЬСОВЫЙ ТЕЛЕПОРТ В ГОЛОВУ', 10.0, 10.0, 8.0, 100, 95, 100, 'dot', '#14e8c6', true)">
-            🔥 ВКЛЮЧИТЬ СБОРКУ #1
-          </button>
+          <div class="param-top"><span class="param-name">⚡ 1. РЕЛЬСОВЫЙ ТЕЛЕПОРТ В ГОЛОВУ (M4A1 / AKR)</span><span class="param-val-pill">100% LINE</span></div>
+          <div class="param-sub" style="margin-bottom:10px;">Включает: <b>Скорость 10.0</b>, <b>Выпрямление линии 100%</b>, <b>Анти-отдачу 100%</b> + прицел «Точка».</div>
+          <button class="btn-main" onclick="loadFullProBundle('РЕЛЬСОВЫЙ ТЕЛЕПОРТ В ГОЛОВУ', 10.0, 10.0, 8.0, 100, 95, 100, 'dot', '#14e8c6', true)">🔥 ВКЛЮЧИТЬ СБОРКУ #1</button>
         </div>
-
         <div class="param-box">
-          <div class="param-top">
-            <span class="param-name">💀 2. DEAGLE / USP ВАНТАП-МАГНИТ (1MM SNAP)</span>
-            <span class="param-val-pill">STOP 100%</span>
-          </div>
-          <div class="param-sub" style="margin-bottom:10px;">
-            Включает: <b>Мгновенный срыв 1мм</b>, <b>Стоп-фиксацию 100%</b>, <b>850 пакетов/сек</b> + новый прицел «Шеврон ^» ровно под макушку головы.
-          </div>
-          <button class="btn-main" onclick="loadFullProBundle('DEAGLE ВАНТАП-МАГНИТ', 10.0, 10.0, 7.6, 100, 100, 100, 'chevron', '#00e5ff', false)">
-            🔥 ВКЛЮЧИТЬ СБОРКУ #2
-          </button>
+          <div class="param-top"><span class="param-name">💀 2. DEAGLE / USP ВАНТАП-МАГНИТ (1MM SNAP)</span><span class="param-val-pill">STOP 100%</span></div>
+          <div class="param-sub" style="margin-bottom:10px;">Включает: <b>Мгновенный срыв 1мм</b>, <b>Стоп-фиксацию 100%</b>, <b>850 пакетов/сек</b> + прицел «Шеврон ^».</div>
+          <button class="btn-main" onclick="loadFullProBundle('DEAGLE ВАНТАП-МАГНИТ', 10.0, 10.0, 7.6, 100, 100, 100, 'chevron', '#00e5ff', false)">🔥 ВКЛЮЧИТЬ СБОРКУ #2</button>
         </div>
-
         <div class="param-box">
-          <div class="param-top">
-            <span class="param-name">🦅 3. AWM / M40 МОМЕНТАЛЬНЫЙ ФАСТЗУМ</span>
-            <span class="param-val-pill">FLICK 180°</span>
-          </div>
-          <div class="param-sub" style="margin-bottom:10px;">
-            Включает: <b>Горизонталь 10.0 + Вертикаль 9.8</b> для мгновенных фликов через весь экран + прицел «Снайперские Уголки» для ноускопов вплотную.
-          </div>
-          <button class="btn-main" onclick="loadFullProBundle('AWM ФАСТЗУМ СНАЙПЕР', 10.0, 10.0, 9.8, 90, 95, 100, 'corners', '#facc15', false)">
-            🔥 ВКЛЮЧИТЬ СБОРКУ #3
-          </button>
+          <div class="param-top"><span class="param-name">🦅 3. AWM / M40 МОМЕНТАЛЬНЫЙ ФАСТЗУМ</span><span class="param-val-pill">FLICK 180°</span></div>
+          <div class="param-sub" style="margin-bottom:10px;">Включает: <b>Горизонталь 10.0 + Вертикаль 9.8</b> + прицел «Снайперские Уголки».</div>
+          <button class="btn-main" onclick="loadFullProBundle('AWM ФАСТЗУМ СНАЙПЕР', 10.0, 10.0, 9.8, 90, 95, 100, 'corners', '#facc15', false)">🔥 ВКЛЮЧИТЬ СБОРКУ #3</button>
         </div>
-
         <div class="param-box">
-          <div class="param-top">
-            <span class="param-name">🎯 4. ЛАЗЕРНЫЙ ЗАЖИМ В ТОЧКУ (AKR12 / F/S)</span>
-            <span class="param-val-pill">NO RECOIL</span>
-          </div>
-          <div class="param-sub" style="margin-bottom:10px;">
-            Включает: <b>Усиленный фикс отдачи 100%</b>, гашение бокового разброса + компактный прицел «Бокс» для контроля спрея на дальней дистанции.
-          </div>
-          <button class="btn-main" onclick="loadFullProBundle('ЛАЗЕРНЫЙ ЗАЖИМ В ТОЧКУ', 9.5, 9.5, 7.4, 100, 95, 95, 'box', '#10b981', true)">
-            🔥 ВКЛЮЧИТЬ СБОРКУ #4
-          </button>
+          <div class="param-top"><span class="param-name">🎯 4. ЛАЗЕРНЫЙ ЗАЖИМ В ТОЧКУ (AKR12 / F/S)</span><span class="param-val-pill">NO RECOIL</span></div>
+          <div class="param-sub" style="margin-bottom:10px;">Включает: <b>Усиленный фикс отдачи 100%</b> + прицел «Бокс».</div>
+          <button class="btn-main" onclick="loadFullProBundle('ЛАЗЕРНЫЙ ЗАЖИМ В ТОЧКУ', 9.5, 9.5, 7.4, 100, 95, 95, 'box', '#10b981', true)">🔥 ВКЛЮЧИТЬ СБОРКУ #4</button>
         </div>
-
         <div class="param-box">
-          <div class="param-top">
-            <span class="param-name">👑 5. ТУРНИРНЫЙ CLAW 4–5 ПАЛЬЦЕВ + VULKAN</span>
-            <span class="param-val-pill">ESPORTS</span>
-          </div>
-          <div class="param-sub" style="margin-bottom:10px;">
-            Включает: <b>Защиту от залипаний мультитача (`multi_press=80ms`)</b>, <b>Vulkan GPU Turbo</b>, <b>Стабилизатор пинга</b> + классический «Крест».
-          </div>
-          <button class="btn-main" onclick="loadFullProBundle('ТУРНИРНЫЙ CLAW PRO', 10.0, 10.0, 8.6, 95, 90, 100, 'cross', '#d946ef', true)">
-            🔥 ВКЛЮЧИТЬ СБОРКУ #5
-          </button>
+          <div class="param-top"><span class="param-name">👑 5. ТУРНИРНЫЙ CLAW 4–5 ПАЛЬЦЕВ + VULKAN</span><span class="param-val-pill">ESPORTS</span></div>
+          <div class="param-sub" style="margin-bottom:10px;">Включает: <b>Защиту от залипаний мультитача</b>, <b>Vulkan GPU Turbo</b>, <b>Стабилизатор пинга</b> + «Крест».</div>
+          <button class="btn-main" onclick="loadFullProBundle('ТУРНИРНЫЙ CLAW PRO', 10.0, 10.0, 8.6, 95, 90, 100, 'cross', '#d946ef', true)">🔥 ВКЛЮЧИТЬ СБОРКУ #5</button>
         </div>
-
         <div class="param-box" style="margin-bottom:0;">
-          <div class="param-top">
-            <span class="param-name">❄️ 6. МАКСИМУМ 120 FPS + ОЧИСТКА ОЗУ</span>
-            <span class="param-val-pill">TURBO FPS</span>
-          </div>
-          <div class="param-sub" style="margin-bottom:10px;">
-            Автоматически очищает ОЗУ, включает <b>Холодную фиксацию 120 Гц</b>, <b>Vulkan рендер</b> и быструю сенсу без нагрева процессора.
-          </div>
-          <button class="btn-main" onclick="loadFullProBundle('МАКСИМУМ 120 FPS TURBO', 9.6, 9.8, 8.4, 95, 90, 90, 'dot', '#00e5ff', true); runRamCleanBoost();">
-            🔥 ВКЛЮЧИТЬ СБОРКУ #6
-          </button>
+          <div class="param-top"><span class="param-name">❄️ 6. МАКСИМУМ 120 FPS + ОЧИСТКА ОЗУ</span><span class="param-val-pill">TURBO FPS</span></div>
+          <div class="param-sub" style="margin-bottom:10px;">Автоматически очищает ОЗУ, включает <b>Холодную фиксацию 120 Гц</b>, <b>Vulkan рендер</b>.</div>
+          <button class="btn-main" onclick="loadFullProBundle('МАКСИМУМ 120 FPS TURBO', 9.6, 9.8, 8.4, 95, 90, 90, 'dot', '#00e5ff', true); runRamCleanBoost();">🔥 ВКЛЮЧИТЬ СБОРКУ #6</button>
         </div>
       </div>
     </div>
-
-    <!-- ================= ЭКРАН 3: РАСТЯГ ЭКРАНА ================= -->
     <div id="page-stretch" class="page-view">
-      <div class="back-bar" onclick="openPage('page-home')">
-        <span class="arrow">←</span>
-        <span>Растяг экрана и Широкие Хитбоксы</span>
-      </div>
-
+      <div class="back-bar" onclick="openPage('page-home')"><span class="arrow">←</span><span>Растяг экрана и Широкие Хитбоксы</span></div>
       <div class="section-card">
-        <div class="section-header-tag">
-          <span>ВЫБОР ФОРМАТА ДЛЯ КНОПКИ «T» (7 РЕЖИМОВ)</span>
-          <span id="stretchCornerLabel">4:3</span>
-        </div>
-
+        <div class="section-header-tag"><span>ВЫБОР ФОРМАТА ДЛЯ КНОПКИ «T» (7 РЕЖИМОВ)</span><span id="stretchCornerLabel">4:3</span></div>
         <div style="height:105px; background:var(--bg-card-inner); border:1px solid rgba(var(--accent-rgb),0.2); border-radius:15px; display:flex; align-items:center; justify-content:center; margin-bottom:12px;">
-          <div id="stretchPreviewBox" style="width:142px; height:76px; border:2px solid var(--accent); border-radius:12px; background:rgba(var(--accent-rgb),0.12); display:flex; align-items:center; justify-content:center; font-size:13px; font-weight:900; color:#fff; transition:width 0.2s;">
-            ФОРМАТ 4:3 (IPAD)
-          </div>
+          <div id="stretchPreviewBox" style="width:142px; height:76px; border:2px solid var(--accent); border-radius:12px; background:rgba(var(--accent-rgb),0.12); display:flex; align-items:center; justify-content:center; font-size:13px; font-weight:900; color:#fff; transition:width 0.2s;">ФОРМАТ 4:3 (IPAD)</div>
         </div>
-
         <div class="pills-grid" style="grid-template-columns:repeat(4, 1fr);" id="ratioPillsContainer">
           <div class="choice-pill" data-ratio="1:1" onclick="selectStretchFormat('1:1', 108, '1:1 (ULTRA WIDE)', this)">1:1 MAX</div>
           <div class="choice-pill" data-ratio="5:4" onclick="selectStretchFormat('5:4', 124, '5:4 (PRO HEAD)', this)">5:4</div>
@@ -1524,45 +553,24 @@
           <div class="choice-pill" data-ratio="16:9" onclick="selectStretchFormat('16:9', 190, '16:9 (FAST)', this)">16:9</div>
           <div class="choice-pill" data-ratio="21:10" style="grid-column: span 2;" onclick="selectStretchFormat('21:10', 210, '21:10 (SOFT STRETCH)', this)">21:10 КИБЕР</div>
         </div>
-
         <div class="param-box" style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
           <div style="padding-right:10px;">
             <div class="param-name">🎯 Режим «Широкие Хитбоксы» (Wide Hitbox)</div>
             <div class="param-sub">Включает выбранный растяг + 850 пакетов/сек + фиксацию на голове</div>
           </div>
-          <label class="ios-switch">
-            <input type="checkbox" id="sw-wideHitboxMode" onchange="toggleWideHitboxFeature(this.checked)" />
-            <span class="ios-slider"></span>
-          </label>
+          <label class="ios-switch"><input type="checkbox" id="sw-wideHitboxMode" onchange="toggleWideHitboxFeature(this.checked)" /><span class="ios-slider"></span></label>
         </div>
-
-        <button class="btn-main" id="activateStretchBtnText" onclick="activateFloatingTButton()" style="margin-bottom:10px;">
-          ⚡ АКТИВИРОВАТЬ КНОПКУ РАСТЯГА «T» (4:3)
-        </button>
-
-        <button class="btn-danger" onclick="removeFloatingTAndReset()">
-          УБРАТЬ КНОПКУ «T» И СБРОСИТЬ ЭКРАН
-        </button>
+        <button class="btn-main" id="activateStretchBtnText" onclick="activateFloatingTButton()" style="margin-bottom:10px;">⚡ АКТИВИРОВАТЬ КНОПКУ РАСТЯГА «T» (4:3)</button>
+        <button class="btn-danger" onclick="removeFloatingTAndReset()">УБРАТЬ КНОПКУ «T» И СБРОСИТЬ ЭКРАН</button>
       </div>
     </div>
-
-    <!-- ================= ЭКРАН 4: PRO ПРИЦЕЛ ================= -->
     <div id="page-crosshair" class="page-view">
-      <div class="back-bar" onclick="openPage('page-home')">
-        <span class="arrow">←</span>
-        <span>Кастомный прицел (PRO Конструктор)</span>
-      </div>
-
+      <div class="back-bar" onclick="openPage('page-home')"><span class="arrow">←</span><span>Кастомный прицел (PRO Конструктор)</span></div>
       <div class="section-card">
-        <div class="section-header-tag">
-          <span>10 ФОРМ ПРИЦЕЛА + ТОЧНАЯ ЦЕНТРОВКА</span>
-          <span id="chCornerStatus">ВЫКЛ</span>
-        </div>
-
+        <div class="section-header-tag"><span>10 ФОРМ ПРИЦЕЛА + ТОЧНАЯ ЦЕНТРОВКА</span><span id="chCornerStatus">ВЫКЛ</span></div>
         <div style="height:125px; background:#050b11; border:1.5px solid rgba(var(--accent-rgb),0.28); border-radius:15px; display:flex; align-items:center; justify-content:center; margin-bottom:12px;">
           <canvas id="chPreviewCanvas" width="260" height="120"></canvas>
         </div>
-
         <div class="pills-grid" style="grid-template-columns:repeat(5,1fr);" id="chShapePills">
           <div class="choice-pill active" data-shape="off" onclick="selectCrosshairShape('off', 'ВЫКЛ', this)">ВЫКЛ</div>
           <div class="choice-pill" data-shape="dot" onclick="selectCrosshairShape('dot', 'ТОЧКА', this)">ТОЧКА</div>
@@ -1575,7 +583,6 @@
           <div class="choice-pill" data-shape="chevron" onclick="selectCrosshairShape('chevron', 'ШЕВРОН ^', this)">ШЕВРОН ^</div>
           <div class="choice-pill" data-shape="corners" onclick="selectCrosshairShape('corners', 'УГОЛКИ', this)">УГОЛКИ</div>
         </div>
-
         <div class="pills-grid" style="grid-template-columns:repeat(5,1fr);" id="chColorPills">
           <div class="choice-pill active" onclick="selectCrosshairColor('#d946ef', this)">ФИОЛЕТ</div>
           <div class="choice-pill" onclick="selectCrosshairColor('#00e5ff', this)">ГОЛУБОЙ</div>
@@ -1583,260 +590,110 @@
           <div class="choice-pill" onclick="selectCrosshairColor('#ef4444', this)">КРАСНЫЙ</div>
           <div class="choice-pill" onclick="selectCrosshairColor('#facc15', this)">ЖЁЛТЫЙ</div>
         </div>
-
+        <div class="param-box"><div class="param-top"><span class="param-name">Размер / Длина лучей</span><span id="v-chLen" class="param-val-pill">10 px</span></div><input type="range" id="p-chLen" min="2" max="26" step="1" value="10" oninput="updateCrosshairAll()" /></div>
+        <div class="param-box"><div class="param-top"><span class="param-name">Толщина линий</span><span id="v-chThick" class="param-val-pill">3 px</span></div><input type="range" id="p-chThick" min="1" max="8" step="1" value="3" oninput="updateCrosshairAll()" /></div>
+        <div class="param-box"><div class="param-top"><span class="param-name">Зазор в центре (Gap)</span><span id="v-chGap" class="param-val-pill">3 px</span></div><input type="range" id="p-chGap" min="0" max="18" step="1" value="3" oninput="updateCrosshairAll()" /></div>
+        <div class="param-box"><div class="param-top"><span class="param-name">Размер центральной точки</span><span id="v-chDot" class="param-val-pill">3 px</span></div><input type="range" id="p-chDot" min="1" max="8" step="1" value="3" oninput="updateCrosshairAll()" /></div>
+        <div class="param-box"><div class="param-top"><span class="param-name">Прозрачность</span><span id="v-chAlpha" class="param-val-pill">100%</span></div><input type="range" id="p-chAlpha" min="20" max="100" step="1" value="100" oninput="updateCrosshairAll()" /></div>
         <div class="param-box">
-          <div class="param-top"><span class="param-name">Размер / Длина лучей</span><span id="v-chLen" class="param-val-pill">10 px</span></div>
-          <input type="range" id="p-chLen" min="2" max="26" step="1" value="10" oninput="updateCrosshairAll()" />
-        </div>
-
-        <div class="param-box">
-          <div class="param-top"><span class="param-name">Толщина линий</span><span id="v-chThick" class="param-val-pill">3 px</span></div>
-          <input type="range" id="p-chThick" min="1" max="8" step="1" value="3" oninput="updateCrosshairAll()" />
-        </div>
-
-        <div class="param-box">
-          <div class="param-top"><span class="param-name">Зазор в центре (Gap)</span><span id="v-chGap" class="param-val-pill">3 px</span></div>
-          <input type="range" id="p-chGap" min="0" max="18" step="1" value="3" oninput="updateCrosshairAll()" />
-        </div>
-
-        <div class="param-box">
-          <div class="param-top"><span class="param-name">Размер центральной точки</span><span id="v-chDot" class="param-val-pill">3 px</span></div>
-          <input type="range" id="p-chDot" min="1" max="8" step="1" value="3" oninput="updateCrosshairAll()" />
-        </div>
-
-        <div class="param-box">
-          <div class="param-top"><span class="param-name">Прозрачность</span><span id="v-chAlpha" class="param-val-pill">100%</span></div>
-          <input type="range" id="p-chAlpha" min="20" max="100" step="1" value="100" oninput="updateCrosshairAll()" />
-        </div>
-
-        <div class="param-box">
-          <div class="param-top">
-            <span class="param-name">Сдвиг по горизонтали / вертикали (X / Y)</span>
-            <span id="v-chOffset" class="param-val-pill">0 / 0</span>
-          </div>
+          <div class="param-top"><span class="param-name">Сдвиг по горизонтали / вертикали (X / Y)</span><span id="v-chOffset" class="param-val-pill">0 / 0</span></div>
           <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
-            <div>
-              <div style="font-size:10px; color:var(--text-muted); margin-bottom:4px;">ОСЬ X (Влево/Вправо)</div>
-              <input type="range" id="p-chOffX" min="-25" max="25" step="1" value="0" oninput="updateCrosshairOffset()" />
-            </div>
-            <div>
-              <div style="font-size:10px; color:var(--text-muted); margin-bottom:4px;">ОСЬ Y (Вверх/Вниз)</div>
-              <input type="range" id="p-chOffY" min="-25" max="25" step="1" value="0" oninput="updateCrosshairOffset()" />
-            </div>
+            <div><div style="font-size:10px; color:var(--text-muted); margin-bottom:4px;">ОСЬ X (Влево/Вправо)</div><input type="range" id="p-chOffX" min="-25" max="25" step="1" value="0" oninput="updateCrosshairOffset()" /></div>
+            <div><div style="font-size:10px; color:var(--text-muted); margin-bottom:4px;">ОСЬ Y (Вверх/Вниз)</div><input type="range" id="p-chOffY" min="-25" max="25" step="1" value="0" oninput="updateCrosshairOffset()" /></div>
           </div>
         </div>
-
         <div class="param-box" style="margin-bottom:0; display:flex; justify-content:space-between; align-items:center;">
-          <div>
-            <div class="param-name">Чёрная обводка (Outline) и Палитра</div>
-            <div class="param-sub">Чёткий контур на светлых текстурах и флешках</div>
-          </div>
+          <div><div class="param-name">Чёрная обводка (Outline) и Палитра</div><div class="param-sub">Чёткий контур на светлых текстурах и флешках</div></div>
           <div style="display:flex; align-items:center; gap:10px;">
             <input type="color" id="customChColorPicker" value="#d946ef" onchange="selectCrosshairColor(this.value, null)" style="width:36px; height:30px; border:none; background:none;" />
-            <label class="ios-switch">
-              <input type="checkbox" id="chOutlineToggle" checked onchange="updateCrosshairAll()" />
-              <span class="ios-slider"></span>
-            </label>
+            <label class="ios-switch"><input type="checkbox" id="chOutlineToggle" checked onchange="updateCrosshairAll()" /><span class="ios-slider"></span></label>
           </div>
         </div>
       </div>
     </div>
-
-    <!-- ================= ЭКРАН 5: ХАБ «ДРУЗЬЯ И DISCORD-ВОЙС БЕЗ ШУМА» ================= -->
     <div id="page-friends" class="page-view">
-      <div class="back-bar" onclick="openPage('page-home')">
-        <span class="arrow">←</span>
-        <span>Друзья и Голосовой Чат (Discord Style)</span>
-      </div>
-
-      <!-- КАРТОЧКА ТВОЕГО ID -->
+      <div class="back-bar" onclick="openPage('page-home')"><span class="arrow">←</span><span>Друзья и Голосовой Чат (Discord Style)</span></div>
       <div class="section-card">
-        <div class="section-header-tag">
-          <span>ТВОЙ TAG / ID ДЛЯ ДРУЗЕЙ</span>
-          <span>SO2 PROFILE</span>
-        </div>
+        <div class="section-header-tag"><span>ТВОЙ TAG / ID ДЛЯ ДРУЗЕЙ</span><span>SO2 PROFILE</span></div>
         <div style="display:flex; justify-content:space-between; align-items:center; background:var(--bg-card-inner); border:1.5px solid rgba(var(--accent-rgb),0.35); border-radius:14px; padding:11px 14px;">
-          <div>
-            <div style="font-size:10.5px; color:var(--text-muted);">Скинь этот ID тиммейту, чтобы добавить в отряд:</div>
-            <div id="myFriendCodeDisplay" style="font-size:19px; font-weight:900; color:var(--accent); font-family:monospace; margin-top:2px;">SO2-....</div>
-          </div>
+          <div><div style="font-size:10.5px; color:var(--text-muted);">Скинь этот ID тиммейту, чтобы добавить в отряд:</div><div id="myFriendCodeDisplay" style="font-size:19px; font-weight:900; color:var(--accent); font-family:monospace; margin-top:2px;">SO2-....</div></div>
           <button class="btn-dark" style="width:auto; padding:9px 14px;" onclick="copyMyFriendCode()">📋 СКОПИРОВАТЬ</button>
         </div>
       </div>
-
-      <!-- DISCORD-STYLE VOICE CALL STAGE -->
       <div class="section-card">
-        <div class="section-header-tag">
-          <span>ГОЛОСОВОЙ КАНАЛ ОТРЯДА</span>
-          <span id="voiceStatePill" style="color:var(--text-muted);">НЕ ПОДКЛЮЧЕН</span>
-        </div>
-
-        <!-- Выбор комнаты -->
+        <div class="section-header-tag"><span>ГОЛОСОВОЙ КАНАЛ ОТРЯДА</span><span id="voiceStatePill" style="color:var(--text-muted);">НЕ ПОДКЛЮЧЕН</span></div>
         <div style="display:grid; grid-template-columns:1.3fr 1fr; gap:8px; margin-bottom:11px;">
           <input type="text" id="voiceRoomInput" class="cyber-field" style="margin-bottom:0; text-transform:uppercase; font-family:monospace;" placeholder="КОМНАТА (SQUAD-MAIN)" value="SQUAD-MAIN" />
           <button class="btn-dark" onclick="setMyOwnRoomCode()">🎲 СОЗДАТЬ СВОЮ</button>
         </div>
-
-        <!-- СЦЕНА ЗВОНКА С АВАТАРКАМИ И ПОДСВЕТКОЙ КАК В DISCORD -->
         <div class="dc-call-stage">
           <div class="dc-stage-top">
-            <div class="dc-room-badge">
-              <span>🔊</span>
-              <span id="stageRoomNameLabel">SQUAD-MAIN</span>
-              <span>(<span id="voiceRosterCount">0</span>)</span>
-            </div>
+            <div class="dc-room-badge"><span>🔊</span><span id="stageRoomNameLabel">SQUAD-MAIN</span><span>(<span id="voiceRosterCount">0</span>)</span></div>
             <div id="dcPingQualityBadge" class="dc-ping-tag">CLEAN 48→16kHz • 0 ЭХО</div>
           </div>
-
           <div id="voiceRosterList" class="dc-avatars-grid">
-            <div style="grid-column: span 2; font-size:12px; color:var(--text-muted); text-align:center; padding:18px 6px;">
-              Нажми «Войти в голосовой канал» ниже, чтобы начать звонок без шума и задержек
-            </div>
+            <div style="grid-column: span 2; font-size:12px; color:var(--text-muted); text-align:center; padding:18px 6px;">Нажми «Войти в голосовой канал» ниже, чтобы начать звонок без шума и задержек</div>
           </div>
-
-          <!-- Кнопка входа когда не в звонке -->
-          <div id="voiceActionRow">
-            <button class="btn-main" id="btnJoinVoice" onclick="toggleVoiceConnection()">
-              🎙️ ВОЙТИ В ГОЛОСОВОЙ КАНАЛ
-            </button>
-          </div>
-
-          <!-- Панель управления звонком как в Discord (когда в звонке) -->
+          <div id="voiceActionRow"><button class="btn-main" id="btnJoinVoice" onclick="toggleVoiceConnection()">🎙️ ВОЙТИ В ГОЛОСОВОЙ КАНАЛ</button></div>
           <div id="voiceControlsActive" class="dc-controls-bar" style="display:none;">
-            <button class="dc-ctrl-btn active-on" id="btnMuteMic" onclick="toggleMicMute()">
-              <span class="ico" id="icoMicState">🎤</span>
-              <span id="lblMicState">Микро</span>
-            </button>
-            <button class="dc-ctrl-btn active-on" id="btnDeafenAudio" onclick="toggleDeafenSpeaker()">
-              <span class="ico" id="icoDeafState">🎧</span>
-              <span id="lblDeafState">Звук</span>
-            </button>
-            <button class="dc-ctrl-btn active-on" id="btnKrispQuick" onclick="toggleKrispQuickBtn()">
-              <span class="ico">🛡️</span>
-              <span id="lblKrispState">Шумодав</span>
-            </button>
-            <button class="dc-ctrl-btn hangup" onclick="leaveVoiceRoom()">
-              <span class="ico">📞</span>
-              <span>Выйти</span>
-            </button>
+            <button class="dc-ctrl-btn active-on" id="btnMuteMic" onclick="toggleMicMute()"><span class="ico" id="icoMicState">🎤</span><span id="lblMicState">Микро</span></button>
+            <button class="dc-ctrl-btn active-on" id="btnDeafenAudio" onclick="toggleDeafenSpeaker()"><span class="ico" id="icoDeafState">🎧</span><span id="lblDeafState">Звук</span></button>
+            <button class="dc-ctrl-btn active-on" id="btnKrispQuick" onclick="toggleKrispQuickBtn()"><span class="ico">🛡️</span><span id="lblKrispState">Шумодав</span></button>
+            <button class="dc-ctrl-btn hangup" onclick="leaveVoiceRoom()"><span class="ico">📞</span><span>Выйти</span></button>
           </div>
         </div>
-
-        <!-- АККУРАТНЫЕ НАСТРОЙКИ ЗВУКА И ШУМОДАВА (БЕЗ ПЕРЕГРУЗА И ХРИПА) -->
         <div class="param-box">
           <div style="display:flex; justify-content:space-between; align-items:center;">
-            <div style="padding-right:10px;">
-              <div class="param-name">🛡️ Студийный фильтр Krisp + Anti-Echo</div>
-              <div class="param-sub">Убирает фоновое шипение, эхо динамика и выравнивает голос мягким лимитером</div>
-            </div>
-            <label class="ios-switch">
-              <input type="checkbox" id="sw-dspNoiseGate" checked onchange="updateVoiceDspParams()" />
-              <span class="ios-slider"></span>
-            </label>
+            <div style="padding-right:10px;"><div class="param-name">🛡️ Студийный фильтр Krisp + Anti-Echo</div><div class="param-sub">Убирает фоновое шипение, эхо динамика и выравнивает голос мягким лимитером</div></div>
+            <label class="ios-switch"><input type="checkbox" id="sw-dspNoiseGate" checked onchange="updateVoiceDspParams()" /><span class="ios-slider"></span></label>
           </div>
-          <div class="vu-bar-wrap">
-            <div id="micVuMeterFill" class="vu-bar-fill"></div>
-          </div>
+          <div class="vu-bar-wrap"><div id="micVuMeterFill" class="vu-bar-fill"></div></div>
         </div>
-
         <div class="param-box">
-          <div class="param-top">
-            <span class="param-name">🎤 Громкость твоего микрофона</span>
-            <span id="v-micGain" class="param-val-pill">120%</span>
-          </div>
+          <div class="param-top"><span class="param-name">🎤 Громкость твоего микрофона</span><span id="v-micGain" class="param-val-pill">120%</span></div>
           <input type="range" id="p-micGain" min="50" max="200" step="5" value="120" oninput="updateVoiceDspParams()" />
           <div class="param-sub">Оптимально 100–135% (с защитой от перегруза и хрипа на 200%)</div>
         </div>
-
         <div class="param-box">
-          <div class="param-top">
-            <span class="param-name">🎧 Громкость тиммейтов в комнате</span>
-            <span id="v-peerVol" class="param-val-pill">100%</span>
-          </div>
+          <div class="param-top"><span class="param-name">🎧 Громкость тиммейтов в комнате</span><span id="v-peerVol" class="param-val-pill">100%</span></div>
           <input type="range" id="p-peerVol" min="20" max="200" step="5" value="100" oninput="updateVoiceDspParams()" />
           <div class="param-sub">Регулируй громкость голосов друзей относительно звуков стрельбы в игре</div>
         </div>
-
         <div class="param-box" style="margin-bottom:0;">
-          <div class="param-top">
-            <span class="param-name">🔇 Порог тишины (Отсечение фона)</span>
-            <span id="v-noiseGate" class="param-val-pill">15%</span>
-          </div>
+          <div class="param-top"><span class="param-name">🔇 Порог тишины (Отсечение фона)</span><span id="v-noiseGate" class="param-val-pill">15%</span></div>
           <input type="range" id="p-noiseGate" min="0" max="45" step="1" value="15" oninput="updateVoiceDspParams()" />
           <div class="param-sub">Плавный гейт: когда ты молчишь, в эфир передаётся абсолютная тишина (0% шума)</div>
         </div>
       </div>
-
-      <!-- ДОБАВЛЕНИЕ ДРУГА ПО ID -->
       <div class="section-card">
-        <div class="section-header-tag">
-          <span>ДОБАВИТЬ ТИММЕЙТА ПО ID ИЛИ НИКУ</span>
-          <span>ADD FRIEND</span>
-        </div>
+        <div class="section-header-tag"><span>ДОБАВИТЬ ТИММЕЙТА ПО ID ИЛИ НИКУ</span><span>ADD FRIEND</span></div>
         <div style="display:grid; grid-template-columns:1.4fr 1fr; gap:8px;">
           <input type="text" id="friendTargetInput" class="cyber-field" style="margin-bottom:0; text-transform:uppercase;" placeholder="SO2-1576 или Ник" />
           <button class="btn-main" onclick="sendAddFriendAction()">➕ ДОБАВИТЬ</button>
         </div>
       </div>
-
-      <!-- ВХОДЯЩИЕ ЗАЯВКИ В ДРУЗЬЯ -->
       <div id="incomingRequestsCard" class="section-card" style="display:none;">
-        <div class="section-header-tag">
-          <span>ВХОДЯЩИЕ ЗАЯВКИ В ДРУЗЬЯ</span>
-          <span id="incomingCountTag">0</span>
-        </div>
+        <div class="section-header-tag"><span>ВХОДЯЩИЕ ЗАЯВКИ В ДРУЗЬЯ</span><span id="incomingCountTag">0</span></div>
         <div id="incomingRequestsList"></div>
       </div>
-
-      <!-- СПИСОК ДРУЗЕЙ -->
       <div class="section-card">
-        <div class="section-header-tag">
-          <span>МОИ ДРУЗЬЯ И ОТРЯД</span>
-          <span onclick="syncFriendsHubData(true)" style="cursor:pointer; text-decoration:underline;">🔄 ОБНОВИТЬ</span>
-        </div>
-        <div id="friendsContainerList">
-          <div style="font-size:12px; color:var(--text-muted); text-align:center; padding:12px 0;">
-            Список друзей пуст. Введите ID друга выше!
-          </div>
-        </div>
+        <div class="section-header-tag"><span>МОИ ДРУЗЬЯ И ОТРЯД</span><span onclick="syncFriendsHubData(true)" style="cursor:pointer; text-decoration:underline;">🔄 ОБНОВИТЬ</span></div>
+        <div id="friendsContainerList"><div style="font-size:12px; color:var(--text-muted); text-align:center; padding:12px 0;">Список друзей пуст. Введите ID друга выше!</div></div>
       </div>
     </div>
-
-    <!-- ================= ЭКРАН 6: НАСТРОЙКИ СИСТЕМЫ ================= -->
     <div id="page-settings" class="page-view">
-      <div class="back-bar" onclick="openPage('page-home')">
-        <span class="arrow">←</span>
-        <span>Настройки системы и Бустеры</span>
-      </div>
-
+      <div class="back-bar" onclick="openPage('page-home')"><span class="arrow">←</span><span>Настройки системы и Бустеры</span></div>
       <div class="section-card">
-        <div style="font-size:15px; font-weight:900; color:#fff; margin-bottom:6px;">
-          🚀 Быстрый сброс кэша (RAM Boost в 1 клик)
-        </div>
-        <div id="ramResultDesc" style="font-size:12px; color:var(--text-muted); line-height:1.45; margin-bottom:13px;">
-          Мгновенно выгружает фоновые процессы и очищает оперативную память от мусора перед запуском катки в Standoff 2.
-        </div>
-        <button class="btn-main" onclick="runRamCleanBoost()">
-          🧹 ОЧИСТИТЬ ОПЕРАТИВКУ И КЭШ ПЕРЕД КАТКОЙ
-        </button>
+        <div style="font-size:15px; font-weight:900; color:#fff; margin-bottom:6px;">🚀 Быстрый сброс кэша (RAM Boost в 1 клик)</div>
+        <div id="ramResultDesc" style="font-size:12px; color:var(--text-muted); line-height:1.45; margin-bottom:13px;">Мгновенно выгружает фоновые процессы и очищает оперативную память от мусора перед запуском катки в Standoff 2.</div>
+        <button class="btn-main" onclick="runRamCleanBoost()">🧹 ОЧИСТИТЬ ОПЕРАТИВКУ И КЭШ ПЕРЕД КАТКОЙ</button>
       </div>
-
       <div class="section-card">
-        <div class="section-header-tag">
-          <span>СИСТЕМНЫЕ БУСТЕРЫ И КОНТРОЛЬ ЗАЖИМА</span>
-          <span>SHIZUKU</span>
-        </div>
-
+        <div class="section-header-tag"><span>СИСТЕМНЫЕ БУСТЕРЫ И КОНТРОЛЬ ЗАЖИМА</span><span>SHIZUKU</span></div>
         <div class="param-box">
           <div style="display:flex; justify-content:space-between; align-items:center;">
-            <div style="padding-right:10px;">
-              <div class="param-name">⚡ Разгон герцовки тача (360 Гц MAX)</div>
-              <div class="param-sub">Принудительный буст опроса матрицы для нулевой задержки выстрела</div>
-            </div>
-            <label class="ios-switch">
-              <input type="checkbox" id="sw-touchBoost" checked onchange="applyTouchSamplingBoost()" />
-              <span class="ios-slider"></span>
-            </label>
+            <div style="padding-right:10px;"><div class="param-name">⚡ Разгон герцовки тача (360 Гц MAX)</div><div class="param-sub">Принудительный буст опроса матрицы для нулевой задержки выстрела</div></div>
+            <label class="ios-switch"><input type="checkbox" id="sw-touchBoost" checked onchange="applyTouchSamplingBoost()" /><span class="ios-slider"></span></label>
           </div>
           <div class="pills-grid" style="grid-template-columns:repeat(3,1fr); margin-bottom:0;" id="hzPills">
             <div class="choice-pill" onclick="pickSamplingHz(240, this)">240 Гц</div>
@@ -1844,139 +701,58 @@
             <div class="choice-pill active" onclick="pickSamplingHz(360, this)">360 Гц (MAX)</div>
           </div>
         </div>
-
         <div class="param-box" style="display:flex; justify-content:space-between; align-items:center;">
-          <div style="padding-right:10px;">
-            <div class="param-name">🔥 Ускоритель графики Vulkan GPU Turbo</div>
-            <div class="param-sub">Включает движок `skiavk` и снимает буферную задержку кадров в Standoff 2</div>
-          </div>
-          <label class="ios-switch">
-            <input type="checkbox" id="sw-vulkanGpu" checked onchange="toggleVulkanGpu(this.checked)" />
-            <span class="ios-slider"></span>
-          </label>
+          <div style="padding-right:10px;"><div class="param-name">🔥 Ускоритель графики Vulkan GPU Turbo</div><div class="param-sub">Включает движок skiavk и снимает буферную задержку кадров в Standoff 2</div></div>
+          <label class="ios-switch"><input type="checkbox" id="sw-vulkanGpu" checked onchange="toggleVulkanGpu(this.checked)" /><span class="ios-slider"></span></label>
         </div>
-
         <div class="param-box" style="display:flex; justify-content:space-between; align-items:center;">
-          <div style="padding-right:10px;">
-            <div class="param-name">📡 Стабилизатор пинга и регистрации урона</div>
-            <div class="param-sub">Блокирует фоновый поиск Wi-Fi и BLE во время стрельбы</div>
-          </div>
-          <label class="ios-switch">
-            <input type="checkbox" id="sw-netStabilizer" checked onchange="toggleNetPingBoost(this.checked)" />
-            <span class="ios-slider"></span>
-          </label>
+          <div style="padding-right:10px;"><div class="param-name">📡 Стабилизатор пинга и регистрации урона</div><div class="param-sub">Блокирует фоновый поиск Wi-Fi и BLE во время стрельбы</div></div>
+          <label class="ios-switch"><input type="checkbox" id="sw-netStabilizer" checked onchange="toggleNetPingBoost(this.checked)" /><span class="ios-slider"></span></label>
         </div>
-
         <div class="param-box" style="display:flex; justify-content:space-between; align-items:center;">
-          <div style="padding-right:10px;">
-            <div class="param-name">❄️ Холодная фиксация 120 Гц (Анти-Троттлинг)</div>
-            <div class="param-sub">Держит стабильные 120 FPS без сброса герцовки при нагреве</div>
-          </div>
-          <label class="ios-switch">
-            <input type="checkbox" id="sw-cold120" checked onchange="toggleCold120Guard(this.checked)" />
-            <span class="ios-slider"></span>
-          </label>
+          <div style="padding-right:10px;"><div class="param-name">❄️ Холодная фиксация 120 Гц (Анти-Троттлинг)</div><div class="param-sub">Держит стабильные 120 FPS без сброса герцовки при нагреве</div></div>
+          <label class="ios-switch"><input type="checkbox" id="sw-cold120" checked onchange="toggleCold120Guard(this.checked)" /><span class="ios-slider"></span></label>
         </div>
-
         <div class="param-box">
           <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
-            <div style="padding-right:10px;">
-              <div class="param-name">🎯 Усиленный фикс отдачи PRO (Anti-Recoil)</div>
-              <div class="param-sub">Выпрямляет вертикальную оттяжку вниз и гасит боковой разброс</div>
-            </div>
-            <label class="ios-switch">
-              <input type="checkbox" id="sw-recoilPro" checked onchange="applyRecoilProSettings()" />
-              <span class="ios-slider"></span>
-            </label>
+            <div style="padding-right:10px;"><div class="param-name">🎯 Усиленный фикс отдачи PRO (Anti-Recoil)</div><div class="param-sub">Выпрямляет вертикальную оттяжку вниз и гасит боковой разброс</div></div>
+            <label class="ios-switch"><input type="checkbox" id="sw-recoilPro" checked onchange="applyRecoilProSettings()" /><span class="ios-slider"></span></label>
           </div>
           <div class="param-top"><span class="param-name" style="font-size:12.5px;">Сила удержания вертикали</span><span id="v-recoilPower" class="param-val-pill">100%</span></div>
           <input type="range" id="p-recoilPower" min="20" max="100" step="5" value="100" oninput="applyRecoilProSettings()" />
         </div>
-
         <div class="param-box" style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0;">
-          <div style="padding-right:10px;">
-            <div class="param-name">🕵️ Скрывать кнопку «T» и прицел на записи (Stealth)</div>
-            <div class="param-sub">Полная невидимость оверлеев на видео и скриншотах</div>
-          </div>
-          <label class="ios-switch">
-            <input type="checkbox" id="sw-stealthMode" onchange="toggleStealthModeFlag(this.checked)" />
-            <span class="ios-slider"></span>
-          </label>
+          <div style="padding-right:10px;"><div class="param-name">🕵️ Скрывать кнопку «T» и прицел на записи (Stealth)</div><div class="param-sub">Полная невидимость оверлеев на видео и скриншотах</div></div>
+          <label class="ios-switch"><input type="checkbox" id="sw-stealthMode" onchange="toggleStealthModeFlag(this.checked)" /><span class="ios-slider"></span></label>
         </div>
       </div>
     </div>
-
-    <!-- ================= ЭКРАН 7: ПРОФИЛЬ ПОЛЬЗОВАТЕЛЯ ================= -->
     <div id="page-profile" class="page-view">
-      <div class="back-bar" onclick="openPage('page-home')">
-        <span class="arrow">←</span>
-        <span>Профиль пользователя</span>
-      </div>
-
+      <div class="back-bar" onclick="openPage('page-home')"><span class="arrow">←</span><span>Профиль пользователя</span></div>
       <div class="section-card">
-        <div class="section-header-tag">
-          <span>ДАННЫЕ АККАУНТА SO2TELEPORT</span>
-          <span>PRO V410</span>
-        </div>
-
-        <div class="profile-row">
-          <span class="profile-key">Ваш логин:</span>
-          <span class="profile-val" id="profLoginVal">—</span>
-        </div>
-        <div class="profile-row">
-          <span class="profile-key">Личный ID для друзей:</span>
-          <span class="profile-val" id="profFriendIdVal" style="color:var(--accent);">SO2-....</span>
-        </div>
-        <div class="profile-row">
-          <span class="profile-key">Время до окончания:</span>
-          <span class="profile-val" id="profSubVal" style="color:#10b981;">—</span>
-        </div>
-        <div class="profile-row" onclick="toggleRevealKey()" style="cursor:pointer;">
-          <span class="profile-key">Лицензионный ключ (нажми):</span>
-          <span class="profile-val" id="profKeyVal" style="color:var(--accent); text-decoration:underline dotted;">СКРЫТ 👁️</span>
-        </div>
-        <div class="profile-row">
-          <span class="profile-key">Модель устройства:</span>
-          <span class="profile-val" id="profModelVal">SM-S938B</span>
-        </div>
-        <div class="profile-row">
-          <span class="profile-key">Экран и частота:</span>
-          <span class="profile-val" id="profScreenVal">1440x3120 (120 Гц)</span>
-        </div>
-        <div class="profile-row" style="margin-bottom:12px;">
-          <span class="profile-key">HWID устройства:</span>
-          <span class="profile-val" id="profHwidVal" style="color:var(--accent);">39e220a438dedb68</span>
-        </div>
-
-        <button class="btn-danger" onclick="logoutAndSwitchKey()">
-          СМЕНИТЬ ЛОГИН ИЛИ ЛИЦЕНЗИОННЫЙ КЛЮЧ
-        </button>
+        <div class="section-header-tag"><span>ДАННЫЕ АККАУНТА SO2TELEPORT</span><span>PRO V410</span></div>
+        <div class="profile-row"><span class="profile-key">Ваш логин:</span><span class="profile-val" id="profLoginVal">—</span></div>
+        <div class="profile-row"><span class="profile-key">Личный ID для друзей:</span><span class="profile-val" id="profFriendIdVal" style="color:var(--accent);">SO2-....</span></div>
+        <div class="profile-row"><span class="profile-key">Время до окончания:</span><span class="profile-val" id="profSubVal" style="color:#10b981;">—</span></div>
+        <div class="profile-row" onclick="toggleRevealKey()" style="cursor:pointer;"><span class="profile-key">Лицензионный ключ (нажми):</span><span class="profile-val" id="profKeyVal" style="color:var(--accent); text-decoration:underline dotted;">СКРЫТ 👁️</span></div>
+        <div class="profile-row"><span class="profile-key">Модель устройства:</span><span class="profile-val" id="profModelVal">SM-S938B</span></div>
+        <div class="profile-row"><span class="profile-key">Экран и частота:</span><span class="profile-val" id="profScreenVal">1440x3120 (120 Гц)</span></div>
+        <div class="profile-row" style="margin-bottom:12px;"><span class="profile-key">HWID устройства:</span><span class="profile-val" id="profHwidVal" style="color:var(--accent);">39e220a438dedb68</span></div>
+        <button class="btn-danger" onclick="logoutAndSwitchKey()">СМЕНИТЬ ЛОГИН ИЛИ ЛИЦЕНЗИОННЫЙ КЛЮЧ</button>
       </div>
     </div>
-
   </div>
-
-  <!-- НИЖНЯЯ ФИКСИРОВАННАЯ ПАНЕЛЬ -->
   <div id="bottomDockBar" class="bottom-dock auth-locked">
     <div class="bottom-dock-inner">
-      <button class="dock-save-btn" onclick="saveCurrentConfigNow()">
-        💾 СОХРАНИТЬ НАСТРОЙКИ
-      </button>
-      <button class="dock-share-btn" onclick="shareQuickLinkAction()">
-        🔗 ПОДЕЛИТЬСЯ ССЫЛКОЙ
-      </button>
+      <button class="dock-save-btn" onclick="saveCurrentConfigNow()">💾 СОХРАНИТЬ НАСТРОЙКИ</button>
+      <button class="dock-share-btn" onclick="shareQuickLinkAction()">🔗 ПОДЕЛИТЬСЯ ССЫЛКОЙ</button>
     </div>
   </div>
-<!-- КОНЕЦ ЧАСТИ 1 (Сразу под этой строкой вставляй Часть 2) -->
   <script>
     const CLIENT_LOGIN_GATE_KEY = "so2tp_manual_login_v412";
     const VOICE_WS_URL = "ws://45.10.165.75:8080/ws/voice";
     const TARGET_PCM_RATE = 16000;
-
-    function getBridge() {
-      return window.AndroidBridge || window.Android || null;
-    }
-
+    function getBridge() { return window.AndroidBridge || window.Android || null; }
     let currentThemeIdx = 0;
     let currentStretch = "4:3";
     let currentChShape = "off";
@@ -1987,8 +763,6 @@
     let isKeyRevealed = false;
     let isSessionAuthorized = false;
     let bridgeDebounceTimer = null;
-
-    // Состояние друзей и Discord-войса
     let myFriendCode = "";
     let pendingInviteRoom = "";
     let voiceWs = null;
@@ -2000,15 +774,12 @@
     let micProcessorNode = null;
     let silentSinkNode = null;
     let peerMasterGainNode = null;
-
-    // Переменные чистого DSP-тракта без треска
     let gateEnvelope = 0.0;
     let gateHoldFrames = 0;
     let dcBlockerPrevX = 0.0;
     let dcBlockerPrevY = 0.0;
     let peerPlaybackTimes = {};
     let speakingTimers = {};
-
     const THEME_PRESETS = [
       { accent: "#14e8c6", second: "#00d2ff", rgb: "20, 232, 198" },
       { accent: "#a855f7", second: "#ec4899", rgb: "168, 85, 247" },
@@ -2017,164 +788,107 @@
       { accent: "#3b82f6", second: "#06b6d4", rgb: "59, 130, 246" },
       { accent: "#f59e0b", second: "#eab308", rgb: "245, 158, 11" }
     ];
-
     function showTopToast(msg) {
       const t = document.getElementById("topToast");
       t.innerText = msg;
       t.style.display = "block";
       clearTimeout(window._toastTimer);
-      window._toastTimer = setTimeout(() => {
-        t.style.display = "none";
-      }, 2400);
+      window._toastTimer = setTimeout(() => { t.style.display = "none"; }, 2400);
     }
-
     function setTheme(idx, accentHex, secondHex, rgbStr, dotEl) {
       currentThemeIdx = idx;
       const root = document.documentElement;
       root.style.setProperty("--accent", accentHex);
       root.style.setProperty("--accent-2", secondHex);
       root.style.setProperty("--accent-rgb", rgbStr);
-
       document.querySelectorAll(".theme-dot").forEach(d => d.classList.remove("active"));
-      if (dotEl) {
-        dotEl.classList.add("active");
-      } else {
-        const targetDot = document.querySelector(`.theme-dot[data-theme="${idx}"]`);
+      if (dotEl) { dotEl.classList.add("active"); }
+      else {
+        const targetDot = document.querySelector('.theme-dot[data-theme="' + idx + '"]');
         if (targetDot) targetDot.classList.add("active");
       }
       if (isSessionAuthorized) saveStateSilent();
     }
-
     function openPage(pageId) {
-      if (!isSessionAuthorized) {
-        window.forceShowKickScreen("Сначала активируйте лицензионный ключ!");
-        return;
-      }
+      if (!isSessionAuthorized) { window.forceShowKickScreen("Сначала активируйте лицензионный ключ!"); return; }
       document.querySelectorAll(".page-view").forEach(p => p.classList.remove("active"));
       const target = document.getElementById(pageId);
       if (target) target.classList.add("active");
       window.scrollTo(0, 0);
     }
-
     function openSensTile() {
-      if (!isSessionAuthorized) {
-        window.forceShowKickScreen("Сначала активируйте лицензионный ключ!");
-        return;
-      }
+      if (!isSessionAuthorized) { window.forceShowKickScreen("Сначала активируйте лицензионный ключ!"); return; }
       openPage("page-sens");
-      if (!calibShownOnce) {
-        calibShownOnce = true;
-        document.getElementById("calibModal").style.display = "flex";
-      }
+      if (!calibShownOnce) { calibShownOnce = true; document.getElementById("calibModal").style.display = "flex"; }
     }
-
     function openFriendsTile() {
-      if (!isSessionAuthorized) {
-        window.forceShowKickScreen("Сначала активируйте лицензионный ключ!");
-        return;
-      }
+      if (!isSessionAuthorized) { window.forceShowKickScreen("Сначала активируйте лицензионный ключ!"); return; }
       openPage("page-friends");
       syncFriendsHubData(false);
     }
-
-    function closeCalibModal() {
-      document.getElementById("calibModal").style.display = "none";
-    }
-
-    function runAutoCalibrationModal() {
-      closeCalibModal();
-      runSmartScanAndApply();
-    }
-
+    function closeCalibModal() { document.getElementById("calibModal").style.display = "none"; }
+    function runAutoCalibrationModal() { closeCalibModal(); runSmartScanAndApply(); }
     window.handleSystemBack = function() {
       if (!isSessionAuthorized) return false;
       const home = document.getElementById("page-home");
-      if (!home.classList.contains("active")) {
-        openPage("page-home");
-        return true;
-      }
+      if (!home.classList.contains("active")) { openPage("page-home"); return true; }
       return false;
     };
-
-    // ================= АВТОРИЗАЦИЯ И ЗАЩИТА КЛЮЧЕЙ =================
     function unlockAuthorizedSession(nick, cleanKey, subStatusText) {
       isSessionAuthorized = true;
       fullLicenseKeyPlain = cleanKey;
       isKeyRevealed = false;
-
       try {
         localStorage.setItem(CLIENT_LOGIN_GATE_KEY, "1");
         localStorage.setItem("so2tp_active_key_v412", cleanKey);
         localStorage.setItem("so2tp_active_nick_v412", nick);
       } catch (e) {}
-
       document.getElementById("authScreen").style.display = "none";
       document.getElementById("mainAppRoot").classList.remove("auth-locked");
       document.getElementById("bottomDockBar").classList.remove("auth-locked");
       document.getElementById("authErrorBox").style.display = "none";
-
       document.getElementById("chipPlayerName").innerText = nick;
       document.getElementById("profLoginVal").innerText = nick;
       document.getElementById("profSubVal").innerText = subStatusText;
       updateProfileKeyDisplay();
-
       setTimeout(() => { syncFriendsHubData(false); }, 300);
     }
-
     window.forceShowKickScreen = function(msg) {
       isSessionAuthorized = false;
       fullLicenseKeyPlain = "";
       leaveVoiceRoom();
-
       try {
         localStorage.removeItem(CLIENT_LOGIN_GATE_KEY);
         localStorage.removeItem("so2tp_active_key_v412");
       } catch (e) {}
-
       document.getElementById("mainAppRoot").classList.add("auth-locked");
       document.getElementById("bottomDockBar").classList.add("auth-locked");
       document.getElementById("calibModal").style.display = "none";
       document.getElementById("authScreen").style.display = "flex";
-
       const err = document.getElementById("authErrorBox");
-      if (msg && msg.trim().length > 0) {
-        err.style.display = "block";
-        err.innerText = "⛔ " + msg;
-      } else {
-        err.style.display = "none";
-      }
-
+      if (msg && msg.trim().length > 0) { err.style.display = "block"; err.innerText = "⛔ " + msg; }
+      else { err.style.display = "none"; }
       document.getElementById("homeTpToggle").checked = false;
       document.getElementById("innerTpToggle").checked = false;
       document.getElementById("tileTpLabel").innerText = "ВЫКЛ";
       const B = getBridge();
       if (B && B.stopTeleport) B.stopTeleport();
     };
-
     function logoutAndSwitchKey() {
       const B = getBridge();
-      if (B && B.logoutLicenseKey) {
-        B.logoutLicenseKey();
-      }
+      if (B && B.logoutLicenseKey) B.logoutLicenseKey();
       document.getElementById("loginKeyInput").value = "";
       window.forceShowKickScreen("Введите ваш логин и лицензионный ключ");
     }
-
     function maskKeyString(k) {
       if (!k || k.length < 8) return "СКРЫТ 👁️";
       return k.substring(0, 5) + "-•••-••••" + k.substring(k.length - 2) + " 👁️";
     }
-
     function updateProfileKeyDisplay() {
       const el = document.getElementById("profKeyVal");
       if (!el) return;
-      if (isKeyRevealed) {
-        el.innerText = fullLicenseKeyPlain + " 🔓";
-      } else {
-        el.innerText = maskKeyString(fullLicenseKeyPlain);
-      }
+      el.innerText = isKeyRevealed ? (fullLicenseKeyPlain + " 🔓") : maskKeyString(fullLicenseKeyPlain);
     }
-
     function toggleRevealKey() {
       if (!fullLicenseKeyPlain) return;
       isKeyRevealed = !isKeyRevealed;
@@ -2182,16 +896,9 @@
       if (isKeyRevealed) {
         if (navigator.clipboard) navigator.clipboard.writeText(fullLicenseKeyPlain);
         showTopToast("🔑 Ключ расшифрован и скопирован: " + fullLicenseKeyPlain);
-      } else {
-        showTopToast("🔒 Ключ скрыт звёздочками");
-      }
+      } else { showTopToast("🔒 Ключ скрыт звёздочками"); }
     }
-
-    function openTgBot() {
-      const B = getBridge();
-      if (B && B.openTelegramBot) B.openTelegramBot();
-    }
-
+    function openTgBot() { const B = getBridge(); if (B && B.openTelegramBot) B.openTelegramBot(); }
     function checkShizukuState() {
       const B = getBridge();
       const dot = document.getElementById("shizukuDot");
@@ -2202,14 +909,10 @@
         txt.innerText = ready ? "Shizuku: АКТИВЕН" : "Shizuku: ВЫКЛ";
       }
     }
-
     function pollLicenseExpiration() {
       const B = getBridge();
       if (!B || !isSessionAuthorized) return;
-      if (!fullLicenseKeyPlain || fullLicenseKeyPlain.length < 5) {
-        window.forceShowKickScreen("Введите лицензионный ключ для доступа!");
-        return;
-      }
+      if (!fullLicenseKeyPlain || fullLicenseKeyPlain.length < 5) { window.forceShowKickScreen("Введите лицензионный ключ для доступа!"); return; }
       try {
         const verifyOut = B.verifyLicenseKey(fullLicenseKeyPlain);
         if (verifyOut.startsWith("OK|") || verifyOut.startsWith("OFFLINE|")) {
@@ -2221,118 +924,61 @@
         }
       } catch (e) {}
     }
-
     function initApplication() {
       checkShizukuState();
       setInterval(checkShizukuState, 4500);
       setInterval(pollLicenseExpiration, 10000);
-      setInterval(() => {
-        if (isSessionAuthorized) syncFriendsHubData(false);
-      }, 8000);
+      setInterval(() => { if (isSessionAuthorized) syncFriendsHubData(false); }, 8000);
       renderCrosshairCanvas();
-
       document.getElementById("mainAppRoot").classList.add("auth-locked");
       document.getElementById("bottomDockBar").classList.add("auth-locked");
       document.getElementById("authScreen").style.display = "flex";
-
       const B = getBridge();
-      if (!B) {
-        document.getElementById("authHwidLabel").innerText = "WEB-MODE";
-        return;
-      }
-
-      let hwid = "39e220a438dedb68";
-      let modelName = "SM-S938B";
-      let screenSpec = "1440x3120 (120 Гц)";
-
-      try {
-        if (typeof B.getDeviceHwid === "function") {
-          hwid = B.getDeviceHwid() || hwid;
-        }
-      } catch (e) {}
-
-      try {
-        if (typeof B.getDeviceHardwareInfo === "function") {
-          const hwRaw = B.getDeviceHardwareInfo() || "";
-          const hwParts = hwRaw.split("|");
-          modelName = hwParts[0] || modelName;
-          screenSpec = hwParts[1] || screenSpec;
-        }
-      } catch (e) {}
-
+      if (!B) { document.getElementById("authHwidLabel").innerText = "WEB-MODE"; return; }
+      const hwid = B.getDeviceHwid ? B.getDeviceHwid() : "39e220a438dedb68";
+      const hwRaw = B.getDeviceHardwareInfo ? B.getDeviceHardwareInfo() : "SM-S938B|1440x3120 (120 Гц)";
+      const hwParts = hwRaw.split("|");
+      const modelName = hwParts[0] || "SM-S938B";
+      const screenSpec = hwParts[1] || "1440x3120 (120 Гц)";
       document.getElementById("calibModelName").innerText = modelName;
       document.getElementById("profModelVal").innerText = modelName;
       document.getElementById("profScreenVal").innerText = screenSpec;
       document.getElementById("profHwidVal").innerText = hwid;
       document.getElementById("authHwidLabel").innerText = hwid;
-
-      let savedNick = "";
-      try {
-        savedNick = (B.getSavedNickname && B.getSavedNickname()) ? B.getSavedNickname().trim() : "";
-      } catch (e) {}
-
-      if (savedNick) {
-        document.getElementById("loginNickInput").value = savedNick;
-      }
-
+      const savedNick = (B.getSavedNickname && B.getSavedNickname()) ? B.getSavedNickname().trim() : "";
+      if (savedNick) document.getElementById("loginNickInput").value = savedNick;
       let manualGatePassed = false;
       let gateKey = "";
       try {
         manualGatePassed = localStorage.getItem(CLIENT_LOGIN_GATE_KEY) === "1";
         gateKey = (localStorage.getItem("so2tp_active_key_v412") || "").trim().toUpperCase();
       } catch (e) {}
-
-      if (!manualGatePassed || gateKey.length < 5) {
-        document.getElementById("loginKeyInput").value = "";
-        return;
-      }
-
+      if (!manualGatePassed || gateKey.length < 5) { document.getElementById("loginKeyInput").value = ""; return; }
       document.getElementById("loginKeyInput").value = gateKey;
-      try {
-        const verifyOut = B.verifyLicenseKey(gateKey);
-        if (verifyOut && (verifyOut.startsWith("OK|") || verifyOut.startsWith("OFFLINE|"))) {
-          const subLabel = verifyOut.split("|")[1] || "АКТИВНА (PRO)";
-          unlockAuthorizedSession(savedNick || "dare", gateKey, subLabel);
-          loadSavedSettingsJson();
-        } else {
-          const errMsg = (verifyOut && verifyOut.includes("|")) ? verifyOut.split("|")[1] : "Срок действия ключа истёк!";
-          window.forceShowKickScreen(errMsg);
-        }
-      } catch (e) {
-        window.forceShowKickScreen("Введите ваш логин и лицензионный ключ");
+      const verifyOut = B.verifyLicenseKey(gateKey);
+      if (verifyOut.startsWith("OK|") || verifyOut.startsWith("OFFLINE|")) {
+        const subLabel = verifyOut.split("|")[1] || "АКТИВНА (PRO)";
+        unlockAuthorizedSession(savedNick || "dare", gateKey, subLabel);
+        loadSavedSettingsJson();
+      } else {
+        const errMsg = verifyOut.split("|")[1] || "Срок действия ключа истёк! Введите действующий ключ.";
+        window.forceShowKickScreen(errMsg);
       }
     }
-
     function submitKeyLogin() {
       const nickInput = document.getElementById("loginNickInput").value.trim();
       const keyInput = document.getElementById("loginKeyInput").value.trim().toUpperCase();
       const errBox = document.getElementById("authErrorBox");
       const btn = document.getElementById("loginBtnAction");
-
-      if (!nickInput) {
-        errBox.style.display = "block";
-        errBox.innerText = "⚠️ Введите ваш игровой логин / никнейм!";
-        return;
-      }
-
-      if (keyInput.length < 5) {
-        errBox.style.display = "block";
-        errBox.innerText = "⚠️ Введите лицензионный ключ из Telegram-бота!";
-        return;
-      }
-
+      if (!nickInput) { errBox.style.display = "block"; errBox.innerText = "⚠️ Введите ваш игровой логин / никнейм!"; return; }
+      if (keyInput.length < 5) { errBox.style.display = "block"; errBox.innerText = "⚠️ Введите лицензионный ключ из Telegram-бота!"; return; }
       const B = getBridge();
-      if (!B) {
-        unlockAuthorizedSession(nickInput, keyInput, "АКТИВНА (DEMO)");
-        return;
-      }
-
+      if (!B) { unlockAuthorizedSession(nickInput, keyInput, "АКТИВНА (DEMO)"); return; }
       btn.innerText = "⏳ ПРОВЕРКА КЛЮЧА НА СЕРВЕРЕ...";
       setTimeout(() => {
         B.savePlayerNickname(nickInput);
         const res = B.activateLicenseKey(keyInput);
         btn.innerText = "⚡ АКТИВИРОВАТЬ КЛЮЧ И ВОЙТИ";
-
         if (res.startsWith("OK|")) {
           const subLabel = res.split("|")[1] || "АКТИВНА (PRO)";
           unlockAuthorizedSession(nickInput, keyInput, subLabel);
@@ -2344,179 +990,84 @@
         }
       }, 60);
     }
-
-    document.addEventListener("visibilitychange", () => {
-      if (!document.hidden && isSessionAuthorized) pollLicenseExpiration();
-    });
-
-    // ================= СИСТЕМА ДРУЗЕЙ ЧЕРЕЗ AndroidBridge.requestFriendsHub =================
+    document.addEventListener("visibilitychange", () => { if (!document.hidden && isSessionAuthorized) pollLicenseExpiration(); });
     function callFriendsApiAction(payloadObj) {
       const B = getBridge();
       if (!B || typeof B.requestFriendsHub !== "function") return null;
       const hwid = B.getDeviceHwid ? B.getDeviceHwid() : "";
       const nick = B.getSavedNickname ? B.getSavedNickname() : (document.getElementById("chipPlayerName").innerText || "Player");
       const req = Object.assign({ android_id: hwid, nickname: nick }, payloadObj);
-      try {
-        const raw = B.requestFriendsHub(JSON.stringify(req));
-        return JSON.parse(raw);
-      } catch (e) {
-        return null;
-      }
+      try { const raw = B.requestFriendsHub(JSON.stringify(req)); return JSON.parse(raw); }
+      catch (e) { return null; }
     }
-
     function syncFriendsHubData(showToastFeedback) {
       const data = callFriendsApiAction({ action: "sync" });
-      if (!data || !data.ok) {
-        if (showToastFeedback) showTopToast("⚠️ Не удалось обновить список друзей");
-        return;
-      }
-
+      if (!data || !data.ok) { if (showToastFeedback) showTopToast("⚠️ Не удалось обновить список друзей"); return; }
       if (data.my_code) {
         myFriendCode = data.my_code;
         document.getElementById("myFriendCodeDisplay").innerText = data.my_code;
         document.getElementById("profFriendIdVal").innerText = data.my_code;
         document.getElementById("chipFriendCode").innerText = "• " + data.my_code;
       }
-
       const incoming = data.incoming || [];
       const incCard = document.getElementById("incomingRequestsCard");
       const incList = document.getElementById("incomingRequestsList");
       document.getElementById("incomingCountTag").innerText = incoming.length;
       if (incoming.length > 0) {
         incCard.style.display = "block";
-        incList.innerHTML = incoming.map(item => `
-          <div class="friend-item">
-            <div class="friend-meta">
-              <span class="online-dot on"></span>
-              <div>
-                <div class="friend-nick">${escapeHtml(item.nick)}</div>
-                <div class="friend-code-sub">${escapeHtml(item.code)}</div>
-              </div>
-            </div>
-            <div class="friend-actions">
-              <button class="mini-act-btn" onclick="acceptFriendReq('${escapeHtml(item.code)}')">✅ ПРИНЯТЬ</button>
-              <button class="mini-act-btn del" onclick="removeFriendEntry('${escapeHtml(item.code)}')">✖</button>
-            </div>
-          </div>
-        `).join("");
-      } else {
-        incCard.style.display = "none";
-      }
-
+        incList.innerHTML = incoming.map(item => '<div class="friend-item"><div class="friend-meta"><span class="online-dot on"></span><div><div class="friend-nick">' + escapeHtml(item.nick) + '</div><div class="friend-code-sub">' + escapeHtml(item.code) + '</div></div></div><div class="friend-actions"><button class="mini-act-btn" onclick="acceptFriendReq(\'' + escapeHtml(item.code) + '\')">✅ ПРИНЯТЬ</button><button class="mini-act-btn del" onclick="removeFriendEntry(\'' + escapeHtml(item.code) + '\')">✖</button></div></div>').join("");
+      } else { incCard.style.display = "none"; }
       const friends = data.friends || [];
       const fContainer = document.getElementById("friendsContainerList");
       const onlineCount = friends.filter(f => f.online).length;
-      document.getElementById("friendsTileBadge").innerText =
-        incoming.length > 0 ? `🔔 ЗАЯВОК: ${incoming.length}` : `ОНЛАЙН: ${onlineCount} • DISCORD VOICE`;
-
+      document.getElementById("friendsTileBadge").innerText = incoming.length > 0 ? ('🔔 ЗАЯВОК: ' + incoming.length) : ('ОНЛАЙН: ' + onlineCount + ' • DISCORD VOICE');
       if (friends.length === 0) {
-        fContainer.innerHTML = `
-          <div style="font-size:12px; color:var(--text-muted); text-align:center; padding:12px 0;">
-            Список друзей пуст. Скопируйте свой ID выше или введите ID друга!
-          </div>`;
+        fContainer.innerHTML = '<div style="font-size:12px; color:var(--text-muted); text-align:center; padding:12px 0;">Список друзей пуст. Скопируйте свой ID выше или введите ID друга!</div>';
       } else {
         fContainer.innerHTML = friends.map(f => {
-          const statusSub = f.room
-            ? `🔊 В голосовом: ${escapeHtml(f.room)}`
-            : (f.online ? "🟢 В сети" : "⚪ Не в сети");
-          const roomJoinBtn = f.room
-            ? `<button class="mini-act-btn" onclick="joinSpecificRoom('${escapeHtml(f.room)}')">⚡ ВОЙТИ К НЕМУ</button>`
-            : `<button class="mini-act-btn" onclick="inviteFriendToMyVoice('${escapeHtml(f.code)}')">📞 ПОЗВАТЬ</button>`;
-          return `
-            <div class="friend-item">
-              <div class="friend-meta">
-                <span class="online-dot ${f.online ? 'on' : ''}"></span>
-                <div>
-                  <div class="friend-nick">${escapeHtml(f.nick)} <span style="font-size:10px; color:var(--accent); font-family:monospace;">(${escapeHtml(f.code)})</span></div>
-                  <div class="friend-code-sub">${statusSub}</div>
-                </div>
-              </div>
-              <div class="friend-actions">
-                ${roomJoinBtn}
-                <button class="mini-act-btn del" onclick="removeFriendEntry('${escapeHtml(f.code)}')">🗑️</button>
-              </div>
-            </div>
-          `;
+          const statusSub = f.room ? ('🔊 В голосовом: ' + escapeHtml(f.room)) : (f.online ? '🟢 В сети' : '⚪ Не в сети');
+          const roomJoinBtn = f.room ? ('<button class="mini-act-btn" onclick="joinSpecificRoom(\'' + escapeHtml(f.room) + '\')">⚡ ВОЙТИ К НЕМУ</button>') : ('<button class="mini-act-btn" onclick="inviteFriendToMyVoice(\'' + escapeHtml(f.code) + '\')">🎙️ ПОЗВАТЬ</button>');
+          return '<div class="friend-item"><div class="friend-meta"><span class="online-dot ' + (f.online ? 'on' : '') + '"></span><div><div class="friend-nick">' + escapeHtml(f.nick) + ' <span style="font-size:10px; color:var(--accent); font-family:monospace;">(' + escapeHtml(f.code) + ')</span></div><div class="friend-code-sub">' + statusSub + '</div></div></div><div class="friend-actions">' + roomJoinBtn + '<button class="mini-act-btn del" onclick="removeFriendEntry(\'' + escapeHtml(f.code) + '\')">🗑️</button></div></div>';
         }).join("");
       }
-
       const invites = data.invites || [];
       if (invites.length > 0) {
         const lastInv = invites[invites.length - 1];
         pendingInviteRoom = lastInv.room || "SQUAD-MAIN";
-        document.getElementById("invFromNick").innerText = `${lastInv.from_nick} (${lastInv.from_code})`;
+        document.getElementById("invFromNick").innerText = lastInv.from_nick + ' (' + lastInv.from_code + ')';
         document.getElementById("invRoomCode").innerText = pendingInviteRoom;
         document.getElementById("voiceInviteBanner").style.display = "block";
       }
-
       if (showToastFeedback) showTopToast("✅ Список друзей обновлён!");
     }
-
     function sendAddFriendAction() {
       const val = document.getElementById("friendTargetInput").value.trim().toUpperCase();
-      if (val.length < 2) {
-        showTopToast("⚠️ Введите ID (SO2-XXXX) или никнейм друга!");
-        return;
-      }
+      if (val.length < 2) { showTopToast("⚠️ Введите ID (SO2-XXXX) или никнейм друга!"); return; }
       const res = callFriendsApiAction({ action: "add", target_code: val });
-      if (res && res.ok) {
-        document.getElementById("friendTargetInput").value = "";
-        showTopToast("✅ " + (res.message || "Заявка отправлена!"));
-        syncFriendsHubData(false);
-      } else {
-        showTopToast("⛔ " + ((res && res.message) ? res.message : "Игрок не найден"));
-      }
+      if (res && res.ok) { document.getElementById("friendTargetInput").value = ""; showTopToast("✅ " + (res.message || "Заявка отправлена!")); syncFriendsHubData(false); }
+      else { showTopToast("⛔ " + ((res && res.message) ? res.message : "Игрок не найден")); }
     }
-
     function acceptFriendReq(targetCode) {
       const res = callFriendsApiAction({ action: "accept", target_code: targetCode });
-      if (res && res.ok) {
-        showTopToast("🤝 Друг добавлен в ваш отряд!");
-        syncFriendsHubData(false);
-      }
+      if (res && res.ok) { showTopToast("🤝 Друг добавлен в ваш отряд!"); syncFriendsHubData(false); }
     }
-
-    function removeFriendEntry(targetCode) {
-      callFriendsApiAction({ action: "remove", target_code: targetCode });
-      syncFriendsHubData(false);
-      showTopToast("🗑️ Контакт удалён");
-    }
-
+    function removeFriendEntry(targetCode) { callFriendsApiAction({ action: "remove", target_code: targetCode }); syncFriendsHubData(false); showTopToast("🗑️ Контакт удалён"); }
     function inviteFriendToMyVoice(targetCode) {
       let room = document.getElementById("voiceRoomInput").value.trim().toUpperCase();
-      if (!room) {
-        room = myFriendCode ? ("SQUAD-" + myFriendCode.slice(-4)) : "SQUAD-MAIN";
-        document.getElementById("voiceRoomInput").value = room;
-      }
-      const res = callFriendsApiAction({
-        action: "invite_voice",
-        target_code: targetCode,
-        room_code: room
-      });
-      if (res && res.ok) {
-        showTopToast("📞 " + res.message);
-        if (!isVoiceConnected) toggleVoiceConnection();
-      } else {
-        showTopToast("⚠️ Ошибка отправки приглашения");
-      }
+      if (!room) { room = myFriendCode ? ("SQUAD-" + myFriendCode.slice(-4)) : "SQUAD-MAIN"; document.getElementById("voiceRoomInput").value = room; }
+      const res = callFriendsApiAction({ action: "invite_voice", target_code: targetCode, room_code: room });
+      if (res && res.ok) { showTopToast("📨 " + res.message); if (!isVoiceConnected) toggleVoiceConnection(); }
+      else { showTopToast("⚠️ Ошибка отправки приглашения"); }
     }
-
     function acceptVoiceInviteBanner() {
       document.getElementById("voiceInviteBanner").style.display = "none";
-      if (pendingInviteRoom) {
-        openPage("page-friends");
-        joinSpecificRoom(pendingInviteRoom);
-      }
+      if (pendingInviteRoom) { openPage("page-friends"); joinSpecificRoom(pendingInviteRoom); }
     }
-
     function joinSpecificRoom(roomCode) {
       document.getElementById("voiceRoomInput").value = roomCode;
-      if (isVoiceConnected) {
-        leaveVoiceRoom();
-      }
+      if (isVoiceConnected) leaveVoiceRoom();
       setTimeout(() => { toggleVoiceConnection(); }, 140);
     }
-
     function setMyOwnRoomCode() {
       const suffix = myFriendCode ? myFriendCode.slice(-4) : Math.floor(1000 + Math.random() * 9000);
       const room = "SQUAD-" + suffix;
@@ -2524,26 +1075,16 @@
       document.getElementById("stageRoomNameLabel").innerText = room;
       showTopToast("🎲 Создана комната: " + room);
     }
-
     function copyMyFriendCode() {
       if (!myFriendCode) return;
       if (navigator.clipboard) navigator.clipboard.writeText(myFriendCode);
       showTopToast("📋 Ваш ID скопирован: " + myFriendCode);
     }
-
     function escapeHtml(str) {
-      return String(str || "").replace(/[&<>"']/g, s => ({
-        "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"
-      }[s]));
+      return String(str || "").replace(/[&<>"']/g, s => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[s]));
     }
-
-    // ================= DISCORD-STYLE ЧИСТЫЙ ВОЙС БЕЗ ФОНА, ЭХА И ТРЕСКА =================
-
-    // Чистый анти-алиасинг ресемплер с родной частоты Android (48000/44100 Гц) в 16000 Гц
     function downsampleFloat32To16k(inputBuffer, inputSampleRate) {
-      if (inputSampleRate === TARGET_PCM_RATE) {
-        return inputBuffer;
-      }
+      if (inputSampleRate === TARGET_PCM_RATE) return inputBuffer;
       const ratio = inputSampleRate / TARGET_PCM_RATE;
       const outLength = Math.round(inputBuffer.length / ratio);
       const result = new Float32Array(outLength);
@@ -2553,186 +1094,79 @@
         const nextOffsetBuffer = Math.round((offsetResult + 1) * ratio);
         let accum = 0;
         let count = 0;
-        for (let i = offsetBuffer; i < nextOffsetBuffer && i < inputBuffer.length; i++) {
-          accum += inputBuffer[i];
-          count++;
-        }
+        for (let i = offsetBuffer; i < nextOffsetBuffer && i < inputBuffer.length; i++) { accum += inputBuffer[i]; count++; }
         result[offsetResult] = count > 0 ? (accum / count) : 0;
         offsetResult++;
         offsetBuffer = nextOffsetBuffer;
       }
       return result;
     }
-
     async function toggleVoiceConnection() {
-      if (isVoiceConnected) {
-        leaveVoiceRoom();
-        return;
-      }
-
+      if (isVoiceConnected) { leaveVoiceRoom(); return; }
       const roomName = (document.getElementById("voiceRoomInput").value.trim() || "SQUAD-MAIN").toUpperCase();
       document.getElementById("voiceRoomInput").value = roomName;
       document.getElementById("stageRoomNameLabel").innerText = roomName;
-
       try {
-        // Запрашиваем микрофон на родной аппаратной частоте Android с системным подавлением эха и шума
-        micStream = await navigator.mediaDevices.getUserMedia({
-          audio: {
-            echoCancellation: { ideal: true },
-            noiseSuppression: { ideal: true },
-            autoGainControl: { ideal: true },
-            channelCount: { ideal: 1 }
-          },
-          video: false
-        });
-      } catch (err) {
-        showTopToast("⚠️ Разрешите доступ к микрофону для голосового чата!");
-        return;
-      }
-
+        micStream = await navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: { ideal: true }, noiseSuppression: { ideal: true }, autoGainControl: { ideal: true }, channelCount: { ideal: 1 } }, video: false });
+      } catch (err) { showTopToast("⚠️ Разрешите доступ к микрофону для голосового чата!"); return; }
       try {
         const AudioCtx = window.AudioContext || window.webkitAudioContext;
-        // ВАЖНО: Создаём контекст без принудительного 16000 в конструкторе, чтобы WebView не трещал!
         voiceAudioCtx = new AudioCtx();
-        if (voiceAudioCtx.state === "suspended") {
-          await voiceAudioCtx.resume();
-        }
-
-        // Общий регулятор громкости входящих голосов тиммейтов
+        if (voiceAudioCtx.state === "suspended") await voiceAudioCtx.resume();
         peerMasterGainNode = voiceAudioCtx.createGain();
         const peerVolPct = parseInt(document.getElementById("p-peerVol").value, 10) || 100;
         peerMasterGainNode.gain.value = isSpeakerDeafened ? 0.0 : (peerVolPct / 100.0);
         peerMasterGainNode.connect(voiceAudioCtx.destination);
-
         const source = voiceAudioCtx.createMediaStreamSource(micStream);
-
-        // 1. Фильтр среза низкочастотного гула и дыхания (100 Гц)
         const highPass = voiceAudioCtx.createBiquadFilter();
-        highPass.type = "highpass";
-        highPass.frequency.value = 100;
-        highPass.Q.value = 0.707;
-
-        // 2. Фильтр присутствия речи (2400 Гц +2.5 дБ для четкости инфы в перестрелках)
+        highPass.type = "highpass"; highPass.frequency.value = 100; highPass.Q.value = 0.707;
         const presenceBoost = voiceAudioCtx.createBiquadFilter();
-        presenceBoost.type = "peaking";
-        presenceBoost.frequency.value = 2400;
-        presenceBoost.Q.value = 1.0;
-        presenceBoost.gain.value = 2.5;
-
-        // 3. Анти-алиасинг фильтр верхних частот (6400 Гц) — полностью убирает высокочастотное шипение и песок
+        presenceBoost.type = "peaking"; presenceBoost.frequency.value = 2400; presenceBoost.Q.value = 1.0; presenceBoost.gain.value = 2.5;
         const lowPass = voiceAudioCtx.createBiquadFilter();
-        lowPass.type = "lowpass";
-        lowPass.frequency.value = 6400;
-        lowPass.Q.value = 0.707;
-
-        // 4. Мягкий студийный компрессор (без экстремального вытягивания фонового шума комнаты)
+        lowPass.type = "lowpass"; lowPass.frequency.value = 6400; lowPass.Q.value = 0.707;
         const compressor = voiceAudioCtx.createDynamicsCompressor();
-        compressor.threshold.value = -22;
-        compressor.knee.value = 18;
-        compressor.ratio.value = 4.0;
-        compressor.attack.value = 0.005;
-        compressor.release.value = 0.18;
-
-        // Буфер 4096 на 48kHz (~85 мс) даёт идеальную плавность без щелчков
+        compressor.threshold.value = -22; compressor.knee.value = 18; compressor.ratio.value = 4.0; compressor.attack.value = 0.005; compressor.release.value = 0.18;
         const bufSize = voiceAudioCtx.sampleRate >= 44100 ? 4096 : 2048;
         micProcessorNode = voiceAudioCtx.createScriptProcessor(bufSize, 1, 1);
-
-        // Глушитель на выходе микрофонного графа (0.0), чтобы ты НИКОГДА не слышал сам себя и не было фона!
         silentSinkNode = voiceAudioCtx.createGain();
         silentSinkNode.gain.value = 0.0;
-
-        source.connect(highPass);
-        highPass.connect(presenceBoost);
-        presenceBoost.connect(lowPass);
-        lowPass.connect(compressor);
-        compressor.connect(micProcessorNode);
-        micProcessorNode.connect(silentSinkNode);
-        silentSinkNode.connect(voiceAudioCtx.destination);
-
-        gateEnvelope = 0.0;
-        gateHoldFrames = 0;
-        dcBlockerPrevX = 0.0;
-        dcBlockerPrevY = 0.0;
-
+        source.connect(highPass); highPass.connect(presenceBoost); presenceBoost.connect(lowPass); lowPass.connect(compressor); compressor.connect(micProcessorNode); micProcessorNode.connect(silentSinkNode); silentSinkNode.connect(voiceAudioCtx.destination);
+        gateEnvelope = 0.0; gateHoldFrames = 0; dcBlockerPrevX = 0.0; dcBlockerPrevY = 0.0;
         micProcessorNode.onaudioprocess = function(e) {
-          // Жёстко зануляем выходной буфер, исключая любую обратную связь в динамик!
           const outBuf = e.outputBuffer.getChannelData(0);
-          for (let i = 0; i < outBuf.length; i++) {
-            outBuf[i] = 0.0;
-          }
-
-          if (!isVoiceConnected || isMicMuted || !voiceWs || voiceWs.readyState !== WebSocket.OPEN) {
-            document.getElementById("micVuMeterFill").style.width = "0%";
-            return;
-          }
-
+          for (let i = 0; i < outBuf.length; i++) outBuf[i] = 0.0;
+          if (!isVoiceConnected || isMicMuted || !voiceWs || voiceWs.readyState !== WebSocket.OPEN) { document.getElementById("micVuMeterFill").style.width = "0%"; return; }
           const rawIn = e.inputBuffer.getChannelData(0);
           const cleanIn = new Float32Array(rawIn.length);
-
-          // Убираем постоянное смещение (DC Offset Blocker) и считаем RMS громкости речи
           let sumSq = 0.0;
-          for (let i = 0; i < rawIn.length; i++) {
-            const x = rawIn[i];
-            const y = x - dcBlockerPrevX + 0.995 * dcBlockerPrevY;
-            dcBlockerPrevX = x;
-            dcBlockerPrevY = y;
-            cleanIn[i] = y;
-            sumSq += y * y;
-          }
+          for (let i = 0; i < rawIn.length; i++) { const x = rawIn[i]; const y = x - dcBlockerPrevX + 0.995 * dcBlockerPrevY; dcBlockerPrevX = x; dcBlockerPrevY = y; cleanIn[i] = y; sumSq += y * y; }
           const rms = Math.sqrt(sumSq / cleanIn.length);
           const vuPct = Math.min(100, Math.round(rms * 340));
           document.getElementById("micVuMeterFill").style.width = vuPct + "%";
-
           const dspOn = document.getElementById("sw-dspNoiseGate").checked;
           const gateSlider = parseInt(document.getElementById("p-noiseGate").value, 10) || 15;
-          // Порог тишины с гистерезисом: открывается при речи, держит 6 фреймов, чтобы не глотать окончания слов
           const openThreshold = dspOn ? (0.002 + (gateSlider / 100.0) * 0.032) : 0.0008;
-
-          if (rms >= openThreshold) {
-            gateHoldFrames = 6;
-          } else if (gateHoldFrames > 0) {
-            gateHoldFrames--;
-          }
-
+          if (rms >= openThreshold) gateHoldFrames = 6; else if (gateHoldFrames > 0) gateHoldFrames--;
           const targetGate = (gateHoldFrames > 0) ? 1.0 : 0.0;
-          // Если в комнате полная тишина и гейт уже закрыт — не шлём пустые пакеты по сети
-          if (targetGate === 0.0 && gateEnvelope < 0.002) {
-            gateEnvelope = 0.0;
-            return;
-          }
-
-          // Сжимаем с родных 48000 Hz до 16000 Hz
+          if (targetGate === 0.0 && gateEnvelope < 0.002) { gateEnvelope = 0.0; return; }
           const downsampled = downsampleFloat32To16k(cleanIn, voiceAudioCtx.sampleRate);
           const userBoost = (parseInt(document.getElementById("p-micGain").value, 10) || 120) / 100.0;
           const pcm16 = new Int16Array(downsampled.length);
-
           for (let i = 0; i < downsampled.length; i++) {
-            // Плавная огибающая гейта без щелчков
             gateEnvelope = gateEnvelope * 0.96 + targetGate * 0.04;
             let sample = downsampled[i] * userBoost * gateEnvelope;
-            // Мягкий студийный лимитер (Math.tanh) — никогда не даёт цифрового хрипа и клиппинга!
             sample = Math.tanh(sample);
             pcm16[i] = sample < 0 ? Math.round(sample * 0x8000) : Math.round(sample * 0x7FFF);
           }
-
           const bytes = new Uint8Array(pcm16.buffer);
           let binary = "";
           const chunkStep = 0x4000;
-          for (let i = 0; i < bytes.length; i += chunkStep) {
-            binary += String.fromCharCode.apply(null, bytes.subarray(i, i + chunkStep));
-          }
-
-          voiceWs.send(JSON.stringify({
-            type: "audio",
-            pcm: btoa(binary),
-            rate: TARGET_PCM_RATE
-          }));
-
+          for (let i = 0; i < bytes.length; i += chunkStep) binary += String.fromCharCode.apply(null, bytes.subarray(i, i + chunkStep));
+          voiceWs.send(JSON.stringify({ type: "audio", pcm: btoa(binary), rate: TARGET_PCM_RATE }));
           highlightSpeakingMember(myFriendCode);
         };
-
         connectVoiceWebSocket(roomName);
-      } catch (e) {
+    } catch (e) {
         showTopToast("⚠️ Ошибка запуска аудио-тракта");
       }
     }
@@ -2743,35 +1177,30 @@
       const nick = (B && B.getSavedNickname && B.getSavedNickname())
         ? B.getSavedNickname()
         : (document.getElementById("chipPlayerName").innerText || "Player");
-
       try {
         voiceWs = new WebSocket(VOICE_WS_URL);
       } catch (e) {
         showTopToast("⚠️ Не удалось подключиться к голосовому серверу");
         return;
       }
-
       voiceWs.onopen = function() {
         isVoiceConnected = true;
         isMicMuted = false;
         peerPlaybackTimes = {};
-
         document.getElementById("voiceActionRow").style.display = "none";
         document.getElementById("voiceControlsActive").style.display = "grid";
         document.getElementById("voiceStatePill").innerText = "🟢 В ЭФИРЕ • " + roomName;
         document.getElementById("voiceStatePill").style.color = "#10b981";
         document.getElementById("topVoiceLiveChip").style.display = "inline-flex";
         syncDiscordControlButtons();
-
         voiceWs.send(JSON.stringify({
           type: "join",
           hwid: hwid,
           room: roomName,
           nick: nick
         }));
-        showTopToast("🎧 Подключено к каналу " + roomName);
+        showTopToast("🎙️ Подключено к каналу " + roomName);
       };
-
       voiceWs.onmessage = function(evt) {
         try {
           const msg = JSON.parse(evt.data);
@@ -2784,7 +1213,6 @@
           }
         } catch (e) {}
       };
-
       voiceWs.onclose = function() {
         if (isVoiceConnected) {
           leaveVoiceRoom();
@@ -2792,7 +1220,6 @@
       };
     }
 
-    // Бесшовное воспроизведение входящего голоса с анти-клик сглаживанием краёв и индивидуальным буфером
     function playIncomingPcmAudio(speakerCode, b64Str, sampleRate) {
       if (!voiceAudioCtx || isSpeakerDeafened) return;
       try {
@@ -2805,12 +1232,10 @@
         const int16 = new Int16Array(bytes.buffer);
         const n = int16.length;
         if (n === 0) return;
-
         const float32 = new Float32Array(n);
         const fadeSamples = Math.min(24, Math.floor(n / 8));
         for (let i = 0; i < n; i++) {
           let val = int16[i] / 32768.0;
-          // Микро-сглаживание стыков пакета (1.5 мс), чтобы исключить любые щелчки на стыках сети
           if (i < fadeSamples) {
             val *= (i / fadeSamples);
           } else if (i >= n - fadeSamples) {
@@ -2818,17 +1243,13 @@
           }
           float32[i] = val;
         }
-
         const audioBuffer = voiceAudioCtx.createBuffer(1, n, sampleRate || TARGET_PCM_RATE);
         audioBuffer.getChannelData(0).set(float32);
-
         const src = voiceAudioCtx.createBufferSource();
         src.buffer = audioBuffer;
         src.connect(peerMasterGainNode || voiceAudioCtx.destination);
-
         const now = voiceAudioCtx.currentTime;
         let nextTime = peerPlaybackTimes[speakerCode] || 0;
-        // Джиттер-подушка 45 мс для идеально ровного потока без обрывов
         if (nextTime < now || (nextTime - now) > 0.40) {
           nextTime = now + 0.045;
         }
@@ -2848,29 +1269,23 @@
       }, 380);
     }
 
-    // Отрисовка участников звонка карточками с аватарками как в Discord
     function renderVoiceRoomRoster(members) {
       document.getElementById("voiceRosterCount").innerText = members.length;
       const box = document.getElementById("voiceRosterList");
       if (!members.length) {
-        box.innerHTML = `
-          <div style="grid-column: span 2; font-size:12px; color:var(--text-muted); text-align:center; padding:18px 6px;">
-            Нажми «Войти в голосовой канал» ниже, чтобы начать звонок
-          </div>`;
+        box.innerHTML = '<div style="grid-column: span 2; font-size:12px; color:var(--text-muted); text-align:center; padding:18px 6px;">Нажми «Войти в голосовой канал» ниже, чтобы начать звонок</div>';
         return;
       }
       box.innerHTML = members.map(m => {
         const cleanNick = escapeHtml(m.nick || "Player");
         const firstLetter = cleanNick.charAt(0).toUpperCase() || "S";
         const statusText = m.muted ? "🔇 Микро выкл" : "🎙️ В эфире";
-        return `
-          <div class="dc-user-tile" id="vmember-${escapeHtml(m.code)}">
-            <div class="dc-avatar-circle">${firstLetter}</div>
-            <div class="dc-user-name">${cleanNick}</div>
-            <div class="dc-user-code">${escapeHtml(m.code)}</div>
-            <div class="dc-user-status-pill ${m.muted ? 'muted' : ''}">${statusText}</div>
-          </div>
-        `;
+        return '<div class="dc-user-tile" id="vmember-' + escapeHtml(m.code) + '">' +
+          '<div class="dc-avatar-circle">' + firstLetter + '</div>' +
+          '<div class="dc-user-name">' + cleanNick + '</div>' +
+          '<div class="dc-user-code">' + escapeHtml(m.code) + '</div>' +
+          '<div class="dc-user-status-pill ' + (m.muted ? 'muted' : '') + '">' + statusText + '</div>' +
+          '</div>';
       }).join("");
     }
 
@@ -2879,21 +1294,21 @@
       document.getElementById("icoMicState").innerText = isMicMuted ? "🔇" : "🎤";
       document.getElementById("lblMicState").innerText = isMicMuted ? "Вкл микро" : "Микро";
       micBtn.className = "dc-ctrl-btn " + (isMicMuted ? "muted-off" : "active-on");
-
       const deafBtn = document.getElementById("btnDeafenAudio");
       document.getElementById("icoDeafState").innerText = isSpeakerDeafened ? "🔈" : "🎧";
       document.getElementById("lblDeafState").innerText = isSpeakerDeafened ? "Без звука" : "Звук";
       deafBtn.className = "dc-ctrl-btn " + (isSpeakerDeafened ? "muted-off" : "active-on");
-
       const krispOn = document.getElementById("sw-dspNoiseGate").checked;
       const krispBtn = document.getElementById("btnKrispQuick");
       document.getElementById("lblKrispState").innerText = krispOn ? "Krisp ВКЛ" : "Krisp ВЫКЛ";
       krispBtn.className = "dc-ctrl-btn " + (krispOn ? "active-on" : "");
 
+      // ⬇️ ОБНОВЛЕНИЕ УВЕДОМЛЕНИЯ В ШТОРКЕ ⬇️
       const B = getBridge();
       if (B && B.updateVoiceCallNotification && isVoiceConnected) {
         const room = document.getElementById("voiceRoomInput").value.trim().toUpperCase() || "SQUAD-MAIN";
         B.updateVoiceCallNotification(room, isMicMuted, isSpeakerDeafened);
+      }
     }
 
     function toggleMicMute() {
@@ -2931,7 +1346,6 @@
       isMicMuted = false;
       isSpeakerDeafened = false;
       peerPlaybackTimes = {};
-
       if (voiceWs) {
         try { voiceWs.close(); } catch (e) {}
         voiceWs = null;
@@ -2952,7 +1366,6 @@
         try { voiceAudioCtx.close(); } catch (e) {}
         voiceAudioCtx = null;
       }
-
       document.getElementById("voiceActionRow").style.display = "block";
       document.getElementById("voiceControlsActive").style.display = "none";
       document.getElementById("voiceStatePill").innerText = "НЕ ПОДКЛЮЧЕН";
@@ -2960,32 +1373,28 @@
       document.getElementById("topVoiceLiveChip").style.display = "none";
       document.getElementById("micVuMeterFill").style.width = "0%";
       document.getElementById("voiceRosterCount").innerText = "0";
-      document.getElementById("voiceRosterList").innerHTML = `
-        <div style="grid-column: span 2; font-size:12px; color:var(--text-muted); text-align:center; padding:18px 6px;">
-          Нажми «Войти в голосовой канал» ниже, чтобы начать звонок без шума и задержек
-        </div>`;
-    
+      document.getElementById("voiceRosterList").innerHTML = '<div style="grid-column: span 2; font-size:12px; color:var(--text-muted); text-align:center; padding:18px 6px;">Нажми «Войти в голосовой канал» ниже, чтобы начать звонок без шума и задержек</div>';
+
+      // ⬇️ УДАЛЕНИЕ УВЕДОМЛЕНИЯ ИЗ ШТОРКИ ⬇️
       const B = getBridge();
       if (B && B.cancelVoiceCallNotification) {
         B.cancelVoiceCallNotification();
+      }
     }
 
     function updateVoiceDspParams() {
       const gainPct = parseInt(document.getElementById("p-micGain").value, 10) || 120;
       const peerPct = parseInt(document.getElementById("p-peerVol").value, 10) || 100;
       const gatePct = parseInt(document.getElementById("p-noiseGate").value, 10) || 15;
-
       document.getElementById("v-micGain").innerText = gainPct + "%";
       document.getElementById("v-peerVol").innerText = peerPct + "%";
       document.getElementById("v-noiseGate").innerText = gatePct + "%";
-
       if (peerMasterGainNode) {
         peerMasterGainNode.gain.value = isSpeakerDeafened ? 0.0 : (peerPct / 100.0);
       }
       syncDiscordControlButtons();
     }
 
-    // ================= ЭКСТРЕМАЛЬНЫЙ ЛИНЕЙНЫЙ ТЕЛЕПОРТ =================
     function toggleTeleportMaster(enabled) {
       if (!isSessionAuthorized) {
         window.forceShowKickScreen("Сначала активируйте лицензионный ключ!");
@@ -2995,11 +1404,9 @@
       document.getElementById("innerTpToggle").checked = enabled;
       document.getElementById("tileTpLabel").innerText = enabled ? "ВКЛ" : "ВЫКЛ";
       document.getElementById("tileTpLabel").style.color = enabled ? "var(--accent)" : "var(--text-muted)";
-
       const heading = document.getElementById("tpStatusHeading");
       const btn = document.getElementById("mainTpActionBtn");
       const B = getBridge();
-
       if (enabled) {
         heading.innerText = "ТЕЛЕПОРТ: АКТИВЕН (850 EV/S)";
         heading.style.color = "var(--accent)";
@@ -3060,14 +1467,12 @@
       const straight = document.getElementById("p-straight").value;
       const stick = document.getElementById("p-stickForce").value;
       const chunks = document.getElementById("p-chunks").value;
-
       document.getElementById("v-sharp").innerText = sharp;
       document.getElementById("v-sx").innerText = sx;
       document.getElementById("v-sy").innerText = sy;
       document.getElementById("v-straight").innerText = straight + "%";
       document.getElementById("v-stickForce").innerText = stick + "%";
       document.getElementById("v-chunks").innerText = chunks + "%";
-
       clearTimeout(bridgeDebounceTimer);
       bridgeDebounceTimer = setTimeout(() => {
         pushEngineParametersImmediate();
@@ -3086,7 +1491,6 @@
       const grid = 64;
       const pause = 0;
       const accel = 10.0;
-
       const B = getBridge();
       if (B && B.updateParameters) {
         B.updateParameters(sharp, sx, sy, chunks, chunkFast, straight, stick, grid, pause, accel);
@@ -3115,7 +1519,6 @@
       showTopToast("⚡ Сенсор сброшен и разогнан до 850 пакетов/сек!");
     }
 
-    // ================= КРОСС-ДЕВАЙС КОДЫ И КОМПЛЕКСНЫЕ СБОРКИ =================
     function loadFullProBundle(title, sharp, sx, sy, straightPct, stickPct, chunksPct, chShape, chHex, recoilOn) {
       document.getElementById("p-sharp").value = sharp;
       document.getElementById("p-sx").value = sx;
@@ -3124,14 +1527,11 @@
       document.getElementById("p-stickForce").value = stickPct;
       document.getElementById("p-chunks").value = chunksPct;
       document.getElementById("zeroDelaySnapToggle").checked = true;
-
       document.getElementById("sw-recoilPro").checked = !!recoilOn;
       applyRecoilProSettings();
-
       currentChColor = chHex;
       document.getElementById("customChColorPicker").value = chHex;
       selectCrosshairShape(chShape, chShape.toUpperCase(), null);
-
       syncAllSliders();
       toggleTeleportMaster(true);
       showTopToast("🔥 Сборка «" + title + "» включена!");
@@ -3226,22 +1626,20 @@
       generateAndCopyShareLink();
     }
 
-    // ================= РАСТЯГ ЭКРАНА =================
     function selectStretchFormat(ratio, widthPx, titleText, pillEl) {
       currentStretch = ratio;
       document.querySelectorAll("#ratioPillsContainer .choice-pill").forEach(p => p.classList.remove("active"));
       if (pillEl) {
         pillEl.classList.add("active");
       } else {
-        const found = document.querySelector(`#ratioPillsContainer .choice-pill[data-ratio="${ratio}"]`);
+        const found = document.querySelector('#ratioPillsContainer .choice-pill[data-ratio="' + ratio + '"]');
         if (found) found.classList.add("active");
       }
-
       document.getElementById("stretchCornerLabel").innerText = ratio;
       const box = document.getElementById("stretchPreviewBox");
       box.style.width = (widthPx || 142) + "px";
       box.innerText = "ФОРМАТ " + (titleText || ratio);
-      document.getElementById("activateStretchBtnText").innerText = `⚡ АКТИВИРОВАТЬ КНОПКУ РАСТЯГА «T» (${ratio})`;
+      document.getElementById("activateStretchBtnText").innerText = "⚡ АКТИВИРОВАТЬ КНОПКУ РАСТЯГА «T» (" + ratio + ")";
       if (isSessionAuthorized) saveStateSilent();
     }
 
@@ -3254,7 +1652,7 @@
           return;
         }
       }
-      showTopToast(enabled ? `🎯 Широкие Хитбоксы (${currentStretch}) + 850Hz ВКЛ!` : "Широкие Хитбоксы ВЫКЛ");
+      showTopToast(enabled ? "🎯 Широкие Хитбоксы (" + currentStretch + ") + 850Hz ВКЛ!" : "Широкие Хитбоксы ВЫКЛ");
       saveStateSilent();
     }
 
@@ -3267,7 +1665,7 @@
       } else if (res === "NEED_AUTH") {
         window.forceShowKickScreen("Сначала активируйте лицензионный ключ!");
       } else {
-        showTopToast(`⚡ Кнопка растяга «T» (${currentStretch}) запущена!`);
+        showTopToast("⚡ Кнопка растяга «T» (" + currentStretch + ") запущена!");
       }
     }
 
@@ -3278,14 +1676,13 @@
       showTopToast("🔄 Кнопка «T» убрана, родной экран восстановлен");
     }
 
-    // ================= PRO КОНСТРУКТОР ПРИЦЕЛА =================
     function selectCrosshairShape(shape, label, el) {
       currentChShape = shape;
       document.querySelectorAll("#chShapePills .choice-pill").forEach(p => p.classList.remove("active"));
       if (el) {
         el.classList.add("active");
       } else {
-        const found = document.querySelector(`#chShapePills .choice-pill[data-shape="${shape}"]`);
+        const found = document.querySelector('#chShapePills .choice-pill[data-shape="' + shape + '"]');
         if (found) found.classList.add("active");
       }
       document.getElementById("chCornerStatus").innerText = label || shape.toUpperCase();
@@ -3303,7 +1700,7 @@
     function updateCrosshairOffset() {
       const offX = parseInt(document.getElementById("p-chOffX").value, 10) || 0;
       const offY = parseInt(document.getElementById("p-chOffY").value, 10) || 0;
-      document.getElementById("v-chOffset").innerText = `${offX} / ${offY}`;
+      document.getElementById("v-chOffset").innerText = offX + " / " + offY;
       const B = getBridge();
       if (B && B.setCrosshairOffset) {
         B.setCrosshairOffset(offX, offY);
@@ -3318,15 +1715,12 @@
       const dot = parseInt(document.getElementById("p-chDot").value, 10);
       const alpha = parseInt(document.getElementById("p-chAlpha").value, 10);
       const outline = document.getElementById("chOutlineToggle").checked;
-
       document.getElementById("v-chLen").innerText = len + " px";
       document.getElementById("v-chThick").innerText = thick + " px";
       document.getElementById("v-chGap").innerText = gap + " px";
       document.getElementById("v-chDot").innerText = dot + " px";
       document.getElementById("v-chAlpha").innerText = alpha + "%";
-
       renderCrosshairCanvas();
-
       if (!isSessionAuthorized) return;
       const B = getBridge();
       if (B) {
@@ -3345,7 +1739,6 @@
       if (!canvas) return;
       const ctx = canvas.getContext("2d");
       ctx.clearRect(0, 0, canvas.width, canvas.height);
-
       if (currentChShape === "off") {
         ctx.fillStyle = "#64748b";
         ctx.font = "bold 11px sans-serif";
@@ -3353,24 +1746,20 @@
         ctx.fillText("ПРИЦЕЛ ВЫКЛЮЧЕН", canvas.width / 2, canvas.height / 2 + 4);
         return;
       }
-
       const len = parseInt(document.getElementById("p-chLen").value, 10) * 1.35;
       const thick = parseInt(document.getElementById("p-chThick").value, 10) * 1.05;
       const gap = parseInt(document.getElementById("p-chGap").value, 10) * 1.25;
       const dot = parseInt(document.getElementById("p-chDot").value, 10) * 1.15;
       const alpha = parseInt(document.getElementById("p-chAlpha").value, 10) / 100;
       const outline = document.getElementById("chOutlineToggle").checked;
-
       const cx = canvas.width / 2;
       const cy = canvas.height / 2;
-
       ctx.save();
       ctx.globalAlpha = alpha;
       ctx.strokeStyle = currentChColor;
       ctx.fillStyle = currentChColor;
       ctx.lineWidth = thick;
       ctx.lineCap = "round";
-
       if (currentChShape === "dot") {
         if (outline) {
           ctx.fillStyle = "#000";
@@ -3381,7 +1770,6 @@
         ctx.restore();
         return;
       }
-
       if (currentChShape === "circle" || currentChShape === "circledot") {
         const rad = Math.max(4, len * 0.65);
         if (outline) {
@@ -3396,7 +1784,6 @@
         ctx.restore();
         return;
       }
-
       if (currentChShape === "box") {
         const boxHalf = Math.max(2.5, len * 0.30);
         if (outline) {
@@ -3408,7 +1795,6 @@
         ctx.restore();
         return;
       }
-
       if (currentChShape === "chevron") {
         const arm = Math.max(4, len * 0.55);
         const drawChev = (col, w) => {
@@ -3424,7 +1810,6 @@
         ctx.restore();
         return;
       }
-
       if (currentChShape === "corners") {
         const dist = Math.max(5, (gap + len) * 0.48);
         const leg = Math.max(3, len * 0.32);
@@ -3443,7 +1828,6 @@
         ctx.restore();
         return;
       }
-
       const drawCrossArms = (col, w) => {
         ctx.strokeStyle = col;
         ctx.lineWidth = w;
@@ -3456,17 +1840,14 @@
         }
         ctx.stroke();
       };
-
       if (outline) drawCrossArms("#000000", thick + 2.0);
       drawCrossArms(currentChColor, thick);
-
       if (currentChShape === "crossdot") {
         ctx.beginPath(); ctx.arc(cx, cy, dot, 0, Math.PI * 2); ctx.fill();
       }
       ctx.restore();
     }
 
-    // ================= НАСТРОЙКИ СИСТЕМЫ И БУСТЕРЫ =================
     function runRamCleanBoost() {
       const B = getBridge();
       if (B && B.performRamBoost) {
@@ -3474,7 +1855,7 @@
         const parts = res.split("|");
         if (parts.length >= 3) {
           document.getElementById("ramResultDesc").innerHTML =
-            `✅ Освобождено <b style="color:var(--accent)">+${parts[0]} МБ</b> ОЗУ! Свободно: <b>${parts[1]} из ${parts[2]} МБ</b>.`;
+            '✅ Освобождено <b style="color:var(--accent)">+' + parts[0] + ' МБ</b> ОЗУ! Свободно: <b>' + parts[1] + ' из ' + parts[2] + ' МБ</b>.';
         }
       }
       showTopToast("🧹 Оперативная память и кэш очищены!");
@@ -3491,7 +1872,7 @@
       const enabled = document.getElementById("sw-touchBoost").checked;
       const B = getBridge();
       if (B && B.setTouchSamplingBoost) B.setTouchSamplingBoost(enabled, currentSamplingHz);
-      showTopToast(enabled ? `⚡ Разгон тача ${currentSamplingHz} Гц активен!` : "Разгон герцовки тача выключен");
+      showTopToast(enabled ? "⚡ Разгон тача " + currentSamplingHz + " Гц активен!" : "Разгон герцовки тача выключен");
       saveStateSilent();
     }
 
@@ -3532,7 +1913,6 @@
       saveStateSilent();
     }
 
-    // ================= СОХРАНЕНИЕ И ЗАГРУЗКА НАСТРОЕК =================
     function collectFullConfig() {
       return {
         theme: currentThemeIdx,
@@ -3582,7 +1962,6 @@
       if (c.stretch) selectStretchFormat(c.stretch, 142, c.stretch, null);
       if (c.chColor) currentChColor = c.chColor;
       if (c.chShape) selectCrosshairShape(c.chShape, c.chShape.toUpperCase(), null);
-
       syncAllSliders();
       updateCrosshairOffset();
       updateCrosshairAll();
