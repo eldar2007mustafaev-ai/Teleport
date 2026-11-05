@@ -1,5 +1,11 @@
 package com.teleport.so2;
 
+import android.app.Notification;
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
+import android.content.BroadcastReceiver;
+import android.content.IntentFilter;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
@@ -1147,6 +1153,137 @@ public class AndroidBridge {
             return "{\"status\":\"error\",\"ok\":false,\"message\":\"Ошибка сети\"}";
         }
     }
+
+        // ================= ПАНЕЛЬ УПРАВЛЕНИЯ ВОЙСОМ В ШТОРКЕ УВЕДОМЛЕНИЙ =================
+    private static final String VOICE_CHANNEL_ID = "so2tp_voice_call_channel";
+    private static final int VOICE_NOTIF_ID = 7744;
+    private static final String ACTION_VOICE_MUTE = "com.teleport.so2.ACTION_VOICE_MUTE";
+    private static final String ACTION_VOICE_DEAFEN = "com.teleport.so2.ACTION_VOICE_DEAFEN";
+    private static final String ACTION_VOICE_HANGUP = "com.teleport.so2.ACTION_VOICE_HANGUP";
+
+    private boolean isReceiverRegistered = false;
+
+    private final BroadcastReceiver voiceNotifReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context ctx, Intent intent) {
+            if (intent == null || intent.getAction() == null) return;
+            String act = intent.getAction();
+            if (ACTION_VOICE_MUTE.equals(act)) {
+                evalJsInWebView("if(typeof toggleMicMute==='function') toggleMicMute();");
+            } else if (ACTION_VOICE_DEAFEN.equals(act)) {
+                evalJsInWebView("if(typeof toggleDeafenSpeaker==='function') toggleDeafenSpeaker();");
+            } else if (ACTION_VOICE_HANGUP.equals(act)) {
+                evalJsInWebView("if(typeof leaveVoiceRoom==='function') leaveVoiceRoom();");
+            }
+        }
+    };
+
+    private void evalJsInWebView(String jsCode) {
+        mainHandler.post(() -> {
+            try {
+                if (activity != null && !activity.isFinishing()) {
+                    View content = activity.findViewById(android.R.id.content);
+                    if (content instanceof android.view.ViewGroup) {
+                        android.view.ViewGroup vg = (android.view.ViewGroup) content;
+                        if (vg.getChildCount() > 0 && vg.getChildAt(0) instanceof android.webkit.WebView) {
+                            ((android.webkit.WebView) vg.getChildAt(0)).evaluateJavascript(jsCode, null);
+                        }
+                    }
+                }
+            } catch (Exception ignored) {}
+        });
+    }
+
+    private void ensureVoiceNotifSetup() {
+        if (!isReceiverRegistered) {
+            IntentFilter filter = new IntentFilter();
+            filter.addAction(ACTION_VOICE_MUTE);
+            filter.addAction(ACTION_VOICE_DEAFEN);
+            filter.addAction(ACTION_VOICE_HANGUP);
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                context.registerReceiver(voiceNotifReceiver, filter, Context.RECEIVER_NOT_EXPORTED);
+            } else {
+                context.registerReceiver(voiceNotifReceiver, filter);
+            }
+            isReceiverRegistered = true;
+        }
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            NotificationManager nm = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
+            if (nm != null && nm.getNotificationChannel(VOICE_CHANNEL_ID) == null) {
+                NotificationChannel ch = new NotificationChannel(
+                        VOICE_CHANNEL_ID,
+                        "SO2Teleport Голосовой Чат",
+                        NotificationManager.IMPORTANCE_HIGH
+                );
+                ch.setDescription("Управление микрофоном и звуком в катке");
+                ch.setSound(null, null);
+                ch.enableVibration(false);
+                nm.createNotificationChannel(ch);
+            }
+        }
+    }
+
+    @JavascriptInterface
+    public void updateVoiceCallNotification(String roomName, boolean isMuted, boolean isDeafened) {
+        mainHandler.post(() -> {
+            try {
+                ensureVoiceNotifSetup();
+                NotificationManager nm = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
+                if (nm == null) return;
+
+                int flags = PendingIntent.FLAG_UPDATE_CURRENT;
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                    flags |= PendingIntent.FLAG_IMMUTABLE;
+                }
+
+                Intent openIntent = new Intent(context, MainActivity.class);
+                openIntent.setFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP | Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                PendingIntent contentPi = PendingIntent.getActivity(context, 10, openIntent, flags);
+
+                PendingIntent mutePi = PendingIntent.getBroadcast(context, 11, new Intent(ACTION_VOICE_MUTE).setPackage(context.getPackageName()), flags);
+                PendingIntent deafPi = PendingIntent.getBroadcast(context, 12, new Intent(ACTION_VOICE_DEAFEN).setPackage(context.getPackageName()), flags);
+                PendingIntent hangPi = PendingIntent.getBroadcast(context, 13, new Intent(ACTION_VOICE_HANGUP).setPackage(context.getPackageName()), flags);
+
+                String muteLabel = isMuted ? "🎤 ВКЛ МИКРО" : "🔇 МУТ МИКРО";
+                String deafLabel = isDeafened ? "🎧 ВКЛ ЗВУК" : "🔈 БЕЗ ЗВУКА";
+                String statusSub = (isMuted ? "Микрофон ВЫКЛ" : "Микрофон ВКЛ") + " • " + (isDeafened ? "Звук ВЫКЛ" : "Шумодав Krisp АКТИВЕН");
+
+                Notification.Builder builder = (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O)
+                        ? new Notification.Builder(context, VOICE_CHANNEL_ID)
+                        : new Notification.Builder(context);
+
+                builder.setSmallIcon(android.R.drawable.ic_btn_speak_now)
+                        .setContentTitle("🟢 Войс: " + (roomName == null || roomName.isEmpty() ? "SQUAD" : roomName))
+                        .setContentText(statusSub)
+                        .setContentIntent(contentPi)
+                        .setOngoing(true)
+                        .setOnlyAlertOnce(true)
+                        .addAction(new Notification.Action.Builder(0, muteLabel, mutePi).build())
+                        .addAction(new Notification.Action.Builder(0, deafLabel, deafPi).build())
+                        .addAction(new Notification.Action.Builder(0, "❌ ВЫЙТИ", hangPi).build());
+
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                    builder.setColor(Color.parseColor("#14E8C6"));
+                    builder.setCategory(Notification.CATEGORY_CALL);
+                    builder.setVisibility(Notification.VISIBILITY_PUBLIC);
+                }
+
+                nm.notify(VOICE_NOTIF_ID, builder.build());
+            } catch (Exception ignored) {}
+        });
+    }
+
+    @JavascriptInterface
+    public void cancelVoiceCallNotification() {
+        mainHandler.post(() -> {
+            try {
+                NotificationManager nm = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
+                if (nm != null) nm.cancel(VOICE_NOTIF_ID);
+            } catch (Exception ignored) {}
+        });
+    }
+
 
     private int dpToPx(int dp) {
         return Math.round(dp * context.getResources().getDisplayMetrics().density);
