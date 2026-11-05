@@ -2241,11 +2241,24 @@
         return;
       }
 
-      const hwid = B.getDeviceHwid ? B.getDeviceHwid() : "39e220a438dedb68";
-      const hwRaw = B.getDeviceHardwareInfo ? B.getDeviceHardwareInfo() : "SM-S938B|1440x3120 (120 Гц)";
-      const hwParts = hwRaw.split("|");
-      const modelName = hwParts[0] || "SM-S938B";
-      const screenSpec = hwParts[1] || "1440x3120 (120 Гц)";
+      let hwid = "39e220a438dedb68";
+      let modelName = "SM-S938B";
+      let screenSpec = "1440x3120 (120 Гц)";
+
+      try {
+        if (typeof B.getDeviceHwid === "function") {
+          hwid = B.getDeviceHwid() || hwid;
+        }
+      } catch (e) {}
+
+      try {
+        if (typeof B.getDeviceHardwareInfo === "function") {
+          const hwRaw = B.getDeviceHardwareInfo() || "";
+          const hwParts = hwRaw.split("|");
+          modelName = hwParts[0] || modelName;
+          screenSpec = hwParts[1] || screenSpec;
+        }
+      } catch (e) {}
 
       document.getElementById("calibModelName").innerText = modelName;
       document.getElementById("profModelVal").innerText = modelName;
@@ -2253,7 +2266,11 @@
       document.getElementById("profHwidVal").innerText = hwid;
       document.getElementById("authHwidLabel").innerText = hwid;
 
-      const savedNick = (B.getSavedNickname && B.getSavedNickname()) ? B.getSavedNickname().trim() : "";
+      let savedNick = "";
+      try {
+        savedNick = (B.getSavedNickname && B.getSavedNickname()) ? B.getSavedNickname().trim() : "";
+      } catch (e) {}
+
       if (savedNick) {
         document.getElementById("loginNickInput").value = savedNick;
       }
@@ -2271,14 +2288,18 @@
       }
 
       document.getElementById("loginKeyInput").value = gateKey;
-      const verifyOut = B.verifyLicenseKey(gateKey);
-      if (verifyOut.startsWith("OK|") || verifyOut.startsWith("OFFLINE|")) {
-        const subLabel = verifyOut.split("|")[1] || "АКТИВНА (PRO)";
-        unlockAuthorizedSession(savedNick || "dare", gateKey, subLabel);
-        loadSavedSettingsJson();
-      } else {
-        const errMsg = verifyOut.split("|")[1] || "Срок действия ключа истёк! Введите действующий ключ.";
-        window.forceShowKickScreen(errMsg);
+      try {
+        const verifyOut = B.verifyLicenseKey(gateKey);
+        if (verifyOut && (verifyOut.startsWith("OK|") || verifyOut.startsWith("OFFLINE|"))) {
+          const subLabel = verifyOut.split("|")[1] || "АКТИВНА (PRO)";
+          unlockAuthorizedSession(savedNick || "dare", gateKey, subLabel);
+          loadSavedSettingsJson();
+        } else {
+          const errMsg = (verifyOut && verifyOut.includes("|")) ? verifyOut.split("|")[1] : "Срок действия ключа истёк!";
+          window.forceShowKickScreen(errMsg);
+        }
+      } catch (e) {
+        window.forceShowKickScreen("Введите ваш логин и лицензионный ключ");
       }
     }
 
