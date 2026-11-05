@@ -31,6 +31,7 @@
     }
 
     body {
+
       background-color: var(--bg-dark);
       background-image:
         radial-gradient(circle at 18% 8%, rgba(var(--accent-rgb), 0.20) 0%, transparent 44%),
@@ -58,14 +59,13 @@
       width: 100%;
       height: 100%;
       z-index: 999999;
-      background-color: var(--bg-dark);
-      background-image:
-        radial-gradient(circle at 50% 20%, rgba(var(--accent-rgb), 0.24) 0%, transparent 56%);
-      display: flex;
+      display: flex !important;
       flex-direction: column;
       align-items: center;
       justify-content: center;
       padding: 20px;
+      background-color: var(--bg-dark);
+      background-image: radial-gradient(circle at 50% 20%, rgba(var(--accent-rgb), 0.24) 0%, transparent 56%);
     }
 
     .auth-box {
@@ -1145,8 +1145,8 @@
     </div>
   </div>
 
-  <!-- ================= 1. ЭКРАН АВТОРИЗАЦИИ ПО КЛЮЧУ ================= -->
-  <div id="authScreen">
+    <!-- ================= 1. ЭКРАН АВТОРИЗАЦИИ ПО КЛЮЧУ (ЗАФИКСИРОВАН НАМЕРТВО) ================= -->
+  <div id="authScreen" style="display: flex;">
     <div class="auth-box">
       <div class="auth-pill-tag">QUANTUM ENGINE V410 • LICENSE GUARD</div>
       <div style="font-size:24px; font-weight:900; color:#fff; margin-bottom:5px;">
@@ -1159,13 +1159,13 @@
       <div id="authErrorBox" style="display:none; background:var(--danger-bg); border:1px solid var(--danger-border); color:var(--danger-text); padding:10px 12px; border-radius:12px; font-size:12px; font-weight:800; margin-bottom:12px;"></div>
 
       <input type="text" id="loginNickInput" class="cyber-field" placeholder="Ваш логин / ник (напр. dare)" autocomplete="off" />
-      <input type="text" id="loginKeyInput" class="cyber-field" placeholder="Ваш ключ (TP-...)" style="text-transform:uppercase; font-family:monospace;" autocomplete="off" />
+      <input type="text" id="loginKeyInput" class="cyber-field" placeholder="ВАШ КЛЮЧ (TP-...)" style="text-transform:uppercase; font-family:monospace;" autocomplete="off" />
 
-      <button type="button" class="btn-main" id="loginBtnAction" onclick="submitKeyLogin()" style="margin-top:4px; margin-bottom:10px;">
+      <button type="button" class="btn-main" id="loginBtnAction" onclick="window.submitKeyLogin()" style="margin-top:4px; margin-bottom:10px; position:relative; z-index:10; pointer-events:auto;">
         ⚡ АКТИВИРОВАТЬ КЛЮЧ И ВОЙТИ
       </button>
 
-      <button type="button" class="btn-dark" id="openTgBotBtn" onclick="openTgBot()">
+      <button type="button" class="btn-dark" id="openTgBotBtn" onclick="window.openTgBot()" style="position:relative; z-index:10; pointer-events:auto;">
         🤖 КУПИТЬ / ПОЛУЧИТЬ КЛЮЧ В TELEGRAM
       </button>
 
@@ -1174,6 +1174,7 @@
       </div>
     </div>
   </div>
+
 
   <!-- МОДАЛЬНОЕ ОКНО «УМНАЯ КАЛИБРОВКА ТЕЛЕФОНА» -->
   <div id="calibModal" class="modal-backdrop">
@@ -2222,6 +2223,81 @@
       try { if (B && B.stopTeleport) B.stopTeleport(); } catch (e) {}
     };
 
+        // ================= ЖЁСТКАЯ АВТОРИЗАЦИЯ БЕЗ АВТО-ПРОПУСКА =================
+    function unlockAuthorizedSession(nick, cleanKey, subStatusText) {
+      if (!cleanKey || cleanKey.length < 5) return;
+      isSessionAuthorized = true;
+      fullLicenseKeyPlain = cleanKey;
+      isKeyRevealed = false;
+
+      try {
+        localStorage.setItem("so2tp_active_nick_v412", nick);
+        localStorage.setItem("so2tp_active_key_v412", cleanKey);
+      } catch (e) {}
+
+      const authEl = document.getElementById("authScreen");
+      if (authEl) authEl.style.display = "none";
+
+      const rootEl = document.getElementById("mainAppRoot");
+      if (rootEl) rootEl.classList.remove("auth-locked");
+
+      const dockEl = document.getElementById("bottomDockBar");
+      if (dockEl) dockEl.classList.remove("auth-locked");
+
+      const errEl = document.getElementById("authErrorBox");
+      if (errEl) errEl.style.display = "none";
+
+      document.getElementById("chipPlayerName").innerText = nick;
+      document.getElementById("profLoginVal").innerText = nick;
+      document.getElementById("profSubVal").innerText = subStatusText;
+      updateProfileKeyDisplay();
+
+      setTimeout(() => { syncFriendsHubData(false); }, 300);
+    }
+
+    window.forceShowKickScreen = function(msg) {
+      isSessionAuthorized = false;
+      fullLicenseKeyPlain = "";
+      try { leaveVoiceRoom(); } catch (e) {}
+
+      try {
+        localStorage.removeItem(CLIENT_LOGIN_GATE_KEY);
+        localStorage.removeItem("so2tp_active_key_v412");
+      } catch (e) {}
+
+      const rootEl = document.getElementById("mainAppRoot");
+      if (rootEl) rootEl.classList.add("auth-locked");
+
+      const dockEl = document.getElementById("bottomDockBar");
+      if (dockEl) dockEl.classList.add("auth-locked");
+
+      const calibEl = document.getElementById("calibModal");
+      if (calibEl) calibEl.style.display = "none";
+
+      const authEl = document.getElementById("authScreen");
+      if (authEl) authEl.style.display = "flex";
+
+      const err = document.getElementById("authErrorBox");
+      if (err) {
+        if (msg && msg.trim().length > 0) {
+          err.style.display = "block";
+          err.innerText = "⛔ " + msg;
+        } else {
+          err.style.display = "none";
+        }
+      }
+
+      const homeTp = document.getElementById("homeTpToggle");
+      if (homeTp) homeTp.checked = false;
+      const innerTp = document.getElementById("innerTpToggle");
+      if (innerTp) innerTp.checked = false;
+      const tileLbl = document.getElementById("tileTpLabel");
+      if (tileLbl) tileLbl.innerText = "ВЫКЛ";
+
+      const B = getBridge();
+      try { if (B && B.stopTeleport) B.stopTeleport(); } catch (e) {}
+    };
+
     function logoutAndSwitchKey() {
       const B = getBridge();
       try {
@@ -2260,19 +2336,16 @@
       }
     }
 
-    function openTgBot() {
+    window.openTgBot = function() {
       const B = getBridge();
-      let opened = false;
       try {
         if (B && typeof B.openTelegramBot === "function") {
           B.openTelegramBot();
-          opened = true;
+          return;
         }
       } catch (e) {}
-      if (!opened) {
-        window.location.href = "https://t.me/SO2Teleport_bot";
-      }
-    }
+      window.open("https://t.me/SO2Teleport_bot", "_blank");
+    };
 
     function checkShizukuState() {
       const B = getBridge();
@@ -2289,22 +2362,189 @@
     }
 
     function pollLicenseExpiration() {
-      const B = getBridge();
-      if (!B || !isSessionAuthorized) return;
+      if (!isSessionAuthorized) return;
       if (!fullLicenseKeyPlain || fullLicenseKeyPlain.length < 5) {
         window.forceShowKickScreen("Введите лицензионный ключ для доступа!");
         return;
       }
+      const B = getBridge();
+      if (!B || typeof B.verifyLicenseKey !== "function") return;
       try {
         const verifyOut = String(B.verifyLicenseKey(fullLicenseKeyPlain) || "");
-        if (verifyOut.startsWith("OK|") || verifyOut.startsWith("OFFLINE|")) {
+        if (verifyOut.startsWith("OK|")) {
           const subLabel = verifyOut.split("|")[1] || "АКТИВНА";
           document.getElementById("profSubVal").innerText = subLabel;
-        } else if (verifyOut.length > 0) {
+        } else if (verifyOut.startsWith("ERR|") || verifyOut.startsWith("EXPIRED|") || verifyOut.startsWith("BANNED|")) {
           const reason = verifyOut.split("|")[1] || "Время действия вашего ключа истекло!";
           window.forceShowKickScreen(reason);
         }
       } catch (e) {}
+    }
+
+    window.submitKeyLogin = function() {
+      const nickEl = document.getElementById("loginNickInput");
+      const keyEl = document.getElementById("loginKeyInput");
+      const errBox = document.getElementById("authErrorBox");
+      const btn = document.getElementById("loginBtnAction");
+
+      const nickInput = (nickEl ? nickEl.value : "").trim();
+      const keyInput = (keyEl ? keyEl.value : "").trim().toUpperCase();
+
+      if (!nickInput) {
+        errBox.style.display = "block";
+        errBox.innerText = "⚠️ Введите ваш игровой логин / никнейм!";
+        return;
+      }
+
+      if (keyInput.length < 5) {
+        errBox.style.display = "block";
+        errBox.innerText = "⚠️ Введите лицензионный ключ из Telegram-бота!";
+        return;
+      }
+
+      errBox.style.display = "none";
+      btn.innerText = "⏳ ПРОВЕРКА КЛЮЧА НА СЕРВЕРЕ...";
+
+      const B = getBridge();
+      setTimeout(async () => {
+        try {
+          if (B && typeof B.savePlayerNickname === "function") {
+            B.savePlayerNickname(nickInput);
+          }
+        } catch (e) {}
+
+        if (B && typeof B.activateLicenseKey === "function") {
+          try {
+            const res = String(B.activateLicenseKey(keyInput) || "");
+            if (res.startsWith("OK|")) {
+              btn.innerText = "⚡ АКТИВИРОВАТЬ КЛЮЧ И ВОЙТИ";
+              const subLabel = res.split("|")[1] || "АКТИВНА (PRO)";
+              unlockAuthorizedSession(nickInput, keyInput, subLabel);
+              loadSavedSettingsJson();
+              showTopToast("✅ Ключ активирован! Добро пожаловать, " + nickInput);
+              return;
+            } else if (res.length > 0) {
+              btn.innerText = "⚡ АКТИВИРОВАТЬ КЛЮЧ И ВОЙТИ";
+              errBox.style.display = "block";
+              errBox.innerText = "⛔ " + (res.includes("|") ? res.split("|")[1] : res);
+              return;
+            }
+          } catch (e) {}
+        }
+
+        try {
+          const hwid = document.getElementById("authHwidLabel").innerText || "unknown_hwid";
+          const resp = await fetch("http://45.10.165.75:8080/api/activate", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              key: keyInput,
+              android_id: hwid,
+              nickname: nickInput,
+              build_version: 410
+            })
+          });
+          const data = await resp.json();
+          btn.innerText = "⚡ АКТИВИРОВАТЬ КЛЮЧ И ВОЙТИ";
+
+          if (data && data.ok === true) {
+            const remDays = Math.max(1, Math.floor((data.remaining_sec || 3600) / 86400));
+            unlockAuthorizedSession(nickInput, keyInput, remDays + " дн. (PRO)");
+            loadSavedSettingsJson();
+            showTopToast("✅ Ключ активирован! Добро пожаловать, " + nickInput);
+          } else {
+            errBox.style.display = "block";
+            errBox.innerText = "⛔ " + ((data && data.message) ? data.message : "Неверный или просроченный ключ!");
+          }
+        } catch (err) {
+          btn.innerText = "⚡ АКТИВИРОВАТЬ КЛЮЧ И ВОЙТИ";
+          errBox.style.display = "block";
+          errBox.innerText = "⛔ Нет связи с сервером лицензий! Вход без проверки запрещён.";
+        }
+      }, 50);
+    };
+
+    function initApplication() {
+      if (window._so2InitDone) return;
+      window._so2InitDone = true;
+
+      isSessionAuthorized = false;
+      fullLicenseKeyPlain = "";
+
+      const rootEl = document.getElementById("mainAppRoot");
+      if (rootEl) rootEl.classList.add("auth-locked");
+
+      const dockEl = document.getElementById("bottomDockBar");
+      if (dockEl) dockEl.classList.add("auth-locked");
+
+      const authEl = document.getElementById("authScreen");
+      if (authEl) authEl.style.display = "flex";
+
+      checkShizukuState();
+      setInterval(checkShizukuState, 4500);
+      setInterval(pollLicenseExpiration, 10000);
+      setInterval(() => {
+        if (isSessionAuthorized) syncFriendsHubData(false);
+      }, 8000);
+      renderCrosshairCanvas();
+
+      const loginBtn = document.getElementById("loginBtnAction");
+      if (loginBtn) {
+        loginBtn.onclick = function(e) {
+          if (e) e.preventDefault();
+          window.submitKeyLogin();
+        };
+      }
+      const tgBtn = document.getElementById("openTgBotBtn");
+      if (tgBtn) {
+        tgBtn.onclick = function(e) {
+          if (e) e.preventDefault();
+          window.openTgBot();
+        };
+      }
+
+      const B = getBridge();
+      let hwid = "НЕ ОПРЕДЕЛЕН";
+      let modelName = "SM-S938B";
+      let screenSpec = "1440x3120 (120 Гц)";
+
+      if (B) {
+        try {
+          if (typeof B.getDeviceHwid === "function") {
+            hwid = String(B.getDeviceHwid() || "39e220a438dedb68");
+          }
+        } catch (e) {}
+
+        try {
+          if (typeof B.getDeviceHardwareInfo === "function") {
+            const hwRaw = String(B.getDeviceHardwareInfo() || "");
+            const hwParts = hwRaw.split("|");
+            if (hwParts[0]) modelName = hwParts[0];
+            if (hwParts[1]) screenSpec = hwParts[1];
+          }
+        } catch (e) {}
+      } else {
+        hwid = "WEB-CLIENT";
+      }
+
+      document.getElementById("calibModelName").innerText = modelName;
+      document.getElementById("profModelVal").innerText = modelName;
+      document.getElementById("profScreenVal").innerText = screenSpec;
+      document.getElementById("profHwidVal").innerText = hwid;
+      document.getElementById("authHwidLabel").innerText = hwid;
+
+      let savedNick = "";
+      let savedKey = "";
+      try {
+        if (B && typeof B.getSavedNickname === "function") {
+          savedNick = String(B.getSavedNickname() || "").trim();
+        }
+        if (!savedNick) savedNick = localStorage.getItem("so2tp_active_nick_v412") || "";
+        savedKey = (localStorage.getItem("so2tp_active_key_v412") || "").trim().toUpperCase();
+      } catch (e) {}
+
+      if (savedNick) document.getElementById("loginNickInput").value = savedNick;
+      if (savedKey) document.getElementById("loginKeyInput").value = savedKey;
     }
 
     function initApplication() {
