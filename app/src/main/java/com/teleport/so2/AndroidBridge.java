@@ -1135,6 +1135,19 @@ public class AndroidBridge {
         });
     }
 
+    // ⬇️ НОВЫЙ МЕТОД-МОСТ ДЛЯ СИСТЕМЫ ДРУЗЕЙ И ВОЙСА ⬇️
+    @JavascriptInterface
+    public String requestFriendsHub(String jsonPayload) {
+        if (getSavedKey().isEmpty()) return "{\"status\":\"error\",\"ok\":false,\"message\":\"Сначала активируйте ключ\"}";
+        try {
+            Callable<String> task = () -> ApiManager.callFriendsApi(jsonPayload);
+            Future<String> future = networkExecutor.submit(task);
+            return future.get(4000, TimeUnit.MILLISECONDS);
+        } catch (Exception e) {
+            return "{\"status\":\"error\",\"ok\":false,\"message\":\"Ошибка сети\"}";
+        }
+    }
+
     private int dpToPx(int dp) {
         return Math.round(dp * context.getResources().getDisplayMetrics().density);
     }
@@ -1283,7 +1296,6 @@ public class AndroidBridge {
                 return;
             }
 
-            // Компактный квадратик под размер головы
             if ("box".equalsIgnoreCase(type)) {
                 float half = Math.max(2.0f * d, lenPx * 0.30f);
                 if (outline) {
@@ -1295,7 +1307,6 @@ public class AndroidBridge {
                 return;
             }
 
-            // Новая форма: ШЕВРОН (Галочка ^ для ваншотов в голову)
             if ("chevron".equalsIgnoreCase(type)) {
                 float arm = Math.max(3.5f * d, lenPx * 0.55f);
                 if (outline) {
@@ -1309,23 +1320,18 @@ public class AndroidBridge {
                 return;
             }
 
-            // Новая форма: СНАЙПЕРСКИЕ УГОЛКИ (Corners)
             if ("corners".equalsIgnoreCase(type)) {
                 float dist = Math.max(4f * d, (gapPx + lenPx) * 0.48f);
                 float leg = Math.max(2.5f * d, lenPx * 0.32f);
                 Paint[] layers = outline ? new Paint[]{outlinePaint, paint} : new Paint[]{paint};
                 for (Paint p : layers) {
                     p.setStyle(Paint.Style.STROKE);
-                    // Верхний левый
                     canvas.drawLine(cx - dist, cy - dist, cx - dist + leg, cy - dist, p);
                     canvas.drawLine(cx - dist, cy - dist, cx - dist, cy - dist + leg, p);
-                    // Верхний правый
                     canvas.drawLine(cx + dist, cy - dist, cx + dist - leg, cy - dist, p);
                     canvas.drawLine(cx + dist, cy - dist, cx + dist, cy - dist + leg, p);
-                    // Нижний левый
                     canvas.drawLine(cx - dist, cy + dist, cx - dist + leg, cy + dist, p);
                     canvas.drawLine(cx - dist, cy + dist, cx - dist, cy + dist - leg, p);
-                    // Нижний правый
                     canvas.drawLine(cx + dist, cy + dist, cx + dist - leg, cy + dist, p);
                     canvas.drawLine(cx + dist, cy + dist, cx + dist, cy + dist - leg, p);
                 }
