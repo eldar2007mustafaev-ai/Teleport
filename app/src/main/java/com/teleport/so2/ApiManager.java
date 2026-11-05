@@ -79,7 +79,6 @@ public class ApiManager {
 
             if (ok) {
                 sessionVerified = true;
-                // Сохраняем все поля от сервера (включая expires_in / days_left / message)
                 res.put("status", "ok");
                 res.put("ok", true);
                 if (!res.has("expires_in") && res.has("days_left")) {
@@ -139,7 +138,6 @@ public class ApiManager {
             }
             return raw;
         } catch (Exception e) {
-            // При кратковременном обрыве связи возвращаем offline, чтобы не кикать активного игрока из катки
             return "{\"status\":\"offline\",\"ok\":true,\"blocked\":false,\"message\":\"Проверка сети\"}";
         }
     }
@@ -189,6 +187,15 @@ public class ApiManager {
             return postWithFallback("/preset", payload.toString());
         } catch (Exception e) {
             return "{\"status\":\"ok\",\"ok\":true,\"message\":\"Конфиг " + shareCode + " успешно применён!\"}";
+        }
+    }
+
+    // ⬇️ НОВЫЙ МЕТОД ДЛЯ СИСТЕМЫ ДРУЗЕЙ И ВОЙСА ⬇️
+    public static String callFriendsApi(String jsonPayload) {
+        try {
+            return postWithFallback("/friends", jsonPayload);
+        } catch (Exception e) {
+            return "{\"status\":\"error\",\"ok\":false,\"message\":\"Нет связи с сервером друзей\"}";
         }
     }
 
