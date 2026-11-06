@@ -8,6 +8,9 @@ import android.os.Build;
 import android.util.DisplayMetrics;
 import android.view.WindowManager;
 
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+
 import rikka.shizuku.Shizuku;
 
 public class TeleportEngine {
@@ -17,6 +20,9 @@ public class TeleportEngine {
     private static boolean wideHitboxActive = false;
     private static int nativeShortSide = 1080;
     private static int nativeLongSide = 2400;
+
+    private static final ExecutorService shizukuQueue = Executors.newSingleThreadExecutor();
+    private static volatile String lastExecutedCmd = "";
 
     public static void init(Context context) {
         appContext = context.getApplicationContext();
@@ -82,16 +88,15 @@ public class TeleportEngine {
         } catch (Throwable ignored) {}
     }
 
-    public static void execShizukuCommand(String cmd) {
+    public static void execShizukuCommand(final String cmd) {
+        if (cmd == null || cmd.isEmpty()) return;
         if (!isShizukuReady() && !ShizukuManager.isPermissionGranted()) return;
-        new Thread(() -> {
+        shizukuQueue.execute(() -> {
             try {
                 ShizukuManager.execCommand(cmd);
             } catch (Throwable ignored) {}
-        }).start();
+        });
     }
-
-    // ================= ШАГ 1 РАСТЯГА: СУЖЕНИЕ С ПОЛОСАМИ (7 ФОРМАТОВ ВКЛЮЧАЯ 1:1 И 21:10) =================
 
     public static boolean applyAspectRatioStretch(String ratio) {
         if (!isShizukuReady() && !ShizukuManager.isPermissionGranted()) return false;
@@ -137,8 +142,6 @@ public class TeleportEngine {
         return true;
     }
 
-    // ================= ШАГ 2 РАСТЯГА: РАЗВОРОТ ИГРЫ ВО ВЕСЬ ЭКРАН =================
-
     public static void releaseBoxToFullStretch() {
         String cmd = "wm size reset; "
                 + "settings put system peak_refresh_rate 120.0; "
@@ -150,8 +153,6 @@ public class TeleportEngine {
     public static void resetResolutionToNative() {
         execShizukuCommand("wm size reset; wm density reset");
     }
-
-    // ================= EXTREME LINEAR TELEPORT (ПРЯМАЯ ЛИНИЯ БЕЗ ШАТАНИЯ + 800 EV/SEC) =================
 
     public static void enableWideHitboxQuantization(boolean enable) {
         wideHitboxActive = enable;
@@ -168,29 +169,35 @@ public class TeleportEngine {
         isEngineRunning = true;
         if (!isShizukuReady() && !ShizukuManager.isPermissionGranted()) return;
 
-        // Полное отключение сглаживания, инерции и предсказания координат Android:
-        // Прицел идет от точки старта до точки конца мгновенно и строго по ровной линии!
-        String cmd = "settings put secure touch_exploration_enabled 0; "
+        String pkg = appContext != null ? appContext.getPackageName() : "com.teleport.so2";
+        String cmd = "cmd appops set " + pkg + " POST_NOTIFICATION allow; "
+                + "pm grant " + pkg + " android.permission.POST_NOTIFICATIONS; "
+                + "settings put secure touch_exploration_enabled 0; "
                 + "settings put secure touch_blocking_period 0.0; "
                 + "settings put secure tap_duration_threshold 0.0; "
                 + "settings put secure ignore_repeat_click_timeout 0; "
-                + "settings put secure long_press_timeout 80; "
-                + "settings put secure multi_press_timeout 80; "
+                + "settings put secure long_press_timeout 55; "
+                + "settings put secure multi_press_timeout 55; "
                 + "settings put system pointer_speed 7; "
                 + "settings put secure game_touch_sampling_rate 360; "
                 + "settings put system touch_sampling_rate 360; "
                 + "settings put system rakuten_denwa_touch_sensitivity 1; "
                 + "settings put system touch_sensitivity 1; "
+                + "settings put system sec_touch_sensitivity 1; "
                 + "settings put secure stylus_handwriting_enabled 0; "
                 + "setprop debug.touch.slop 0; "
                 + "setprop view.touch_slop 0; "
                 + "setprop view.scroll_friction 0; "
                 + "setprop debug.input.touch.prediction 0; "
-                + "setprop ro.min_pointer_dur 1; "
-                + "setprop windowsmgr.max_events_per_sec 800; "
+                + "setprop ro.min_pointer_dur 0; "
+                + "setprop touch.pressure.scale 0.001; "
+                + "setprop touch.size.calibration geometric; "
+                + "setprop windowsmgr.max_events_per_sec 1000; "
+                + "setprop ro.max.fling_velocity 32000; "
+                + "setprop ro.min.fling_velocity 16000; "
                 + "setprop debug.sf.latch_unsignaled 1; "
                 + "setprop debug.sf.disable_backpressure 1; "
-                + "setprop debug.sf.early_phase_offset_ns 500000; "
+                + "setprop debug.sf.early_phase_offset_ns 250000; "
                 + "settings put system peak_refresh_rate 120.0; "
                 + "settings put system min_refresh_rate 120.0; "
                 + "settings put secure refresh_rate_mode 2; "
@@ -212,12 +219,14 @@ public class TeleportEngine {
                 "wm size reset; wm density reset; "
                 + "settings put secure touch_blocking_period 0.0; "
                 + "settings put secure tap_duration_threshold 0.0; "
-                + "settings put secure long_press_timeout 80; "
-                + "settings put secure multi_press_timeout 80; "
+                + "settings put secure long_press_timeout 55; "
+                + "settings put secure multi_press_timeout 55; "
+                + "setprop debug.touch.slop 0; "
                 + "setprop view.touch_slop 0; "
                 + "setprop view.scroll_friction 0; "
                 + "setprop debug.input.touch.prediction 0; "
-                + "setprop windowsmgr.max_events_per_sec 800; "
+                + "setprop ro.min_pointer_dur 0; "
+                + "setprop windowsmgr.max_events_per_sec 1000; "
                 + "settings put system pointer_speed 7"
         );
     }
@@ -229,10 +238,10 @@ public class TeleportEngine {
     ) {
         if (!isShizukuReady() && !ShizukuManager.isPermissionGranted()) return;
 
-        // Выжимаем максимум: даже на средних ползунках держим максимальный pointer_speed и нулевой slop
-        int pointerSpeed = (sharp >= 6.0 || sx >= 6.0) ? 7 : Math.max(5, (int) Math.round(sharp * 0.7));
-        int pressTimeout = Math.max(75, 130 - (chunks / 2));
-        int maxEvents = Math.min(900, 500 + (chunks * 4));
+        int pointerSpeed = (sharp >= 5.0 || sx >= 5.0) ? 7 : Math.max(5, (int) Math.round(sharp));
+        int pressTimeout = Math.max(50, 110 - (chunks / 2));
+        int maxEvents = Math.min(1000, 600 + (chunks * 4));
+        int flingMax = (int) Math.round(24000 + sharp * 800);
 
         String cmd = "settings put system pointer_speed " + pointerSpeed + "; "
                 + "settings put secure long_press_timeout " + pressTimeout + "; "
@@ -240,14 +249,19 @@ public class TeleportEngine {
                 + "settings put secure touch_blocking_period 0.0; "
                 + "settings put secure tap_duration_threshold 0.0; "
                 + "settings put system touch_sensitivity 1; "
+                + "settings put system sec_touch_sensitivity 1; "
                 + "setprop debug.touch.slop 0; "
                 + "setprop view.touch_slop 0; "
                 + "setprop view.scroll_friction 0; "
                 + "setprop debug.input.touch.prediction 0; "
-                + "setprop ro.min_pointer_dur 1; "
+                + "setprop ro.min_pointer_dur 0; "
+                + "setprop ro.max.fling_velocity " + flingMax + "; "
                 + "setprop windowsmgr.max_events_per_sec " + maxEvents + "; "
                 + "settings put secure game_touch_sampling_rate 360; "
                 + "settings put system touch_sampling_rate 360;";
+
+        if (cmd.equals(lastExecutedCmd)) return;
+        lastExecutedCmd = cmd;
         execShizukuCommand(cmd);
     }
 
@@ -258,8 +272,8 @@ public class TeleportEngine {
                     + "setprop view.touch_slop 0; "
                     + "setprop view.scroll_friction 0; "
                     + "setprop debug.input.touch.prediction 0; "
-                    + "setprop ro.min_pointer_dur 1; "
-                    + "setprop windowsmgr.max_events_per_sec 850; "
+                    + "setprop ro.min_pointer_dur 0; "
+                    + "setprop windowsmgr.max_events_per_sec 1000; "
                     + "settings put secure touch_blocking_period 0.0; "
                     + "settings put secure tap_duration_threshold 0.0; "
                     + "settings put system pointer_speed 7;";
@@ -340,7 +354,6 @@ public class TeleportEngine {
     }
 
     public static void setAutoGameDpi(boolean enabled, int dpi) {
-        // Отключено по запросу, чтобы никогда не ломать масштаб интерфейса
     }
 
     public static void setPixelDownscaleFactor(int pct) {
