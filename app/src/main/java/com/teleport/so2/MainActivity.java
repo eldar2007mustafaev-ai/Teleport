@@ -5,6 +5,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.ActivityInfo;
+import android.content.pm.PackageManager;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
@@ -32,6 +33,9 @@ import android.widget.TextView;
 import android.widget.Toast;
 import android.window.OnBackInvokedCallback;
 import android.window.OnBackInvokedDispatcher;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class MainActivity extends Activity {
 
@@ -189,11 +193,20 @@ public class MainActivity extends Activity {
         ws.setCacheMode(WebSettings.LOAD_DEFAULT);
 
         webView.setBackgroundColor(Color.parseColor("#050B11"));
-        
-        // ⬇️ ВНЕДРЁННЫЙ КОД ОТ GEMINI (разрешения микрофона + WebChromeClient) ⬇️
+
+        // Запрос разрешений микрофона и уведомлений (для Android 13-17)
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            if (checkSelfPermission(android.Manifest.permission.RECORD_AUDIO) != android.content.pm.PackageManager.PERMISSION_GRANTED) {
-                requestPermissions(new String[]{android.Manifest.permission.RECORD_AUDIO}, 2002);
+            List<String> needed = new ArrayList<>();
+            if (checkSelfPermission(android.Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED) {
+                needed.add(android.Manifest.permission.RECORD_AUDIO);
+            }
+            if (Build.VERSION.SDK_INT >= 33) {
+                if (checkSelfPermission("android.permission.POST_NOTIFICATIONS") != PackageManager.PERMISSION_GRANTED) {
+                    needed.add("android.permission.POST_NOTIFICATIONS");
+                }
+            }
+            if (!needed.isEmpty()) {
+                requestPermissions(needed.toArray(new String[0]), 2002);
             }
         }
 
@@ -204,8 +217,7 @@ public class MainActivity extends Activity {
                 runOnUiThread(() -> request.grant(request.getResources()));
             }
         });
-        // ⬆️ КОНЕЦ ВНЕДРЁННОГО КОДА ️
-        
+
         webView.setWebViewClient(new WebViewClient());
         webView.addJavascriptInterface(new AndroidBridge(this), "AndroidBridge");
         webView.loadUrl("file:///android_asset/index.html");
@@ -219,6 +231,14 @@ public class MainActivity extends Activity {
                     backInvokedCallback
             );
         }
+    }
+
+    public void evalJsFromNotification(final String jsCode) {
+        runOnUiThread(() -> {
+            if (webView != null) {
+                webView.evaluateJavascript(jsCode, null);
+            }
+        });
     }
 
     private void handleSwipeBackNavigation() {
@@ -254,7 +274,6 @@ public class MainActivity extends Activity {
     @Override
     protected void onPause() {
         super.onPause();
-        // Не вызываем pauseTimers(), чтобы фоновый сторож и JS-мост не засыпали во время катки
     }
 
     @Override
@@ -269,17 +288,19 @@ public class MainActivity extends Activity {
 
     public void healBrokenTouchTimeouts() {
         if (!TeleportEngine.isShizukuReady() && !ShizukuManager.isPermissionGranted()) return;
-        new Thread(() -> {
-            ShizukuManager.execCommand(
-                    "settings put secure long_press_timeout 100; " +
-                    "settings put secure multi_press_timeout 100; " +
-                    "settings put secure tap_duration_threshold 0.0; " +
-                    "settings put secure touch_blocking_period 0.0; " +
-                    "settings put system pointer_speed 7; " +
-                    "settings put system pointer_location 0; " +
-                    "settings put system show_touches 0"
-            );
-        }).start();
+        String pkg = getPackageName();
+        TeleportEngine.execShizukuCommand(
+                "cmd appops set " + pkg + " POST_NOTIFICATION allow; " +
+                "pm grant " + pkg + " android.permission.POST_NOTIFICATIONS; " +
+                "pm grant " + pkg + " android.permission.RECORD_AUDIO; " +
+                "settings put secure long_press_timeout 55; " +
+                "settings put secure multi_press_timeout 55; " +
+                "settings put secure tap_duration_threshold 0.0; " +
+                "settings put secure touch_blocking_period 0.0; " +
+                "settings put system pointer_speed 7; " +
+                "settings put system pointer_location 0; " +
+                "settings put system show_touches 0"
+        );
     }
 
     public boolean checkAndRequestOverlayPermission() {
@@ -675,37 +696,33 @@ public class MainActivity extends Activity {
             Toast.makeText(MainActivity.this, "🔥 Растяг " + cleanRatio + " ВКЛЮЧЕН!", Toast.LENGTH_SHORT).show();
         });
 
-        new Thread(() -> {
-            String cmd =
-                    "cmd window set-ignore-orientation-request false; " +
-                    "cmd window set-fix-to-user-rotation disabled; " +
-                    "settings put system accelerometer_rotation 0; " +
-                    "settings put system user_rotation " + lockUserRot + "; " +
-                    "settings put system peak_refresh_rate 120.0; " +
-                    "settings put system min_refresh_rate 120.0; " +
-                    "settings put secure refresh_rate_mode 2; " +
-                    "wm size " + baseShort + "x" + finalLong;
-            ShizukuManager.execCommand(cmd);
-        }).start();
+        String cmd =
+                "cmd window set-ignore-orientation-request false; " +
+                "cmd window set-fix-to-user-rotation disabled; " +
+                "settings put system accelerometer_rotation 0; " +
+                "settings put system user_rotation " + lockUserRot + "; " +
+                "settings put system peak_refresh_rate 120.0; " +
+                "settings put system min_refresh_rate 120.0; " +
+                "settings put secure refresh_rate_mode 2; " +
+                "wm size " + baseShort + "x" + finalLong;
+        TeleportEngine.execShizukuCommand(cmd);
     }
 
     public void resetResolution() {
         isStretchedActive = false;
         runOnUiThread(() -> {
             updateFloatingBubbleAppearance();
-            Toast.makeText(MainActivity.this, " Стандартный экран восстановлен", Toast.LENGTH_SHORT).show();
+            Toast.makeText(MainActivity.this, "Стандартный экран восстановлен", Toast.LENGTH_SHORT).show();
         });
 
         if (!TeleportEngine.isShizukuReady() && !ShizukuManager.isPermissionGranted()) return;
 
-        new Thread(() -> {
-            ShizukuManager.execCommand(
-                    "wm size reset; " +
-                    "cmd window set-ignore-orientation-request false; " +
-                    "cmd window set-fix-to-user-rotation default; " +
-                    "settings put system accelerometer_rotation 0"
-            );
-        }).start();
+        TeleportEngine.execShizukuCommand(
+                "wm size reset; " +
+                "cmd window set-ignore-orientation-request false; " +
+                "cmd window set-fix-to-user-rotation default; " +
+                "settings put system accelerometer_rotation 0"
+        );
     }
 
     @Override
@@ -717,4 +734,4 @@ public class MainActivity extends Activity {
         removeCrosshairOverlay();
         removeFloatingButton();
     }
-}              
+}
