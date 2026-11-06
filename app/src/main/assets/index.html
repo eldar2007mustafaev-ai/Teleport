@@ -1354,7 +1354,7 @@
       </div>
     </div>
 
-    <!-- ================= ЭКРАН 3: РАСТЯГ ЭКРАНА ================= -->
+    <!-- ================= ЭКРАН 3: РАСТЯГ ЭКРАНА (ИСПРАВЛЕННЫЕ КЛИКАБЕЛЬНЫЕ ПИЛЛИ) ================= -->
     <div id="page-stretch" class="page-view">
       <div class="back-bar" onclick="openPage('page-home')">
         <span class="arrow">←</span>
@@ -1785,7 +1785,7 @@
       </button>
     </div>
   </div>
-    <script>
+  <script>
     const CLIENT_LOGIN_GATE_KEY = "so2tp_manual_login_v412";
     const API_HTTP_BASE = "http://45.10.165.75:8080/api";
     const VOICE_WS_URL = "ws://45.10.165.75:8080/ws/voice";
@@ -3230,7 +3230,9 @@
       saveStateSilent();
     }
 
-    function applyRecoilProSettings() { onRecoilSliderCommit(); }
+    function applyRecoilProSettings() {
+      onRecoilSliderCommit();
+    }
 
     function toggleStealthModeFlag(enabled) {
       showTopToast(enabled ? "🕵️ Невидимость на записи (Stealth) ВКЛ" : "Stealth режим ВЫКЛ");
@@ -3241,184 +3243,7 @@
       saveStateSilent();
     }
 
-    function onZeroDelayToggle(enabled) {
-      showTopToast(enabled ? "⚡ Мгновенный отклик 1 мм (Zero-Delay) ВКЛ!" : "Мгновенный отклик 1 мм ВЫКЛ");
-      enqueueBridgeTask("zero_delay_toggle", () => {
-        const B = getBridge();
-        if (B && B.setRawInputNoSmoothing) B.setRawInputNoSmoothing(enabled);
-        if (enabled && B && B.applyUltraProTouchMatrix) B.applyUltraProTouchMatrix(3);
-      }, 20);
-      saveStateSilent();
-    }
-
-    function onSensSliderInput() {
-      const elSharp = document.getElementById("p-sharp");
-      const elSx = document.getElementById("p-sx");
-      const elSy = document.getElementById("p-sy");
-      const elStraight = document.getElementById("p-straight");
-      const elStick = document.getElementById("p-stickForce");
-      const elChunks = document.getElementById("p-chunks");
-
-      [elSharp, elSx, elSy, elStraight, elStick, elChunks].forEach(syncRangeFill);
-
-      document.getElementById("v-sharp").innerText = parseFloat(elSharp.value).toFixed(1);
-      document.getElementById("v-sx").innerText = parseFloat(elSx.value).toFixed(1);
-      document.getElementById("v-sy").innerText = parseFloat(elSy.value).toFixed(1);
-      document.getElementById("v-straight").innerText = elStraight.value + "%";
-      document.getElementById("v-stickForce").innerText = elStick.value + "%";
-      document.getElementById("v-chunks").innerText = elChunks.value + "%";
-    }
-
-    function onSensSliderCommit() {
-      onSensSliderInput();
-      pushEngineParametersImmediate(false);
-    }
-
-    function syncAllSliders() {
-      onSensSliderInput();
-      pushEngineParametersImmediate(false);
-    }
-
-    function pushEngineParametersImmediate(forcePush) {
-      if (!isSessionAuthorized) return;
-      const sharp = parseFloat(document.getElementById("p-sharp").value);
-      const sx = parseFloat(document.getElementById("p-sx").value);
-      const sy = parseFloat(document.getElementById("p-sy").value);
-      const chunks = parseInt(document.getElementById("p-chunks").value, 10);
-      const chunkFast = 100;
-      const straight = parseFloat(document.getElementById("p-straight").value) / 10.0;
-      const stick = parseInt(document.getElementById("p-stickForce").value, 10);
-      const grid = 128;
-      const pause = 0;
-      const accel = 10.0;
-
-      const sig = [sharp, sx, sy, chunks, chunkFast, straight, stick, grid, pause, accel].join("|");
-      if (!forcePush && sig === lastEngineSignature) return;
-      lastEngineSignature = sig;
-
-      enqueueBridgeTask("update_engine_params", () => {
-        const B = getBridge();
-        if (B && B.updateParameters) {
-          B.updateParameters(sharp, sx, sy, chunks, chunkFast, straight, stick, grid, pause, accel);
-        }
-      }, 25);
-      saveStateSilent();
-    }
-
-    function runSmartScanAndApply() {
-      document.getElementById("zeroDelaySnapToggle").checked = true;
-      selectQuickSensMode(1, 10.0, 10.0, 8.2, 100, 96, 100);
-      enqueueBridgeTask("smart_scan", () => {
-        const B = getBridge();
-        let model = document.getElementById("profModelVal").innerText || "SM-S938B";
-        if (B && B.runSmartDeviceScan) {
-          const res = String(B.runSmartDeviceScan() || "");
-          model = res.split("|")[0] || model;
-        }
-        document.getElementById("calibModelName").innerText = model;
-        if (B && B.applyUltraProTouchMatrix) B.applyUltraProTouchMatrix(3);
-        showTopToast("🔥 Выжат максимум для " + model + " (850 ev/s)!");
-      }, 25);
-    }
-
-    function testOneMmFlickResponse() {
-      showTopToast("⚡ Сенсор сброшен и разогнан до 850 пакетов/сек!");
-      enqueueBridgeTask("heal_touch", () => {
-        const B = getBridge();
-        if (B && B.healTouch) B.healTouch();
-        if (B && B.applyUltraProTouchMatrix) B.applyUltraProTouchMatrix(3);
-      }, 20);
-    }
-
-    function loadFullProBundle(title, sharp, sx, sy, straightPct, stickPct, chunksPct, chShape, chHex, recoilOn) {
-      document.getElementById("p-sharp").value = sharp;
-      document.getElementById("p-sx").value = sx;
-      document.getElementById("p-sy").value = sy;
-      document.getElementById("p-straight").value = straightPct;
-      document.getElementById("p-stickForce").value = stickPct;
-      document.getElementById("p-chunks").value = chunksPct;
-      document.getElementById("zeroDelaySnapToggle").checked = true;
-      document.getElementById("sw-recoilPro").checked = !!recoilOn;
-
-      onSensSliderInput();
-      onRecoilSliderCommit();
-
-      currentChColor = chHex;
-      document.getElementById("customChColorPicker").value = chHex;
-      selectCrosshairShape(chShape, chShape.toUpperCase(), null);
-
-      toggleTeleportMaster(true);
-      showTopToast("🔥 Сборка «" + title + "» включена!");
-    }
-
-    function encodePortableConfigToken() {
-      const c = collectFullConfig();
-      const packed = [
-        c.theme, c.tpOn ? 1 : 0, c.zeroSnap ? 1 : 0,
-        c.sharp, c.sx, c.sy, c.straight, c.stickForce, c.chunks,
-        c.stretch, c.chShape, c.chColor,
-        c.chLen, c.chThick, c.chGap, c.chDot, c.chAlpha,
-        c.chOffX, c.chOffY, c.chOutline ? 1 : 0,
-        c.recoilPower
-      ].join("|");
-      return "SO2-" + btoa(unescape(encodeURIComponent(packed))).replace(/=+$/, "");
-    }
-
-    function decodePortableConfigToken(tokenStr) {
-      try {
-        let clean = tokenStr.trim();
-        if (clean.includes("c=")) clean = clean.split("c=")[1].trim();
-        if (clean.startsWith("SO2-") && clean.length > 12) {
-          const b64 = clean.substring(4);
-          const raw = decodeURIComponent(escape(atob(b64)));
-          const p = raw.split("|");
-          if (p.length >= 20) {
-            return {
-              theme: parseInt(p[0], 10) || 0,
-              tpOn: p[1] === "1",
-              zeroSnap: p[2] === "1",
-              sharp: p[3], sx: p[4], sy: p[5],
-              straight: p[6], stickForce: p[7], chunks: p[8],
-              stretch: p[9], chShape: p[10], chColor: p[11],
-              chLen: p[12], chThick: p[13], chGap: p[14], chDot: p[15], chAlpha: p[16],
-              chOffX: p[17] || "0", chOffY: p[18] || "0",
-              chOutline: p[19] === "1",
-              recoilPower: p[20] || "100"
-            };
-          }
-        }
-      } catch (e) {}
-      return null;
-    }
-
-    function generateAndCopyShareLink() {
-      const portableCode = encodePortableConfigToken();
-      enqueueBridgeTask("upload_cfg", () => {
-        const B = getBridge();
-        if (B && B.uploadCloudConfig) B.uploadCloudConfig("PRO CFG", JSON.stringify(collectFullConfig()));
-      }, 30);
-      const shareUrl = "https://so2tp.cfg/?c=" + portableCode;
-      document.getElementById("shareLinkInput").value = shareUrl;
-      if (navigator.clipboard) navigator.clipboard.writeText(shareUrl);
-      showTopToast("🔗 Код скопирован!");
-    }
-
-    function applySharedConfigCode() {
-      const val = document.getElementById("shareLinkInput").value.trim();
-      if (!val) { showTopToast("⚠️ Введите код!"); return; }
-      const decoded = decodePortableConfigToken(val);
-      if (decoded) {
-        applyFullConfigObject(decoded);
-        saveCurrentConfigNow();
-        showTopToast("✅ Конфиг применён!");
-        return;
-      }
-      toggleTeleportMaster(true);
-      showTopToast("✅ Конфиг активирован!");
-    }
-
-    function shareQuickLinkAction() { openPage("page-configs"); generateAndCopyShareLink(); }
-
+    // ================= СОХРАНЕНИЕ И ЗАГРУЗКА НАСТРОЕК =================
     function collectFullConfig() {
       return {
         theme: currentThemeIdx,
@@ -3469,8 +3294,15 @@
       if (c.chColor) currentChColor = c.chColor;
       if (c.chShape) selectCrosshairShape(c.chShape, c.chShape.toUpperCase(), null);
 
-      onSensSliderInput(); onCrosshairOffsetInput(); onCrosshairSliderInput(); onRecoilSliderInput(); syncAllRangeFills();
-      if (c.tpOn !== undefined && isSessionAuthorized) toggleTeleportMaster(!!c.tpOn);
+      onSensSliderInput();
+      onCrosshairOffsetInput();
+      onCrosshairSliderInput();
+      onRecoilSliderInput();
+      syncAllRangeFills();
+
+      if (c.tpOn !== undefined && isSessionAuthorized) {
+        toggleTeleportMaster(!!c.tpOn);
+      }
     }
 
     function saveStateSilent() {
@@ -3479,7 +3311,9 @@
       try { localStorage.setItem("so2tp_backup_v410", jsonStr); } catch (e) {}
       enqueueBridgeTask("save_cfg_json", () => {
         const B = getBridge();
-        if (B && B.saveFullConfigJson) B.saveFullConfigJson(jsonStr);
+        if (B && B.saveFullConfigJson) {
+          B.saveFullConfigJson(jsonStr);
+        }
       }, 180);
     }
 
@@ -3487,7 +3321,7 @@
       if (!isSessionAuthorized) return;
       saveStateSilent();
       pushEngineParametersImmediate(true);
-      showTopToast("💾 Настройки сохранены!");
+      showTopToast("💾 Все настройки успешно сохранены!");
     }
 
     function loadSavedSettingsJson() {
