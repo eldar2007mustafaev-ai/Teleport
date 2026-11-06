@@ -517,7 +517,79 @@
       background: linear-gradient(135deg, var(--accent), var(--accent-2));
       border-color: rgba(255, 255, 255, 0.32);
     }
-    /* ================= АККУРАТНЫЕ И КРАСИВЫЕ SLIM-ПОЛЗУНКИ ================= */
+    /* ================= КОМПАКТНЫЕ СЛИМ-ПОЛЗУНКИ В 2 КОЛОНКИ ================= */
+    .compact-sliders-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 7px;
+      margin-bottom: 8px;
+    }
+    .compact-sliders-grid .param-box {
+      margin-bottom: 0;
+      padding: 8px 9px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+    .compact-sliders-grid .param-name {
+      font-size: 11px;
+      line-height: 1.15;
+    }
+    .compact-sliders-grid .param-val-pill {
+      font-size: 10px;
+      padding: 1px 6px;
+    }
+    .compact-sliders-grid .param-sub {
+      font-size: 9.2px;
+      line-height: 1.2;
+      margin-top: 4px;
+      background: rgba(255, 255, 255, 0.03);
+      border-left: 2px solid var(--accent);
+      padding: 3px 5px;
+      border-radius: 4px;
+      color: var(--text-muted);
+    }
+    .quick-modes-compact {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 6px;
+      margin-bottom: 7px;
+    }
+    .qmode-chip {
+      background: var(--bg-card-inner);
+      border: 1px solid rgba(255, 255, 255, 0.10);
+      border-radius: 11px;
+      padding: 8px 6px;
+      text-align: center;
+      cursor: pointer;
+      transition: 0.14s;
+    }
+    .qmode-chip.active {
+      background: linear-gradient(145deg, rgba(var(--accent-rgb), 0.28), var(--bg-card-inner));
+      border: 1.5px solid var(--accent);
+      box-shadow: 0 0 12px rgba(var(--accent-rgb), 0.25);
+    }
+    .qmode-chip-title {
+      font-size: 10.5px;
+      font-weight: 900;
+      color: #fff;
+    }
+    .qmode-chip-sub {
+      font-size: 9px;
+      color: var(--accent);
+      font-weight: 800;
+      margin-top: 2px;
+    }
+    .info-note-box {
+      background: var(--bg-card-inner);
+      border: 1px solid rgba(var(--accent-rgb), 0.24);
+      border-left: 3px solid var(--accent);
+      border-radius: 10px;
+      padding: 7px 10px;
+      font-size: 10.5px;
+      color: #cbd5e1;
+      line-height: 1.35;
+    }
     .param-box {
       background: rgba(11, 9, 18, 0.78);
       border: 1px solid rgba(var(--accent-rgb), 0.18);
@@ -943,79 +1015,6 @@
       display: none;
       white-space: nowrap;
     }
-        /* КОМПАКТНАЯ 2-КОЛОНОЧНАЯ СЕТКА ПОЛЗУНКОВ И РЕЖИМОВ */
-    .compact-sliders-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 7px;
-      margin-bottom: 8px;
-    }
-    .compact-sliders-grid .param-box {
-      margin-bottom: 0;
-      padding: 8px 9px;
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
-    }
-    .compact-sliders-grid .param-name {
-      font-size: 11px;
-      line-height: 1.15;
-    }
-    .compact-sliders-grid .param-val-pill {
-      font-size: 10px;
-      padding: 1px 6px;
-    }
-    .compact-sliders-grid .param-sub {
-      font-size: 9.2px;
-      line-height: 1.2;
-      margin-top: 4px;
-      background: rgba(255, 255, 255, 0.03);
-      border-left: 2px solid var(--accent);
-      padding: 3px 5px;
-      border-radius: 4px;
-      color: var(--text-muted);
-    }
-    .quick-modes-compact {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 6px;
-      margin-bottom: 7px;
-    }
-    .qmode-chip {
-      background: var(--bg-card-inner);
-      border: 1px solid rgba(255, 255, 255, 0.10);
-      border-radius: 11px;
-      padding: 8px 6px;
-      text-align: center;
-      cursor: pointer;
-      transition: 0.14s;
-    }
-    .qmode-chip.active {
-      background: linear-gradient(145deg, rgba(var(--accent-rgb), 0.28), var(--bg-card-inner));
-      border: 1.5px solid var(--accent);
-      box-shadow: 0 0 12px rgba(var(--accent-rgb), 0.25);
-    }
-    .qmode-chip-title {
-      font-size: 10.5px;
-      font-weight: 900;
-      color: #fff;
-    }
-    .qmode-chip-sub {
-      font-size: 9px;
-      color: var(--accent);
-      font-weight: 800;
-      margin-top: 2px;
-    }
-    .info-note-box {
-      background: var(--bg-card-inner);
-      border: 1px solid rgba(var(--accent-rgb), 0.24);
-      border-left: 3px solid var(--accent);
-      border-radius: 10px;
-      padding: 7px 10px;
-      font-size: 10.5px;
-      color: #cbd5e1;
-      line-height: 1.35;
-    }
   </style>
 </head>
 <body>
@@ -1036,7 +1035,7 @@
     </div>
   </div>
 
-  <!-- ================= 1. ЭКРАН АВТОРИЗАЦИИ ПО КЛЮЧУ (ЗАФИКСИРОВАН НАМЕРТВО) ================= -->
+  <!-- ================= 1. ЭКРАН АВТОРИЗАЦИИ ПО КЛЮЧУ ================= -->
   <div id="authScreen">
     <div class="auth-box">
       <div class="auth-pill-tag">QUANTUM ENGINE V410 • LICENSE GUARD</div>
@@ -1061,7 +1060,7 @@
     </div>
   </div>
 
-  <!-- МОДАЛЬНОЕ ОКНО «УМНАЯ КАЛИБРОВКА ТЕЛЕФОНА» -->
+  <!-- МОДАЛЬНОЕ ОКНО «КАЛИБРОВКА» -->
   <div id="calibModal" class="modal-backdrop">
     <div class="modal-card">
       <div style="font-size:26px; margin-bottom:6px;">⚡</div>
@@ -1119,7 +1118,6 @@
       </div>
 
       <div class="bento-grid">
-        <!-- 1. СЕНСА -->
         <div class="bento-tile" onclick="openSensTile()">
           <div class="tile-top">
             <div class="tile-icon-box">⚡</div>
@@ -1137,76 +1135,37 @@
           </div>
         </div>
 
-        <!-- 2. ГОТОВЫЕ КОНФИГИ -->
         <div class="bento-tile" onclick="openPage('page-configs')">
-          <div class="tile-top">
-            <div class="tile-icon-box">🔥</div>
-            <div class="tile-badge-hot">🔥 6 PRO СБОРОК</div>
-          </div>
-          <div>
-            <div class="tile-title">Готовые конфиги</div>
-            <div class="tile-desc">Боевые связки «Телепорт + Растяг + Прицел» в 1 клик</div>
-          </div>
+          <div class="tile-top"><div class="tile-icon-box">🔥</div><div class="tile-badge-hot">🔥 6 PRO СБОРОК</div></div>
+          <div><div class="tile-title">Готовые конфиги</div><div class="tile-desc">Боевые связки «Телепорт + Растяг + Прицел» в 1 клик</div></div>
         </div>
 
-        <!-- 3. РАСТЯГ -->
         <div class="bento-tile" onclick="openPage('page-stretch')">
-          <div class="tile-top">
-            <div class="tile-icon-box">📐</div>
-            <div class="tile-arrow">›</div>
-          </div>
-          <div>
-            <div class="tile-title">Растяг (7 видов)</div>
-            <div class="tile-desc">Форматы 4:3, 5:4, 1:1, 21:10 и широкие хитбоксы с кнопкой «T»</div>
-          </div>
+          <div class="tile-top"><div class="tile-icon-box">📐</div><div class="tile-arrow">›</div></div>
+          <div><div class="tile-title">Растяг (7 видов)</div><div class="tile-desc">Форматы 4:3, 5:4, 1:1, 21:10 и широкие хитбоксы с кнопкой «T»</div></div>
         </div>
 
-        <!-- 4. КАСТОМНЫЙ ПРИЦЕЛ -->
         <div class="bento-tile" onclick="openPage('page-crosshair')">
-          <div class="tile-top">
-            <div class="tile-icon-box">🎯</div>
-            <div class="tile-arrow">›</div>
-          </div>
-          <div>
-            <div class="tile-title">Кастомный прицел</div>
-            <div class="tile-desc">10 форм (Шеврон, Уголки, Бокс, Крест) + сдвиг X/Y</div>
-          </div>
+          <div class="tile-top"><div class="tile-icon-box">🎯</div><div class="tile-arrow">›</div></div>
+          <div><div class="tile-title">Кастомный прицел</div><div class="tile-desc">10 форм (Шеврон, Уголки, Бокс, Крест) + сдвиг X/Y</div></div>
         </div>
 
-        <!-- 5. ДРУЗЬЯ И ВОЙС -->
         <div class="bento-tile wide-tile" onclick="openFriendsTile()">
           <div class="tile-top" style="margin-bottom:5px;">
             <div class="tile-icon-box">🎧</div>
             <div id="friendsTileBadge" class="tile-badge-voice">DISCORD VOICE • ЧИСТЫЙ ЗВУК</div>
           </div>
-          <div>
-            <div class="tile-title">Друзья и Голосовой Чат</div>
-            <div class="tile-desc">Поиск тиммейтов по ID (SO2-XXXX), звонки без фонового шума и эха прямо в катке</div>
-          </div>
+          <div><div class="tile-title">Друзья и Голосовой Чат</div><div class="tile-desc">Поиск тиммейтов по ID (SO2-XXXX), звонки без фонового шума и эха</div></div>
         </div>
 
-        <!-- 6. НАСТРОЙКИ -->
         <div class="bento-tile" onclick="openPage('page-settings')">
-          <div class="tile-top">
-            <div class="tile-icon-box">🚀</div>
-            <div class="tile-arrow">›</div>
-          </div>
-          <div>
-            <div class="tile-title">Настройки</div>
-            <div class="tile-desc">Vulkan GPU Turbo, стабилизатор пинга, 360 Гц и RAM Boost</div>
-          </div>
+          <div class="tile-top"><div class="tile-icon-box">🚀</div><div class="tile-arrow">›</div></div>
+          <div><div class="tile-title">Настройки</div><div class="tile-desc">Vulkan GPU Turbo, стабилизатор пинга, 360 Гц и RAM Boost</div></div>
         </div>
 
-        <!-- 7. ПРОФИЛЬ -->
         <div class="bento-tile" onclick="openPage('page-profile')">
-          <div class="tile-top">
-            <div class="tile-icon-box">👤</div>
-            <div class="tile-arrow">›</div>
-          </div>
-          <div>
-            <div class="tile-title">Профиль</div>
-            <div class="tile-desc">Ваш логин, остаток времени ключа и данные телефона</div>
-          </div>
+          <div class="tile-top"><div class="tile-icon-box">👤</div><div class="tile-arrow">›</div></div>
+          <div><div class="tile-title">Профиль</div><div class="tile-desc">Ваш логин, остаток времени ключа и данные телефона</div></div>
         </div>
       </div>
     </div>
@@ -1218,73 +1177,6 @@
         <span>Сенса и Квантовый Телепорт</span>
       </div>
 
-      <div class="section-card">
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
-          <div>
-            <div id="tpStatusHeading" style="font-size:14px; font-weight:900; color:#fff;">ТЕЛЕПОРТ: ВЫКЛЮЧЕН</div>
-            <div style="font-size:10.5px; color:var(--text-muted); margin-top:2px;">Мгновенный скачок в точку без плавного доплывания (`850 ev/s`)</div>
-          </div>
-          <label class="ios-switch">
-            <input type="checkbox" id="innerTpToggle" onchange="toggleTeleportMaster(this.checked)" />
-            <span class="ios-slider"></span>
-          </label>
-        </div>
-        <button type="button" class="btn-main" id="mainTpActionBtn" onclick="toggleTeleportMaster(!document.getElementById('innerTpToggle').checked)">
-          ⚡ ВКЛЮЧИТЬ ТЕЛЕПОРТ (850 EV/SEC)
-        </button>
-      </div>
-
-      <div class="section-card">
-        <div style="font-size:12.5px; font-weight:900; color:var(--accent); margin-bottom:4px;">
-          • Максимальный разгон под <span id="calibModelName">SM-S938B</span>
-        </div>
-        <div style="font-size:11px; color:#cbd5e1; line-height:1.38; margin-bottom:10px;">
-          Одним нажатием включает квантовый скачок прицела за 1 мс, убирает вертикальное шатание и мертвую зону 1 мм.
-        </div>
-        <button type="button" class="btn-main" onclick="runSmartScanAndApply()">
-          🔥 ВЫЖАТЬ МАКСИМУМ ИЗ СЕНСОРА (БЕЗ ШАТАНИЯ)
-        </button>
-      </div>
-
-      <div class="section-card">
-        <div class="section-header-tag">
-          <span>БЫСТРЫЕ РЕЖИМЫ ТЕЛЕПОРТА</span>
-          <span>В 1 КЛИК</span>
-        </div>
-        <div class="mode-row-card active" id="qmode-1" onclick="selectQuickSensMode(1, 10.0, 10.0, 8.2, 100, 96, 100)">
-          <div>
-            <div class="mode-info-title">⚡ 1. ПРЯМОЙ РЕЛЬСОВЫЙ ТЕЛЕПОРТ (В ГОЛОВУ)</div>
-            <div class="mode-info-desc">Прицел телепортируется строго по ровной линии головы без шатания вверх-вниз</div>
-          </div>
-          <button type="button" class="mode-select-btn" id="qbtn-1">АКТИВЕН</button>
-        </div>
-        <div class="mode-row-card" id="qmode-2" onclick="selectQuickSensMode(2, 10.0, 10.0, 9.5, 92, 98, 100)">
-          <div>
-            <div class="mode-info-title">💀 2. РАЗВОРОТ НА 180° ЗА 1 МС (AWM / DEAGLE)</div>
-            <div class="mode-info-desc">Мгновенный переброс камеры от начальной до конечной точки с жёстким стопом</div>
-          </div>
-          <button type="button" class="mode-select-btn" id="qbtn-2">ВЫБРАТЬ</button>
-        </div>
-        <div class="mode-row-card" id="qmode-3" onclick="selectQuickSensMode(3, 9.6, 9.6, 7.5, 100, 94, 95)" style="margin-bottom:0;">
-          <div>
-            <div class="mode-info-title">🎯 3. ТЕЛЕПОРТ + ЗАЖИМ В ТОЧКУ (AKR / M4A1)</div>
-            <div class="mode-info-desc">Резкая наводка по горизонтали + удержание спрея в одной точке без тряски</div>
-          </div>
-          <button type="button" class="mode-select-btn" id="qbtn-3">ВЫБРАТЬ</button>
-        </div>
-      </div>
-
-      <div class="section-card">
-        <div class="section-header-tag">
-          <span>ТОЧНАЯ НАСТРОЙКА РЫВКА И ЛИНИИ</span>
-    <!-- ================= ЭКРАН 1: СЕНСА И КВАНТОВЫЙ ТЕЛЕПОРТ ================= -->
-    <div id="page-sens" class="page-view">
-      <div class="back-bar" onclick="openPage('page-home')">
-        <span class="arrow">←</span>
-        <span>Сенса и Квантовый Телепорт</span>
-      </div>
-
-      <!-- Компактная шапка включения + Авто-разгон в одной карточке -->
       <div class="section-card" style="padding:11px;">
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
           <div>
@@ -1306,7 +1198,6 @@
         </div>
       </div>
 
-      <!-- Быстрые режимы в 3 компактные плитки в ряд + инфо-блок -->
       <div class="section-card" style="padding:11px;">
         <div class="section-header-tag" style="margin-bottom:7px;">
           <span>БЫСТРЫЕ РЕЖИМЫ ТЕЛЕПОРТА</span>
@@ -1331,11 +1222,10 @@
         </div>
       </div>
 
-      <!-- Компактная 2-колоночная сетка ползунков с инфо-блоками -->
       <div class="section-card" style="padding:11px;">
         <div class="section-header-tag" style="margin-bottom:7px;">
           <span>ТОЧНАЯ НАСТРОЙКА РЫВКА</span>
-          <span>6 ОСЕЙ • COMPACT</span>
+          <span>6 ОСЕЙ • SLIM</span>
         </div>
 
         <div class="param-box" style="display:flex; justify-content:space-between; align-items:center; margin-bottom:7px; padding:7px 10px;">
@@ -1371,7 +1261,7 @@
               <div class="param-top"><span class="param-name">3. Ось Y (Верт.)</span><span id="v-sy" class="param-val-pill">8.2</span></div>
               <input type="range" id="p-sy" min="1" max="10" step="0.1" value="8.2" oninput="onSensSliderInput()" onchange="onSensSliderCommit()" />
             </div>
-            <div class="param-sub">Фиксирует уровень головы без взлёта прицела вверх</div>
+            <div class="param-sub">Фиксирует уровень головы без взлёта прицела</div>
           </div>
 
           <div class="param-box">
@@ -1404,7 +1294,6 @@
         </button>
       </div>
     </div>
-
 
     <!-- ================= ЭКРАН 2: ГОТОВЫЕ PRO КОНФИГИ ================= -->
     <div id="page-configs" class="page-view">
@@ -2330,7 +2219,6 @@
       if (window._so2InitDone) return;
       window._so2InitDone = true;
 
-      // НАМЕРТВО ДЕРЖИМ ЭКРАН АВТОРИЗАЦИИ ПРИ ЗАПУСКЕ
       isSessionAuthorized = false;
       fullLicenseKeyPlain = "";
 
@@ -2350,7 +2238,6 @@
       renderCrosshairCanvas();
       checkShizukuState(false);
 
-      // Лёгкие фоновые интервалы без перегрузки UI-потока
       setInterval(() => {
         if (!document.hidden && isSessionAuthorized) checkShizukuState(false);
       }, 12000);
@@ -2408,7 +2295,6 @@
       document.getElementById("profHwidVal").innerText = hwid;
       document.getElementById("authHwidLabel").innerText = hwid;
 
-      // Читаем последний введённый пользователем логин и ключ конкретно на его устройстве
       let savedNick = "";
       let savedKey = "";
       try {
@@ -2439,7 +2325,7 @@
       if (!document.hidden && isSessionAuthorized) pollLicenseExpiration();
     });
 
-    // ================= СИСТЕМА ДРУЗЕЙ (АСИНХРОННО БЕЗ ФРИЗОВ) =================
+    // ================= СИСТЕМА ДРУЗЕЙ =================
     function callFriendsApiAction(payloadObj) {
       const B = getBridge();
       if (!B || typeof B.requestFriendsHub !== "function") return null;
@@ -2625,20 +2511,16 @@
       }[s]));
     }
 
-    // ================= DISCORD-STYLE ЧИСТЫЙ ВОЙС (KRISP DSP + JITTER GUARD) =================
+    // ================= DISCORD-STYLE VOICE CALL & MEDIA SESSION =================
     function downsampleFloat32To16k(inputBuffer, inputSampleRate) {
-      if (inputSampleRate === TARGET_PCM_RATE) {
-        return inputBuffer;
-      }
+      if (inputSampleRate === TARGET_PCM_RATE) return inputBuffer;
       const ratio = inputSampleRate / TARGET_PCM_RATE;
       const outLength = Math.round(inputBuffer.length / ratio);
       const result = new Float32Array(outLength);
-      let offsetResult = 0;
-      let offsetBuffer = 0;
+      let offsetResult = 0, offsetBuffer = 0;
       while (offsetResult < outLength) {
         const nextOffsetBuffer = Math.round((offsetResult + 1) * ratio);
-        let accum = 0;
-        let count = 0;
+        let accum = 0, count = 0;
         for (let i = offsetBuffer; i < nextOffsetBuffer && i < inputBuffer.length; i++) {
           accum += inputBuffer[i];
           count++;
@@ -2675,42 +2557,25 @@
       try {
         const AudioCtx = window.AudioContext || window.webkitAudioContext;
         voiceAudioCtx = new AudioCtx({ latencyHint: "interactive" });
-        if (voiceAudioCtx.state === "suspended") {
-          await voiceAudioCtx.resume();
-        }
+        if (voiceAudioCtx.state === "suspended") await voiceAudioCtx.resume();
+
         peerMasterGainNode = voiceAudioCtx.createGain();
         const peerVolPct = parseInt(document.getElementById("p-peerVol").value, 10) || 100;
         peerMasterGainNode.gain.value = isSpeakerDeafened ? 0.0 : (peerVolPct / 100.0);
         peerMasterGainNode.connect(voiceAudioCtx.destination);
 
         const source = voiceAudioCtx.createMediaStreamSource(micStream);
-
-        // 1. Sub-Bass Cut (убирает гул и задувание микрофона)
         const highPass = voiceAudioCtx.createBiquadFilter();
-        highPass.type = "highpass";
-        highPass.frequency.value = 110;
-        highPass.Q.value = 0.707;
+        highPass.type = "highpass"; highPass.frequency.value = 110; highPass.Q.value = 0.707;
 
-        // 2. Discord Voice Presence (кристальная разборчивость речи)
         const presenceBoost = voiceAudioCtx.createBiquadFilter();
-        presenceBoost.type = "peaking";
-        presenceBoost.frequency.value = 2600;
-        presenceBoost.Q.value = 1.1;
-        presenceBoost.gain.value = 3.0;
+        presenceBoost.type = "peaking"; presenceBoost.frequency.value = 2600; presenceBoost.Q.value = 1.1; presenceBoost.gain.value = 3.0;
 
-        // 3. Anti-Hiss LowPass (полностью срезает высокочастотный песок и шипение)
         const lowPass = voiceAudioCtx.createBiquadFilter();
-        lowPass.type = "lowpass";
-        lowPass.frequency.value = 6200;
-        lowPass.Q.value = 0.707;
+        lowPass.type = "lowpass"; lowPass.frequency.value = 6200; lowPass.Q.value = 0.707;
 
-        // 4. Студийный компрессор (выравнивает шепот и громкие коллы)
         const compressor = voiceAudioCtx.createDynamicsCompressor();
-        compressor.threshold.value = -24;
-        compressor.knee.value = 16;
-        compressor.ratio.value = 4.5;
-        compressor.attack.value = 0.004;
-        compressor.release.value = 0.16;
+        compressor.threshold.value = -24; compressor.knee.value = 16; compressor.ratio.value = 4.5; compressor.attack.value = 0.004; compressor.release.value = 0.16;
 
         const bufSize = voiceAudioCtx.sampleRate >= 44100 ? 4096 : 2048;
         micProcessorNode = voiceAudioCtx.createScriptProcessor(bufSize, 1, 1);
@@ -2725,16 +2590,13 @@
         micProcessorNode.connect(silentSinkNode);
         silentSinkNode.connect(voiceAudioCtx.destination);
 
-        gateEnvelope = 0.0;
-        gateHoldFrames = 0;
-        dcBlockerPrevX = 0.0;
-        dcBlockerPrevY = 0.0;
+        gateEnvelope = 0.0; gateHoldFrames = 0;
+        dcBlockerPrevX = 0.0; dcBlockerPrevY = 0.0;
 
         micProcessorNode.onaudioprocess = function(e) {
           const outBuf = e.outputBuffer.getChannelData(0);
-          for (let i = 0; i < outBuf.length; i++) {
-            outBuf[i] = 0.0;
-          }
+          for (let i = 0; i < outBuf.length; i++) outBuf[i] = 0.0;
+
           if (!isVoiceConnected || isMicMuted || !voiceWs || voiceWs.readyState !== WebSocket.OPEN) {
             document.getElementById("micVuMeterFill").style.width = "0%";
             return;
@@ -2745,24 +2607,19 @@
           for (let i = 0; i < rawIn.length; i++) {
             const x = rawIn[i];
             const y = x - dcBlockerPrevX + 0.995 * dcBlockerPrevY;
-            dcBlockerPrevX = x;
-            dcBlockerPrevY = y;
-            cleanIn[i] = y;
-            sumSq += y * y;
+            dcBlockerPrevX = x; dcBlockerPrevY = y;
+            cleanIn[i] = y; sumSq += y * y;
           }
           const rms = Math.sqrt(sumSq / cleanIn.length);
-          const vuPct = Math.min(100, Math.round(rms * 340));
-          document.getElementById("micVuMeterFill").style.width = vuPct + "%";
+          document.getElementById("micVuMeterFill").style.width = Math.min(100, Math.round(rms * 340)) + "%";
 
           const dspOn = document.getElementById("sw-dspNoiseGate").checked;
           const gateSlider = parseInt(document.getElementById("p-noiseGate").value, 10) || 15;
           const openThreshold = dspOn ? (0.0022 + (gateSlider / 100.0) * 0.032) : 0.0008;
 
-          if (rms >= openThreshold) {
-            gateHoldFrames = 7;
-          } else if (gateHoldFrames > 0) {
-            gateHoldFrames--;
-          }
+          if (rms >= openThreshold) gateHoldFrames = 7;
+          else if (gateHoldFrames > 0) gateHoldFrames--;
+
           const targetGate = (gateHoldFrames > 0) ? 1.0 : 0.0;
           if (targetGate === 0.0 && gateEnvelope < 0.002) {
             gateEnvelope = 0.0;
@@ -2773,8 +2630,7 @@
           const pcm16 = new Int16Array(downsampled.length);
           for (let i = 0; i < downsampled.length; i++) {
             gateEnvelope = gateEnvelope * 0.95 + targetGate * 0.05;
-            let sample = downsampled[i] * userBoost * gateEnvelope;
-            sample = Math.tanh(sample);
+            let sample = Math.tanh(downsampled[i] * userBoost * gateEnvelope);
             pcm16[i] = sample < 0 ? Math.round(sample * 0x8000) : Math.round(sample * 0x7FFF);
           }
           const bytes = new Uint8Array(pcm16.buffer);
@@ -2783,11 +2639,7 @@
           for (let i = 0; i < bytes.length; i += chunkStep) {
             binary += String.fromCharCode.apply(null, bytes.subarray(i, i + chunkStep));
           }
-          voiceWs.send(JSON.stringify({
-            type: "audio",
-            pcm: btoa(binary),
-            rate: TARGET_PCM_RATE
-          }));
+          voiceWs.send(JSON.stringify({ type: "audio", pcm: btoa(binary), rate: TARGET_PCM_RATE }));
           highlightSpeakingMember(myFriendCode);
         };
         connectVoiceWebSocket(roomName);
@@ -2802,55 +2654,38 @@
       try {
         voiceWs = new WebSocket(VOICE_WS_URL);
       } catch (e) {
-        showTopToast("⚠️ Не удалось подключиться к голосовому серверу");
+        showTopToast("⚠️ Не удалось подключиться к серверу");
         return;
       }
       voiceWs.onopen = function() {
-        isVoiceConnected = true;
-        isMicMuted = false;
-        peerPlaybackTimes = {};
+        isVoiceConnected = true; isMicMuted = false; peerPlaybackTimes = {};
         document.getElementById("voiceActionRow").style.display = "none";
         document.getElementById("voiceControlsActive").style.display = "grid";
         document.getElementById("voiceStatePill").innerText = "🟢 В ЭФИРЕ • " + roomName;
         document.getElementById("voiceStatePill").style.color = "#10b981";
         document.getElementById("topVoiceLiveChip").style.display = "inline-flex";
         syncDiscordControlButtons();
-        voiceWs.send(JSON.stringify({
-          type: "join",
-          hwid: hwid,
-          room: roomName,
-          nick: nick
-        }));
+        voiceWs.send(JSON.stringify({ type: "join", hwid: hwid, room: roomName, nick: nick }));
         showTopToast("🎧 Подключено к каналу " + roomName);
       };
       voiceWs.onmessage = function(evt) {
         try {
           const msg = JSON.parse(evt.data);
-          if (msg.type === "roster") {
-            renderVoiceRoomRoster(msg.members || []);
-          } else if (msg.type === "audio" && msg.pcm) {
-            const speakerCode = msg.from_code || "PEER";
-            playIncomingPcmAudio(speakerCode, msg.pcm, msg.rate || TARGET_PCM_RATE);
-            highlightSpeakingMember(speakerCode);
+          if (msg.type === "roster") renderVoiceRoomRoster(msg.members || []);
+          else if (msg.type === "audio" && msg.pcm) {
+            playIncomingPcmAudio(msg.from_code || "PEER", msg.pcm, msg.rate || TARGET_PCM_RATE);
+            highlightSpeakingMember(msg.from_code);
           }
         } catch (e) {}
       };
-      voiceWs.onclose = function() {
-        if (isVoiceConnected) {
-          leaveVoiceRoom();
-        }
-      };
+      voiceWs.onclose = function() { if (isVoiceConnected) leaveVoiceRoom(); };
     }
 
     function playIncomingPcmAudio(speakerCode, b64Str, sampleRate) {
       if (!voiceAudioCtx || isSpeakerDeafened) return;
       try {
-        const binary = atob(b64Str);
-        const len = binary.length;
-        const bytes = new Uint8Array(len);
-        for (let i = 0; i < len; i++) {
-          bytes[i] = binary.charCodeAt(i);
-        }
+        const binary = atob(b64Str), bytes = new Uint8Array(binary.length);
+        for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
         const int16 = new Int16Array(bytes.buffer);
         const n = int16.length;
         if (n === 0) return;
@@ -2858,11 +2693,8 @@
         const fadeSamples = Math.min(28, Math.floor(n / 8));
         for (let i = 0; i < n; i++) {
           let val = int16[i] / 32768.0;
-          if (i < fadeSamples) {
-            val *= (i / fadeSamples);
-          } else if (i >= n - fadeSamples) {
-            val *= ((n - 1 - i) / fadeSamples);
-          }
+          if (i < fadeSamples) val *= (i / fadeSamples);
+          else if (i >= n - fadeSamples) val *= ((n - 1 - i) / fadeSamples);
           float32[i] = val;
         }
         const audioBuffer = voiceAudioCtx.createBuffer(1, n, sampleRate || TARGET_PCM_RATE);
@@ -2872,9 +2704,7 @@
         src.connect(peerMasterGainNode || voiceAudioCtx.destination);
         const now = voiceAudioCtx.currentTime;
         let nextTime = peerPlaybackTimes[speakerCode] || 0;
-        if (nextTime < now || (nextTime - now) > 0.35) {
-          nextTime = now + 0.04;
-        }
+        if (nextTime < now || (nextTime - now) > 0.35) nextTime = now + 0.04;
         src.start(nextTime);
         peerPlaybackTimes[speakerCode] = nextTime + audioBuffer.duration;
       } catch (e) {}
@@ -2886,55 +2716,36 @@
       if (!el) return;
       el.classList.add("speaking");
       clearTimeout(speakingTimers[code]);
-      speakingTimers[code] = setTimeout(() => {
-        el.classList.remove("speaking");
-      }, 360);
+      speakingTimers[code] = setTimeout(() => { el.classList.remove("speaking"); }, 360);
     }
 
     function renderVoiceRoomRoster(members) {
       document.getElementById("voiceRosterCount").innerText = members.length;
       const box = document.getElementById("voiceRosterList");
       if (!members.length) {
-        box.innerHTML = `
-          <div style="grid-column: span 2; font-size:11.5px; color:var(--text-muted); text-align:center; padding:14px 6px;">
-            Нажми «Войти в голосовой канал» ниже для связи без шума и задержек
-          </div>`;
+        box.innerHTML = `<div style="grid-column: span 2; font-size:11.5px; color:var(--text-muted); text-align:center; padding:14px 6px;">Нет участников</div>`;
         return;
       }
-      box.innerHTML = members.map(m => {
-        const cleanNick = escapeHtml(m.nick || "Player");
-        const firstLetter = cleanNick.charAt(0).toUpperCase() || "S";
-        const statusText = m.muted ? "🔇 Микро выкл" : "🎙️ В эфире";
-        return `
-          <div class="dc-user-tile" id="vmember-${escapeHtml(m.code)}">
-            <div class="dc-avatar-circle">${firstLetter}</div>
-            <div class="dc-user-name">${cleanNick}</div>
-            <div class="dc-user-code">${escapeHtml(m.code)}</div>
-            <div class="dc-user-status-pill ${m.muted ? 'muted' : ''}">${statusText}</div>
-          </div>
-        `;
-      }).join("");
+      box.innerHTML = members.map(m => `
+        <div class="dc-user-tile" id="vmember-${escapeHtml(m.code)}">
+          <div class="dc-avatar-circle">${escapeHtml(m.nick || "P").charAt(0).toUpperCase()}</div>
+          <div class="dc-user-name">${escapeHtml(m.nick)}</div>
+          <div class="dc-user-code">${escapeHtml(m.code)}</div>
+          <div class="dc-user-status-pill ${m.muted ? 'muted' : ''}">${m.muted ? '🔇' : '🎙️'}</div>
+        </div>
+      `).join("");
     }
 
-     // ================= ФИКС ШТОРКИ УВЕДОМЛЕНИЙ DISCORD-ВОЙСА (МИКРО / ЗВУК / ВЫХОД) =================
+    // ================= ШТОРКА УВЕДОМЛЕНИЙ (MEDIA SESSION + ANDROID BRIDGE) =================
     function pushPersistentVoiceNotification() {
       const room = (document.getElementById("voiceRoomInput").value.trim() || "SQUAD-MAIN").toUpperCase();
       const B = getBridge();
-
       try {
         if (B) {
-          if (typeof B.requestNotificationPermission === "function") {
-            B.requestNotificationPermission();
-          }
-          if (typeof B.updateVoiceCallNotification === "function") {
-            B.updateVoiceCallNotification(room, !!isMicMuted, !!isSpeakerDeafened);
-          }
-          if (typeof B.startVoiceCallService === "function") {
-            B.startVoiceCallService(room, !!isMicMuted, !!isSpeakerDeafened);
-          }
-          if (typeof B.showVoiceNotification === "function") {
-            B.showVoiceNotification(room, !!isMicMuted, !!isSpeakerDeafened);
-          }
+          if (typeof B.requestNotificationPermission === "function") B.requestNotificationPermission();
+          if (typeof B.updateVoiceCallNotification === "function") B.updateVoiceCallNotification(room, !!isMicMuted, !!isSpeakerDeafened);
+          if (typeof B.startVoiceCallService === "function") B.startVoiceCallService(room, !!isMicMuted, !!isSpeakerDeafened);
+          if (typeof B.showVoiceNotification === "function") B.showVoiceNotification(room, !!isMicMuted, !!isSpeakerDeafened);
         }
       } catch (e) {}
 
@@ -2955,15 +2766,9 @@
       } catch (e) {}
     }
 
-    window.onNotificationMicToggle = function() {
-      toggleMicMute();
-    };
-    window.onNotificationDeafenToggle = function() {
-      toggleDeafenSpeaker();
-    };
-    window.onNotificationHangup = function() {
-      leaveVoiceRoom();
-    };
+    window.onNotificationMicToggle = function() { toggleMicMute(); };
+    window.onNotificationDeafenToggle = function() { toggleDeafenSpeaker(); };
+    window.onNotificationHangup = function() { leaveVoiceRoom(); };
     window.handleVoiceNotificationAction = function(action) {
       if (action === "mic" || action === "mute") toggleMicMute();
       else if (action === "deafen" || action === "speaker") toggleDeafenSpeaker();
@@ -2973,22 +2778,20 @@
     function syncDiscordControlButtons() {
       const micBtn = document.getElementById("btnMuteMic");
       document.getElementById("icoMicState").innerText = isMicMuted ? "🔇" : "🎤";
-      document.getElementById("lblMicState").innerText = isMicMuted ? "Вкл микро" : "Микро";
+      document.getElementById("lblMicState").innerText = isMicMuted ? "Вкл" : "Микро";
       micBtn.className = "dc-ctrl-btn " + (isMicMuted ? "muted-off" : "active-on");
 
       const deafBtn = document.getElementById("btnDeafenAudio");
       document.getElementById("icoDeafState").innerText = isSpeakerDeafened ? "🔈" : "🎧";
-      document.getElementById("lblDeafState").innerText = isSpeakerDeafened ? "Без звука" : "Звук";
+      document.getElementById("lblDeafState").innerText = isSpeakerDeafened ? "Звук" : "Звук";
       deafBtn.className = "dc-ctrl-btn " + (isSpeakerDeafened ? "muted-off" : "active-on");
 
       const krispOn = document.getElementById("sw-dspNoiseGate").checked;
       const krispBtn = document.getElementById("btnKrispQuick");
-      document.getElementById("lblKrispState").innerText = krispOn ? "Krisp ВКЛ" : "Krisp ВЫКЛ";
+      document.getElementById("lblKrispState").innerText = krispOn ? "Krisp" : "Krisp";
       krispBtn.className = "dc-ctrl-btn " + (krispOn ? "active-on" : "");
 
-      if (isVoiceConnected) {
-        pushPersistentVoiceNotification();
-      }
+      if (isVoiceConnected) pushPersistentVoiceNotification();
     }
 
     function toggleMicMute() {
@@ -3010,7 +2813,7 @@
       }
       updateVoiceDspParams();
       syncDiscordControlButtons();
-      showTopToast(isSpeakerDeafened ? "🔈 Звук комнаты отключён (Deafen)" : "🎧 Звук комнаты включён");
+      showTopToast(isSpeakerDeafened ? "🔈 Звук отключён" : "🎧 Звук включён");
     }
 
     function toggleKrispQuickBtn() {
@@ -3018,34 +2821,17 @@
       sw.checked = !sw.checked;
       updateVoiceDspParams();
       syncDiscordControlButtons();
-      showTopToast(sw.checked ? "🛡️ Шумодав Krisp ВКЛ" : "Шумодав Krisp ВЫКЛ");
+      showTopToast(sw.checked ? "🛡️ Шумодав ВКЛ" : "Шумодав ВЫКЛ");
     }
 
     function leaveVoiceRoom() {
-      isVoiceConnected = false;
-      isMicMuted = false;
-      isSpeakerDeafened = false;
-      peerPlaybackTimes = {};
-      if (voiceWs) {
-        try { voiceWs.close(); } catch (e) {}
-        voiceWs = null;
-      }
-      if (micProcessorNode) {
-        try { micProcessorNode.disconnect(); } catch (e) {}
-        micProcessorNode = null;
-      }
-      if (silentSinkNode) {
-        try { silentSinkNode.disconnect(); } catch (e) {}
-        silentSinkNode = null;
-      }
-      if (micStream) {
-        try { micStream.getTracks().forEach(t => t.stop()); } catch (e) {}
-        micStream = null;
-      }
-      if (voiceAudioCtx) {
-        try { voiceAudioCtx.close(); } catch (e) {}
-        voiceAudioCtx = null;
-      }
+      isVoiceConnected = false; isMicMuted = false; isSpeakerDeafened = false; peerPlaybackTimes = {};
+      if (voiceWs) { try { voiceWs.close(); } catch (e) {} voiceWs = null; }
+      if (micProcessorNode) { try { micProcessorNode.disconnect(); } catch (e) {} micProcessorNode = null; }
+      if (silentSinkNode) { try { silentSinkNode.disconnect(); } catch (e) {} silentSinkNode = null; }
+      if (micStream) { try { micStream.getTracks().forEach(t => t.stop()); } catch (e) {} micStream = null; }
+      if (voiceAudioCtx) { try { voiceAudioCtx.close(); } catch (e) {} voiceAudioCtx = null; }
+
       document.getElementById("voiceActionRow").style.display = "block";
       document.getElementById("voiceControlsActive").style.display = "none";
       document.getElementById("voiceStatePill").innerText = "НЕ ПОДКЛЮЧЕН";
@@ -3053,13 +2839,9 @@
       document.getElementById("topVoiceLiveChip").style.display = "none";
       document.getElementById("micVuMeterFill").style.width = "0%";
       document.getElementById("voiceRosterCount").innerText = "0";
-      document.getElementById("voiceRosterList").innerHTML = `
-        <div style="grid-column: span 2; font-size:11.5px; color:var(--text-muted); text-align:center; padding:14px 6px;">
-          Нажми «Войти в голосовой канал» ниже для связи без шума и задержек
-        </div>`;
-      try {
-        if ("mediaSession" in navigator) navigator.mediaSession.playbackState = "none";
-      } catch (e) {}
+      document.getElementById("voiceRosterList").innerHTML = `<div style="grid-column: span 2; font-size:11.5px; color:var(--text-muted); text-align:center; padding:14px 6px;">Нет участников</div>`;
+      
+      try { if ("mediaSession" in navigator) navigator.mediaSession.playbackState = "none"; } catch (e) {}
       try {
         const B = getBridge();
         if (B) {
@@ -3073,26 +2855,21 @@
       const gainEl = document.getElementById("p-micGain");
       const peerEl = document.getElementById("p-peerVol");
       const gateEl = document.getElementById("p-noiseGate");
-      syncRangeFill(gainEl);
-      syncRangeFill(peerEl);
-      syncRangeFill(gateEl);
+      syncRangeFill(gainEl); syncRangeFill(peerEl); syncRangeFill(gateEl);
 
-      const gainPct = parseInt(gainEl.value, 10) || 120;
-      const peerPct = parseInt(peerEl.value, 10) || 100;
-      const gatePct = parseInt(gateEl.value, 10) || 15;
-      document.getElementById("v-micGain").innerText = gainPct + "%";
-      document.getElementById("v-peerVol").innerText = peerPct + "%";
-      document.getElementById("v-noiseGate").innerText = gatePct + "%";
+      document.getElementById("v-micGain").innerText = gainEl.value + "%";
+      document.getElementById("v-peerVol").innerText = peerEl.value + "%";
+      document.getElementById("v-noiseGate").innerText = gateEl.value + "%";
       if (peerMasterGainNode) {
-        peerMasterGainNode.gain.value = isSpeakerDeafened ? 0.0 : (peerPct / 100.0);
+        peerMasterGainNode.gain.value = isSpeakerDeafened ? 0.0 : (parseInt(peerEl.value, 10) / 100.0);
       }
       syncDiscordControlButtons();
     }
 
-    // ================= КВАНТОВЫЙ ТЕЛЕПОРТ СЕНСЫ (INSTANT JUMP + ZERO SHIZUKU LAG) =================
+    // ================= ТЕЛЕПОРТ СЕНСЫ =================
     function toggleTeleportMaster(enabled) {
       if (!isSessionAuthorized) {
-        window.forceShowKickScreen("Сначала активируйте лицензионный ключ!");
+        window.forceShowKickScreen("Сначала активируйте ключ!");
         return;
       }
       document.getElementById("homeTpToggle").checked = enabled;
@@ -3108,8 +2885,6 @@
         heading.style.color = "var(--accent)";
         btn.innerText = "🛑 ОСТАНОВИТЬ ТЕЛЕПОРТ";
         showTopToast("⚡ Квантовый Телепорт 850Hz ВКЛЮЧЕН!");
-
-        // Асинхронный запуск без зависания интерфейса
         enqueueBridgeTask("tp_master_toggle", () => {
           const B = getBridge();
           if (B) {
@@ -3123,8 +2898,7 @@
         heading.innerText = "ТЕЛЕПОРТ: ВЫКЛЮЧЕН";
         heading.style.color = "#ffffff";
         btn.innerText = "⚡ ВКЛЮЧИТЬ ТЕЛЕПОРТ (850 EV/SEC)";
-        showTopToast("🛑 Телепорт сенсы остановлен");
-
+        showTopToast("🛑 Телепорт остановлен");
         enqueueBridgeTask("tp_master_toggle", () => {
           const B = getBridge();
           if (B && B.stopTeleport) B.stopTeleport();
@@ -3164,7 +2938,7 @@
       toggleTeleportMaster(true);
     }
 
-    // ================= ИСПРАВЛЕННЫЙ PRO КОНСТРУКТОР ПРИЦЕЛА (МГНОВЕННЫЙ ВЫКЛ И ПЕРЕКЛЮЧЕНИЕ) =================
+    // ================= ПРИЦЕЛ (ИСПРАВЛЕННЫЙ МОМЕНТАЛЬНЫЙ ВЫКЛ) =================
     function selectCrosshairShape(shape, label, el) {
       currentChShape = shape;
       document.querySelectorAll("#chShapePills .choice-pill").forEach(p => p.classList.remove("active"));
@@ -3175,7 +2949,7 @@
         if (found) found.classList.add("active");
       }
       document.getElementById("chCornerStatus").innerText = label || shape.toUpperCase();
-      lastCrosshairSignature = ""; // Сбрасываем кэш, чтобы форма применилась гарантированно
+      lastCrosshairSignature = "";
       pushCrosshairToBridgeImmediate();
     }
 
@@ -3191,8 +2965,7 @@
     function onCrosshairOffsetInput() {
       const elX = document.getElementById("p-chOffX");
       const elY = document.getElementById("p-chOffY");
-      syncRangeFill(elX);
-      syncRangeFill(elY);
+      syncRangeFill(elX); syncRangeFill(elY);
       const offX = parseInt(elX.value, 10) || 0;
       const offY = parseInt(elY.value, 10) || 0;
       document.getElementById("v-chOffset").innerText = `${offX} / ${offY}`;
@@ -3202,16 +2975,14 @@
       onCrosshairOffsetInput();
       const offX = parseInt(document.getElementById("p-chOffX").value, 10) || 0;
       const offY = parseInt(document.getElementById("p-chOffY").value, 10) || 0;
-      try {
+      enqueueBridgeTask("ch_offset", () => {
         const B = getBridge();
         if (B && B.setCrosshairOffset) B.setCrosshairOffset(offX, offY);
-      } catch (e) {}
+      }, 25);
       saveStateSilent();
     }
 
-    function updateCrosshairOffset() {
-      onCrosshairOffsetCommit();
-    }
+    function updateCrosshairOffset() { onCrosshairOffsetCommit(); }
 
     function onCrosshairSliderInput() {
       const elLen = document.getElementById("p-chLen");
@@ -3242,7 +3013,6 @@
       const alpha = parseInt(document.getElementById("p-chAlpha").value, 10) || 100;
       const outline = document.getElementById("chOutlineToggle").checked;
 
-      // Отменяем любые старые отложенные задачи прицела, чтобы они не перезаписали "off"
       if (pendingBridgeTasks["ch_update"]) {
         clearTimeout(pendingBridgeTasks["ch_update"]);
         delete pendingBridgeTasks["ch_update"];
@@ -3253,393 +3023,22 @@
 
       try {
         if (currentChShape === "off") {
-          // ЖЁСТКО ГАСИМ НАТИВНЫЙ ОВЕРЛЕЙ ПРИЦЕЛА ВО ВСЕХ МЕТОДАХ МОСТА
           if (typeof B.updateCrosshair === "function") B.updateCrosshair("off");
-          if (typeof B.updateCrosshairAdvanced === "function") {
-            B.updateCrosshairAdvanced("off", currentChColor, 0, 0, 0, 0, 0, false);
-          }
+          if (typeof B.updateCrosshairAdvanced === "function") B.updateCrosshairAdvanced("off", currentChColor, 0, 0, 0, 0, 0, false);
           if (typeof B.updateCrosshairStyle === "function") B.updateCrosshairStyle(0, 0, "#000000");
           if (typeof B.hideCrosshair === "function") B.hideCrosshair();
           if (typeof B.stopCrosshairOverlay === "function") B.stopCrosshairOverlay();
         } else {
-          // Сначала активируем сам оверлей в старом и новом API, затем передаём точные параметры
           if (typeof B.updateCrosshair === "function") B.updateCrosshair(currentChShape);
           if (typeof B.updateCrosshairStyle === "function") B.updateCrosshairStyle(len * 4, alpha, currentChColor);
-          if (typeof B.updateCrosshairAdvanced === "function") {
-            B.updateCrosshairAdvanced(currentChShape, currentChColor, alpha, len, thick, gap, dot, outline);
-          }
+          if (typeof B.updateCrosshairAdvanced === "function") B.updateCrosshairAdvanced(currentChShape, currentChColor, alpha, len, thick, gap, dot, outline);
         }
       } catch (e) {}
       saveStateSilent();
     }
 
-    function onCrosshairSliderCommit() {
-      pushCrosshairToBridgeImmediate();
-    }
-
-    function updateCrosshairAll() {
-      pushCrosshairToBridgeImmediate();
-    }
-
-
-    function onZeroDelayToggle(enabled) {
-      showTopToast(enabled ? "⚡ Мгновенный отклик 1 мм (Zero-Delay) ВКЛ!" : "Мгновенный отклик 1 мм ВЫКЛ");
-      enqueueBridgeTask("zero_delay_toggle", () => {
-        const B = getBridge();
-        if (B && B.setRawInputNoSmoothing) B.setRawInputNoSmoothing(enabled);
-        if (enabled && B && B.applyUltraProTouchMatrix) B.applyUltraProTouchMatrix(3);
-      }, 20);
-      saveStateSilent();
-    }
-
-    // Мгновенное обновление цифр и полосок при ведении пальца (БЕЗ вызова Shizuku)
-    function onSensSliderInput() {
-      const elSharp = document.getElementById("p-sharp");
-      const elSx = document.getElementById("p-sx");
-      const elSy = document.getElementById("p-sy");
-      const elStraight = document.getElementById("p-straight");
-      const elStick = document.getElementById("p-stickForce");
-      const elChunks = document.getElementById("p-chunks");
-
-      [elSharp, elSx, elSy, elStraight, elStick, elChunks].forEach(syncRangeFill);
-
-      document.getElementById("v-sharp").innerText = parseFloat(elSharp.value).toFixed(1);
-      document.getElementById("v-sx").innerText = parseFloat(elSx.value).toFixed(1);
-      document.getElementById("v-sy").innerText = parseFloat(elSy.value).toFixed(1);
-      document.getElementById("v-straight").innerText = elStraight.value + "%";
-      document.getElementById("v-stickForce").innerText = elStick.value + "%";
-      document.getElementById("v-chunks").innerText = elChunks.value + "%";
-    }
-
-    // Отправка в движок ТОЛЬКО когда палец отпущен
-    function onSensSliderCommit() {
-      onSensSliderInput();
-      pushEngineParametersImmediate(false);
-    }
-
-    function syncAllSliders() {
-      onSensSliderInput();
-      pushEngineParametersImmediate(false);
-    }
-
-    function pushEngineParametersImmediate(forcePush) {
-      if (!isSessionAuthorized) return;
-      const sharp = parseFloat(document.getElementById("p-sharp").value);
-      const sx = parseFloat(document.getElementById("p-sx").value);
-      const sy = parseFloat(document.getElementById("p-sy").value);
-      const chunks = parseInt(document.getElementById("p-chunks").value, 10);
-      // Максимальное квантование скачка для мгновенного телепорта прицела
-      const chunkFast = 100;
-      const straight = parseFloat(document.getElementById("p-straight").value) / 10.0;
-      const stick = parseInt(document.getElementById("p-stickForce").value, 10);
-      const grid = 128;
-      const pause = 0;
-      const accel = 10.0;
-
-      const sig = [sharp, sx, sy, chunks, chunkFast, straight, stick, grid, pause, accel].join("|");
-      if (!forcePush && sig === lastEngineSignature) return;
-      lastEngineSignature = sig;
-
-      enqueueBridgeTask("update_engine_params", () => {
-        const B = getBridge();
-        if (B && B.updateParameters) {
-          B.updateParameters(sharp, sx, sy, chunks, chunkFast, straight, stick, grid, pause, accel);
-        }
-      }, 25);
-      saveStateSilent();
-    }
-
-    function runSmartScanAndApply() {
-      document.getElementById("zeroDelaySnapToggle").checked = true;
-      selectQuickSensMode(1, 10.0, 10.0, 8.2, 100, 96, 100);
-      enqueueBridgeTask("smart_scan", () => {
-        const B = getBridge();
-        let model = document.getElementById("profModelVal").innerText || "SM-S938B";
-        if (B && B.runSmartDeviceScan) {
-          const res = String(B.runSmartDeviceScan() || "");
-          model = res.split("|")[0] || model;
-        }
-        document.getElementById("calibModelName").innerText = model;
-        if (B && B.applyUltraProTouchMatrix) B.applyUltraProTouchMatrix(3);
-        showTopToast("🔥 Выжат максимум для " + model + " (Квантовый Телепорт 850 ev/s)!");
-      }, 25);
-    }
-
-    function testOneMmFlickResponse() {
-      showTopToast("⚡ Сенсор сброшен и разогнан до 850 пакетов/сек!");
-      enqueueBridgeTask("heal_touch", () => {
-        const B = getBridge();
-        if (B && B.healTouch) B.healTouch();
-        if (B && B.applyUltraProTouchMatrix) B.applyUltraProTouchMatrix(3);
-      }, 20);
-    }
-
-    // ================= КРОСС-ДЕВАЙС КОДЫ И КОМПЛЕКСНЫЕ СБОРКИ =================
-    function loadFullProBundle(title, sharp, sx, sy, straightPct, stickPct, chunksPct, chShape, chHex, recoilOn) {
-      document.getElementById("p-sharp").value = sharp;
-      document.getElementById("p-sx").value = sx;
-      document.getElementById("p-sy").value = sy;
-      document.getElementById("p-straight").value = straightPct;
-      document.getElementById("p-stickForce").value = stickPct;
-      document.getElementById("p-chunks").value = chunksPct;
-      document.getElementById("zeroDelaySnapToggle").checked = true;
-      document.getElementById("sw-recoilPro").checked = !!recoilOn;
-
-      onSensSliderInput();
-      onRecoilSliderCommit();
-
-      currentChColor = chHex;
-      document.getElementById("customChColorPicker").value = chHex;
-      selectCrosshairShape(chShape, chShape.toUpperCase(), null);
-
-      toggleTeleportMaster(true);
-      showTopToast("🔥 Сборка «" + title + "» включена!");
-    }
-
-    function encodePortableConfigToken() {
-      const c = collectFullConfig();
-      const packed = [
-        c.theme, c.tpOn ? 1 : 0, c.zeroSnap ? 1 : 0,
-        c.sharp, c.sx, c.sy, c.straight, c.stickForce, c.chunks,
-        c.stretch, c.chShape, c.chColor,
-        c.chLen, c.chThick, c.chGap, c.chDot, c.chAlpha,
-        c.chOffX, c.chOffY, c.chOutline ? 1 : 0,
-        c.recoilPower
-      ].join("|");
-      return "SO2-" + btoa(unescape(encodeURIComponent(packed))).replace(/=+$/, "");
-    }
-
-    function decodePortableConfigToken(tokenStr) {
-      try {
-        let clean = tokenStr.trim();
-        if (clean.includes("c=")) clean = clean.split("c=")[1].trim();
-        if (clean.startsWith("SO2-") && clean.length > 12) {
-          const b64 = clean.substring(4);
-          const raw = decodeURIComponent(escape(atob(b64)));
-          const p = raw.split("|");
-          if (p.length >= 20) {
-            return {
-              theme: parseInt(p[0], 10) || 0,
-              tpOn: p[1] === "1",
-              zeroSnap: p[2] === "1",
-              sharp: p[3], sx: p[4], sy: p[5],
-              straight: p[6], stickForce: p[7], chunks: p[8],
-              stretch: p[9], chShape: p[10], chColor: p[11],
-              chLen: p[12], chThick: p[13], chGap: p[14], chDot: p[15], chAlpha: p[16],
-              chOffX: p[17] || "0", chOffY: p[18] || "0",
-              chOutline: p[19] === "1",
-              recoilPower: p[20] || "100"
-            };
-          }
-        }
-      } catch (e) {}
-      return null;
-    }
-
-    function generateAndCopyShareLink() {
-      const portableCode = encodePortableConfigToken();
-      enqueueBridgeTask("upload_cfg", () => {
-        const B = getBridge();
-        if (B && B.uploadCloudConfig) {
-          B.uploadCloudConfig("PRO CFG", JSON.stringify(collectFullConfig()));
-        }
-      }, 30);
-      const shareUrl = "https://so2tp.cfg/?c=" + portableCode;
-      document.getElementById("shareLinkInput").value = shareUrl;
-      if (navigator.clipboard) navigator.clipboard.writeText(shareUrl);
-      showTopToast("🔗 Код скопирован! Отправь другу или вставь на другом телефоне");
-    }
-
-    function applySharedConfigCode() {
-      const val = document.getElementById("shareLinkInput").value.trim();
-      if (!val) {
-        showTopToast("⚠️ Вставьте код или ссылку на конфиг!");
-        return;
-      }
-      const decoded = decodePortableConfigToken(val);
-      if (decoded) {
-        applyFullConfigObject(decoded);
-        saveCurrentConfigNow();
-        showTopToast("✅ Все настройки из кода успешно применены!");
-        return;
-      }
-      let shortCode = val.includes("c=") ? val.split("c=")[1].trim() : val;
-      const B = getBridge();
-      if (B && B.downloadCloudConfig) {
-        try {
-          const raw = B.downloadCloudConfig(shortCode);
-          const res = JSON.parse(raw);
-          if (res.preset) {
-            const cfg = typeof res.preset === "string" ? JSON.parse(res.preset) : res.preset;
-            applyFullConfigObject(cfg);
-            saveCurrentConfigNow();
-            showTopToast("✅ Облачный конфиг " + shortCode + " применён!");
-            return;
-          }
-        } catch (e) {}
-      }
-      toggleTeleportMaster(true);
-      showTopToast("✅ Конфиг " + shortCode.toUpperCase() + " активирован!");
-    }
-
-    function shareQuickLinkAction() {
-      openPage("page-configs");
-      generateAndCopyShareLink();
-    }
-
-    // ================= РАСТЯГ ЭКРАНА =================
-    function selectStretchFormat(ratio, widthPx, titleText, pillEl) {
-      currentStretch = ratio;
-      document.querySelectorAll("#ratioPillsContainer .choice-pill").forEach(p => p.classList.remove("active"));
-      if (pillEl) {
-        pillEl.classList.add("active");
-      } else {
-        const found = document.querySelector(`#ratioPillsContainer .choice-pill[data-ratio="${ratio}"]`);
-        if (found) found.classList.add("active");
-      }
-      document.getElementById("stretchCornerLabel").innerText = ratio;
-      const box = document.getElementById("stretchPreviewBox");
-      box.style.width = (widthPx || 142) + "px";
-      box.innerText = "ФОРМАТ " + (titleText || ratio);
-      document.getElementById("activateStretchBtnText").innerText = `⚡ АКТИВИРОВАТЬ КНОПКУ РАСТЯГА «T» (${ratio})`;
-      if (isSessionAuthorized) saveStateSilent();
-    }
-
-    function toggleWideHitboxFeature(enabled) {
-      showTopToast(enabled ? `🎯 Широкие Хитбоксы (${currentStretch}) + 850Hz ВКЛ!` : "Широкие Хитбоксы ВЫКЛ");
-      enqueueBridgeTask("wide_hitbox", () => {
-        const B = getBridge();
-        if (B && B.setWideHitboxMode) {
-          const res = B.setWideHitboxMode(enabled, currentStretch);
-          if (res === "NEED_AUTH") {
-            window.forceShowKickScreen("Сначала активируйте ключ!");
-          }
-        }
-      }, 25);
-      saveStateSilent();
-    }
-
-    function activateFloatingTButton() {
-      enqueueBridgeTask("activate_t_btn", () => {
-        const B = getBridge();
-        if (!B) return;
-        const res = B.activateStretchFloatingButton(currentStretch);
-        if (res === "NEED_PERMISSION") {
-          showTopToast("🪟 Разрешите показ поверх других окон!");
-        } else if (res === "NEED_AUTH") {
-          window.forceShowKickScreen("Сначала активируйте лицензионный ключ!");
-        } else {
-          showTopToast(`⚡ Кнопка растяга «T» (${currentStretch}) запущена!`);
-        }
-      }, 15);
-    }
-
-    function removeFloatingTAndReset() {
-      document.getElementById("sw-wideHitboxMode").checked = false;
-      showTopToast("🔄 Кнопка «T» убрана, родной экран восстановлен");
-      enqueueBridgeTask("reset_res", () => {
-        const B = getBridge();
-        if (B && B.resetResolution) B.resetResolution();
-      }, 15);
-    }
-
-    // ================= PRO КОНСТРУКТОР ПРИЦЕЛА (БЕЗ ФРИЗОВ ПРИ ДВИЖЕНИИ ПОЛЗУНКОВ) =================
-    function selectCrosshairShape(shape, label, el) {
-      currentChShape = shape;
-      document.querySelectorAll("#chShapePills .choice-pill").forEach(p => p.classList.remove("active"));
-      if (el) {
-        el.classList.add("active");
-      } else {
-        const found = document.querySelector(`#chShapePills .choice-pill[data-shape="${shape}"]`);
-        if (found) found.classList.add("active");
-      }
-      document.getElementById("chCornerStatus").innerText = label || shape.toUpperCase();
-      onCrosshairSliderCommit();
-    }
-
-    function selectCrosshairColor(hex, el) {
-      currentChColor = hex;
-      document.getElementById("customChColorPicker").value = hex;
-      document.querySelectorAll("#chColorPills .choice-pill").forEach(p => p.classList.remove("active"));
-      if (el) el.classList.add("active");
-      onCrosshairSliderCommit();
-    }
-
-    function onCrosshairOffsetInput() {
-      const elX = document.getElementById("p-chOffX");
-      const elY = document.getElementById("p-chOffY");
-      syncRangeFill(elX);
-      syncRangeFill(elY);
-      const offX = parseInt(elX.value, 10) || 0;
-      const offY = parseInt(elY.value, 10) || 0;
-      document.getElementById("v-chOffset").innerText = `${offX} / ${offY}`;
-    }
-
-    function onCrosshairOffsetCommit() {
-      onCrosshairOffsetInput();
-      const offX = parseInt(document.getElementById("p-chOffX").value, 10) || 0;
-      const offY = parseInt(document.getElementById("p-chOffY").value, 10) || 0;
-      enqueueBridgeTask("ch_offset", () => {
-        const B = getBridge();
-        if (B && B.setCrosshairOffset) B.setCrosshairOffset(offX, offY);
-      }, 25);
-      saveStateSilent();
-    }
-
-    function updateCrosshairOffset() {
-      onCrosshairOffsetCommit();
-    }
-
-    function onCrosshairSliderInput() {
-      const elLen = document.getElementById("p-chLen");
-      const elThick = document.getElementById("p-chThick");
-      const elGap = document.getElementById("p-chGap");
-      const elDot = document.getElementById("p-chDot");
-      const elAlpha = document.getElementById("p-chAlpha");
-
-      [elLen, elThick, elGap, elDot, elAlpha].forEach(syncRangeFill);
-
-      document.getElementById("v-chLen").innerText = elLen.value + " px";
-      document.getElementById("v-chThick").innerText = elThick.value + " px";
-      document.getElementById("v-chGap").innerText = elGap.value + " px";
-      document.getElementById("v-chDot").innerText = elDot.value + " px";
-      document.getElementById("v-chAlpha").innerText = elAlpha.value + "%";
-
-      renderCrosshairCanvas();
-    }
-
-    function onCrosshairSliderCommit() {
-      onCrosshairSliderInput();
-      if (!isSessionAuthorized) return;
-
-      const len = parseInt(document.getElementById("p-chLen").value, 10);
-      const thick = parseInt(document.getElementById("p-chThick").value, 10);
-      const gap = parseInt(document.getElementById("p-chGap").value, 10);
-      const dot = parseInt(document.getElementById("p-chDot").value, 10);
-      const alpha = parseInt(document.getElementById("p-chAlpha").value, 10);
-      const outline = document.getElementById("chOutlineToggle").checked;
-
-      const sig = [currentChShape, currentChColor, alpha, len, thick, gap, dot, outline ? 1 : 0].join("|");
-      if (sig === lastCrosshairSignature) return;
-      lastCrosshairSignature = sig;
-
-      enqueueBridgeTask("ch_update", () => {
-        const B = getBridge();
-        if (B) {
-          if (B.updateCrosshairAdvanced) {
-            B.updateCrosshairAdvanced(currentChShape, currentChColor, alpha, len, thick, gap, dot, outline);
-          } else if (B.updateCrosshair) {
-            B.updateCrosshair(currentChShape);
-            B.updateCrosshairStyle(len * 4, alpha, currentChColor);
-          }
-        }
-      }, 25);
-      saveStateSilent();
-    }
-
-    function updateCrosshairAll() {
-      onCrosshairSliderCommit();
-    }
+    function onCrosshairSliderCommit() { pushCrosshairToBridgeImmediate(); }
+    function updateCrosshairAll() { pushCrosshairToBridgeImmediate(); }
 
     function renderCrosshairCanvas() {
       const canvas = document.getElementById("chPreviewCanvas");
@@ -3736,8 +3135,7 @@
         return;
       }
       const drawCrossArms = (col, w) => {
-        ctx.strokeStyle = col;
-        ctx.lineWidth = w;
+        ctx.strokeStyle = col; ctx.lineWidth = w;
         ctx.beginPath();
         ctx.moveTo(cx - gap - len, cy); ctx.lineTo(cx - gap, cy);
         ctx.moveTo(cx + gap, cy); ctx.lineTo(cx + gap + len, cy);
@@ -3755,7 +3153,7 @@
       ctx.restore();
     }
 
-    // ================= НАСТРОЙКИ СИСТЕМЫ И БУСТЕРЫ (АСИНХРОННО БЕЗ ЗАВИСАНИЙ) =================
+    // ================= НАСТРОЙКИ СИСТЕМЫ И БУСТЕРЫ =================
     function runRamCleanBoost() {
       showTopToast("🧹 Очистка оперативной памяти и кэша...");
       enqueueBridgeTask("ram_boost", () => {
@@ -3832,9 +3230,7 @@
       saveStateSilent();
     }
 
-    function applyRecoilProSettings() {
-      onRecoilSliderCommit();
-    }
+    function applyRecoilProSettings() { onRecoilSliderCommit(); }
 
     function toggleStealthModeFlag(enabled) {
       showTopToast(enabled ? "🕵️ Невидимость на записи (Stealth) ВКЛ" : "Stealth режим ВЫКЛ");
@@ -3845,7 +3241,184 @@
       saveStateSilent();
     }
 
-    // ================= СОХРАНЕНИЕ И ЗАГРУЗКА НАСТРОЕК =================
+    function onZeroDelayToggle(enabled) {
+      showTopToast(enabled ? "⚡ Мгновенный отклик 1 мм (Zero-Delay) ВКЛ!" : "Мгновенный отклик 1 мм ВЫКЛ");
+      enqueueBridgeTask("zero_delay_toggle", () => {
+        const B = getBridge();
+        if (B && B.setRawInputNoSmoothing) B.setRawInputNoSmoothing(enabled);
+        if (enabled && B && B.applyUltraProTouchMatrix) B.applyUltraProTouchMatrix(3);
+      }, 20);
+      saveStateSilent();
+    }
+
+    function onSensSliderInput() {
+      const elSharp = document.getElementById("p-sharp");
+      const elSx = document.getElementById("p-sx");
+      const elSy = document.getElementById("p-sy");
+      const elStraight = document.getElementById("p-straight");
+      const elStick = document.getElementById("p-stickForce");
+      const elChunks = document.getElementById("p-chunks");
+
+      [elSharp, elSx, elSy, elStraight, elStick, elChunks].forEach(syncRangeFill);
+
+      document.getElementById("v-sharp").innerText = parseFloat(elSharp.value).toFixed(1);
+      document.getElementById("v-sx").innerText = parseFloat(elSx.value).toFixed(1);
+      document.getElementById("v-sy").innerText = parseFloat(elSy.value).toFixed(1);
+      document.getElementById("v-straight").innerText = elStraight.value + "%";
+      document.getElementById("v-stickForce").innerText = elStick.value + "%";
+      document.getElementById("v-chunks").innerText = elChunks.value + "%";
+    }
+
+    function onSensSliderCommit() {
+      onSensSliderInput();
+      pushEngineParametersImmediate(false);
+    }
+
+    function syncAllSliders() {
+      onSensSliderInput();
+      pushEngineParametersImmediate(false);
+    }
+
+    function pushEngineParametersImmediate(forcePush) {
+      if (!isSessionAuthorized) return;
+      const sharp = parseFloat(document.getElementById("p-sharp").value);
+      const sx = parseFloat(document.getElementById("p-sx").value);
+      const sy = parseFloat(document.getElementById("p-sy").value);
+      const chunks = parseInt(document.getElementById("p-chunks").value, 10);
+      const chunkFast = 100;
+      const straight = parseFloat(document.getElementById("p-straight").value) / 10.0;
+      const stick = parseInt(document.getElementById("p-stickForce").value, 10);
+      const grid = 128;
+      const pause = 0;
+      const accel = 10.0;
+
+      const sig = [sharp, sx, sy, chunks, chunkFast, straight, stick, grid, pause, accel].join("|");
+      if (!forcePush && sig === lastEngineSignature) return;
+      lastEngineSignature = sig;
+
+      enqueueBridgeTask("update_engine_params", () => {
+        const B = getBridge();
+        if (B && B.updateParameters) {
+          B.updateParameters(sharp, sx, sy, chunks, chunkFast, straight, stick, grid, pause, accel);
+        }
+      }, 25);
+      saveStateSilent();
+    }
+
+    function runSmartScanAndApply() {
+      document.getElementById("zeroDelaySnapToggle").checked = true;
+      selectQuickSensMode(1, 10.0, 10.0, 8.2, 100, 96, 100);
+      enqueueBridgeTask("smart_scan", () => {
+        const B = getBridge();
+        let model = document.getElementById("profModelVal").innerText || "SM-S938B";
+        if (B && B.runSmartDeviceScan) {
+          const res = String(B.runSmartDeviceScan() || "");
+          model = res.split("|")[0] || model;
+        }
+        document.getElementById("calibModelName").innerText = model;
+        if (B && B.applyUltraProTouchMatrix) B.applyUltraProTouchMatrix(3);
+        showTopToast("🔥 Выжат максимум для " + model + " (850 ev/s)!");
+      }, 25);
+    }
+
+    function testOneMmFlickResponse() {
+      showTopToast("⚡ Сенсор сброшен и разогнан до 850 пакетов/сек!");
+      enqueueBridgeTask("heal_touch", () => {
+        const B = getBridge();
+        if (B && B.healTouch) B.healTouch();
+        if (B && B.applyUltraProTouchMatrix) B.applyUltraProTouchMatrix(3);
+      }, 20);
+    }
+
+    function loadFullProBundle(title, sharp, sx, sy, straightPct, stickPct, chunksPct, chShape, chHex, recoilOn) {
+      document.getElementById("p-sharp").value = sharp;
+      document.getElementById("p-sx").value = sx;
+      document.getElementById("p-sy").value = sy;
+      document.getElementById("p-straight").value = straightPct;
+      document.getElementById("p-stickForce").value = stickPct;
+      document.getElementById("p-chunks").value = chunksPct;
+      document.getElementById("zeroDelaySnapToggle").checked = true;
+      document.getElementById("sw-recoilPro").checked = !!recoilOn;
+
+      onSensSliderInput();
+      onRecoilSliderCommit();
+
+      currentChColor = chHex;
+      document.getElementById("customChColorPicker").value = chHex;
+      selectCrosshairShape(chShape, chShape.toUpperCase(), null);
+
+      toggleTeleportMaster(true);
+      showTopToast("🔥 Сборка «" + title + "» включена!");
+    }
+
+    function encodePortableConfigToken() {
+      const c = collectFullConfig();
+      const packed = [
+        c.theme, c.tpOn ? 1 : 0, c.zeroSnap ? 1 : 0,
+        c.sharp, c.sx, c.sy, c.straight, c.stickForce, c.chunks,
+        c.stretch, c.chShape, c.chColor,
+        c.chLen, c.chThick, c.chGap, c.chDot, c.chAlpha,
+        c.chOffX, c.chOffY, c.chOutline ? 1 : 0,
+        c.recoilPower
+      ].join("|");
+      return "SO2-" + btoa(unescape(encodeURIComponent(packed))).replace(/=+$/, "");
+    }
+
+    function decodePortableConfigToken(tokenStr) {
+      try {
+        let clean = tokenStr.trim();
+        if (clean.includes("c=")) clean = clean.split("c=")[1].trim();
+        if (clean.startsWith("SO2-") && clean.length > 12) {
+          const b64 = clean.substring(4);
+          const raw = decodeURIComponent(escape(atob(b64)));
+          const p = raw.split("|");
+          if (p.length >= 20) {
+            return {
+              theme: parseInt(p[0], 10) || 0,
+              tpOn: p[1] === "1",
+              zeroSnap: p[2] === "1",
+              sharp: p[3], sx: p[4], sy: p[5],
+              straight: p[6], stickForce: p[7], chunks: p[8],
+              stretch: p[9], chShape: p[10], chColor: p[11],
+              chLen: p[12], chThick: p[13], chGap: p[14], chDot: p[15], chAlpha: p[16],
+              chOffX: p[17] || "0", chOffY: p[18] || "0",
+              chOutline: p[19] === "1",
+              recoilPower: p[20] || "100"
+            };
+          }
+        }
+      } catch (e) {}
+      return null;
+    }
+
+    function generateAndCopyShareLink() {
+      const portableCode = encodePortableConfigToken();
+      enqueueBridgeTask("upload_cfg", () => {
+        const B = getBridge();
+        if (B && B.uploadCloudConfig) B.uploadCloudConfig("PRO CFG", JSON.stringify(collectFullConfig()));
+      }, 30);
+      const shareUrl = "https://so2tp.cfg/?c=" + portableCode;
+      document.getElementById("shareLinkInput").value = shareUrl;
+      if (navigator.clipboard) navigator.clipboard.writeText(shareUrl);
+      showTopToast("🔗 Код скопирован!");
+    }
+
+    function applySharedConfigCode() {
+      const val = document.getElementById("shareLinkInput").value.trim();
+      if (!val) { showTopToast("⚠️ Введите код!"); return; }
+      const decoded = decodePortableConfigToken(val);
+      if (decoded) {
+        applyFullConfigObject(decoded);
+        saveCurrentConfigNow();
+        showTopToast("✅ Конфиг применён!");
+        return;
+      }
+      toggleTeleportMaster(true);
+      showTopToast("✅ Конфиг активирован!");
+    }
+
+    function shareQuickLinkAction() { openPage("page-configs"); generateAndCopyShareLink(); }
+
     function collectFullConfig() {
       return {
         theme: currentThemeIdx,
@@ -3896,15 +3469,8 @@
       if (c.chColor) currentChColor = c.chColor;
       if (c.chShape) selectCrosshairShape(c.chShape, c.chShape.toUpperCase(), null);
 
-      onSensSliderInput();
-      onCrosshairOffsetInput();
-      onCrosshairSliderInput();
-      onRecoilSliderInput();
-      syncAllRangeFills();
-
-      if (c.tpOn !== undefined && isSessionAuthorized) {
-        toggleTeleportMaster(!!c.tpOn);
-      }
+      onSensSliderInput(); onCrosshairOffsetInput(); onCrosshairSliderInput(); onRecoilSliderInput(); syncAllRangeFills();
+      if (c.tpOn !== undefined && isSessionAuthorized) toggleTeleportMaster(!!c.tpOn);
     }
 
     function saveStateSilent() {
@@ -3913,9 +3479,7 @@
       try { localStorage.setItem("so2tp_backup_v410", jsonStr); } catch (e) {}
       enqueueBridgeTask("save_cfg_json", () => {
         const B = getBridge();
-        if (B && B.saveFullConfigJson) {
-          B.saveFullConfigJson(jsonStr);
-        }
+        if (B && B.saveFullConfigJson) B.saveFullConfigJson(jsonStr);
       }, 180);
     }
 
@@ -3923,7 +3487,7 @@
       if (!isSessionAuthorized) return;
       saveStateSilent();
       pushEngineParametersImmediate(true);
-      showTopToast("💾 Все настройки успешно сохранены!");
+      showTopToast("💾 Настройки сохранены!");
     }
 
     function loadSavedSettingsJson() {
