@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
-  <title>SO2Teleport QUANTUM ENGINE V410</title>
+  <title>SO2Teleport QUANTUM ENGINE V410 FINAL</title>
   <style>
     :root {
       --bg-dark: #07050d;
@@ -474,49 +474,6 @@
       background: linear-gradient(145deg, #ffffff, var(--accent));
       box-shadow: 0 0 10px var(--accent);
     }
-    .mode-row-card {
-      background: var(--bg-card-inner);
-      border: 1px solid rgba(255, 255, 255, 0.08);
-      border-radius: 13px;
-      padding: 10px 11px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: 8px;
-      margin-bottom: 7px;
-      cursor: pointer;
-    }
-    .mode-row-card.active {
-      background: linear-gradient(90deg, rgba(var(--accent-rgb), 0.20) 0%, var(--bg-card-inner) 92%);
-      border: 1.5px solid var(--accent);
-    }
-    .mode-info-title {
-      font-size: 11.5px;
-      font-weight: 900;
-      color: #ffffff;
-      text-transform: uppercase;
-    }
-    .mode-info-desc {
-      font-size: 10px;
-      color: var(--text-muted);
-      margin-top: 2px;
-      line-height: 1.25;
-    }
-    .mode-select-btn {
-      background: rgba(255, 255, 255, 0.06);
-      border: 1px solid rgba(255, 255, 255, 0.16);
-      color: #ffffff;
-      border-radius: 8px;
-      padding: 6px 10px;
-      font-size: 10px;
-      font-weight: 900;
-      cursor: pointer;
-      white-space: nowrap;
-    }
-    .mode-row-card.active .mode-select-btn {
-      background: linear-gradient(135deg, var(--accent), var(--accent-2));
-      border-color: rgba(255, 255, 255, 0.32);
-    }
     /* ================= КОМПАКТНЫЕ СЛИМ-ПОЛЗУНКИ В 2 КОЛОНКИ ================= */
     .compact-sliders-grid {
       display: grid;
@@ -623,17 +580,18 @@
       -webkit-appearance: none;
       appearance: none;
       width: 100%;
-      height: 5px;
-      background: linear-gradient(90deg, var(--accent) var(--pct, 80%), rgba(255, 255, 255, 0.10) var(--pct, 80%));
+      height: 6px;
+      background: linear-gradient(90deg, var(--accent) var(--pct, 80%), rgba(255, 255, 255, 0.12) var(--pct, 80%));
       border-radius: 999px;
       outline: none;
-      margin: 3px 0;
+      margin: 4px 0;
+      touch-action: pan-y;
     }
     input[type="range"]::-webkit-slider-thumb {
       -webkit-appearance: none;
       appearance: none;
-      width: 16px;
-      height: 16px;
+      width: 18px;
+      height: 18px;
       border-radius: 50%;
       background: #ffffff;
       border: 3px solid var(--accent);
@@ -654,19 +612,27 @@
     }
     .choice-pill {
       background: var(--bg-card-inner);
-      border: 1px solid rgba(255, 255, 255, 0.10);
+      border: 1px solid rgba(255, 255, 255, 0.12);
       color: #e2e8f0;
-      padding: 8px 4px;
+      padding: 9px 4px;
       border-radius: 999px;
       font-size: 10.5px;
       font-weight: 800;
       text-align: center;
       cursor: pointer;
+      position: relative;
+      z-index: 2;
+      pointer-events: auto;
+      transition: background 0.12s, border-color 0.12s, transform 0.1s;
+    }
+    .choice-pill:active {
+      transform: scale(0.95);
     }
     .choice-pill.active {
-      background: linear-gradient(135deg, rgba(var(--accent-rgb), 0.42), rgba(var(--accent-rgb), 0.16));
+      background: linear-gradient(135deg, rgba(var(--accent-rgb), 0.48), rgba(var(--accent-rgb), 0.20));
       border: 1.5px solid var(--accent);
       color: #ffffff;
+      box-shadow: 0 0 12px rgba(var(--accent-rgb), 0.35);
     }
     .profile-row {
       display: flex;
@@ -1018,6 +984,9 @@
   </style>
 </head>
 <body>
+  <!-- Скрытый HTML5 аудио-плеер для гарантированного вывода пульта в шторку Android 14-17 -->
+  <audio id="voiceNotifAudio" loop playsinline style="display:none;"></audio>
+
   <!-- ВСПЛЫВАЮЩЕЕ УВЕДОМЛЕНИЕ -->
   <div id="topToast">⚡ Квантовый Телепорт 850Hz активирован!</div>
 
@@ -1354,7 +1323,7 @@
       </div>
     </div>
 
-    <!-- ================= ЭКРАН 3: РАСТЯГ ЭКРАНА (ИСПРАВЛЕННЫЕ КЛИКАБЕЛЬНЫЕ ПИЛЛИ) ================= -->
+    <!-- ================= ЭКРАН 3: РАСТЯГ ЭКРАНА ================= -->
     <div id="page-stretch" class="page-view">
       <div class="back-bar" onclick="openPage('page-home')">
         <span class="arrow">←</span>
@@ -1371,13 +1340,13 @@
           </div>
         </div>
         <div class="pills-grid" style="grid-template-columns:repeat(4, 1fr);" id="ratioPillsContainer">
-          <div class="choice-pill" data-ratio="1:1" onclick="selectStretchFormat('1:1', 108, '1:1 (ULTRA WIDE)', this)">1:1 MAX</div>
-          <div class="choice-pill" data-ratio="5:4" onclick="selectStretchFormat('5:4', 124, '5:4 (PRO HEAD)', this)">5:4</div>
-          <div class="choice-pill active" data-ratio="4:3" onclick="selectStretchFormat('4:3', 142, '4:3 (IPAD)', this)">4:3 IPAD</div>
-          <div class="choice-pill" data-ratio="3:2" onclick="selectStretchFormat('3:2', 158, '3:2 (BALANCED)', this)">3:2</div>
-          <div class="choice-pill" data-ratio="16:10" onclick="selectStretchFormat('16:10', 174, '16:10 (WIDE)', this)">16:10</div>
-          <div class="choice-pill" data-ratio="16:9" onclick="selectStretchFormat('16:9', 190, '16:9 (FAST)', this)">16:9</div>
-          <div class="choice-pill" data-ratio="21:10" style="grid-column: span 2;" onclick="selectStretchFormat('21:10', 210, '21:10 (SOFT STRETCH)', this)">21:10 КИБЕР</div>
+          <div class="choice-pill" data-ratio="1:1" data-w="108" data-title="1:1 (ULTRA WIDE)" onclick="selectStretchFormat('1:1', 108, '1:1 (ULTRA WIDE)', this)">1:1 MAX</div>
+          <div class="choice-pill" data-ratio="5:4" data-w="124" data-title="5:4 (PRO HEAD)" onclick="selectStretchFormat('5:4', 124, '5:4 (PRO HEAD)', this)">5:4</div>
+          <div class="choice-pill active" data-ratio="4:3" data-w="142" data-title="4:3 (IPAD)" onclick="selectStretchFormat('4:3', 142, '4:3 (IPAD)', this)">4:3 IPAD</div>
+          <div class="choice-pill" data-ratio="3:2" data-w="158" data-title="3:2 (BALANCED)" onclick="selectStretchFormat('3:2', 158, '3:2 (BALANCED)', this)">3:2</div>
+          <div class="choice-pill" data-ratio="16:10" data-w="174" data-title="16:10 (WIDE)" onclick="selectStretchFormat('16:10', 174, '16:10 (WIDE)', this)">16:10</div>
+          <div class="choice-pill" data-ratio="16:9" data-w="190" data-title="16:9 (FAST)" onclick="selectStretchFormat('16:9', 190, '16:9 (FAST)', this)">16:9</div>
+          <div class="choice-pill" data-ratio="21:10" data-w="210" data-title="21:10 (SOFT STRETCH)" style="grid-column: span 2;" onclick="selectStretchFormat('21:10', 210, '21:10 (SOFT STRETCH)', this)">21:10 КИБЕР</div>
         </div>
         <div class="param-box" style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
           <div style="padding-right:10px;">
@@ -1576,19 +1545,19 @@
 
         <div class="param-box">
           <div class="param-top"><span class="param-name">🎤 Усиление твоего микрофона</span><span id="v-micGain" class="param-val-pill">120%</span></div>
-          <input type="range" id="p-micGain" min="50" max="200" step="5" value="120" oninput="updateVoiceDspParams()" />
+          <input type="range" id="p-micGain" min="50" max="200" step="5" value="120" oninput="updateVoiceDspParams()" onchange="updateVoiceDspParams()" />
           <div class="param-sub">Мягкий лимитер защищает голос от хрипа и перегруза на 200%</div>
         </div>
 
         <div class="param-box">
           <div class="param-top"><span class="param-name">🎧 Громкость тиммейтов в комнате</span><span id="v-peerVol" class="param-val-pill">100%</span></div>
-          <input type="range" id="p-peerVol" min="20" max="200" step="5" value="100" oninput="updateVoiceDspParams()" />
+          <input type="range" id="p-peerVol" min="20" max="200" step="5" value="100" oninput="updateVoiceDspParams()" onchange="updateVoiceDspParams()" />
           <div class="param-sub">Баланс громкости голосов отряда поверх звуков шагов в игре</div>
         </div>
 
         <div class="param-box" style="margin-bottom:0;">
           <div class="param-top"><span class="param-name">🔇 Порог тишины (Noise Gate)</span><span id="v-noiseGate" class="param-val-pill">15%</span></div>
-          <input type="range" id="p-noiseGate" min="0" max="45" step="1" value="15" oninput="updateVoiceDspParams()" />
+          <input type="range" id="p-noiseGate" min="0" max="45" step="1" value="15" oninput="updateVoiceDspParams()" onchange="updateVoiceDspParams()" />
           <div class="param-sub">Отсекает передачу пакетов, когда ты молчишь (0% фонового шипения)</div>
         </div>
       </div>
@@ -1805,25 +1774,24 @@
     let isKeyRevealed = false;
     let isSessionAuthorized = false;
 
-    // Очередь неблокирующих вызовов Shizuku (0% лагов интерфейса)
+    // Неблокирующая очередь команд к мосту (чтобы Shizuku никогда не фризил UI)
     const pendingBridgeTasks = {};
     let lastEngineSignature = "";
     let lastCrosshairSignature = "";
 
-    function enqueueBridgeTask(taskKey, fn, delayMs = 28) {
+    function enqueueBridgeTask(taskKey, fn, delayMs = 60) {
       if (pendingBridgeTasks[taskKey]) {
         clearTimeout(pendingBridgeTasks[taskKey]);
       }
       pendingBridgeTasks[taskKey] = setTimeout(() => {
         delete pendingBridgeTasks[taskKey];
-        const runner = window.requestIdleCallback || function(cb) { setTimeout(cb, 8); };
-        runner(() => {
+        setTimeout(() => {
           try { fn(); } catch (e) {}
-        });
+        }, 4);
       }, delayMs);
     }
 
-    // Обновление неоновой заливки ползунка (--pct)
+    // Мгновенная отрисовка неоновой заливки ползунка
     function syncRangeFill(inputEl) {
       if (!inputEl) return;
       const min = parseFloat(inputEl.min) || 0;
@@ -1835,6 +1803,63 @@
 
     function syncAllRangeFills() {
       document.querySelectorAll('input[type="range"]').forEach(syncRangeFill);
+    }
+
+    // Принудительная привязка realtime-обновления цифр на все ползунки
+    function bindAllSlidersRealtime() {
+      const sensIds = ["p-sharp", "p-sx", "p-sy", "p-straight", "p-stickForce", "p-chunks"];
+      sensIds.forEach(id => {
+        const el = document.getElementById(id);
+        if (!el) return;
+        ["input", "touchmove", "pointermove"].forEach(ev => {
+          el.addEventListener(ev, () => { onSensSliderInput(); }, { passive: true });
+        });
+      });
+
+      const chIds = ["p-chLen", "p-chThick", "p-chGap", "p-chDot", "p-chAlpha"];
+      chIds.forEach(id => {
+        const el = document.getElementById(id);
+        if (!el) return;
+        ["input", "touchmove", "pointermove"].forEach(ev => {
+          el.addEventListener(ev, () => { onCrosshairSliderInput(); }, { passive: true });
+        });
+      });
+
+      ["p-chOffX", "p-chOffY"].forEach(id => {
+        const el = document.getElementById(id);
+        if (!el) return;
+        ["input", "touchmove", "pointermove"].forEach(ev => {
+          el.addEventListener(ev, () => { onCrosshairOffsetInput(); }, { passive: true });
+        });
+      });
+
+      const recEl = document.getElementById("p-recoilPower");
+      if (recEl) {
+        ["input", "touchmove", "pointermove"].forEach(ev => {
+          recEl.addEventListener(ev, () => { onRecoilSliderInput(); }, { passive: true });
+        });
+      }
+
+      ["p-micGain", "p-peerVol", "p-noiseGate"].forEach(id => {
+        const el = document.getElementById(id);
+        if (!el) return;
+        ["input", "touchmove", "pointermove"].forEach(ev => {
+          el.addEventListener(ev, () => { updateVoiceDspParams(); }, { passive: true });
+        });
+      });
+
+      // Надёжный делегированный клик по всем 7 кнопкам растяга
+      const ratioBox = document.getElementById("ratioPillsContainer");
+      if (ratioBox) {
+        ratioBox.addEventListener("click", (e) => {
+          const pill = e.target.closest(".choice-pill");
+          if (!pill) return;
+          const r = pill.getAttribute("data-ratio") || "4:3";
+          const w = parseInt(pill.getAttribute("data-w") || "142", 10);
+          const t = pill.getAttribute("data-title") || r;
+          selectStretchFormat(r, w, t, pill);
+        });
+      }
     }
 
     // Состояние друзей и Discord-войса
@@ -1849,8 +1874,8 @@
     let micProcessorNode = null;
     let silentSinkNode = null;
     let peerMasterGainNode = null;
+    let silentLoopBlobUrl = null;
 
-    // Переменные чистого DSP-тракта без треска
     let gateEnvelope = 0.0;
     let gateHoldFrames = 0;
     let dcBlockerPrevX = 0.0;
@@ -1875,7 +1900,7 @@
       clearTimeout(window._toastTimer);
       window._toastTimer = setTimeout(() => {
         t.style.display = "none";
-      }, 2200);
+      }, 2100);
     }
 
     function setTheme(idx, accentHex, secondHex, rgbStr, dotEl) {
@@ -1983,9 +2008,7 @@
       document.getElementById("profSubVal").innerText = subStatusText;
       updateProfileKeyDisplay();
 
-      enqueueBridgeTask("init_friends_sync", () => {
-        syncFriendsHubData(false);
-      }, 450);
+      setTimeout(() => { syncFriendsHubData(false); }, 350);
     }
 
     window.forceShowKickScreen = function(msg) {
@@ -2032,15 +2055,13 @@
       enqueueBridgeTask("stop_tp_kick", () => {
         const B = getBridge();
         if (B && B.stopTeleport) B.stopTeleport();
-      }, 10);
+      }, 20);
     };
 
     function logoutAndSwitchKey() {
       const B = getBridge();
       try {
-        if (B && B.logoutLicenseKey) {
-          B.logoutLicenseKey();
-        }
+        if (B && B.logoutLicenseKey) B.logoutLicenseKey();
       } catch (e) {}
       try {
         localStorage.removeItem("so2tp_active_key_v412");
@@ -2107,29 +2128,7 @@
             }
           }
         } catch (e) {}
-      }, 15);
-    }
-
-    function pollLicenseExpiration() {
-      if (!isSessionAuthorized || document.hidden) return;
-      if (!fullLicenseKeyPlain || fullLicenseKeyPlain.length < 5) {
-        window.forceShowKickScreen("Введите лицензионный ключ для доступа!");
-        return;
-      }
-      enqueueBridgeTask("poll_license", () => {
-        const B = getBridge();
-        if (!B || typeof B.verifyLicenseKey !== "function") return;
-        try {
-          const verifyOut = String(B.verifyLicenseKey(fullLicenseKeyPlain) || "");
-          if (verifyOut.startsWith("OK|")) {
-            const subLabel = verifyOut.split("|")[1] || "АКТИВНА";
-            document.getElementById("profSubVal").innerText = subLabel;
-          } else if (verifyOut.startsWith("ERR|") || verifyOut.startsWith("EXPIRED|") || verifyOut.startsWith("BANNED|")) {
-            const reason = verifyOut.split("|")[1] || "Время действия вашего ключа истекло!";
-            window.forceShowKickScreen(reason);
-          }
-        } catch (e) {}
-      }, 50);
+      }, 20);
     }
 
     window.submitKeyLogin = function() {
@@ -2234,22 +2233,18 @@
         authEl.style.setProperty("display", "flex", "important");
       }
 
+      bindAllSlidersRealtime();
       syncAllRangeFills();
       renderCrosshairCanvas();
       checkShizukuState(false);
 
-      setInterval(() => {
-        if (!document.hidden && isSessionAuthorized) checkShizukuState(false);
-      }, 12000);
-
-      setInterval(pollLicenseExpiration, 15000);
-
+      // Асинхронная синхронизация друзей только когда открыта вкладка друзей (0 нагрузки на Shizuku)
       setInterval(() => {
         const friendsPage = document.getElementById("page-friends");
         if (!document.hidden && isSessionAuthorized && friendsPage && friendsPage.classList.contains("active")) {
           syncFriendsHubData(false);
         }
-      }, 10000);
+      }, 9000);
 
       const loginBtn = document.getElementById("loginBtnAction");
       if (loginBtn) {
@@ -2267,7 +2262,7 @@
       }
 
       const B = getBridge();
-      let hwid = "НЕ ОПРЕДЕЛЕН";
+      let hwid = "39e220a438dedb68";
       let modelName = "SM-S938B";
       let screenSpec = "1440x3120 (120 Гц)";
 
@@ -2308,131 +2303,131 @@
       const nickInputEl = document.getElementById("loginNickInput");
       const keyInputEl = document.getElementById("loginKeyInput");
 
-      if (nickInputEl) {
-        nickInputEl.value = savedNick || "";
-      }
+      if (nickInputEl) nickInputEl.value = savedNick || "";
       if (keyInputEl) {
         keyInputEl.placeholder = "TP-****-******";
-        if (savedKey && savedKey.length >= 5) {
-          keyInputEl.value = savedKey;
-        } else {
-          keyInputEl.value = "";
-        }
+        keyInputEl.value = (savedKey && savedKey.length >= 5) ? savedKey : "";
       }
     }
 
-    document.addEventListener("visibilitychange", () => {
-      if (!document.hidden && isSessionAuthorized) pollLicenseExpiration();
-    });
-
-    // ================= СИСТЕМА ДРУЗЕЙ =================
-    function callFriendsApiAction(payloadObj) {
-      const B = getBridge();
-      if (!B || typeof B.requestFriendsHub !== "function") return null;
-      const hwid = document.getElementById("profHwidVal").innerText || "";
+    // ================= АСИНХРОННАЯ СИСТЕМА ДРУЗЕЙ (ПРЯМОЙ FETCH БЕЗ БЛОКИРОВКИ МОСТА) =================
+    async function callFriendsApiAsync(payloadObj) {
+      const hwid = document.getElementById("profHwidVal").innerText || "39e220a438dedb68";
       const nick = document.getElementById("chipPlayerName").innerText || "Player";
       const req = Object.assign({ android_id: hwid, nickname: nick }, payloadObj);
+
       try {
-        const raw = B.requestFriendsHub(JSON.stringify(req));
-        return JSON.parse(raw);
-      } catch (e) {
-        return null;
+        const resp = await fetch(API_HTTP_BASE + "/friends", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(req)
+        });
+        if (resp.ok) {
+          return await resp.json();
+        }
+      } catch (e) {}
+
+      const B = getBridge();
+      if (B && typeof B.requestFriendsHub === "function") {
+        try {
+          const raw = B.requestFriendsHub(JSON.stringify(req));
+          return JSON.parse(raw);
+        } catch (e) {}
       }
+      return null;
     }
 
-    function syncFriendsHubData(showToastFeedback) {
-      enqueueBridgeTask("friends_sync", () => {
-        const data = callFriendsApiAction({ action: "sync" });
-        if (!data || !data.ok) {
-          if (showToastFeedback) showTopToast("⚠️ Не удалось обновить список друзей");
-          return;
-        }
-        if (data.my_code) {
-          myFriendCode = data.my_code;
-          document.getElementById("myFriendCodeDisplay").innerText = data.my_code;
-          document.getElementById("profFriendIdVal").innerText = data.my_code;
-          document.getElementById("chipFriendCode").innerText = "• " + data.my_code;
-        }
-        const incoming = data.incoming || [];
-        const incCard = document.getElementById("incomingRequestsCard");
-        const incList = document.getElementById("incomingRequestsList");
-        document.getElementById("incomingCountTag").innerText = incoming.length;
-        if (incoming.length > 0) {
-          incCard.style.display = "block";
-          incList.innerHTML = incoming.map(item => `
+    async function syncFriendsHubData(showToastFeedback) {
+      const data = await callFriendsApiAsync({ action: "sync" });
+      if (!data || !data.ok) {
+        if (showToastFeedback) showTopToast("⚠️ Не удалось обновить список друзей");
+        return;
+      }
+      if (data.my_code) {
+        myFriendCode = data.my_code;
+        document.getElementById("myFriendCodeDisplay").innerText = data.my_code;
+        document.getElementById("profFriendIdVal").innerText = data.my_code;
+        document.getElementById("chipFriendCode").innerText = "• " + data.my_code;
+      }
+      const incoming = data.incoming || [];
+      const incCard = document.getElementById("incomingRequestsCard");
+      const incList = document.getElementById("incomingRequestsList");
+      document.getElementById("incomingCountTag").innerText = incoming.length;
+      if (incoming.length > 0) {
+        incCard.style.display = "block";
+        incList.innerHTML = incoming.map(item => `
+          <div class="friend-item">
+            <div class="friend-meta">
+              <span class="online-dot on"></span>
+              <div>
+                <div class="friend-nick">${escapeHtml(item.nick)}</div>
+                <div class="friend-code-sub">${escapeHtml(item.code)}</div>
+              </div>
+            </div>
+            <div class="friend-actions">
+              <button type="button" class="mini-act-btn" onclick="acceptFriendReq('${escapeHtml(item.code)}')">✅ ПРИНЯТЬ</button>
+              <button type="button" class="mini-act-btn del" onclick="removeFriendEntry('${escapeHtml(item.code)}')">✖</button>
+            </div>
+          </div>
+        `).join("");
+      } else {
+        incCard.style.display = "none";
+      }
+
+      const friends = data.friends || [];
+      const fContainer = document.getElementById("friendsContainerList");
+      const onlineCount = friends.filter(f => f.online).length;
+      document.getElementById("friendsTileBadge").innerText =
+        incoming.length > 0 ? `🔔 ЗАЯВОК: ${incoming.length}` : `ОНЛАЙН: ${onlineCount} • DISCORD VOICE`;
+      if (friends.length === 0) {
+        fContainer.innerHTML = `
+          <div style="font-size:11.5px; color:var(--text-muted); text-align:center; padding:10px 0;">
+            Список друзей пуст. Скопируйте свой ID выше или введите ID друга!
+          </div>`;
+      } else {
+        fContainer.innerHTML = friends.map(f => {
+          const statusSub = f.room
+            ? `🔊 В голосовом: ${escapeHtml(f.room)}`
+            : (f.online ? "🟢 В сети" : "⚪ Не в сети");
+          const roomJoinBtn = f.room
+            ? `<button type="button" class="mini-act-btn" onclick="joinSpecificRoom('${escapeHtml(f.room)}')">⚡ ВОЙТИ</button>`
+            : `<button type="button" class="mini-act-btn" onclick="inviteFriendToMyVoice('${escapeHtml(f.code)}')">📞 ПОЗВАТЬ</button>`;
+          return `
             <div class="friend-item">
               <div class="friend-meta">
-                <span class="online-dot on"></span>
+                <span class="online-dot ${f.online ? 'on' : ''}"></span>
                 <div>
-                  <div class="friend-nick">${escapeHtml(item.nick)}</div>
-                  <div class="friend-code-sub">${escapeHtml(item.code)}</div>
+                  <div class="friend-nick">${escapeHtml(f.nick)} <span style="font-size:9.5px; color:var(--accent); font-family:monospace;">(${escapeHtml(f.code)})</span></div>
+                  <div class="friend-code-sub">${statusSub}</div>
                 </div>
               </div>
               <div class="friend-actions">
-                <button type="button" class="mini-act-btn" onclick="acceptFriendReq('${escapeHtml(item.code)}')">✅ ПРИНЯТЬ</button>
-                <button type="button" class="mini-act-btn del" onclick="removeFriendEntry('${escapeHtml(item.code)}')">✖</button>
+                ${roomJoinBtn}
+                <button type="button" class="mini-act-btn del" onclick="removeFriendEntry('${escapeHtml(f.code)}')">🗑️</button>
               </div>
             </div>
-          `).join("");
-        } else {
-          incCard.style.display = "none";
-        }
+          `;
+        }).join("");
+      }
 
-        const friends = data.friends || [];
-        const fContainer = document.getElementById("friendsContainerList");
-        const onlineCount = friends.filter(f => f.online).length;
-        document.getElementById("friendsTileBadge").innerText =
-          incoming.length > 0 ? `🔔 ЗАЯВОК: ${incoming.length}` : `ОНЛАЙН: ${onlineCount} • DISCORD VOICE`;
-        if (friends.length === 0) {
-          fContainer.innerHTML = `
-            <div style="font-size:11.5px; color:var(--text-muted); text-align:center; padding:10px 0;">
-              Список друзей пуст. Скопируйте свой ID выше или введите ID друга!
-            </div>`;
-        } else {
-          fContainer.innerHTML = friends.map(f => {
-            const statusSub = f.room
-              ? `🔊 В голосовом: ${escapeHtml(f.room)}`
-              : (f.online ? "🟢 В сети" : "⚪ Не в сети");
-            const roomJoinBtn = f.room
-              ? `<button type="button" class="mini-act-btn" onclick="joinSpecificRoom('${escapeHtml(f.room)}')">⚡ ВОЙТИ</button>`
-              : `<button type="button" class="mini-act-btn" onclick="inviteFriendToMyVoice('${escapeHtml(f.code)}')">📞 ПОЗВАТЬ</button>`;
-            return `
-              <div class="friend-item">
-                <div class="friend-meta">
-                  <span class="online-dot ${f.online ? 'on' : ''}"></span>
-                  <div>
-                    <div class="friend-nick">${escapeHtml(f.nick)} <span style="font-size:9.5px; color:var(--accent); font-family:monospace;">(${escapeHtml(f.code)})</span></div>
-                    <div class="friend-code-sub">${statusSub}</div>
-                  </div>
-                </div>
-                <div class="friend-actions">
-                  ${roomJoinBtn}
-                  <button type="button" class="mini-act-btn del" onclick="removeFriendEntry('${escapeHtml(f.code)}')">🗑️</button>
-                </div>
-              </div>
-            `;
-          }).join("");
-        }
-
-        const invites = data.invites || [];
-        if (invites.length > 0) {
-          const lastInv = invites[invites.length - 1];
-          pendingInviteRoom = lastInv.room || "SQUAD-MAIN";
-          document.getElementById("invFromNick").innerText = `${lastInv.from_nick} (${lastInv.from_code})`;
-          document.getElementById("invRoomCode").innerText = pendingInviteRoom;
-          document.getElementById("voiceInviteBanner").style.display = "block";
-        }
-        if (showToastFeedback) showTopToast("✅ Список друзей обновлён!");
-      }, 20);
+      const invites = data.invites || [];
+      if (invites.length > 0) {
+        const lastInv = invites[invites.length - 1];
+        pendingInviteRoom = lastInv.room || "SQUAD-MAIN";
+        document.getElementById("invFromNick").innerText = `${lastInv.from_nick} (${lastInv.from_code})`;
+        document.getElementById("invRoomCode").innerText = pendingInviteRoom;
+        document.getElementById("voiceInviteBanner").style.display = "block";
+      }
+      if (showToastFeedback) showTopToast("✅ Список друзей обновлён!");
     }
 
-    function sendAddFriendAction() {
+    async function sendAddFriendAction() {
       const val = document.getElementById("friendTargetInput").value.trim().toUpperCase();
       if (val.length < 2) {
         showTopToast("⚠️ Введите ID (SO2-XXXX) или никнейм друга!");
         return;
       }
-      const res = callFriendsApiAction({ action: "add", target_code: val });
+      const res = await callFriendsApiAsync({ action: "add", target_code: val });
       if (res && res.ok) {
         document.getElementById("friendTargetInput").value = "";
         showTopToast("✅ " + (res.message || "Заявка отправлена!"));
@@ -2442,27 +2437,27 @@
       }
     }
 
-    function acceptFriendReq(targetCode) {
-      const res = callFriendsApiAction({ action: "accept", target_code: targetCode });
+    async function acceptFriendReq(targetCode) {
+      const res = await callFriendsApiAsync({ action: "accept", target_code: targetCode });
       if (res && res.ok) {
         showTopToast("🤝 Друг добавлен в ваш отряд!");
         syncFriendsHubData(false);
       }
     }
 
-    function removeFriendEntry(targetCode) {
-      callFriendsApiAction({ action: "remove", target_code: targetCode });
+    async function removeFriendEntry(targetCode) {
+      await callFriendsApiAsync({ action: "remove", target_code: targetCode });
       syncFriendsHubData(false);
       showTopToast("🗑️ Контакт удалён");
     }
 
-    function inviteFriendToMyVoice(targetCode) {
+    async function inviteFriendToMyVoice(targetCode) {
       let room = document.getElementById("voiceRoomInput").value.trim().toUpperCase();
       if (!room) {
         room = myFriendCode ? ("SQUAD-" + myFriendCode.slice(-4)) : "SQUAD-MAIN";
         document.getElementById("voiceRoomInput").value = room;
       }
-      const res = callFriendsApiAction({
+      const res = await callFriendsApiAsync({
         action: "invite_voice",
         target_code: targetCode,
         room_code: room
@@ -2488,7 +2483,7 @@
       if (isVoiceConnected) {
         leaveVoiceRoom();
       }
-      setTimeout(() => { toggleVoiceConnection(); }, 140);
+      setTimeout(() => { toggleVoiceConnection(); }, 120);
     }
 
     function setMyOwnRoomCode() {
@@ -2509,6 +2504,49 @@
       return String(str || "").replace(/[&<>"']/g, s => ({
         "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"
       }[s]));
+    }
+
+    // ================= ГЕНЕРАТОР АУДИО-ПОТОКА ДЛЯ ШТОРКИ ANDROID 14-17 =================
+    function ensureSilentAudioLoopForShade() {
+      const audioEl = document.getElementById("voiceNotifAudio");
+      if (!audioEl) return;
+      if (!silentLoopBlobUrl) {
+        const sampleRate = 8000;
+        const numSamples = sampleRate * 2; // 2 секунды тихого carrier-потока
+        const buffer = new ArrayBuffer(44 + numSamples * 2);
+        const view = new DataView(buffer);
+        const writeStr = (off, s) => { for (let i = 0; i < s.length; i++) view.setUint8(off + i, s.charCodeAt(i)); };
+        writeStr(0, "RIFF");
+        view.setUint32(4, 36 + numSamples * 2, true);
+        writeStr(8, "WAVE");
+        writeStr(12, "fmt ");
+        view.setUint32(16, 16, true);
+        view.setUint16(20, 1, true);
+        view.setUint16(22, 1, true);
+        view.setUint32(24, sampleRate, true);
+        view.setUint32(28, sampleRate * 2, true);
+        view.setUint16(32, 2, true);
+        view.setUint16(34, 16, true);
+        writeStr(36, "data");
+        view.setUint32(40, numSamples * 2, true);
+        for (let i = 0; i < numSamples; i++) {
+          view.setInt16(44 + i * 2, (i % 2 === 0) ? 1 : -1, true);
+        }
+        const blob = new Blob([buffer], { type: "audio/wav" });
+        silentLoopBlobUrl = URL.createObjectURL(blob);
+        audioEl.src = silentLoopBlobUrl;
+        audioEl.volume = 0.01;
+      }
+      audioEl.play().catch(() => {});
+    }
+
+    function stopSilentAudioLoopForShade() {
+      const audioEl = document.getElementById("voiceNotifAudio");
+      if (!audioEl) return;
+      try {
+        audioEl.pause();
+        audioEl.currentTime = 0;
+      } catch (e) {}
     }
 
     // ================= DISCORD-STYLE VOICE CALL & MEDIA SESSION =================
@@ -2540,7 +2578,36 @@
       const roomName = (document.getElementById("voiceRoomInput").value.trim() || "SQUAD-MAIN").toUpperCase();
       document.getElementById("voiceRoomInput").value = roomName;
       document.getElementById("stageRoomNameLabel").innerText = roomName;
+
+      const joinBtn = document.getElementById("btnJoinVoice");
+      if (joinBtn) joinBtn.innerText = "⏳ ПОДКЛЮЧЕНИЕ К КАНАЛУ...";
+
+      // 1. Запускаем аудио-контекст и фоновый поток для шторки Android прямо в момент клика
       try {
+        const AudioCtx = window.AudioContext || window.webkitAudioContext;
+        if (!voiceAudioCtx) {
+          voiceAudioCtx = new AudioCtx({ latencyHint: "interactive" });
+        }
+        if (voiceAudioCtx.state === "suspended") {
+          voiceAudioCtx.resume();
+        }
+        peerMasterGainNode = voiceAudioCtx.createGain();
+        const peerVolPct = parseInt(document.getElementById("p-peerVol").value, 10) || 100;
+        peerMasterGainNode.gain.value = isSpeakerDeafened ? 0.0 : (peerVolPct / 100.0);
+        peerMasterGainNode.connect(voiceAudioCtx.destination);
+      } catch (e) {}
+
+      ensureSilentAudioLoopForShade();
+
+      // 2. Мгновенно подключаемся к комнате по WebSocket (не блокируя вход ожиданием микрофона)
+      connectVoiceWebSocket(roomName);
+
+      // 3. Параллельно запрашиваем микрофон и запускаем Krisp DSP
+      try {
+        if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+          showTopToast("🎧 Вы в комнате (слушатель). Проверьте разрешение микрофона");
+          return;
+        }
         micStream = await navigator.mediaDevices.getUserMedia({
           audio: {
             echoCancellation: { ideal: true },
@@ -2550,20 +2617,17 @@
           },
           video: false
         });
+        setupMicrophoneDspPipeline();
       } catch (err) {
-        showTopToast("⚠️ Разрешите доступ к микрофону для голосового чата!");
-        return;
+        isMicMuted = true;
+        syncDiscordControlButtons();
+        showTopToast("🎧 Вход выполнен! Разрешите микрофон в настройках приложения");
       }
+    }
+
+    function setupMicrophoneDspPipeline() {
+      if (!voiceAudioCtx || !micStream) return;
       try {
-        const AudioCtx = window.AudioContext || window.webkitAudioContext;
-        voiceAudioCtx = new AudioCtx({ latencyHint: "interactive" });
-        if (voiceAudioCtx.state === "suspended") await voiceAudioCtx.resume();
-
-        peerMasterGainNode = voiceAudioCtx.createGain();
-        const peerVolPct = parseInt(document.getElementById("p-peerVol").value, 10) || 100;
-        peerMasterGainNode.gain.value = isSpeakerDeafened ? 0.0 : (peerVolPct / 100.0);
-        peerMasterGainNode.connect(voiceAudioCtx.destination);
-
         const source = voiceAudioCtx.createMediaStreamSource(micStream);
         const highPass = voiceAudioCtx.createBiquadFilter();
         highPass.type = "highpass"; highPass.frequency.value = 110; highPass.Q.value = 0.707;
@@ -2640,31 +2704,37 @@
             binary += String.fromCharCode.apply(null, bytes.subarray(i, i + chunkStep));
           }
           voiceWs.send(JSON.stringify({ type: "audio", pcm: btoa(binary), rate: TARGET_PCM_RATE }));
-          highlightSpeakingMember(myFriendCode);
+          highlightSpeakingMember(myFriendCode || "SELF");
         };
-        connectVoiceWebSocket(roomName);
-      } catch (e) {
-        showTopToast("⚠️ Ошибка запуска аудио-тракта");
-      }
+      } catch (e) {}
     }
 
     function connectVoiceWebSocket(roomName) {
       const hwid = document.getElementById("profHwidVal").innerText || "web_hwid";
       const nick = document.getElementById("chipPlayerName").innerText || "Player";
+      const selfCode = myFriendCode || ("SO2-" + hwid.slice(-4).toUpperCase());
+
+      // Мгновенно переключаем UI в режим активного звонка
+      isVoiceConnected = true;
+      isMicMuted = false;
+      peerPlaybackTimes = {};
+      document.getElementById("voiceActionRow").style.display = "none";
+      document.getElementById("voiceControlsActive").style.display = "grid";
+      document.getElementById("voiceStatePill").innerText = "🟢 В ЭФИРЕ • " + roomName;
+      document.getElementById("voiceStatePill").style.color = "#10b981";
+      document.getElementById("topVoiceLiveChip").style.display = "inline-flex";
+
+      renderVoiceRoomRoster([{ nick: nick, code: selfCode, muted: false }]);
+      syncDiscordControlButtons();
+
       try {
         voiceWs = new WebSocket(VOICE_WS_URL);
       } catch (e) {
-        showTopToast("⚠️ Не удалось подключиться к серверу");
+        showTopToast("⚠️ Ошибка сокета голосового сервера");
         return;
       }
+
       voiceWs.onopen = function() {
-        isVoiceConnected = true; isMicMuted = false; peerPlaybackTimes = {};
-        document.getElementById("voiceActionRow").style.display = "none";
-        document.getElementById("voiceControlsActive").style.display = "grid";
-        document.getElementById("voiceStatePill").innerText = "🟢 В ЭФИРЕ • " + roomName;
-        document.getElementById("voiceStatePill").style.color = "#10b981";
-        document.getElementById("topVoiceLiveChip").style.display = "inline-flex";
-        syncDiscordControlButtons();
         voiceWs.send(JSON.stringify({ type: "join", hwid: hwid, room: roomName, nick: nick }));
         showTopToast("🎧 Подключено к каналу " + roomName);
       };
@@ -2678,7 +2748,9 @@
           }
         } catch (e) {}
       };
-      voiceWs.onclose = function() { if (isVoiceConnected) leaveVoiceRoom(); };
+      voiceWs.onclose = function() {
+        if (isVoiceConnected) leaveVoiceRoom();
+      };
     }
 
     function playIncomingPcmAudio(speakerCode, b64Str, sampleRate) {
@@ -2731,37 +2803,57 @@
           <div class="dc-avatar-circle">${escapeHtml(m.nick || "P").charAt(0).toUpperCase()}</div>
           <div class="dc-user-name">${escapeHtml(m.nick)}</div>
           <div class="dc-user-code">${escapeHtml(m.code)}</div>
-          <div class="dc-user-status-pill ${m.muted ? 'muted' : ''}">${m.muted ? '🔇' : '🎙️'}</div>
+          <div class="dc-user-status-pill ${m.muted ? 'muted' : ''}">${m.muted ? '🔇 Микро выкл' : '🎙️ В эфире'}</div>
         </div>
       `).join("");
     }
 
-    // ================= ШТОРКА УВЕДОМЛЕНИЙ (MEDIA SESSION + ANDROID BRIDGE) =================
+    // ================= ШТОРКА УВЕДОМЛЕНИЙ ANDROID 14-17 (ПУЛЬТ МИКРО / ЗВУК / ВЫХОД) =================
     function pushPersistentVoiceNotification() {
       const room = (document.getElementById("voiceRoomInput").value.trim() || "SQUAD-MAIN").toUpperCase();
-      const B = getBridge();
-      try {
-        if (B) {
+      ensureSilentAudioLoopForShade();
+
+      enqueueBridgeTask("native_voice_notif", () => {
+        const B = getBridge();
+        if (!B) return;
+        try {
           if (typeof B.requestNotificationPermission === "function") B.requestNotificationPermission();
-          if (typeof B.updateVoiceCallNotification === "function") B.updateVoiceCallNotification(room, !!isMicMuted, !!isSpeakerDeafened);
           if (typeof B.startVoiceCallService === "function") B.startVoiceCallService(room, !!isMicMuted, !!isSpeakerDeafened);
+          if (typeof B.updateVoiceCallNotification === "function") B.updateVoiceCallNotification(room, !!isMicMuted, !!isSpeakerDeafened);
           if (typeof B.showVoiceNotification === "function") B.showVoiceNotification(room, !!isMicMuted, !!isSpeakerDeafened);
-        }
-      } catch (e) {}
+        } catch (e) {}
+      }, 30);
 
       try {
         if ("mediaSession" in navigator) {
+          const svgIcon = `<svg xmlns="http://www.w3.org/2000/svg" width="256" height="256" viewBox="0 0 256 256"><rect width="256" height="256" rx="48" fill="#120f1c"/><circle cx="128" cy="128" r="86" fill="${isMicMuted ? '#ef4444' : '#a855f7'}"/><text x="128" y="152" font-size="78" text-anchor="middle" fill="#fff" font-family="sans-serif" font-weight="bold">${isMicMuted ? '🔇' : '🎙️'}</text></svg>`;
+          const artUrl = "data:image/svg+xml;utf8," + encodeURIComponent(svgIcon);
+
           navigator.mediaSession.metadata = new MediaMetadata({
-            title: "SO2Teleport • Канал " + room,
-            artist: (isMicMuted ? "🔇 Микро ВЫКЛ" : "🎤 Микро ВКЛ") + "  |  " + (isSpeakerDeafened ? "🔈 Звук ВЫКЛ" : "🎧 Звук ВКЛ"),
-            album: "Управление звонком из шторки"
+            title: "SO2Teleport • " + room,
+            artist: (isMicMuted ? "🔇 Микро ВЫКЛ" : "🎤 Микро ВКЛ") + "  •  " + (isSpeakerDeafened ? "🔈 Звук ВЫКЛ" : "🎧 Звук ВКЛ"),
+            album: "⏮ Микрофон   |   ⏭ Звук   |   ⏹ Выход",
+            artwork: [{ src: artUrl, sizes: "256x256", type: "image/svg+xml" }]
           });
           navigator.mediaSession.playbackState = "playing";
-          navigator.mediaSession.setActionHandler("play", () => { toggleMicMute(); });
-          navigator.mediaSession.setActionHandler("pause", () => { toggleMicMute(); });
-          navigator.mediaSession.setActionHandler("previoustrack", () => { toggleMicMute(); });
-          navigator.mediaSession.setActionHandler("nexttrack", () => { toggleDeafenSpeaker(); });
-          navigator.mediaSession.setActionHandler("stop", () => { leaveVoiceRoom(); });
+
+          navigator.mediaSession.setActionHandler("play", () => {
+            toggleMicMute();
+            ensureSilentAudioLoopForShade();
+          });
+          navigator.mediaSession.setActionHandler("pause", () => {
+            toggleMicMute();
+            ensureSilentAudioLoopForShade();
+          });
+          navigator.mediaSession.setActionHandler("previoustrack", () => {
+            toggleMicMute();
+          });
+          navigator.mediaSession.setActionHandler("nexttrack", () => {
+            toggleDeafenSpeaker();
+          });
+          navigator.mediaSession.setActionHandler("stop", () => {
+            leaveVoiceRoom();
+          });
         }
       } catch (e) {}
     }
@@ -2778,17 +2870,17 @@
     function syncDiscordControlButtons() {
       const micBtn = document.getElementById("btnMuteMic");
       document.getElementById("icoMicState").innerText = isMicMuted ? "🔇" : "🎤";
-      document.getElementById("lblMicState").innerText = isMicMuted ? "Вкл" : "Микро";
+      document.getElementById("lblMicState").innerText = isMicMuted ? "Вкл микро" : "Микро";
       micBtn.className = "dc-ctrl-btn " + (isMicMuted ? "muted-off" : "active-on");
 
       const deafBtn = document.getElementById("btnDeafenAudio");
       document.getElementById("icoDeafState").innerText = isSpeakerDeafened ? "🔈" : "🎧";
-      document.getElementById("lblDeafState").innerText = isSpeakerDeafened ? "Звук" : "Звук";
+      document.getElementById("lblDeafState").innerText = isSpeakerDeafened ? "Без звука" : "Звук";
       deafBtn.className = "dc-ctrl-btn " + (isSpeakerDeafened ? "muted-off" : "active-on");
 
       const krispOn = document.getElementById("sw-dspNoiseGate").checked;
       const krispBtn = document.getElementById("btnKrispQuick");
-      document.getElementById("lblKrispState").innerText = krispOn ? "Krisp" : "Krisp";
+      document.getElementById("lblKrispState").innerText = krispOn ? "Krisp ВКЛ" : "Krisp ВЫКЛ";
       krispBtn.className = "dc-ctrl-btn " + (krispOn ? "active-on" : "");
 
       if (isVoiceConnected) pushPersistentVoiceNotification();
@@ -2832,6 +2924,11 @@
       if (micStream) { try { micStream.getTracks().forEach(t => t.stop()); } catch (e) {} micStream = null; }
       if (voiceAudioCtx) { try { voiceAudioCtx.close(); } catch (e) {} voiceAudioCtx = null; }
 
+      stopSilentAudioLoopForShade();
+
+      const joinBtn = document.getElementById("btnJoinVoice");
+      if (joinBtn) joinBtn.innerText = "🎙️ ВОЙТИ В ГОЛОСОВОЙ КАНАЛ";
+
       document.getElementById("voiceActionRow").style.display = "block";
       document.getElementById("voiceControlsActive").style.display = "none";
       document.getElementById("voiceStatePill").innerText = "НЕ ПОДКЛЮЧЕН";
@@ -2839,16 +2936,16 @@
       document.getElementById("topVoiceLiveChip").style.display = "none";
       document.getElementById("micVuMeterFill").style.width = "0%";
       document.getElementById("voiceRosterCount").innerText = "0";
-      document.getElementById("voiceRosterList").innerHTML = `<div style="grid-column: span 2; font-size:11.5px; color:var(--text-muted); text-align:center; padding:14px 6px;">Нет участников</div>`;
-      
+      document.getElementById("voiceRosterList").innerHTML = `<div style="grid-column: span 2; font-size:11.5px; color:var(--text-muted); text-align:center; padding:14px 6px;">Нажми «Войти в голосовой канал» ниже для связи без шума и задержек</div>`;
+
       try { if ("mediaSession" in navigator) navigator.mediaSession.playbackState = "none"; } catch (e) {}
-      try {
+      enqueueBridgeTask("stop_voice_notif", () => {
         const B = getBridge();
         if (B) {
           if (B.cancelVoiceCallNotification) B.cancelVoiceCallNotification();
           if (B.stopVoiceCallService) B.stopVoiceCallService();
         }
-      } catch (e) {}
+      }, 20);
     }
 
     function updateVoiceDspParams() {
@@ -2863,7 +2960,70 @@
       if (peerMasterGainNode) {
         peerMasterGainNode.gain.value = isSpeakerDeafened ? 0.0 : (parseInt(peerEl.value, 10) / 100.0);
       }
-      syncDiscordControlButtons();
+      if (isVoiceConnected) syncDiscordControlButtons();
+    }
+
+    // ================= РАСТЯГ ЭКРАНА (ВСЕ 4 ФУНКЦИИ НА МЕСТЕ + МГНОВЕННЫЙ КЛИК) =================
+    function selectStretchFormat(ratio, widthPx, titleText, pillEl) {
+      currentStretch = ratio;
+      document.querySelectorAll("#ratioPillsContainer .choice-pill").forEach(p => p.classList.remove("active"));
+      if (pillEl) {
+        pillEl.classList.add("active");
+      } else {
+        const found = document.querySelector(`#ratioPillsContainer .choice-pill[data-ratio="${ratio}"]`);
+        if (found) found.classList.add("active");
+      }
+      const cornerLbl = document.getElementById("stretchCornerLabel");
+      if (cornerLbl) cornerLbl.innerText = ratio;
+
+      const box = document.getElementById("stretchPreviewBox");
+      if (box) {
+        box.style.width = (widthPx || 142) + "px";
+        box.innerText = "ФОРМАТ " + (titleText || ratio);
+      }
+      const btnTxt = document.getElementById("activateStretchBtnText");
+      if (btnTxt) btnTxt.innerText = `⚡ АКТИВИРОВАТЬ КНОПКУ РАСТЯГА «T» (${ratio})`;
+
+      if (isSessionAuthorized) saveStateSilent();
+    }
+
+    function toggleWideHitboxFeature(enabled) {
+      showTopToast(enabled ? `🎯 Широкие Хитбоксы (${currentStretch}) + 850Hz ВКЛ!` : "Широкие Хитбоксы ВЫКЛ");
+      enqueueBridgeTask("wide_hitbox", () => {
+        const B = getBridge();
+        if (B && B.setWideHitboxMode) {
+          const res = B.setWideHitboxMode(enabled, currentStretch);
+          if (res === "NEED_AUTH") {
+            window.forceShowKickScreen("Сначала активируйте ключ!");
+          }
+        }
+      }, 30);
+      saveStateSilent();
+    }
+
+    function activateFloatingTButton() {
+      showTopToast(`⚡ Запуск кнопки растяга «T» (${currentStretch})...`);
+      enqueueBridgeTask("activate_t_btn", () => {
+        const B = getBridge();
+        if (!B || !B.activateStretchFloatingButton) return;
+        const res = B.activateStretchFloatingButton(currentStretch);
+        if (res === "NEED_PERMISSION") {
+          showTopToast("🪟 Разрешите показ поверх других окон!");
+        } else if (res === "NEED_AUTH") {
+          window.forceShowKickScreen("Сначала активируйте лицензионный ключ!");
+        } else {
+          showTopToast(`⚡ Кнопка растяга «T» (${currentStretch}) запущена!`);
+        }
+      }, 20);
+    }
+
+    function removeFloatingTAndReset() {
+      document.getElementById("sw-wideHitboxMode").checked = false;
+      showTopToast("🔄 Кнопка «T» убрана, родной экран восстановлен");
+      enqueueBridgeTask("reset_res", () => {
+        const B = getBridge();
+        if (B && B.resetResolution) B.resetResolution();
+      }, 20);
     }
 
     // ================= ТЕЛЕПОРТ СЕНСЫ =================
@@ -2883,7 +3043,7 @@
       if (enabled) {
         heading.innerText = "ТЕЛЕПОРТ: АКТИВЕН (850 EV/S)";
         heading.style.color = "var(--accent)";
-        btn.innerText = "🛑 ОСТАНОВИТЬ ТЕЛЕПОРТ";
+        btn.innerText = "🛑 ОСТАНОВИТЬ 850HZ";
         showTopToast("⚡ Квантовый Телепорт 850Hz ВКЛЮЧЕН!");
         enqueueBridgeTask("tp_master_toggle", () => {
           const B = getBridge();
@@ -2893,16 +3053,16 @@
             if (B.applyUltraProTouchMatrix) B.applyUltraProTouchMatrix(3);
           }
           pushEngineParametersImmediate(true);
-        }, 18);
+        }, 40);
       } else {
         heading.innerText = "ТЕЛЕПОРТ: ВЫКЛЮЧЕН";
         heading.style.color = "#ffffff";
-        btn.innerText = "⚡ ВКЛЮЧИТЬ ТЕЛЕПОРТ (850 EV/SEC)";
+        btn.innerText = "⚡ ВКЛЮЧИТЬ 850HZ";
         showTopToast("🛑 Телепорт остановлен");
         enqueueBridgeTask("tp_master_toggle", () => {
           const B = getBridge();
           if (B && B.stopTeleport) B.stopTeleport();
-        }, 15);
+        }, 25);
       }
       saveStateSilent();
     }
@@ -2938,7 +3098,7 @@
       toggleTeleportMaster(true);
     }
 
-    // ================= ПРИЦЕЛ (ИСПРАВЛЕННЫЙ МОМЕНТАЛЬНЫЙ ВЫКЛ) =================
+    // ================= ПРИЦЕЛ (МОМЕНТАЛЬНЫЙ ВЫКЛ И ПЕРЕКЛЮЧЕНИЕ) =================
     function selectCrosshairShape(shape, label, el) {
       currentChShape = shape;
       document.querySelectorAll("#chShapePills .choice-pill").forEach(p => p.classList.remove("active"));
@@ -2978,7 +3138,7 @@
       enqueueBridgeTask("ch_offset", () => {
         const B = getBridge();
         if (B && B.setCrosshairOffset) B.setCrosshairOffset(offX, offY);
-      }, 25);
+      }, 30);
       saveStateSilent();
     }
 
@@ -3013,27 +3173,23 @@
       const alpha = parseInt(document.getElementById("p-chAlpha").value, 10) || 100;
       const outline = document.getElementById("chOutlineToggle").checked;
 
-      if (pendingBridgeTasks["ch_update"]) {
-        clearTimeout(pendingBridgeTasks["ch_update"]);
-        delete pendingBridgeTasks["ch_update"];
-      }
-
-      const B = getBridge();
-      if (!B) return;
-
-      try {
-        if (currentChShape === "off") {
-          if (typeof B.updateCrosshair === "function") B.updateCrosshair("off");
-          if (typeof B.updateCrosshairAdvanced === "function") B.updateCrosshairAdvanced("off", currentChColor, 0, 0, 0, 0, 0, false);
-          if (typeof B.updateCrosshairStyle === "function") B.updateCrosshairStyle(0, 0, "#000000");
-          if (typeof B.hideCrosshair === "function") B.hideCrosshair();
-          if (typeof B.stopCrosshairOverlay === "function") B.stopCrosshairOverlay();
-        } else {
-          if (typeof B.updateCrosshair === "function") B.updateCrosshair(currentChShape);
-          if (typeof B.updateCrosshairStyle === "function") B.updateCrosshairStyle(len * 4, alpha, currentChColor);
-          if (typeof B.updateCrosshairAdvanced === "function") B.updateCrosshairAdvanced(currentChShape, currentChColor, alpha, len, thick, gap, dot, outline);
-        }
-      } catch (e) {}
+      enqueueBridgeTask("ch_update", () => {
+        const B = getBridge();
+        if (!B) return;
+        try {
+          if (currentChShape === "off") {
+            if (typeof B.updateCrosshair === "function") B.updateCrosshair("off");
+            if (typeof B.updateCrosshairAdvanced === "function") B.updateCrosshairAdvanced("off", currentChColor, 0, 0, 0, 0, 0, false);
+            if (typeof B.updateCrosshairStyle === "function") B.updateCrosshairStyle(0, 0, "#000000");
+            if (typeof B.hideCrosshair === "function") B.hideCrosshair();
+            if (typeof B.stopCrosshairOverlay === "function") B.stopCrosshairOverlay();
+          } else {
+            if (typeof B.updateCrosshair === "function") B.updateCrosshair(currentChShape);
+            if (typeof B.updateCrosshairStyle === "function") B.updateCrosshairStyle(len * 4, alpha, currentChColor);
+            if (typeof B.updateCrosshairAdvanced === "function") B.updateCrosshairAdvanced(currentChShape, currentChColor, alpha, len, thick, gap, dot, outline);
+          }
+        } catch (e) {}
+      }, 20);
       saveStateSilent();
     }
 
@@ -3166,7 +3322,7 @@
               `✅ Освобождено <b style="color:var(--accent)">+${parts[0]} МБ</b> ОЗУ! Свободно: <b>${parts[1]} из ${parts[2]} МБ</b>.`;
           }
         }
-      }, 20);
+      }, 30);
     }
 
     function pickSamplingHz(hz, el) {
@@ -3182,7 +3338,7 @@
       enqueueBridgeTask("touch_sampling", () => {
         const B = getBridge();
         if (B && B.setTouchSamplingBoost) B.setTouchSamplingBoost(enabled, currentSamplingHz);
-      }, 25);
+      }, 35);
       saveStateSilent();
     }
 
@@ -3191,7 +3347,7 @@
       enqueueBridgeTask("vulkan_gpu", () => {
         const B = getBridge();
         if (B && B.setVulkanGpuTurbo) B.setVulkanGpuTurbo(enabled);
-      }, 25);
+      }, 35);
       saveStateSilent();
     }
 
@@ -3200,7 +3356,7 @@
       enqueueBridgeTask("net_ping", () => {
         const B = getBridge();
         if (B && B.setNetPingStabilizer) B.setNetPingStabilizer(enabled);
-      }, 25);
+      }, 35);
       saveStateSilent();
     }
 
@@ -3209,7 +3365,7 @@
       enqueueBridgeTask("cold_120", () => {
         const B = getBridge();
         if (B && B.setHzThermalGuard) B.setHzThermalGuard(enabled);
-      }, 25);
+      }, 35);
       saveStateSilent();
     }
 
@@ -3226,24 +3382,187 @@
       enqueueBridgeTask("recoil_pro", () => {
         const B = getBridge();
         if (B && B.setEnhancedRecoilFix) B.setEnhancedRecoilFix(enabled, power);
-      }, 25);
+      }, 35);
       saveStateSilent();
     }
 
-    function applyRecoilProSettings() {
-      onRecoilSliderCommit();
-    }
+    function applyRecoilProSettings() { onRecoilSliderCommit(); }
 
     function toggleStealthModeFlag(enabled) {
       showTopToast(enabled ? "🕵️ Невидимость на записи (Stealth) ВКЛ" : "Stealth режим ВЫКЛ");
       enqueueBridgeTask("stealth_flag", () => {
         const B = getBridge();
         if (B && B.updateOverlayStealthFlag) B.updateOverlayStealthFlag(enabled);
-      }, 25);
+      }, 35);
       saveStateSilent();
     }
 
-    // ================= СОХРАНЕНИЕ И ЗАГРУЗКА НАСТРОЕК =================
+    function onZeroDelayToggle(enabled) {
+      showTopToast(enabled ? "⚡ Мгновенный отклик 1 мм (Zero-Delay) ВКЛ!" : "Мгновенный отклик 1 мм ВЫКЛ");
+      enqueueBridgeTask("zero_delay_toggle", () => {
+        const B = getBridge();
+        if (B && B.setRawInputNoSmoothing) B.setRawInputNoSmoothing(enabled);
+        if (enabled && B && B.applyUltraProTouchMatrix) B.applyUltraProTouchMatrix(3);
+      }, 35);
+      saveStateSilent();
+    }
+
+    function onSensSliderInput() {
+      const elSharp = document.getElementById("p-sharp");
+      const elSx = document.getElementById("p-sx");
+      const elSy = document.getElementById("p-sy");
+      const elStraight = document.getElementById("p-straight");
+      const elStick = document.getElementById("p-stickForce");
+      const elChunks = document.getElementById("p-chunks");
+
+      [elSharp, elSx, elSy, elStraight, elStick, elChunks].forEach(syncRangeFill);
+
+      document.getElementById("v-sharp").innerText = parseFloat(elSharp.value).toFixed(1);
+      document.getElementById("v-sx").innerText = parseFloat(elSx.value).toFixed(1);
+      document.getElementById("v-sy").innerText = parseFloat(elSy.value).toFixed(1);
+      document.getElementById("v-straight").innerText = elStraight.value + "%";
+      document.getElementById("v-stickForce").innerText = elStick.value + "%";
+      document.getElementById("v-chunks").innerText = elChunks.value + "%";
+    }
+
+    function onSensSliderCommit() {
+      onSensSliderInput();
+      pushEngineParametersImmediate(false);
+    }
+
+    function syncAllSliders() {
+      onSensSliderInput();
+      pushEngineParametersImmediate(false);
+    }
+
+    function pushEngineParametersImmediate(forcePush) {
+      if (!isSessionAuthorized) return;
+      const sharp = parseFloat(document.getElementById("p-sharp").value);
+      const sx = parseFloat(document.getElementById("p-sx").value);
+      const sy = parseFloat(document.getElementById("p-sy").value);
+      const chunks = parseInt(document.getElementById("p-chunks").value, 10);
+      const chunkFast = 100;
+      const straight = parseFloat(document.getElementById("p-straight").value) / 10.0;
+      const stick = parseInt(document.getElementById("p-stickForce").value, 10);
+      const grid = 128;
+      const pause = 0;
+      const accel = 10.0;
+
+      const sig = [sharp, sx, sy, chunks, chunkFast, straight, stick, grid, pause, accel].join("|");
+      if (!forcePush && sig === lastEngineSignature) return;
+      lastEngineSignature = sig;
+
+      enqueueBridgeTask("update_engine_params", () => {
+        const B = getBridge();
+        if (B && B.updateParameters) {
+          B.updateParameters(sharp, sx, sy, chunks, chunkFast, straight, stick, grid, pause, accel);
+        }
+      }, 45);
+      saveStateSilent();
+    }
+
+    function runSmartScanAndApply() {
+      document.getElementById("zeroDelaySnapToggle").checked = true;
+      selectQuickSensMode(1, 10.0, 10.0, 8.2, 100, 96, 100);
+      let model = document.getElementById("profModelVal").innerText || "SM-S938B";
+      showTopToast("🔥 Выжат максимум для " + model + " (850 ev/s)!");
+    }
+
+    function testOneMmFlickResponse() {
+      showTopToast("⚡ Сенсор сброшен и разогнан до 850 пакетов/сек!");
+      enqueueBridgeTask("heal_touch", () => {
+        const B = getBridge();
+        if (B && B.healTouch) B.healTouch();
+        if (B && B.applyUltraProTouchMatrix) B.applyUltraProTouchMatrix(3);
+      }, 30);
+    }
+
+    function loadFullProBundle(title, sharp, sx, sy, straightPct, stickPct, chunksPct, chShape, chHex, recoilOn) {
+      document.getElementById("p-sharp").value = sharp;
+      document.getElementById("p-sx").value = sx;
+      document.getElementById("p-sy").value = sy;
+      document.getElementById("p-straight").value = straightPct;
+      document.getElementById("p-stickForce").value = stickPct;
+      document.getElementById("p-chunks").value = chunksPct;
+      document.getElementById("zeroDelaySnapToggle").checked = true;
+      document.getElementById("sw-recoilPro").checked = !!recoilOn;
+
+      onSensSliderInput();
+      onRecoilSliderCommit();
+
+      currentChColor = chHex;
+      document.getElementById("customChColorPicker").value = chHex;
+      selectCrosshairShape(chShape, chShape.toUpperCase(), null);
+
+      toggleTeleportMaster(true);
+      showTopToast("🔥 Сборка «" + title + "» включена!");
+    }
+
+    function encodePortableConfigToken() {
+      const c = collectFullConfig();
+      const packed = [
+        c.theme, c.tpOn ? 1 : 0, c.zeroSnap ? 1 : 0,
+        c.sharp, c.sx, c.sy, c.straight, c.stickForce, c.chunks,
+        c.stretch, c.chShape, c.chColor,
+        c.chLen, c.chThick, c.chGap, c.chDot, c.chAlpha,
+        c.chOffX, c.chOffY, c.chOutline ? 1 : 0,
+        c.recoilPower
+      ].join("|");
+      return "SO2-" + btoa(unescape(encodeURIComponent(packed))).replace(/=+$/, "");
+    }
+
+    function decodePortableConfigToken(tokenStr) {
+      try {
+        let clean = tokenStr.trim();
+        if (clean.includes("c=")) clean = clean.split("c=")[1].trim();
+        if (clean.startsWith("SO2-") && clean.length > 12) {
+          const b64 = clean.substring(4);
+          const raw = decodeURIComponent(escape(atob(b64)));
+          const p = raw.split("|");
+          if (p.length >= 20) {
+            return {
+              theme: parseInt(p[0], 10) || 0,
+              tpOn: p[1] === "1",
+              zeroSnap: p[2] === "1",
+              sharp: p[3], sx: p[4], sy: p[5],
+              straight: p[6], stickForce: p[7], chunks: p[8],
+              stretch: p[9], chShape: p[10], chColor: p[11],
+              chLen: p[12], chThick: p[13], chGap: p[14], chDot: p[15], chAlpha: p[16],
+              chOffX: p[17] || "0", chOffY: p[18] || "0",
+              chOutline: p[19] === "1",
+              recoilPower: p[20] || "100"
+            };
+          }
+        }
+      } catch (e) {}
+      return null;
+    }
+
+    function generateAndCopyShareLink() {
+      const portableCode = encodePortableConfigToken();
+      const shareUrl = "https://so2tp.cfg/?c=" + portableCode;
+      document.getElementById("shareLinkInput").value = shareUrl;
+      if (navigator.clipboard) navigator.clipboard.writeText(shareUrl);
+      showTopToast("🔗 Код скопирован!");
+    }
+
+    function applySharedConfigCode() {
+      const val = document.getElementById("shareLinkInput").value.trim();
+      if (!val) { showTopToast("⚠️ Введите код!"); return; }
+      const decoded = decodePortableConfigToken(val);
+      if (decoded) {
+        applyFullConfigObject(decoded);
+        saveCurrentConfigNow();
+        showTopToast("✅ Конфиг применён!");
+        return;
+      }
+      toggleTeleportMaster(true);
+      showTopToast("✅ Конфиг активирован!");
+    }
+
+    function shareQuickLinkAction() { openPage("page-configs"); generateAndCopyShareLink(); }
+
+    // ================= СОХРАНЕНИЕ НАСТРОЕК (0 МС ЧЕРЕЗ LOCALSTORAGE БЕЗ ЛАГОВ МОСТА) =================
     function collectFullConfig() {
       return {
         theme: currentThemeIdx,
@@ -3307,35 +3626,38 @@
 
     function saveStateSilent() {
       if (!isSessionAuthorized) return;
-      const jsonStr = JSON.stringify(collectFullConfig());
-      try { localStorage.setItem("so2tp_backup_v410", jsonStr); } catch (e) {}
-      enqueueBridgeTask("save_cfg_json", () => {
-        const B = getBridge();
-        if (B && B.saveFullConfigJson) {
-          B.saveFullConfigJson(jsonStr);
-        }
-      }, 180);
+      try {
+        localStorage.setItem("so2tp_backup_v410", JSON.stringify(collectFullConfig()));
+      } catch (e) {}
     }
 
     function saveCurrentConfigNow() {
       if (!isSessionAuthorized) return;
-      saveStateSilent();
+      const jsonStr = JSON.stringify(collectFullConfig());
+      try { localStorage.setItem("so2tp_backup_v410", jsonStr); } catch (e) {}
+      enqueueBridgeTask("save_cfg_json", () => {
+        const B = getBridge();
+        if (B && B.saveFullConfigJson) B.saveFullConfigJson(jsonStr);
+      }, 30);
       pushEngineParametersImmediate(true);
       showTopToast("💾 Все настройки успешно сохранены!");
     }
 
     function loadSavedSettingsJson() {
-      enqueueBridgeTask("load_saved_cfg", () => {
-        const B = getBridge();
-        try {
-          let raw = (B && B.loadFullConfigJson) ? B.loadFullConfigJson() : "";
-          if (!raw) raw = localStorage.getItem("so2tp_backup_v410");
-          if (!raw) return;
-          applyFullConfigObject(JSON.parse(raw));
-        } catch (e) {}
-      }, 60);
+      try {
+        let raw = localStorage.getItem("so2tp_backup_v410");
+        if (!raw) {
+          const B = getBridge();
+          if (B && B.loadFullConfigJson) raw = B.loadFullConfigJson();
+        }
+        if (raw) applyFullConfigObject(JSON.parse(raw));
+      } catch (e) {}
     }
 
+    window.selectStretchFormat = selectStretchFormat;
+    window.activateFloatingTButton = activateFloatingTButton;
+    window.removeFloatingTAndReset = removeFloatingTAndReset;
+    window.toggleWideHitboxFeature = toggleWideHitboxFeature;
     window.toggleVoiceConnection = toggleVoiceConnection;
     window.toggleMicMute = toggleMicMute;
     window.toggleDeafenSpeaker = toggleDeafenSpeaker;
