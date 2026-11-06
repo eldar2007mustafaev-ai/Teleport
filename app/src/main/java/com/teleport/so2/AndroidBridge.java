@@ -1,15 +1,16 @@
 package com.teleport.so2;
 
+import android.app.Activity;
 import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
-import android.content.IntentFilter;
-import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
@@ -276,9 +277,9 @@ public class AndroidBridge {
                         } catch (Exception ignored) {}
                     });
                 }
-                mainHandler.postDelayed(this, 15000);
+                mainHandler.postDelayed(this, 25000);
             }
-        }, 15000);
+        }, 25000);
     }
 
     private void forceKickExpiredUser(String reasonToast) {
@@ -316,22 +317,12 @@ public class AndroidBridge {
                 Toast.makeText(context, "⛔ " + reasonToast, Toast.LENGTH_LONG).show();
             }
 
-            if (activity != null && !activity.isFinishing()) {
-                try {
-                    View content = activity.findViewById(android.R.id.content);
-                    if (content instanceof android.view.ViewGroup) {
-                        android.view.ViewGroup vg = (android.view.ViewGroup) content;
-                        if (vg.getChildCount() > 0 && vg.getChildAt(0) instanceof android.webkit.WebView) {
-                            android.webkit.WebView wv = (android.webkit.WebView) vg.getChildAt(0);
-                            String safeMsg = (reasonToast == null ? "Введите лицензионный ключ" : reasonToast)
-                                    .replace("'", "").replace("\"", "");
-                            wv.evaluateJavascript(
-                                    "try { if(typeof forceShowKickScreen==='function') forceShowKickScreen('" + safeMsg + "'); } catch(e){}",
-                                    null
-                            );
-                        }
-                    }
-                } catch (Exception ignored) {}
+            if (activity instanceof MainActivity) {
+                String safeMsg = (reasonToast == null ? "Введите лицензионный ключ" : reasonToast)
+                        .replace("'", "").replace("\"", "");
+                ((MainActivity) activity).evalJsFromNotification(
+                        "try { if(typeof forceShowKickScreen==='function') forceShowKickScreen('" + safeMsg + "'); } catch(e){}"
+                );
             }
         });
     }
@@ -761,7 +752,6 @@ public class AndroidBridge {
 
     @JavascriptInterface
     public void setAutoGameDpi(boolean enabled, int dpi) {
-        // Убрано, чтобы не уменьшался интерфейс телефона
     }
 
     @JavascriptInterface
@@ -781,21 +771,23 @@ public class AndroidBridge {
         ProfileManager.addTeleportCountToTotal(context, 1);
         if (!TeleportEngine.isShizukuReady() && !ShizukuManager.isPermissionGranted()) return;
 
-        int maxEv = (modeLevel >= 3) ? 850 : (modeLevel == 2 ? 650 : 500);
+        int maxEv = (modeLevel >= 3) ? 1000 : (modeLevel == 2 ? 800 : 600);
         String cmd = "settings put system pointer_speed 7; "
                 + "settings put secure touch_blocking_period 0.0; "
                 + "settings put secure tap_duration_threshold 0.0; "
                 + "settings put secure ignore_repeat_click_timeout 0; "
-                + "settings put secure long_press_timeout 80; "
-                + "settings put secure multi_press_timeout 80; "
+                + "settings put secure long_press_timeout 55; "
+                + "settings put secure multi_press_timeout 55; "
                 + "settings put system touch_sensitivity 1; "
+                + "settings put system sec_touch_sensitivity 1; "
                 + "settings put secure game_touch_sampling_rate 360; "
                 + "settings put system touch_sampling_rate 360; "
                 + "setprop debug.touch.slop 0; "
                 + "setprop view.touch_slop 0; "
                 + "setprop view.scroll_friction 0; "
                 + "setprop debug.input.touch.prediction 0; "
-                + "setprop ro.min_pointer_dur 1; "
+                + "setprop ro.min_pointer_dur 0; "
+                + "setprop touch.pressure.scale 0.001; "
                 + "setprop windowsmgr.max_events_per_sec " + maxEv + "; "
                 + "setprop debug.sf.latch_unsignaled 1; "
                 + "setprop debug.sf.disable_backpressure 1;";
@@ -1141,7 +1133,6 @@ public class AndroidBridge {
         });
     }
 
-    // ⬇️ НОВЫЙ МЕТОД-МОСТ ДЛЯ СИСТЕМЫ ДРУЗЕЙ И ВОЙСА ⬇️
     @JavascriptInterface
     public String requestFriendsHub(String jsonPayload) {
         if (getSavedKey().isEmpty()) return "{\"status\":\"error\",\"ok\":false,\"message\":\"Сначала активируйте ключ\"}";
@@ -1154,8 +1145,8 @@ public class AndroidBridge {
         }
     }
 
-        // ================= ПАНЕЛЬ УПРАВЛЕНИЯ ВОЙСОМ В ШТОРКЕ УВЕДОМЛЕНИЙ =================
-    private static final String VOICE_CHANNEL_ID = "so2tp_voice_call_channel";
+    // ================= ПАНЕЛЬ УПРАВЛЕНИЯ ВОЙСОМ В ШТОРКЕ УВЕДОМЛЕНИЙ (ANDROID 8 - 17) =================
+    private static final String VOICE_CHANNEL_ID = "so2tp_voice_call_channel_v2";
     private static final int VOICE_NOTIF_ID = 7744;
     private static final String ACTION_VOICE_MUTE = "com.teleport.so2.ACTION_VOICE_MUTE";
     private static final String ACTION_VOICE_DEAFEN = "com.teleport.so2.ACTION_VOICE_DEAFEN";
@@ -1169,11 +1160,11 @@ public class AndroidBridge {
             if (intent == null || intent.getAction() == null) return;
             String act = intent.getAction();
             if (ACTION_VOICE_MUTE.equals(act)) {
-                evalJsInWebView("if(typeof toggleMicMute==='function') toggleMicMute();");
+                evalJsInWebView("if(window.toggleMicMute) window.toggleMicMute();");
             } else if (ACTION_VOICE_DEAFEN.equals(act)) {
-                evalJsInWebView("if(typeof toggleDeafenSpeaker==='function') toggleDeafenSpeaker();");
+                evalJsInWebView("if(window.toggleDeafenSpeaker) window.toggleDeafenSpeaker();");
             } else if (ACTION_VOICE_HANGUP.equals(act)) {
-                evalJsInWebView("if(typeof leaveVoiceRoom==='function') leaveVoiceRoom();");
+                evalJsInWebView("if(window.leaveVoiceRoom) window.leaveVoiceRoom();");
             }
         }
     };
@@ -1181,6 +1172,10 @@ public class AndroidBridge {
     private void evalJsInWebView(String jsCode) {
         mainHandler.post(() -> {
             try {
+                if (activity instanceof MainActivity) {
+                    ((MainActivity) activity).evalJsFromNotification(jsCode);
+                    return;
+                }
                 if (activity != null && !activity.isFinishing()) {
                     View content = activity.findViewById(android.R.id.content);
                     if (content instanceof android.view.ViewGroup) {
@@ -1195,13 +1190,22 @@ public class AndroidBridge {
     }
 
     private void ensureVoiceNotifSetup() {
+        if (TeleportEngine.isShizukuReady() || ShizukuManager.isPermissionGranted()) {
+            String pkg = context.getPackageName();
+            TeleportEngine.execShizukuCommand(
+                    "cmd appops set " + pkg + " POST_NOTIFICATION allow; " +
+                    "pm grant " + pkg + " android.permission.POST_NOTIFICATIONS; " +
+                    "pm grant " + pkg + " android.permission.RECORD_AUDIO"
+            );
+        }
+
         if (!isReceiverRegistered) {
             IntentFilter filter = new IntentFilter();
             filter.addAction(ACTION_VOICE_MUTE);
             filter.addAction(ACTION_VOICE_DEAFEN);
             filter.addAction(ACTION_VOICE_HANGUP);
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                context.registerReceiver(voiceNotifReceiver, filter, Context.RECEIVER_NOT_EXPORTED);
+            if (Build.VERSION.SDK_INT >= 33) {
+                context.registerReceiver(voiceNotifReceiver, filter, Context.RECEIVER_EXPORTED);
             } else {
                 context.registerReceiver(voiceNotifReceiver, filter);
             }
@@ -1213,12 +1217,13 @@ public class AndroidBridge {
             if (nm != null && nm.getNotificationChannel(VOICE_CHANNEL_ID) == null) {
                 NotificationChannel ch = new NotificationChannel(
                         VOICE_CHANNEL_ID,
-                        "SO2Teleport Голосовой Чат",
+                        "SO2Teleport Discord Voice",
                         NotificationManager.IMPORTANCE_HIGH
                 );
-                ch.setDescription("Управление микрофоном и звуком в катке");
+                ch.setDescription("Пульт управления микрофоном и звуком в шторке");
                 ch.setSound(null, null);
                 ch.enableVibration(false);
+                ch.setLockscreenVisibility(Notification.VISIBILITY_PUBLIC);
                 nm.createNotificationChannel(ch);
             }
         }
@@ -1232,6 +1237,12 @@ public class AndroidBridge {
                 NotificationManager nm = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
                 if (nm == null) return;
 
+                if (Build.VERSION.SDK_INT >= 33 && activity != null) {
+                    if (context.checkSelfPermission("android.permission.POST_NOTIFICATIONS") != PackageManager.PERMISSION_GRANTED) {
+                        activity.requestPermissions(new String[]{"android.permission.POST_NOTIFICATIONS"}, 2005);
+                    }
+                }
+
                 int flags = PendingIntent.FLAG_UPDATE_CURRENT;
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
                     flags |= PendingIntent.FLAG_IMMUTABLE;
@@ -1241,32 +1252,41 @@ public class AndroidBridge {
                 openIntent.setFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP | Intent.FLAG_ACTIVITY_CLEAR_TOP);
                 PendingIntent contentPi = PendingIntent.getActivity(context, 10, openIntent, flags);
 
-                PendingIntent mutePi = PendingIntent.getBroadcast(context, 11, new Intent(ACTION_VOICE_MUTE).setPackage(context.getPackageName()), flags);
-                PendingIntent deafPi = PendingIntent.getBroadcast(context, 12, new Intent(ACTION_VOICE_DEAFEN).setPackage(context.getPackageName()), flags);
-                PendingIntent hangPi = PendingIntent.getBroadcast(context, 13, new Intent(ACTION_VOICE_HANGUP).setPackage(context.getPackageName()), flags);
+                PendingIntent mutePi = PendingIntent.getBroadcast(
+                        context, 11, new Intent(ACTION_VOICE_MUTE).setPackage(context.getPackageName()), flags);
+                PendingIntent deafPi = PendingIntent.getBroadcast(
+                        context, 12, new Intent(ACTION_VOICE_DEAFEN).setPackage(context.getPackageName()), flags);
+                PendingIntent hangPi = PendingIntent.getBroadcast(
+                        context, 13, new Intent(ACTION_VOICE_HANGUP).setPackage(context.getPackageName()), flags);
 
-                String muteLabel = isMuted ? "🎤 ВКЛ МИКРО" : "🔇 МУТ МИКРО";
-                String deafLabel = isDeafened ? "🎧 ВКЛ ЗВУК" : "🔈 БЕЗ ЗВУКА";
-                String statusSub = (isMuted ? "Микрофон ВЫКЛ" : "Микрофон ВКЛ") + " • " + (isDeafened ? "Звук ВЫКЛ" : "Шумодав Krisp АКТИВЕН");
+                String muteLabel = isMuted ? "🎤 ВКЛ МИКРО" : "🔇 ВЫКЛ МИКРО";
+                String deafLabel = isDeafened ? "🎧 ВКЛ ЗВУК" : "🔈 ВЫКЛ ЗВУК";
+                String statusSub = (isMuted ? "🔇 Микро ВЫКЛ" : "🎤 Микро ВКЛ") + "  •  " + (isDeafened ? "🔈 Звук ВЫКЛ" : "🎧 Звук ВКЛ (Krisp HD)");
 
                 Notification.Builder builder = (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O)
                         ? new Notification.Builder(context, VOICE_CHANNEL_ID)
                         : new Notification.Builder(context);
 
-                builder.setSmallIcon(android.R.drawable.ic_btn_speak_now)
-                        .setContentTitle("🟢 Войс: " + (roomName == null || roomName.isEmpty() ? "SQUAD" : roomName))
+                int smallIco = isMuted ? android.R.drawable.ic_lock_silent_mode : android.R.drawable.ic_btn_speak_now;
+
+                builder.setSmallIcon(smallIco)
+                        .setContentTitle("SO2Teleport Войс • " + (roomName == null || roomName.isEmpty() ? "SQUAD-MAIN" : roomName))
                         .setContentText(statusSub)
                         .setContentIntent(contentPi)
                         .setOngoing(true)
+                        .setAutoCancel(false)
                         .setOnlyAlertOnce(true)
-                        .addAction(new Notification.Action.Builder(0, muteLabel, mutePi).build())
-                        .addAction(new Notification.Action.Builder(0, deafLabel, deafPi).build())
-                        .addAction(new Notification.Action.Builder(0, "❌ ВЫЙТИ", hangPi).build());
+                        .addAction(new Notification.Action.Builder(android.R.drawable.ic_btn_speak_now, muteLabel, mutePi).build())
+                        .addAction(new Notification.Action.Builder(android.R.drawable.ic_lock_silent_mode_off, deafLabel, deafPi).build())
+                        .addAction(new Notification.Action.Builder(android.R.drawable.ic_menu_close_clear_cancel, "ВЫЙТИ", hangPi).build());
 
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                    builder.setColor(Color.parseColor("#14E8C6"));
+                    builder.setColor(Color.parseColor("#A855F7"));
                     builder.setCategory(Notification.CATEGORY_CALL);
                     builder.setVisibility(Notification.VISIBILITY_PUBLIC);
+                }
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                    builder.setForegroundServiceBehavior(Notification.FOREGROUND_SERVICE_IMMEDIATE);
                 }
 
                 nm.notify(VOICE_NOTIF_ID, builder.build());
@@ -1283,7 +1303,6 @@ public class AndroidBridge {
             } catch (Exception ignored) {}
         });
     }
-
 
     private int dpToPx(int dp) {
         return Math.round(dp * context.getResources().getDisplayMetrics().density);
