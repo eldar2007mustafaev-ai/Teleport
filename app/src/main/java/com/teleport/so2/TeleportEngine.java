@@ -165,19 +165,27 @@ public class TeleportEngine {
         }
     }
 
+    // ================= FRAME-SKIP INSTANT TELEPORT (КАК НА ВИДЕО: ПРЫЖОК В КОНЕЧНУЮ ТОЧКУ ФЛИКА) =================
     public static void startTeleport(String presetId) {
         isEngineRunning = true;
         if (!isShizukuReady() && !ShizukuManager.isPermissionGranted()) return;
 
         String pkg = appContext != null ? appContext.getPackageName() : "com.teleport.so2";
+
+        // Секрет телепорта при флике:
+        // 1) Склеиваем промежуточные точки быстрого свайпа через windowsmgr.max_events_per_sec 24
+        //    + ro.input.noresample 1 + qti.inputopts.movetouchslop 0, чтобы во время резкого движения
+        //    пальца игра не получала 20 плавных промежуточных кадров, а получала сразу конечную координату!
+        // 2) Выкручиваем pointer_speed 7 и ускорение свайпа под мгновенный разворот на 90-180 градусов.
         String cmd = "cmd appops set " + pkg + " POST_NOTIFICATION allow; "
                 + "pm grant " + pkg + " android.permission.POST_NOTIFICATIONS; "
+                + "cmd game mode performance com.axlebolt.standoff2; "
                 + "settings put secure touch_exploration_enabled 0; "
                 + "settings put secure touch_blocking_period 0.0; "
                 + "settings put secure tap_duration_threshold 0.0; "
                 + "settings put secure ignore_repeat_click_timeout 0; "
-                + "settings put secure long_press_timeout 55; "
-                + "settings put secure multi_press_timeout 55; "
+                + "settings put secure long_press_timeout 45; "
+                + "settings put secure multi_press_timeout 45; "
                 + "settings put system pointer_speed 7; "
                 + "settings put secure game_touch_sampling_rate 360; "
                 + "settings put system touch_sampling_rate 360; "
@@ -189,15 +197,17 @@ public class TeleportEngine {
                 + "setprop view.touch_slop 0; "
                 + "setprop view.scroll_friction 0; "
                 + "setprop debug.input.touch.prediction 0; "
+                + "setprop ro.input.noresample 1; "
+                + "setprop debug.sf.nobootanimation 1; "
                 + "setprop ro.min_pointer_dur 0; "
-                + "setprop touch.pressure.scale 0.001; "
+                + "setprop touch.pressure.scale 0.0001; "
                 + "setprop touch.size.calibration geometric; "
-                + "setprop windowsmgr.max_events_per_sec 1000; "
-                + "setprop ro.max.fling_velocity 32000; "
-                + "setprop ro.min.fling_velocity 16000; "
+                + "setprop windowsmgr.max_events_per_sec 26; "
+                + "setprop ro.max.fling_velocity 48000; "
+                + "setprop ro.min.fling_velocity 24000; "
                 + "setprop debug.sf.latch_unsignaled 1; "
                 + "setprop debug.sf.disable_backpressure 1; "
-                + "setprop debug.sf.early_phase_offset_ns 250000; "
+                + "setprop debug.sf.early_phase_offset_ns 100000; "
                 + "settings put system peak_refresh_rate 120.0; "
                 + "settings put system min_refresh_rate 120.0; "
                 + "settings put secure refresh_rate_mode 2; "
@@ -210,25 +220,17 @@ public class TeleportEngine {
     public static void stopTeleport() {
         isEngineRunning = false;
         if (!isShizukuReady() && !ShizukuManager.isPermissionGranted()) return;
-        execShizukuCommand("settings put system pointer_speed 0; settings put secure long_press_timeout 400;");
+        execShizukuCommand(
+                "settings put system pointer_speed 0; "
+                + "settings put secure long_press_timeout 400; "
+                + "setprop ro.input.noresample 0; "
+                + "setprop windowsmgr.max_events_per_sec 180;"
+        );
     }
 
     public static void healTouchAndRestart() {
         if (!isShizukuReady() && !ShizukuManager.isPermissionGranted()) return;
-        execShizukuCommand(
-                "wm size reset; wm density reset; "
-                + "settings put secure touch_blocking_period 0.0; "
-                + "settings put secure tap_duration_threshold 0.0; "
-                + "settings put secure long_press_timeout 55; "
-                + "settings put secure multi_press_timeout 55; "
-                + "setprop debug.touch.slop 0; "
-                + "setprop view.touch_slop 0; "
-                + "setprop view.scroll_friction 0; "
-                + "setprop debug.input.touch.prediction 0; "
-                + "setprop ro.min_pointer_dur 0; "
-                + "setprop windowsmgr.max_events_per_sec 1000; "
-                + "settings put system pointer_speed 7"
-        );
+        startTeleport("extreme");
     }
 
     public static void updateParameters(
@@ -238,10 +240,13 @@ public class TeleportEngine {
     ) {
         if (!isShizukuReady() && !ShizukuManager.isPermissionGranted()) return;
 
-        int pointerSpeed = (sharp >= 5.0 || sx >= 5.0) ? 7 : Math.max(5, (int) Math.round(sharp));
-        int pressTimeout = Math.max(50, 110 - (chunks / 2));
-        int maxEvents = Math.min(1000, 600 + (chunks * 4));
-        int flingMax = (int) Math.round(24000 + sharp * 800);
+        // Чем выше "Импульс рывка" (sharp до 12.0) и "Поток" (chunks до 100%),
+        // тем сильнее схлопываются промежуточные точки свайпа (frame-skip teleport):
+        // На максимуме (12.0 / 100%) промежуточные кадры свайпа склеиваются в один мгновенный скачок в конечную точку!
+        int pointerSpeed = 7;
+        int pressTimeout = Math.max(40, 100 - (chunks / 2));
+        int teleportBatchRate = Math.max(18, Math.min(90, (int) Math.round(115 - (sharp * 6.5) - (chunks * 0.2))));
+        int flingMax = (int) Math.round(30000 + sharp * 1800);
 
         String cmd = "settings put system pointer_speed " + pointerSpeed + "; "
                 + "settings put secure long_press_timeout " + pressTimeout + "; "
@@ -254,9 +259,10 @@ public class TeleportEngine {
                 + "setprop view.touch_slop 0; "
                 + "setprop view.scroll_friction 0; "
                 + "setprop debug.input.touch.prediction 0; "
+                + "setprop ro.input.noresample 1; "
                 + "setprop ro.min_pointer_dur 0; "
                 + "setprop ro.max.fling_velocity " + flingMax + "; "
-                + "setprop windowsmgr.max_events_per_sec " + maxEvents + "; "
+                + "setprop windowsmgr.max_events_per_sec " + teleportBatchRate + "; "
                 + "settings put secure game_touch_sampling_rate 360; "
                 + "settings put system touch_sampling_rate 360;";
 
@@ -272,14 +278,15 @@ public class TeleportEngine {
                     + "setprop view.touch_slop 0; "
                     + "setprop view.scroll_friction 0; "
                     + "setprop debug.input.touch.prediction 0; "
+                    + "setprop ro.input.noresample 1; "
                     + "setprop ro.min_pointer_dur 0; "
-                    + "setprop windowsmgr.max_events_per_sec 1000; "
+                    + "setprop windowsmgr.max_events_per_sec 24; "
                     + "settings put secure touch_blocking_period 0.0; "
                     + "settings put secure tap_duration_threshold 0.0; "
                     + "settings put system pointer_speed 7;";
             execShizukuCommand(cmd);
         } else {
-            execShizukuCommand("setprop windowsmgr.max_events_per_sec 300;");
+            execShizukuCommand("setprop ro.input.noresample 0; setprop windowsmgr.max_events_per_sec 180;");
         }
     }
 
