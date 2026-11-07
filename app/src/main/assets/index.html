@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
-  <title>SO2Teleport PRO V410 MONOCHROME</title>
+  <title>SO2Teleport PRO V410 RAIL 950HZ</title>
   <style>
     :root {
       --bg-dark: #060709;
@@ -51,12 +51,12 @@
       display: none !important;
     }
 
-    /* ================= СОВРЕМЕННЫЕ СТЕКЛЯННЫЕ ПОЛЯ ВВОДА ВМЕСТО СТАРЫХ БЕЛЫХ ================= */
+    /* ================= ТЁМНЫЕ СТЕКЛЯННЫЕ ПОЛЯ ВВОДА (БЕЗ БЕЛОГО ФОНА) ================= */
     .cyber-field {
       width: 100%;
       background: linear-gradient(180deg, rgba(8, 10, 15, 0.96) 0%, rgba(14, 17, 24, 0.96) 100%) !important;
-      border: 1.2px solid rgba(var(--accent-rgb), 0.32) !important;
-      box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.85), 0 0 12px rgba(var(--accent-rgb), 0.06) !important;
+      border: 1.2px solid rgba(var(--accent-rgb), 0.34) !important;
+      box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.88), 0 0 12px rgba(var(--accent-rgb), 0.06) !important;
       color: #ffffff !important;
       border-radius: 14px;
       padding: 11px 14px;
@@ -241,7 +241,7 @@
       cursor: pointer;
     }
 
-    /* ================= 2. ОСНОВНОЙ КОНТЕЙНЕР И ШАПКА С ПОЛЗУНКОМ SHIZUKU ================= */
+    /* ================= 2. ШАПКА И ПОЛЗУНОК SHIZUKU СПРАВА СВЕРХУ ================= */
     .app-container {
       max-width: 480px;
       margin: 0 auto;
@@ -284,7 +284,6 @@
       cursor: pointer;
     }
 
-    /* ПОЛЗУНОК SHIZUKU В ПРАВОМ ВЕРХНЕМ УГЛУ (КАК НА КОНЦЕПТЕ) */
     .shizuku-top-box {
       display: flex;
       align-items: center;
@@ -1114,7 +1113,7 @@
   </style>
 </head>
 <body>
-  <div id="topToast">⚡ INSTANT TELEPORT активирован!</div>
+  <div id="topToast">⚡ РЕЛЬСОВЫЙ ТЕЛЕПОРТ 950Hz активирован!</div>
 
   <!-- ВСПЛЫВАЮЩЕЕ ПРИГЛАШЕНИЕ В ВОЙС -->
   <div id="voiceInviteBanner">
@@ -1132,7 +1131,7 @@
 
   <!-- ================= 1. ЭКРАН АВТОРИЗАЦИИ ================= -->
   <div id="authScreen">
-    <div class="auth-top-pill">QUANTUM ENGINE V410 • INSTANT TELEPORT</div>
+    <div class="auth-top-pill">QUANTUM ENGINE V410 • RAIL TELEPORT 950HZ</div>
     <div class="auth-hero-title">SO2Teleport <span>PRO</span></div>
 
     <div class="auth-glass-card">
@@ -1179,7 +1178,7 @@
 
   <!-- ================= 2. ГЛАВНЫЙ ИНТЕРФЕЙС ================= -->
   <div id="mainAppRoot" class="app-container auth-locked">
-    <!-- ВЕРХНЯЯ ШАПКА С НАСТОЯЩИМ ПОЛЗУНКОМ SHIZUKU -->
+    <!-- ВЕРХНЯЯ ШАПКА С ПОЛЗУНКОМ SHIZUKU -->
     <header class="top-header">
       <div class="brand-logo-wrap">
         <div class="brand-so2">SO2</div>
@@ -1210,7 +1209,7 @@
             </svg>
           </div>
           <div class="hero-card-title">Телепорт Сенсы</div>
-          <div class="hero-card-sub">Молниеносный флик за 1 кадр</div>
+          <div class="hero-card-sub">Эталонная рельса 950Hz</div>
         </div>
 
         <div class="hero-neon-card" id="heroCardCrosshair" onclick="switchSensSubpanel('crosshair')">
@@ -1230,13 +1229,13 @@
         </div>
       </div>
 
-      <!-- ПОДПАНЕЛЬ 1А: НАСТРОЙКА ФЛИК-ТЕЛЕПОРТА -->
+      <!-- ПОДПАНЕЛЬ 1А: РЕЛЬСОВЫЙ ТЕЛЕПОРТ 950HZ -->
       <div id="subpanel-sens">
         <div class="section-card">
           <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:9px;">
             <div>
               <div id="tpStatusHeading" style="font-size:13.5px; font-weight:900; color:#fff;">ТЕЛЕПОРТ: ВЫКЛЮЧЕН</div>
-              <div style="font-size:10px; color:var(--text-muted);">Instant Flick Coalescing (<span id="calibModelName" style="color:#fff;">SM-S938B</span>)</div>
+              <div style="font-size:10px; color:var(--text-muted);">Linear Rail 950 ev/s (<span id="calibModelName" style="color:#fff;">SM-S938B</span>)</div>
             </div>
             <label class="ios-switch">
               <input type="checkbox" id="innerTpToggle" onchange="toggleTeleportMaster(this.checked)" />
@@ -1245,26 +1244,26 @@
           </div>
           <div style="display:grid; grid-template-columns:1.15fr 1fr; gap:7px;">
             <button type="button" class="btn-main" id="mainTpActionBtn" style="padding:10px 8px; font-size:11px;" onclick="toggleTeleportMaster(!document.getElementById('innerTpToggle').checked)">
-              ⚡ ВКЛЮЧИТЬ ТЕЛЕПОРТ
+              ⚡ ВКЛЮЧИТЬ 950HZ
             </button>
             <button type="button" class="btn-dark" style="padding:10px 8px; font-size:10.5px; border-color:#fff;" onclick="runSmartScanAndApply()">
-              🔥 УЛЬТРА ФЛИК
+              🔥 ЭТАЛОН РЕЛЬСЫ
             </button>
           </div>
         </div>
 
         <div class="section-card">
           <div class="section-header-tag">
-            <span>БЫСТРЫЕ ПРОФИЛИ ФЛИК-ТЕЛЕПОРТА</span>
-            <span>INSTANT JUMP</span>
+            <span>БЫСТРЫЕ ПРОФИЛИ РЕЛЬСОВОГО ТЕЛЕПОРТА</span>
+            <span>950 EV/S</span>
           </div>
           <div class="quick-modes-compact">
             <div class="qmode-chip active" id="qmode-1" onclick="selectQuickSensMode(1, 12.0, 12.0, 8.8, 100, 98, 100)">
-              <div class="qmode-chip-title">⚡ 1. ТЕЛЕПОРТ</div>
+              <div class="qmode-chip-title">⚡ 1. РЕЛЬСА 950</div>
               <div class="qmode-chip-sub" id="qbtn-1">АКТИВЕН</div>
             </div>
             <div class="qmode-chip" id="qmode-2" onclick="selectQuickSensMode(2, 12.0, 12.0, 10.5, 95, 100, 100)">
-              <div class="qmode-chip-title">💀 2. ФЛИК 180°</div>
+              <div class="qmode-chip-title">💀 2. ФЛИК 360°</div>
               <div class="qmode-chip-sub" id="qbtn-2">AWM / DEAGLE</div>
             </div>
             <div class="qmode-chip" id="qmode-3" onclick="selectQuickSensMode(3, 11.2, 11.2, 7.8, 100, 96, 100)">
@@ -1275,8 +1274,8 @@
 
           <div class="param-box" style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
             <div style="padding-right:8px;">
-              <div class="param-name">⚡ Схлопывание кадров при флике (Instant Jump)</div>
-              <div class="param-sub">Пропускает плавную доводку и сразу кидает прицел в конечную точку пальца</div>
+              <div class="param-name">⚡ Чистый линейный ввод (No Resample 950Hz)</div>
+              <div class="param-sub">Прицел идёт от старта до точки остановки ровно по линии без дёрганий</div>
             </div>
             <label class="ios-switch">
               <input type="checkbox" id="zeroDelaySnapToggle" checked onchange="onZeroDelayToggle(this.checked)" />
@@ -1290,7 +1289,7 @@
                 <div class="param-top"><span class="param-name">1. Импульс рывка</span><span id="v-sharp" class="param-val-pill">12.0</span></div>
                 <input type="range" id="p-sharp" min="1" max="12" step="0.1" value="12.0" oninput="onSensSliderInput()" onchange="onSensSliderCommit()" />
               </div>
-              <div class="param-sub">Мгновенный прыжок за 1 кадр</div>
+              <div class="param-sub">Молниеносный скачок без плавания</div>
             </div>
 
             <div class="param-box">
@@ -1298,7 +1297,7 @@
                 <div class="param-top"><span class="param-name">2. Ось X (Гориз.)</span><span id="v-sx" class="param-val-pill">12.0</span></div>
                 <input type="range" id="p-sx" min="1" max="12" step="0.1" value="12.0" oninput="onSensSliderInput()" onchange="onSensSliderCommit()" />
               </div>
-              <div class="param-sub">Моментальный разворот 90–180°</div>
+              <div class="param-sub">Скорость разворота 90–180°</div>
             </div>
 
             <div class="param-box">
@@ -1322,20 +1321,20 @@
                 <div class="param-top"><span class="param-name">5. Стоп-магнит</span><span id="v-stickForce" class="param-val-pill">98%</span></div>
                 <input type="range" id="p-stickForce" min="10" max="100" step="2" value="98" oninput="onSensSliderInput()" onchange="onSensSliderCommit()" />
               </div>
-              <div class="param-sub">Точный стоп без пролёта мимо</div>
+              <div class="param-sub">Гасит инерцию в точке стопа</div>
             </div>
 
             <div class="param-box">
               <div>
-                <div class="param-top"><span class="param-name">6. Склейка флика</span><span id="v-chunks" class="param-val-pill">100%</span></div>
+                <div class="param-top"><span class="param-name">6. Поток 950Hz</span><span id="v-chunks" class="param-val-pill">100%</span></div>
                 <input type="range" id="p-chunks" min="20" max="100" step="5" value="100" oninput="onSensSliderInput()" onchange="onSensSliderCommit()" />
               </div>
-              <div class="param-sub">Сжимает свайп в 1 вектор</div>
+              <div class="param-sub">Плотность потока координат</div>
             </div>
           </div>
 
           <button type="button" class="btn-dark" onclick="testOneMmFlickResponse()">
-            🛠️ СБРОСИТЬ ТАЧ И ПРИМЕНИТЬ ФЛИК-ТЕЛЕПОРТ
+            🛠️ СБРОСИТЬ ФРИЗЫ ТАЧА И ПЕРЕЗАПУСТИТЬ 950 EV/S
           </button>
         </div>
       </div>
@@ -1421,1527 +1420,2347 @@
         </div>
       </div>
     </div>
-    package com.teleport.so2;
+        <!-- ================= ВКЛАДКА 2: НАСТРОЙКИ (ТЕМЫ, РАСТЯГ, ПОЛЗУНКИ ПРИЛОЖЕНИЯ, КОНФИГИ, БУСТЕРЫ) ================= -->
+    <div id="tab-settings" class="tab-view">
+      <!-- ВЫБОР СТИЛЯ СТЕКЛА (ОСНОВНАЯ — СЕРЕБРИСТАЯ СВЕТЯЩАЯСЯ) -->
+      <div class="section-card">
+        <div class="section-header-tag">
+          <span>🎨 ТЕМА И ПОДСВЕТКА ПРИЛОЖЕНИЯ</span>
+          <span>SILVER DEFAULT</span>
+        </div>
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+          <div style="font-size:11.5px; font-weight:800; color:#cbd5e1;">Выбери свечение граней:</div>
+          <div class="theme-circles">
+            <div class="theme-dot active" data-theme="0" style="background:linear-gradient(135deg,#ffffff,#64748b);" onclick="setTheme(0, '#f8fafc', '#94a3b8', '248, 250, 252', this)"></div>
+            <div class="theme-dot" data-theme="1" style="background:linear-gradient(135deg,#a855f7,#4c1d95);" onclick="setTheme(1, '#a855f7', '#7c3aed', '168, 85, 247', this)"></div>
+            <div class="theme-dot" data-theme="2" style="background:linear-gradient(135deg,#60a5fa,#1e3a8a);" onclick="setTheme(2, '#60a5fa', '#3b82f6', '96, 165, 250', this)"></div>
+            <div class="theme-dot" data-theme="3" style="background:linear-gradient(135deg,#14e8c6,#0f172a);" onclick="setTheme(3, '#14e8c6', '#00d2ff', '20, 232, 198', this)"></div>
+            <div class="theme-dot" data-theme="4" style="background:linear-gradient(135deg,#f43f5e,#881337);" onclick="setTheme(4, '#f43f5e', '#be123c', '244, 63, 94', this)"></div>
+            <div class="theme-dot" data-theme="5" style="background:linear-gradient(135deg,#10b981,#064e3b);" onclick="setTheme(5, '#10b981', '#059669', '16, 185, 129', this)"></div>
+          </div>
+        </div>
+      </div>
 
-import android.app.Activity;
-import android.app.Notification;
-import android.app.NotificationChannel;
-import android.app.NotificationManager;
-import android.app.PendingIntent;
-import android.content.BroadcastReceiver;
-import android.content.Context;
-import android.content.Intent;
-import android.content.IntentFilter;
-import android.content.SharedPreferences;
-import android.content.pm.PackageManager;
-import android.graphics.Canvas;
-import android.graphics.Color;
-import android.graphics.Paint;
-import android.graphics.PixelFormat;
-import android.graphics.RectF;
-import android.graphics.drawable.GradientDrawable;
-import android.net.Uri;
-import android.os.Build;
-import android.os.Handler;
-import android.os.Looper;
-import android.provider.Settings;
-import android.util.DisplayMetrics;
-import android.view.Gravity;
-import android.view.MotionEvent;
-import android.view.View;
-import android.view.WindowManager;
-import android.webkit.JavascriptInterface;
-import android.widget.FrameLayout;
-import android.widget.TextView;
-import android.widget.Toast;
+      <!-- РАСТЯГ ЭКРАНА 7 ФОРМАТОВ -->
+      <div class="section-card">
+        <div class="section-header-tag">
+          <span>📐 РАСТЯГ ЭКРАНА И ХИТБОКСЫ (7 РЕЖИМОВ)</span>
+          <span id="stretchCornerLabel">4:3</span>
+        </div>
+        <div style="height:76px; background:var(--bg-card-inner); border:1px solid rgba(255,255,255,0.2); border-radius:13px; display:flex; align-items:center; justify-content:center; margin-bottom:8px;">
+          <div id="stretchPreviewBox" style="width:142px; height:56px; border:2px solid #fff; border-radius:10px; background:rgba(255,255,255,0.12); display:flex; align-items:center; justify-content:center; font-size:11.5px; font-weight:900; color:#fff; transition:width 0.18s;">
+            ФОРМАТ 4:3 (IPAD)
+          </div>
+        </div>
+        <div class="pills-grid" style="grid-template-columns:repeat(4, 1fr);" id="ratioPillsContainer">
+          <div class="choice-pill" data-ratio="1:1" data-w="108" data-title="1:1 (ULTRA WIDE)" onclick="selectStretchFormat('1:1', 108, '1:1 (ULTRA WIDE)', this)">1:1 MAX</div>
+          <div class="choice-pill" data-ratio="5:4" data-w="124" data-title="5:4 (PRO HEAD)" onclick="selectStretchFormat('5:4', 124, '5:4 (PRO HEAD)', this)">5:4</div>
+          <div class="choice-pill active" data-ratio="4:3" data-w="142" data-title="4:3 (IPAD)" onclick="selectStretchFormat('4:3', 142, '4:3 (IPAD)', this)">4:3 IPAD</div>
+          <div class="choice-pill" data-ratio="3:2" data-w="158" data-title="3:2 (BALANCED)" onclick="selectStretchFormat('3:2', 158, '3:2 (BALANCED)', this)">3:2</div>
+          <div class="choice-pill" data-ratio="16:10" data-w="174" data-title="16:10 (WIDE)" onclick="selectStretchFormat('16:10', 174, '16:10 (WIDE)', this)">16:10</div>
+          <div class="choice-pill" data-ratio="16:9" data-w="190" data-title="16:9 (FAST)" onclick="selectStretchFormat('16:9', 190, '16:9 (FAST)', this)">16:9</div>
+          <div class="choice-pill" data-ratio="21:10" data-w="210" data-title="21:10 (SOFT STRETCH)" style="grid-column: span 2;" onclick="selectStretchFormat('21:10', 210, '21:10 (SOFT STRETCH)', this)">21:10 КИБЕР</div>
+        </div>
+        <div class="param-box" style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+          <div style="padding-right:10px;">
+            <div class="param-name">🎯 Широкие Хитбоксы (Wide Hitbox)</div>
+            <div class="param-sub">Синхронизирует растяг с рельсовым телепортом 950Hz</div>
+          </div>
+          <label class="ios-switch">
+            <input type="checkbox" id="sw-wideHitboxMode" onchange="toggleWideHitboxFeature(this.checked)" />
+            <span class="ios-slider"></span>
+          </label>
+        </div>
+        <div style="display:grid; grid-template-columns:1.3fr 1fr; gap:7px;">
+          <button type="button" class="btn-main" id="activateStretchBtnText" onclick="activateFloatingTButton()">
+            ⚡ ЗАПУСТИТЬ «T» (4:3)
+          </button>
+          <button type="button" class="btn-danger" onclick="removeFloatingTAndReset()">
+            СБРОСИТЬ ЭКРАН
+          </button>
+        </div>
+      </div>
 
-import org.json.JSONArray;
-import org.json.JSONObject;
+      <!-- ПОЛЗУНКИ СИСТЕМЫ И БУСТЕРЫ -->
+      <div class="section-card">
+        <div class="section-header-tag">
+          <span>🚀 СИСТЕМНЫЕ ПОЛЗУНКИ И БУСТЕРЫ</span>
+          <span>SHIZUKU PRO</span>
+        </div>
 
-import java.io.InputStream;
-import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.Locale;
-import java.util.Scanner;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
+        <div class="param-box">
+          <div class="param-top"><span class="param-name">🎯 Сила фиксации отдачи PRO (Anti-Recoil)</span><span id="v-recoilPower" class="param-val-pill">100%</span></div>
+          <input type="range" id="p-recoilPower" min="20" max="100" step="5" value="100" oninput="onRecoilSliderInput()" onchange="onRecoilSliderCommit()" />
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-top:4px;">
+            <span class="param-sub">Компенсация вертикального подброса при зажиме</span>
+            <label class="ios-switch" style="transform:scale(0.84);">
+              <input type="checkbox" id="sw-recoilPro" checked onchange="onRecoilSliderCommit()" />
+              <span class="ios-slider"></span>
+            </label>
+          </div>
+        </div>
 
-public class AndroidBridge {
+        <div class="param-box">
+          <div style="display:flex; justify-content:space-between; align-items:center;">
+            <div>
+              <div class="param-name">⚡ Частота опроса тача (360 Гц MAX)</div>
+              <div class="param-sub">Нулевая задержка матрицы дисплея</div>
+            </div>
+            <label class="ios-switch">
+              <input type="checkbox" id="sw-touchBoost" checked onchange="applyTouchSamplingBoost()" />
+              <span class="ios-slider"></span>
+            </label>
+          </div>
+          <div class="pills-grid" style="grid-template-columns:repeat(3,1fr); margin-bottom:0;" id="hzPills">
+            <div class="choice-pill" onclick="pickSamplingHz(240, this)">240 Гц</div>
+            <div class="choice-pill" onclick="pickSamplingHz(300, this)">300 Гц</div>
+            <div class="choice-pill active" onclick="pickSamplingHz(360, this)">360 Гц MAX</div>
+          </div>
+        </div>
 
-    private static final String PREF_FIRST_LOGIN_DONE = "v410_manual_login_done";
+        <div class="param-box" style="display:flex; justify-content:space-between; align-items:center;">
+          <div>
+            <div class="param-name">🔥 Ускоритель графики Vulkan GPU Turbo</div>
+            <div class="param-sub">Рендер skiavk без буферной задержки кадров</div>
+          </div>
+          <label class="ios-switch">
+            <input type="checkbox" id="sw-vulkanGpu" checked onchange="toggleVulkanGpu(this.checked)" />
+            <span class="ios-slider"></span>
+          </label>
+        </div>
 
-    private final Context context;
-    private final Activity activity;
-    private final SharedPreferences prefs;
-    private final SharedPreferences legacyPrefs;
-    private final SharedPreferences profilePrefs;
-    private final Handler mainHandler = new Handler(Looper.getMainLooper());
-    private final ExecutorService networkExecutor = Executors.newCachedThreadPool();
+        <div class="param-box" style="display:flex; justify-content:space-between; align-items:center;">
+          <div>
+            <div class="param-name">📡 Стабилизатор пинга и пакетов</div>
+            <div class="param-sub">Отключает фоновый скан Wi-Fi/BLE во время катки</div>
+          </div>
+          <label class="ios-switch">
+            <input type="checkbox" id="sw-netStabilizer" checked onchange="toggleNetPingBoost(this.checked)" />
+            <span class="ios-slider"></span>
+          </label>
+        </div>
 
-    private WindowManager windowManager;
-    private TextView floatingStretchBtn;
-    private FrameLayout trashContainer;
-    private BridgeTrashView trashPillView;
-    private WindowManager.LayoutParams stretchParams;
-    private WindowManager.LayoutParams trashParams;
-    private boolean isStretchOverlayShown = false;
-    private boolean isBoxBarsActive = false;
-    private String selectedStretchRatio = "4:3";
+        <div class="param-box" style="display:flex; justify-content:space-between; align-items:center;">
+          <div>
+            <div class="param-name">❄️ Холодная фиксация 120 Гц</div>
+            <div class="param-sub">Удерживает 120 FPS без троттлинга</div>
+          </div>
+          <label class="ios-switch">
+            <input type="checkbox" id="sw-cold120" checked onchange="toggleCold120Guard(this.checked)" />
+            <span class="ios-slider"></span>
+          </label>
+        </div>
 
-    private CrosshairOverlayView crosshairView;
-    private WindowManager.LayoutParams crosshairParams;
-    private boolean isCrosshairShown = false;
-    private boolean stealthOverlayFlag = false;
-    private int crosshairOffsetXDp = 0;
-    private int crosshairOffsetYDp = 0;
+        <div class="param-box" style="display:flex; justify-content:space-between; align-items:center;">
+          <div>
+            <div class="param-name">🕵️ Невидимость на записи (Stealth)</div>
+            <div class="param-sub">Скрывает кнопку «T» и прицел на видео/скринах</div>
+          </div>
+          <label class="ios-switch">
+            <input type="checkbox" id="sw-stealthMode" onchange="toggleStealthModeFlag(this.checked)" />
+            <span class="ios-slider"></span>
+          </label>
+        </div>
 
-    public AndroidBridge(Activity activity) {
-        this.activity = activity;
-        this.context = activity.getApplicationContext();
-        this.prefs = context.getSharedPreferences("SO2TeleportPrefs_V410", Context.MODE_PRIVATE);
-        this.legacyPrefs = context.getSharedPreferences("so2_teleport_prefs", Context.MODE_PRIVATE);
-        this.profilePrefs = context.getSharedPreferences("so2_teleport_profile_prefs", Context.MODE_PRIVATE);
-        this.windowManager = (WindowManager) context.getSystemService(Context.WINDOW_SERVICE);
+        <div id="ramResultDesc" style="font-size:10.5px; color:var(--text-muted); margin-bottom:7px;">
+          Очистка ОЗУ перед каткой освобождает ресурсы под Standoff 2:
+        </div>
+        <button type="button" class="btn-dark" onclick="runRamCleanBoost()">
+          🧹 ОЧИСТИТЬ ОЗУ И КЭШ (RAM BOOST)
+        </button>
+      </div>
 
-        String oldLegacyKey = legacyPrefs.getString("license_key", "");
-        if (oldLegacyKey == null || oldLegacyKey.trim().isEmpty()) {
-            oldLegacyKey = ProfileManager.getSavedKey(context);
-        }
-        if (oldLegacyKey != null && !oldLegacyKey.trim().isEmpty()) {
-            prefs.edit().putString("backup_buyer_key", oldLegacyKey.trim().toUpperCase()).apply();
-        }
+      <!-- ГОТОВЫЕ PRO-КОНФИГИ И ОБМЕН КОДОМ -->
+      <div class="section-card">
+        <div class="section-header-tag">
+          <span>🔥 ГОТОВЫЕ PRO-СБОРКИ И ОБМЕН КОДОМ</span>
+          <span>1-CLICK</span>
+        </div>
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:7px; margin-bottom:9px;">
+          <button type="button" class="btn-dark" onclick="loadFullProBundle('РЕЛЬСА В ГОЛОВУ 950HZ', 12.0, 12.0, 8.5, 100, 98, 100, 'dot', '#ffffff', true)">⚡ 1. РЕЛЬСА 950HZ</button>
+          <button type="button" class="btn-dark" onclick="loadFullProBundle('DEAGLE ВАНТАП', 12.0, 12.0, 8.0, 100, 100, 100, 'chevron', '#00e5ff', false)">💀 2. DEAGLE SNAP</button>
+          <button type="button" class="btn-dark" onclick="loadFullProBundle('AWM ФАСТЗУМ 360', 12.0, 12.0, 10.8, 95, 98, 100, 'corners', '#facc15', false)">🦅 3. AWM 360°</button>
+          <button type="button" class="btn-dark" onclick="loadFullProBundle('ЛАЗЕРНЫЙ ЗАЖИМ', 11.2, 11.2, 7.6, 100, 98, 100, 'box', '#10b981', true)">🎯 4. NO-RECOIL</button>
+        </div>
+        <input type="text" id="shareLinkInput" class="cyber-field" placeholder="Вставь код конфига SO2-... или скопируй свой" />
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:7px;">
+          <button type="button" class="btn-main" style="padding:10px;" onclick="saveCurrentConfigNow()">💾 СОХРАНИТЬ ВСЁ</button>
+          <button type="button" class="btn-dark" style="padding:10px;" onclick="generateAndCopyShareLink()">🔗 КОПИРОВАТЬ КОД</button>
+        </div>
+      </div>
+    </div>
 
-        if (!prefs.getBoolean(PREF_FIRST_LOGIN_DONE, false)) {
-            ApiManager.invalidateSession();
-        }
+    <!-- ================= ВКЛАДКА 3: ВОЙС (КОМНАТА С АВАТАРКАМИ, МЕССЕНДЖЕРОМ И NO-DUCKING ЗВУКОМ) ================= -->
+    <div id="tab-voice" class="tab-view">
+      <div class="section-card">
+        <div class="section-header-tag">
+          <span>🎧 ГОЛОСОВАЯ КОМНАТА ОТРЯДА (NO GAME DUCKING)</span>
+          <span id="voiceStatePill" style="color:var(--text-muted);">НЕ ПОДКЛЮЧЕН</span>
+        </div>
 
-        TeleportEngine.init(context);
-        TeleportEngine.requestShizukuPermissionIfNeeded();
-        startLicenseWatchdog();
+        <div style="display:grid; grid-template-columns:1.35fr 1fr; gap:7px; margin-bottom:9px;">
+          <input type="text" id="voiceRoomInput" class="cyber-field" style="margin-bottom:0; text-transform:uppercase; font-family:monospace;" placeholder="КОМНАТА" value="SQUAD-MAIN" />
+          <button type="button" class="btn-dark" onclick="setMyOwnRoomCode()">🎲 СОЗДАТЬ СВОЮ</button>
+        </div>
+
+        <div class="dc-call-stage">
+          <div class="dc-stage-top">
+            <div class="dc-room-badge">
+              <span>🔊</span>
+              <span id="stageRoomNameLabel">SQUAD-MAIN</span>
+              <span>(<span id="voiceRosterCount">0</span>)</span>
+            </div>
+            <div id="dcPingQualityBadge" class="dc-ping-tag">300% BOOST • ИГРУ НЕ ГЛУШИТ</div>
+          </div>
+
+          <div id="voiceRosterList" class="dc-avatars-grid">
+            <div style="grid-column: span 2; font-size:11.5px; color:var(--text-muted); text-align:center; padding:14px 6px;">
+              Нажми «Войти в голосовой канал» — здесь появятся аватарки и ники всех участников комнаты
+            </div>
+          </div>
+
+          <div id="voiceActionRow">
+            <button type="button" class="btn-main" id="btnJoinVoice" onclick="toggleVoiceConnection()">
+              🎙️ ВОЙТИ В ГОЛОСОВОЙ КАНАЛ
+            </button>
+          </div>
+
+          <div id="voiceControlsActive" class="dc-controls-bar" style="display:none;">
+            <button type="button" class="dc-ctrl-btn active-on" id="btnMuteMic" onclick="toggleMicMute()">
+              <span class="ico" id="icoMicState">🎤</span>
+              <span id="lblMicState">Микро</span>
+            </button>
+            <button type="button" class="dc-ctrl-btn active-on" id="btnDeafenAudio" onclick="toggleDeafenSpeaker()">
+              <span class="ico" id="icoDeafState">🎧</span>
+              <span id="lblDeafState">Звук</span>
+            </button>
+            <button type="button" class="dc-ctrl-btn active-on" id="btnKrispQuick" onclick="toggleKrispQuickBtn()">
+              <span class="ico">🛡️</span>
+              <span id="lblKrispState">Krisp ВКЛ</span>
+            </button>
+            <button type="button" class="dc-ctrl-btn hangup" onclick="leaveVoiceRoom()">
+              <span class="ico">📞</span>
+              <span>Выйти</span>
+            </button>
+          </div>
+
+          <!-- ВСТРОЕННЫЙ МИНИ-МЕССЕНДЖЕР ОТРЯДА -->
+          <div class="squad-chat-box">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+              <span style="font-size:10px; font-weight:900; color:#cbd5e1; letter-spacing:0.5px;">💬 ЧАТ КОМНАТЫ ОТРЯДА</span>
+              <span style="font-size:9.5px; color:var(--text-muted);">Мгновенные коллы</span>
+            </div>
+            <div id="squadChatMessages" style="height:122px; overflow-y:auto; display:flex; flex-direction:column; gap:6px; margin-bottom:7px;">
+              <div style="font-size:11px; color:var(--text-muted); text-align:center; padding:26px 6px;">
+                Войдите в комнату, чтобы переписываться с тиммейтами и кидать быстрые инфо-коллы
+              </div>
+            </div>
+            <div class="quick-callouts-row">
+              <div class="callout-chip" onclick="sendQuickCallout('⚡ Пушим А плент!')">⚡ Пушим А</div>
+              <div class="callout-chip" onclick="sendQuickCallout('💣 Все на Б!')">💣 Все на Б</div>
+              <div class="callout-chip" onclick="sendQuickCallout('🦅 Снайпер на миду!')">🦅 Мид АВМ</div>
+              <div class="callout-chip" onclick="sendQuickCallout('💰 Эко раунд')">💰 Эко</div>
+              <div class="callout-chip" onclick="sendQuickCallout('🔥 Найс раунд, красавцы!')">🔥 Найс!</div>
+            </div>
+            <div style="display:grid; grid-template-columns:1fr auto; gap:6px;">
+              <input type="text" id="squadChatInput" class="cyber-field" style="margin-bottom:0;" placeholder="Написать в чат отряда..." onkeydown="if(event.key==='Enter') sendSquadChatMessage();" />
+              <button type="button" class="btn-main" style="width:auto; padding:0 15px;" onclick="sendSquadChatMessage()">➤</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="param-box">
+          <div class="param-top"><span class="param-name">🎧 Громкость друга в игре (300% Pre-Amp)</span><span id="v-peerVol" class="param-val-pill">220%</span></div>
+          <input type="range" id="p-peerVol" min="50" max="300" step="10" value="220" oninput="updateVoiceDspParams()" onchange="updateVoiceDspParams()" />
+          <div class="param-sub">Мощный предусилитель голоса тиммейта без приглушения шагов в Standoff 2</div>
+        </div>
+
+        <div class="param-box">
+          <div class="param-top"><span class="param-name">🎤 Усиление твоего микрофона</span><span id="v-micGain" class="param-val-pill">160%</span></div>
+          <input type="range" id="p-micGain" min="50" max="250" step="5" value="160" oninput="updateVoiceDspParams()" onchange="updateVoiceDspParams()" />
+          <div class="vu-bar-wrap"><div id="micVuMeterFill" class="vu-bar-fill"></div></div>
+        </div>
+
+        <div class="param-box" style="margin-bottom:0; display:flex; justify-content:space-between; align-items:center;">
+          <div style="padding-right:10px; flex:1;">
+            <div class="param-name">🛡️ Программный Krisp фильтр + Порог шума (<span id="v-noiseGate">12%</span>)</div>
+            <input type="range" id="p-noiseGate" min="0" max="40" step="1" value="12" oninput="updateVoiceDspParams()" onchange="updateVoiceDspParams()" />
+          </div>
+          <label class="ios-switch">
+            <input type="checkbox" id="sw-dspNoiseGate" checked onchange="updateVoiceDspParams()" />
+            <span class="ios-slider"></span>
+          </label>
+        </div>
+      </div>
+
+      <!-- СПИСОК ДРУЗЕЙ И ДОБАВЛЕНИЕ ПО ID -->
+      <div class="section-card">
+        <div class="section-header-tag">
+          <span>👥 ДРУЗЬЯ И ПОИСК ТИММЕЙТОВ</span>
+          <span onclick="syncFriendsHubData(true)" style="cursor:pointer; text-decoration:underline;">🔄 ОБНОВИТЬ</span>
+        </div>
+        <div style="display:grid; grid-template-columns:1.4fr 1fr; gap:7px; margin-bottom:9px;">
+          <input type="text" id="friendTargetInput" class="cyber-field" style="margin-bottom:0; text-transform:uppercase;" placeholder="ID друга (SO2-XXXX)" />
+          <button type="button" class="btn-main" style="padding:10px;" onclick="sendAddFriendAction()">➕ ДОБАВИТЬ</button>
+        </div>
+        <div id="incomingRequestsCard" style="display:none; margin-bottom:8px;">
+          <div style="font-size:10px; font-weight:900; color:#fff; margin-bottom:5px;">ВХОДЯЩИЕ ЗАЯВКИ (<span id="incomingCountTag">0</span>):</div>
+          <div id="incomingRequestsList"></div>
+        </div>
+        <div id="friendsContainerList">
+          <div style="font-size:11.5px; color:var(--text-muted); text-align:center; padding:8px 0;">
+            Список друзей пуст. Скопируйте свой ID в профиле или введите ID друга выше!
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ================= ВКЛАДКА 4: ПРОФИЛЬ (АВАТАРКА ИЗ ГАЛЕРЕИ, СМЕНА НИКА, КЛЮЧ) ================= -->
+    <div id="tab-profile" class="tab-view">
+      <div class="section-card">
+        <div class="section-header-tag">
+          <span>👤 ТВОЙ ИГРОВОЙ ПРОФИЛЬ И АВАТАРКА</span>
+          <span>SYNCED WITH VOICE</span>
+        </div>
+
+        <div class="profile-hero-box">
+          <div class="profile-big-avatar" id="profileAvatarPreview" onclick="document.getElementById('avatarFileInput').click()">
+            🐺
+          </div>
+          <div style="flex:1;">
+            <div style="font-size:10px; color:var(--text-muted); font-weight:700; margin-bottom:4px;">ТВОЙ НИКНЕЙМ В ВОЙСЕ И ЧАТЕ:</div>
+            <div style="display:grid; grid-template-columns:1fr auto; gap:6px;">
+              <input type="text" id="profileNickEditInput" class="cyber-field" style="margin-bottom:0;" placeholder="Твой ник" />
+              <button type="button" class="btn-main" style="width:auto; padding:0 14px; font-size:11px;" onclick="saveCustomProfileNickAndAvatar()">ОК</button>
+            </div>
+          </div>
+        </div>
+
+        <input type="file" id="avatarFileInput" accept="image/*" style="display:none;" onchange="handleCustomAvatarUpload(this)" />
+
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
+          <span style="font-size:10.5px; font-weight:800; color:#cbd5e1;">Выбери кибер-аватарку или загрузи фото:</span>
+          <button type="button" class="mini-act-btn" onclick="document.getElementById('avatarFileInput').click()">📁 СВОЁ ФОТО</button>
+        </div>
+
+        <div class="avatar-presets-row" id="avatarPresetsGrid">
+          <div class="ava-preset-item active" onclick="selectPresetAvatar('🐺', this)">🐺</div>
+          <div class="ava-preset-item" onclick="selectPresetAvatar('⚡', this)">⚡</div>
+          <div class="ava-preset-item" onclick="selectPresetAvatar('💀', this)">💀</div>
+          <div class="ava-preset-item" onclick="selectPresetAvatar('🥷', this)">🥷</div>
+          <div class="ava-preset-item" onclick="selectPresetAvatar('🦅', this)">🦅</div>
+          <div class="ava-preset-item" onclick="selectPresetAvatar('🔥', this)">🔥</div>
+          <div class="ava-preset-item" onclick="selectPresetAvatar('👑', this)">👑</div>
+          <div class="ava-preset-item" onclick="selectPresetAvatar('🎯', this)">🎯</div>
+          <div class="ava-preset-item" onclick="selectPresetAvatar('🐉', this)">🐉</div>
+          <div class="ava-preset-item" onclick="selectPresetAvatar('🤖', this)">🤖</div>
+        </div>
+      </div>
+
+      <div class="section-card">
+        <div class="section-header-tag">
+          <span>ДАННЫЕ ЛИЦЕНЗИИ И УСТРОЙСТВА</span>
+          <span>PRO V410</span>
+        </div>
+        <div class="profile-row" onclick="copyMyFriendCode()" style="cursor:pointer;">
+          <span class="profile-key">Твой ID для друзей (нажми):</span>
+          <span class="profile-val" id="profFriendIdVal" style="text-decoration:underline;">SO2-7693 📋</span>
+        </div>
+        <div id="myFriendCodeDisplay" style="display:none;">SO2-7693</div>
+        <div class="profile-row">
+          <span class="profile-key">Ваш логин:</span>
+          <span class="profile-val" id="profLoginVal">dare</span>
+        </div>
+        <div class="profile-row">
+          <span class="profile-key">Статус подписки:</span>
+          <span class="profile-val" id="profSubVal" style="color:#34d399;">АКТИВНА</span>
+        </div>
+        <div class="profile-row" onclick="toggleRevealKey()" style="cursor:pointer;">
+          <span class="profile-key">Лицензионный ключ (нажми):</span>
+          <span class="profile-val" id="profKeyVal" style="text-decoration:underline dotted;">СКРЫТ 👁️</span>
+        </div>
+        <div class="profile-row">
+          <span class="profile-key">Модель устройства:</span>
+          <span class="profile-val" id="profModelVal">SM-S938B</span>
+        </div>
+        <div class="profile-row">
+          <span class="profile-key">Экран и герцовка:</span>
+          <span class="profile-val" id="profScreenVal">1440x3120 (120 Гц)</span>
+        </div>
+        <div class="profile-row" style="margin-bottom:10px;">
+          <span class="profile-key">HWID устройства:</span>
+          <span class="profile-val" id="profHwidVal">39e220a438dedb68</span>
+        </div>
+        <button type="button" class="btn-danger" onclick="logoutAndSwitchKey()">
+          ВЫЙТИ / СМЕНИТЬ ЛИЦЕНЗИОННЫЙ КЛЮЧ
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= НИЖНЯЯ НАВИГАЦИЯ НА 4 ИКОНКИ ================= -->
+  <nav id="bottomDockBar" class="bottom-nav-pill auth-locked">
+    <div class="nav-tab-item active" data-tab="tab-sens" onclick="switchMainTab('tab-sens')">
+      <svg viewBox="0 0 24 24" fill="none" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+        <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
+      </svg>
+      <span class="nav-tab-lbl">Сенсы</span>
+      <span class="nav-tab-underline"></span>
+    </div>
+
+    <div class="nav-tab-item" data-tab="tab-settings" onclick="switchMainTab('tab-settings')">
+      <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="3"></circle>
+        <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+      </svg>
+      <span class="nav-tab-lbl">Настройки</span>
+      <span class="nav-tab-underline"></span>
+    </div>
+
+    <div class="nav-tab-item" data-tab="tab-voice" onclick="switchMainTab('tab-voice')">
+      <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M3 18v-6a9 9 0 0 1 18 0v6"></path>
+        <path d="M21 19a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3zM3 19a2 2 0 0 0 2 2h1a2 2 0 0 0 2-2v-3a2 2 0 0 0-2-2H3z"></path>
+      </svg>
+      <span class="nav-tab-lbl">Войс</span>
+      <span class="nav-tab-underline"></span>
+    </div>
+
+    <div class="nav-tab-item" data-tab="tab-profile" onclick="switchMainTab('tab-profile')">
+      <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+        <circle cx="12" cy="7" r="4"></circle>
+      </svg>
+      <span class="nav-tab-lbl">Профиль</span>
+      <span class="nav-tab-underline"></span>
+    </div>
+  </nav>
+
+  <script>
+    const CLIENT_LOGIN_GATE_KEY = "so2tp_manual_login_v412";
+    const API_HTTP_BASE = "http://45.10.165.75:8080/api";
+    const VOICE_WS_URL = "ws://45.10.165.75:8080/ws/voice";
+    const TARGET_PCM_RATE = 16000;
+
+    window.addEventListener("contextmenu", function(e) {
+      if (e.target && e.target.tagName !== "INPUT") {
+        e.preventDefault();
+      }
+    }, false);
+
+    function getBridge() {
+      return window.AndroidBridge || window.Android || null;
     }
 
-    private boolean isLegacyOrOwnerKey(String cleanKey) {
-        if (cleanKey == null || cleanKey.isEmpty()) return false;
-        String[] ownerAndBuyerKeys = {
-                "TP90D-HHG-125841",
-                "TP-EOW-371500",
-                "TP-YRE-133700",
-                "TP-SO2-999999",
-                "TP-PRO-777888",
-                "TP-VIP-100200",
-                "TP-RAH-404213"
-        };
-        for (String k : ownerAndBuyerKeys) {
-            if (k.equalsIgnoreCase(cleanKey)) return true;
-        }
+    let currentThemeIdx = 0;
+    let currentStretch = "4:3";
+    let currentChShape = "off";
+    let currentChColor = "#ffffff";
+    let currentSamplingHz = 360;
+    let fullLicenseKeyPlain = "";
+    let isKeyRevealed = false;
+    let isSessionAuthorized = false;
 
-        String backupBuyerKey = prefs.getString("backup_buyer_key", "");
-        if (!backupBuyerKey.isEmpty() && backupBuyerKey.equalsIgnoreCase(cleanKey)) {
-            return true;
-        }
+    let myProfileAvatar = localStorage.getItem("so2tp_user_avatar_v412") || "🐺";
+    let peerAvatarsCache = {};
 
-        String previouslyActivated = ProfileManager.getSavedKey(context);
-        if (!previouslyActivated.isEmpty() && previouslyActivated.equalsIgnoreCase(cleanKey)) {
-            return true;
-        }
+    const pendingBridgeTasks = {};
+    let lastEngineSignature = "";
 
-        try {
-            InputStream is = context.getAssets().open("keys.json");
-            Scanner s = new Scanner(is).useDelimiter("\\A");
-            String jsonStr = s.hasNext() ? s.next() : "";
-            is.close();
-            JSONObject obj = new JSONObject(jsonStr);
-            JSONArray arr = obj.optJSONArray("valid_keys");
-            if (arr != null) {
-                for (int i = 0; i < arr.length(); i++) {
-                    if (cleanKey.equalsIgnoreCase(arr.getString(i).trim())) {
-                        return true;
-                    }
-                }
-            }
-        } catch (Exception ignored) {}
-        return false;
+    function enqueueBridgeTask(taskKey, fn, delayMs = 35) {
+      if (pendingBridgeTasks[taskKey]) {
+        clearTimeout(pendingBridgeTasks[taskKey]);
+      }
+      pendingBridgeTasks[taskKey] = setTimeout(() => {
+        delete pendingBridgeTasks[taskKey];
+        setTimeout(() => {
+          try { fn(); } catch (e) {}
+        }, 4);
+      }, delayMs);
     }
 
-    private long getDefaultDurationMsForKey(String cleanKey) {
-        if (cleanKey == null) return 30L * 24L * 3600L * 1000L;
-        String u = cleanKey.toUpperCase();
-        if (u.startsWith("TP-1HR") || u.contains("1HR") || u.contains("-1H-")) {
-            return 3600L * 1000L;
-        }
-        if (u.startsWith("TP1D") || u.contains("-1D-") || u.contains("24H")) {
-            return 24L * 3600L * 1000L;
-        }
-        if (u.startsWith("TP7D") || u.contains("-7D-")) {
-            return 7L * 24L * 3600L * 1000L;
-        }
-        if (u.startsWith("TP90D") || u.contains("90D")) {
-            return 90L * 24L * 3600L * 1000L;
-        }
-        return 30L * 24L * 3600L * 1000L;
+    function syncRangeFill(inputEl) {
+      if (!inputEl) return;
+      const min = parseFloat(inputEl.min) || 0;
+      const max = parseFloat(inputEl.max) || 100;
+      const val = parseFloat(inputEl.value) || 0;
+      const pct = Math.max(0, Math.min(100, ((val - min) / (max - min)) * 100));
+      inputEl.style.setProperty("--pct", pct.toFixed(1) + "%");
     }
 
-    private long getOrInitKeyDeadlineMs(String cleanKey, JSONObject serverRes) {
-        String deadlinePrefKey = "key_deadline_ms_" + cleanKey;
-        long now = System.currentTimeMillis();
-
-        if (serverRes != null) {
-            long remSec = serverRes.optLong("remaining_sec",
-                    serverRes.optLong("time_left_sec",
-                            serverRes.optLong("seconds_left", -1L)));
-            if (remSec > 0) {
-                long newDeadline = now + (remSec * 1000L);
-                prefs.edit().putLong(deadlinePrefKey, newDeadline).apply();
-                return newDeadline;
-            }
-
-            long expUnix = serverRes.optLong("expires_at", serverRes.optLong("exp", -1L));
-            if (expUnix > 1700000000L) {
-                long newDeadline = (expUnix < 100000000000L) ? (expUnix * 1000L) : expUnix;
-                prefs.edit().putLong(deadlinePrefKey, newDeadline).apply();
-                return newDeadline;
-            }
-        }
-
-        long savedDeadline = prefs.getLong(deadlinePrefKey, 0L);
-        if (savedDeadline > 0L) {
-            return savedDeadline;
-        }
-
-        long startMs = 0L;
-        String savedDateStr = profilePrefs.getString("activated_date", "");
-        String savedProfKey = profilePrefs.getString("activated_key", "");
-        if (!savedDateStr.isEmpty() && cleanKey.equalsIgnoreCase(savedProfKey)) {
-            try {
-                SimpleDateFormat sdf = new SimpleDateFormat("dd.MM.yyyy HH:mm", Locale.getDefault());
-                Date d = sdf.parse(savedDateStr);
-                if (d != null) startMs = d.getTime();
-            } catch (Exception ignored) {}
-        }
-
-        long durationMs = getDefaultDurationMsForKey(cleanKey);
-
-        if (startMs <= 0L) {
-            boolean wasUsedBefore = !prefs.getString("backup_buyer_key", "").isEmpty() || isLegacyOrOwnerKey(cleanKey);
-            if (wasUsedBefore && durationMs >= 7L * 24L * 3600L * 1000L) {
-                long elapsedOffset = (2L * 24L * 3600L * 1000L) + (14L * 3600L * 1000L);
-                startMs = now - elapsedOffset;
-            } else {
-                startMs = now;
-            }
-        }
-
-        long computedDeadline = startMs + durationMs;
-        prefs.edit().putLong(deadlinePrefKey, computedDeadline).apply();
-        return computedDeadline;
+    function syncAllRangeFills() {
+      document.querySelectorAll('input[type="range"]').forEach(syncRangeFill);
     }
 
-    private String buildLiveSubscriptionLabel(JSONObject serverRes, String cleanKey) {
-        if (serverRes != null) {
-            String serverText = serverRes.optString("expires_in",
-                    serverRes.optString("days_left",
-                            serverRes.optString("time_left", "")));
-            if (serverText != null && !serverText.isEmpty() && !serverText.equalsIgnoreCase("null")
-                    && !serverText.equals("30 дней") && !serverText.equals("30 ДНЕЙ")) {
-                if (serverText.toUpperCase().contains("АКТИВНА")) return serverText;
-                return "АКТИВНА (" + serverText + ")";
-            }
-        }
-
-        long deadlineMs = getOrInitKeyDeadlineMs(cleanKey, serverRes);
-        long diffMs = deadlineMs - System.currentTimeMillis();
-
-        if (diffMs <= 0L) {
-            return "EXPIRED";
-        }
-
-        long totalMinutes = diffMs / (60L * 1000L);
-        long days = totalMinutes / (60L * 24L);
-        long hours = (totalMinutes % (60L * 24L)) / 60L;
-        long mins = totalMinutes % 60L;
-
-        if (days > 0) {
-            return "АКТИВНА (" + days + " дн. " + hours + " ч.)";
-        } else if (hours > 0) {
-            return "АКТИВНА (" + hours + " ч. " + mins + " мин.)";
-        } else {
-            return "АКТИВНА (" + Math.max(1, mins) + " мин.)";
-        }
-    }
-
-    private void startLicenseWatchdog() {
-        mainHandler.postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                final String savedKey = getSavedKey();
-                if (!savedKey.isEmpty() && prefs.getBoolean(PREF_FIRST_LOGIN_DONE, false)) {
-                    String liveStatus = buildLiveSubscriptionLabel(null, savedKey);
-                    if ("EXPIRED".equals(liveStatus)) {
-                        forceKickExpiredUser("Срок действия вашего ключа истёк!");
-                        return;
-                    }
-
-                    networkExecutor.execute(() -> {
-                        String raw = ApiManager.verifyLicense(savedKey, getDeviceHwid());
-                        try {
-                            JSONObject res = new JSONObject(raw);
-                            String status = res.optString("status", "");
-                            boolean explicitlyBlocked = "expired".equalsIgnoreCase(status)
-                                    || "blocked".equalsIgnoreCase(status)
-                                    || "device_mismatch".equalsIgnoreCase(status)
-                                    || res.optBoolean("blocked", false);
-
-                            if (explicitlyBlocked && !isLegacyOrOwnerKey(savedKey)) {
-                                forceKickExpiredUser(res.optString("message", "Срок действия вашего ключа истёк!"));
-                            }
-                        } catch (Exception ignored) {}
-                    });
-                }
-                mainHandler.postDelayed(this, 25000);
-            }
-        }, 25000);
-    }
-
-    private void forceKickExpiredUser(String reasonToast) {
-        prefs.edit()
-                .remove("saved_license_key")
-                .putBoolean(PREF_FIRST_LOGIN_DONE, false)
-                .apply();
-        ApiManager.invalidateSession();
-        TeleportEngine.stopTeleport();
-
-        mainHandler.post(() -> {
-            if (floatingStretchBtn != null && windowManager != null) {
-                try { windowManager.removeView(floatingStretchBtn); } catch (Exception ignored) {}
-                floatingStretchBtn = null;
-            }
-            if (trashContainer != null && windowManager != null) {
-                try { windowManager.removeView(trashContainer); } catch (Exception ignored) {}
-                trashContainer = null;
-                trashPillView = null;
-            }
-            isStretchOverlayShown = false;
-
-            if (isCrosshairShown && crosshairView != null && windowManager != null) {
-                try { windowManager.removeView(crosshairView); } catch (Exception ignored) {}
-                crosshairView = null;
-                isCrosshairShown = false;
-            }
-
-            if (activity instanceof MainActivity) {
-                ((MainActivity) activity).toggleFloatingButton(false);
-                ((MainActivity) activity).updateCrosshair("off");
-            }
-
-            if (reasonToast != null && !reasonToast.isEmpty()) {
-                Toast.makeText(context, "⛔ " + reasonToast, Toast.LENGTH_LONG).show();
-            }
-
-            if (activity instanceof MainActivity) {
-                String safeMsg = (reasonToast == null ? "Введите лицензионный ключ" : reasonToast)
-                        .replace("'", "").replace("\"", "");
-                ((MainActivity) activity).evalJsFromNotification(
-                        "try { if(typeof forceShowKickScreen==='function') forceShowKickScreen('" + safeMsg + "'); } catch(e){}"
-                );
-            }
+    function bindAllSlidersRealtime() {
+      const sensIds = ["p-sharp", "p-sx", "p-sy", "p-straight", "p-stickForce", "p-chunks"];
+      sensIds.forEach(id => {
+        const el = document.getElementById(id);
+        if (!el) return;
+        ["input", "touchmove", "pointermove"].forEach(ev => {
+          el.addEventListener(ev, () => { onSensSliderInput(); }, { passive: true });
         });
+      });
+
+      const chIds = ["p-chLen", "p-chThick", "p-chGap", "p-chDot", "p-chAlpha"];
+      chIds.forEach(id => {
+        const el = document.getElementById(id);
+        if (!el) return;
+        ["input", "touchmove", "pointermove"].forEach(ev => {
+          el.addEventListener(ev, () => { onCrosshairSliderInput(); }, { passive: true });
+        });
+      });
+
+      ["p-chOffX", "p-chOffY"].forEach(id => {
+        const el = document.getElementById(id);
+        if (!el) return;
+        ["input", "touchmove", "pointermove"].forEach(ev => {
+          el.addEventListener(ev, () => { onCrosshairOffsetInput(); }, { passive: true });
+        });
+      });
+
+      const recEl = document.getElementById("p-recoilPower");
+      if (recEl) {
+        ["input", "touchmove", "pointermove"].forEach(ev => {
+          recEl.addEventListener(ev, () => { onRecoilSliderInput(); }, { passive: true });
+        });
+      }
+
+      ["p-micGain", "p-peerVol", "p-noiseGate"].forEach(id => {
+        const el = document.getElementById(id);
+        if (!el) return;
+        ["input", "touchmove", "pointermove"].forEach(ev => {
+          el.addEventListener(ev, () => { updateVoiceDspParams(); }, { passive: true });
+        });
+      });
+
+      const ratioBox = document.getElementById("ratioPillsContainer");
+      if (ratioBox) {
+        ratioBox.addEventListener("click", (e) => {
+          const pill = e.target.closest(".choice-pill");
+          if (!pill) return;
+          const r = pill.getAttribute("data-ratio") || "4:3";
+          const w = parseInt(pill.getAttribute("data-w") || "142", 10);
+          const t = pill.getAttribute("data-title") || r;
+          selectStretchFormat(r, w, t, pill);
+        });
+      }
     }
 
-    @JavascriptInterface
-    public boolean hasOverlayPermission() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            return Settings.canDrawOverlays(context);
+    let myFriendCode = "";
+    let pendingInviteRoom = "";
+    let voiceWs = null;
+    let isVoiceConnected = false;
+    let isMicMuted = false;
+    let isSpeakerDeafened = false;
+    let voiceAudioCtx = null;
+    let micStream = null;
+    let micProcessorNode = null;
+    let silentSinkNode = null;
+    let peerMasterGainNode = null;
+    let peerCompressorNode = null;
+
+    let gateEnvelope = 0.0;
+    let gateHoldFrames = 0;
+    let dcBlockerPrevX = 0.0;
+    let dcBlockerPrevY = 0.0;
+    let prevPreEmphasis = 0.0;
+    let peerPlaybackTimes = {};
+    let speakingTimers = {};
+    let currentRoomMembers = [];
+    let squadChatHistory = [];
+
+    const THEME_PRESETS = [
+      { accent: "#f8fafc", second: "#94a3b8", rgb: "248, 250, 252", bg: "#060709", card: "rgba(18, 20, 26, 0.88)", inner: "rgba(10, 12, 16, 0.95)" },
+      { accent: "#a855f7", second: "#7c3aed", rgb: "168, 85, 247", bg: "#07050d", card: "rgba(18, 15, 28, 0.90)", inner: "rgba(11, 9, 18, 0.95)" },
+      { accent: "#60a5fa", second: "#3b82f6", rgb: "96, 165, 250", bg: "#060a10", card: "rgba(16, 23, 34, 0.90)", inner: "rgba(10, 15, 23, 0.95)" },
+      { accent: "#14e8c6", second: "#00d2ff", rgb: "20, 232, 198", bg: "#050c12", card: "rgba(11, 22, 32, 0.90)", inner: "rgba(8, 15, 24, 0.95)" },
+      { accent: "#f43f5e", second: "#be123c", rgb: "244, 63, 94", bg: "#0b0608", card: "rgba(26, 14, 19, 0.90)", inner: "rgba(16, 9, 12, 0.95)" },
+      { accent: "#10b981", second: "#059669", rgb: "16, 185, 129", bg: "#050b09", card: "rgba(12, 24, 20, 0.90)", inner: "rgba(8, 16, 13, 0.95)" }
+    ];
+
+    function showTopToast(msg) {
+      const t = document.getElementById("topToast");
+      if (!t) return;
+      t.innerText = msg;
+      t.style.display = "block";
+      clearTimeout(window._toastTimer);
+      window._toastTimer = setTimeout(() => {
+        t.style.display = "none";
+      }, 2100);
+    }
+
+    function setTheme(idx, accentHex, secondHex, rgbStr, dotEl) {
+      const p = THEME_PRESETS[idx] || THEME_PRESETS[0];
+      currentThemeIdx = idx;
+      const root = document.documentElement;
+      root.style.setProperty("--accent", accentHex || p.accent);
+      root.style.setProperty("--accent-2", secondHex || p.second);
+      root.style.setProperty("--accent-rgb", rgbStr || p.rgb);
+      root.style.setProperty("--bg-dark", p.bg);
+      root.style.setProperty("--bg-card", p.card);
+      root.style.setProperty("--bg-card-inner", p.inner);
+
+      document.querySelectorAll(".theme-dot").forEach(d => d.classList.remove("active"));
+      if (dotEl) {
+        dotEl.classList.add("active");
+      } else {
+        const targetDot = document.querySelector(`.theme-dot[data-theme="${idx}"]`);
+        if (targetDot) targetDot.classList.add("active");
+      }
+      if (isSessionAuthorized) saveStateSilent();
+    }
+
+    function switchMainTab(tabId) {
+      if (!isSessionAuthorized) {
+        window.forceShowKickScreen("Сначала активируйте лицензионный ключ!");
+        return;
+      }
+      document.querySelectorAll(".tab-view").forEach(t => t.classList.remove("active"));
+      const target = document.getElementById(tabId);
+      if (target) target.classList.add("active");
+
+      document.querySelectorAll(".nav-tab-item").forEach(item => {
+        if (item.getAttribute("data-tab") === tabId) {
+          item.classList.add("active");
+        } else {
+          item.classList.remove("active");
         }
+      });
+
+      if (tabId === "tab-voice") {
+        syncFriendsHubData(false);
+      }
+      window.scrollTo(0, 0);
+    }
+
+    function switchSensSubpanel(mode) {
+      const sensPanel = document.getElementById("subpanel-sens");
+      const chPanel = document.getElementById("subpanel-crosshair");
+      const cardSens = document.getElementById("heroCardSens");
+      const cardCh = document.getElementById("heroCardCrosshair");
+
+      if (mode === "crosshair") {
+        sensPanel.style.display = "none";
+        chPanel.style.display = "block";
+        cardSens.classList.remove("active-card");
+        cardCh.classList.add("active-card");
+        renderCrosshairCanvas();
+      } else {
+        chPanel.style.display = "none";
+        sensPanel.style.display = "block";
+        cardCh.classList.remove("active-card");
+        cardSens.classList.add("active-card");
+      }
+    }
+
+    window.handleSystemBack = function() {
+      if (!isSessionAuthorized) return false;
+      const sensTab = document.getElementById("tab-sens");
+      if (sensTab && !sensTab.classList.contains("active")) {
+        switchMainTab("tab-sens");
         return true;
-    }
-
-    @JavascriptInterface
-    public void requestOverlayPermission() {
-        mainHandler.post(() -> {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && !Settings.canDrawOverlays(context)) {
-                try {
-                    Toast.makeText(context, "Выдайте разрешение «Поверх других окон» для кнопки «T»!", Toast.LENGTH_LONG).show();
-                    Intent intent = new Intent(
-                            Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
-                            Uri.parse("package:" + context.getPackageName())
-                    );
-                    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                    context.startActivity(intent);
-                } catch (Exception e) {
-                    Intent fallback = new Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION);
-                    fallback.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                    context.startActivity(fallback);
-                }
-            } else {
-                Toast.makeText(context, "✅ Разрешение «Поверх других окон» активно!", Toast.LENGTH_SHORT).show();
-            }
-        });
-    }
-
-    @JavascriptInterface
-    public String activateStretchFloatingButton(String ratio) {
-        if (getSavedKey().isEmpty()) {
-            return "NEED_AUTH";
-        }
-        if (ratio != null && !ratio.trim().isEmpty()) {
-            this.selectedStretchRatio = ratio.trim();
-        }
-        prefs.edit().putString("saved_stretch_ratio", this.selectedStretchRatio).apply();
-        legacyPrefs.edit()
-                .putString("stretch_ratio", this.selectedStretchRatio)
-                .putBoolean("float_btn_enabled", true)
-                .apply();
-
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && !Settings.canDrawOverlays(context)) {
-            requestOverlayPermission();
-            return "NEED_PERMISSION";
-        }
-
-        TeleportEngine.requestShizukuPermissionIfNeeded();
-
-        mainHandler.post(() -> {
-            try {
-                if (activity instanceof MainActivity) {
-                    ((MainActivity) activity).toggleFloatingButton(false);
-                }
-
-                if (isStretchOverlayShown && floatingStretchBtn != null) {
-                    updateFloatingBtnAppearance();
-                    Toast.makeText(context, "⚡ Кнопка «T» обновлена на формат " + selectedStretchRatio, Toast.LENGTH_SHORT).show();
-                    return;
-                }
-
-                int overlayType = (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O)
-                        ? WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY
-                        : WindowManager.LayoutParams.TYPE_PHONE;
-
-                trashContainer = new FrameLayout(context);
-                trashPillView = new BridgeTrashView(context);
-                FrameLayout.LayoutParams pillLp = new FrameLayout.LayoutParams(dpToPx(250), dpToPx(52), Gravity.CENTER);
-                trashContainer.addView(trashPillView, pillLp);
-                trashContainer.setVisibility(View.GONE);
-
-                int trashFlags = WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE
-                        | WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE
-                        | WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL
-                        | WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN;
-                if (stealthOverlayFlag) {
-                    trashFlags |= WindowManager.LayoutParams.FLAG_SECURE;
-                }
-
-                trashParams = new WindowManager.LayoutParams(
-                        WindowManager.LayoutParams.MATCH_PARENT,
-                        dpToPx(86),
-                        overlayType,
-                        trashFlags,
-                        PixelFormat.TRANSLUCENT
-                );
-                trashParams.gravity = Gravity.BOTTOM | Gravity.CENTER_HORIZONTAL;
-                trashParams.y = dpToPx(16);
-
-                floatingStretchBtn = new TextView(context);
-                floatingStretchBtn.setText("T\n" + selectedStretchRatio);
-                floatingStretchBtn.setTextColor(Color.WHITE);
-                floatingStretchBtn.setTextSize(11.5f);
-                floatingStretchBtn.setGravity(Gravity.CENTER);
-                floatingStretchBtn.setIncludeFontPadding(false);
-
-                int sizePx = dpToPx(54);
-                int btnFlags = WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE
-                        | WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL
-                        | WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN;
-                if (stealthOverlayFlag) {
-                    btnFlags |= WindowManager.LayoutParams.FLAG_SECURE;
-                }
-
-                stretchParams = new WindowManager.LayoutParams(
-                        sizePx,
-                        sizePx,
-                        overlayType,
-                        btnFlags,
-                        PixelFormat.TRANSLUCENT
-                );
-                stretchParams.gravity = Gravity.TOP | Gravity.START;
-                stretchParams.x = dpToPx(20);
-                stretchParams.y = dpToPx(150);
-
-                isBoxBarsActive = false;
-                updateFloatingBtnAppearance();
-
-                floatingStretchBtn.setOnTouchListener(new View.OnTouchListener() {
-                    private int initialX, initialY;
-                    private float initialTouchX, initialTouchY;
-                    private boolean isDragging = false;
-                    private final int touchSlop = dpToPx(11);
-
-                    @Override
-                    public boolean onTouch(View v, MotionEvent event) {
-                        switch (event.getActionMasked()) {
-                            case MotionEvent.ACTION_DOWN:
-                                initialX = stretchParams.x;
-                                initialY = stretchParams.y;
-                                initialTouchX = event.getRawX();
-                                initialTouchY = event.getRawY();
-                                isDragging = false;
-                                v.setScaleX(0.92f);
-                                v.setScaleY(0.92f);
-                                return true;
-
-                            case MotionEvent.ACTION_MOVE:
-                                int dx = (int) (event.getRawX() - initialTouchX);
-                                int dy = (int) (event.getRawY() - initialTouchY);
-                                if (Math.abs(dx) > touchSlop || Math.abs(dy) > touchSlop) {
-                                    isDragging = true;
-                                    if (trashContainer != null && trashContainer.getVisibility() != View.VISIBLE) {
-                                        trashContainer.setAlpha(0f);
-                                        trashContainer.setVisibility(View.VISIBLE);
-                                        trashContainer.animate().alpha(1f).setDuration(130).start();
-                                    }
-                                }
-                                if (isDragging && windowManager != null && floatingStretchBtn != null) {
-                                    stretchParams.x = initialX + dx;
-                                    stretchParams.y = initialY + dy;
-                                    try {
-                                        windowManager.updateViewLayout(floatingStretchBtn, stretchParams);
-                                    } catch (Exception ignored) {}
-
-                                    if (trashPillView != null) {
-                                        trashPillView.setHovered(isTouchOverTrashZone(event.getRawX(), event.getRawY()));
-                                    }
-                                }
-                                return true;
-
-                            case MotionEvent.ACTION_UP:
-                            case MotionEvent.ACTION_CANCEL:
-                                v.setScaleX(1.0f);
-                                v.setScaleY(1.0f);
-
-                                boolean droppedInTrash = isDragging && isTouchOverTrashZone(event.getRawX(), event.getRawY());
-                                if (trashPillView != null) {
-                                    trashPillView.setHovered(false);
-                                }
-                                if (trashContainer != null) {
-                                    trashContainer.setVisibility(View.GONE);
-                                }
-
-                                if (droppedInTrash) {
-                                    removeFloatingTpButtonOnly();
-                                    return true;
-                                }
-
-                                if (!isDragging) {
-                                    toggleTwoStepStretchAction();
-                                }
-                                return true;
-                        }
-                        return false;
-                    }
-                });
-
-                windowManager.addView(trashContainer, trashParams);
-                windowManager.addView(floatingStretchBtn, stretchParams);
-                isStretchOverlayShown = true;
-                Toast.makeText(context, "⚡ Кнопка «T» (" + selectedStretchRatio + ") запущена!", Toast.LENGTH_SHORT).show();
-            } catch (Exception e) {
-                Toast.makeText(context, "Ошибка кнопки T: " + e.getMessage(), Toast.LENGTH_LONG).show();
-            }
-        });
-
-        return "OK";
-    }
-
-    private boolean isTouchOverTrashZone(float rawX, float rawY) {
-        DisplayMetrics dm = new DisplayMetrics();
-        if (windowManager != null && windowManager.getDefaultDisplay() != null) {
-            windowManager.getDefaultDisplay().getRealMetrics(dm);
-        } else {
-            dm = context.getResources().getDisplayMetrics();
-        }
-        int screenH = dm.heightPixels;
-        if (trashPillView != null && trashContainer != null && trashContainer.getVisibility() == View.VISIBLE) {
-            int[] loc = new int[2];
-            trashPillView.getLocationOnScreen(loc);
-            int left = loc[0] - dpToPx(35);
-            int top = loc[1] - dpToPx(35);
-            int right = loc[0] + trashPillView.getWidth() + dpToPx(35);
-            int bottom = loc[1] + trashPillView.getHeight() + dpToPx(45);
-            if (rawX >= left && rawX <= right && rawY >= top && rawY <= bottom) {
-                return true;
-            }
-        }
-        return rawY >= (screenH - dpToPx(105));
-    }
-
-    private void toggleTwoStepStretchAction() {
-        if (getSavedKey().isEmpty()) {
-            forceKickExpiredUser("Ключ не активен!");
-            return;
-        }
-        boolean shizukuOk = TeleportEngine.isShizukuReady() || ShizukuManager.isPermissionGranted();
-        if (!shizukuOk) {
-            Toast.makeText(context, "⚠️ Разрешите доступ в Shizuku для работы растяга!", Toast.LENGTH_SHORT).show();
-            TeleportEngine.requestShizukuPermissionIfNeeded();
-            return;
-        }
-
-        if (!isBoxBarsActive) {
-            boolean ok = TeleportEngine.applyAspectRatioStretch(selectedStretchRatio);
-            if (ok) {
-                isBoxBarsActive = true;
-                Toast.makeText(context, "⬛ Шаг 1: Полосы (" + selectedStretchRatio + ") включены! Зайди в игру и нажми «T» снова", Toast.LENGTH_SHORT).show();
-            }
-        } else {
-            TeleportEngine.releaseBoxToFullStretch();
-            isBoxBarsActive = false;
-            Toast.makeText(context, "🔥 Шаг 2: Экран растянут! Перетяни кнопку «T» вниз в корзину", Toast.LENGTH_SHORT).show();
-        }
-        updateFloatingBtnAppearance();
-    }
-
-    private void removeFloatingTpButtonOnly() {
-        mainHandler.post(() -> {
-            if (isBoxBarsActive) {
-                TeleportEngine.releaseBoxToFullStretch();
-                isBoxBarsActive = false;
-            }
-            if (floatingStretchBtn != null && windowManager != null) {
-                try { windowManager.removeView(floatingStretchBtn); } catch (Exception ignored) {}
-                floatingStretchBtn = null;
-            }
-            if (trashContainer != null && windowManager != null) {
-                try { windowManager.removeView(trashContainer); } catch (Exception ignored) {}
-                trashContainer = null;
-                trashPillView = null;
-            }
-            isStretchOverlayShown = false;
-            Toast.makeText(context, "🗑️ Кнопка «T» удалена, приятной катки!", Toast.LENGTH_SHORT).show();
-        });
-    }
-
-    private void updateFloatingBtnAppearance() {
-        if (floatingStretchBtn == null) return;
-        GradientDrawable bg = new GradientDrawable();
-        bg.setShape(GradientDrawable.OVAL);
-        if (isBoxBarsActive) {
-            bg.setColor(Color.parseColor("#E610B981"));
-            bg.setStroke(dpToPx(2), Color.WHITE);
-            floatingStretchBtn.setText("ON\n" + selectedStretchRatio);
-        } else {
-            bg.setColor(Color.parseColor("#D90B1622"));
-            bg.setStroke(dpToPx(2), Color.parseColor("#00E5FF"));
-            floatingStretchBtn.setText("T\n" + selectedStretchRatio);
-        }
-        floatingStretchBtn.setBackground(bg);
-    }
-
-    @JavascriptInterface
-    public void applyStretchDirectlyNow(String ratio) {
-        activateStretchFloatingButton(ratio);
-    }
-
-    @JavascriptInterface
-    public void resetResolution() {
-        legacyPrefs.edit().putBoolean("float_btn_enabled", false).apply();
-        mainHandler.post(() -> {
-            if (activity instanceof MainActivity) {
-                ((MainActivity) activity).toggleFloatingButton(false);
-            }
-            TeleportEngine.resetResolutionToNative();
-            isBoxBarsActive = false;
-
-            if (floatingStretchBtn != null && windowManager != null) {
-                try { windowManager.removeView(floatingStretchBtn); } catch (Exception ignored) {}
-                floatingStretchBtn = null;
-            }
-            if (trashContainer != null && windowManager != null) {
-                try { windowManager.removeView(trashContainer); } catch (Exception ignored) {}
-                trashContainer = null;
-                trashPillView = null;
-            }
-            isStretchOverlayShown = false;
-            Toast.makeText(context, "🔄 Кнопка «T» убрана, родной экран восстановлен", Toast.LENGTH_SHORT).show();
-        });
-    }
-
-    @JavascriptInterface
-    public boolean saveFullConfigJson(String jsonConfig) {
-        if (jsonConfig == null || jsonConfig.trim().isEmpty()) return false;
-        prefs.edit().putString("full_user_config_v410", jsonConfig).apply();
+      }
+      const chPanel = document.getElementById("subpanel-crosshair");
+      if (chPanel && chPanel.style.display !== "none") {
+        switchSensSubpanel("sens");
         return true;
-    }
-
-    @JavascriptInterface
-    public String loadFullConfigJson() {
-        return prefs.getString("full_user_config_v410", "");
-    }
-
-    @JavascriptInterface
-    public String setWideHitboxMode(boolean enabled, String ratio) {
-        if (getSavedKey().isEmpty()) return "NEED_AUTH";
-        String targetRatio = (ratio != null && !ratio.isEmpty()) ? ratio : "4:3";
-        prefs.edit().putBoolean("wide_hitbox_mode", enabled).apply();
-
-        if (enabled) {
-            TeleportEngine.setTouchSamplingBoost(true, 360);
-            TeleportEngine.setEnhancedRecoilFix(true, 100);
-            TeleportEngine.enableWideHitboxQuantization(true);
-            activateStretchFloatingButton(targetRatio);
-            return "OK|" + targetRatio;
-        } else {
-            TeleportEngine.enableWideHitboxQuantization(false);
-            resetResolution();
-            return "OFF";
-        }
-    }
-
-    @JavascriptInterface
-    public boolean isShizukuReady() {
-        return TeleportEngine.isShizukuReady() || ShizukuManager.isPermissionGranted();
-    }
-
-    @JavascriptInterface
-    public void healTouch() {
-        TeleportEngine.requestShizukuPermissionIfNeeded();
-        TeleportEngine.healTouchAndRestart();
-    }
-
-    @JavascriptInterface
-    public void startTeleport(String presetId) {
-        if (getSavedKey().isEmpty()) return;
-        TeleportEngine.startTeleport(presetId);
-        applyUltraProTouchMatrix(3);
-    }
-
-    @JavascriptInterface
-    public void stopTeleport() {
-        TeleportEngine.stopTeleport();
-    }
-
-    @JavascriptInterface
-    public void updateParameters(
-            double sharp, double sx, double sy,
-            int chunks, int chunkFast, double straight,
-            int stick, int grid, int pause, double accel
-    ) {
-        if (getSavedKey().isEmpty()) return;
-        TeleportEngine.updateParameters(sharp, sx, sy, chunks, chunkFast, straight, stick, grid, pause, accel);
-    }
-
-    @JavascriptInterface
-    public void setRawInputNoSmoothing(boolean enabled) {
-        if (getSavedKey().isEmpty()) return;
-        TeleportEngine.setRawInputNoSmoothing(enabled);
-        if (enabled) {
-            applyUltraProTouchMatrix(3);
-        }
-    }
-
-    @JavascriptInterface
-    public void setVulkanGpuTurbo(boolean enabled) {
-        if (getSavedKey().isEmpty()) return;
-        TeleportEngine.setVulkanGpuTurbo(enabled);
-    }
-
-    @JavascriptInterface
-    public void setNetPingStabilizer(boolean enabled) {
-        if (getSavedKey().isEmpty()) return;
-        TeleportEngine.setNetPingStabilizer(enabled);
-    }
-
-    @JavascriptInterface
-    public void setTouchSamplingBoost(boolean enabled, int hz) {
-        if (getSavedKey().isEmpty()) return;
-        TeleportEngine.setTouchSamplingBoost(enabled, hz);
-    }
-
-    @JavascriptInterface
-    public String performRamBoost() {
-        return TeleportEngine.performRamBoost(context);
-    }
-
-    @JavascriptInterface
-    public void setHzThermalGuard(boolean enabled) {
-        TeleportEngine.setHzThermalGuard(enabled);
-    }
-
-    @JavascriptInterface
-    public void setEnhancedRecoilFix(boolean enabled, int power) {
-        if (getSavedKey().isEmpty()) return;
-        TeleportEngine.setEnhancedRecoilFix(enabled, power);
-    }
-
-    @JavascriptInterface
-    public void setAutoGameDpi(boolean enabled, int dpi) {
-    }
-
-    @JavascriptInterface
-    public void setPixelDownscaleFactor(int pct) {
-        if (getSavedKey().isEmpty()) return;
-        TeleportEngine.setPixelDownscaleFactor(pct);
-    }
-
-    @JavascriptInterface
-    public String runSmartDeviceScan() {
-        return TeleportEngine.runSmartDeviceScan(context);
-    }
-
-    @JavascriptInterface
-    public void applyUltraProTouchMatrix(int modeLevel) {
-        if (getSavedKey().isEmpty()) return;
-        ProfileManager.addTeleportCountToTotal(context, 1);
-        if (!TeleportEngine.isShizukuReady() && !ShizukuManager.isPermissionGranted()) return;
-
-        int batchEv = (modeLevel >= 3) ? 20 : (modeLevel == 2 ? 32 : 50);
-        String cmd = "settings put system pointer_speed 7; "
-                + "settings put secure touch_blocking_period 0.0; "
-                + "settings put secure tap_duration_threshold 0.0; "
-                + "settings put secure ignore_repeat_click_timeout 0; "
-                + "settings put secure long_press_timeout 400; "
-                + "settings put secure multi_press_timeout 300; "
-                + "settings put system touch_sensitivity 1; "
-                + "settings put system sec_touch_sensitivity 1; "
-                + "settings put secure game_touch_sampling_rate 360; "
-                + "settings put system touch_sampling_rate 360; "
-                + "setprop debug.touch.slop 0; "
-                + "setprop view.touch_slop 0; "
-                + "setprop view.scroll_friction 0; "
-                + "setprop debug.input.touch.prediction 0; "
-                + "setprop ro.input.noresample 1; "
-                + "setprop touch.pressure.scale 0.0001; "
-                + "setprop windowsmgr.max_events_per_sec " + batchEv + "; "
-                + "setprop debug.sf.latch_unsignaled 1; "
-                + "setprop debug.sf.disable_backpressure 1;";
-        TeleportEngine.execShizukuCommand(cmd);
-    }
-
-    @JavascriptInterface
-    public String uploadCloudConfig(String title, String presetJson) {
-        String key = getSavedKey();
-        if (key.isEmpty()) return "{\"status\":\"error\",\"ok\":false,\"message\":\"Сначала активируйте ключ\"}";
-        try {
-            Callable<String> task = () -> ApiManager.uploadCloudPreset(key, getDeviceHwid(), title, presetJson);
-            Future<String> future = networkExecutor.submit(task);
-            return future.get(4000, TimeUnit.MILLISECONDS);
-        } catch (Exception e) {
-            return "{\"status\":\"error\",\"ok\":false,\"message\":\"Ошибка создания кода\"}";
-        }
-    }
-
-    @JavascriptInterface
-    public String downloadCloudConfig(String shareCode) {
-        String key = getSavedKey();
-        if (key.isEmpty()) return "{\"status\":\"error\",\"ok\":false,\"message\":\"Сначала активируйте ключ\"}";
-        try {
-            Callable<String> task = () -> ApiManager.downloadCloudPresetByCode(key, getDeviceHwid(), shareCode);
-            Future<String> future = networkExecutor.submit(task);
-            return future.get(4000, TimeUnit.MILLISECONDS);
-        } catch (Exception e) {
-            return "{\"status\":\"ok\",\"ok\":true,\"message\":\"Конфиг " + shareCode + " применён!\"}";
-        }
-    }
-
-    @JavascriptInterface
-    public void updateCrosshair(String type) {
-        if (getSavedKey().isEmpty() && !"off".equalsIgnoreCase(type)) return;
-        mainHandler.post(() -> {
-            if (activity instanceof MainActivity) {
-                ((MainActivity) activity).updateCrosshair("off");
-            }
-            if ("off".equalsIgnoreCase(type)) {
-                if (isCrosshairShown && crosshairView != null && windowManager != null) {
-                    try { windowManager.removeView(crosshairView); } catch (Exception ignored) {}
-                    crosshairView = null;
-                    isCrosshairShown = false;
-                }
-                return;
-            }
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && !Settings.canDrawOverlays(context)) {
-                requestOverlayPermission();
-                return;
-            }
-            if (!isCrosshairShown || crosshairView == null) {
-                crosshairView = new CrosshairOverlayView(context);
-                int overlayType = (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O)
-                        ? WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY
-                        : WindowManager.LayoutParams.TYPE_PHONE;
-                int flags = WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE
-                        | WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE
-                        | WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN;
-                if (stealthOverlayFlag) {
-                    flags |= WindowManager.LayoutParams.FLAG_SECURE;
-                }
-                crosshairParams = new WindowManager.LayoutParams(
-                        dpToPx(120), dpToPx(120),
-                        overlayType,
-                        flags,
-                        PixelFormat.TRANSLUCENT
-                );
-                crosshairParams.gravity = Gravity.CENTER;
-                crosshairParams.x = dpToPx(crosshairOffsetXDp);
-                crosshairParams.y = dpToPx(crosshairOffsetYDp);
-                try {
-                    windowManager.addView(crosshairView, crosshairParams);
-                    isCrosshairShown = true;
-                } catch (Exception ignored) {}
-            }
-            if (crosshairView != null) {
-                crosshairView.setCrosshairType(type);
-            }
-        });
-    }
-
-    @JavascriptInterface
-    public void setCrosshairOffset(int offsetXDp, int offsetYDp) {
-        this.crosshairOffsetXDp = Math.max(-30, Math.min(30, offsetXDp));
-        this.crosshairOffsetYDp = Math.max(-30, Math.min(30, offsetYDp));
-        mainHandler.post(() -> {
-            if (isCrosshairShown && crosshairView != null && crosshairParams != null && windowManager != null) {
-                crosshairParams.x = dpToPx(this.crosshairOffsetXDp);
-                crosshairParams.y = dpToPx(this.crosshairOffsetYDp);
-                try {
-                    windowManager.updateViewLayout(crosshairView, crosshairParams);
-                } catch (Exception ignored) {}
-            }
-        });
-    }
-
-    @JavascriptInterface
-    public void updateCrosshairStyle(int scalePct, int opacityPct, String hexColor) {
-        mainHandler.post(() -> {
-            if (crosshairView != null) {
-                crosshairView.setStyle(scalePct, opacityPct, hexColor);
-            }
-        });
-    }
-
-    @JavascriptInterface
-    public void updateCrosshairAdvanced(
-            String type, String hexColor, int opacityPct,
-            int lengthDp, int thicknessDp, int gapDp,
-            int dotSizeDp, boolean showOutline
-    ) {
-        if ("off".equalsIgnoreCase(type)) {
-            updateCrosshair("off");
-            return;
-        }
-        if (getSavedKey().isEmpty()) return;
-        updateCrosshair(type);
-        mainHandler.post(() -> {
-            if (crosshairView != null) {
-                crosshairView.setAdvancedConfig(type, hexColor, opacityPct, lengthDp, thicknessDp, gapDp, dotSizeDp, showOutline);
-            }
-        });
-    }
-
-    @JavascriptInterface
-    public void updateOverlayStealthFlag(boolean stealth) {
-        this.stealthOverlayFlag = stealth;
-        legacyPrefs.edit().putBoolean("stealth_overlays", stealth).apply();
-        mainHandler.post(() -> {
-            try {
-                if (isStretchOverlayShown && floatingStretchBtn != null && stretchParams != null) {
-                    if (stealth) stretchParams.flags |= WindowManager.LayoutParams.FLAG_SECURE;
-                    else stretchParams.flags &= ~WindowManager.LayoutParams.FLAG_SECURE;
-                    windowManager.updateViewLayout(floatingStretchBtn, stretchParams);
-                }
-                if (isCrosshairShown && crosshairView != null && crosshairParams != null) {
-                    if (stealth) crosshairParams.flags |= WindowManager.LayoutParams.FLAG_SECURE;
-                    else crosshairParams.flags &= ~WindowManager.LayoutParams.FLAG_SECURE;
-                    windowManager.updateViewLayout(crosshairView, crosshairParams);
-                }
-            } catch (Exception ignored) {}
-        });
-    }
-
-    @JavascriptInterface
-    public String getDeviceHwid() {
-        String androidId = Settings.Secure.getString(context.getContentResolver(), Settings.Secure.ANDROID_ID);
-        return (androidId != null ? androidId.trim().toLowerCase() : "39e220a438dedb68");
-    }
-
-    @JavascriptInterface
-    public String getDeviceHardwareInfo() {
-        String model = Build.MODEL;
-        int shortPx = TeleportEngine.getNativeShortSide();
-        int longPx = TeleportEngine.getNativeLongSide();
-        return model + "|" + shortPx + "x" + longPx + " (120 Гц)";
-    }
-
-    @JavascriptInterface
-    public String getSavedKey() {
-        if (!prefs.getBoolean(PREF_FIRST_LOGIN_DONE, false)) {
-            return "";
-        }
-        String savedKey = prefs.getString("saved_license_key", "");
-        return savedKey == null ? "" : savedKey.trim().toUpperCase();
-    }
-
-    @JavascriptInterface
-    public String getSavedNickname() {
-        String nick = prefs.getString("saved_player_nick", "");
-        if (nick == null || nick.trim().isEmpty()) {
-            nick = legacyPrefs.getString("nickname", "");
-        }
-        return nick == null ? "" : nick.trim();
-    }
-
-    @JavascriptInterface
-    public void savePlayerNickname(String nick) {
-        if (nick != null && !nick.trim().isEmpty()) {
-            prefs.edit().putString("saved_player_nick", nick.trim()).apply();
-            legacyPrefs.edit().putString("nickname", nick.trim()).apply();
-        }
-    }
-
-    private void markKeyActivated(String nick, String cleanKey, JSONObject serverRes) {
-        ApiManager.setSessionVerified(true);
-        getOrInitKeyDeadlineMs(cleanKey, serverRes);
-        prefs.edit()
-                .putString("saved_license_key", cleanKey)
-                .putString("backup_buyer_key", cleanKey)
-                .putBoolean(PREF_FIRST_LOGIN_DONE, true)
-                .apply();
-        legacyPrefs.edit().putString("license_key", cleanKey).apply();
-        ProfileManager.saveActivatedProfile(context, nick, cleanKey);
-    }
-
-    @JavascriptInterface
-    public String activateLicenseKey(String key) {
-        if (key == null || key.trim().length() < 5) {
-            return "ERROR|Введите лицензионный ключ из Telegram-бота";
-        }
-        final String cleanKey = key.trim().toUpperCase();
-        final String hwid = getDeviceHwid();
-        final String nick = getSavedNickname().isEmpty() ? "dare" : getSavedNickname();
-
-        try {
-            Callable<String> task = () -> ApiManager.activateLicense(cleanKey, hwid, nick);
-            Future<String> future = networkExecutor.submit(task);
-            String raw = future.get(4500, TimeUnit.MILLISECONDS);
-            JSONObject res = new JSONObject(raw);
-            String status = res.optString("status", "");
-
-            boolean blocked = res.optBoolean("blocked", false)
-                    || "expired".equalsIgnoreCase(status)
-                    || "blocked".equalsIgnoreCase(status)
-                    || "device_mismatch".equalsIgnoreCase(status);
-
-            boolean ok = (res.optBoolean("ok", false)
-                    || "ok".equalsIgnoreCase(status)
-                    || "active".equalsIgnoreCase(status)) && !blocked;
-
-            if (ok) {
-                markKeyActivated(nick, cleanKey, res);
-                String liveLabel = buildLiveSubscriptionLabel(res, cleanKey);
-                if ("EXPIRED".equals(liveLabel)) {
-                    forceKickExpiredUser("Срок действия этого ключа истёк!");
-                    return "ERROR|Срок действия этого ключа истёк!";
-                }
-                return "OK|" + liveLabel;
-            }
-
-            if (isLegacyOrOwnerKey(cleanKey)) {
-                markKeyActivated(nick, cleanKey, null);
-                String liveLabel = buildLiveSubscriptionLabel(null, cleanKey);
-                if ("EXPIRED".equals(liveLabel)) {
-                    forceKickExpiredUser("Срок действия этого ключа истёк!");
-                    return "ERROR|Срок действия этого ключа истёк!";
-                }
-                return "OK|" + liveLabel;
-            }
-
-            return "ERROR|" + res.optString("message", "Ключ не найден, истёк или привязан к другому устройству!");
-        } catch (Exception e) {
-            if (isLegacyOrOwnerKey(cleanKey)) {
-                markKeyActivated(nick, cleanKey, null);
-                String liveLabel = buildLiveSubscriptionLabel(null, cleanKey);
-                if ("EXPIRED".equals(liveLabel)) {
-                    return "ERROR|Срок действия этого ключа истёк!";
-                }
-                return "OK|" + liveLabel;
-            }
-            return "ERROR|Нет связи с сервером авторизации. Проверьте интернет!";
-        }
-    }
-
-    @JavascriptInterface
-    public String verifyLicenseKey(String key) {
-        if (!prefs.getBoolean(PREF_FIRST_LOGIN_DONE, false)) {
-            return "EXPIRED|Введите ваш логин и лицензионный ключ";
-        }
-
-        final String cleanKey = (key != null && !key.trim().isEmpty())
-                ? key.trim().toUpperCase()
-                : getSavedKey();
-
-        if (cleanKey.length() < 5) {
-            forceKickExpiredUser("Введите лицензионный ключ");
-            return "EXPIRED|Введите ключ";
-        }
-
-        String localLiveLabel = buildLiveSubscriptionLabel(null, cleanKey);
-        if ("EXPIRED".equals(localLiveLabel)) {
-            forceKickExpiredUser("Время вашей подписки истекло!");
-            return "EXPIRED|Время вашей подписки истекло!";
-        }
-
-        try {
-            Callable<String> task = () -> ApiManager.verifyLicense(cleanKey, getDeviceHwid());
-            Future<String> future = networkExecutor.submit(task);
-            String raw = future.get(4200, TimeUnit.MILLISECONDS);
-            JSONObject res = new JSONObject(raw);
-            String status = res.optString("status", "");
-
-            boolean blockedOrExpired = "expired".equalsIgnoreCase(status)
-                    || "blocked".equalsIgnoreCase(status)
-                    || "device_mismatch".equalsIgnoreCase(status)
-                    || res.optBoolean("blocked", false);
-
-            if (blockedOrExpired) {
-                if (isLegacyOrOwnerKey(cleanKey)) {
-                    ApiManager.setSessionVerified(true);
-                    return "OK|" + localLiveLabel;
-                }
-                String msg = res.optString("message", "Срок действия вашего ключа закончился!");
-                forceKickExpiredUser(msg);
-                return "EXPIRED|" + msg;
-            }
-
-            boolean ok = res.optBoolean("ok", false)
-                    || "ok".equalsIgnoreCase(status)
-                    || "active".equalsIgnoreCase(status);
-
-            if (ok) {
-                ApiManager.setSessionVerified(true);
-                String label = buildLiveSubscriptionLabel(res, cleanKey);
-                return "OK|" + label;
-            }
-
-            if ("offline".equalsIgnoreCase(status) && ApiManager.isSessionVerified()) {
-                return "OK|" + localLiveLabel;
-            }
-
-            if (isLegacyOrOwnerKey(cleanKey)) {
-                ApiManager.setSessionVerified(true);
-                return "OK|" + localLiveLabel;
-            }
-
-            String msg = res.optString("message", "Срок действия ключа истёк!");
-            forceKickExpiredUser(msg);
-            return "EXPIRED|" + msg;
-        } catch (Exception e) {
-            if (isLegacyOrOwnerKey(cleanKey) || ApiManager.isSessionVerified()) {
-                return "OK|" + localLiveLabel;
-            }
-            return "EXPIRED|Проверьте подключение к интернету";
-        }
-    }
-
-    @JavascriptInterface
-    public void logoutLicenseKey() {
-        forceKickExpiredUser("Смена логина или лицензионного ключа");
-    }
-
-    @JavascriptInterface
-    public void openTelegramBot() {
-        mainHandler.post(() -> {
-            try {
-                Intent i = new Intent(Intent.ACTION_VIEW, Uri.parse("https://t.me/SO2TeleportShop_bot"));
-                i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                context.startActivity(i);
-            } catch (Exception ignored) {}
-        });
-    }
-
-    @JavascriptInterface
-    public String requestFriendsHub(String jsonPayload) {
-        if (getSavedKey().isEmpty()) return "{\"status\":\"error\",\"ok\":false,\"message\":\"Сначала активируйте ключ\"}";
-        try {
-            Callable<String> task = () -> ApiManager.callFriendsApi(jsonPayload);
-            Future<String> future = networkExecutor.submit(task);
-            return future.get(4000, TimeUnit.MILLISECONDS);
-        } catch (Exception e) {
-            return "{\"status\":\"error\",\"ok\":false,\"message\":\"Ошибка сети\"}";
-        }
-    }
-
-    // ================= ПАНЕЛЬ УПРАВЛЕНИЯ ВОЙСОМ В ШТОРКЕ УВЕДОМЛЕНИЙ (ANDROID 8 - 17) =================
-    private static final String VOICE_CHANNEL_ID = "so2tp_voice_call_channel_v2";
-    private static final int VOICE_NOTIF_ID = 7744;
-    private static final String ACTION_VOICE_MUTE = "com.teleport.so2.ACTION_VOICE_MUTE";
-    private static final String ACTION_VOICE_DEAFEN = "com.teleport.so2.ACTION_VOICE_DEAFEN";
-    private static final String ACTION_VOICE_HANGUP = "com.teleport.so2.ACTION_VOICE_HANGUP";
-
-    private boolean isReceiverRegistered = false;
-
-    private final BroadcastReceiver voiceNotifReceiver = new BroadcastReceiver() {
-        @Override
-        public void onReceive(Context ctx, Intent intent) {
-            if (intent == null || intent.getAction() == null) return;
-            String act = intent.getAction();
-            if (ACTION_VOICE_MUTE.equals(act)) {
-                evalJsInWebView("if(window.toggleMicMute) window.toggleMicMute();");
-            } else if (ACTION_VOICE_DEAFEN.equals(act)) {
-                evalJsInWebView("if(window.toggleDeafenSpeaker) window.toggleDeafenSpeaker();");
-            } else if (ACTION_VOICE_HANGUP.equals(act)) {
-                evalJsInWebView("if(window.leaveVoiceRoom) window.leaveVoiceRoom();");
-            }
-        }
+      }
+      return false;
     };
 
-    private void evalJsInWebView(String jsCode) {
-        mainHandler.post(() -> {
-            try {
-                if (activity instanceof MainActivity) {
-                    ((MainActivity) activity).evalJsFromNotification(jsCode);
-                    return;
-                }
-                if (activity != null && !activity.isFinishing()) {
-                    View content = activity.findViewById(android.R.id.content);
-                    if (content instanceof android.view.ViewGroup) {
-                        android.view.ViewGroup vg = (android.view.ViewGroup) content;
-                        if (vg.getChildCount() > 0 && vg.getChildAt(0) instanceof android.webkit.WebView) {
-                            ((android.webkit.WebView) vg.getChildAt(0)).evaluateJavascript(jsCode, null);
-                        }
-                    }
-                }
-            } catch (Exception ignored) {}
+    // ================= ПРОФИЛЬ: ЗАГРУЗКА АВАТАРКИ С ГАЛЕРЕИ И СМЕНА НИКА =================
+    function renderAvatarIntoElement(el, avatarVal) {
+      if (!el) return;
+      const val = avatarVal || "🐺";
+      if (val.startsWith("data:image")) {
+        el.style.backgroundImage = `url(${val})`;
+        el.innerText = "";
+      } else {
+        el.style.backgroundImage = "none";
+        el.innerText = val;
+      }
+    }
+
+    function selectPresetAvatar(emoji, el) {
+      myProfileAvatar = emoji;
+      localStorage.setItem("so2tp_user_avatar_v412", emoji);
+      document.querySelectorAll("#avatarPresetsGrid .ava-preset-item").forEach(i => i.classList.remove("active"));
+      if (el) el.classList.add("active");
+      renderAvatarIntoElement(document.getElementById("profileAvatarPreview"), myProfileAvatar);
+      broadcastMyProfileToVoiceRoom();
+      showTopToast("🐺 Аватарка профиля обновлена!");
+    }
+
+    function handleCustomAvatarUpload(inputEl) {
+      const file = inputEl && inputEl.files && inputEl.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = function(evt) {
+        const img = new Image();
+        img.onload = function() {
+          const canvas = document.createElement("canvas");
+          const targetSize = 160;
+          canvas.width = targetSize;
+          canvas.height = targetSize;
+          const ctx = canvas.getContext("2d");
+
+          const minSide = Math.min(img.width, img.height);
+          const sx = (img.width - minSide) / 2;
+          const sy = (img.height - minSide) / 2;
+
+          ctx.clearRect(0, 0, targetSize, targetSize);
+          ctx.drawImage(img, sx, sy, minSide, minSide, 0, 0, targetSize, targetSize);
+
+          const dataUrl = canvas.toDataURL("image/jpeg", 0.84);
+          myProfileAvatar = dataUrl;
+          try { localStorage.setItem("so2tp_user_avatar_v412", dataUrl); } catch (e) {}
+          document.querySelectorAll("#avatarPresetsGrid .ava-preset-item").forEach(i => i.classList.remove("active"));
+          renderAvatarIntoElement(document.getElementById("profileAvatarPreview"), myProfileAvatar);
+          broadcastMyProfileToVoiceRoom();
+          showTopToast("📸 Своя аватарка идеально установлена в рамку!");
+          inputEl.value = "";
+        };
+        img.src = evt.target.result;
+      };
+      reader.readAsDataURL(file);
+    }
+
+    function saveCustomProfileNickAndAvatar() {
+      const nickInput = document.getElementById("profileNickEditInput");
+      const newNick = (nickInput ? nickInput.value : "").trim();
+      if (!newNick) {
+        showTopToast("⚠️ Введите никнейм!");
+        return;
+      }
+      document.getElementById("chipPlayerName").innerText = newNick;
+      document.getElementById("profLoginVal").innerText = newNick;
+      try {
+        localStorage.setItem("so2tp_active_nick_v412", newNick);
+        const B = getBridge();
+        if (B && B.savePlayerNickname) B.savePlayerNickname(newNick);
+      } catch (e) {}
+      broadcastMyProfileToVoiceRoom();
+      syncFriendsHubData(false);
+      showTopToast("✅ Профиль обновлён: " + newNick);
+    }
+
+    function broadcastMyProfileToVoiceRoom() {
+      const nick = document.getElementById("chipPlayerName").innerText || "Player";
+      const selfCode = myFriendCode || "SELF";
+      peerAvatarsCache[selfCode] = myProfileAvatar;
+
+      if (isVoiceConnected) {
+        currentRoomMembers = currentRoomMembers.map(m => {
+          if (m.code === selfCode || m.nick === nick) {
+            return Object.assign({}, m, { nick: nick, avatar: myProfileAvatar });
+          }
+          return m;
         });
+        renderVoiceRoomRoster(currentRoomMembers);
+        if (voiceWs && voiceWs.readyState === WebSocket.OPEN) {
+          voiceWs.send(JSON.stringify({
+            type: "profile_sync",
+            from_code: selfCode,
+            nick: nick,
+            avatar: myProfileAvatar
+          }));
+        }
+      }
     }
 
-    private void ensureVoiceNotifSetup() {
-        if (TeleportEngine.isShizukuReady() || ShizukuManager.isPermissionGranted()) {
-            String pkg = context.getPackageName();
-            TeleportEngine.execShizukuCommand(
-                    "cmd appops set " + pkg + " POST_NOTIFICATION allow; " +
-                    "pm grant " + pkg + " android.permission.POST_NOTIFICATIONS; " +
-                    "pm grant " + pkg + " android.permission.RECORD_AUDIO"
-            );
-        }
+    // ================= АВТОРИЗАЦИЯ И ПОЛЗУНОК SHIZUKU =================
+    function unlockAuthorizedSession(nick, cleanKey, subStatusText) {
+      if (!cleanKey || cleanKey.length < 5) return;
+      isSessionAuthorized = true;
+      fullLicenseKeyPlain = cleanKey;
+      isKeyRevealed = false;
 
-        if (!isReceiverRegistered) {
-            IntentFilter filter = new IntentFilter();
-            filter.addAction(ACTION_VOICE_MUTE);
-            filter.addAction(ACTION_VOICE_DEAFEN);
-            filter.addAction(ACTION_VOICE_HANGUP);
-            if (Build.VERSION.SDK_INT >= 33) {
-                context.registerReceiver(voiceNotifReceiver, filter, Context.RECEIVER_EXPORTED);
-            } else {
-                context.registerReceiver(voiceNotifReceiver, filter);
-            }
-            isReceiverRegistered = true;
-        }
+      try {
+        localStorage.setItem(CLIENT_LOGIN_GATE_KEY, "1");
+        localStorage.setItem("so2tp_active_nick_v412", nick);
+        localStorage.setItem("so2tp_active_key_v412", cleanKey);
+      } catch (e) {}
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            NotificationManager nm = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
-            if (nm != null && nm.getNotificationChannel(VOICE_CHANNEL_ID) == null) {
-                NotificationChannel ch = new NotificationChannel(
-                        VOICE_CHANNEL_ID,
-                        "SO2Teleport Discord Voice",
-                        NotificationManager.IMPORTANCE_HIGH
-                );
-                ch.setDescription("Пульт управления микрофоном и звуком в шторке");
-                ch.setSound(null, null);
-                ch.enableVibration(false);
-                ch.setLockscreenVisibility(Notification.VISIBILITY_PUBLIC);
-                nm.createNotificationChannel(ch);
-            }
-        }
+      const authEl = document.getElementById("authScreen");
+      if (authEl) {
+        authEl.classList.add("auth-screen-hidden");
+        authEl.style.setProperty("display", "none", "important");
+      }
+
+      const rootEl = document.getElementById("mainAppRoot");
+      if (rootEl) rootEl.classList.remove("auth-locked");
+
+      const dockEl = document.getElementById("bottomDockBar");
+      if (dockEl) dockEl.classList.remove("auth-locked");
+
+      document.getElementById("chipPlayerName").innerText = nick;
+      document.getElementById("profLoginVal").innerText = nick;
+      const profEdit = document.getElementById("profileNickEditInput");
+      if (profEdit) profEdit.value = nick;
+      document.getElementById("profSubVal").innerText = subStatusText;
+
+      renderAvatarIntoElement(document.getElementById("profileAvatarPreview"), myProfileAvatar);
+      updateProfileKeyDisplay();
+      checkShizukuState(false);
+
+      setTimeout(() => { syncFriendsHubData(false); }, 350);
     }
 
-    @JavascriptInterface
-    public void updateVoiceCallNotification(String roomName, boolean isMuted, boolean isDeafened) {
-        mainHandler.post(() -> {
-            try {
-                ensureVoiceNotifSetup();
-                NotificationManager nm = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
-                if (nm == null) return;
+    window.forceShowKickScreen = function(msg) {
+      isSessionAuthorized = false;
+      fullLicenseKeyPlain = "";
+      try { leaveVoiceRoom(); } catch (e) {}
+      try { localStorage.removeItem(CLIENT_LOGIN_GATE_KEY); } catch (e) {}
 
-                if (Build.VERSION.SDK_INT >= 33 && activity != null) {
-                    if (context.checkSelfPermission("android.permission.POST_NOTIFICATIONS") != PackageManager.PERMISSION_GRANTED) {
-                        activity.requestPermissions(new String[]{"android.permission.POST_NOTIFICATIONS"}, 2005);
-                    }
-                }
+      const rootEl = document.getElementById("mainAppRoot");
+      if (rootEl) rootEl.classList.add("auth-locked");
 
-                int flags = PendingIntent.FLAG_UPDATE_CURRENT;
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                    flags |= PendingIntent.FLAG_IMMUTABLE;
-                }
+      const dockEl = document.getElementById("bottomDockBar");
+      if (dockEl) dockEl.classList.add("auth-locked");
 
-                Intent openIntent = new Intent(context, MainActivity.class);
-                openIntent.setFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP | Intent.FLAG_ACTIVITY_CLEAR_TOP);
-                PendingIntent contentPi = PendingIntent.getActivity(context, 10, openIntent, flags);
+      const authEl = document.getElementById("authScreen");
+      if (authEl) {
+        authEl.classList.remove("auth-screen-hidden");
+        authEl.style.setProperty("display", "flex", "important");
+      }
 
-                PendingIntent mutePi = PendingIntent.getBroadcast(
-                        context, 11, new Intent(ACTION_VOICE_MUTE).setPackage(context.getPackageName()), flags);
-                PendingIntent deafPi = PendingIntent.getBroadcast(
-                        context, 12, new Intent(ACTION_VOICE_DEAFEN).setPackage(context.getPackageName()), flags);
-                PendingIntent hangPi = PendingIntent.getBroadcast(
-                        context, 13, new Intent(ACTION_VOICE_HANGUP).setPackage(context.getPackageName()), flags);
+      const err = document.getElementById("authErrorBox");
+      if (err) {
+        if (msg && msg.trim().length > 0) {
+          err.style.display = "block";
+          err.innerText = "⛔ " + msg;
+        } else {
+          err.style.display = "none";
+        }
+      }
 
-                String muteLabel = isMuted ? "🎤 ВКЛ МИКРО" : "🔇 ВЫКЛ МИКРО";
-                String deafLabel = isDeafened ? "🎧 ВКЛ ЗВУК" : "🔈 ВЫКЛ ЗВУК";
-                String statusSub = (isMuted ? "🔇 Микро ВЫКЛ" : "🎤 Микро ВКЛ") + "  •  " + (isDeafened ? "🔈 Звук ВЫКЛ" : "🎧 Звук ВКЛ (Krisp HD)");
+      const innerTp = document.getElementById("innerTpToggle");
+      if (innerTp) innerTp.checked = false;
 
-                Notification.Builder builder = (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O)
-                        ? new Notification.Builder(context, VOICE_CHANNEL_ID)
-                        : new Notification.Builder(context);
+      enqueueBridgeTask("stop_tp_kick", () => {
+        const B = getBridge();
+        if (B && B.stopTeleport) B.stopTeleport();
+      }, 20);
+    };
 
-                int smallIco = isMuted ? android.R.drawable.ic_lock_silent_mode : android.R.drawable.ic_btn_speak_now;
+    function logoutAndSwitchKey() {
+      const B = getBridge();
+      try { if (B && B.logoutLicenseKey) B.logoutLicenseKey(); } catch (e) {}
+      try { localStorage.removeItem("so2tp_active_key_v412"); } catch (e) {}
+      const keyEl = document.getElementById("loginKeyInput");
+      if (keyEl) keyEl.value = "";
+      window.forceShowKickScreen("Введите ваш логин и лицензионный ключ");
+    }
 
-                builder.setSmallIcon(smallIco)
-                        .setContentTitle("SO2Teleport Войс • " + (roomName == null || roomName.isEmpty() ? "SQUAD-MAIN" : roomName))
-                        .setContentText(statusSub)
-                        .setContentIntent(contentPi)
-                        .setOngoing(true)
-                        .setAutoCancel(false)
-                        .setOnlyAlertOnce(true)
-                        .addAction(new Notification.Action.Builder(android.R.drawable.ic_btn_speak_now, muteLabel, mutePi).build())
-                        .addAction(new Notification.Action.Builder(android.R.drawable.ic_lock_silent_mode_off, deafLabel, deafPi).build())
-                        .addAction(new Notification.Action.Builder(android.R.drawable.ic_menu_close_clear_cancel, "ВЫЙТИ", hangPi).build());
+    function maskKeyString(k) {
+      if (!k || k.length < 8) return "СКРЫТ 👁️";
+      return k.substring(0, 5) + "-•••-••••" + k.substring(k.length - 2) + " 👁️";
+    }
 
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                    builder.setColor(Color.parseColor("#A855F7"));
-                    builder.setCategory(Notification.CATEGORY_CALL);
-                    builder.setVisibility(Notification.VISIBILITY_PUBLIC);
-                }
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-                    builder.setForegroundServiceBehavior(Notification.FOREGROUND_SERVICE_IMMEDIATE);
-                }
+    function updateProfileKeyDisplay() {
+      const el = document.getElementById("profKeyVal");
+      if (!el) return;
+      el.innerText = isKeyRevealed ? (fullLicenseKeyPlain + " 🔓") : maskKeyString(fullLicenseKeyPlain);
+    }
 
-                nm.notify(VOICE_NOTIF_ID, builder.build());
-            } catch (Exception ignored) {}
+    function toggleRevealKey() {
+      if (!fullLicenseKeyPlain) return;
+      isKeyRevealed = !isKeyRevealed;
+      updateProfileKeyDisplay();
+      if (isKeyRevealed) {
+        if (navigator.clipboard) navigator.clipboard.writeText(fullLicenseKeyPlain);
+        showTopToast("🔑 Ключ скопирован: " + fullLicenseKeyPlain);
+      } else {
+        showTopToast("🔒 Ключ скрыт");
+      }
+    }
+
+    window.openTgBot = function() {
+      const B = getBridge();
+      try {
+        if (B && typeof B.openTelegramBot === "function") {
+          B.openTelegramBot();
+          return;
+        }
+      } catch (e) {}
+      window.open("https://t.me/SO2Teleport_bot", "_blank");
+    };
+
+    function checkShizukuState(showToastMsg) {
+      enqueueBridgeTask("check_shizuku", () => {
+        const B = getBridge();
+        const track = document.getElementById("shizukuTrack");
+        const txt = document.getElementById("shizukuText");
+        if (!track || !txt) return;
+        try {
+          if (B && typeof B.isShizukuReady === "function") {
+            const ready = B.isShizukuReady();
+            track.className = ready ? "shizuku-switch-track on" : "shizuku-switch-track";
+            txt.innerText = ready ? "Shizuku" : "Shizuku ВЫКЛ";
+            txt.style.color = ready ? "#ffffff" : "#fca5a5";
+            if (showToastMsg) {
+              if (!ready && B.healTouch) B.healTouch();
+              showTopToast(ready ? "✅ Shizuku АКТИВЕН (Рельса 950Hz готова)!" : "⚠️ Запустите и разрешите доступ в Shizuku!");
+            }
+          }
+        } catch (e) {}
+      }, 20);
+    }
+
+    window.submitKeyLogin = function() {
+      const nickEl = document.getElementById("loginNickInput");
+      const keyEl = document.getElementById("loginKeyInput");
+      const errBox = document.getElementById("authErrorBox");
+      const btn = document.getElementById("loginBtnAction");
+
+      const nickInput = (nickEl ? nickEl.value : "").trim();
+      const keyInput = (keyEl ? keyEl.value : "").trim().toUpperCase();
+
+      if (!nickInput) {
+        errBox.style.display = "block";
+        errBox.innerText = "⚠️ Введите ваш игровой логин / никнейм!";
+        return;
+      }
+      if (keyInput.length < 5) {
+        errBox.style.display = "block";
+        errBox.innerText = "⚠️ Введите лицензионный ключ!";
+        return;
+      }
+
+      errBox.style.display = "none";
+      btn.innerHTML = "<span>⏳</span><span>ПРОВЕРКА КЛЮЧА...</span>";
+
+      const B = getBridge();
+      setTimeout(async () => {
+        try {
+          if (B && typeof B.savePlayerNickname === "function") B.savePlayerNickname(nickInput);
+        } catch (e) {}
+
+        if (B && typeof B.activateLicenseKey === "function") {
+          try {
+            const res = String(B.activateLicenseKey(keyInput) || "");
+            if (res.startsWith("OK|")) {
+              btn.innerHTML = "<span>⚡</span><span>АКТИВИРОВАТЬ КЛЮЧ И ВОЙТИ</span>";
+              const subLabel = res.split("|")[1] || "АКТИВНА (PRO)";
+              unlockAuthorizedSession(nickInput, keyInput, subLabel);
+              loadSavedSettingsJson();
+              showTopToast("✅ Добро пожаловать, " + nickInput);
+              return;
+            } else if (res.length > 0) {
+              btn.innerHTML = "<span>⚡</span><span>АКТИВИРОВАТЬ КЛЮЧ И ВОЙТИ</span>";
+              errBox.style.display = "block";
+              errBox.innerText = "⛔ " + (res.includes("|") ? res.split("|")[1] : res);
+              return;
+            }
+          } catch (e) {}
+        }
+
+        try {
+          const hwid = document.getElementById("authHwidLabel").innerText || "unknown_hwid";
+          const resp = await fetch(API_HTTP_BASE + "/activate", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              key: keyInput,
+              android_id: hwid,
+              nickname: nickInput,
+              build_version: 410
+            })
+          });
+          const data = await resp.json();
+          btn.innerHTML = "<span>⚡</span><span>АКТИВИРОВАТЬ КЛЮЧ И ВОЙТИ</span>";
+
+          if (data && data.ok === true) {
+            const remDays = Math.max(1, Math.floor((data.remaining_sec || 3600) / 86400));
+            unlockAuthorizedSession(nickInput, keyInput, remDays + " дн. (PRO)");
+            loadSavedSettingsJson();
+            showTopToast("✅ Добро пожаловать, " + nickInput);
+          } else {
+            errBox.style.display = "block";
+            errBox.innerText = "⛔ " + ((data && data.message) ? data.message : "Неверный или просроченный ключ!");
+          }
+        } catch (err) {
+          btn.innerHTML = "<span>⚡</span><span>АКТИВИРОВАТЬ КЛЮЧ И ВОЙТИ</span>";
+          errBox.style.display = "block";
+          errBox.innerText = "⛔ Нет связи с сервером лицензий!";
+        }
+      }, 40);
+    };
+
+    function initApplication() {
+      if (window._so2InitDone) return;
+      window._so2InitDone = true;
+
+      isSessionAuthorized = false;
+      fullLicenseKeyPlain = "";
+
+      bindAllSlidersRealtime();
+      syncAllRangeFills();
+      renderCrosshairCanvas();
+      renderAvatarIntoElement(document.getElementById("profileAvatarPreview"), myProfileAvatar);
+      checkShizukuState(false);
+
+      setInterval(() => {
+        const voiceTab = document.getElementById("tab-voice");
+        if (!document.hidden && isSessionAuthorized && voiceTab && voiceTab.classList.contains("active")) {
+          syncFriendsHubData(false);
+        }
+      }, 9000);
+
+      const B = getBridge();
+      let hwid = "39e220a438dedb68";
+      let modelName = "SM-S938B";
+      let screenSpec = "1440x3120 (120 Гц)";
+
+      if (B) {
+        try {
+          if (typeof B.getDeviceHwid === "function") hwid = String(B.getDeviceHwid() || "39e220a438dedb68");
+        } catch (e) {}
+        try {
+          if (typeof B.getDeviceHardwareInfo === "function") {
+            const hwRaw = String(B.getDeviceHardwareInfo() || "");
+            const hwParts = hwRaw.split("|");
+            if (hwParts[0]) modelName = hwParts[0];
+            if (hwParts[1]) screenSpec = hwParts[1];
+          }
+        } catch (e) {}
+      }
+
+      document.getElementById("calibModelName").innerText = modelName;
+      document.getElementById("profModelVal").innerText = modelName;
+      document.getElementById("profScreenVal").innerText = screenSpec;
+      document.getElementById("profHwidVal").innerText = hwid;
+      document.getElementById("authHwidLabel").innerText = hwid;
+
+      let savedNick = "";
+      let savedKey = "";
+      try {
+        if (B && typeof B.getSavedNickname === "function") savedNick = String(B.getSavedNickname() || "").trim();
+        if (!savedNick) savedNick = (localStorage.getItem("so2tp_active_nick_v412") || "").trim();
+        savedKey = (localStorage.getItem("so2tp_active_key_v412") || "").trim().toUpperCase();
+      } catch (e) {}
+
+      const nickInputEl = document.getElementById("loginNickInput");
+      const keyInputEl = document.getElementById("loginKeyInput");
+      if (nickInputEl) nickInputEl.value = savedNick || "";
+      if (keyInputEl) keyInputEl.value = (savedKey && savedKey.length >= 5) ? savedKey : "";
+    }
+
+    // ================= ДРУЗЬЯ =================
+    async function callFriendsApiAsync(payloadObj) {
+      const hwid = document.getElementById("profHwidVal").innerText || "39e220a438dedb68";
+      const nick = document.getElementById("chipPlayerName").innerText || "Player";
+      const req = Object.assign({ android_id: hwid, nickname: nick }, payloadObj);
+
+      try {
+        const resp = await fetch(API_HTTP_BASE + "/friends", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(req)
         });
+        if (resp.ok) return await resp.json();
+      } catch (e) {}
+
+      const B = getBridge();
+      if (B && typeof B.requestFriendsHub === "function") {
+        try {
+          const raw = B.requestFriendsHub(JSON.stringify(req));
+          return JSON.parse(raw);
+        } catch (e) {}
+      }
+      return null;
     }
 
-    @JavascriptInterface
-    public void cancelVoiceCallNotification() {
-        mainHandler.post(() -> {
-            try {
-                NotificationManager nm = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
-                if (nm != null) nm.cancel(VOICE_NOTIF_ID);
-            } catch (Exception ignored) {}
+    async function syncFriendsHubData(showToastFeedback) {
+      const data = await callFriendsApiAsync({ action: "sync" });
+      if (!data || !data.ok) {
+        if (showToastFeedback) showTopToast("⚠️ Не удалось обновить список друзей");
+        return;
+      }
+      if (data.my_code) {
+        myFriendCode = data.my_code;
+        document.getElementById("myFriendCodeDisplay").innerText = data.my_code;
+        document.getElementById("profFriendIdVal").innerText = data.my_code + " 📋";
+        document.getElementById("chipFriendCode").innerText = "• " + data.my_code;
+      }
+      const incoming = data.incoming || [];
+      const incCard = document.getElementById("incomingRequestsCard");
+      const incList = document.getElementById("incomingRequestsList");
+      document.getElementById("incomingCountTag").innerText = incoming.length;
+      if (incoming.length > 0) {
+        incCard.style.display = "block";
+        incList.innerHTML = incoming.map(item => `
+          <div class="friend-item">
+            <div class="friend-meta">
+              <span class="online-dot on"></span>
+              <div>
+                <div style="font-size:12px; font-weight:900; color:#fff;">${escapeHtml(item.nick)}</div>
+                <div style="font-size:10px; color:var(--text-muted); font-family:monospace;">${escapeHtml(item.code)}</div>
+              </div>
+            </div>
+            <div style="display:flex; gap:5px;">
+              <button type="button" class="mini-act-btn" onclick="acceptFriendReq('${escapeHtml(item.code)}')">✅ ПРИНЯТЬ</button>
+              <button type="button" class="mini-act-btn del" onclick="removeFriendEntry('${escapeHtml(item.code)}')">✖</button>
+            </div>
+          </div>
+        `).join("");
+      } else {
+        incCard.style.display = "none";
+      }
+
+      const friends = data.friends || [];
+      const fContainer = document.getElementById("friendsContainerList");
+      if (friends.length === 0) {
+        fContainer.innerHTML = `
+          <div style="font-size:11.5px; color:var(--text-muted); text-align:center; padding:8px 0;">
+            Список друзей пуст. Скопируйте свой ID в профиле или введите ID друга выше!
+          </div>`;
+      } else {
+        fContainer.innerHTML = friends.map(f => {
+          const statusSub = f.room
+            ? `🔊 В комнате: ${escapeHtml(f.room)}`
+            : (f.online ? "🟢 В сети" : "⚪ Не в сети");
+          const roomJoinBtn = f.room
+            ? `<button type="button" class="mini-act-btn" onclick="joinSpecificRoom('${escapeHtml(f.room)}')">⚡ ВОЙТИ</button>`
+            : `<button type="button" class="mini-act-btn" onclick="inviteFriendToMyVoice('${escapeHtml(f.code)}')">📞 ПОЗВАТЬ</button>`;
+          return `
+            <div class="friend-item">
+              <div class="friend-meta">
+                <span class="online-dot ${f.online ? 'on' : ''}"></span>
+                <div>
+                  <div style="font-size:12.5px; font-weight:900; color:#fff;">${escapeHtml(f.nick)} <span style="font-size:9.5px; color:#94a3b8; font-family:monospace;">(${escapeHtml(f.code)})</span></div>
+                  <div style="font-size:10px; color:var(--text-muted);">${statusSub}</div>
+                </div>
+              </div>
+              <div style="display:flex; gap:5px;">
+                ${roomJoinBtn}
+                <button type="button" class="mini-act-btn del" onclick="removeFriendEntry('${escapeHtml(f.code)}')">🗑️</button>
+              </div>
+            </div>
+          `;
+        }).join("");
+      }
+
+      const invites = data.invites || [];
+      if (invites.length > 0) {
+        const lastInv = invites[invites.length - 1];
+        pendingInviteRoom = lastInv.room || "SQUAD-MAIN";
+        document.getElementById("invFromNick").innerText = `${lastInv.from_nick} (${lastInv.from_code})`;
+        document.getElementById("invRoomCode").innerText = pendingInviteRoom;
+        document.getElementById("voiceInviteBanner").style.display = "block";
+      }
+      if (showToastFeedback) showTopToast("✅ Список друзей обновлён!");
+    }
+
+    async function sendAddFriendAction() {
+      const val = document.getElementById("friendTargetInput").value.trim().toUpperCase();
+      if (val.length < 2) {
+        showTopToast("⚠️ Введите ID (SO2-XXXX) или ник друга!");
+        return;
+      }
+      const res = await callFriendsApiAsync({ action: "add", target_code: val });
+      if (res && res.ok) {
+        document.getElementById("friendTargetInput").value = "";
+        showTopToast("✅ " + (res.message || "Заявка отправлена!"));
+        syncFriendsHubData(false);
+      } else {
+        showTopToast("⛔ " + ((res && res.message) ? res.message : "Игрок не найден"));
+      }
+    }
+
+    async function acceptFriendReq(targetCode) {
+      const res = await callFriendsApiAsync({ action: "accept", target_code: targetCode });
+      if (res && res.ok) {
+        showTopToast("🤝 Друг добавлен в отряд!");
+        syncFriendsHubData(false);
+      }
+    }
+
+    async function removeFriendEntry(targetCode) {
+      await callFriendsApiAsync({ action: "remove", target_code: targetCode });
+      syncFriendsHubData(false);
+      showTopToast("🗑️ Контакт удалён");
+    }
+
+    async function inviteFriendToMyVoice(targetCode) {
+      let room = document.getElementById("voiceRoomInput").value.trim().toUpperCase() || "SQUAD-MAIN";
+      const res = await callFriendsApiAsync({
+        action: "invite_voice",
+        target_code: targetCode,
+        room_code: room
+      });
+      if (res && res.ok) {
+        showTopToast("📞 Приглашение отправлено!");
+        if (!isVoiceConnected) toggleVoiceConnection();
+      } else {
+        showTopToast("⚠️ Ошибка отправки приглашения");
+      }
+    }
+
+    function acceptVoiceInviteBanner() {
+      document.getElementById("voiceInviteBanner").style.display = "none";
+      if (pendingInviteRoom) {
+        switchMainTab("tab-voice");
+        joinSpecificRoom(pendingInviteRoom);
+      }
+    }
+
+    function joinSpecificRoom(roomCode) {
+      document.getElementById("voiceRoomInput").value = roomCode;
+      if (isVoiceConnected) leaveVoiceRoom();
+      setTimeout(() => { toggleVoiceConnection(); }, 120);
+    }
+
+    function setMyOwnRoomCode() {
+      const suffix = myFriendCode ? myFriendCode.slice(-4) : Math.floor(1000 + Math.random() * 9000);
+      const room = "SQUAD-" + suffix;
+      document.getElementById("voiceRoomInput").value = room;
+      document.getElementById("stageRoomNameLabel").innerText = room;
+      showTopToast("🎲 Создана комната: " + room);
+    }
+
+    function copyMyFriendCode() {
+      const code = myFriendCode || "SO2-7693";
+      if (navigator.clipboard) navigator.clipboard.writeText(code);
+      showTopToast("📋 Твой ID скопирован: " + code);
+    }
+
+    function escapeHtml(str) {
+      return String(str || "").replace(/[&<>"']/g, s => ({
+        "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"
+      }[s]));
+    }
+
+    // ================= ВОЙС БЕЗ ПРИГЛУШЕНИЯ ИГРЫ (NO DUCKING + 300% PRE-AMP + МИНИ-МЕССЕНДЖЕР) =================
+    function downsampleFloat32To16k(inputBuffer, inputSampleRate) {
+      if (inputSampleRate === TARGET_PCM_RATE) return inputBuffer;
+      const ratio = inputSampleRate / TARGET_PCM_RATE;
+      const outLength = Math.round(inputBuffer.length / ratio);
+      const result = new Float32Array(outLength);
+      let offsetResult = 0, offsetBuffer = 0;
+      while (offsetResult < outLength) {
+        const nextOffsetBuffer = Math.round((offsetResult + 1) * ratio);
+        let accum = 0, count = 0;
+        for (let i = offsetBuffer; i < nextOffsetBuffer && i < inputBuffer.length; i++) {
+          accum += inputBuffer[i];
+          count++;
+        }
+        result[offsetResult] = count > 0 ? (accum / count) : 0;
+        offsetResult++;
+        offsetBuffer = nextOffsetBuffer;
+      }
+      return result;
+    }
+
+    async function toggleVoiceConnection() {
+      if (isVoiceConnected) {
+        leaveVoiceRoom();
+        return;
+      }
+      const roomName = (document.getElementById("voiceRoomInput").value.trim() || "SQUAD-MAIN").toUpperCase();
+      document.getElementById("voiceRoomInput").value = roomName;
+      document.getElementById("stageRoomNameLabel").innerText = roomName;
+
+      try {
+        const AudioCtx = window.AudioContext || window.webkitAudioContext;
+        if (!voiceAudioCtx) {
+          voiceAudioCtx = new AudioCtx({ latencyHint: "interactive" });
+        }
+        if (voiceAudioCtx.state === "suspended") {
+          voiceAudioCtx.resume();
+        }
+
+        peerCompressorNode = voiceAudioCtx.createDynamicsCompressor();
+        peerCompressorNode.threshold.value = -20;
+        peerCompressorNode.knee.value = 10;
+        peerCompressorNode.ratio.value = 3.5;
+        peerCompressorNode.attack.value = 0.002;
+        peerCompressorNode.release.value = 0.12;
+
+        peerMasterGainNode = voiceAudioCtx.createGain();
+        const peerVolPct = parseInt(document.getElementById("p-peerVol").value, 10) || 220;
+        peerMasterGainNode.gain.value = isSpeakerDeafened ? 0.0 : ((peerVolPct / 100.0) * 1.35);
+
+        peerMasterGainNode.connect(peerCompressorNode);
+        peerCompressorNode.connect(voiceAudioCtx.destination);
+      } catch (e) {}
+
+      connectVoiceWebSocket(roomName);
+
+      try {
+        micStream = await navigator.mediaDevices.getUserMedia({
+          audio: {
+            echoCancellation: false,
+            noiseSuppression: false,
+            autoGainControl: false,
+            channelCount: 1
+          },
+          video: false
         });
+        // Принудительно удерживаем игровой аудио-режим MODE_NORMAL в AndroidBridge
+        const B = getBridge();
+        if (B && typeof B.enforceGameAudioMode === "function") {
+          B.enforceGameAudioMode();
+        }
+        setupStudioMicrophoneDsp();
+      } catch (err) {
+        showTopToast("🎧 Вы в комнате! Проверьте разрешение микрофона");
+      }
     }
 
-    private int dpToPx(int dp) {
-        return Math.round(dp * context.getResources().getDisplayMetrics().density);
+    function setupStudioMicrophoneDsp() {
+      if (!voiceAudioCtx || !micStream) return;
+      try {
+        const source = voiceAudioCtx.createMediaStreamSource(micStream);
+
+        const highPass = voiceAudioCtx.createBiquadFilter();
+        highPass.type = "highpass";
+        highPass.frequency.value = 125;
+        highPass.Q.value = 0.707;
+
+        const mudCut = voiceAudioCtx.createBiquadFilter();
+        mudCut.type = "peaking";
+        mudCut.frequency.value = 330;
+        mudCut.Q.value = 1.5;
+        mudCut.gain.value = -4.0;
+
+        const presenceBoost = voiceAudioCtx.createBiquadFilter();
+        presenceBoost.type = "peaking";
+        presenceBoost.frequency.value = 2900;
+        presenceBoost.Q.value = 1.0;
+        presenceBoost.gain.value = 5.5;
+
+        const lowPass = voiceAudioCtx.createBiquadFilter();
+        lowPass.type = "lowpass";
+        lowPass.frequency.value = 6500;
+        lowPass.Q.value = 0.707;
+
+        const compressor = voiceAudioCtx.createDynamicsCompressor();
+        compressor.threshold.value = -26;
+        compressor.knee.value = 12;
+        compressor.ratio.value = 5.0;
+        compressor.attack.value = 0.002;
+        compressor.release.value = 0.14;
+
+        const bufSize = voiceAudioCtx.sampleRate >= 44100 ? 2048 : 1024;
+        micProcessorNode = voiceAudioCtx.createScriptProcessor(bufSize, 1, 1);
+        silentSinkNode = voiceAudioCtx.createGain();
+        silentSinkNode.gain.value = 0.0;
+
+        source.connect(highPass);
+        highPass.connect(mudCut);
+        mudCut.connect(presenceBoost);
+        presenceBoost.connect(lowPass);
+        lowPass.connect(compressor);
+        compressor.connect(micProcessorNode);
+        micProcessorNode.connect(silentSinkNode);
+        silentSinkNode.connect(voiceAudioCtx.destination);
+
+        gateEnvelope = 0.0;
+        gateHoldFrames = 0;
+        dcBlockerPrevX = 0.0;
+        dcBlockerPrevY = 0.0;
+        prevPreEmphasis = 0.0;
+
+        micProcessorNode.onaudioprocess = function(e) {
+          const outBuf = e.outputBuffer.getChannelData(0);
+          for (let i = 0; i < outBuf.length; i++) outBuf[i] = 0.0;
+
+          if (!isVoiceConnected || isMicMuted || !voiceWs || voiceWs.readyState !== WebSocket.OPEN) {
+            document.getElementById("micVuMeterFill").style.width = "0%";
+            return;
+          }
+          const rawIn = e.inputBuffer.getChannelData(0);
+          const cleanIn = new Float32Array(rawIn.length);
+          let sumSq = 0.0;
+          for (let i = 0; i < rawIn.length; i++) {
+            const x = rawIn[i];
+            const y = x - dcBlockerPrevX + 0.995 * dcBlockerPrevY;
+            dcBlockerPrevX = x;
+            dcBlockerPrevY = y;
+            const emph = y - 0.20 * prevPreEmphasis;
+            prevPreEmphasis = y;
+            cleanIn[i] = emph;
+            sumSq += emph * emph;
+          }
+          const rms = Math.sqrt(sumSq / cleanIn.length);
+          document.getElementById("micVuMeterFill").style.width = Math.min(100, Math.round(rms * 380)) + "%";
+
+          const dspOn = document.getElementById("sw-dspNoiseGate").checked;
+          const gateSlider = parseInt(document.getElementById("p-noiseGate").value, 10) || 12;
+          const openThreshold = dspOn ? (0.0018 + (gateSlider / 100.0) * 0.028) : 0.0006;
+
+          if (rms >= openThreshold) gateHoldFrames = 8;
+          else if (gateHoldFrames > 0) gateHoldFrames--;
+
+          const targetGate = (gateHoldFrames > 0) ? 1.0 : 0.0;
+          if (targetGate === 0.0 && gateEnvelope < 0.002) {
+            gateEnvelope = 0.0;
+            return;
+          }
+          const downsampled = downsampleFloat32To16k(cleanIn, voiceAudioCtx.sampleRate);
+          const userBoost = ((parseInt(document.getElementById("p-micGain").value, 10) || 160) / 100.0) * 1.3;
+          const pcm16 = new Int16Array(downsampled.length);
+          for (let i = 0; i < downsampled.length; i++) {
+            gateEnvelope = gateEnvelope * 0.92 + targetGate * 0.08;
+            let sample = Math.tanh(downsampled[i] * userBoost * gateEnvelope);
+            pcm16[i] = sample < 0 ? Math.round(sample * 0x8000) : Math.round(sample * 0x7FFF);
+          }
+          const bytes = new Uint8Array(pcm16.buffer);
+          let binary = "";
+          const chunkStep = 0x4000;
+          for (let i = 0; i < bytes.length; i += chunkStep) {
+            binary += String.fromCharCode.apply(null, bytes.subarray(i, i + chunkStep));
+          }
+          voiceWs.send(JSON.stringify({ type: "audio", pcm: btoa(binary), rate: TARGET_PCM_RATE }));
+          highlightSpeakingMember(myFriendCode || "SELF");
+        };
+      } catch (e) {}
     }
 
-    private static class BridgeTrashView extends View {
-        private final Paint bgPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
-        private final Paint borderPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
-        private final Paint textPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
-        private final RectF rect = new RectF();
-        private boolean hovered = false;
+    function connectVoiceWebSocket(roomName) {
+      const hwid = document.getElementById("profHwidVal").innerText || "web_hwid";
+      const nick = document.getElementById("chipPlayerName").innerText || "Player";
+      const selfCode = myFriendCode || ("SO2-" + hwid.slice(-4).toUpperCase());
 
-        public BridgeTrashView(Context context) {
-            super(context);
-            float d = context.getResources().getDisplayMetrics().density;
-            borderPaint.setStyle(Paint.Style.STROKE);
-            borderPaint.setStrokeWidth(2f * d);
-            textPaint.setColor(Color.WHITE);
-            textPaint.setTextSize(12f * d);
-            textPaint.setFakeBoldText(true);
-            textPaint.setTextAlign(Paint.Align.CENTER);
-        }
+      peerAvatarsCache[selfCode] = myProfileAvatar;
+      isVoiceConnected = true;
+      isMicMuted = false;
+      peerPlaybackTimes = {};
 
-        public void setHovered(boolean h) {
-            if (this.hovered != h) {
-                this.hovered = h;
-                animate().scaleX(h ? 1.08f : 1.0f).scaleY(h ? 1.08f : 1.0f).setDuration(110).start();
-                invalidate();
+      document.getElementById("voiceActionRow").style.display = "none";
+      document.getElementById("voiceControlsActive").style.display = "grid";
+      document.getElementById("voiceStatePill").innerText = "🟢 В ЭФИРЕ • " + roomName;
+      document.getElementById("voiceStatePill").style.color = "#34d399";
+      document.getElementById("topVoiceLiveChip").style.display = "inline";
+
+      currentRoomMembers = [{ nick: nick, code: selfCode, muted: false, avatar: myProfileAvatar }];
+      renderVoiceRoomRoster(currentRoomMembers);
+      appendChatSystemNotice("Вы вошли в комнату " + roomName + ". Звук игры защищён от приглушения!");
+      syncDiscordControlButtons();
+
+      try {
+        voiceWs = new WebSocket(VOICE_WS_URL);
+      } catch (e) {
+        showTopToast("⚠️ Ошибка подключения к голосовому серверу");
+        return;
+      }
+
+      voiceWs.onopen = function() {
+        voiceWs.send(JSON.stringify({
+          type: "join",
+          hwid: hwid,
+          room: roomName,
+          nick: nick,
+          avatar: myProfileAvatar
+        }));
+        setTimeout(() => { broadcastMyProfileToVoiceRoom(); }, 250);
+        showTopToast("🎧 Подключено к " + roomName + " (Шторка активна)");
+      };
+
+      voiceWs.onmessage = function(evt) {
+        try {
+          const msg = JSON.parse(evt.data);
+          if (msg.type === "roster") {
+            currentRoomMembers = (msg.members || []).map(m => {
+              if (m.avatar) peerAvatarsCache[m.code] = m.avatar;
+              return Object.assign({}, m, { avatar: peerAvatarsCache[m.code] || m.avatar || "🥷" });
+            });
+            renderVoiceRoomRoster(currentRoomMembers);
+          } else if (msg.type === "profile_sync") {
+            if (msg.from_code && msg.avatar) {
+              peerAvatarsCache[msg.from_code] = msg.avatar;
+              renderVoiceRoomRoster(currentRoomMembers);
             }
-        }
-
-        @Override
-        protected void onDraw(Canvas canvas) {
-            super.onDraw(canvas);
-            float pad = 6f;
-            rect.set(pad, pad, getWidth() - pad, getHeight() - pad);
-            if (hovered) {
-                bgPaint.setColor(Color.parseColor("#EE4C0519"));
-                borderPaint.setColor(Color.parseColor("#FF2E93"));
-                textPaint.setColor(Color.parseColor("#FFE4E6"));
-            } else {
-                bgPaint.setColor(Color.parseColor("#E60B1622"));
-                borderPaint.setColor(Color.parseColor("#00E5FF"));
-                textPaint.setColor(Color.WHITE);
+          } else if (msg.type === "chat") {
+            appendSquadChatMessage(msg.nick || "Тиммейт", msg.from_code || "", msg.text || "", msg.avatar || peerAvatarsCache[msg.from_code] || "🥷", false);
+          } else if (msg.type === "audio" && msg.pcm) {
+            if (msg.pcm.startsWith("CHAT:")) {
+              const decodedChat = JSON.parse(decodeURIComponent(escape(atob(msg.pcm.substring(5)))));
+              if (decodedChat.avatar && msg.from_code) peerAvatarsCache[msg.from_code] = decodedChat.avatar;
+              appendSquadChatMessage(decodedChat.nick || "Тиммейт", msg.from_code || "", decodedChat.text || "", decodedChat.avatar || "🥷", false);
+              return;
             }
-            canvas.drawRoundRect(rect, 999f, 999f, bgPaint);
-            canvas.drawRoundRect(rect, 999f, 999f, borderPaint);
+            playIncomingPcmAudio(msg.from_code || "PEER", msg.pcm, msg.rate || TARGET_PCM_RATE);
+            highlightSpeakingMember(msg.from_code);
+          }
+        } catch (e) {}
+      };
 
-            String label = hovered ? "🗑️ ОТПУСТИТЕ ДЛЯ УДАЛЕНИЯ" : "🗑️ УДАЛИТЬ КНОПКУ «T»";
-            Paint.FontMetrics fm = textPaint.getFontMetrics();
-            float cy = getHeight() / 2f - (fm.ascent + fm.descent) / 2f;
-            canvas.drawText(label, getWidth() / 2f, cy, textPaint);
-        }
+      voiceWs.onclose = function() {
+        if (isVoiceConnected) leaveVoiceRoom();
+      };
     }
 
-    private static class CrosshairOverlayView extends View {
-        private String type = "cross";
-        private int opacity = 100;
-        private int lengthDp = 10;
-        private int thicknessDp = 3;
-        private int gapDp = 3;
-        private int dotSizeDp = 3;
-        private boolean outline = true;
-        private int color = Color.parseColor("#00E5FF");
-
-        private final Paint paint = new Paint(Paint.ANTI_ALIAS_FLAG);
-        private final Paint outlinePaint = new Paint(Paint.ANTI_ALIAS_FLAG);
-
-        public CrosshairOverlayView(Context context) {
-            super(context);
-            outlinePaint.setColor(Color.BLACK);
-            paint.setStrokeCap(Paint.Cap.ROUND);
-            outlinePaint.setStrokeCap(Paint.Cap.ROUND);
+    function playIncomingPcmAudio(speakerCode, b64Str, sampleRate) {
+      if (!voiceAudioCtx || isSpeakerDeafened) return;
+      try {
+        if (voiceAudioCtx.state === "suspended") voiceAudioCtx.resume();
+        const binary = atob(b64Str), bytes = new Uint8Array(binary.length);
+        for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+        const int16 = new Int16Array(bytes.buffer);
+        const n = int16.length;
+        if (n === 0) return;
+        const float32 = new Float32Array(n);
+        const fadeSamples = Math.min(20, Math.floor(n / 8));
+        for (let i = 0; i < n; i++) {
+          let val = (int16[i] / 32768.0) * 1.45;
+          if (val > 1.0) val = 1.0;
+          else if (val < -1.0) val = -1.0;
+          if (i < fadeSamples) val *= (i / fadeSamples);
+          else if (i >= n - fadeSamples) val *= ((n - 1 - i) / fadeSamples);
+          float32[i] = val;
         }
-
-        public void setCrosshairType(String t) {
-            this.type = t;
-            invalidate();
-        }
-
-        public void setStyle(int scalePct, int opacityPct, String hex) {
-            this.lengthDp = Math.max(3, Math.round(3 + (scalePct / 100f) * 18f));
-            this.opacity = opacityPct;
-            try { this.color = Color.parseColor(hex); } catch (Exception ignored) {}
-            invalidate();
-        }
-
-        public void setAdvancedConfig(
-                String t, String hex, int op,
-                int len, int thick, int gap, int dot, boolean out
-        ) {
-            this.type = t;
-            this.opacity = op;
-            this.lengthDp = len;
-            this.thicknessDp = thick;
-            this.gapDp = gap;
-            this.dotSizeDp = dot;
-            this.outline = out;
-            try { this.color = Color.parseColor(hex); } catch (Exception ignored) {}
-            invalidate();
-        }
-
-        @Override
-        protected void onDraw(Canvas canvas) {
-            super.onDraw(canvas);
-            if ("off".equalsIgnoreCase(type)) return;
-
-            float d = getResources().getDisplayMetrics().density;
-            float cx = getWidth() / 2f;
-            float cy = getHeight() / 2f;
-
-            float lenPx = lengthDp * d;
-            float thickPx = Math.max(1.2f, thicknessDp * 0.78f * d);
-            float gapPx = gapDp * d;
-            float dotRadPx = Math.max(1.3f, dotSizeDp * 0.68f * d);
-
-            int alpha = Math.max(25, Math.min(255, Math.round(opacity * 2.55f)));
-            paint.setColor(color);
-            paint.setAlpha(alpha);
-            paint.setStrokeWidth(thickPx);
-
-            outlinePaint.setAlpha(Math.min(220, alpha));
-            outlinePaint.setStrokeWidth(thickPx + 2.0f * d);
-
-            if ("dot".equalsIgnoreCase(type)) {
-                if (outline) {
-                    outlinePaint.setStyle(Paint.Style.FILL);
-                    canvas.drawCircle(cx, cy, dotRadPx + 1.1f * d, outlinePaint);
-                }
-                paint.setStyle(Paint.Style.FILL);
-                canvas.drawCircle(cx, cy, dotRadPx, paint);
-                return;
-            }
-
-            if ("circle".equalsIgnoreCase(type) || "circledot".equalsIgnoreCase(type)) {
-                float rad = Math.max(3.5f * d, lenPx * 0.65f);
-                if (outline) {
-                    outlinePaint.setStyle(Paint.Style.STROKE);
-                    canvas.drawCircle(cx, cy, rad, outlinePaint);
-                }
-                paint.setStyle(Paint.Style.STROKE);
-                canvas.drawCircle(cx, cy, rad, paint);
-                if ("circledot".equalsIgnoreCase(type)) {
-                    paint.setStyle(Paint.Style.FILL);
-                    canvas.drawCircle(cx, cy, dotRadPx, paint);
-                }
-                return;
-            }
-
-            if ("box".equalsIgnoreCase(type)) {
-                float half = Math.max(2.0f * d, lenPx * 0.30f);
-                if (outline) {
-                    outlinePaint.setStyle(Paint.Style.STROKE);
-                    canvas.drawRect(cx - half, cy - half, cx + half, cy + half, outlinePaint);
-                }
-                paint.setStyle(Paint.Style.STROKE);
-                canvas.drawRect(cx - half, cy - half, cx + half, cy + half, paint);
-                return;
-            }
-
-            if ("chevron".equalsIgnoreCase(type)) {
-                float arm = Math.max(3.5f * d, lenPx * 0.55f);
-                if (outline) {
-                    outlinePaint.setStyle(Paint.Style.STROKE);
-                    canvas.drawLine(cx, cy - gapPx * 0.4f, cx - arm, cy + arm, outlinePaint);
-                    canvas.drawLine(cx, cy - gapPx * 0.4f, cx + arm, cy + arm, outlinePaint);
-                }
-                paint.setStyle(Paint.Style.STROKE);
-                canvas.drawLine(cx, cy - gapPx * 0.4f, cx - arm, cy + arm, paint);
-                canvas.drawLine(cx, cy - gapPx * 0.4f, cx + arm, cy + arm, paint);
-                return;
-            }
-
-            if ("corners".equalsIgnoreCase(type)) {
-                float dist = Math.max(4f * d, (gapPx + lenPx) * 0.48f);
-                float leg = Math.max(2.5f * d, lenPx * 0.32f);
-                Paint[] layers = outline ? new Paint[]{outlinePaint, paint} : new Paint[]{paint};
-                for (Paint p : layers) {
-                    p.setStyle(Paint.Style.STROKE);
-                    canvas.drawLine(cx - dist, cy - dist, cx - dist + leg, cy - dist, p);
-                    canvas.drawLine(cx - dist, cy - dist, cx - dist, cy - dist + leg, p);
-                    canvas.drawLine(cx + dist, cy - dist, cx + dist - leg, cy - dist, p);
-                    canvas.drawLine(cx + dist, cy - dist, cx + dist, cy - dist + leg, p);
-                    canvas.drawLine(cx - dist, cy + dist, cx - dist + leg, cy + dist, p);
-                    canvas.drawLine(cx - dist, cy + dist, cx - dist, cy + dist - leg, p);
-                    canvas.drawLine(cx + dist, cy + dist, cx + dist - leg, cy + dist, p);
-                    canvas.drawLine(cx + dist, cy + dist, cx + dist, cy + dist - leg, p);
-                }
-                paint.setStyle(Paint.Style.FILL);
-                canvas.drawCircle(cx, cy, dotRadPx * 0.85f, paint);
-                return;
-            }
-
-            boolean hasTop = !"tshape".equalsIgnoreCase(type);
-            if (outline) {
-                outlinePaint.setStyle(Paint.Style.STROKE);
-                canvas.drawLine(cx - gapPx - lenPx, cy, cx - gapPx, cy, outlinePaint);
-                canvas.drawLine(cx + gapPx, cy, cx + gapPx + lenPx, cy, outlinePaint);
-                canvas.drawLine(cx, cy + gapPx, cx, cy + gapPx + lenPx, outlinePaint);
-                if (hasTop) {
-                    canvas.drawLine(cx, cy - gapPx - lenPx, cx, cy - gapPx, outlinePaint);
-                }
-            }
-
-            paint.setStyle(Paint.Style.STROKE);
-            canvas.drawLine(cx - gapPx - lenPx, cy, cx - gapPx, cy, paint);
-            canvas.drawLine(cx + gapPx, cy, cx + gapPx + lenPx, cy, paint);
-            canvas.drawLine(cx, cy + gapPx, cx, cy + gapPx + lenPx, paint);
-            if (hasTop) {
-                canvas.drawLine(cx, cy - gapPx - lenPx, cx, cy - gapPx, paint);
-            }
-
-            if ("crossdot".equalsIgnoreCase(type)) {
-                paint.setStyle(Paint.Style.FILL);
-                canvas.drawCircle(cx, cy, dotRadPx, paint);
-            }
-        }
+        const audioBuffer = voiceAudioCtx.createBuffer(1, n, sampleRate || TARGET_PCM_RATE);
+        audioBuffer.getChannelData(0).set(float32);
+        const src = voiceAudioCtx.createBufferSource();
+        src.buffer = audioBuffer;
+        src.connect(peerMasterGainNode || voiceAudioCtx.destination);
+        const now = voiceAudioCtx.currentTime;
+        let nextTime = peerPlaybackTimes[speakerCode] || 0;
+        if (nextTime < now || (nextTime - now) > 0.22) nextTime = now + 0.02;
+        src.start(nextTime);
+        peerPlaybackTimes[speakerCode] = nextTime + audioBuffer.duration;
+      } catch (e) {}
     }
-}
+
+    function highlightSpeakingMember(code) {
+      if (!code) return;
+      const el = document.getElementById("vmember-" + code);
+      if (!el) return;
+      el.classList.add("speaking");
+      clearTimeout(speakingTimers[code]);
+      speakingTimers[code] = setTimeout(() => { el.classList.remove("speaking"); }, 340);
+    }
+
+    function renderVoiceRoomRoster(members) {
+      document.getElementById("voiceRosterCount").innerText = members.length;
+      const box = document.getElementById("voiceRosterList");
+      if (!members.length) {
+        box.innerHTML = `<div style="grid-column: span 2; font-size:11.5px; color:var(--text-muted); text-align:center; padding:14px 6px;">Нет участников в комнате</div>`;
+        return;
+      }
+      const selfCode = myFriendCode || "SELF";
+      box.innerHTML = members.map(m => {
+        const isMe = (m.code === selfCode || m.nick === document.getElementById("chipPlayerName").innerText);
+        const avaVal = isMe ? myProfileAvatar : (peerAvatarsCache[m.code] || m.avatar || "🥷");
+        const avaStyle = avaVal.startsWith("data:image") ? `style="background-image:url(${avaVal})"` : "";
+        const avaText = avaVal.startsWith("data:image") ? "" : escapeHtml(avaVal);
+        return `
+          <div class="dc-user-tile" id="vmember-${escapeHtml(m.code)}">
+            <div class="dc-avatar-circle" ${avaStyle}>${avaText}</div>
+            <div class="dc-user-name">${escapeHtml(m.nick)}</div>
+            <div class="dc-user-code">${escapeHtml(m.code)}</div>
+            <div class="dc-user-status-pill ${m.muted ? 'muted' : ''}">${m.muted ? '🔇 Микро выкл' : '🎙️ В эфире'}</div>
+          </div>
+        `;
+      }).join("");
+    }
+
+    function appendChatSystemNotice(text) {
+      const box = document.getElementById("squadChatMessages");
+      if (!box) return;
+      box.innerHTML = `<div style="font-size:10.5px; color:#34d399; text-align:center; padding:4px;">⚡ ${escapeHtml(text)}</div>`;
+    }
+
+    function appendSquadChatMessage(nick, code, text, avatarVal, isMine) {
+      const box = document.getElementById("squadChatMessages");
+      if (!box) return;
+      if (squadChatHistory.length === 0) box.innerHTML = "";
+      const timeStr = new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+      squadChatHistory.push({ nick, code, text, timeStr, isMine });
+
+      const ava = avatarVal || "🐺";
+      const avaStyle = ava.startsWith("data:image") ? `style="background-image:url(${ava})"` : "";
+      const avaChar = ava.startsWith("data:image") ? "" : escapeHtml(ava);
+
+      const row = document.createElement("div");
+      row.className = "chat-msg-row" + (isMine ? " mine" : "");
+      row.innerHTML = `
+        <div class="chat-msg-ava" ${avaStyle}>${avaChar}</div>
+        <div class="chat-msg-body">
+          <div class="chat-msg-author">
+            <span>${escapeHtml(nick)}</span>
+            <span style="font-weight:600; color:#64748b;">${timeStr}</span>
+          </div>
+          <div class="chat-msg-text">${escapeHtml(text)}</div>
+        </div>
+      `;
+      box.appendChild(row);
+      box.scrollTop = box.scrollHeight;
+    }
+
+    function sendSquadChatMessage() {
+      const inp = document.getElementById("squadChatInput");
+      const text = (inp ? inp.value : "").trim();
+      if (!text) return;
+      inp.value = "";
+      dispatchChatPayload(text);
+    }
+
+    function sendQuickCallout(callText) {
+      dispatchChatPayload(callText);
+    }
+
+    function dispatchChatPayload(text) {
+      const nick = document.getElementById("chipPlayerName").innerText || "Player";
+      const selfCode = myFriendCode || "SO2-USER";
+      appendSquadChatMessage(nick, selfCode, text, myProfileAvatar, true);
+
+      if (voiceWs && voiceWs.readyState === WebSocket.OPEN) {
+        const chatPacket = btoa(unescape(encodeURIComponent(JSON.stringify({
+          nick: nick,
+          text: text,
+          avatar: myProfileAvatar.startsWith("data:image") ? "🐺" : myProfileAvatar
+        }))));
+        voiceWs.send(JSON.stringify({
+          type: "audio",
+          pcm: "CHAT:" + chatPacket,
+          rate: TARGET_PCM_RATE
+        }));
+      } else if (!isVoiceConnected) {
+        showTopToast("🎙️ Войдите в голосовой канал, чтобы тиммейты видели сообщения!");
+      }
+    }
+
+    function pushPersistentVoiceNotification() {
+      const room = (document.getElementById("voiceRoomInput").value.trim() || "SQUAD-MAIN").toUpperCase();
+      const B = getBridge();
+      if (B && typeof B.updateVoiceCallNotification === "function") {
+        try {
+          B.updateVoiceCallNotification(room, !!isMicMuted, !!isSpeakerDeafened);
+        } catch (e) {}
+      }
+    }
+
+    window.onNotificationMicToggle = function() { toggleMicMute(); };
+    window.onNotificationDeafenToggle = function() { toggleDeafenSpeaker(); };
+    window.onNotificationHangup = function() { leaveVoiceRoom(); };
+
+    function syncDiscordControlButtons() {
+      const micBtn = document.getElementById("btnMuteMic");
+      document.getElementById("icoMicState").innerText = isMicMuted ? "🔇" : "🎤";
+      document.getElementById("lblMicState").innerText = isMicMuted ? "Вкл микро" : "Микро";
+      micBtn.className = "dc-ctrl-btn " + (isMicMuted ? "muted-off" : "active-on");
+
+      const deafBtn = document.getElementById("btnDeafenAudio");
+      document.getElementById("icoDeafState").innerText = isSpeakerDeafened ? "🔈" : "🎧";
+      document.getElementById("lblDeafState").innerText = isSpeakerDeafened ? "Без звука" : "Звук";
+      deafBtn.className = "dc-ctrl-btn " + (isSpeakerDeafened ? "muted-off" : "active-on");
+
+      const krispOn = document.getElementById("sw-dspNoiseGate").checked;
+      const krispBtn = document.getElementById("btnKrispQuick");
+      document.getElementById("lblKrispState").innerText = krispOn ? "Krisp ВКЛ" : "Krisp ВЫКЛ";
+      krispBtn.className = "dc-ctrl-btn " + (krispOn ? "active-on" : "");
+
+      if (isVoiceConnected) pushPersistentVoiceNotification();
+    }
+
+    function toggleMicMute() {
+      isMicMuted = !isMicMuted;
+      syncDiscordControlButtons();
+      if (voiceWs && voiceWs.readyState === WebSocket.OPEN) {
+        voiceWs.send(JSON.stringify({ type: "mute", muted: isMicMuted }));
+      }
+      showTopToast(isMicMuted ? "🔇 Микрофон выключен" : "🎤 Микрофон включён");
+    }
+
+    function toggleDeafenSpeaker() {
+      isSpeakerDeafened = !isSpeakerDeafened;
+      if (isSpeakerDeafened && !isMicMuted) {
+        isMicMuted = true;
+        if (voiceWs && voiceWs.readyState === WebSocket.OPEN) {
+          voiceWs.send(JSON.stringify({ type: "mute", muted: true }));
+        }
+      }
+      updateVoiceDspParams();
+      syncDiscordControlButtons();
+      showTopToast(isSpeakerDeafened ? "🔈 Звук комнаты отключён" : "🎧 Звук комнаты включён");
+    }
+
+    function toggleKrispQuickBtn() {
+      const sw = document.getElementById("sw-dspNoiseGate");
+      sw.checked = !sw.checked;
+      updateVoiceDspParams();
+      syncDiscordControlButtons();
+      showTopToast(sw.checked ? "🛡️ Шумодав Krisp ВКЛ" : "Шумодав Krisp ВЫКЛ");
+    }
+
+    function leaveVoiceRoom() {
+      isVoiceConnected = false; isMicMuted = false; isSpeakerDeafened = false; peerPlaybackTimes = {};
+      if (voiceWs) { try { voiceWs.close(); } catch (e) {} voiceWs = null; }
+      if (micProcessorNode) { try { micProcessorNode.disconnect(); } catch (e) {} micProcessorNode = null; }
+      if (silentSinkNode) { try { silentSinkNode.disconnect(); } catch (e) {} silentSinkNode = null; }
+      if (micStream) { try { micStream.getTracks().forEach(t => t.stop()); } catch (e) {} micStream = null; }
+      if (voiceAudioCtx) { try { voiceAudioCtx.close(); } catch (e) {} voiceAudioCtx = null; }
+
+      document.getElementById("voiceActionRow").style.display = "block";
+      document.getElementById("voiceControlsActive").style.display = "none";
+      document.getElementById("voiceStatePill").innerText = "НЕ ПОДКЛЮЧЕН";
+      document.getElementById("voiceStatePill").style.color = "var(--text-muted)";
+      document.getElementById("topVoiceLiveChip").style.display = "none";
+      document.getElementById("micVuMeterFill").style.width = "0%";
+      document.getElementById("voiceRosterCount").innerText = "0";
+      document.getElementById("voiceRosterList").innerHTML = `<div style="grid-column: span 2; font-size:11.5px; color:var(--text-muted); text-align:center; padding:14px 6px;">Нажми «Войти в голосовой канал» — здесь появятся аватарки и ники всех участников комнаты</div>`;
+
+      try {
+        const B = getBridge();
+        if (B && typeof B.cancelVoiceCallNotification === "function") {
+          B.cancelVoiceCallNotification();
+        }
+      } catch (e) {}
+    }
+
+    function updateVoiceDspParams() {
+      const gainEl = document.getElementById("p-micGain");
+      const peerEl = document.getElementById("p-peerVol");
+      const gateEl = document.getElementById("p-noiseGate");
+      syncRangeFill(gainEl); syncRangeFill(peerEl); syncRangeFill(gateEl);
+
+      document.getElementById("v-micGain").innerText = gainEl.value + "%";
+      document.getElementById("v-peerVol").innerText = peerEl.value + "%";
+      document.getElementById("v-noiseGate").innerText = gateEl.value + "%";
+      if (peerMasterGainNode) {
+        peerMasterGainNode.gain.value = isSpeakerDeafened ? 0.0 : ((parseInt(peerEl.value, 10) / 100.0) * 1.35);
+      }
+      if (isVoiceConnected) syncDiscordControlButtons();
+    }
+
+    // ================= РАСТЯГ ЭКРАНА =================
+    function selectStretchFormat(ratio, widthPx, titleText, pillEl) {
+      currentStretch = ratio;
+      document.querySelectorAll("#ratioPillsContainer .choice-pill").forEach(p => p.classList.remove("active"));
+      if (pillEl) {
+        pillEl.classList.add("active");
+      } else {
+        const found = document.querySelector(`#ratioPillsContainer .choice-pill[data-ratio="${ratio}"]`);
+        if (found) found.classList.add("active");
+      }
+      const cornerLbl = document.getElementById("stretchCornerLabel");
+      if (cornerLbl) cornerLbl.innerText = ratio;
+
+      const box = document.getElementById("stretchPreviewBox");
+      if (box) {
+        box.style.width = (widthPx || 142) + "px";
+        box.innerText = "ФОРМАТ " + (titleText || ratio);
+      }
+      const btnTxt = document.getElementById("activateStretchBtnText");
+      if (btnTxt) btnTxt.innerText = `⚡ ЗАПУСТИТЬ «T» (${ratio})`;
+
+      if (isSessionAuthorized) saveStateSilent();
+    }
+
+    function toggleWideHitboxFeature(enabled) {
+      showTopToast(enabled ? `🎯 Широкие Хитбоксы (${currentStretch}) + Рельса 950Hz ВКЛ!` : "Широкие Хитбоксы ВЫКЛ");
+      enqueueBridgeTask("wide_hitbox", () => {
+        const B = getBridge();
+        if (B && B.setWideHitboxMode) {
+          const res = B.setWideHitboxMode(enabled, currentStretch);
+          if (res === "NEED_AUTH") window.forceShowKickScreen("Сначала активируйте ключ!");
+        }
+      }, 25);
+      saveStateSilent();
+    }
+
+    function activateFloatingTButton() {
+      showTopToast(`⚡ Запуск кнопки растяга «T» (${currentStretch})...`);
+      enqueueBridgeTask("activate_t_btn", () => {
+        const B = getBridge();
+        if (!B || !B.activateStretchFloatingButton) return;
+        const res = B.activateStretchFloatingButton(currentStretch);
+        if (res === "NEED_PERMISSION") {
+          showTopToast("🪟 Разрешите показ поверх других окон!");
+        } else if (res === "NEED_AUTH") {
+          window.forceShowKickScreen("Сначала активируйте лицензионный ключ!");
+        } else {
+          showTopToast(`⚡ Кнопка растяга «T» (${currentStretch}) запущена!`);
+        }
+      }, 20);
+    }
+
+    function removeFloatingTAndReset() {
+      document.getElementById("sw-wideHitboxMode").checked = false;
+      showTopToast("🔄 Кнопка «T» убрана, родной экран восстановлен");
+      enqueueBridgeTask("reset_res", () => {
+        const B = getBridge();
+        if (B && B.resetResolution) B.resetResolution();
+      }, 20);
+    }
+
+    // ================= СЕНСА: ЭТАЛОННЫЙ РЕЛЬСОВЫЙ ТЕЛЕПОРТ 950HZ =================
+    function toggleTeleportMaster(enabled) {
+      if (!isSessionAuthorized) {
+        window.forceShowKickScreen("Сначала активируйте ключ!");
+        return;
+      }
+      document.getElementById("innerTpToggle").checked = enabled;
+      const heading = document.getElementById("tpStatusHeading");
+      const btn = document.getElementById("mainTpActionBtn");
+
+      if (enabled) {
+        heading.innerText = "ТЕЛЕПОРТ: АКТИВЕН (950 EV/S)";
+        heading.style.color = "#34d399";
+        btn.innerText = "🛑 ОСТАНОВИТЬ 950HZ";
+        showTopToast("⚡ Рельсовый Телепорт 950Hz ВКЛЮЧЕН!");
+        enqueueBridgeTask("tp_master_toggle", () => {
+          const B = getBridge();
+          if (B) {
+            if (B.startTeleport) B.startTeleport("extreme");
+            if (B.setRawInputNoSmoothing) B.setRawInputNoSmoothing(true);
+            if (B.applyUltraProTouchMatrix) B.applyUltraProTouchMatrix(3);
+          }
+          pushEngineParametersImmediate(true);
+        }, 25);
+      } else {
+        heading.innerText = "ТЕЛЕПОРТ: ВЫКЛЮЧЕН";
+        heading.style.color = "#ffffff";
+        btn.innerText = "⚡ ВКЛЮЧИТЬ 950HZ";
+        showTopToast("🛑 Телепорт остановлен");
+        enqueueBridgeTask("tp_master_toggle", () => {
+          const B = getBridge();
+          if (B && B.stopTeleport) B.stopTeleport();
+        }, 20);
+      }
+      saveStateSilent();
+    }
+
+    function selectQuickSensMode(idx, sharp, sx, sy, straightPct, stickPct, chunksPct) {
+      for (let i = 1; i <= 3; i++) {
+        const card = document.getElementById("qmode-" + i);
+        const b = document.getElementById("qbtn-" + i);
+        if (!card || !b) continue;
+        if (i === idx) {
+          card.classList.add("active");
+          b.innerText = "АКТИВЕН";
+        } else {
+          card.classList.remove("active");
+          b.innerText = i === 1 ? "В ГОЛОВУ" : (i === 2 ? "AWM / DEAGLE" : "AKR / M4A1");
+        }
+      }
+      document.getElementById("p-sharp").value = sharp;
+      document.getElementById("p-sx").value = sx;
+      document.getElementById("p-sy").value = sy;
+      document.getElementById("p-straight").value = straightPct;
+      document.getElementById("p-stickForce").value = stickPct;
+      document.getElementById("p-chunks").value = chunksPct;
+      onSensSliderInput();
+      toggleTeleportMaster(true);
+    }
+
+    // ================= ПРИЦЕЛ =================
+    function selectCrosshairShape(shape, label, el) {
+      currentChShape = shape;
+      document.querySelectorAll("#chShapePills .choice-pill").forEach(p => p.classList.remove("active"));
+      if (el) {
+        el.classList.add("active");
+      } else {
+        const found = document.querySelector(`#chShapePills .choice-pill[data-shape="${shape}"]`);
+        if (found) found.classList.add("active");
+      }
+      document.getElementById("chCornerStatus").innerText = label || shape.toUpperCase();
+      pushCrosshairToBridgeImmediate();
+    }
+
+    function selectCrosshairColor(hex, el) {
+      currentChColor = hex;
+      document.getElementById("customChColorPicker").value = hex;
+      document.querySelectorAll("#chColorPills .choice-pill").forEach(p => p.classList.remove("active"));
+      if (el) el.classList.add("active");
+      pushCrosshairToBridgeImmediate();
+    }
+
+    function onCrosshairOffsetInput() {
+      const elX = document.getElementById("p-chOffX");
+      const elY = document.getElementById("p-chOffY");
+      syncRangeFill(elX); syncRangeFill(elY);
+      const offX = parseInt(elX.value, 10) || 0;
+      const offY = parseInt(elY.value, 10) || 0;
+      document.getElementById("v-chOffset").innerText = `${offX} / ${offY}`;
+    }
+
+    function onCrosshairOffsetCommit() {
+      onCrosshairOffsetInput();
+      const offX = parseInt(document.getElementById("p-chOffX").value, 10) || 0;
+      const offY = parseInt(document.getElementById("p-chOffY").value, 10) || 0;
+      enqueueBridgeTask("ch_offset", () => {
+        const B = getBridge();
+        if (B && B.setCrosshairOffset) B.setCrosshairOffset(offX, offY);
+      }, 25);
+      saveStateSilent();
+    }
+
+    function onCrosshairSliderInput() {
+      const elLen = document.getElementById("p-chLen");
+      const elThick = document.getElementById("p-chThick");
+      const elGap = document.getElementById("p-chGap");
+      const elDot = document.getElementById("p-chDot");
+      const elAlpha = document.getElementById("p-chAlpha");
+
+      [elLen, elThick, elGap, elDot, elAlpha].forEach(syncRangeFill);
+
+      document.getElementById("v-chLen").innerText = elLen.value + " px";
+      document.getElementById("v-chThick").innerText = elThick.value + " px";
+      document.getElementById("v-chGap").innerText = elGap.value + " px";
+      document.getElementById("v-chDot").innerText = elDot.value + " px";
+      document.getElementById("v-chAlpha").innerText = elAlpha.value + "%";
+
+      renderCrosshairCanvas();
+    }
+
+    function pushCrosshairToBridgeImmediate() {
+      onCrosshairSliderInput();
+      if (!isSessionAuthorized) return;
+
+      const len = parseInt(document.getElementById("p-chLen").value, 10) || 10;
+      const thick = parseInt(document.getElementById("p-chThick").value, 10) || 3;
+      const gap = parseInt(document.getElementById("p-chGap").value, 10) || 3;
+      const dot = parseInt(document.getElementById("p-chDot").value, 10) || 3;
+      const alpha = parseInt(document.getElementById("p-chAlpha").value, 10) || 100;
+      const outline = document.getElementById("chOutlineToggle").checked;
+
+      enqueueBridgeTask("ch_update", () => {
+        const B = getBridge();
+        if (!B) return;
+        try {
+          if (currentChShape === "off") {
+            if (typeof B.updateCrosshair === "function") B.updateCrosshair("off");
+            if (typeof B.updateCrosshairAdvanced === "function") B.updateCrosshairAdvanced("off", currentChColor, 0, 0, 0, 0, 0, false);
+          } else {
+            if (typeof B.updateCrosshairAdvanced === "function") {
+              B.updateCrosshairAdvanced(currentChShape, currentChColor, alpha, len, thick, gap, dot, outline);
+            } else if (typeof B.updateCrosshair === "function") {
+              B.updateCrosshair(currentChShape);
+            }
+          }
+        } catch (e) {}
+      }, 20);
+      saveStateSilent();
+    }
+
+    function onCrosshairSliderCommit() { pushCrosshairToBridgeImmediate(); }
+
+    function renderCrosshairCanvas() {
+      const canvas = document.getElementById("chPreviewCanvas");
+      if (!canvas) return;
+      const ctx = canvas.getContext("2d");
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      if (currentChShape === "off") {
+        ctx.fillStyle = "#8e96a8";
+        ctx.font = "bold 11px sans-serif";
+        ctx.textAlign = "center";
+        ctx.fillText("ПРИЦЕЛ ВЫКЛЮЧЕН", canvas.width / 2, canvas.height / 2 + 4);
+        return;
+      }
+      const len = parseInt(document.getElementById("p-chLen").value, 10) * 1.35;
+      const thick = parseInt(document.getElementById("p-chThick").value, 10) * 1.05;
+      const gap = parseInt(document.getElementById("p-chGap").value, 10) * 1.25;
+      const dot = parseInt(document.getElementById("p-chDot").value, 10) * 1.15;
+      const alpha = parseInt(document.getElementById("p-chAlpha").value, 10) / 100;
+      const outline = document.getElementById("chOutlineToggle").checked;
+      const cx = canvas.width / 2;
+      const cy = canvas.height / 2;
+      ctx.save();
+      ctx.globalAlpha = alpha;
+      ctx.strokeStyle = currentChColor;
+      ctx.fillStyle = currentChColor;
+      ctx.lineWidth = thick;
+      ctx.lineCap = "round";
+      if (currentChShape === "dot") {
+        if (outline) {
+          ctx.fillStyle = "#000";
+          ctx.beginPath(); ctx.arc(cx, cy, dot + 1.5, 0, Math.PI * 2); ctx.fill();
+          ctx.fillStyle = currentChColor;
+        }
+        ctx.beginPath(); ctx.arc(cx, cy, dot, 0, Math.PI * 2); ctx.fill();
+        ctx.restore();
+        return;
+      }
+      if (currentChShape === "circle" || currentChShape === "circledot") {
+        const rad = Math.max(4, len * 0.65);
+        if (outline) {
+          ctx.strokeStyle = "#000"; ctx.lineWidth = thick + 2.0;
+          ctx.beginPath(); ctx.arc(cx, cy, rad, 0, Math.PI * 2); ctx.stroke();
+          ctx.strokeStyle = currentChColor; ctx.lineWidth = thick;
+        }
+        ctx.beginPath(); ctx.arc(cx, cy, rad, 0, Math.PI * 2); ctx.stroke();
+        if (currentChShape === "circledot") {
+          ctx.beginPath(); ctx.arc(cx, cy, dot, 0, Math.PI * 2); ctx.fill();
+        }
+        ctx.restore();
+        return;
+      }
+      if (currentChShape === "box") {
+        const boxHalf = Math.max(2.5, len * 0.30);
+        if (outline) {
+          ctx.strokeStyle = "#000"; ctx.lineWidth = thick + 2.0;
+          ctx.strokeRect(cx - boxHalf, cy - boxHalf, boxHalf * 2, boxHalf * 2);
+          ctx.strokeStyle = currentChColor; ctx.lineWidth = thick;
+        }
+        ctx.strokeRect(cx - boxHalf, cy - boxHalf, boxHalf * 2, boxHalf * 2);
+        ctx.restore();
+        return;
+      }
+      if (currentChShape === "chevron") {
+        const arm = Math.max(4, len * 0.55);
+        const drawChev = (col, w) => {
+          ctx.strokeStyle = col; ctx.lineWidth = w;
+          ctx.beginPath();
+          ctx.moveTo(cx - arm, cy + arm);
+          ctx.lineTo(cx, cy - gap * 0.4);
+          ctx.lineTo(cx + arm, cy + arm);
+          ctx.stroke();
+        };
+        if (outline) drawChev("#000", thick + 2.0);
+        drawChev(currentChColor, thick);
+        ctx.restore();
+        return;
+      }
+      if (currentChShape === "corners") {
+        const dist = Math.max(5, (gap + len) * 0.48);
+        const leg = Math.max(3, len * 0.32);
+        const drawCorners = (col, w) => {
+          ctx.strokeStyle = col; ctx.lineWidth = w;
+          ctx.beginPath();
+          ctx.moveTo(cx - dist, cy - dist + leg); ctx.lineTo(cx - dist, cy - dist); ctx.lineTo(cx - dist + leg, cy - dist);
+          ctx.moveTo(cx + dist - leg, cy - dist); ctx.lineTo(cx + dist, cy - dist); ctx.lineTo(cx + dist, cy - dist + leg);
+          ctx.moveTo(cx - dist, cy + dist - leg); ctx.lineTo(cx - dist, cy + dist); ctx.lineTo(cx - dist + leg, cy + dist);
+          ctx.moveTo(cx + dist - leg, cy + dist); ctx.lineTo(cx + dist, cy + dist); ctx.lineTo(cx + dist, cy + dist - leg);
+          ctx.stroke();
+        };
+        if (outline) drawCorners("#000", thick + 2.0);
+        drawCorners(currentChColor, thick);
+        ctx.beginPath(); ctx.arc(cx, cy, dot * 0.85, 0, Math.PI * 2); ctx.fill();
+        ctx.restore();
+        return;
+      }
+      const drawCrossArms = (col, w) => {
+        ctx.strokeStyle = col; ctx.lineWidth = w;
+        ctx.beginPath();
+        ctx.moveTo(cx - gap - len, cy); ctx.lineTo(cx - gap, cy);
+        ctx.moveTo(cx + gap, cy); ctx.lineTo(cx + gap + len, cy);
+        ctx.moveTo(cx, cy + gap); ctx.lineTo(cx, cy + gap + len);
+        if (currentChShape !== "tshape") {
+          ctx.moveTo(cx, cy - gap - len); ctx.lineTo(cx, cy - gap);
+        }
+        ctx.stroke();
+      };
+      if (outline) drawCrossArms("#000000", thick + 2.0);
+      drawCrossArms(currentChColor, thick);
+      if (currentChShape === "crossdot") {
+        ctx.beginPath(); ctx.arc(cx, cy, dot, 0, Math.PI * 2); ctx.fill();
+      }
+      ctx.restore();
+    }
+
+    // ================= БУСТЕРЫ И ПАРАМЕТРЫ ДВИЖКА =================
+    function runRamCleanBoost() {
+      showTopToast("🧹 Очистка оперативной памяти и кэша...");
+      enqueueBridgeTask("ram_boost", () => {
+        const B = getBridge();
+        if (B && B.performRamBoost) {
+          const res = String(B.performRamBoost() || "");
+          const parts = res.split("|");
+          if (parts.length >= 3) {
+            document.getElementById("ramResultDesc").innerHTML =
+              `✅ Освобождено <b style="color:#fff">+${parts[0]} МБ</b> ОЗУ! Свободно: <b>${parts[1]} из ${parts[2]} МБ</b>.`;
+          }
+        }
+      }, 25);
+    }
+
+    function pickSamplingHz(hz, el) {
+      currentSamplingHz = hz;
+      document.querySelectorAll("#hzPills .choice-pill").forEach(p => p.classList.remove("active"));
+      if (el) el.classList.add("active");
+      applyTouchSamplingBoost();
+    }
+
+    function applyTouchSamplingBoost() {
+      const enabled = document.getElementById("sw-touchBoost").checked;
+      showTopToast(enabled ? `⚡ Разгон тача ${currentSamplingHz} Гц активен!` : "Разгон тача выключен");
+      enqueueBridgeTask("touch_sampling", () => {
+        const B = getBridge();
+        if (B && B.setTouchSamplingBoost) B.setTouchSamplingBoost(enabled, currentSamplingHz);
+      }, 30);
+      saveStateSilent();
+    }
+
+    function toggleVulkanGpu(enabled) {
+      showTopToast(enabled ? "🔥 Vulkan GPU Turbo ВКЛ!" : "Vulkan GPU Turbo ВЫКЛ");
+      enqueueBridgeTask("vulkan_gpu", () => {
+        const B = getBridge();
+        if (B && B.setVulkanGpuTurbo) B.setVulkanGpuTurbo(enabled);
+      }, 30);
+      saveStateSilent();
+    }
+
+    function toggleNetPingBoost(enabled) {
+      showTopToast(enabled ? "📡 Стабилизатор пинга ВКЛ!" : "Стабилизатор пинга ВЫКЛ");
+      enqueueBridgeTask("net_ping", () => {
+        const B = getBridge();
+        if (B && B.setNetPingStabilizer) B.setNetPingStabilizer(enabled);
+      }, 30);
+      saveStateSilent();
+    }
+
+    function toggleCold120Guard(enabled) {
+      showTopToast(enabled ? "❄️ Фиксация 120 Гц включена!" : "Фиксация 120 Гц выключена");
+      enqueueBridgeTask("cold_120", () => {
+        const B = getBridge();
+        if (B && B.setHzThermalGuard) B.setHzThermalGuard(enabled);
+      }, 30);
+      saveStateSilent();
+    }
+
+    function onRecoilSliderInput() {
+      const el = document.getElementById("p-recoilPower");
+      syncRangeFill(el);
+      document.getElementById("v-recoilPower").innerText = el.value + "%";
+    }
+
+    function onRecoilSliderCommit() {
+      onRecoilSliderInput();
+      const enabled = document.getElementById("sw-recoilPro").checked;
+      const power = parseInt(document.getElementById("p-recoilPower").value, 10);
+      enqueueBridgeTask("recoil_pro", () => {
+        const B = getBridge();
+        if (B && B.setEnhancedRecoilFix) B.setEnhancedRecoilFix(enabled, power);
+      }, 30);
+      saveStateSilent();
+    }
+
+    function toggleStealthModeFlag(enabled) {
+      showTopToast(enabled ? "🕵️ Невидимость на записи (Stealth) ВКЛ" : "Stealth режим ВЫКЛ");
+      enqueueBridgeTask("stealth_flag", () => {
+        const B = getBridge();
+        if (B && B.updateOverlayStealthFlag) B.updateOverlayStealthFlag(enabled);
+      }, 30);
+      saveStateSilent();
+    }
+
+    function onZeroDelayToggle(enabled) {
+      showTopToast(enabled ? "⚡ Чистый линейный ввод 950Hz ВКЛ!" : "Линейный ввод 950Hz ВЫКЛ");
+      enqueueBridgeTask("zero_delay_toggle", () => {
+        const B = getBridge();
+        if (B && B.setRawInputNoSmoothing) B.setRawInputNoSmoothing(enabled);
+        if (enabled && B && B.applyUltraProTouchMatrix) B.applyUltraProTouchMatrix(3);
+      }, 30);
+      saveStateSilent();
+    }
+
+    function onSensSliderInput() {
+      const elSharp = document.getElementById("p-sharp");
+      const elSx = document.getElementById("p-sx");
+      const elSy = document.getElementById("p-sy");
+      const elStraight = document.getElementById("p-straight");
+      const elStick = document.getElementById("p-stickForce");
+      const elChunks = document.getElementById("p-chunks");
+
+      [elSharp, elSx, elSy, elStraight, elStick, elChunks].forEach(syncRangeFill);
+
+      document.getElementById("v-sharp").innerText = parseFloat(elSharp.value).toFixed(1);
+      document.getElementById("v-sx").innerText = parseFloat(elSx.value).toFixed(1);
+      document.getElementById("v-sy").innerText = parseFloat(elSy.value).toFixed(1);
+      document.getElementById("v-straight").innerText = elStraight.value + "%";
+      document.getElementById("v-stickForce").innerText = elStick.value + "%";
+      document.getElementById("v-chunks").innerText = elChunks.value + "%";
+    }
+
+    function onSensSliderCommit() {
+      onSensSliderInput();
+      pushEngineParametersImmediate(false);
+    }
+
+    function pushEngineParametersImmediate(forcePush) {
+      if (!isSessionAuthorized) return;
+      const sharp = parseFloat(document.getElementById("p-sharp").value);
+      const sx = parseFloat(document.getElementById("p-sx").value);
+      const sy = parseFloat(document.getElementById("p-sy").value);
+      const chunks = parseInt(document.getElementById("p-chunks").value, 10);
+      const chunkFast = 100;
+      const straight = parseFloat(document.getElementById("p-straight").value) / 10.0;
+      const stick = parseInt(document.getElementById("p-stickForce").value, 10);
+      const grid = 256;
+      const pause = 0;
+      const accel = 12.0;
+
+      const sig = [sharp, sx, sy, chunks, chunkFast, straight, stick, grid, pause, accel].join("|");
+      if (!forcePush && sig === lastEngineSignature) return;
+      lastEngineSignature = sig;
+
+      enqueueBridgeTask("update_engine_params", () => {
+        const B = getBridge();
+        if (B && B.updateParameters) {
+          B.updateParameters(sharp, sx, sy, chunks, chunkFast, straight, stick, grid, pause, accel);
+        }
+      }, 35);
+      saveStateSilent();
+    }
+
+    function runSmartScanAndApply() {
+      document.getElementById("zeroDelaySnapToggle").checked = true;
+      selectQuickSensMode(1, 12.0, 12.0, 8.8, 100, 98, 100);
+      let model = document.getElementById("profModelVal").innerText || "SM-S938B";
+      showTopToast("🔥 Эталон Рельсы 950Hz включен для " + model + "!");
+    }
+
+    function testOneMmFlickResponse() {
+      showTopToast("⚡ Сенсор сброшен и откалиброван на 950 ev/s!");
+      enqueueBridgeTask("heal_touch", () => {
+        const B = getBridge();
+        if (B && B.healTouch) B.healTouch();
+        if (B && B.applyUltraProTouchMatrix) B.applyUltraProTouchMatrix(3);
+      }, 25);
+    }
+
+    function loadFullProBundle(title, sharp, sx, sy, straightPct, stickPct, chunksPct, chShape, chHex, recoilOn) {
+      document.getElementById("p-sharp").value = sharp;
+      document.getElementById("p-sx").value = sx;
+      document.getElementById("p-sy").value = sy;
+      document.getElementById("p-straight").value = straightPct;
+      document.getElementById("p-stickForce").value = stickPct;
+      document.getElementById("p-chunks").value = chunksPct;
+      document.getElementById("zeroDelaySnapToggle").checked = true;
+      document.getElementById("sw-recoilPro").checked = !!recoilOn;
+
+      onSensSliderInput();
+      onRecoilSliderCommit();
+
+      currentChColor = chHex;
+      document.getElementById("customChColorPicker").value = chHex;
+      selectCrosshairShape(chShape, chShape.toUpperCase(), null);
+
+      toggleTeleportMaster(true);
+      showTopToast("🔥 Сборка «" + title + "» включена!");
+    }
+
+    function encodePortableConfigToken() {
+      const c = collectFullConfig();
+      const packed = [
+        c.theme, c.tpOn ? 1 : 0, c.zeroSnap ? 1 : 0,
+        c.sharp, c.sx, c.sy, c.straight, c.stickForce, c.chunks,
+        c.stretch, c.chShape, c.chColor,
+        c.chLen, c.chThick, c.chGap, c.chDot, c.chAlpha,
+        c.chOffX, c.chOffY, c.chOutline ? 1 : 0,
+        c.recoilPower
+      ].join("|");
+      return "SO2-" + btoa(unescape(encodeURIComponent(packed))).replace(/=+$/, "");
+    }
+
+    function generateAndCopyShareLink() {
+      const portableCode = encodePortableConfigToken();
+      const shareUrl = "https://so2tp.cfg/?c=" + portableCode;
+      document.getElementById("shareLinkInput").value = shareUrl;
+      if (navigator.clipboard) navigator.clipboard.writeText(shareUrl);
+      showTopToast("🔗 Код конфига скопирован!");
+    }
+
+    function collectFullConfig() {
+      return {
+        theme: currentThemeIdx,
+        tpOn: document.getElementById("innerTpToggle").checked,
+        zeroSnap: document.getElementById("zeroDelaySnapToggle").checked,
+        sharp: document.getElementById("p-sharp").value,
+        sx: document.getElementById("p-sx").value,
+        sy: document.getElementById("p-sy").value,
+        straight: document.getElementById("p-straight").value,
+        stickForce: document.getElementById("p-stickForce").value,
+        chunks: document.getElementById("p-chunks").value,
+        stretch: currentStretch,
+        chShape: currentChShape,
+        chColor: currentChColor,
+        chLen: document.getElementById("p-chLen").value,
+        chThick: document.getElementById("p-chThick").value,
+        chGap: document.getElementById("p-chGap").value,
+        chDot: document.getElementById("p-chDot").value,
+        chAlpha: document.getElementById("p-chAlpha").value,
+        chOffX: document.getElementById("p-chOffX").value,
+        chOffY: document.getElementById("p-chOffY").value,
+        chOutline: document.getElementById("chOutlineToggle").checked,
+        recoilPower: document.getElementById("p-recoilPower").value,
+        vulkan: document.getElementById("sw-vulkanGpu").checked,
+        netBoost: document.getElementById("sw-netStabilizer").checked,
+        stealth: document.getElementById("sw-stealthMode").checked
+      };
+    }
+
+    function applyFullConfigObject(c) {
+      if (!c) return;
+      if (c.theme !== undefined && THEME_PRESETS[c.theme]) {
+        const t = THEME_PRESETS[c.theme];
+        setTheme(c.theme, t.accent, t.second, t.rgb, null);
+      }
+      const sliders = ["sharp", "sx", "sy", "straight", "stickForce", "chunks", "chLen", "chThick", "chGap", "chDot", "chAlpha", "chOffX", "chOffY", "recoilPower"];
+      sliders.forEach(k => {
+        if (c[k] !== undefined && document.getElementById("p-" + k)) {
+          document.getElementById("p-" + k).value = c[k];
+        }
+      });
+      if (c.zeroSnap !== undefined) document.getElementById("zeroDelaySnapToggle").checked = !!c.zeroSnap;
+      if (c.chOutline !== undefined) document.getElementById("chOutlineToggle").checked = !!c.chOutline;
+      if (c.vulkan !== undefined) document.getElementById("sw-vulkanGpu").checked = !!c.vulkan;
+      if (c.netBoost !== undefined) document.getElementById("sw-netStabilizer").checked = !!c.netBoost;
+      if (c.stealth !== undefined) document.getElementById("sw-stealthMode").checked = !!c.stealth;
+      if (c.stretch) selectStretchFormat(c.stretch, 142, c.stretch, null);
+      if (c.chColor) currentChColor = c.chColor;
+      if (c.chShape) selectCrosshairShape(c.chShape, c.chShape.toUpperCase(), null);
+
+      onSensSliderInput();
+      onCrosshairOffsetInput();
+      onCrosshairSliderInput();
+      onRecoilSliderInput();
+      syncAllRangeFills();
+
+      if (c.tpOn !== undefined && isSessionAuthorized) {
+        toggleTeleportMaster(!!c.tpOn);
+      }
+    }
+
+    function saveStateSilent() {
+      if (!isSessionAuthorized) return;
+      try {
+        localStorage.setItem("so2tp_backup_v410", JSON.stringify(collectFullConfig()));
+      } catch (e) {}
+    }
+
+    function saveCurrentConfigNow() {
+      if (!isSessionAuthorized) return;
+      const jsonStr = JSON.stringify(collectFullConfig());
+      try { localStorage.setItem("so2tp_backup_v410", jsonStr); } catch (e) {}
+      enqueueBridgeTask("save_cfg_json", () => {
+        const B = getBridge();
+        if (B && B.saveFullConfigJson) B.saveFullConfigJson(jsonStr);
+      }, 30);
+      pushEngineParametersImmediate(true);
+      showTopToast("💾 Все настройки успешно сохранены!");
+    }
+
+    function loadSavedSettingsJson() {
+      try {
+        let raw = localStorage.getItem("so2tp_backup_v410");
+        if (!raw) {
+          const B = getBridge();
+          if (B && B.loadFullConfigJson) raw = B.loadFullConfigJson();
+        }
+        if (raw) applyFullConfigObject(JSON.parse(raw));
+      } catch (e) {}
+    }
+
+    window.selectStretchFormat = selectStretchFormat;
+    window.activateFloatingTButton = activateFloatingTButton;
+    window.removeFloatingTAndReset = removeFloatingTAndReset;
+    window.toggleWideHitboxFeature = toggleWideHitboxFeature;
+    window.toggleVoiceConnection = toggleVoiceConnection;
+    window.toggleMicMute = toggleMicMute;
+    window.toggleDeafenSpeaker = toggleDeafenSpeaker;
+    window.leaveVoiceRoom = leaveVoiceRoom;
+
+    if (document.readyState === "loading") {
+      document.addEventListener("DOMContentLoaded", initApplication);
+    } else {
+      initApplication();
+    }
+  </script>
+</body>
+</html>
