@@ -108,18 +108,21 @@ public class TeleportEngine {
         int targetLong = baseLong;
         String clean = (ratio == null) ? "4:3" : ratio.trim();
 
-        // Если выбран режим СТЯГА (SHRINK-85, SHRINK-90, SHRINK-95, 21:9, 24:10)
+        // НАСТОЯЩИЙ СТЯГ (Уменьшаем короткую сторону на Шаге 1 -> на Шаге 2 игра стягивается с огромным FOV и малой отдачей)
         if (clean.startsWith("SHRINK-")) {
-            int pct = 90;
+            int pct = 85;
             try { pct = Integer.parseInt(clean.replace("SHRINK-", "")); } catch (Exception ignored) {}
-            pct = Math.max(75, Math.min(98, pct));
+            pct = Math.max(70, Math.min(95, pct));
             targetShort = Math.round(baseShort * (pct / 100f));
-            targetLong = Math.round(baseLong * (pct / 100f));
+            targetLong = baseLong;
         } else if ("21:9".equals(clean)) {
-            targetLong = Math.round(baseShort * 2.333f);
+            targetShort = Math.round(baseShort * 0.82f);
+            targetLong = baseLong;
         } else if ("24:10".equals(clean)) {
-            targetLong = Math.round(baseShort * 2.40f);
+            targetShort = Math.round(baseShort * 0.76f);
+            targetLong = baseLong;
         } else {
+            // КЛАССИЧЕСКИЙ РАСТЯГ (Уменьшаем длинную сторону на Шаге 1)
             switch (clean) {
                 case "1:1":
                     targetLong = Math.round(baseShort * 1.12f);
@@ -151,8 +154,6 @@ public class TeleportEngine {
         if ((targetShort & 1) == 1) targetShort++;
         if ((targetLong & 1) == 1) targetLong++;
 
-        // Принудительно включаем поддержку изменения геометрии для Android 15/16/17 (One UI 8/9),
-        // чтобы система НИКОГДА не писала "Приложение не поддерживает"
         String cmd = "settings put global force_resizable_activities 1; "
                 + "settings put global enable_freeform_support 1; "
                 + "settings put global enable_non_resizable_multi_window 1; "
