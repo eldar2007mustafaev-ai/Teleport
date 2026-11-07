@@ -336,15 +336,10 @@ public class AndroidBridge {
             if (am != null) {
                 am.setMode(AudioManager.MODE_NORMAL);
                 am.setSpeakerphoneOn(true);
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                    am.abandonAudioFocusRequest(null);
-                } else {
-                    am.abandonAudioFocus(null);
-                }
+                am.abandonAudioFocus(null);
             }
         } catch (Throwable ignored) {}
 
-        // Повторяем сброс MODE_IN_COMMUNICATION -> MODE_NORMAL через 400 и 1200 мс после старта WebRTC/getUserMedia
         mainHandler.postDelayed(() -> {
             try {
                 AudioManager am = (AudioManager) context.getSystemService(Context.AUDIO_SERVICE);
@@ -614,12 +609,12 @@ public class AndroidBridge {
             boolean ok = TeleportEngine.applyAspectRatioStretch(selectedStretchRatio);
             if (ok) {
                 isBoxBarsActive = true;
-                Toast.makeText(context, "⬛ Шаг 1: Полосы (" + selectedStretchRatio + ") включены! Зайди в игру и нажми «T» снова", Toast.LENGTH_SHORT).show();
+                Toast.makeText(context, "⬛ Шаг 1 (" + selectedStretchRatio + ") включен! Зайди в игру и нажми «T» снова", Toast.LENGTH_SHORT).show();
             }
         } else {
             TeleportEngine.releaseBoxToFullStretch();
             isBoxBarsActive = false;
-            Toast.makeText(context, "🔥 Шаг 2: Экран растянут! Перетяни кнопку «T» вниз в корзину", Toast.LENGTH_SHORT).show();
+            Toast.makeText(context, "🔥 Шаг 2: Экран применён! Перетяни кнопку «T» вниз в корзину", Toast.LENGTH_SHORT).show();
         }
         updateFloatingBtnAppearance();
     }
@@ -807,50 +802,11 @@ public class AndroidBridge {
         return TeleportEngine.runSmartDeviceScan(context);
     }
 
-    // Синхронизировано с эталонным Рельсовым Телепортом 950 Гц из TeleportEngine.java
     @JavascriptInterface
     public void applyUltraProTouchMatrix(int modeLevel) {
         if (getSavedKey().isEmpty()) return;
         ProfileManager.addTeleportCountToTotal(context, 1);
         TeleportEngine.startTeleport("extreme");
-    }
-
-
-        int hardChunkEv = (modeLevel >= 3) ? 7 : (modeLevel == 2 ? 10 : 14);
-        String cmd = "cmd game mode performance com.axlebolt.standoff2; "
-                + "settings put system pointer_speed 7; "
-                + "settings put secure touch_blocking_period 0.0; "
-                + "settings put secure tap_duration_threshold 0.0; "
-                + "settings put secure ignore_repeat_click_timeout 0; "
-                + "settings put secure long_press_timeout 260; "
-                + "settings put secure multi_press_timeout 230; "
-                + "settings put system touch_sensitivity 1; "
-                + "settings put system sec_touch_sensitivity 1; "
-                + "settings put secure game_touch_sampling_rate 360; "
-                + "settings put system touch_sampling_rate 360; "
-                + "setprop debug.touch.slop 0; "
-                + "setprop view.touch_slop 0; "
-                + "setprop view.scroll_friction 0; "
-                + "setprop view.minimum_fling_velocity 64000; "
-                + "setprop view.maximum_fling_velocity 180000; "
-                + "setprop ro.max.fling_velocity 180000; "
-                + "setprop ro.min.fling_velocity 64000; "
-                + "setprop debug.input.touch.prediction 0; "
-                + "setprop persist.sys.touch.prediction 0; "
-                + "setprop ro.input.noresample 1; "
-                + "setprop debug.input.NeedResample 0; "
-                + "setprop touch.Temporality.filter 0; "
-                + "setprop touch.InitialJump 1; "
-                + "setprop touch.gestureMode spots; "
-                + "setprop ro.min_pointer_dur 26; "
-                + "setprop touch.pressure.scale 0.0001; "
-                + "setprop windowsmgr.max_events_per_sec " + hardChunkEv + "; "
-                + "setprop debug.sf.latch_unsignaled 1; "
-                + "setprop debug.sf.disable_backpressure 1; "
-                + "setprop debug.sf.early_phase_offset_ns -10000000; "
-                + "setprop debug.sf.early_app_phase_offset_ns -10000000; "
-                + "setprop debug.sf.high_fps_early_phase_offset_ns -10000000;";
-        TeleportEngine.execShizukuCommand(cmd);
     }
 
     @JavascriptInterface
@@ -916,8 +872,8 @@ public class AndroidBridge {
                         PixelFormat.TRANSLUCENT
                 );
                 crosshairParams.gravity = Gravity.CENTER;
-                crosshairParams.x = dpToPx(crosshairOffsetXDp);
-                crosshairParams.y = dpToPx(crosshairOffsetYDp);
+                crosshairParams.x = 0;
+                crosshairParams.y = 0;
                 try {
                     windowManager.addView(crosshairView, crosshairParams);
                     isCrosshairShown = true;
@@ -931,12 +887,12 @@ public class AndroidBridge {
 
     @JavascriptInterface
     public void setCrosshairOffset(int offsetXDp, int offsetYDp) {
-        this.crosshairOffsetXDp = Math.max(-30, Math.min(30, offsetXDp));
-        this.crosshairOffsetYDp = Math.max(-30, Math.min(30, offsetYDp));
+        this.crosshairOffsetXDp = 0;
+        this.crosshairOffsetYDp = 0;
         mainHandler.post(() -> {
             if (isCrosshairShown && crosshairView != null && crosshairParams != null && windowManager != null) {
-                crosshairParams.x = dpToPx(this.crosshairOffsetXDp);
-                crosshairParams.y = dpToPx(this.crosshairOffsetYDp);
+                crosshairParams.x = 0;
+                crosshairParams.y = 0;
                 try {
                     windowManager.updateViewLayout(crosshairView, crosshairParams);
                 } catch (Exception ignored) {}
@@ -1204,7 +1160,7 @@ public class AndroidBridge {
         }
     }
 
-    // ================= ПАНЕЛЬ УПРАВЛЕНИЯ ВОЙСОМ В ШТОРКЕ УВЕДОМЛЕНИЙ (КАК В DISCORD) =================
+    // ================= ПАНЕЛЬ УПРАВЛЕНИЯ ВОЙСОМ В ШТОРКЕ УВЕДОМЛЕНИЙ =================
     private static final String VOICE_CHANNEL_ID = "so2tp_voice_call_channel_v2";
     private static final int VOICE_NOTIF_ID = 7744;
     private static final String ACTION_VOICE_MUTE = "com.teleport.so2.ACTION_VOICE_MUTE";
