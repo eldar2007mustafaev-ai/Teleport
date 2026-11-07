@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
-  <title>SO2Teleport PRO V410 RAIL 950HZ</title>
+  <title>SO2Teleport PRO V410 CHUNK ENGINE V2</title>
   <style>
     :root {
       --bg-dark: #060709;
@@ -51,7 +51,7 @@
       display: none !important;
     }
 
-    /* ================= ТЁМНЫЕ СТЕКЛЯННЫЕ ПОЛЯ ВВОДА (БЕЗ БЕЛОГО ФОНА) ================= */
+    /* ================= ТЁМНЫЕ СТЕКЛЯННЫЕ ПОЛЯ ВВОДА ================= */
     .cyber-field {
       width: 100%;
       background: linear-gradient(180deg, rgba(8, 10, 15, 0.96) 0%, rgba(14, 17, 24, 0.96) 100%) !important;
@@ -551,7 +551,7 @@
       margin-bottom: 5px;
     }
     .param-name {
-      font-size: 11.5px;
+      font-size: 11px;
       font-weight: 800;
       color: #f8fafc;
     }
@@ -588,10 +588,10 @@
       cursor: pointer;
     }
     .param-sub {
-      font-size: 9.5px;
+      font-size: 9.2px;
       color: var(--text-muted);
       margin-top: 3px;
-      line-height: 1.25;
+      line-height: 1.22;
     }
 
     .quick-modes-compact {
@@ -1113,7 +1113,7 @@
   </style>
 </head>
 <body>
-  <div id="topToast">⚡ РЕЛЬСОВЫЙ ТЕЛЕПОРТ 950Hz активирован!</div>
+  <div id="topToast">⚡ КУСКОВОЙ ТЕЛЕПОРТ V2 активирован!</div>
 
   <!-- ВСПЛЫВАЮЩЕЕ ПРИГЛАШЕНИЕ В ВОЙС -->
   <div id="voiceInviteBanner">
@@ -1131,7 +1131,7 @@
 
   <!-- ================= 1. ЭКРАН АВТОРИЗАЦИИ ================= -->
   <div id="authScreen">
-    <div class="auth-top-pill">QUANTUM ENGINE V410 • RAIL TELEPORT 950HZ</div>
+    <div class="auth-top-pill">QUANTUM ENGINE V410 • HARD CHUNKS 25.0X</div>
     <div class="auth-hero-title">SO2Teleport <span>PRO</span></div>
 
     <div class="auth-glass-card">
@@ -1198,7 +1198,7 @@
       </div>
     </header>
 
-    <!-- ================= ВКЛАДКА 1: СЕНСЫ ================= -->
+    <!-- ================= ВКЛАДКА 1: СЕНСЫ (КУСКОВОЙ ТЕЛЕПОРТ V2 + КАСТОМНЫЙ ПРИЦЕЛ) ================= -->
     <div id="tab-sens" class="tab-view active">
       <div class="hero-cards-grid">
         <div class="hero-neon-card active-card" id="heroCardSens" onclick="switchSensSubpanel('sens')">
@@ -1208,8 +1208,8 @@
               <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
             </svg>
           </div>
-          <div class="hero-card-title">Телепорт Сенсы</div>
-          <div class="hero-card-sub">Эталонная рельса 950Hz</div>
+          <div class="hero-card-title">Кусковой Телепорт</div>
+          <div class="hero-card-sub">Жёсткие куски 25.0x</div>
         </div>
 
         <div class="hero-neon-card" id="heroCardCrosshair" onclick="switchSensSubpanel('crosshair')">
@@ -1229,13 +1229,13 @@
         </div>
       </div>
 
-      <!-- ПОДПАНЕЛЬ 1А: РЕЛЬСОВЫЙ ТЕЛЕПОРТ 950HZ -->
+      <!-- ПОДПАНЕЛЬ 1А: ВСЕ 10 ПОЛЗУНКОВ КУСКОВОГО ТЕЛЕПОРТА V2 -->
       <div id="subpanel-sens">
         <div class="section-card">
           <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:9px;">
             <div>
               <div id="tpStatusHeading" style="font-size:13.5px; font-weight:900; color:#fff;">ТЕЛЕПОРТ: ВЫКЛЮЧЕН</div>
-              <div style="font-size:10px; color:var(--text-muted);">Linear Rail 950 ev/s (<span id="calibModelName" style="color:#fff;">SM-S938B</span>)</div>
+              <div style="font-size:10px; color:var(--text-muted);">Hard-Chunk Engine 25.0x (<span id="calibModelName" style="color:#fff;">SM-S938B</span>)</div>
             </div>
             <label class="ios-switch">
               <input type="checkbox" id="innerTpToggle" onchange="toggleTeleportMaster(this.checked)" />
@@ -1244,38 +1244,38 @@
           </div>
           <div style="display:grid; grid-template-columns:1.15fr 1fr; gap:7px;">
             <button type="button" class="btn-main" id="mainTpActionBtn" style="padding:10px 8px; font-size:11px;" onclick="toggleTeleportMaster(!document.getElementById('innerTpToggle').checked)">
-              ⚡ ВКЛЮЧИТЬ 950HZ
+              ⚡ ВКЛЮЧИТЬ КУСКИ
             </button>
             <button type="button" class="btn-dark" style="padding:10px 8px; font-size:10.5px; border-color:#fff;" onclick="runSmartScanAndApply()">
-              🔥 ЭТАЛОН РЕЛЬСЫ
+              🔥 ЖЁСТКИЕ КУСКИ 25X
             </button>
           </div>
         </div>
 
         <div class="section-card">
           <div class="section-header-tag">
-            <span>БЫСТРЫЕ ПРОФИЛИ РЕЛЬСОВОГО ТЕЛЕПОРТА</span>
-            <span>950 EV/S</span>
+            <span>БЫСТРЫЕ РЕЖИМЫ ЖЁСТКИХ КУСКОВ</span>
+            <span>CHUNK V2</span>
           </div>
           <div class="quick-modes-compact">
-            <div class="qmode-chip active" id="qmode-1" onclick="selectQuickSensMode(1, 12.0, 12.0, 8.8, 100, 98, 100)">
-              <div class="qmode-chip-title">⚡ 1. РЕЛЬСА 950</div>
+            <div class="qmode-chip active" id="qmode-1" onclick="selectQuickSensMode(1, 24.0, 24.0, 12.5, 100, 100, 100, 200, 480, 22, 24.0)">
+              <div class="qmode-chip-title">⚡ 1. МЯСОРУБКА</div>
               <div class="qmode-chip-sub" id="qbtn-1">АКТИВЕН</div>
             </div>
-            <div class="qmode-chip" id="qmode-2" onclick="selectQuickSensMode(2, 12.0, 12.0, 10.5, 95, 100, 100)">
-              <div class="qmode-chip-title">💀 2. ФЛИК 360°</div>
+            <div class="qmode-chip" id="qmode-2" onclick="selectQuickSensMode(2, 25.0, 25.0, 15.0, 95, 100, 100, 200, 512, 16, 25.0)">
+              <div class="qmode-chip-title">💀 2. КУСКИ 360°</div>
               <div class="qmode-chip-sub" id="qbtn-2">AWM / DEAGLE</div>
             </div>
-            <div class="qmode-chip" id="qmode-3" onclick="selectQuickSensMode(3, 11.2, 11.2, 7.8, 100, 96, 100)">
-              <div class="qmode-chip-title">🎯 3. ЛАЗЕР</div>
+            <div class="qmode-chip" id="qmode-3" onclick="selectQuickSensMode(3, 19.5, 20.0, 10.5, 100, 98, 90, 175, 320, 20, 19.0)">
+              <div class="qmode-chip-title">🎯 3. РЕЛЬСА-КУСК</div>
               <div class="qmode-chip-sub" id="qbtn-3">AKR / M4A1</div>
             </div>
           </div>
 
           <div class="param-box" style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
             <div style="padding-right:8px;">
-              <div class="param-name">⚡ Чистый линейный ввод (No Resample 950Hz)</div>
-              <div class="param-sub">Прицел идёт от старта до точки остановки ровно по линии без дёрганий</div>
+              <div class="param-name">⚡ Квантование свайпа кусками (Hard Chunk Jump)</div>
+              <div class="param-sub">Копит дельту пальца и выстреливает прицел резкими кусками без плавания</div>
             </div>
             <label class="ios-switch">
               <input type="checkbox" id="zeroDelaySnapToggle" checked onchange="onZeroDelayToggle(this.checked)" />
@@ -1283,58 +1283,91 @@
             </label>
           </div>
 
+          <!-- 10 ПОЛЗУНКОВ КУСКОВОГО ДВИЖКА -->
           <div class="compact-sliders-grid">
             <div class="param-box">
               <div>
-                <div class="param-top"><span class="param-name">1. Импульс рывка</span><span id="v-sharp" class="param-val-pill">12.0</span></div>
-                <input type="range" id="p-sharp" min="1" max="12" step="0.1" value="12.0" oninput="onSensSliderInput()" onchange="onSensSliderCommit()" />
+                <div class="param-top"><span class="param-name">1. Куски телепорта</span><span id="v-chunks" class="param-val-pill">100%</span></div>
+                <input type="range" id="p-chunks" min="10" max="100" step="2" value="100" oninput="onSensSliderInput()" onchange="onSensSliderCommit()" />
               </div>
-              <div class="param-sub">Молниеносный скачок без плавания</div>
+              <div class="param-sub">Сила разбивки флика на резкие куски</div>
             </div>
 
             <div class="param-box">
               <div>
-                <div class="param-top"><span class="param-name">2. Ось X (Гориз.)</span><span id="v-sx" class="param-val-pill">12.0</span></div>
-                <input type="range" id="p-sx" min="1" max="12" step="0.1" value="12.0" oninput="onSensSliderInput()" onchange="onSensSliderCommit()" />
+                <div class="param-top"><span class="param-name">2. Скорость кусков</span><span id="v-chunkFast" class="param-val-pill">200%</span></div>
+                <input type="range" id="p-chunkFast" min="50" max="200" step="5" value="200" oninput="onSensSliderInput()" onchange="onSensSliderCommit()" />
               </div>
-              <div class="param-sub">Скорость разворота 90–180°</div>
+              <div class="param-sub">Скорость пролёта каждого куска</div>
             </div>
 
             <div class="param-box">
               <div>
-                <div class="param-top"><span class="param-name">3. Ось Y (Верт.)</span><span id="v-sy" class="param-val-pill">8.8</span></div>
-                <input type="range" id="p-sy" min="1" max="12" step="0.1" value="8.8" oninput="onSensSliderInput()" onchange="onSensSliderCommit()" />
+                <div class="param-top"><span class="param-name">3. Импульс рывка</span><span id="v-sharp" class="param-val-pill">24.0</span></div>
+                <input type="range" id="p-sharp" min="1" max="25" step="0.5" value="24.0" oninput="onSensSliderInput()" onchange="onSensSliderCommit()" />
               </div>
-              <div class="param-sub">Фиксация уровня головы</div>
+              <div class="param-sub">Мощность стартового прыжка (до 25.0)</div>
             </div>
 
             <div class="param-box">
               <div>
-                <div class="param-top"><span class="param-name">4. Горизонт</span><span id="v-straight" class="param-val-pill">100%</span></div>
+                <div class="param-top"><span class="param-name">4. Множитель Ускор.</span><span id="v-accel" class="param-val-pill">24.0x</span></div>
+                <input type="range" id="p-accel" min="1" max="25" step="0.5" value="24.0" oninput="onSensSliderInput()" onchange="onSensSliderCommit()" />
+              </div>
+              <div class="param-sub">Взрывное ускорение дельты при флике</div>
+            </div>
+
+            <div class="param-box">
+              <div>
+                <div class="param-top"><span class="param-name">5. Сенса X (Гориз.)</span><span id="v-sx" class="param-val-pill">24.0</span></div>
+                <input type="range" id="p-sx" min="1" max="25" step="0.5" value="24.0" oninput="onSensSliderInput()" onchange="onSensSliderCommit()" />
+              </div>
+              <div class="param-sub">Разворот на 180° одним коротким рывком</div>
+            </div>
+
+            <div class="param-box">
+              <div>
+                <div class="param-top"><span class="param-name">6. Сенса Y (Верт.)</span><span id="v-sy" class="param-val-pill">12.5</span></div>
+                <input type="range" id="p-sy" min="1" max="25" step="0.5" value="12.5" oninput="onSensSliderInput()" onchange="onSensSliderCommit()" />
+              </div>
+              <div class="param-sub">Удержание прицела на уровне головы</div>
+            </div>
+
+            <div class="param-box">
+              <div>
+                <div class="param-top"><span class="param-name">7. Сетка проброса</span><span id="v-grid" class="param-val-pill">480 px</span></div>
+                <input type="range" id="p-grid" min="64" max="512" step="16" value="480" oninput="onSensSliderInput()" onchange="onSensSliderCommit()" />
+              </div>
+              <div class="param-sub">Калибр пиксельного шага куска</div>
+            </div>
+
+            <div class="param-box">
+              <div>
+                <div class="param-top"><span class="param-name">8. Пауза фиксации</span><span id="v-pause" class="param-val-pill">22 мс</span></div>
+                <input type="range" id="p-pause" min="0" max="40" step="2" value="22" oninput="onSensSliderInput()" onchange="onSensSliderCommit()" />
+              </div>
+              <div class="param-sub">Мёртвая точка фиксации между кусками</div>
+            </div>
+
+            <div class="param-box">
+              <div>
+                <div class="param-top"><span class="param-name">9. Выпрямление</span><span id="v-straight" class="param-val-pill">100%</span></div>
                 <input type="range" id="p-straight" min="20" max="100" step="5" value="100" oninput="onSensSliderInput()" onchange="onSensSliderCommit()" />
               </div>
-              <div class="param-sub">Строго прямая рельса</div>
+              <div class="param-sub">Рельсовое ведение по прямой линии</div>
             </div>
 
             <div class="param-box">
               <div>
-                <div class="param-top"><span class="param-name">5. Стоп-магнит</span><span id="v-stickForce" class="param-val-pill">98%</span></div>
-                <input type="range" id="p-stickForce" min="10" max="100" step="2" value="98" oninput="onSensSliderInput()" onchange="onSensSliderCommit()" />
+                <div class="param-top"><span class="param-name">10. Стоп-магнит</span><span id="v-stickForce" class="param-val-pill">100%</span></div>
+                <input type="range" id="p-stickForce" min="10" max="100" step="2" value="100" oninput="onSensSliderInput()" onchange="onSensSliderCommit()" />
               </div>
-              <div class="param-sub">Гасит инерцию в точке стопа</div>
-            </div>
-
-            <div class="param-box">
-              <div>
-                <div class="param-top"><span class="param-name">6. Поток 950Hz</span><span id="v-chunks" class="param-val-pill">100%</span></div>
-                <input type="range" id="p-chunks" min="20" max="100" step="5" value="100" oninput="onSensSliderInput()" onchange="onSensSliderCommit()" />
-              </div>
-              <div class="param-sub">Плотность потока координат</div>
+              <div class="param-sub">Вкапывает прицел на модельке врага</div>
             </div>
           </div>
 
           <button type="button" class="btn-dark" onclick="testOneMmFlickResponse()">
-            🛠️ СБРОСИТЬ ФРИЗЫ ТАЧА И ПЕРЕЗАПУСТИТЬ 950 EV/S
+            🛠️ ПЕРЕЗАПУСТИТЬ КУСКОВОЙ ДВИЖОК 25.0X
           </button>
         </div>
       </div>
@@ -1420,7 +1453,7 @@
         </div>
       </div>
     </div>
-        <!-- ================= ВКЛАДКА 2: НАСТРОЙКИ (ТЕМЫ, РАСТЯГ, ПОЛЗУНКИ ПРИЛОЖЕНИЯ, КОНФИГИ, БУСТЕРЫ) ================= -->
+<!-- ================= ВКЛАДКА 2: НАСТРОЙКИ (ТЕМЫ, РАСТЯГ, ПОЛЗУНКИ ПРИЛОЖЕНИЯ, КОНФИГИ, БУСТЕРЫ) ================= -->
     <div id="tab-settings" class="tab-view">
       <!-- ВЫБОР СТИЛЯ СТЕКЛА (ОСНОВНАЯ — СЕРЕБРИСТАЯ СВЕТЯЩАЯСЯ) -->
       <div class="section-card">
@@ -1464,7 +1497,7 @@
         <div class="param-box" style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
           <div style="padding-right:10px;">
             <div class="param-name">🎯 Широкие Хитбоксы (Wide Hitbox)</div>
-            <div class="param-sub">Синхронизирует растяг с рельсовым телепортом 950Hz</div>
+            <div class="param-sub">Синхронизирует растяг с кусковым телепортом 25.0x</div>
           </div>
           <label class="ios-switch">
             <input type="checkbox" id="sw-wideHitboxMode" onchange="toggleWideHitboxFeature(this.checked)" />
@@ -1573,14 +1606,14 @@
       <!-- ГОТОВЫЕ PRO-КОНФИГИ И ОБМЕН КОДОМ -->
       <div class="section-card">
         <div class="section-header-tag">
-          <span>🔥 ГОТОВЫЕ PRO-СБОРКИ И ОБМЕН КОДОМ</span>
+          <span>🔥 ГОТОВЫЕ PRO-СБОРКИ КУСКОВ И ОБМЕН КОДОМ</span>
           <span>1-CLICK</span>
         </div>
         <div style="display:grid; grid-template-columns:1fr 1fr; gap:7px; margin-bottom:9px;">
-          <button type="button" class="btn-dark" onclick="loadFullProBundle('РЕЛЬСА В ГОЛОВУ 950HZ', 12.0, 12.0, 8.5, 100, 98, 100, 'dot', '#ffffff', true)">⚡ 1. РЕЛЬСА 950HZ</button>
-          <button type="button" class="btn-dark" onclick="loadFullProBundle('DEAGLE ВАНТАП', 12.0, 12.0, 8.0, 100, 100, 100, 'chevron', '#00e5ff', false)">💀 2. DEAGLE SNAP</button>
-          <button type="button" class="btn-dark" onclick="loadFullProBundle('AWM ФАСТЗУМ 360', 12.0, 12.0, 10.8, 95, 98, 100, 'corners', '#facc15', false)">🦅 3. AWM 360°</button>
-          <button type="button" class="btn-dark" onclick="loadFullProBundle('ЛАЗЕРНЫЙ ЗАЖИМ', 11.2, 11.2, 7.6, 100, 98, 100, 'box', '#10b981', true)">🎯 4. NO-RECOIL</button>
+          <button type="button" class="btn-dark" onclick="loadFullProBundle('МЯСОРУБКА КУСКОВ 24X', 24.0, 24.0, 12.5, 100, 100, 100, 200, 480, 22, 24.0, 'dot', '#ffffff', true)">⚡ 1. МЯСОРУБКА 24X</button>
+          <button type="button" class="btn-dark" onclick="loadFullProBundle('DEAGLE ЖЁСТКИЙ КУСОК', 25.0, 25.0, 11.5, 100, 100, 100, 200, 512, 26, 25.0, 'chevron', '#00e5ff', false)">💀 2. DEAGLE КУСОК</button>
+          <button type="button" class="btn-dark" onclick="loadFullProBundle('AWM ФАСТЗУМ 360', 25.0, 25.0, 16.0, 95, 100, 100, 200, 512, 18, 25.0, 'corners', '#facc15', false)">🦅 3. AWM КУСКИ 360°</button>
+          <button type="button" class="btn-dark" onclick="loadFullProBundle('РЕЛЬСА-КУСОК AKR', 20.0, 20.5, 10.5, 100, 98, 92, 180, 368, 20, 20.0, 'box', '#10b981', true)">🎯 4. AKR РЕЛЬСА</button>
         </div>
         <input type="text" id="shareLinkInput" class="cyber-field" placeholder="Вставь код конфига SO2-... или скопируй свой" />
         <div style="display:grid; grid-template-columns:1fr 1fr; gap:7px;">
@@ -1835,13 +1868,13 @@
       <span class="nav-tab-underline"></span>
     </div>
   </nav>
-
-  <script>
+    <script>
     const CLIENT_LOGIN_GATE_KEY = "so2tp_manual_login_v412";
     const API_HTTP_BASE = "http://45.10.165.75:8080/api";
     const VOICE_WS_URL = "ws://45.10.165.75:8080/ws/voice";
     const TARGET_PCM_RATE = 16000;
 
+    // Блокируем системное контекстное меню долгого тапа в WebView
     window.addEventListener("contextmenu", function(e) {
       if (e.target && e.target.tagName !== "INPUT") {
         e.preventDefault();
@@ -1867,7 +1900,7 @@
     const pendingBridgeTasks = {};
     let lastEngineSignature = "";
 
-    function enqueueBridgeTask(taskKey, fn, delayMs = 35) {
+    function enqueueBridgeTask(taskKey, fn, delayMs = 30) {
       if (pendingBridgeTasks[taskKey]) {
         clearTimeout(pendingBridgeTasks[taskKey]);
       }
@@ -1893,7 +1926,10 @@
     }
 
     function bindAllSlidersRealtime() {
-      const sensIds = ["p-sharp", "p-sx", "p-sy", "p-straight", "p-stickForce", "p-chunks"];
+      const sensIds = [
+        "p-chunks", "p-chunkFast", "p-sharp", "p-accel",
+        "p-sx", "p-sy", "p-grid", "p-pause", "p-straight", "p-stickForce"
+      ];
       sensIds.forEach(id => {
         const el = document.getElementById(id);
         if (!el) return;
@@ -2301,7 +2337,7 @@
             txt.style.color = ready ? "#ffffff" : "#fca5a5";
             if (showToastMsg) {
               if (!ready && B.healTouch) B.healTouch();
-              showTopToast(ready ? "✅ Shizuku АКТИВЕН (Рельса 950Hz готова)!" : "⚠️ Запустите и разрешите доступ в Shizuku!");
+              showTopToast(ready ? "✅ Shizuku АКТИВЕН (Жёсткие Куски 25x готовы)!" : "⚠️ Запустите и разрешите доступ в Shizuku!");
             }
           }
         } catch (e) {}
@@ -2698,7 +2734,6 @@
           },
           video: false
         });
-        // Принудительно удерживаем игровой аудио-режим MODE_NORMAL в AndroidBridge
         const B = getBridge();
         if (B && typeof B.enforceGameAudioMode === "function") {
           B.enforceGameAudioMode();
@@ -3152,7 +3187,7 @@
     }
 
     function toggleWideHitboxFeature(enabled) {
-      showTopToast(enabled ? `🎯 Широкие Хитбоксы (${currentStretch}) + Рельса 950Hz ВКЛ!` : "Широкие Хитбоксы ВЫКЛ");
+      showTopToast(enabled ? `🎯 Широкие Хитбоксы (${currentStretch}) + Куски 25x ВКЛ!` : "Широкие Хитбоксы ВЫКЛ");
       enqueueBridgeTask("wide_hitbox", () => {
         const B = getBridge();
         if (B && B.setWideHitboxMode) {
@@ -3188,7 +3223,7 @@
       }, 20);
     }
 
-    // ================= СЕНСА: ЭТАЛОННЫЙ РЕЛЬСОВЫЙ ТЕЛЕПОРТ 950HZ =================
+    // ================= ДВИЖОК «МЯСОРУБКА КУСКОВ V2» (ВСЕ 10 ПОЛЗУНКОВ) =================
     function toggleTeleportMaster(enabled) {
       if (!isSessionAuthorized) {
         window.forceShowKickScreen("Сначала активируйте ключ!");
@@ -3199,10 +3234,10 @@
       const btn = document.getElementById("mainTpActionBtn");
 
       if (enabled) {
-        heading.innerText = "ТЕЛЕПОРТ: АКТИВЕН (950 EV/S)";
+        heading.innerText = "ТЕЛЕПОРТ: АКТИВЕН (ЖЁСТКИЕ КУСКИ)";
         heading.style.color = "#34d399";
-        btn.innerText = "🛑 ОСТАНОВИТЬ 950HZ";
-        showTopToast("⚡ Рельсовый Телепорт 950Hz ВКЛЮЧЕН!");
+        btn.innerText = "🛑 ОСТАНОВИТЬ КУСКИ";
+        showTopToast("⚡ Движок «Жёсткие Куски V2» ВКЛЮЧЕН!");
         enqueueBridgeTask("tp_master_toggle", () => {
           const B = getBridge();
           if (B) {
@@ -3215,8 +3250,8 @@
       } else {
         heading.innerText = "ТЕЛЕПОРТ: ВЫКЛЮЧЕН";
         heading.style.color = "#ffffff";
-        btn.innerText = "⚡ ВКЛЮЧИТЬ 950HZ";
-        showTopToast("🛑 Телепорт остановлен");
+        btn.innerText = "⚡ ВКЛЮЧИТЬ КУСКИ";
+        showTopToast("🛑 Кусковой Телепорт остановлен");
         enqueueBridgeTask("tp_master_toggle", () => {
           const B = getBridge();
           if (B && B.stopTeleport) B.stopTeleport();
@@ -3225,7 +3260,7 @@
       saveStateSilent();
     }
 
-    function selectQuickSensMode(idx, sharp, sx, sy, straightPct, stickPct, chunksPct) {
+    function selectQuickSensMode(idx, sharp, sx, sy, straightPct, stickPct, chunksPct, chunkFastPct, gridPx, pauseMs, accelVal) {
       for (let i = 1; i <= 3; i++) {
         const card = document.getElementById("qmode-" + i);
         const b = document.getElementById("qbtn-" + i);
@@ -3235,7 +3270,7 @@
           b.innerText = "АКТИВЕН";
         } else {
           card.classList.remove("active");
-          b.innerText = i === 1 ? "В ГОЛОВУ" : (i === 2 ? "AWM / DEAGLE" : "AKR / M4A1");
+          b.innerText = i === 1 ? "МЯСОРУБКА" : (i === 2 ? "AWM / DEAGLE" : "AKR / M4A1");
         }
       }
       document.getElementById("p-sharp").value = sharp;
@@ -3244,8 +3279,112 @@
       document.getElementById("p-straight").value = straightPct;
       document.getElementById("p-stickForce").value = stickPct;
       document.getElementById("p-chunks").value = chunksPct;
+      if (chunkFastPct !== undefined && document.getElementById("p-chunkFast")) document.getElementById("p-chunkFast").value = chunkFastPct;
+      if (gridPx !== undefined && document.getElementById("p-grid")) document.getElementById("p-grid").value = gridPx;
+      if (pauseMs !== undefined && document.getElementById("p-pause")) document.getElementById("p-pause").value = pauseMs;
+      if (accelVal !== undefined && document.getElementById("p-accel")) document.getElementById("p-accel").value = accelVal;
+
       onSensSliderInput();
       toggleTeleportMaster(true);
+    }
+
+    function onSensSliderInput() {
+      const elChunks = document.getElementById("p-chunks");
+      const elChunkFast = document.getElementById("p-chunkFast");
+      const elSharp = document.getElementById("p-sharp");
+      const elAccel = document.getElementById("p-accel");
+      const elSx = document.getElementById("p-sx");
+      const elSy = document.getElementById("p-sy");
+      const elGrid = document.getElementById("p-grid");
+      const elPause = document.getElementById("p-pause");
+      const elStraight = document.getElementById("p-straight");
+      const elStick = document.getElementById("p-stickForce");
+
+      [elChunks, elChunkFast, elSharp, elAccel, elSx, elSy, elGrid, elPause, elStraight, elStick].forEach(syncRangeFill);
+
+      if (elChunks) document.getElementById("v-chunks").innerText = elChunks.value + "%";
+      if (elChunkFast) document.getElementById("v-chunkFast").innerText = elChunkFast.value + "%";
+      if (elSharp) document.getElementById("v-sharp").innerText = parseFloat(elSharp.value).toFixed(1);
+      if (elAccel) document.getElementById("v-accel").innerText = parseFloat(elAccel.value).toFixed(1) + "x";
+      if (elSx) document.getElementById("v-sx").innerText = parseFloat(elSx.value).toFixed(1);
+      if (elSy) document.getElementById("v-sy").innerText = parseFloat(elSy.value).toFixed(1);
+      if (elGrid) document.getElementById("v-grid").innerText = elGrid.value + " px";
+      if (elPause) document.getElementById("v-pause").innerText = elPause.value + " мс";
+      if (elStraight) document.getElementById("v-straight").innerText = elStraight.value + "%";
+      if (elStick) document.getElementById("v-stickForce").innerText = elStick.value + "%";
+    }
+
+    function onSensSliderCommit() {
+      onSensSliderInput();
+      pushEngineParametersImmediate(false);
+    }
+
+    function pushEngineParametersImmediate(forcePush) {
+      if (!isSessionAuthorized) return;
+      const sharp = parseFloat(document.getElementById("p-sharp").value) || 24.0;
+      const sx = parseFloat(document.getElementById("p-sx").value) || 24.0;
+      const sy = parseFloat(document.getElementById("p-sy").value) || 12.5;
+      const chunks = parseInt(document.getElementById("p-chunks").value, 10) || 100;
+      const chunkFast = parseInt((document.getElementById("p-chunkFast") || {}).value, 10) || 200;
+      const straight = (parseFloat(document.getElementById("p-straight").value) || 100) / 10.0;
+      const stick = parseInt(document.getElementById("p-stickForce").value, 10) || 100;
+      const grid = parseInt((document.getElementById("p-grid") || {}).value, 10) || 480;
+      const pause = parseInt((document.getElementById("p-pause") || {}).value, 10) || 22;
+      const accel = parseFloat((document.getElementById("p-accel") || {}).value) || 24.0;
+
+      const sig = [sharp, sx, sy, chunks, chunkFast, straight, stick, grid, pause, accel].join("|");
+      if (!forcePush && sig === lastEngineSignature) return;
+      lastEngineSignature = sig;
+
+      enqueueBridgeTask("update_engine_params", () => {
+        const B = getBridge();
+        if (B && B.updateParameters) {
+          B.updateParameters(sharp, sx, sy, chunks, chunkFast, straight, stick, grid, pause, accel);
+        }
+      }, 30);
+      saveStateSilent();
+    }
+
+    function runSmartScanAndApply() {
+      document.getElementById("zeroDelaySnapToggle").checked = true;
+      selectQuickSensMode(1, 24.0, 24.0, 12.5, 100, 100, 100, 200, 480, 22, 24.0);
+      let model = document.getElementById("profModelVal").innerText || "SM-S938B";
+      showTopToast("🔥 Жёсткие Куски 25.0x включены для " + model + "!");
+    }
+
+    function testOneMmFlickResponse() {
+      showTopToast("⚡ Движок Жёстких Кусков 25.0x перезапущен!");
+      enqueueBridgeTask("heal_touch", () => {
+        const B = getBridge();
+        if (B && B.healTouch) B.healTouch();
+        if (B && B.applyUltraProTouchMatrix) B.applyUltraProTouchMatrix(3);
+      }, 25);
+    }
+
+    function loadFullProBundle(title, sharp, sx, sy, straightPct, stickPct, chunksPct, chunkFastPct, gridPx, pauseMs, accelVal, chShape, chHex, recoilOn) {
+      document.getElementById("p-sharp").value = sharp;
+      document.getElementById("p-sx").value = sx;
+      document.getElementById("p-sy").value = sy;
+      document.getElementById("p-straight").value = straightPct;
+      document.getElementById("p-stickForce").value = stickPct;
+      document.getElementById("p-chunks").value = chunksPct;
+      if (document.getElementById("p-chunkFast")) document.getElementById("p-chunkFast").value = chunkFastPct;
+      if (document.getElementById("p-grid")) document.getElementById("p-grid").value = gridPx;
+      if (document.getElementById("p-pause")) document.getElementById("p-pause").value = pauseMs;
+      if (document.getElementById("p-accel")) document.getElementById("p-accel").value = accelVal;
+
+      document.getElementById("zeroDelaySnapToggle").checked = true;
+      document.getElementById("sw-recoilPro").checked = !!recoilOn;
+
+      onSensSliderInput();
+      onRecoilSliderCommit();
+
+      currentChColor = chHex;
+      document.getElementById("customChColorPicker").value = chHex;
+      selectCrosshairShape(chShape, chShape.toUpperCase(), null);
+
+      toggleTeleportMaster(true);
+      showTopToast("🔥 Сборка «" + title + "» включена!");
     }
 
     // ================= ПРИЦЕЛ =================
@@ -3453,7 +3592,7 @@
       ctx.restore();
     }
 
-    // ================= БУСТЕРЫ И ПАРАМЕТРЫ ДВИЖКА =================
+    // ================= БУСТЕРЫ =================
     function runRamCleanBoost() {
       showTopToast("🧹 Очистка оперативной памяти и кэша...");
       enqueueBridgeTask("ram_boost", () => {
@@ -3540,99 +3679,13 @@
     }
 
     function onZeroDelayToggle(enabled) {
-      showTopToast(enabled ? "⚡ Чистый линейный ввод 950Hz ВКЛ!" : "Линейный ввод 950Hz ВЫКЛ");
+      showTopToast(enabled ? "⚡ Квантование свайпа кусками ВКЛ!" : "Квантование кусками ВЫКЛ");
       enqueueBridgeTask("zero_delay_toggle", () => {
         const B = getBridge();
         if (B && B.setRawInputNoSmoothing) B.setRawInputNoSmoothing(enabled);
         if (enabled && B && B.applyUltraProTouchMatrix) B.applyUltraProTouchMatrix(3);
       }, 30);
       saveStateSilent();
-    }
-
-    function onSensSliderInput() {
-      const elSharp = document.getElementById("p-sharp");
-      const elSx = document.getElementById("p-sx");
-      const elSy = document.getElementById("p-sy");
-      const elStraight = document.getElementById("p-straight");
-      const elStick = document.getElementById("p-stickForce");
-      const elChunks = document.getElementById("p-chunks");
-
-      [elSharp, elSx, elSy, elStraight, elStick, elChunks].forEach(syncRangeFill);
-
-      document.getElementById("v-sharp").innerText = parseFloat(elSharp.value).toFixed(1);
-      document.getElementById("v-sx").innerText = parseFloat(elSx.value).toFixed(1);
-      document.getElementById("v-sy").innerText = parseFloat(elSy.value).toFixed(1);
-      document.getElementById("v-straight").innerText = elStraight.value + "%";
-      document.getElementById("v-stickForce").innerText = elStick.value + "%";
-      document.getElementById("v-chunks").innerText = elChunks.value + "%";
-    }
-
-    function onSensSliderCommit() {
-      onSensSliderInput();
-      pushEngineParametersImmediate(false);
-    }
-
-    function pushEngineParametersImmediate(forcePush) {
-      if (!isSessionAuthorized) return;
-      const sharp = parseFloat(document.getElementById("p-sharp").value);
-      const sx = parseFloat(document.getElementById("p-sx").value);
-      const sy = parseFloat(document.getElementById("p-sy").value);
-      const chunks = parseInt(document.getElementById("p-chunks").value, 10);
-      const chunkFast = 100;
-      const straight = parseFloat(document.getElementById("p-straight").value) / 10.0;
-      const stick = parseInt(document.getElementById("p-stickForce").value, 10);
-      const grid = 256;
-      const pause = 0;
-      const accel = 12.0;
-
-      const sig = [sharp, sx, sy, chunks, chunkFast, straight, stick, grid, pause, accel].join("|");
-      if (!forcePush && sig === lastEngineSignature) return;
-      lastEngineSignature = sig;
-
-      enqueueBridgeTask("update_engine_params", () => {
-        const B = getBridge();
-        if (B && B.updateParameters) {
-          B.updateParameters(sharp, sx, sy, chunks, chunkFast, straight, stick, grid, pause, accel);
-        }
-      }, 35);
-      saveStateSilent();
-    }
-
-    function runSmartScanAndApply() {
-      document.getElementById("zeroDelaySnapToggle").checked = true;
-      selectQuickSensMode(1, 12.0, 12.0, 8.8, 100, 98, 100);
-      let model = document.getElementById("profModelVal").innerText || "SM-S938B";
-      showTopToast("🔥 Эталон Рельсы 950Hz включен для " + model + "!");
-    }
-
-    function testOneMmFlickResponse() {
-      showTopToast("⚡ Сенсор сброшен и откалиброван на 950 ev/s!");
-      enqueueBridgeTask("heal_touch", () => {
-        const B = getBridge();
-        if (B && B.healTouch) B.healTouch();
-        if (B && B.applyUltraProTouchMatrix) B.applyUltraProTouchMatrix(3);
-      }, 25);
-    }
-
-    function loadFullProBundle(title, sharp, sx, sy, straightPct, stickPct, chunksPct, chShape, chHex, recoilOn) {
-      document.getElementById("p-sharp").value = sharp;
-      document.getElementById("p-sx").value = sx;
-      document.getElementById("p-sy").value = sy;
-      document.getElementById("p-straight").value = straightPct;
-      document.getElementById("p-stickForce").value = stickPct;
-      document.getElementById("p-chunks").value = chunksPct;
-      document.getElementById("zeroDelaySnapToggle").checked = true;
-      document.getElementById("sw-recoilPro").checked = !!recoilOn;
-
-      onSensSliderInput();
-      onRecoilSliderCommit();
-
-      currentChColor = chHex;
-      document.getElementById("customChColorPicker").value = chHex;
-      selectCrosshairShape(chShape, chShape.toUpperCase(), null);
-
-      toggleTeleportMaster(true);
-      showTopToast("🔥 Сборка «" + title + "» включена!");
     }
 
     function encodePortableConfigToken() {
@@ -3643,7 +3696,7 @@
         c.stretch, c.chShape, c.chColor,
         c.chLen, c.chThick, c.chGap, c.chDot, c.chAlpha,
         c.chOffX, c.chOffY, c.chOutline ? 1 : 0,
-        c.recoilPower
+        c.recoilPower, c.chunkFast, c.grid, c.pause, c.accel
       ].join("|");
       return "SO2-" + btoa(unescape(encodeURIComponent(packed))).replace(/=+$/, "");
     }
@@ -3667,6 +3720,10 @@
         straight: document.getElementById("p-straight").value,
         stickForce: document.getElementById("p-stickForce").value,
         chunks: document.getElementById("p-chunks").value,
+        chunkFast: document.getElementById("p-chunkFast") ? document.getElementById("p-chunkFast").value : "200",
+        grid: document.getElementById("p-grid") ? document.getElementById("p-grid").value : "480",
+        pause: document.getElementById("p-pause") ? document.getElementById("p-pause").value : "22",
+        accel: document.getElementById("p-accel") ? document.getElementById("p-accel").value : "24.0",
         stretch: currentStretch,
         chShape: currentChShape,
         chColor: currentChColor,
@@ -3691,7 +3748,11 @@
         const t = THEME_PRESETS[c.theme];
         setTheme(c.theme, t.accent, t.second, t.rgb, null);
       }
-      const sliders = ["sharp", "sx", "sy", "straight", "stickForce", "chunks", "chLen", "chThick", "chGap", "chDot", "chAlpha", "chOffX", "chOffY", "recoilPower"];
+      const sliders = [
+        "sharp", "sx", "sy", "straight", "stickForce", "chunks",
+        "chunkFast", "grid", "pause", "accel",
+        "chLen", "chThick", "chGap", "chDot", "chAlpha", "chOffX", "chOffY", "recoilPower"
+      ];
       sliders.forEach(k => {
         if (c[k] !== undefined && document.getElementById("p-" + k)) {
           document.getElementById("p-" + k).value = c[k];
@@ -3720,25 +3781,25 @@
     function saveStateSilent() {
       if (!isSessionAuthorized) return;
       try {
-        localStorage.setItem("so2tp_backup_v410", JSON.stringify(collectFullConfig()));
+        localStorage.setItem("so2tp_backup_v412_chunks", JSON.stringify(collectFullConfig()));
       } catch (e) {}
     }
 
     function saveCurrentConfigNow() {
       if (!isSessionAuthorized) return;
       const jsonStr = JSON.stringify(collectFullConfig());
-      try { localStorage.setItem("so2tp_backup_v410", jsonStr); } catch (e) {}
+      try { localStorage.setItem("so2tp_backup_v412_chunks", jsonStr); } catch (e) {}
       enqueueBridgeTask("save_cfg_json", () => {
         const B = getBridge();
         if (B && B.saveFullConfigJson) B.saveFullConfigJson(jsonStr);
       }, 30);
       pushEngineParametersImmediate(true);
-      showTopToast("💾 Все настройки успешно сохранены!");
+      showTopToast("💾 Все настройки Кусков сохранены!");
     }
 
     function loadSavedSettingsJson() {
       try {
-        let raw = localStorage.getItem("so2tp_backup_v410");
+        let raw = localStorage.getItem("so2tp_backup_v412_chunks");
         if (!raw) {
           const B = getBridge();
           if (B && B.loadFullConfigJson) raw = B.loadFullConfigJson();
