@@ -17,6 +17,7 @@ import android.graphics.Paint;
 import android.graphics.PixelFormat;
 import android.graphics.RectF;
 import android.graphics.drawable.GradientDrawable;
+import android.media.AudioManager;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Handler;
@@ -277,9 +278,9 @@ public class AndroidBridge {
                         } catch (Exception ignored) {}
                     });
                 }
-                mainHandler.postDelayed(this, 25000);
+                mainHandler.postDelayed(this, 30000);
             }
-        }, 25000);
+        }, 30000);
     }
 
     private void forceKickExpiredUser(String reasonToast) {
@@ -325,6 +326,51 @@ public class AndroidBridge {
                 );
             }
         });
+    }
+
+    // ================= ЗАЩИТА ЗВУКА ИГРЫ ОТ ПРИГЛУШЕНИЯ (NO ANDROID AUDIO DUCKING) =================
+    @JavascriptInterface
+    public void enforceGameAudioMode() {
+        try {
+            AudioManager am = (AudioManager) context.getSystemService(Context.AUDIO_SERVICE);
+            if (am != null) {
+                am.setMode(AudioManager.MODE_NORMAL);
+                am.setSpeakerphoneOn(true);
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                    am.abandonAudioFocusRequest(null);
+                } else {
+                    am.abandonAudioFocus(null);
+                }
+            }
+        } catch (Throwable ignored) {}
+
+        // Повторяем сброс MODE_IN_COMMUNICATION -> MODE_NORMAL через 400 и 1200 мс после старта WebRTC/getUserMedia
+        mainHandler.postDelayed(() -> {
+            try {
+                AudioManager am = (AudioManager) context.getSystemService(Context.AUDIO_SERVICE);
+                if (am != null && am.getMode() != AudioManager.MODE_NORMAL) {
+                    am.setMode(AudioManager.MODE_NORMAL);
+                    am.setSpeakerphoneOn(true);
+                }
+            } catch (Throwable ignored) {}
+        }, 450);
+
+        mainHandler.postDelayed(() -> {
+            try {
+                AudioManager am = (AudioManager) context.getSystemService(Context.AUDIO_SERVICE);
+                if (am != null && am.getMode() != AudioManager.MODE_NORMAL) {
+                    am.setMode(AudioManager.MODE_NORMAL);
+                    am.setSpeakerphoneOn(true);
+                }
+            } catch (Throwable ignored) {}
+        }, 1250);
+
+        if (TeleportEngine.isShizukuReady() || ShizukuManager.isPermissionGranted()) {
+            TeleportEngine.execShizukuCommand(
+                    "cmd appops set com.axlebolt.standoff2 TAKE_AUDIO_FOCUS allow; " +
+                    "cmd appops set com.axlebolt.standoff2 PLAY_AUDIO allow;"
+            );
+        }
     }
 
     @JavascriptInterface
@@ -689,7 +735,6 @@ public class AndroidBridge {
     public void startTeleport(String presetId) {
         if (getSavedKey().isEmpty()) return;
         TeleportEngine.startTeleport(presetId);
-        applyUltraProTouchMatrix(3);
     }
 
     @JavascriptInterface
@@ -711,9 +756,6 @@ public class AndroidBridge {
     public void setRawInputNoSmoothing(boolean enabled) {
         if (getSavedKey().isEmpty()) return;
         TeleportEngine.setRawInputNoSmoothing(enabled);
-        if (enabled) {
-            applyUltraProTouchMatrix(3);
-        }
     }
 
     @JavascriptInterface
@@ -765,19 +807,20 @@ public class AndroidBridge {
         return TeleportEngine.runSmartDeviceScan(context);
     }
 
+    // Синхронизировано с эталонным Рельсовым Телепортом 950 Гц из TeleportEngine.java
     @JavascriptInterface
     public void applyUltraProTouchMatrix(int modeLevel) {
         if (getSavedKey().isEmpty()) return;
         ProfileManager.addTeleportCountToTotal(context, 1);
         if (!TeleportEngine.isShizukuReady() && !ShizukuManager.isPermissionGranted()) return;
 
-        int batchEv = (modeLevel >= 3) ? 20 : (modeLevel == 2 ? 32 : 50);
+        int maxEv = (modeLevel >= 3) ? 950 : (modeLevel == 2 ? 750 : 550);
         String cmd = "settings put system pointer_speed 7; "
                 + "settings put secure touch_blocking_period 0.0; "
                 + "settings put secure tap_duration_threshold 0.0; "
                 + "settings put secure ignore_repeat_click_timeout 0; "
-                + "settings put secure long_press_timeout 400; "
-                + "settings put secure multi_press_timeout 300; "
+                + "settings put secure long_press_timeout 240; "
+                + "settings put secure multi_press_timeout 240; "
                 + "settings put system touch_sensitivity 1; "
                 + "settings put system sec_touch_sensitivity 1; "
                 + "settings put secure game_touch_sampling_rate 360; "
@@ -786,14 +829,17 @@ public class AndroidBridge {
                 + "setprop view.touch_slop 0; "
                 + "setprop view.scroll_friction 0; "
                 + "setprop debug.input.touch.prediction 0; "
+                + "setprop persist.sys.touch.prediction 0; "
                 + "setprop ro.input.noresample 1; "
-                + "setprop touch.pressure.scale 0.0001; "
-                + "setprop windowsmgr.max_events_per_sec " + batchEv + "; "
+                + "setprop ro.min_pointer_dur 1; "
+                + "setprop touch.pressure.scale 0.001; "
+                + "setprop windowsmgr.max_events_per_sec " + maxEv + "; "
                 + "setprop debug.sf.latch_unsignaled 1; "
-                + "setprop debug.sf.disable_backpressure 1;";
+                + "setprop debug.sf.disable_backpressure 1; "
+                + "setprop debug.sf.early_phase_offset_ns 500000; "
+                + "setprop debug.sf.early_gl_phase_offset_ns 500000;";
         TeleportEngine.execShizukuCommand(cmd);
     }
-
 
     @JavascriptInterface
     public String uploadCloudConfig(String title, String presetJson) {
@@ -1146,7 +1192,7 @@ public class AndroidBridge {
         }
     }
 
-    // ================= ПАНЕЛЬ УПРАВЛЕНИЯ ВОЙСОМ В ШТОРКЕ УВЕДОМЛЕНИЙ (ANDROID 8 - 17) =================
+    // ================= ПАНЕЛЬ УПРАВЛЕНИЯ ВОЙСОМ В ШТОРКЕ УВЕДОМЛЕНИЙ (КАК В DISCORD) =================
     private static final String VOICE_CHANNEL_ID = "so2tp_voice_call_channel_v2";
     private static final int VOICE_NOTIF_ID = 7744;
     private static final String ACTION_VOICE_MUTE = "com.teleport.so2.ACTION_VOICE_MUTE";
@@ -1219,9 +1265,9 @@ public class AndroidBridge {
                 NotificationChannel ch = new NotificationChannel(
                         VOICE_CHANNEL_ID,
                         "SO2Teleport Discord Voice",
-                        NotificationManager.IMPORTANCE_HIGH
+                        NotificationManager.IMPORTANCE_LOW
                 );
-                ch.setDescription("Пульт управления микрофоном и звуком в шторке");
+                ch.setDescription("Пульт управления микрофоном и звуком в шторке без звука уведомлений");
                 ch.setSound(null, null);
                 ch.enableVibration(false);
                 ch.setLockscreenVisibility(Notification.VISIBILITY_PUBLIC);
@@ -1235,6 +1281,7 @@ public class AndroidBridge {
         mainHandler.post(() -> {
             try {
                 ensureVoiceNotifSetup();
+                enforceGameAudioMode();
                 NotificationManager nm = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
                 if (nm == null) return;
 
@@ -1262,7 +1309,7 @@ public class AndroidBridge {
 
                 String muteLabel = isMuted ? "🎤 ВКЛ МИКРО" : "🔇 ВЫКЛ МИКРО";
                 String deafLabel = isDeafened ? "🎧 ВКЛ ЗВУК" : "🔈 ВЫКЛ ЗВУК";
-                String statusSub = (isMuted ? "🔇 Микро ВЫКЛ" : "🎤 Микро ВКЛ") + "  •  " + (isDeafened ? "🔈 Звук ВЫКЛ" : "🎧 Звук ВКЛ (Krisp HD)");
+                String statusSub = (isMuted ? "🔇 Микро ВЫКЛ" : "🎤 Микро ВКЛ") + "  •  " + (isDeafened ? "🔈 Звук ВЫКЛ" : "🎧 Звук 300% (No Ducking)");
 
                 Notification.Builder builder = (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O)
                         ? new Notification.Builder(context, VOICE_CHANNEL_ID)
@@ -1271,7 +1318,7 @@ public class AndroidBridge {
                 int smallIco = isMuted ? android.R.drawable.ic_lock_silent_mode : android.R.drawable.ic_btn_speak_now;
 
                 builder.setSmallIcon(smallIco)
-                        .setContentTitle("SO2Teleport Войс • " + (roomName == null || roomName.isEmpty() ? "SQUAD-MAIN" : roomName))
+                        .setContentTitle("🟢 Войс Отряда • " + (roomName == null || roomName.isEmpty() ? "SQUAD-MAIN" : roomName))
                         .setContentText(statusSub)
                         .setContentIntent(contentPi)
                         .setOngoing(true)
@@ -1282,7 +1329,7 @@ public class AndroidBridge {
                         .addAction(new Notification.Action.Builder(android.R.drawable.ic_menu_close_clear_cancel, "ВЫЙТИ", hangPi).build());
 
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                    builder.setColor(Color.parseColor("#A855F7"));
+                    builder.setColor(Color.parseColor("#10B981"));
                     builder.setCategory(Notification.CATEGORY_CALL);
                     builder.setVisibility(Notification.VISIBILITY_PUBLIC);
                 }
