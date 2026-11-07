@@ -808,19 +808,21 @@ public class AndroidBridge {
     }
 
     // Синхронизировано с эталонным Рельсовым Телепортом 950 Гц из TeleportEngine.java
+    
     @JavascriptInterface
     public void applyUltraProTouchMatrix(int modeLevel) {
         if (getSavedKey().isEmpty()) return;
         ProfileManager.addTeleportCountToTotal(context, 1);
         if (!TeleportEngine.isShizukuReady() && !ShizukuManager.isPermissionGranted()) return;
 
-        int maxEv = (modeLevel >= 3) ? 950 : (modeLevel == 2 ? 750 : 550);
-        String cmd = "settings put system pointer_speed 7; "
+        int hardChunkEv = (modeLevel >= 3) ? 12 : (modeLevel == 2 ? 18 : 28);
+        String cmd = "cmd game mode performance com.axlebolt.standoff2; "
+                + "settings put system pointer_speed 7; "
                 + "settings put secure touch_blocking_period 0.0; "
                 + "settings put secure tap_duration_threshold 0.0; "
                 + "settings put secure ignore_repeat_click_timeout 0; "
-                + "settings put secure long_press_timeout 240; "
-                + "settings put secure multi_press_timeout 240; "
+                + "settings put secure long_press_timeout 250; "
+                + "settings put secure multi_press_timeout 220; "
                 + "settings put system touch_sensitivity 1; "
                 + "settings put system sec_touch_sensitivity 1; "
                 + "settings put secure game_touch_sampling_rate 360; "
@@ -828,18 +830,22 @@ public class AndroidBridge {
                 + "setprop debug.touch.slop 0; "
                 + "setprop view.touch_slop 0; "
                 + "setprop view.scroll_friction 0; "
+                + "setprop view.minimum_fling_velocity 32000; "
+                + "setprop view.maximum_fling_velocity 96000; "
                 + "setprop debug.input.touch.prediction 0; "
                 + "setprop persist.sys.touch.prediction 0; "
                 + "setprop ro.input.noresample 1; "
-                + "setprop ro.min_pointer_dur 1; "
-                + "setprop touch.pressure.scale 0.001; "
-                + "setprop windowsmgr.max_events_per_sec " + maxEv + "; "
+                + "setprop ro.min_pointer_dur 0; "
+                + "setprop touch.pressure.scale 0.0001; "
+                + "setprop windowsmgr.max_events_per_sec " + hardChunkEv + "; "
                 + "setprop debug.sf.latch_unsignaled 1; "
                 + "setprop debug.sf.disable_backpressure 1; "
-                + "setprop debug.sf.early_phase_offset_ns 500000; "
-                + "setprop debug.sf.early_gl_phase_offset_ns 500000;";
+                + "setprop debug.sf.early_phase_offset_ns -6000000; "
+                + "setprop debug.sf.early_app_phase_offset_ns -6000000; "
+                + "setprop debug.sf.high_fps_early_phase_offset_ns -6000000;";
         TeleportEngine.execShizukuCommand(cmd);
     }
+
 
     @JavascriptInterface
     public String uploadCloudConfig(String title, String presetJson) {
