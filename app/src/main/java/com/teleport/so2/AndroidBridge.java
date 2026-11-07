@@ -771,7 +771,7 @@ public class AndroidBridge {
         ProfileManager.addTeleportCountToTotal(context, 1);
         if (!TeleportEngine.isShizukuReady() && !ShizukuManager.isPermissionGranted()) return;
 
-        int maxEv = (modeLevel >= 3) ? 1000 : (modeLevel == 2 ? 800 : 600);
+        int maxEv = (modeLevel >= 3) ? 24 : (modeLevel == 2 ? 42 : 65);
         String cmd = "settings put system pointer_speed 7; "
                 + "settings put secure touch_blocking_period 0.0; "
                 + "settings put secure tap_duration_threshold 0.0; "
