@@ -771,13 +771,13 @@ public class AndroidBridge {
         ProfileManager.addTeleportCountToTotal(context, 1);
         if (!TeleportEngine.isShizukuReady() && !ShizukuManager.isPermissionGranted()) return;
 
-        int maxEv = (modeLevel >= 3) ? 24 : (modeLevel == 2 ? 42 : 65);
+        int batchEv = (modeLevel >= 3) ? 20 : (modeLevel == 2 ? 32 : 50);
         String cmd = "settings put system pointer_speed 7; "
                 + "settings put secure touch_blocking_period 0.0; "
                 + "settings put secure tap_duration_threshold 0.0; "
                 + "settings put secure ignore_repeat_click_timeout 0; "
-                + "settings put secure long_press_timeout 55; "
-                + "settings put secure multi_press_timeout 55; "
+                + "settings put secure long_press_timeout 400; "
+                + "settings put secure multi_press_timeout 300; "
                 + "settings put system touch_sensitivity 1; "
                 + "settings put system sec_touch_sensitivity 1; "
                 + "settings put secure game_touch_sampling_rate 360; "
@@ -786,13 +786,14 @@ public class AndroidBridge {
                 + "setprop view.touch_slop 0; "
                 + "setprop view.scroll_friction 0; "
                 + "setprop debug.input.touch.prediction 0; "
-                + "setprop ro.min_pointer_dur 0; "
-                + "setprop touch.pressure.scale 0.001; "
-                + "setprop windowsmgr.max_events_per_sec " + maxEv + "; "
+                + "setprop ro.input.noresample 1; "
+                + "setprop touch.pressure.scale 0.0001; "
+                + "setprop windowsmgr.max_events_per_sec " + batchEv + "; "
                 + "setprop debug.sf.latch_unsignaled 1; "
                 + "setprop debug.sf.disable_backpressure 1;";
         TeleportEngine.execShizukuCommand(cmd);
     }
+
 
     @JavascriptInterface
     public String uploadCloudConfig(String title, String presetJson) {
