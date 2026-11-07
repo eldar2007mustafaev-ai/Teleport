@@ -24,6 +24,7 @@ import android.view.Surface;
 import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
+import android.webkit.ValueCallback;
 import android.webkit.WebChromeClient;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
@@ -38,6 +39,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class MainActivity extends Activity {
+
+    private static final int FILE_CHOOSER_RESULT_CODE = 3005;
+    private ValueCallback<Uri[]> filePathCallback;
 
     private WebView webView;
     private WindowManager windowManager;
@@ -192,9 +196,8 @@ public class MainActivity extends Activity {
         ws.setMediaPlaybackRequiresUserGesture(false);
         ws.setCacheMode(WebSettings.LOAD_DEFAULT);
 
-        webView.setBackgroundColor(Color.parseColor("#050B11"));
+        webView.setBackgroundColor(Color.parseColor("#060709"));
 
-        // Запрос разрешений микрофона и уведомлений (для Android 13-17)
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             List<String> needed = new ArrayList<>();
             if (checkSelfPermission(android.Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED) {
@@ -216,6 +219,30 @@ public class MainActivity extends Activity {
             public void onPermissionRequest(final android.webkit.PermissionRequest request) {
                 runOnUiThread(() -> request.grant(request.getResources()));
             }
+
+            // Открытие системной Галереи Android при выборе аватарки в профиле
+            @Override
+            public boolean onShowFileChooser(
+                    WebView webView,
+                    ValueCallback<Uri[]> filePathCallback,
+                    FileChooserParams fileChooserParams
+            ) {
+                if (MainActivity.this.filePathCallback != null) {
+                    MainActivity.this.filePathCallback.onReceiveValue(null);
+                }
+                MainActivity.this.filePathCallback = filePathCallback;
+
+                try {
+                    Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
+                    intent.addCategory(Intent.CATEGORY_OPENABLE);
+                    intent.setType("image/*");
+                    startActivityForResult(Intent.createChooser(intent, "Выберите аватарку"), FILE_CHOOSER_RESULT_CODE);
+                    return true;
+                } catch (Exception e) {
+                    MainActivity.this.filePathCallback = null;
+                    return false;
+                }
+            }
         });
 
         webView.setWebViewClient(new WebViewClient());
@@ -230,6 +257,25 @@ public class MainActivity extends Activity {
                     OnBackInvokedDispatcher.PRIORITY_DEFAULT,
                     backInvokedCallback
             );
+        }
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == FILE_CHOOSER_RESULT_CODE) {
+            if (filePathCallback == null) return;
+            Uri[] results = null;
+            if (resultCode == Activity.RESULT_OK && data != null) {
+                String dataString = data.getDataString();
+                if (dataString != null) {
+                    results = new Uri[]{Uri.parse(dataString)};
+                } else if (data.getClipData() != null && data.getClipData().getItemCount() > 0) {
+                    results = new Uri[]{data.getClipData().getItemAt(0).getUri()};
+                }
+            }
+            filePathCallback.onReceiveValue(results);
+            filePathCallback = null;
         }
     }
 
