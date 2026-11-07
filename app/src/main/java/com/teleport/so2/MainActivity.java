@@ -187,6 +187,11 @@ public class MainActivity extends Activity {
         webView.setFocusableInTouchMode(true);
         webView.requestFocus(View.FOCUS_DOWN);
 
+        // Полная блокировка системного окна «Выбор с помощью ИИ» при долгом нажатии
+        webView.setLongClickable(false);
+        webView.setHapticFeedbackEnabled(false);
+        webView.setOnLongClickListener(v -> true);
+
         WebSettings ws = webView.getSettings();
         ws.setJavaScriptEnabled(true);
         ws.setDomStorageEnabled(true);
@@ -220,7 +225,6 @@ public class MainActivity extends Activity {
                 runOnUiThread(() -> request.grant(request.getResources()));
             }
 
-            // Открытие системной Галереи Android при выборе аватарки в профиле
             @Override
             public boolean onShowFileChooser(
                     WebView webView,
@@ -332,15 +336,15 @@ public class MainActivity extends Activity {
         }
     }
 
-        public void healBrokenTouchTimeouts() {
+    public void healBrokenTouchTimeouts() {
         if (!TeleportEngine.isShizukuReady() && !ShizukuManager.isPermissionGranted()) return;
         String pkg = getPackageName();
         TeleportEngine.execShizukuCommand(
                 "cmd appops set " + pkg + " POST_NOTIFICATION allow; " +
                 "pm grant " + pkg + " android.permission.POST_NOTIFICATIONS; " +
                 "pm grant " + pkg + " android.permission.RECORD_AUDIO; " +
-                "settings put secure long_press_timeout 400; " +
-                "settings put secure multi_press_timeout 300; " +
+                "settings put secure long_press_timeout 240; " +
+                "settings put secure multi_press_timeout 240; " +
                 "settings put secure tap_duration_threshold 0.0; " +
                 "settings put secure touch_blocking_period 0.0; " +
                 "settings put system pointer_speed 7; " +
@@ -348,7 +352,6 @@ public class MainActivity extends Activity {
                 "settings put system show_touches 0"
         );
     }
-
 
     public boolean checkAndRequestOverlayPermission() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
