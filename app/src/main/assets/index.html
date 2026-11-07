@@ -3368,18 +3368,21 @@
     }
 
     function applyShrinkNowAction() {
-      showTopToast(`🤏 Активация Стяга экрана (${currentShrinkPreset})...`);
+      showTopToast(`🤏 Кнопка «T» запущена в режиме Стяга (${currentShrinkPreset})!`);
       enqueueBridgeTask("apply_shrink_now", () => {
         const B = getBridge();
         if (!B) return;
-        if (currentShrinkPreset.startsWith("SHRINK-") && typeof B.setPixelDownscaleFactor === "function") {
-          B.setPixelDownscaleFactor(currentShrinkPct);
-        }
         if (typeof B.activateStretchFloatingButton === "function") {
-          B.activateStretchFloatingButton(currentShrinkPreset);
+          const res = B.activateStretchFloatingButton(currentShrinkPreset);
+          if (res === "NEED_PERMISSION") {
+            showTopToast("🪟 Разрешите показ поверх других окон!");
+          } else if (res === "NEED_AUTH") {
+            window.forceShowKickScreen("Сначала активируйте лицензионный ключ!");
+          }
         }
       }, 20);
     }
+
 
     function toggleWideHitboxFeature(enabled) {
       showTopToast(enabled ? `🎯 Широкие Хитбоксы (${currentStretch}) + Обход Android 17 ВКЛ!` : "Широкие Хитбоксы ВЫКЛ");
