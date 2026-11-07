@@ -16,7 +16,7 @@ import rikka.shizuku.Shizuku;
 public class TeleportEngine {
 
     private static Context appContext;
-    private static boolean isEngineRunning = false;
+    private static volatile boolean isEngineRunning = false;
     private static boolean wideHitboxActive = false;
     private static int nativeShortSide = 1080;
     private static int nativeLongSide = 2400;
@@ -98,43 +98,67 @@ public class TeleportEngine {
         });
     }
 
+    // ================= РАСТЯГ И СТЯГ ЭКРАНА С ОБХОДОМ ОШИБКИ ANDROID 17 =================
     public static boolean applyAspectRatioStretch(String ratio) {
         if (!isShizukuReady() && !ShizukuManager.isPermissionGranted()) return false;
 
         int baseShort = getNativeShortSide();
-        int targetLong;
+        int baseLong = getNativeLongSide();
+        int targetShort = baseShort;
+        int targetLong = baseLong;
         String clean = (ratio == null) ? "4:3" : ratio.trim();
 
-        switch (clean) {
-            case "1:1":
-                targetLong = Math.round(baseShort * 1.12f);
-                break;
-            case "5:4":
-                targetLong = Math.round(baseShort * 1.22f);
-                break;
-            case "4:3":
-                targetLong = Math.round(baseShort * 1.3333f);
-                break;
-            case "3:2":
-                targetLong = Math.round(baseShort * 1.42f);
-                break;
-            case "16:10":
-                targetLong = Math.round(baseShort * 1.50f);
-                break;
-            case "16:9":
-                targetLong = Math.round(baseShort * 1.58f);
-                break;
-            case "21:10":
-                targetLong = Math.round(baseShort * 1.68f);
-                break;
-            default:
-                targetLong = Math.round(baseShort * 1.3333f);
-                break;
+        // Если выбран режим СТЯГА (SHRINK-85, SHRINK-90, SHRINK-95, 21:9, 24:10)
+        if (clean.startsWith("SHRINK-")) {
+            int pct = 90;
+            try { pct = Integer.parseInt(clean.replace("SHRINK-", "")); } catch (Exception ignored) {}
+            pct = Math.max(75, Math.min(98, pct));
+            targetShort = Math.round(baseShort * (pct / 100f));
+            targetLong = Math.round(baseLong * (pct / 100f));
+        } else if ("21:9".equals(clean)) {
+            targetLong = Math.round(baseShort * 2.333f);
+        } else if ("24:10".equals(clean)) {
+            targetLong = Math.round(baseShort * 2.40f);
+        } else {
+            switch (clean) {
+                case "1:1":
+                    targetLong = Math.round(baseShort * 1.12f);
+                    break;
+                case "5:4":
+                    targetLong = Math.round(baseShort * 1.22f);
+                    break;
+                case "4:3":
+                    targetLong = Math.round(baseShort * 1.3333f);
+                    break;
+                case "3:2":
+                    targetLong = Math.round(baseShort * 1.42f);
+                    break;
+                case "16:10":
+                    targetLong = Math.round(baseShort * 1.50f);
+                    break;
+                case "16:9":
+                    targetLong = Math.round(baseShort * 1.58f);
+                    break;
+                case "21:10":
+                    targetLong = Math.round(baseShort * 1.68f);
+                    break;
+                default:
+                    targetLong = Math.round(baseShort * 1.3333f);
+                    break;
+            }
         }
 
+        if ((targetShort & 1) == 1) targetShort++;
         if ((targetLong & 1) == 1) targetLong++;
 
-        String cmd = "wm size " + baseShort + "x" + targetLong + "; "
+        // Принудительно включаем поддержку изменения геометрии для Android 15/16/17 (One UI 8/9),
+        // чтобы система НИКОГДА не писала "Приложение не поддерживает"
+        String cmd = "settings put global force_resizable_activities 1; "
+                + "settings put global enable_freeform_support 1; "
+                + "settings put global enable_non_resizable_multi_window 1; "
+                + "cmd window set-ignore-orientation-request true; "
+                + "cmd window set-fix-to-user-rotation disabled; "
+                + "wm size " + targetShort + "x" + targetLong + "; "
                 + "settings put system peak_refresh_rate 120.0; "
                 + "settings put system min_refresh_rate 120.0; "
                 + "settings put secure refresh_rate_mode 2;";
@@ -144,6 +168,7 @@ public class TeleportEngine {
 
     public static void releaseBoxToFullStretch() {
         String cmd = "wm size reset; "
+                + "cmd window set-ignore-orientation-request false; "
                 + "settings put system peak_refresh_rate 120.0; "
                 + "settings put system min_refresh_rate 120.0; "
                 + "settings put secure refresh_rate_mode 2;";
@@ -151,7 +176,11 @@ public class TeleportEngine {
     }
 
     public static void resetResolutionToNative() {
-        execShizukuCommand("wm size reset; wm density reset");
+        execShizukuCommand(
+                "wm size reset; wm density reset; "
+                + "cmd window set-ignore-orientation-request false; "
+                + "cmd window set-fix-to-user-rotation default;"
+        );
     }
 
     public static void enableWideHitboxQuantization(boolean enable) {
@@ -165,30 +194,29 @@ public class TeleportEngine {
         }
     }
 
-    // ================= ДВИЖОК «МЯСОРУБКА КУСКОВ V2» (7 HZ BURST + 26 MS QUANTUM BUFFER) =================
+    // ================= ДВИЖОК «МЯСОРУБКА КУСКОВ V3» (МГНОВЕННЫЙ КЛИК В ЗАКУПЕ + ЖЁСТКИЕ КУСКИ НА ФЛИКЕ) =================
     public static void startTeleport(String presetId) {
         isEngineRunning = true;
         if (!isShizukuReady() && !ShizukuManager.isPermissionGranted()) return;
 
         String pkg = appContext != null ? appContext.getPackageName() : "com.teleport.so2";
 
-        // Ключевая связка для максимально жёстких кусков:
-        // 1) windowsmgr.max_events_per_sec = 7 + ro.min_pointer_dur = 26:
-        //    Драйвер копит дельту свайпа 26 миллисекунд и выстреливает её одним огромным куском!
-        // 2) touch.InitialJump = 1 + touch.gestureMode = spots + ro.input.noresample = 1:
-        //    Полностью отрубает плавную интерполяцию между кусками.
-        // 3) fling_velocity = 180000 + early_phase_offset_ns = -10000000:
-        //    Максимальный взрывной рывок на каждый кусок.
+        // ВАЖНО ДЛЯ ПОКУПКИ ОРУЖИЯ С 1-ГО КЛИКА:
+        // ro.min_pointer_dur = 0 (НЕ блокирует быстрые тапы в магазине Standoff 2!)
+        // windowsmgr.max_events_per_sec = 26 + touch.InitialJump = 1 + ro.input.noresample = 1
+        // дают мощные куски при свайпе и мгновенную регистрацию каждого одиночного нажатия!
         String cmd = "cmd appops set " + pkg + " POST_NOTIFICATION allow; "
                 + "pm grant " + pkg + " android.permission.POST_NOTIFICATIONS; "
+                + "settings put global force_resizable_activities 1; "
+                + "settings put global enable_non_resizable_multi_window 1; "
                 + "cmd game mode performance com.axlebolt.standoff2; "
                 + "device_config put game_overlay com.axlebolt.standoff2 mode=2,fps=120:mode=3,fps=120; "
                 + "settings put secure touch_exploration_enabled 0; "
                 + "settings put secure touch_blocking_period 0.0; "
                 + "settings put secure tap_duration_threshold 0.0; "
                 + "settings put secure ignore_repeat_click_timeout 0; "
-                + "settings put secure long_press_timeout 260; "
-                + "settings put secure multi_press_timeout 230; "
+                + "settings put secure long_press_timeout 350; "
+                + "settings put secure multi_press_timeout 250; "
                 + "settings put system pointer_speed 7; "
                 + "settings put secure game_touch_sampling_rate 360; "
                 + "settings put system touch_sampling_rate 360; "
@@ -199,10 +227,10 @@ public class TeleportEngine {
                 + "setprop debug.touch.slop 0; "
                 + "setprop view.touch_slop 0; "
                 + "setprop view.scroll_friction 0; "
-                + "setprop view.minimum_fling_velocity 64000; "
-                + "setprop view.maximum_fling_velocity 180000; "
-                + "setprop ro.max.fling_velocity 180000; "
-                + "setprop ro.min.fling_velocity 64000; "
+                + "setprop view.minimum_fling_velocity 48000; "
+                + "setprop view.maximum_fling_velocity 190000; "
+                + "setprop ro.max.fling_velocity 190000; "
+                + "setprop ro.min.fling_velocity 48000; "
                 + "setprop debug.input.touch.prediction 0; "
                 + "setprop persist.sys.touch.prediction 0; "
                 + "setprop ro.input.noresample 1; "
@@ -210,16 +238,14 @@ public class TeleportEngine {
                 + "setprop touch.Temporality.filter 0; "
                 + "setprop touch.InitialJump 1; "
                 + "setprop touch.gestureMode spots; "
-                + "setprop debug.sf.nobootanimation 1; "
-                + "setprop ro.min_pointer_dur 26; "
+                + "setprop ro.min_pointer_dur 0; "
                 + "setprop touch.pressure.scale 0.0001; "
                 + "setprop touch.size.calibration geometric; "
-                + "setprop windowsmgr.max_events_per_sec 7; "
+                + "setprop windowsmgr.max_events_per_sec 26; "
                 + "setprop debug.sf.latch_unsignaled 1; "
                 + "setprop debug.sf.disable_backpressure 1; "
-                + "setprop debug.sf.early_phase_offset_ns -10000000; "
-                + "setprop debug.sf.early_app_phase_offset_ns -10000000; "
-                + "setprop debug.sf.high_fps_early_phase_offset_ns -10000000; "
+                + "setprop debug.sf.early_phase_offset_ns -8000000; "
+                + "setprop debug.sf.early_app_phase_offset_ns -8000000; "
                 + "settings put system peak_refresh_rate 120.0; "
                 + "settings put system min_refresh_rate 120.0; "
                 + "settings put secure refresh_rate_mode 2; "
@@ -239,7 +265,7 @@ public class TeleportEngine {
                 + "settings put secure long_press_timeout 400; "
                 + "settings put secure multi_press_timeout 300; "
                 + "setprop ro.input.noresample 0; "
-                + "setprop ro.min_pointer_dur 1; "
+                + "setprop ro.min_pointer_dur 0; "
                 + "setprop windowsmgr.max_events_per_sec 180; "
                 + "setprop debug.sf.early_phase_offset_ns 0;"
         );
@@ -252,13 +278,13 @@ public class TeleportEngine {
                 "wm size reset; wm density reset; "
                 + "settings put secure touch_blocking_period 0.0; "
                 + "settings put secure tap_duration_threshold 0.0; "
-                + "settings put secure long_press_timeout 260; "
-                + "settings put secure multi_press_timeout 230;"
+                + "settings put secure long_press_timeout 350; "
+                + "settings put secure multi_press_timeout 250; "
+                + "setprop ro.min_pointer_dur 0;"
         );
         startTeleport("extreme");
     }
 
-    // Полная математика всех 10 ползунков «Жёстких Кусков» (6..16 импульсов/сек + буфер 16..32 мс)
     public static void updateParameters(
             double sharp, double sx, double sy,
             int chunks, int chunkFast, double straight,
@@ -266,24 +292,22 @@ public class TeleportEngine {
     ) {
         if (!isShizukuReady() && !ShizukuManager.isPermissionGranted()) return;
 
-        // Чем выше накручены ползунки Кусков, тем ниже частота пакетов (до 6 кусков/сек!)
-        // и тем мощнее буфер накопления каждого куска (до 32 мс):
         double powerNorm = Math.min(1.0, (sharp + sx + accel) / 70.0);
         double chunkNorm = Math.min(1.0, chunks / 100.0);
-        double fastNorm = Math.min(1.0, chunkFast / 200.0);
 
-        int hardChunkRate = Math.max(6, Math.min(18, (int) Math.round(18.0 - (chunkNorm * 6.5) - (powerNorm * 4.0) - (fastNorm * 1.5))));
-        int pointerDurQuantumMs = Math.max(14, Math.min(32, (int) Math.round(12 + (chunkNorm * 12.0) + (pause * 0.25))));
-
-        long phaseOffsetNs = -1000000L * Math.max(4, Math.min(14, (grid / 42) + (pause / 5)));
-        int maxFling = (int) Math.round(90000 + (sharp * 2200) + (accel * 2200) + (chunkFast * 200));
-        int minFling = Math.max(32000, maxFling / 2);
+        // Оптимальное окно кусков 22..48 ev/s + ro.min_pointer_dur 0:
+        // Прицел прыгает крупными кусками при свайпе, но каждый клик по кнопкам закупа срабатывает с 1-го раза!
+        int hardChunkRate = Math.max(22, Math.min(55, (int) Math.round(52.0 - (chunkNorm * 18.0) - (powerNorm * 12.0))));
+        long phaseOffsetNs = -1000000L * Math.max(4, Math.min(12, (grid / 48) + (pause / 6)));
+        int maxFling = (int) Math.round(100000 + (sharp * 2400) + (accel * 2400) + (chunkFast * 200));
+        int minFling = Math.max(36000, maxFling / 2);
 
         String cmd = "settings put system pointer_speed 7; "
-                + "settings put secure long_press_timeout 260; "
-                + "settings put secure multi_press_timeout 230; "
+                + "settings put secure long_press_timeout 350; "
+                + "settings put secure multi_press_timeout 250; "
                 + "settings put secure touch_blocking_period 0.0; "
                 + "settings put secure tap_duration_threshold 0.0; "
+                + "settings put secure ignore_repeat_click_timeout 0; "
                 + "settings put system touch_sensitivity 1; "
                 + "settings put system sec_touch_sensitivity 1; "
                 + "setprop debug.touch.slop 0; "
@@ -300,14 +324,13 @@ public class TeleportEngine {
                 + "setprop touch.Temporality.filter 0; "
                 + "setprop touch.InitialJump 1; "
                 + "setprop touch.gestureMode spots; "
-                + "setprop ro.min_pointer_dur " + pointerDurQuantumMs + "; "
+                + "setprop ro.min_pointer_dur 0; "
                 + "setprop touch.pressure.scale 0.0001; "
                 + "setprop windowsmgr.max_events_per_sec " + hardChunkRate + "; "
                 + "setprop debug.sf.latch_unsignaled 1; "
                 + "setprop debug.sf.disable_backpressure 1; "
                 + "setprop debug.sf.early_phase_offset_ns " + phaseOffsetNs + "; "
                 + "setprop debug.sf.early_app_phase_offset_ns " + phaseOffsetNs + "; "
-                + "setprop debug.sf.high_fps_early_phase_offset_ns " + phaseOffsetNs + "; "
                 + "settings put secure game_touch_sampling_rate 360; "
                 + "settings put system touch_sampling_rate 360;";
 
@@ -319,27 +342,10 @@ public class TeleportEngine {
     public static void setRawInputNoSmoothing(boolean enabled) {
         if (!isShizukuReady() && !ShizukuManager.isPermissionGranted()) return;
         if (enabled) {
-            String cmd = "settings put secure long_press_timeout 260; "
-                    + "settings put secure multi_press_timeout 230; "
-                    + "setprop debug.touch.slop 0; "
-                    + "setprop view.touch_slop 0; "
-                    + "setprop view.scroll_friction 0; "
-                    + "setprop debug.input.touch.prediction 0; "
-                    + "setprop persist.sys.touch.prediction 0; "
-                    + "setprop ro.input.noresample 1; "
-                    + "setprop debug.input.NeedResample 0; "
-                    + "setprop touch.InitialJump 1; "
-                    + "setprop touch.gestureMode spots; "
-                    + "setprop ro.min_pointer_dur 26; "
-                    + "setprop windowsmgr.max_events_per_sec 7; "
-                    + "setprop debug.sf.early_phase_offset_ns -10000000; "
-                    + "setprop debug.sf.early_app_phase_offset_ns -10000000; "
-                    + "settings put secure touch_blocking_period 0.0; "
-                    + "settings put secure tap_duration_threshold 0.0; "
-                    + "settings put system pointer_speed 7;";
-            execShizukuCommand(cmd);
+            lastExecutedCmd = "";
+            startTeleport("extreme");
         } else {
-            execShizukuCommand("setprop ro.input.noresample 0; setprop ro.min_pointer_dur 1; setprop windowsmgr.max_events_per_sec 180; setprop debug.sf.early_phase_offset_ns 0;");
+            execShizukuCommand("setprop ro.input.noresample 0; setprop ro.min_pointer_dur 0; setprop windowsmgr.max_events_per_sec 180; setprop debug.sf.early_phase_offset_ns 0;");
         }
     }
 
@@ -423,7 +429,13 @@ public class TeleportEngine {
         } else {
             int w = Math.round(getNativeShortSide() * (pct / 100f));
             int h = Math.round(getNativeLongSide() * (pct / 100f));
-            execShizukuCommand("wm size " + w + "x" + h);
+            if ((w & 1) == 1) w++;
+            if ((h & 1) == 1) h++;
+            String cmd = "settings put global force_resizable_activities 1; "
+                    + "settings put global enable_freeform_support 1; "
+                    + "settings put global enable_non_resizable_multi_window 1; "
+                    + "wm size " + w + "x" + h;
+            execShizukuCommand(cmd);
         }
     }
 
