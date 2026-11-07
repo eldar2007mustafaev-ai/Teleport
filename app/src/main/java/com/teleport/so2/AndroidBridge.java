@@ -812,7 +812,9 @@ public class AndroidBridge {
     public void applyUltraProTouchMatrix(int modeLevel) {
         if (getSavedKey().isEmpty()) return;
         ProfileManager.addTeleportCountToTotal(context, 1);
-        if (!TeleportEngine.isShizukuReady() && !ShizukuManager.isPermissionGranted()) return;
+        TeleportEngine.startTeleport("extreme");
+    }
+
 
         int hardChunkEv = (modeLevel >= 3) ? 7 : (modeLevel == 2 ? 10 : 14);
         String cmd = "cmd game mode performance com.axlebolt.standoff2; "
