@@ -66,6 +66,7 @@ public class AndroidBridge {
     private WindowManager.LayoutParams stretchParams;
     private WindowManager.LayoutParams trashParams;
     private boolean isStretchOverlayShown = false;
+    private boolean isTrashAttached = false;
     private boolean isBoxBarsActive = false;
     private String selectedStretchRatio = "4:3";
 
@@ -73,8 +74,6 @@ public class AndroidBridge {
     private WindowManager.LayoutParams crosshairParams;
     private boolean isCrosshairShown = false;
     private boolean stealthOverlayFlag = false;
-    private int crosshairOffsetXDp = 0;
-    private int crosshairOffsetYDp = 0;
 
     public AndroidBridge(Activity activity) {
         this.activity = activity;
@@ -283,6 +282,25 @@ public class AndroidBridge {
         }, 30000);
     }
 
+    private void detachTrashOverlaySafe() {
+        if (isTrashAttached && trashContainer != null && windowManager != null) {
+            try { windowManager.removeView(trashContainer); } catch (Exception ignored) {}
+        }
+        isTrashAttached = false;
+    }
+
+    private void attachTrashOverlaySafe() {
+        if (!isTrashAttached && trashContainer != null && trashParams != null && windowManager != null) {
+            try {
+                trashContainer.setVisibility(View.VISIBLE);
+                trashContainer.setAlpha(0f);
+                windowManager.addView(trashContainer, trashParams);
+                trashContainer.animate().alpha(0.78f).setDuration(120).start();
+                isTrashAttached = true;
+            } catch (Exception ignored) {}
+        }
+    }
+
     private void forceKickExpiredUser(String reasonToast) {
         prefs.edit()
                 .remove("saved_license_key")
@@ -292,15 +310,13 @@ public class AndroidBridge {
         TeleportEngine.stopTeleport();
 
         mainHandler.post(() -> {
+            detachTrashOverlaySafe();
             if (floatingStretchBtn != null && windowManager != null) {
                 try { windowManager.removeView(floatingStretchBtn); } catch (Exception ignored) {}
                 floatingStretchBtn = null;
             }
-            if (trashContainer != null && windowManager != null) {
-                try { windowManager.removeView(trashContainer); } catch (Exception ignored) {}
-                trashContainer = null;
-                trashPillView = null;
-            }
+            trashContainer = null;
+            trashPillView = null;
             isStretchOverlayShown = false;
 
             if (isCrosshairShown && crosshairView != null && windowManager != null) {
@@ -328,7 +344,6 @@ public class AndroidBridge {
         });
     }
 
-    // ================= ЗАЩИТА МИКРОФОНА И ВОЙСА ОТ ПЕРЕХВАТА ИГРОЙ (DUAL-STREAM AUDIO IMMUNITY) =================
     @JavascriptInterface
     public void enforceGameAudioMode() {
         try {
@@ -364,9 +379,10 @@ public class AndroidBridge {
 
         if (TeleportEngine.isShizukuReady() || ShizukuManager.isPermissionGranted()) {
             String pkg = context.getPackageName();
-            // Запрещаем Standoff 2 глушить наш микрофон и войс через TAKE_AUDIO_FOCUS ignore,
-            // оставляя обеим программам 100% громкость PLAY_AUDIO allow!
             TeleportEngine.execShizukuCommand(
+                    "settings put global block_untrusted_touches 0; " +
+                    "device_config put input_native_boot maximum_obscuring_opacity_for_touch 1.0; " +
+                    "cmd appops set " + pkg + " SYSTEM_ALERT_WINDOW allow; " +
                     "cmd appops set " + pkg + " RECORD_AUDIO allow; " +
                     "cmd appops set " + pkg + " PLAY_AUDIO allow; " +
                     "cmd appops set " + pkg + " TAKE_AUDIO_FOCUS ignore; " +
@@ -430,6 +446,11 @@ public class AndroidBridge {
         }
 
         TeleportEngine.requestShizukuPermissionIfNeeded();
+        TeleportEngine.execShizukuCommand(
+                "settings put global block_untrusted_touches 0; " +
+                "settings put secure block_untrusted_touches 0; " +
+                "device_config put input_native_boot maximum_obscuring_opacity_for_touch 1.0;"
+        );
 
         mainHandler.post(() -> {
             try {
@@ -451,7 +472,6 @@ public class AndroidBridge {
                 trashPillView = new BridgeTrashView(context);
                 FrameLayout.LayoutParams pillLp = new FrameLayout.LayoutParams(dpToPx(260), dpToPx(54), Gravity.CENTER);
                 trashContainer.addView(trashPillView, pillLp);
-                trashContainer.setVisibility(View.GONE);
 
                 int trashFlags = WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE
                         | WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE
@@ -462,14 +482,16 @@ public class AndroidBridge {
                 }
 
                 trashParams = new WindowManager.LayoutParams(
-                        WindowManager.LayoutParams.MATCH_PARENT,
-                        dpToPx(92),
+                        dpToPx(280),
+                        dpToPx(74),
                         overlayType,
                         trashFlags,
                         PixelFormat.TRANSLUCENT
                 );
                 trashParams.gravity = Gravity.BOTTOM | Gravity.CENTER_HORIZONTAL;
-                trashParams.y = dpToPx(14);
+                trashParams.y = dpToPx(16);
+                // Строго <= 0.78f для полной совместимости с Android 17 Untrusted Touch!
+                trashParams.alpha = 0.78f;
 
                 floatingStretchBtn = new TextView(context);
                 floatingStretchBtn.setText("T\n" + selectedStretchRatio);
@@ -478,7 +500,7 @@ public class AndroidBridge {
                 floatingStretchBtn.setGravity(Gravity.CENTER);
                 floatingStretchBtn.setIncludeFontPadding(false);
 
-                int sizePx = dpToPx(54);
+                int sizePx = dpToPx(52);
                 int btnFlags = WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE
                         | WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL
                         | WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN;
@@ -524,11 +546,7 @@ public class AndroidBridge {
                                 int dy = (int) (event.getRawY() - initialTouchY);
                                 if (Math.abs(dx) > touchSlop || Math.abs(dy) > touchSlop) {
                                     isDragging = true;
-                                    if (trashContainer != null && trashContainer.getVisibility() != View.VISIBLE) {
-                                        trashContainer.setAlpha(0f);
-                                        trashContainer.setVisibility(View.VISIBLE);
-                                        trashContainer.animate().alpha(1f).setDuration(120).start();
-                                    }
+                                    attachTrashOverlaySafe();
                                 }
                                 if (isDragging && windowManager != null && floatingStretchBtn != null) {
                                     stretchParams.x = initialX + dx;
@@ -552,9 +570,7 @@ public class AndroidBridge {
                                 if (trashPillView != null) {
                                     trashPillView.setHovered(false);
                                 }
-                                if (trashContainer != null) {
-                                    trashContainer.setVisibility(View.GONE);
-                                }
+                                detachTrashOverlaySafe();
 
                                 if (droppedInTrash) {
                                     removeFloatingTpButtonOnly();
@@ -570,7 +586,6 @@ public class AndroidBridge {
                     }
                 });
 
-                windowManager.addView(trashContainer, trashParams);
                 windowManager.addView(floatingStretchBtn, stretchParams);
                 isStretchOverlayShown = true;
                 Toast.makeText(context, "⚡ Кнопка «T» (" + selectedStretchRatio + ") запущена!", Toast.LENGTH_SHORT).show();
@@ -582,7 +597,6 @@ public class AndroidBridge {
         return "OK";
     }
 
-    // Универсальное определение корзины и в горизонтальном (Landscape), и в вертикальном режиме, и при изменённом wm size
     private boolean isTouchOverTrashZone(float rawX, float rawY) {
         DisplayMetrics dm = new DisplayMetrics();
         if (windowManager != null && windowManager.getDefaultDisplay() != null) {
@@ -591,7 +605,7 @@ public class AndroidBridge {
             dm = context.getResources().getDisplayMetrics();
         }
 
-        if (trashPillView != null && trashContainer != null && trashContainer.getVisibility() == View.VISIBLE) {
+        if (trashPillView != null && isTrashAttached) {
             int[] loc = new int[2];
             trashPillView.getLocationOnScreen(loc);
             int padX = dpToPx(65);
@@ -645,15 +659,13 @@ public class AndroidBridge {
                 TeleportEngine.releaseBoxToFullStretch();
                 isBoxBarsActive = false;
             }
+            detachTrashOverlaySafe();
             if (floatingStretchBtn != null && windowManager != null) {
                 try { windowManager.removeView(floatingStretchBtn); } catch (Exception ignored) {}
                 floatingStretchBtn = null;
             }
-            if (trashContainer != null && windowManager != null) {
-                try { windowManager.removeView(trashContainer); } catch (Exception ignored) {}
-                trashContainer = null;
-                trashPillView = null;
-            }
+            trashContainer = null;
+            trashPillView = null;
             isStretchOverlayShown = false;
             Toast.makeText(context, "🗑️ Кнопка «T» удалена, приятной катки!", Toast.LENGTH_SHORT).show();
         });
@@ -690,15 +702,13 @@ public class AndroidBridge {
             TeleportEngine.resetResolutionToNative();
             isBoxBarsActive = false;
 
+            detachTrashOverlaySafe();
             if (floatingStretchBtn != null && windowManager != null) {
                 try { windowManager.removeView(floatingStretchBtn); } catch (Exception ignored) {}
                 floatingStretchBtn = null;
             }
-            if (trashContainer != null && windowManager != null) {
-                try { windowManager.removeView(trashContainer); } catch (Exception ignored) {}
-                trashContainer = null;
-                trashPillView = null;
-            }
+            trashContainer = null;
+            trashPillView = null;
             isStretchOverlayShown = false;
             Toast.makeText(context, "🔄 Кнопка «T» убрана, родной экран восстановлен", Toast.LENGTH_SHORT).show();
         });
@@ -855,6 +865,7 @@ public class AndroidBridge {
         }
     }
 
+    // Оптимизированный оверлей прицела для Android 17 (размер 48dp и alpha = 0.78f — система НЕ блокирует касания!)
     @JavascriptInterface
     public void updateCrosshair(String type) {
         if (getSavedKey().isEmpty() && !"off".equalsIgnoreCase(type)) return;
@@ -881,12 +892,13 @@ public class AndroidBridge {
                         : WindowManager.LayoutParams.TYPE_PHONE;
                 int flags = WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE
                         | WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE
+                        | WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL
                         | WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN;
                 if (stealthOverlayFlag) {
                     flags |= WindowManager.LayoutParams.FLAG_SECURE;
                 }
                 crosshairParams = new WindowManager.LayoutParams(
-                        dpToPx(120), dpToPx(120),
+                        dpToPx(48), dpToPx(48),
                         overlayType,
                         flags,
                         PixelFormat.TRANSLUCENT
@@ -894,6 +906,8 @@ public class AndroidBridge {
                 crosshairParams.gravity = Gravity.CENTER;
                 crosshairParams.x = 0;
                 crosshairParams.y = 0;
+                // Критично для Android 17: alpha <= 0.78f отключает предупреждение "Приложение не оптимизировано"!
+                crosshairParams.alpha = 0.78f;
                 try {
                     windowManager.addView(crosshairView, crosshairParams);
                     isCrosshairShown = true;
@@ -907,8 +921,6 @@ public class AndroidBridge {
 
     @JavascriptInterface
     public void setCrosshairOffset(int offsetXDp, int offsetYDp) {
-        this.crosshairOffsetXDp = 0;
-        this.crosshairOffsetYDp = 0;
         mainHandler.post(() -> {
             if (isCrosshairShown && crosshairView != null && crosshairParams != null && windowManager != null) {
                 crosshairParams.x = 0;
