@@ -810,6 +810,15 @@ public class AndroidBridge {
     public void setHzThermalGuard(boolean enabled) {
         TeleportEngine.setHzThermalGuard(enabled);
     }
+   
+    @JavascriptInterface
+    public void applyShooterOptimizer(
+            int fpsLock, int gpuBoost, int frameTime,
+            int edgeSens, int multiTouch, int netBuffer, int thermalLim
+    ) {
+        if (getSavedKey().isEmpty()) return;
+        TeleportEngine.applyShooterOptimizer(fpsLock, gpuBoost, frameTime, edgeSens, multiTouch, netBuffer, thermalLim);
+    }
 
     @JavascriptInterface
     public void setEnhancedRecoilFix(boolean enabled, int power) {
