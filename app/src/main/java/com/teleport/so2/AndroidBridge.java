@@ -1402,8 +1402,6 @@ public class AndroidBridge {
         @Override
         protected void onDraw(Canvas canvas) {
             super.onDraw(canvas);
-            canvas.drawColor(Color.TRANSPARENT, android.graphics.PorterDuff.Mode.CLEAR);
-            if ("off".equalsIgnoreCase(type)) return;
             float pad = 6f;
             rect.set(pad, pad, getWidth() - pad, getHeight() - pad);
             if (hovered) {
@@ -1443,6 +1441,15 @@ public class AndroidBridge {
             outlinePaint.setColor(Color.BLACK);
             paint.setStrokeCap(Paint.Cap.ROUND);
             outlinePaint.setStrokeCap(Paint.Cap.ROUND);
+        }
+        
+        @Override
+        protected void onDraw(Canvas canvas) {
+            super.onDraw(canvas);
+            canvas.drawColor(Color.TRANSPARENT, android.graphics.PorterDuff.Mode.CLEAR);
+            if ("off".equalsIgnoreCase(type)) return;
+            
+            // ... дальше вставляется остальной код отрисовки прицела (линии, кружки и т.д.) ...
         }
 
         public void setCrosshairType(String t) {
