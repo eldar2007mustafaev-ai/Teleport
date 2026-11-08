@@ -328,7 +328,7 @@ public class AndroidBridge {
         });
     }
 
-    // ================= ЗАЩИТА ЗВУКА ИГРЫ ОТ ПРИГЛУШЕНИЯ (NO ANDROID AUDIO DUCKING) =================
+    // ================= ЗАЩИТА МИКРОФОНА И ВОЙСА ОТ ПЕРЕХВАТА ИГРОЙ (DUAL-STREAM AUDIO IMMUNITY) =================
     @JavascriptInterface
     public void enforceGameAudioMode() {
         try {
@@ -336,34 +336,45 @@ public class AndroidBridge {
             if (am != null) {
                 am.setMode(AudioManager.MODE_NORMAL);
                 am.setSpeakerphoneOn(true);
-                am.abandonAudioFocus(null);
+                am.setMicrophoneMute(false);
             }
         } catch (Throwable ignored) {}
 
         mainHandler.postDelayed(() -> {
             try {
                 AudioManager am = (AudioManager) context.getSystemService(Context.AUDIO_SERVICE);
-                if (am != null && am.getMode() != AudioManager.MODE_NORMAL) {
+                if (am != null) {
                     am.setMode(AudioManager.MODE_NORMAL);
                     am.setSpeakerphoneOn(true);
+                    am.setMicrophoneMute(false);
                 }
             } catch (Throwable ignored) {}
-        }, 450);
+        }, 500);
 
         mainHandler.postDelayed(() -> {
             try {
                 AudioManager am = (AudioManager) context.getSystemService(Context.AUDIO_SERVICE);
-                if (am != null && am.getMode() != AudioManager.MODE_NORMAL) {
+                if (am != null) {
                     am.setMode(AudioManager.MODE_NORMAL);
                     am.setSpeakerphoneOn(true);
+                    am.setMicrophoneMute(false);
                 }
             } catch (Throwable ignored) {}
-        }, 1250);
+        }, 1500);
 
         if (TeleportEngine.isShizukuReady() || ShizukuManager.isPermissionGranted()) {
+            String pkg = context.getPackageName();
+            // Запрещаем Standoff 2 глушить наш микрофон и войс через TAKE_AUDIO_FOCUS ignore,
+            // оставляя обеим программам 100% громкость PLAY_AUDIO allow!
             TeleportEngine.execShizukuCommand(
-                    "cmd appops set com.axlebolt.standoff2 TAKE_AUDIO_FOCUS allow; " +
-                    "cmd appops set com.axlebolt.standoff2 PLAY_AUDIO allow;"
+                    "cmd appops set " + pkg + " RECORD_AUDIO allow; " +
+                    "cmd appops set " + pkg + " PLAY_AUDIO allow; " +
+                    "cmd appops set " + pkg + " TAKE_AUDIO_FOCUS ignore; " +
+                    "cmd appops set " + pkg + " RUN_IN_BACKGROUND allow; " +
+                    "cmd appops set " + pkg + " RUN_ANY_IN_BACKGROUND allow; " +
+                    "cmd deviceidle whitelist +" + pkg + "; " +
+                    "cmd appops set com.axlebolt.standoff2 PLAY_AUDIO allow; " +
+                    "cmd appops set com.axlebolt.standoff2 TAKE_AUDIO_FOCUS ignore;"
             );
         }
     }
@@ -438,7 +449,7 @@ public class AndroidBridge {
 
                 trashContainer = new FrameLayout(context);
                 trashPillView = new BridgeTrashView(context);
-                FrameLayout.LayoutParams pillLp = new FrameLayout.LayoutParams(dpToPx(250), dpToPx(52), Gravity.CENTER);
+                FrameLayout.LayoutParams pillLp = new FrameLayout.LayoutParams(dpToPx(260), dpToPx(54), Gravity.CENTER);
                 trashContainer.addView(trashPillView, pillLp);
                 trashContainer.setVisibility(View.GONE);
 
@@ -452,13 +463,13 @@ public class AndroidBridge {
 
                 trashParams = new WindowManager.LayoutParams(
                         WindowManager.LayoutParams.MATCH_PARENT,
-                        dpToPx(86),
+                        dpToPx(92),
                         overlayType,
                         trashFlags,
                         PixelFormat.TRANSLUCENT
                 );
                 trashParams.gravity = Gravity.BOTTOM | Gravity.CENTER_HORIZONTAL;
-                trashParams.y = dpToPx(16);
+                trashParams.y = dpToPx(14);
 
                 floatingStretchBtn = new TextView(context);
                 floatingStretchBtn.setText("T\n" + selectedStretchRatio);
@@ -484,7 +495,7 @@ public class AndroidBridge {
                 );
                 stretchParams.gravity = Gravity.TOP | Gravity.START;
                 stretchParams.x = dpToPx(20);
-                stretchParams.y = dpToPx(150);
+                stretchParams.y = dpToPx(140);
 
                 isBoxBarsActive = false;
                 updateFloatingBtnAppearance();
@@ -493,7 +504,7 @@ public class AndroidBridge {
                     private int initialX, initialY;
                     private float initialTouchX, initialTouchY;
                     private boolean isDragging = false;
-                    private final int touchSlop = dpToPx(11);
+                    private final int touchSlop = dpToPx(10);
 
                     @Override
                     public boolean onTouch(View v, MotionEvent event) {
@@ -516,7 +527,7 @@ public class AndroidBridge {
                                     if (trashContainer != null && trashContainer.getVisibility() != View.VISIBLE) {
                                         trashContainer.setAlpha(0f);
                                         trashContainer.setVisibility(View.VISIBLE);
-                                        trashContainer.animate().alpha(1f).setDuration(130).start();
+                                        trashContainer.animate().alpha(1f).setDuration(120).start();
                                     }
                                 }
                                 if (isDragging && windowManager != null && floatingStretchBtn != null) {
@@ -571,6 +582,7 @@ public class AndroidBridge {
         return "OK";
     }
 
+    // Универсальное определение корзины и в горизонтальном (Landscape), и в вертикальном режиме, и при изменённом wm size
     private boolean isTouchOverTrashZone(float rawX, float rawY) {
         DisplayMetrics dm = new DisplayMetrics();
         if (windowManager != null && windowManager.getDefaultDisplay() != null) {
@@ -578,19 +590,27 @@ public class AndroidBridge {
         } else {
             dm = context.getResources().getDisplayMetrics();
         }
-        int screenH = dm.heightPixels;
+
         if (trashPillView != null && trashContainer != null && trashContainer.getVisibility() == View.VISIBLE) {
             int[] loc = new int[2];
             trashPillView.getLocationOnScreen(loc);
-            int left = loc[0] - dpToPx(35);
-            int top = loc[1] - dpToPx(35);
-            int right = loc[0] + trashPillView.getWidth() + dpToPx(35);
-            int bottom = loc[1] + trashPillView.getHeight() + dpToPx(45);
+            int padX = dpToPx(65);
+            int padY = dpToPx(65);
+            int left = loc[0] - padX;
+            int top = loc[1] - padY;
+            int right = loc[0] + trashPillView.getWidth() + padX;
+            int bottom = loc[1] + trashPillView.getHeight() + padY;
             if (rawX >= left && rawX <= right && rawY >= top && rawY <= bottom) {
                 return true;
             }
         }
-        return rawY >= (screenH - dpToPx(105));
+
+        int curH = dm.heightPixels;
+        int shortSide = Math.min(dm.widthPixels, dm.heightPixels);
+        if (rawY >= (curH - dpToPx(135)) || rawY >= (shortSide - dpToPx(135))) {
+            return true;
+        }
+        return stretchParams != null && stretchParams.y >= (shortSide * 0.68f);
     }
 
     private void toggleTwoStepStretchAction() {
@@ -609,7 +629,7 @@ public class AndroidBridge {
             boolean ok = TeleportEngine.applyAspectRatioStretch(selectedStretchRatio);
             if (ok) {
                 isBoxBarsActive = true;
-                Toast.makeText(context, "⬛ Шаг 1 (" + selectedStretchRatio + ") включен! Зайди в игру и нажми «T» снова", Toast.LENGTH_SHORT).show();
+                Toast.makeText(context, "⬛ Шаг 1 (" + selectedStretchRatio + ") включен! Дождись меню игры и нажми «T» снова", Toast.LENGTH_SHORT).show();
             }
         } else {
             TeleportEngine.releaseBoxToFullStretch();
@@ -1160,7 +1180,6 @@ public class AndroidBridge {
         }
     }
 
-    // ================= ПАНЕЛЬ УПРАВЛЕНИЯ ВОЙСОМ В ШТОРКЕ УВЕДОМЛЕНИЙ =================
     private static final String VOICE_CHANNEL_ID = "so2tp_voice_call_channel_v2";
     private static final int VOICE_NOTIF_ID = 7744;
     private static final String ACTION_VOICE_MUTE = "com.teleport.so2.ACTION_VOICE_MUTE";
@@ -1277,7 +1296,7 @@ public class AndroidBridge {
 
                 String muteLabel = isMuted ? "🎤 ВКЛ МИКРО" : "🔇 ВЫКЛ МИКРО";
                 String deafLabel = isDeafened ? "🎧 ВКЛ ЗВУК" : "🔈 ВЫКЛ ЗВУК";
-                String statusSub = (isMuted ? "🔇 Микро ВЫКЛ" : "🎤 Микро ВКЛ") + "  •  " + (isDeafened ? "🔈 Звук ВЫКЛ" : "🎧 Звук 300% (No Ducking)");
+                String statusSub = (isMuted ? "🔇 Микро ВЫКЛ" : "🎤 Микро ВКЛ") + "  •  " + (isDeafened ? "🔈 Звук ВЫКЛ" : "🎧 Звук 400% (Squad Isolator)");
 
                 Notification.Builder builder = (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O)
                         ? new Notification.Builder(context, VOICE_CHANNEL_ID)
