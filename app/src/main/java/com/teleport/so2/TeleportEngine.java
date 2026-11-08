@@ -109,7 +109,7 @@ public class TeleportEngine {
                 }
             }
         } catch (Throwable ignored) {}
-        return 1; // Стандартный горизонтальный режим (ROTATION_90)
+        return 1;
     }
 
     // ================= РАСТЯГ И СТЯГ С МЁРТВОЙ ФИКСАЦИЕЙ В ГОРИЗОНТАЛЬНОМ РЕЖИМЕ =================
@@ -168,8 +168,11 @@ public class TeleportEngine {
 
         int landRot = getCurrentLandscapeRotation();
 
-        // ВАЖНО: set-ignore-orientation-request ОБЯЗАТЕЛЬНО false, чтобы система уважала Landscape игры и НЕ переворачивала экран в портрет!
-        String cmd = "settings put global force_resizable_activities 1; "
+        String cmd = "settings put global block_untrusted_touches 0; "
+                + "settings put secure block_untrusted_touches 0; "
+                + "settings put global maximum_obscuring_opacity_for_touch 1.0; "
+                + "device_config put input_native_boot maximum_obscuring_opacity_for_touch 1.0; "
+                + "settings put global force_resizable_activities 1; "
                 + "settings put global enable_freeform_support 1; "
                 + "settings put global enable_non_resizable_multi_window 1; "
                 + "cmd window set-ignore-orientation-request false; "
@@ -219,14 +222,26 @@ public class TeleportEngine {
         }
     }
 
-    // ================= ДВИЖОК «МЯСОРУБКА КУСКОВ V3» =================
+    // ================= ДВИЖОК «ЧИСТЫЙ ТЕЛЕПОРТ V4» (ANDROID 17 UNTRUSTED-TOUCH BYPASS + ZERO JITTER) =================
     public static void startTeleport(String presetId) {
         isEngineRunning = true;
         if (!isShizukuReady() && !ShizukuManager.isPermissionGranted()) return;
 
         String pkg = appContext != null ? appContext.getPackageName() : "com.teleport.so2";
 
-        String cmd = "cmd appops set " + pkg + " POST_NOTIFICATION allow; "
+        // 1) block_untrusted_touches 0 + maximum_obscuring_opacity_for_touch 1.0 + SYSTEM_ALERT_WINDOW allow
+        //    полностью убирают плашку Android 17 "Приложение не оптимизировано" и снимают системную задержку тача!
+        // 2) windowsmgr.max_events_per_sec 30 (ровно 1/4 от 120 Гц) + ro.min_pointer_dur 8 + view.touch_slop 1
+        //    дают мгновенный телепорт без единого дрожания прицела и покупку оружия с 1-го клика!
+        String cmd = "settings put global block_untrusted_touches 0; "
+                + "settings put secure block_untrusted_touches 0; "
+                + "settings put system block_untrusted_touches 0; "
+                + "settings put global maximum_obscuring_opacity_for_touch 1.0; "
+                + "settings put secure maximum_obscuring_opacity_for_touch 1.0; "
+                + "device_config put input_native_boot maximum_obscuring_opacity_for_touch 1.0; "
+                + "device_config put window_manager block_untrusted_touches 0; "
+                + "cmd appops set " + pkg + " SYSTEM_ALERT_WINDOW allow; "
+                + "cmd appops set " + pkg + " POST_NOTIFICATION allow; "
                 + "cmd appops set " + pkg + " RECORD_AUDIO allow; "
                 + "cmd appops set " + pkg + " PLAY_AUDIO allow; "
                 + "cmd appops set " + pkg + " RUN_IN_BACKGROUND allow; "
@@ -243,8 +258,8 @@ public class TeleportEngine {
                 + "settings put secure touch_blocking_period 0.0; "
                 + "settings put secure tap_duration_threshold 0.0; "
                 + "settings put secure ignore_repeat_click_timeout 0; "
-                + "settings put secure long_press_timeout 350; "
-                + "settings put secure multi_press_timeout 250; "
+                + "settings put secure long_press_timeout 340; "
+                + "settings put secure multi_press_timeout 240; "
                 + "settings put system pointer_speed 7; "
                 + "settings put secure game_touch_sampling_rate 360; "
                 + "settings put system touch_sampling_rate 360; "
@@ -252,28 +267,30 @@ public class TeleportEngine {
                 + "settings put system touch_sensitivity 1; "
                 + "settings put system sec_touch_sensitivity 1; "
                 + "settings put secure stylus_handwriting_enabled 0; "
-                + "setprop debug.touch.slop 0; "
-                + "setprop view.touch_slop 0; "
+                + "setprop debug.touch.slop 1; "
+                + "setprop view.touch_slop 1; "
+                + "setprop touch.filter.level 2; "
                 + "setprop view.scroll_friction 0; "
-                + "setprop view.minimum_fling_velocity 48000; "
-                + "setprop view.maximum_fling_velocity 190000; "
-                + "setprop ro.max.fling_velocity 190000; "
-                + "setprop ro.min.fling_velocity 48000; "
+                + "setprop view.minimum_fling_velocity 85000; "
+                + "setprop view.maximum_fling_velocity 320000; "
+                + "setprop ro.max.fling_velocity 320000; "
+                + "setprop ro.min.fling_velocity 85000; "
                 + "setprop debug.input.touch.prediction 0; "
                 + "setprop persist.sys.touch.prediction 0; "
                 + "setprop ro.input.noresample 1; "
                 + "setprop debug.input.NeedResample 0; "
-                + "setprop touch.Temporality.filter 0; "
                 + "setprop touch.InitialJump 1; "
+                + "setprop touch.acceleration.hw 1; "
+                + "setprop touch.distance.scale 2.4; "
                 + "setprop touch.gestureMode spots; "
-                + "setprop ro.min_pointer_dur 0; "
+                + "setprop ro.min_pointer_dur 8; "
                 + "setprop touch.pressure.scale 0.0001; "
                 + "setprop touch.size.calibration geometric; "
-                + "setprop windowsmgr.max_events_per_sec 26; "
+                + "setprop windowsmgr.max_events_per_sec 30; "
                 + "setprop debug.sf.latch_unsignaled 1; "
                 + "setprop debug.sf.disable_backpressure 1; "
-                + "setprop debug.sf.early_phase_offset_ns -8000000; "
-                + "setprop debug.sf.early_app_phase_offset_ns -8000000; "
+                + "setprop debug.sf.early_phase_offset_ns -6000000; "
+                + "setprop debug.sf.early_app_phase_offset_ns -6000000; "
                 + "settings put system peak_refresh_rate 120.0; "
                 + "settings put system min_refresh_rate 120.0; "
                 + "settings put secure refresh_rate_mode 2; "
@@ -293,7 +310,7 @@ public class TeleportEngine {
                 + "settings put secure long_press_timeout 400; "
                 + "settings put secure multi_press_timeout 300; "
                 + "setprop ro.input.noresample 0; "
-                + "setprop ro.min_pointer_dur 0; "
+                + "setprop ro.min_pointer_dur 1; "
                 + "setprop windowsmgr.max_events_per_sec 180; "
                 + "setprop debug.sf.early_phase_offset_ns 0;"
         );
@@ -304,16 +321,20 @@ public class TeleportEngine {
         lastExecutedCmd = "";
         execShizukuCommand(
                 "wm size reset; wm density reset; "
+                + "settings put global block_untrusted_touches 0; "
+                + "settings put secure block_untrusted_touches 0; "
+                + "device_config put input_native_boot maximum_obscuring_opacity_for_touch 1.0; "
                 + "cmd window set-ignore-orientation-request false; "
                 + "settings put secure touch_blocking_period 0.0; "
                 + "settings put secure tap_duration_threshold 0.0; "
-                + "settings put secure long_press_timeout 350; "
-                + "settings put secure multi_press_timeout 250; "
-                + "setprop ro.min_pointer_dur 0;"
+                + "settings put secure long_press_timeout 340; "
+                + "settings put secure multi_press_timeout 240; "
+                + "setprop ro.min_pointer_dur 8;"
         );
         startTeleport("extreme");
     }
 
+    // Гармоническая синхронизация кусков с экраном 120 Гц (делители 24, 30, 40, 60 Гц — 0% дрожания прицела!)
     public static void updateParameters(
             double sharp, double sx, double sy,
             int chunks, int chunkFast, double straight,
@@ -321,24 +342,37 @@ public class TeleportEngine {
     ) {
         if (!isShizukuReady() && !ShizukuManager.isPermissionGranted()) return;
 
-        double powerNorm = Math.min(1.0, (sharp + sx + accel) / 70.0);
-        double chunkNorm = Math.min(1.0, chunks / 100.0);
+        double totalIntensity = ((sharp + sx + accel) / 75.0) * 0.6 + (chunks / 100.0) * 0.4;
+        // Используем ТОЛЬКО чистые делители 120 Гц (24, 30, 40, 60), чтобы кадры никогда не рвались и прицел не дрожал!
+        int harmonicChunkRate;
+        if (totalIntensity >= 0.82) {
+            harmonicChunkRate = 24; // 1 мощный прыжок ровно каждые 5 кадров
+        } else if (totalIntensity >= 0.60) {
+            harmonicChunkRate = 30; // 1 прыжок ровно каждые 4 кадра
+        } else if (totalIntensity >= 0.35) {
+            harmonicChunkRate = 40; // 1 прыжок ровно каждые 3 кадра
+        } else {
+            harmonicChunkRate = 60; // 1 прыжок каждые 2 кадра
+        }
 
-        int hardChunkRate = Math.max(22, Math.min(55, (int) Math.round(52.0 - (chunkNorm * 18.0) - (powerNorm * 12.0))));
-        long phaseOffsetNs = -1000000L * Math.max(4, Math.min(12, (grid / 48) + (pause / 6)));
-        int maxFling = (int) Math.round(100000 + (sharp * 2400) + (accel * 2400) + (chunkFast * 200));
-        int minFling = Math.max(36000, maxFling / 2);
+        int pointerDurMs = Math.max(6, Math.min(12, 6 + (chunks / 20)));
+        int maxFling = (int) Math.round(160000 + (sharp * 3500) + (accel * 3500) + (chunkFast * 300));
+        int minFling = Math.max(65000, maxFling / 2);
 
-        String cmd = "settings put system pointer_speed 7; "
-                + "settings put secure long_press_timeout 350; "
-                + "settings put secure multi_press_timeout 250; "
+        String cmd = "settings put global block_untrusted_touches 0; "
+                + "settings put secure block_untrusted_touches 0; "
+                + "device_config put input_native_boot maximum_obscuring_opacity_for_touch 1.0; "
+                + "settings put system pointer_speed 7; "
+                + "settings put secure long_press_timeout 340; "
+                + "settings put secure multi_press_timeout 240; "
                 + "settings put secure touch_blocking_period 0.0; "
                 + "settings put secure tap_duration_threshold 0.0; "
                 + "settings put secure ignore_repeat_click_timeout 0; "
                 + "settings put system touch_sensitivity 1; "
                 + "settings put system sec_touch_sensitivity 1; "
-                + "setprop debug.touch.slop 0; "
-                + "setprop view.touch_slop 0; "
+                + "setprop debug.touch.slop 1; "
+                + "setprop view.touch_slop 1; "
+                + "setprop touch.filter.level 2; "
                 + "setprop view.scroll_friction 0; "
                 + "setprop view.minimum_fling_velocity " + minFling + "; "
                 + "setprop view.maximum_fling_velocity " + maxFling + "; "
@@ -348,16 +382,17 @@ public class TeleportEngine {
                 + "setprop persist.sys.touch.prediction 0; "
                 + "setprop ro.input.noresample 1; "
                 + "setprop debug.input.NeedResample 0; "
-                + "setprop touch.Temporality.filter 0; "
                 + "setprop touch.InitialJump 1; "
+                + "setprop touch.acceleration.hw 1; "
+                + "setprop touch.distance.scale 2.4; "
                 + "setprop touch.gestureMode spots; "
-                + "setprop ro.min_pointer_dur 0; "
+                + "setprop ro.min_pointer_dur " + pointerDurMs + "; "
                 + "setprop touch.pressure.scale 0.0001; "
-                + "setprop windowsmgr.max_events_per_sec " + hardChunkRate + "; "
+                + "setprop windowsmgr.max_events_per_sec " + harmonicChunkRate + "; "
                 + "setprop debug.sf.latch_unsignaled 1; "
                 + "setprop debug.sf.disable_backpressure 1; "
-                + "setprop debug.sf.early_phase_offset_ns " + phaseOffsetNs + "; "
-                + "setprop debug.sf.early_app_phase_offset_ns " + phaseOffsetNs + "; "
+                + "setprop debug.sf.early_phase_offset_ns -6000000; "
+                + "setprop debug.sf.early_app_phase_offset_ns -6000000; "
                 + "settings put secure game_touch_sampling_rate 360; "
                 + "settings put system touch_sampling_rate 360;";
 
@@ -372,7 +407,7 @@ public class TeleportEngine {
             lastExecutedCmd = "";
             startTeleport("extreme");
         } else {
-            execShizukuCommand("setprop ro.input.noresample 0; setprop ro.min_pointer_dur 0; setprop windowsmgr.max_events_per_sec 180; setprop debug.sf.early_phase_offset_ns 0;");
+            execShizukuCommand("setprop ro.input.noresample 0; setprop ro.min_pointer_dur 1; setprop windowsmgr.max_events_per_sec 180; setprop debug.sf.early_phase_offset_ns 0;");
         }
     }
 
@@ -459,7 +494,8 @@ public class TeleportEngine {
             if ((w & 1) == 1) w++;
             if ((h & 1) == 1) h++;
             int landRot = getCurrentLandscapeRotation();
-            String cmd = "settings put global force_resizable_activities 1; "
+            String cmd = "settings put global block_untrusted_touches 0; "
+                    + "settings put global force_resizable_activities 1; "
                     + "settings put global enable_freeform_support 1; "
                     + "settings put global enable_non_resizable_multi_window 1; "
                     + "cmd window set-ignore-orientation-request false; "
