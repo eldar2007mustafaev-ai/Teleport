@@ -1247,13 +1247,13 @@
         </div>
       </div>
 
-      <!-- ПОДПАНЕЛЬ 1А: ЧИСТЫЙ ДИСКРЕТНЫЙ ТЕЛЕПОРТ (ТОЛЬКО 4 РЕАЛЬНЫХ ПОЛЗУНКА БЕЗ ВОДЫ) -->
+      <!-- ПОДПАНЕЛЬ 1А: ПРОФЕССИОНАЛЬНЫЙ ДВИЖОК TELEPORT & SPRAY CONTROL -->
       <div id="subpanel-sens">
         <div class="section-card">
           <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:9px;">
             <div>
-              <div id="tpStatusHeading" style="font-size:13.5px; font-weight:900; color:#fff;">ТЕЛЕПОРТ: ВЫКЛЮЧЕН</div>
-              <div style="font-size:10px; color:var(--text-muted);">Zero-Animation Frame Skip (<span id="calibModelName" style="color:#fff;">SM-S938B</span>)</div>
+              <div id="tpStatusHeading" style="font-size:13.5px; font-weight:900; color:#fff;">TELEPORT ENGINE: ВЫКЛЮЧЕН</div>
+              <div style="font-size:10px; color:var(--text-muted);">Instant Point-to-Point Transfer (<span id="calibModelName" style="color:#fff;">SM-S938B</span>)</div>
             </div>
             <label class="ios-switch">
               <input type="checkbox" id="innerTpToggle" onchange="toggleTeleportMaster(this.checked)" />
@@ -1262,38 +1262,38 @@
           </div>
           <div style="display:grid; grid-template-columns:1.15fr 1fr; gap:7px;">
             <button type="button" class="btn-main" id="mainTpActionBtn" style="padding:10px 8px; font-size:11px;" onclick="toggleTeleportMaster(!document.getElementById('innerTpToggle').checked)">
-              ⚡ ВКЛЮЧИТЬ ТЕЛЕПОРТ
+              ⚡ ВКЛЮЧИТЬ TELEPORT
             </button>
             <button type="button" class="btn-dark" style="padding:10px 8px; font-size:10.5px; border-color:#fff;" onclick="runSmartScanAndApply()">
-              🔥 МАКС. ТЕЛЕПОРТ
+              🔥 ПРЕСЕТ H9IJE PRO
             </button>
           </div>
         </div>
 
         <div class="section-card">
           <div class="section-header-tag">
-            <span>КОНФИГИ МГНОВЕННОГО ТЕЛЕПОРТА</span>
-            <span>0% АНИМАЦИИ</span>
+            <span>КИБЕРСПОРТИВНЫЕ ПРОФИЛИ НАВОДКИ</span>
+            <span>PRO ENGINE</span>
           </div>
           <div class="quick-modes-compact">
-            <div class="qmode-chip active" id="qmode-1" onclick="selectQuickSensMode(1, 25.0, 100, 32, 25.0)">
-              <div class="qmode-chip-title">⚡ 1. ТЕЛЕПОРТ 100%</div>
+            <div class="qmode-chip active" id="qmode-1" onclick="selectQuickSensMode(1, 25.0, 100, 34, 25.0)">
+              <div class="qmode-chip-title">⚡ 1. TELEPORT</div>
               <div class="qmode-chip-sub" id="qbtn-1">АКТИВЕН</div>
             </div>
-            <div class="qmode-chip" id="qmode-2" onclick="selectQuickSensMode(2, 25.0, 96, 28, 22.0)">
-              <div class="qmode-chip-title">🎯 2. МИКРО-ФЛИК</div>
-              <div class="qmode-chip-sub" id="qbtn-2">БЛИЖНЯЯ ДИСТ.</div>
+            <div class="qmode-chip" id="qmode-2" onclick="selectQuickSensMode(2, 22.0, 82, 22, 20.5)">
+              <div class="qmode-chip-title">🎯 2. AWM / DEAGLE</div>
+              <div class="qmode-chip-sub" id="qbtn-2">БЕЗ ТРЯСКИ</div>
             </div>
-            <div class="qmode-chip" id="qmode-3" onclick="selectQuickSensMode(3, 24.0, 100, 36, 25.0)">
-              <div class="qmode-chip-title">💀 3. РАЗВОРОТ 180°</div>
-              <div class="qmode-chip-sub" id="qbtn-3">AWM / DEAGLE</div>
+            <div class="qmode-chip" id="qmode-3" onclick="selectQuickSensMode(3, 24.5, 96, 28, 23.5)">
+              <div class="qmode-chip-title">🔥 3. AKR TRANSFER</div>
+              <div class="qmode-chip-sub" id="qbtn-3">ЗАЖИМ В ТОЧКУ</div>
             </div>
           </div>
 
           <div class="param-box" style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
             <div style="padding-right:8px;">
-              <div class="param-name">⚡ Вырезать плавную анимацию флика (Frame-Skip)</div>
-              <div class="param-sub">Прицел перескакивает из точки А в точку Б за 1 кадр (и вблизи, и вдали)</div>
+              <div class="param-name">⚡ Отключение сглаживания (Zero-Smoothing Teleport)</div>
+              <div class="param-sub">Мгновенный скачок прицела из точки А в точку Б без промежуточной анимации</div>
             </div>
             <label class="ios-switch">
               <input type="checkbox" id="zeroDelaySnapToggle" checked onchange="onZeroDelayToggle(this.checked)" />
@@ -1301,22 +1301,22 @@
             </label>
           </div>
 
-          <!-- 4 РЕАЛЬНЫХ ДРАЙВЕРНЫХ ПОЛЗУНКА ТЕЛЕПОРТА -->
+          <!-- 4 ПРОФЕССИОНАЛЬНЫХ ДРАЙВЕРНЫХ ПОЛЗУНКА -->
           <div class="compact-sliders-grid">
             <div class="param-box">
               <div>
-                <div class="param-top"><span class="param-name">1. Склейка кадров</span><span id="v-chunks" class="param-val-pill">100%</span></div>
+                <div class="param-top"><span class="param-name">1. Резкость Телепорта</span><span id="v-chunks" class="param-val-pill">100%</span></div>
                 <input type="range" id="p-chunks" min="20" max="100" step="2" value="100" oninput="onSensSliderInput()" onchange="onSensSliderCommit()" />
               </div>
-              <div class="param-sub">Убирает промежуточную анимацию свайпа (до 4 ev/s)</div>
+              <div class="param-sub">100% — мгновенный скачок; 82% — чёткая фиксация AWM без тряски</div>
             </div>
 
             <div class="param-box">
               <div>
-                <div class="param-top"><span class="param-name">2. Микро-флик (Вблизи)</span><span id="v-sharp" class="param-val-pill">25.0</span></div>
+                <div class="param-top"><span class="param-name">2. Отклик микро-флика</span><span id="v-sharp" class="param-val-pill">25.0</span></div>
                 <input type="range" id="p-sharp" min="1" max="25" step="0.5" value="25.0" oninput="onSensSliderInput()" onchange="onSensSliderCommit()" />
               </div>
-              <div class="param-sub">Телепорт даже при коротком движении пальца 1–2 мм</div>
+              <div class="param-sub">Мгновенная доводка и перенос спрея на короткой дистанции</div>
             </div>
 
             <div class="param-box">
@@ -1324,91 +1324,21 @@
                 <div class="param-top"><span class="param-name">3. Импульс 90°/180°</span><span id="v-accel" class="param-val-pill">25.0x</span></div>
                 <input type="range" id="p-accel" min="1" max="25" step="0.5" value="25.0" oninput="onSensSliderInput()" onchange="onSensSliderCommit()" />
               </div>
-              <div class="param-sub">Моментальный переброс камеры на широких углах</div>
+              <div class="param-sub">Скорость разворота камеры одним коротким движением пальца</div>
             </div>
 
             <div class="param-box">
               <div>
-                <div class="param-top"><span class="param-name">4. Окно телепорта</span><span id="v-pause" class="param-val-pill">32 мс</span></div>
-                <input type="range" id="p-pause" min="0" max="40" step="2" value="32" oninput="onSensSliderInput()" onchange="onSensSliderCommit()" />
+                <div class="param-top"><span class="param-name">4. Стабилизация точки</span><span id="v-pause" class="param-val-pill">34 мс</span></div>
+                <input type="range" id="p-pause" min="0" max="40" step="2" value="34" oninput="onSensSliderInput()" onchange="onSensSliderCommit()" />
               </div>
-              <div class="param-sub">Копит свайп в один резкий прыжок (закуп с 1 клика)</div>
+              <div class="param-sub">Чёткая остановка прицела ровно на голове без отскока</div>
             </div>
           </div>
 
           <button type="button" class="btn-dark" onclick="testOneMmFlickResponse()">
-            🛠️ ПРИМЕНИТЬ И ПЕРЕЗАПУСТИТЬ ТЕЛЕПОРТ V5
+            🛠️ ПРИМЕНИТЬ И ОБНОВИТЬ ДРАЙВЕР ТАЧА
           </button>
-        </div>
-      </div>
-
-      <!-- ПОДПАНЕЛЬ 1Б: КАСТОМНЫЙ ПРИЦЕЛ (СТРОГО ПО ЦЕНТРУ, БЕЗ СДВИГА ПО ОСЯМ) -->
-      <div id="subpanel-crosshair" style="display:none;">
-        <div class="section-card">
-          <div class="section-header-tag">
-            <span>КОНСТРУКТОР КАСТОМНОГО ПРИЦЕЛА (ПО ЦЕНТРУ)</span>
-            <span id="chCornerStatus">ВЫКЛ</span>
-          </div>
-          <div style="height:106px; background:#05070b; border:1px solid rgba(255,255,255,0.24); border-radius:14px; display:flex; align-items:center; justify-content:center; margin-bottom:10px;">
-            <canvas id="chPreviewCanvas" width="240" height="102"></canvas>
-          </div>
-          <div class="pills-grid" style="grid-template-columns:repeat(5,1fr);" id="chShapePills">
-            <div class="choice-pill active" data-shape="off" onclick="selectCrosshairShape('off', 'ВЫКЛ', this)">ВЫКЛ</div>
-            <div class="choice-pill" data-shape="dot" onclick="selectCrosshairShape('dot', 'ТОЧКА', this)">ТОЧКА</div>
-            <div class="choice-pill" data-shape="cross" onclick="selectCrosshairShape('cross', 'КРЕСТ', this)">КРЕСТ</div>
-            <div class="choice-pill" data-shape="crossdot" onclick="selectCrosshairShape('crossdot', 'КРЕСТ+ТЧК', this)">КРЕСТ+ТЧК</div>
-            <div class="choice-pill" data-shape="tshape" onclick="selectCrosshairShape('tshape', 'Т-ФОРМА', this)">Т-ФОРМА</div>
-            <div class="choice-pill" data-shape="circle" onclick="selectCrosshairShape('circle', 'КРУГ', this)">КРУГ</div>
-            <div class="choice-pill" data-shape="circledot" onclick="selectCrosshairShape('circledot', 'КРУГ+ТЧК', this)">КРУГ+ТЧК</div>
-            <div class="choice-pill" data-shape="box" onclick="selectCrosshairShape('box', 'БОКС', this)">БОКС</div>
-            <div class="choice-pill" data-shape="chevron" onclick="selectCrosshairShape('chevron', 'ШЕВРОН ^', this)">ШЕВРОН ^</div>
-            <div class="choice-pill" data-shape="corners" onclick="selectCrosshairShape('corners', 'УГОЛКИ', this)">УГОЛКИ</div>
-          </div>
-          <div class="pills-grid" style="grid-template-columns:repeat(5,1fr);" id="chColorPills">
-            <div class="choice-pill active" onclick="selectCrosshairColor('#ffffff', this)">БЕЛЫЙ</div>
-            <div class="choice-pill" onclick="selectCrosshairColor('#00e5ff', this)">ГОЛУБОЙ</div>
-            <div class="choice-pill" onclick="selectCrosshairColor('#10b981', this)">ЗЕЛЁНЫЙ</div>
-            <div class="choice-pill" onclick="selectCrosshairColor('#ef4444', this)">КРАСНЫЙ</div>
-            <div class="choice-pill" onclick="selectCrosshairColor('#facc15', this)">ЖЁЛТЫЙ</div>
-          </div>
-
-          <div class="compact-sliders-grid">
-            <div class="param-box">
-              <div class="param-top"><span class="param-name">Длина лучей</span><span id="v-chLen" class="param-val-pill">10 px</span></div>
-              <input type="range" id="p-chLen" min="2" max="26" step="1" value="10" oninput="onCrosshairSliderInput()" onchange="onCrosshairSliderCommit()" />
-            </div>
-            <div class="param-box">
-              <div class="param-top"><span class="param-name">Толщина</span><span id="v-chThick" class="param-val-pill">3 px</span></div>
-              <input type="range" id="p-chThick" min="1" max="8" step="1" value="3" oninput="onCrosshairSliderInput()" onchange="onCrosshairSliderCommit()" />
-            </div>
-            <div class="param-box">
-              <div class="param-top"><span class="param-name">Зазор (Gap)</span><span id="v-chGap" class="param-val-pill">3 px</span></div>
-              <input type="range" id="p-chGap" min="0" max="18" step="1" value="3" oninput="onCrosshairSliderInput()" onchange="onCrosshairSliderCommit()" />
-            </div>
-            <div class="param-box">
-              <div class="param-top"><span class="param-name">Точка центра</span><span id="v-chDot" class="param-val-pill">3 px</span></div>
-              <input type="range" id="p-chDot" min="1" max="8" step="1" value="3" oninput="onCrosshairSliderInput()" onchange="onCrosshairSliderCommit()" />
-            </div>
-          </div>
-
-          <div class="param-box">
-            <div class="param-top"><span class="param-name">Прозрачность прицела</span><span id="v-chAlpha" class="param-val-pill">100%</span></div>
-            <input type="range" id="p-chAlpha" min="20" max="100" step="1" value="100" oninput="onCrosshairSliderInput()" onchange="onCrosshairSliderCommit()" />
-          </div>
-
-          <div class="param-box" style="margin-bottom:0; display:flex; justify-content:space-between; align-items:center;">
-            <div>
-              <div class="param-name">Контрастная обводка и свой цвет</div>
-              <div class="param-sub">Автоматическая фиксация ровно в центре (0, 0)</div>
-            </div>
-            <div style="display:flex; align-items:center; gap:8px;">
-              <input type="color" id="customChColorPicker" value="#ffffff" onchange="selectCrosshairColor(this.value, null)" style="width:32px; height:26px; border:none; background:none;" />
-              <label class="ios-switch">
-                <input type="checkbox" id="chOutlineToggle" checked onchange="onCrosshairSliderCommit()" />
-                <span class="ios-slider"></span>
-              </label>
-            </div>
-          </div>
         </div>
       </div>
 
@@ -1663,27 +1593,26 @@
           🧹 ОЧИСТИТЬ ОЗУ И КЭШ (RAM BOOST)
         </button>
       </div>
-
-      <!-- ГОТОВЫЕ PRO-КОНФИГИ ТЕЛЕПОРТА И ОБМЕН КОДОМ -->
+      <!-- ГОТОВЫЕ КИБЕРСПОРТИВНЫЕ КОНФИГИ И ОБМЕН КОДОМ -->
       <div class="section-card">
         <div class="section-header-tag">
-          <span>🔥 ГОТОВЫЕ PRO-КОНФИГИ ТЕЛЕПОРТА</span>
-          <span>1-CLICK</span>
+          <span>🔥 ПРОФЕССИОНАЛЬНЫЕ КИБЕРСПОРТИВНЫЕ КОНФИГИ</span>
+          <span>1-CLICK PRO</span>
         </div>
         <div style="display:grid; grid-template-columns:1fr 1fr; gap:7px; margin-bottom:9px;">
-          <button type="button" class="btn-dark" onclick="loadFullProBundle('ПОЛНЫЙ ТЕЛЕПОРТ (0 АНИМАЦИИ)', 25.0, 100, 32, 25.0, 'dot', '#ffffff', true)">⚡ 1. FULL TELEPORT</button>
-          <button type="button" class="btn-dark" onclick="loadFullProBundle('МИКРО-ФЛИК + СТРЕЛЬБА ВБЛИЗИ', 25.0, 96, 28, 23.0, 'cross', '#00e5ff', true)">🎯 2. МИКРО-ФЛИК PRO</button>
-          <button type="button" class="btn-dark" onclick="loadFullProBundle('РАЗВОРОТ 90°/180° SNAP', 25.0, 100, 36, 25.0, 'chevron', '#facc15', false)">💀 3. ФЛИК 90°/180°</button>
-          <button type="button" class="btn-dark" onclick="loadFullProBundle('ТУРНИРНЫЙ AKR / M4A1', 23.5, 92, 24, 21.0, 'box', '#10b981', true)">🔥 4. AKR ТЕЛЕПОРТ</button>
+          <button type="button" class="btn-dark" onclick="loadFullProBundle('TELEPORT (H9IJE TRANSFER)', 25.0, 100, 34, 25.0, 'dot', '#ffffff', true)">⚡ 1. TELEPORT PRO</button>
+          <button type="button" class="btn-dark" onclick="loadFullProBundle('AWM / DEAGLE PRECISION', 22.0, 82, 22, 20.5, 'cross', '#00e5ff', false)">🎯 2. AWM / DEAGLE</button>
+          <button type="button" class="btn-dark" onclick="loadFullProBundle('AKR / M4A1 SPRAY TRANSFER', 24.5, 96, 28, 23.5, 'box', '#10b981', true)">🔥 3. AKR ЗАЖИМ В ТОЧКУ</button>
+          <button type="button" class="btn-dark" onclick="loadFullProBundle('HYBRID TOURNAMENT (AKR + AWM)', 23.5, 90, 26, 22.5, 'corners', '#facc15', true)">👑 4. УНИВЕРСАЛ PRO</button>
         </div>
         <input type="text" id="shareLinkInput" class="cyber-field" placeholder="Вставь код конфига SO2-... или скопируй свой" />
         <div style="display:grid; grid-template-columns:1fr 1fr; gap:7px;">
-          <button type="button" class="btn-main" style="padding:10px;" onclick="saveCurrentConfigNow()">💾 СОХРАНИТЬ ВСЁ</button>
+          <button type="button" class="btn-main" style="padding:10px;" onclick="saveCurrentConfigNow()">💾 СОХРАНИТЬ КОНФИГ</button>
           <button type="button" class="btn-dark" style="padding:10px;" onclick="generateAndCopyShareLink()">🔗 КОПИРОВАТЬ КОД</button>
         </div>
       </div>
-    </div>
-
+    </div> <!-- Закрывает tab-settings, чтобы Войс и Профиль всегда отображались! -->
+      
     <!-- ================= ВКЛАДКА 3: ВОЙС (БОЛЬШАЯ DISCORD STAGE КОМНАТА БЕЗ ШУМА + ОТДЕЛЬНЫЙ ЧАТ ПО КНОПКЕ) ================= -->
     <div id="tab-voice" class="tab-view">
       <div class="section-card">
