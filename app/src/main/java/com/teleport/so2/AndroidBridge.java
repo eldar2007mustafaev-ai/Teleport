@@ -877,19 +877,28 @@ public class AndroidBridge {
     // Оптимизированный оверлей прицела для Android 17 (размер 48dp и alpha = 0.78f — система НЕ блокирует касания!)
     @JavascriptInterface
     public void updateCrosshair(String type) {
-        if (getSavedKey().isEmpty() && !"off".equalsIgnoreCase(type)) return;
+        final String cleanType = (type == null) ? "off" : type.trim();
+        if (getSavedKey().isEmpty() && !"off".equalsIgnoreCase(cleanType)) return;
+
         mainHandler.post(() -> {
             if (activity instanceof MainActivity) {
                 ((MainActivity) activity).updateCrosshair("off");
             }
-            if ("off".equalsIgnoreCase(type)) {
-                if (isCrosshairShown && crosshairView != null && windowManager != null) {
-                    try { windowManager.removeView(crosshairView); } catch (Exception ignored) {}
-                    crosshairView = null;
-                    isCrosshairShown = false;
+            if ("off".equalsIgnoreCase(cleanType) || "none".equalsIgnoreCase(cleanType) || cleanType.isEmpty()) {
+                if (crosshairView != null) {
+                    crosshairView.setCrosshairType("off");
+                    crosshairView.setVisibility(View.GONE);
+                    if (windowManager != null) {
+                        try { windowManager.removeViewImmediate(crosshairView); } catch (Exception e) {
+                            try { windowManager.removeView(crosshairView); } catch (Exception ignored) {}
+                        }
+                    }
                 }
+                crosshairView = null;
+                isCrosshairShown = false;
                 return;
             }
+
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && !Settings.canDrawOverlays(context)) {
                 requestOverlayPermission();
                 return;
@@ -915,7 +924,6 @@ public class AndroidBridge {
                 crosshairParams.gravity = Gravity.CENTER;
                 crosshairParams.x = 0;
                 crosshairParams.y = 0;
-                // Критично для Android 17: alpha <= 0.78f отключает предупреждение "Приложение не оптимизировано"!
                 crosshairParams.alpha = 0.78f;
                 try {
                     windowManager.addView(crosshairView, crosshairParams);
@@ -923,7 +931,8 @@ public class AndroidBridge {
                 } catch (Exception ignored) {}
             }
             if (crosshairView != null) {
-                crosshairView.setCrosshairType(type);
+                crosshairView.setVisibility(View.VISIBLE);
+                crosshairView.setCrosshairType(cleanType);
             }
         });
     }
@@ -1393,6 +1402,8 @@ public class AndroidBridge {
         @Override
         protected void onDraw(Canvas canvas) {
             super.onDraw(canvas);
+            canvas.drawColor(Color.TRANSPARENT, android.graphics.PorterDuff.Mode.CLEAR);
+            if ("off".equalsIgnoreCase(type)) return;
             float pad = 6f;
             rect.set(pad, pad, getWidth() - pad, getHeight() - pad);
             if (hovered) {
