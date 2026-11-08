@@ -6,6 +6,7 @@ import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.os.Build;
 import android.util.DisplayMetrics;
+import android.view.Surface;
 import android.view.WindowManager;
 
 import java.util.concurrent.ExecutorService;
@@ -98,7 +99,20 @@ public class TeleportEngine {
         });
     }
 
-    // ================= РАСТЯГ И СТЯГ ЭКРАНА С ОБХОДОМ ОШИБКИ ANDROID 17 =================
+    private static int getCurrentLandscapeRotation() {
+        try {
+            if (appContext != null) {
+                WindowManager wm = (WindowManager) appContext.getSystemService(Context.WINDOW_SERVICE);
+                if (wm != null && wm.getDefaultDisplay() != null) {
+                    int rot = wm.getDefaultDisplay().getRotation();
+                    if (rot == Surface.ROTATION_270) return 3;
+                }
+            }
+        } catch (Throwable ignored) {}
+        return 1; // Стандартный горизонтальный режим (ROTATION_90)
+    }
+
+    // ================= РАСТЯГ И СТЯГ С МЁРТВОЙ ФИКСАЦИЕЙ В ГОРИЗОНТАЛЬНОМ РЕЖИМЕ =================
     public static boolean applyAspectRatioStretch(String ratio) {
         if (!isShizukuReady() && !ShizukuManager.isPermissionGranted()) return false;
 
@@ -108,21 +122,19 @@ public class TeleportEngine {
         int targetLong = baseLong;
         String clean = (ratio == null) ? "4:3" : ratio.trim();
 
-        // НАСТОЯЩИЙ СТЯГ (Уменьшаем короткую сторону на Шаге 1 -> на Шаге 2 игра стягивается с огромным FOV и малой отдачей)
         if (clean.startsWith("SHRINK-")) {
             int pct = 85;
             try { pct = Integer.parseInt(clean.replace("SHRINK-", "")); } catch (Exception ignored) {}
-            pct = Math.max(70, Math.min(95, pct));
+            pct = Math.max(72, Math.min(96, pct));
             targetShort = Math.round(baseShort * (pct / 100f));
             targetLong = baseLong;
         } else if ("21:9".equals(clean)) {
-            targetShort = Math.round(baseShort * 0.82f);
+            targetShort = Math.round(baseShort * 0.84f);
             targetLong = baseLong;
         } else if ("24:10".equals(clean)) {
-            targetShort = Math.round(baseShort * 0.76f);
+            targetShort = Math.round(baseShort * 0.78f);
             targetLong = baseLong;
         } else {
-            // КЛАССИЧЕСКИЙ РАСТЯГ (Уменьшаем длинную сторону на Шаге 1)
             switch (clean) {
                 case "1:1":
                     targetLong = Math.round(baseShort * 1.12f);
@@ -154,11 +166,17 @@ public class TeleportEngine {
         if ((targetShort & 1) == 1) targetShort++;
         if ((targetLong & 1) == 1) targetLong++;
 
+        int landRot = getCurrentLandscapeRotation();
+
+        // ВАЖНО: set-ignore-orientation-request ОБЯЗАТЕЛЬНО false, чтобы система уважала Landscape игры и НЕ переворачивала экран в портрет!
         String cmd = "settings put global force_resizable_activities 1; "
                 + "settings put global enable_freeform_support 1; "
                 + "settings put global enable_non_resizable_multi_window 1; "
-                + "cmd window set-ignore-orientation-request true; "
+                + "cmd window set-ignore-orientation-request false; "
                 + "cmd window set-fix-to-user-rotation disabled; "
+                + "settings put system accelerometer_rotation 0; "
+                + "settings put system user_rotation " + landRot + "; "
+                + "cmd window user-rotation lock " + landRot + "; "
                 + "wm size " + targetShort + "x" + targetLong + "; "
                 + "settings put system peak_refresh_rate 120.0; "
                 + "settings put system min_refresh_rate 120.0; "
@@ -168,8 +186,13 @@ public class TeleportEngine {
     }
 
     public static void releaseBoxToFullStretch() {
-        String cmd = "wm size reset; "
-                + "cmd window set-ignore-orientation-request false; "
+        int landRot = getCurrentLandscapeRotation();
+        String cmd = "cmd window set-ignore-orientation-request false; "
+                + "cmd window set-fix-to-user-rotation disabled; "
+                + "settings put system accelerometer_rotation 0; "
+                + "settings put system user_rotation " + landRot + "; "
+                + "cmd window user-rotation lock " + landRot + "; "
+                + "wm size reset; "
                 + "settings put system peak_refresh_rate 120.0; "
                 + "settings put system min_refresh_rate 120.0; "
                 + "settings put secure refresh_rate_mode 2;";
@@ -180,7 +203,8 @@ public class TeleportEngine {
         execShizukuCommand(
                 "wm size reset; wm density reset; "
                 + "cmd window set-ignore-orientation-request false; "
-                + "cmd window set-fix-to-user-rotation default;"
+                + "cmd window set-fix-to-user-rotation default; "
+                + "cmd window user-rotation free;"
         );
     }
 
@@ -195,21 +219,24 @@ public class TeleportEngine {
         }
     }
 
-    // ================= ДВИЖОК «МЯСОРУБКА КУСКОВ V3» (МГНОВЕННЫЙ КЛИК В ЗАКУПЕ + ЖЁСТКИЕ КУСКИ НА ФЛИКЕ) =================
+    // ================= ДВИЖОК «МЯСОРУБКА КУСКОВ V3» =================
     public static void startTeleport(String presetId) {
         isEngineRunning = true;
         if (!isShizukuReady() && !ShizukuManager.isPermissionGranted()) return;
 
         String pkg = appContext != null ? appContext.getPackageName() : "com.teleport.so2";
 
-        // ВАЖНО ДЛЯ ПОКУПКИ ОРУЖИЯ С 1-ГО КЛИКА:
-        // ro.min_pointer_dur = 0 (НЕ блокирует быстрые тапы в магазине Standoff 2!)
-        // windowsmgr.max_events_per_sec = 26 + touch.InitialJump = 1 + ro.input.noresample = 1
-        // дают мощные куски при свайпе и мгновенную регистрацию каждого одиночного нажатия!
         String cmd = "cmd appops set " + pkg + " POST_NOTIFICATION allow; "
+                + "cmd appops set " + pkg + " RECORD_AUDIO allow; "
+                + "cmd appops set " + pkg + " PLAY_AUDIO allow; "
+                + "cmd appops set " + pkg + " RUN_IN_BACKGROUND allow; "
+                + "cmd appops set " + pkg + " RUN_ANY_IN_BACKGROUND allow; "
+                + "cmd deviceidle whitelist +" + pkg + "; "
                 + "pm grant " + pkg + " android.permission.POST_NOTIFICATIONS; "
+                + "pm grant " + pkg + " android.permission.RECORD_AUDIO; "
                 + "settings put global force_resizable_activities 1; "
                 + "settings put global enable_non_resizable_multi_window 1; "
+                + "cmd window set-ignore-orientation-request false; "
                 + "cmd game mode performance com.axlebolt.standoff2; "
                 + "device_config put game_overlay com.axlebolt.standoff2 mode=2,fps=120:mode=3,fps=120; "
                 + "settings put secure touch_exploration_enabled 0; "
@@ -277,6 +304,7 @@ public class TeleportEngine {
         lastExecutedCmd = "";
         execShizukuCommand(
                 "wm size reset; wm density reset; "
+                + "cmd window set-ignore-orientation-request false; "
                 + "settings put secure touch_blocking_period 0.0; "
                 + "settings put secure tap_duration_threshold 0.0; "
                 + "settings put secure long_press_timeout 350; "
@@ -296,8 +324,6 @@ public class TeleportEngine {
         double powerNorm = Math.min(1.0, (sharp + sx + accel) / 70.0);
         double chunkNorm = Math.min(1.0, chunks / 100.0);
 
-        // Оптимальное окно кусков 22..48 ev/s + ro.min_pointer_dur 0:
-        // Прицел прыгает крупными кусками при свайпе, но каждый клик по кнопкам закупа срабатывает с 1-го раза!
         int hardChunkRate = Math.max(22, Math.min(55, (int) Math.round(52.0 - (chunkNorm * 18.0) - (powerNorm * 12.0))));
         long phaseOffsetNs = -1000000L * Math.max(4, Math.min(12, (grid / 48) + (pause / 6)));
         int maxFling = (int) Math.round(100000 + (sharp * 2400) + (accel * 2400) + (chunkFast * 200));
@@ -429,12 +455,17 @@ public class TeleportEngine {
             execShizukuCommand("wm size reset");
         } else {
             int w = Math.round(getNativeShortSide() * (pct / 100f));
-            int h = Math.round(getNativeLongSide() * (pct / 100f));
+            int h = getNativeLongSide();
             if ((w & 1) == 1) w++;
             if ((h & 1) == 1) h++;
+            int landRot = getCurrentLandscapeRotation();
             String cmd = "settings put global force_resizable_activities 1; "
                     + "settings put global enable_freeform_support 1; "
                     + "settings put global enable_non_resizable_multi_window 1; "
+                    + "cmd window set-ignore-orientation-request false; "
+                    + "settings put system accelerometer_rotation 0; "
+                    + "settings put system user_rotation " + landRot + "; "
+                    + "cmd window user-rotation lock " + landRot + "; "
                     + "wm size " + w + "x" + h;
             execShizukuCommand(cmd);
         }
