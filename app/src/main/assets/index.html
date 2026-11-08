@@ -3451,7 +3451,7 @@
         if (B && B.resetResolution) B.resetResolution();
       }, 20);
     }
-    // ================= ДВИЖОК «ДИСКРЕТНЫЙ ТЕЛЕПОРТ V5» (4 РЕАЛЬНЫХ ПОЛЗУНКА) =================
+        // ================= ДВИЖОК «ДИСКРЕТНЫЙ ТЕЛЕПОРТ V7» + ПРИЦЕЛ + ШУТЕР-ПОЛЗУНКИ =================
     function toggleTeleportMaster(enabled) {
       if (!isSessionAuthorized) {
         window.forceShowKickScreen("Сначала активируйте ключ!");
@@ -3462,10 +3462,10 @@
       const btn = document.getElementById("mainTpActionBtn");
 
       if (enabled) {
-        heading.innerText = "ТЕЛЕПОРТ: АКТИВЕН (0% АНИМАЦИИ)";
+        heading.innerText = "TELEPORT ENGINE: АКТИВЕН (0% АНИМАЦИИ)";
         heading.style.color = "#34d399";
-        btn.innerText = "🛑 ОСТАНОВИТЬ ТЕЛЕПОРТ";
-        showTopToast("⚡ Полный Телепорт V5 ВКЛЮЧЕН!");
+        btn.innerText = "🛑 ОСТАНОВИТЬ TELEPORT";
+        showTopToast("⚡ Полный Teleport V7 ВКЛЮЧЕН!");
         enqueueBridgeTask("tp_master_toggle", () => {
           const B = getBridge();
           if (B) {
@@ -3476,10 +3476,10 @@
           pushEngineParametersImmediate(true);
         }, 25);
       } else {
-        heading.innerText = "ТЕЛЕПОРТ: ВЫКЛЮЧЕН";
+        heading.innerText = "TELEPORT ENGINE: ВЫКЛЮЧЕН";
         heading.style.color = "#ffffff";
-        btn.innerText = "⚡ ВКЛЮЧИТЬ ТЕЛЕПОРТ";
-        showTopToast("🛑 Телепорт остановлен");
+        btn.innerText = "⚡ ВКЛЮЧИТЬ TELEPORT";
+        showTopToast("🛑 Teleport остановлен");
         enqueueBridgeTask("tp_master_toggle", () => {
           const B = getBridge();
           if (B && B.stopTeleport) B.stopTeleport();
@@ -3488,7 +3488,7 @@
       saveStateSilent();
     }
 
-    function selectQuickSensMode(idx, sharp, chunksPct, pauseMs, accelVal) {
+    function selectQuickSensMode(idx, sharp, sx, sy, chunksPct, pauseMs, accelVal) {
       for (let i = 1; i <= 3; i++) {
         const card = document.getElementById("qmode-" + i);
         const b = document.getElementById("qbtn-" + i);
@@ -3498,10 +3498,12 @@
           b.innerText = "АКТИВЕН";
         } else {
           card.classList.remove("active");
-          b.innerText = i === 1 ? "0% АНИМАЦИИ" : (i === 2 ? "БЛИЖНЯЯ ДИСТ." : "AWM / DEAGLE");
+          b.innerText = i === 1 ? "H9IJE SNAP" : (i === 2 ? "РЕЗКАЯ КАМЕРА" : "ЗАЖИМ В ТОЧКУ");
         }
       }
       if (document.getElementById("p-sharp")) document.getElementById("p-sharp").value = sharp;
+      if (document.getElementById("p-sx")) document.getElementById("p-sx").value = sx;
+      if (document.getElementById("p-sy")) document.getElementById("p-sy").value = sy;
       if (document.getElementById("p-chunks")) document.getElementById("p-chunks").value = chunksPct;
       if (document.getElementById("p-pause")) document.getElementById("p-pause").value = pauseMs;
       if (document.getElementById("p-accel")) document.getElementById("p-accel").value = accelVal;
@@ -3512,13 +3514,17 @@
 
     function onSensSliderInput() {
       const elChunks = document.getElementById("p-chunks");
+      const elSx = document.getElementById("p-sx");
+      const elSy = document.getElementById("p-sy");
       const elSharp = document.getElementById("p-sharp");
       const elAccel = document.getElementById("p-accel");
       const elPause = document.getElementById("p-pause");
 
-      [elChunks, elSharp, elAccel, elPause].forEach(syncRangeFill);
+      [elChunks, elSx, elSy, elSharp, elAccel, elPause].forEach(syncRangeFill);
 
       if (elChunks) document.getElementById("v-chunks").innerText = elChunks.value + "%";
+      if (elSx) document.getElementById("v-sx").innerText = parseFloat(elSx.value).toFixed(1);
+      if (elSy) document.getElementById("v-sy").innerText = parseFloat(elSy.value).toFixed(1);
       if (elSharp) document.getElementById("v-sharp").innerText = parseFloat(elSharp.value).toFixed(1);
       if (elAccel) document.getElementById("v-accel").innerText = parseFloat(elAccel.value).toFixed(1) + "x";
       if (elPause) document.getElementById("v-pause").innerText = elPause.value + " мс";
@@ -3532,18 +3538,20 @@
     function pushEngineParametersImmediate(forcePush) {
       if (!isSessionAuthorized) return;
       const sharp = parseFloat((document.getElementById("p-sharp") || {}).value) || 25.0;
+      const sx = parseFloat((document.getElementById("p-sx") || {}).value) || 25.0;
+      const sy = parseFloat((document.getElementById("p-sy") || {}).value) || 24.0;
       const chunks = parseInt((document.getElementById("p-chunks") || {}).value, 10) || 100;
-      const pause = parseInt((document.getElementById("p-pause") || {}).value, 10) || 32;
+      const pause = parseInt((document.getElementById("p-pause") || {}).value, 10) || 36;
       const accel = parseFloat((document.getElementById("p-accel") || {}).value) || 25.0;
 
-      const sig = [sharp, chunks, pause, accel].join("|");
+      const sig = [sharp, sx, sy, chunks, pause, accel].join("|");
       if (!forcePush && sig === lastEngineSignature) return;
       lastEngineSignature = sig;
 
       enqueueBridgeTask("update_engine_params", () => {
         const B = getBridge();
         if (B && B.updateParameters) {
-          B.updateParameters(sharp, sharp, sharp, chunks, 200, 10.0, 0, 512, pause, accel);
+          B.updateParameters(sharp, sx, sy, chunks, 200, 10.0, 0, 512, pause, accel);
         }
       }, 25);
       saveStateSilent();
@@ -3551,22 +3559,25 @@
 
     function runSmartScanAndApply() {
       document.getElementById("zeroDelaySnapToggle").checked = true;
-      selectQuickSensMode(1, 25.0, 100, 32, 25.0);
+      selectQuickSensMode(1, 25.0, 25.0, 24.0, 100, 36, 25.0);
       let model = document.getElementById("profModelVal").innerText || "SM-S938B";
-      showTopToast("🔥 Полный Телепорт (0% анимации) включён для " + model + "!");
+      showTopToast("🔥 Профиль H9IJE TELEPORT MAX активирован для " + model + "!");
     }
 
     function testOneMmFlickResponse() {
-      showTopToast("⚡ Телепорт V5 (Микро-флик + 0% анимации) перезапущен!");
+      showTopToast("⚡ Драйвер Teleport V7 + Резкость камеры перезапущены!");
       enqueueBridgeTask("heal_touch", () => {
         const B = getBridge();
         if (B && B.healTouch) B.healTouch();
         if (B && B.applyUltraProTouchMatrix) B.applyUltraProTouchMatrix(3);
+        pushEngineParametersImmediate(true);
       }, 25);
     }
 
-    function loadFullProBundle(title, sharp, chunksPct, pauseMs, accelVal, chShape, chHex, recoilOn) {
+    function loadFullProBundle(title, sharp, sx, sy, chunksPct, pauseMs, accelVal, chShape, chHex, recoilOn) {
       if (document.getElementById("p-sharp")) document.getElementById("p-sharp").value = sharp;
+      if (document.getElementById("p-sx")) document.getElementById("p-sx").value = sx;
+      if (document.getElementById("p-sy")) document.getElementById("p-sy").value = sy;
       if (document.getElementById("p-chunks")) document.getElementById("p-chunks").value = chunksPct;
       if (document.getElementById("p-pause")) document.getElementById("p-pause").value = pauseMs;
       if (document.getElementById("p-accel")) document.getElementById("p-accel").value = accelVal;
@@ -3787,14 +3798,25 @@
 
     function onShooterSlidersCommit() {
       onShooterSlidersInput();
+      const fpsLock = parseInt((document.getElementById("p-fpsLock") || {}).value, 10) || 120;
+      const gpuBoost = parseInt((document.getElementById("p-gpuBoost") || {}).value, 10) || 100;
+      const frameTime = parseInt((document.getElementById("p-frameTime") || {}).value, 10) || 100;
+      const edgeSens = parseInt((document.getElementById("p-edgeSens") || {}).value, 10) || 100;
+      const multiTouch = parseInt((document.getElementById("p-multiTouch") || {}).value, 10) || 100;
+      const netBuffer = parseInt((document.getElementById("p-netBuffer") || {}).value, 10) || 100;
+      const thermalLim = parseInt((document.getElementById("p-thermalLim") || {}).value, 10) || 100;
+
       enqueueBridgeTask("shooter_sliders_commit", () => {
         const B = getBridge();
         if (!B) return;
+        if (typeof B.applyShooterOptimizer === "function") {
+          B.applyShooterOptimizer(fpsLock, gpuBoost, frameTime, edgeSens, multiTouch, netBuffer, thermalLim);
+        }
         if (B.setHzThermalGuard) B.setHzThermalGuard(true);
         if (B.setVulkanGpuTurbo) B.setVulkanGpuTurbo(true);
         if (B.setNetPingStabilizer) B.setNetPingStabilizer(true);
-      }, 35);
-      showTopToast("🚀 Шутер-параметры FPS и тача обновлены!");
+      }, 30);
+      showTopToast(`🚀 Фиксация ${fpsLock} FPS и анти-троттлинг применены!`);
       saveStateSilent();
     }
 
@@ -3920,8 +3942,8 @@
         tpOn: document.getElementById("innerTpToggle").checked,
         zeroSnap: document.getElementById("zeroDelaySnapToggle").checked,
         sharp: (document.getElementById("p-sharp") || {}).value || "25.0",
-        sx: "25.0",
-        sy: "25.0",
+        sx: (document.getElementById("p-sx") || {}).value || "25.0",
+        sy: (document.getElementById("p-sy") || {}).value || "24.0",
         straight: "100",
         stickForce: "0",
         chunks: (document.getElementById("p-chunks") || {}).value || "100",
