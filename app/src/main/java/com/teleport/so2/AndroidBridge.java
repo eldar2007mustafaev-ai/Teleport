@@ -1443,15 +1443,6 @@ public class AndroidBridge {
             outlinePaint.setStrokeCap(Paint.Cap.ROUND);
         }
         
-        @Override
-        protected void onDraw(Canvas canvas) {
-            super.onDraw(canvas);
-            canvas.drawColor(Color.TRANSPARENT, android.graphics.PorterDuff.Mode.CLEAR);
-            if ("off".equalsIgnoreCase(type)) return;
-            
-            // ... дальше вставляется остальной код отрисовки прицела (линии, кружки и т.д.) ...
-        }
-
         public void setCrosshairType(String t) {
             this.type = t;
             invalidate();
@@ -1482,6 +1473,7 @@ public class AndroidBridge {
         @Override
         protected void onDraw(Canvas canvas) {
             super.onDraw(canvas);
+            canvas.drawColor(Color.TRANSPARENT, android.graphics.PorterDuff.Mode.CLEAR);
             if ("off".equalsIgnoreCase(type)) return;
 
             float d = getResources().getDisplayMetrics().density;
