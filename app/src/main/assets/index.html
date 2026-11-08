@@ -2775,8 +2775,10 @@
         "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"
       }[s]));
     }
+    // ================= ВОЙС БЕЗ ШУМА И БЕЗ ПРИГЛУШЕНИЯ ИГРЫ (VOCAL ISOLATOR + SEAMLESS PCM) =================
+    let peerLastSample = {};
+    let micNoiseFloor = 0.0015;
 
-    // ================= ВОЙС БЕЗ ШУМА И БЕЗ ПРИГЛУШЕНИЯ ИГРЫ (SPECTRAL NOISE FILTER + DISCORD STAGE) =================
     function downsampleFloat32To16k(inputBuffer, inputSampleRate) {
       if (inputSampleRate === TARGET_PCM_RATE) return inputBuffer;
       const ratio = inputSampleRate / TARGET_PCM_RATE;
@@ -2812,33 +2814,40 @@
           voiceAudioCtx = new AudioCtx({ latencyHint: "interactive" });
         }
         if (voiceAudioCtx.state === "suspended") {
-          voiceAudioCtx.resume();
+          await voiceAudioCtx.resume();
         }
 
-        // Цепочка фильтрации входящего голоса друга (полностью убирает фоновое шипение и ВЧ-песок):
-        // HighPass (130 Гц) -> LowPass (4900 Гц, срез белого шума квантования) -> Compressor -> MasterGain
+        // Узкий голосовой коридор (Vocal Isolator: 175 Гц - 4100 Гц + 2200 Гц Presence Boost)
+        // Полностью вырезает низкочастотный гул и высокочастотное шипение, выделяя только голос друга
         peerHighPassNode = voiceAudioCtx.createBiquadFilter();
         peerHighPassNode.type = "highpass";
-        peerHighPassNode.frequency.value = 130;
-        peerHighPassNode.Q.value = 0.707;
+        peerHighPassNode.frequency.value = 175;
+        peerHighPassNode.Q.value = 0.85;
+
+        const vocalPresenceNode = voiceAudioCtx.createBiquadFilter();
+        vocalPresenceNode.type = "peaking";
+        vocalPresenceNode.frequency.value = 2200;
+        vocalPresenceNode.Q.value = 1.1;
+        vocalPresenceNode.gain.value = 5.5;
 
         peerLowPassNode = voiceAudioCtx.createBiquadFilter();
         peerLowPassNode.type = "lowpass";
-        peerLowPassNode.frequency.value = 4900;
-        peerLowPassNode.Q.value = 0.707;
+        peerLowPassNode.frequency.value = 4100;
+        peerLowPassNode.Q.value = 0.85;
 
         peerCompressorNode = voiceAudioCtx.createDynamicsCompressor();
-        peerCompressorNode.threshold.value = -22;
-        peerCompressorNode.knee.value = 10;
-        peerCompressorNode.ratio.value = 3.2;
-        peerCompressorNode.attack.value = 0.003;
-        peerCompressorNode.release.value = 0.14;
+        peerCompressorNode.threshold.value = -24;
+        peerCompressorNode.knee.value = 8;
+        peerCompressorNode.ratio.value = 4.5;
+        peerCompressorNode.attack.value = 0.002;
+        peerCompressorNode.release.value = 0.12;
 
         peerMasterGainNode = voiceAudioCtx.createGain();
         const peerVolPct = parseInt(document.getElementById("p-peerVol").value, 10) || 220;
-        peerMasterGainNode.gain.value = isSpeakerDeafened ? 0.0 : ((peerVolPct / 100.0) * 1.25);
+        peerMasterGainNode.gain.value = isSpeakerDeafened ? 0.0 : ((peerVolPct / 100.0) * 1.75);
 
-        peerHighPassNode.connect(peerLowPassNode);
+        peerHighPassNode.connect(vocalPresenceNode);
+        vocalPresenceNode.connect(peerLowPassNode);
         peerLowPassNode.connect(peerCompressorNode);
         peerCompressorNode.connect(peerMasterGainNode);
         peerMasterGainNode.connect(voiceAudioCtx.destination);
@@ -2860,6 +2869,19 @@
         if (B && typeof B.enforceGameAudioMode === "function") {
           B.enforceGameAudioMode();
         }
+        clearInterval(window._audioGuardTimer);
+        window._audioGuardTimer = setInterval(() => {
+          if (isVoiceConnected) {
+            if (voiceAudioCtx && voiceAudioCtx.state === "suspended") {
+              voiceAudioCtx.resume();
+            }
+            const br = getBridge();
+            if (br && typeof br.enforceGameAudioMode === "function") {
+              br.enforceGameAudioMode();
+            }
+          }
+        }, 3500);
+
         setupStudioMicrophoneDsp();
       } catch (err) {
         showTopToast("🎧 Вы в комнате! Проверьте разрешение микрофона");
@@ -2871,35 +2893,35 @@
       try {
         const source = voiceAudioCtx.createMediaStreamSource(micStream);
 
+        // Фильтрация микрофона: отсекаем бытовой шум комнаты и дальние голоса (оставляем только ближний голос)
         const highPass = voiceAudioCtx.createBiquadFilter();
         highPass.type = "highpass";
-        highPass.frequency.value = 140;
-        highPass.Q.value = 0.707;
+        highPass.frequency.value = 175;
+        highPass.Q.value = 0.85;
 
         const mudCut = voiceAudioCtx.createBiquadFilter();
         mudCut.type = "peaking";
-        mudCut.frequency.value = 320;
-        mudCut.Q.value = 1.4;
-        mudCut.gain.value = -4.0;
+        mudCut.frequency.value = 310;
+        mudCut.Q.value = 1.5;
+        mudCut.gain.value = -5.5;
 
         const presenceBoost = voiceAudioCtx.createBiquadFilter();
         presenceBoost.type = "peaking";
-        presenceBoost.frequency.value = 2600;
-        presenceBoost.Q.value = 1.0;
-        presenceBoost.gain.value = 3.8;
+        presenceBoost.frequency.value = 2350;
+        presenceBoost.Q.value = 1.1;
+        presenceBoost.gain.value = 5.2;
 
-        // Строгий срез верхнего шипения микрофона (5200 Гц)
         const lowPass = voiceAudioCtx.createBiquadFilter();
         lowPass.type = "lowpass";
-        lowPass.frequency.value = 5200;
-        lowPass.Q.value = 0.707;
+        lowPass.frequency.value = 4200;
+        lowPass.Q.value = 0.85;
 
         const compressor = voiceAudioCtx.createDynamicsCompressor();
         compressor.threshold.value = -24;
-        compressor.knee.value = 10;
-        compressor.ratio.value = 4.5;
-        compressor.attack.value = 0.003;
-        compressor.release.value = 0.15;
+        compressor.knee.value = 8;
+        compressor.ratio.value = 5.0;
+        compressor.attack.value = 0.002;
+        compressor.release.value = 0.12;
 
         const bufSize = voiceAudioCtx.sampleRate >= 44100 ? 2048 : 1024;
         micProcessorNode = voiceAudioCtx.createScriptProcessor(bufSize, 1, 1);
@@ -2919,6 +2941,7 @@
         gateHoldFrames = 0;
         dcBlockerPrevX = 0.0;
         dcBlockerPrevY = 0.0;
+        micNoiseFloor = 0.0015;
 
         micProcessorNode.onaudioprocess = function(e) {
           const outBuf = e.outputBuffer.getChannelData(0);
@@ -2931,39 +2954,53 @@
           const rawIn = e.inputBuffer.getChannelData(0);
           const cleanIn = new Float32Array(rawIn.length);
           let sumSq = 0.0;
+          let prevSample = 0.0;
           for (let i = 0; i < rawIn.length; i++) {
             const x = rawIn[i];
             const y = x - dcBlockerPrevX + 0.995 * dcBlockerPrevY;
             dcBlockerPrevX = x;
             dcBlockerPrevY = y;
-            cleanIn[i] = y;
-            sumSq += y * y;
+            // Мягкое сглаживание высокочастотного цифрового песка
+            const smoothed = y * 0.78 + prevSample * 0.22;
+            prevSample = smoothed;
+            cleanIn[i] = smoothed;
+            sumSq += smoothed * smoothed;
           }
           const rms = Math.sqrt(sumSq / cleanIn.length);
-          document.getElementById("micVuMeterFill").style.width = Math.min(100, Math.round(rms * 360)) + "%";
+          document.getElementById("micVuMeterFill").style.width = Math.min(100, Math.round(rms * 380)) + "%";
+
+          // Адаптивный трекер шума комнаты (отсекает всё, что тише прямого голоса в микрофон)
+          if (rms < micNoiseFloor) {
+            micNoiseFloor = micNoiseFloor * 0.85 + rms * 0.15;
+          } else {
+            micNoiseFloor = Math.min(0.012, micNoiseFloor * 0.996 + rms * 0.004);
+          }
 
           const dspOn = document.getElementById("sw-dspNoiseGate").checked;
           const gateSlider = parseInt(document.getElementById("p-noiseGate").value, 10) || 18;
-          // Надёжный порог тишины: когда ты молчишь, пакеты вообще НЕ отправляются в эфир (0% фонового шума)
-          const openThreshold = dspOn ? (0.0035 + (gateSlider / 100.0) * 0.038) : 0.0018;
+          const openThreshold = dspOn
+            ? Math.max(0.0048 + (gateSlider / 100.0) * 0.042, micNoiseFloor * 2.8)
+            : 0.0022;
 
-          if (rms >= openThreshold) gateHoldFrames = 6;
+          if (rms >= openThreshold) gateHoldFrames = 8;
           else if (gateHoldFrames > 0) gateHoldFrames--;
 
           const targetGate = (gateHoldFrames > 0) ? 1.0 : 0.0;
-          if (targetGate === 0.0 && gateEnvelope < 0.005) {
+          if (targetGate === 0.0 && gateEnvelope < 0.004) {
             gateEnvelope = 0.0;
             return;
           }
           const downsampled = downsampleFloat32To16k(cleanIn, voiceAudioCtx.sampleRate);
-          const userBoost = ((parseInt(document.getElementById("p-micGain").value, 10) || 150) / 100.0);
+          const userBoost = ((parseInt(document.getElementById("p-micGain").value, 10) || 150) / 100.0) * 1.38;
           const pcm16 = new Int16Array(downsampled.length);
           for (let i = 0; i < downsampled.length; i++) {
-            gateEnvelope = gateEnvelope * 0.90 + targetGate * 0.10;
+            gateEnvelope = gateEnvelope * 0.93 + targetGate * 0.07;
             let sample = downsampled[i] * userBoost * gateEnvelope;
-            // Dead-zone отсечка микро-шума внутри пакета
-            if (Math.abs(sample) < 0.003) sample = 0.0;
-            else sample = Math.tanh(sample);
+            if (Math.abs(sample) < 0.0025) {
+              sample *= 0.2;
+            } else {
+              sample = Math.tanh(sample);
+            }
             pcm16[i] = sample < 0 ? Math.round(sample * 0x8000) : Math.round(sample * 0x7FFF);
           }
           const bytes = new Uint8Array(pcm16.buffer);
@@ -2987,6 +3024,7 @@
       isVoiceConnected = true;
       isMicMuted = false;
       peerPlaybackTimes = {};
+      peerLastSample = {};
       unreadChatCount = 0;
 
       document.getElementById("voiceActionRow").style.display = "none";
@@ -2999,7 +3037,7 @@
 
       currentRoomMembers = [{ nick: nick, code: selfCode, muted: false, avatar: myProfileAvatar }];
       renderVoiceRoomRoster(currentRoomMembers);
-      appendChatSystemNotice("Вы вошли в комнату " + roomName + ". Шумодав тишины активен!");
+      appendChatSystemNotice("Вы вошли в комнату " + roomName + ". Шумодав тишины и буст голоса активны!");
       syncDiscordControlButtons();
 
       try {
@@ -3055,7 +3093,7 @@
       };
     }
 
-    // Чистое воспроизведение входящего голоса с отсечкой фонового шума
+    // Бесшовное воспроизведение входящего голоса без щелчков на стыках пакетов и без фонового шума
     function playIncomingPcmAudio(speakerCode, b64Str, sampleRate) {
       if (!voiceAudioCtx || isSpeakerDeafened) return;
       try {
@@ -3066,32 +3104,48 @@
         const n = int16.length;
         if (n === 0) return;
 
-        // Проверяем RMS входящего пакета: если там только фоновое шипение, гасим его в 0
         let sumSq = 0.0;
         for (let i = 0; i < n; i++) {
           const s = int16[i] / 32768.0;
           sumSq += s * s;
         }
         const packetRms = Math.sqrt(sumSq / n);
-        if (packetRms < 0.0022) return;
+        // Если в пакете только фоновый шум — не воспроизводим его и сбрасываем хвост сэмпла
+        if (packetRms < 0.0032) {
+          peerLastSample[speakerCode] = 0.0;
+          return;
+        }
+
+        const now = voiceAudioCtx.currentTime;
+        let nextTime = peerPlaybackTimes[speakerCode] || 0;
+        let isNewBurst = false;
+        if (nextTime < now || (nextTime - now) > 0.28) {
+          nextTime = now + 0.045; // 45 мс анти-джиттер буфер для идеально слитного голоса без треска
+          isNewBurst = true;
+        }
 
         const float32 = new Float32Array(n);
-        const fadeSamples = Math.min(32, Math.floor(n / 6));
+        let prevS = isNewBurst ? 0.0 : (peerLastSample[speakerCode] || 0.0);
+
         for (let i = 0; i < n; i++) {
-          let val = int16[i] / 32768.0;
-          if (Math.abs(val) < 0.0025) val = 0.0;
-          if (i < fadeSamples) val *= (i / fadeSamples);
-          else if (i >= n - fadeSamples) val *= ((n - 1 - i) / fadeSamples);
-          float32[i] = val;
+          let raw = (int16[i] / 32768.0) * 1.40;
+          // Подавление мелкого шума внутри голоса (Soft Expander)
+          if (Math.abs(raw) < 0.0030) raw *= 0.15;
+          // Однополюсное сглаживание со стыковкой с предыдущим пакетом (убирает любые щелчки)
+          let smoothed = raw * 0.80 + prevS * 0.20;
+          prevS = smoothed;
+          if (isNewBurst && i < 24) {
+            smoothed *= (i / 24.0);
+          }
+          float32[i] = Math.tanh(smoothed);
         }
+        peerLastSample[speakerCode] = prevS;
+
         const audioBuffer = voiceAudioCtx.createBuffer(1, n, sampleRate || TARGET_PCM_RATE);
         audioBuffer.getChannelData(0).set(float32);
         const src = voiceAudioCtx.createBufferSource();
         src.buffer = audioBuffer;
         src.connect(peerHighPassNode || peerMasterGainNode || voiceAudioCtx.destination);
-        const now = voiceAudioCtx.currentTime;
-        let nextTime = peerPlaybackTimes[speakerCode] || 0;
-        if (nextTime < now || (nextTime - now) > 0.20) nextTime = now + 0.025;
         src.start(nextTime);
         peerPlaybackTimes[speakerCode] = nextTime + audioBuffer.duration;
       } catch (e) {}
@@ -3276,7 +3330,9 @@
     }
 
     function leaveVoiceRoom() {
-      isVoiceConnected = false; isMicMuted = false; isSpeakerDeafened = false; peerPlaybackTimes = {};
+      isVoiceConnected = false; isMicMuted = false; isSpeakerDeafened = false;
+      peerPlaybackTimes = {}; peerLastSample = {};
+      clearInterval(window._audioGuardTimer);
       if (voiceWs) { try { voiceWs.close(); } catch (e) {} voiceWs = null; }
       if (micProcessorNode) { try { micProcessorNode.disconnect(); } catch (e) {} micProcessorNode = null; }
       if (silentSinkNode) { try { silentSinkNode.disconnect(); } catch (e) {} silentSinkNode = null; }
@@ -3311,7 +3367,7 @@
       document.getElementById("v-peerVol").innerText = peerEl.value + "%";
       document.getElementById("v-noiseGate").innerText = gateEl.value + "%";
       if (peerMasterGainNode) {
-        peerMasterGainNode.gain.value = isSpeakerDeafened ? 0.0 : ((parseInt(peerEl.value, 10) / 100.0) * 1.25);
+        peerMasterGainNode.gain.value = isSpeakerDeafened ? 0.0 : ((parseInt(peerEl.value, 10) / 100.0) * 1.75);
       }
       if (isVoiceConnected) syncDiscordControlButtons();
     }
