@@ -344,10 +344,17 @@ public class MainActivity extends Activity {
         if (!TeleportEngine.isShizukuReady() && !ShizukuManager.isPermissionGranted()) return;
         String pkg = getPackageName();
         TeleportEngine.execShizukuCommand(
+                "settings put global block_untrusted_touches 0; " +
+                "settings put secure block_untrusted_touches 0; " +
+                "settings put system block_untrusted_touches 0; " +
+                "settings put global maximum_obscuring_opacity_for_touch 1.0; " +
+                "device_config put input_native_boot maximum_obscuring_opacity_for_touch 1.0; " +
+                "device_config put window_manager block_untrusted_touches 0; " +
+                "cmd appops set " + pkg + " SYSTEM_ALERT_WINDOW allow; " +
                 "cmd appops set " + pkg + " POST_NOTIFICATION allow; " +
                 "pm grant " + pkg + " android.permission.POST_NOTIFICATIONS; " +
                 "pm grant " + pkg + " android.permission.RECORD_AUDIO; " +
-                "settings put secure long_press_timeout 240; " +
+                "settings put secure long_press_timeout 340; " +
                 "settings put secure multi_press_timeout 240; " +
                 "settings put secure tap_duration_threshold 0.0; " +
                 "settings put secure touch_blocking_period 0.0; " +
