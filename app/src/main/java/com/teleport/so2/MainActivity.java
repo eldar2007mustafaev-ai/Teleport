@@ -324,6 +324,10 @@ public class MainActivity extends Activity {
     @Override
     protected void onPause() {
         super.onPause();
+        // Удерживаем аудио-поток и таймеры WebView активными в фоне во время игры в Standoff 2
+        if (webView != null) {
+            webView.resumeTimers();
+        }
     }
 
     @Override
