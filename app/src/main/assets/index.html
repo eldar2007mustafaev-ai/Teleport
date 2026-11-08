@@ -3640,6 +3640,17 @@
       onCrosshairSliderInput();
       if (!isSessionAuthorized) return;
 
+      const B = getBridge();
+      if (currentChShape === "off") {
+        if (B) {
+          try {
+            if (typeof B.updateCrosshair === "function") B.updateCrosshair("off");
+          } catch (e) {}
+        }
+        saveStateSilent();
+        return;
+      }
+
       const len = parseInt(document.getElementById("p-chLen").value, 10) || 10;
       const thick = parseInt(document.getElementById("p-chThick").value, 10) || 3;
       const gap = parseInt(document.getElementById("p-chGap").value, 10) || 3;
@@ -3648,24 +3659,24 @@
       const outline = document.getElementById("chOutlineToggle").checked;
 
       enqueueBridgeTask("ch_update", () => {
-        const B = getBridge();
-        if (!B) return;
+        const br = getBridge();
+        if (!br) return;
         try {
-          if (typeof B.setCrosshairOffset === "function") B.setCrosshairOffset(0, 0);
           if (currentChShape === "off") {
-            if (typeof B.updateCrosshair === "function") B.updateCrosshair("off");
-            if (typeof B.updateCrosshairAdvanced === "function") B.updateCrosshairAdvanced("off", currentChColor, 0, 0, 0, 0, 0, false);
-          } else {
-            if (typeof B.updateCrosshairAdvanced === "function") {
-              B.updateCrosshairAdvanced(currentChShape, currentChColor, alpha, len, thick, gap, dot, outline);
-            } else if (typeof B.updateCrosshair === "function") {
-              B.updateCrosshair(currentChShape);
-            }
+            if (typeof br.updateCrosshair === "function") br.updateCrosshair("off");
+            return;
+          }
+          if (typeof br.setCrosshairOffset === "function") br.setCrosshairOffset(0, 0);
+          if (typeof br.updateCrosshairAdvanced === "function") {
+            br.updateCrosshairAdvanced(currentChShape, currentChColor, alpha, len, thick, gap, dot, outline);
+          } else if (typeof br.updateCrosshair === "function") {
+            br.updateCrosshair(currentChShape);
           }
         } catch (e) {}
       }, 20);
       saveStateSilent();
     }
+
 
     function onCrosshairSliderCommit() { pushCrosshairToBridgeImmediate(); }
 
