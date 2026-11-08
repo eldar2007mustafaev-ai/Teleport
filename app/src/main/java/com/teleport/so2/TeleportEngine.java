@@ -222,18 +222,18 @@ public class TeleportEngine {
         }
     }
 
-    // ================= ПРОФЕССИОНАЛЬНЫЙ ДВИЖОК ТЕЛЕПОРТА (H9IJE TRANSFER + SPRAY CONTROL) =================
+    // ================= УСИЛЕННЫЙ ДВИЖОК TELEPORT V7 (3 EV/S INSTANT SNAP + CAMERA SHARPNESS) =================
     public static void startTeleport(String presetId) {
         isEngineRunning = true;
         if (!isShizukuReady() && !ShizukuManager.isPermissionGranted()) return;
 
         String pkg = appContext != null ? appContext.getPackageName() : "com.teleport.so2";
-        boolean isSniperSmooth = "awm_deagle".equalsIgnoreCase(presetId);
+        boolean isSniperMode = "awm_deagle".equalsIgnoreCase(presetId);
 
-        int evRate = isSniperSmooth ? 10 : 4;
-        int slopVal = isSniperSmooth ? 1 : 0;
-        int filterLvl = isSniperSmooth ? 2 : 0;
-        int pointerDur = isSniperSmooth ? 7 : 9;
+        int evRate = isSniperMode ? 9 : 3;
+        int slopVal = isSniperMode ? 1 : 0;
+        int filterLvl = isSniperMode ? 2 : 0;
+        int pointerDur = isSniperMode ? 6 : 9;
 
         String cmd = "settings put global block_untrusted_touches 0; "
                 + "settings put secure block_untrusted_touches 0; "
@@ -254,14 +254,16 @@ public class TeleportEngine {
                 + "settings put global force_resizable_activities 1; "
                 + "settings put global enable_non_resizable_multi_window 1; "
                 + "cmd window set-ignore-orientation-request false; "
+                + "cmd power set-fixed-performance-mode-enabled true; "
                 + "cmd game mode performance com.axlebolt.standoff2; "
+                + "cmd game set --mode 2 --fps 120 com.axlebolt.standoff2; "
                 + "device_config put game_overlay com.axlebolt.standoff2 mode=2,fps=120:mode=3,fps=120; "
                 + "settings put secure touch_exploration_enabled 0; "
                 + "settings put secure touch_blocking_period 0.0; "
                 + "settings put secure tap_duration_threshold 0.0; "
                 + "settings put secure ignore_repeat_click_timeout 0; "
-                + "settings put secure long_press_timeout 340; "
-                + "settings put secure multi_press_timeout 240; "
+                + "settings put secure long_press_timeout 320; "
+                + "settings put secure multi_press_timeout 210; "
                 + "settings put system pointer_speed 7; "
                 + "settings put secure game_touch_sampling_rate 360; "
                 + "settings put system touch_sampling_rate 360; "
@@ -275,8 +277,8 @@ public class TeleportEngine {
                 + "setprop view.scroll_friction 0; "
                 + "setprop view.minimum_fling_velocity 1; "
                 + "setprop ro.min.fling_velocity 1; "
-                + "setprop view.maximum_fling_velocity 950000; "
-                + "setprop ro.max.fling_velocity 950000; "
+                + "setprop view.maximum_fling_velocity 1200000; "
+                + "setprop ro.max.fling_velocity 1200000; "
                 + "setprop debug.input.touch.prediction 0; "
                 + "setprop persist.sys.touch.prediction 0; "
                 + "setprop ro.input.noresample 1; "
@@ -284,8 +286,8 @@ public class TeleportEngine {
                 + "setprop touch.Temporality.filter 0; "
                 + "setprop touch.InitialJump 1; "
                 + "setprop touch.acceleration.hw 1; "
-                + "setprop touch.distance.scale 7.0; "
-                + "setprop touch.size.scale 0.005; "
+                + "setprop touch.distance.scale 9.0; "
+                + "setprop touch.size.scale 0.004; "
                 + "setprop touch.gestureMode spots; "
                 + "setprop ro.min_pointer_dur " + pointerDur + "; "
                 + "setprop touch.pressure.scale 0.00001; "
@@ -293,9 +295,9 @@ public class TeleportEngine {
                 + "setprop windowsmgr.max_events_per_sec " + evRate + "; "
                 + "setprop debug.sf.latch_unsignaled 1; "
                 + "setprop debug.sf.disable_backpressure 1; "
-                + "setprop debug.sf.early_phase_offset_ns -14000000; "
-                + "setprop debug.sf.early_app_phase_offset_ns -14000000; "
-                + "setprop debug.sf.high_fps_early_phase_offset_ns -14000000; "
+                + "setprop debug.sf.early_phase_offset_ns -16000000; "
+                + "setprop debug.sf.early_app_phase_offset_ns -16000000; "
+                + "setprop debug.sf.high_fps_early_phase_offset_ns -16000000; "
                 + "settings put system peak_refresh_rate 120.0; "
                 + "settings put system min_refresh_rate 120.0; "
                 + "settings put secure refresh_rate_mode 2; "
@@ -312,6 +314,7 @@ public class TeleportEngine {
         lastExecutedCmd = "";
         execShizukuCommand(
                 "settings put system pointer_speed 0; "
+                + "cmd power set-fixed-performance-mode-enabled false; "
                 + "settings put secure long_press_timeout 400; "
                 + "settings put secure multi_press_timeout 300; "
                 + "setprop ro.input.noresample 0; "
@@ -332,16 +335,16 @@ public class TeleportEngine {
                 + "cmd window set-ignore-orientation-request false; "
                 + "settings put secure touch_blocking_period 0.0; "
                 + "settings put secure tap_duration_threshold 0.0; "
-                + "settings put secure long_press_timeout 340; "
-                + "settings put secure multi_press_timeout 240; "
+                + "settings put secure long_press_timeout 320; "
+                + "settings put secure multi_press_timeout 210; "
                 + "setprop ro.min_pointer_dur 9;"
         );
         startTeleport("extreme");
     }
 
-    // Калибровка:
-    // - При chunks = 100% (TELEPORT h9ije): 4 пакета/сек, нулевая гладкость, мгновенный переброс прицела из А в Б!
-    // - При chunks = 75..88% (AWM / DEAGLE): 8..10 пакетов/сек + фильтр тремора (touch_slop = 1), чтобы прицел НЕ трусило!
+    // 6 боевых параметров:
+    // sharp (Микро-флик), sx (Резкость камеры X), sy (Резкость камеры Y / Зажим),
+    // chunks (Склейка Телепорта: при 100% = 3 ev/s!), pause (Фиксация точки), accel (Импульс разворота)
     public static void updateParameters(
             double sharp, double sx, double sy,
             int chunks, int chunkFast, double straight,
@@ -350,26 +353,30 @@ public class TeleportEngine {
         if (!isShizukuReady() && !ShizukuManager.isPermissionGranted()) return;
 
         double chunkNorm = Math.min(1.0, Math.max(0.0, chunks / 100.0));
-        int teleportCoalesceRate = Math.max(4, Math.min(14, (int) Math.round(14.0 - (chunkNorm * 10.0))));
+        // При chunks = 100% ставит 3 пакета/сек — мгновенный переброс из точки А в точку Б без анимации!
+        int teleportCoalesceRate = Math.max(3, Math.min(14, (int) Math.round(14.0 - (chunkNorm * 11.0))));
 
-        // Если выбран режим AWM / Deagle (chunks <= 88%), включаем защиту от тряски прицела (slop = 1, filter = 2)
-        boolean antiTremorActive = (chunks <= 88);
+        // Если выбран режим AWM / Deagle (chunks <= 86%), включаем фильтр микро-тремора, чтобы прицел не трусило
+        boolean antiTremorActive = (chunks <= 86);
         int slopVal = antiTremorActive ? 1 : 0;
         int filterLvl = antiTremorActive ? 2 : 0;
 
-        int microFlickMinVel = Math.max(1, (int) Math.round(28 - (sharp * 1.1)));
-        double distScale = Math.round((3.0 + (sharp / 25.0) * 4.5 + (currentRecoilPower / 100.0) * 1.5) * 10.0) / 10.0;
+        int microFlickMinVel = Math.max(1, (int) Math.round(25 - (sharp * 1.0)));
 
-        int maxFling = (int) Math.round(350000 + (accel * 24000));
+        // Резкость камеры X (sx) + Резкость камеры Y (sy) напрямую разгоняют множитель дистанции и векторный импульс!
+        double cameraSharpnessBoost = ((sx + sy) / 50.0) * 4.2;
+        double distScale = Math.round((2.8 + (sharp / 25.0) * 3.2 + cameraSharpnessBoost + (currentRecoilPower / 100.0) * 1.2) * 10.0) / 10.0;
+
+        int maxFling = (int) Math.round(400000 + (accel * 22000) + (sx * 10000));
         int pointerDurMs = Math.max(5, Math.min(11, (int) Math.round(5 + (pause * 0.16))));
-        long phaseOffsetNs = -1000000L * Math.max(8, Math.min(15, 8 + (chunks / 14)));
+        long phaseOffsetNs = -1000000L * Math.max(9, Math.min(16, 9 + (chunks / 14)));
 
         String cmd = "settings put global block_untrusted_touches 0; "
                 + "settings put secure block_untrusted_touches 0; "
                 + "device_config put input_native_boot maximum_obscuring_opacity_for_touch 1.0; "
                 + "settings put system pointer_speed 7; "
-                + "settings put secure long_press_timeout 340; "
-                + "settings put secure multi_press_timeout 240; "
+                + "settings put secure long_press_timeout 320; "
+                + "settings put secure multi_press_timeout 210; "
                 + "settings put secure touch_blocking_period 0.0; "
                 + "settings put secure tap_duration_threshold 0.0; "
                 + "settings put secure ignore_repeat_click_timeout 0; "
@@ -391,7 +398,7 @@ public class TeleportEngine {
                 + "setprop touch.InitialJump 1; "
                 + "setprop touch.acceleration.hw 1; "
                 + "setprop touch.distance.scale " + distScale + "; "
-                + "setprop touch.size.scale 0.005; "
+                + "setprop touch.size.scale 0.004; "
                 + "setprop touch.gestureMode spots; "
                 + "setprop ro.min_pointer_dur " + pointerDurMs + "; "
                 + "setprop touch.pressure.scale 0.00001; "
@@ -409,6 +416,48 @@ public class TeleportEngine {
         execShizukuCommand(cmd);
     }
 
+    // ================= РЕАЛЬНЫЙ ШУТЕР-ОПТИМИЗАТОР (ЖЕЛЕЗНЫЕ 120 FPS БЕЗ ПРОСАДОК + АНТИ-ТРОТТЛИНГ) =================
+    public static void applyShooterOptimizer(
+            int fpsLock, int gpuBoost, int frameTime,
+            int edgeSens, int multiTouch, int netBuffer, int thermalLim
+    ) {
+        if (!isShizukuReady() && !ShizukuManager.isPermissionGranted()) return;
+
+        int targetFps = Math.max(60, Math.min(144, fpsLock));
+        long earlyOffset = -1000000L * Math.max(6, Math.min(16, 6 + (frameTime / 10)));
+        int multiPressMs = Math.max(150, 320 - (multiTouch * 1));
+
+        String cmd = "cmd power set-fixed-performance-mode-enabled true; "
+                + "cmd power set-adaptive-power-saver-enabled false; "
+                + "cmd power set-mode 0; "
+                + "cmd game mode performance com.axlebolt.standoff2; "
+                + "cmd game set --mode 2 --fps " + targetFps + " com.axlebolt.standoff2; "
+                + "device_config put game_overlay com.axlebolt.standoff2 mode=2,fps=" + targetFps + ":mode=3,fps=" + targetFps + "; "
+                + "settings put system peak_refresh_rate " + targetFps + ".0; "
+                + "settings put system min_refresh_rate " + targetFps + ".0; "
+                + "settings put secure refresh_rate_mode 2; "
+                + "settings put global sem_enhanced_cpu_responsiveness 1; "
+                + "settings put system sem_enhanced_cpu_responsiveness 1; "
+                + "settings put global restricted_device_performance 0,0; "
+                + "settings put global game_Added_gpu_level " + (gpuBoost >= 80 ? 3 : 2) + "; "
+                + "setprop debug.hwui.renderer skiavk; "
+                + "setprop debug.sf.latch_unsignaled 1; "
+                + "setprop debug.sf.disable_backpressure 1; "
+                + "setprop debug.sf.early_phase_offset_ns " + earlyOffset + "; "
+                + "setprop debug.sf.early_app_phase_offset_ns " + earlyOffset + "; "
+                + "setprop debug.sf.high_fps_early_phase_offset_ns " + earlyOffset + "; "
+                + "setprop debug.egl.hw 1; "
+                + "setprop debug.performance.tuning 1; "
+                + "settings put system edge_touch_width 0; "
+                + "settings put secure edge_enable 0; "
+                + "settings put secure multi_press_timeout " + multiPressMs + "; "
+                + "settings put global wifi_scan_always_enabled 0; "
+                + "settings put global ble_scan_always_enabled 0; "
+                + "settings put global wifi_sleep_policy 2; "
+                + "settings put global mobile_data_always_on 1;";
+        execShizukuCommand(cmd);
+    }
+
     public static void setRawInputNoSmoothing(boolean enabled) {
         if (!isShizukuReady() && !ShizukuManager.isPermissionGranted()) return;
         if (enabled) {
@@ -422,7 +471,8 @@ public class TeleportEngine {
     public static void setVulkanGpuTurbo(boolean enabled) {
         if (!isShizukuReady() && !ShizukuManager.isPermissionGranted()) return;
         if (enabled) {
-            String cmd = "setprop debug.hwui.renderer skiavk; "
+            String cmd = "cmd power set-fixed-performance-mode-enabled true; "
+                    + "setprop debug.hwui.renderer skiavk; "
                     + "setprop debug.sf.latch_unsignaled 1; "
                     + "setprop debug.sf.disable_backpressure 1; "
                     + "setprop debug.egl.hw 1; "
@@ -448,6 +498,7 @@ public class TeleportEngine {
         if (enabled) {
             String cmd = "settings put system peak_refresh_rate 120.0; "
                     + "settings put system min_refresh_rate 120.0; "
+                    + "settings put secure refresh_rate_mode 2; "
                     + "settings put secure game_touch_sampling_rate " + hz + "; "
                     + "settings put system touch_sampling_rate " + hz + ";";
             execShizukuCommand(cmd);
@@ -479,18 +530,22 @@ public class TeleportEngine {
     public static void setHzThermalGuard(boolean enabled) {
         if (!isShizukuReady() && !ShizukuManager.isPermissionGranted()) return;
         if (enabled) {
-            execShizukuCommand("settings put system peak_refresh_rate 120.0; settings put system min_refresh_rate 120.0");
+            execShizukuCommand(
+                    "cmd power set-fixed-performance-mode-enabled true; "
+                    + "settings put system peak_refresh_rate 120.0; "
+                    + "settings put system min_refresh_rate 120.0; "
+                    + "settings put secure refresh_rate_mode 2;"
+            );
         }
     }
 
-    // Послушный векторный контроль зажима (Spray Control): пули летят строго в точку при лёгком оттягивании вниз
     public static void setEnhancedRecoilFix(boolean enabled, int power) {
         currentRecoilPower = enabled ? Math.max(20, Math.min(100, power)) : 0;
         if (!isShizukuReady() && !ShizukuManager.isPermissionGranted()) return;
 
         if (enabled) {
             int ptrSpeed = Math.min(7, Math.max(5, Math.round((power / 100f) * 7f)));
-            double recoilDistScale = Math.round((3.5 + (power / 100.0) * 4.5) * 10.0) / 10.0;
+            double recoilDistScale = Math.round((4.0 + (power / 100.0) * 5.0) * 10.0) / 10.0;
             String cmd = "settings put system pointer_speed " + ptrSpeed + "; "
                     + "setprop view.scroll_friction 0; "
                     + "setprop debug.touch.slop 0; "
@@ -498,7 +553,7 @@ public class TeleportEngine {
                     + "setprop view.minimum_fling_velocity 1; "
                     + "setprop ro.min.fling_velocity 1; "
                     + "setprop touch.distance.scale " + recoilDistScale + "; "
-                    + "setprop touch.size.scale 0.005; "
+                    + "setprop touch.size.scale 0.004; "
                     + "setprop touch.pressure.scale 0.00001; "
                     + "setprop touch.gestureMode spots;";
             execShizukuCommand(cmd);
