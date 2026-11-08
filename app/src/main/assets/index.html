@@ -1187,8 +1187,8 @@
         </div>
       </div>
     </header>
-
-    <!-- ================= ВКЛАДКА 1: ГЛАВНОЕ (4 БЛОКА: СЕНСА, КАСТОМНЫЙ ПРИЦЕЛ, РАСТЯГ, СТЯГ) ================= -->
+        
+    <!-- ================= ВКЛАДКА 1: ГЛАВНОЕ (СЕНСА, КАСТОМНЫЙ ПРИЦЕЛ, РАСТЯГ, СТЯГ) ================= -->
     <div id="tab-sens" class="tab-view active">
       <div class="hero-cards-grid">
         <div class="hero-neon-card active-card" id="heroCardSens" onclick="switchSensSubpanel('sens')">
@@ -1198,8 +1198,8 @@
               <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
             </svg>
           </div>
-          <div class="hero-card-title">Сенса (Куски)</div>
-          <div class="hero-card-sub">Жёсткие куски 25.0x</div>
+          <div class="hero-card-title">Teleport & Резкость</div>
+          <div class="hero-card-sub">Мгновенная наводка</div>
         </div>
 
         <div class="hero-neon-card" id="heroCardCrosshair" onclick="switchSensSubpanel('crosshair')">
@@ -1247,7 +1247,7 @@
         </div>
       </div>
 
-      <!-- ПОДПАНЕЛЬ 1А: ПРОФЕССИОНАЛЬНЫЙ ДВИЖОК TELEPORT & SPRAY CONTROL -->
+      <!-- ПОДПАНЕЛЬ 1А: TELEPORT + РЕЗКОСТЬ КАМЕРЫ (6 БОЕВЫХ ПОЛЗУНКОВ) -->
       <div id="subpanel-sens">
         <div class="section-card">
           <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:9px;">
@@ -1265,7 +1265,7 @@
               ⚡ ВКЛЮЧИТЬ TELEPORT
             </button>
             <button type="button" class="btn-dark" style="padding:10px 8px; font-size:10.5px; border-color:#fff;" onclick="runSmartScanAndApply()">
-              🔥 ПРЕСЕТ H9IJE PRO
+              🔥 H9IJE TELEPORT MAX
             </button>
           </div>
         </div>
@@ -1273,18 +1273,18 @@
         <div class="section-card">
           <div class="section-header-tag">
             <span>КИБЕРСПОРТИВНЫЕ ПРОФИЛИ НАВОДКИ</span>
-            <span>PRO ENGINE</span>
+            <span>PRO V7</span>
           </div>
           <div class="quick-modes-compact">
-            <div class="qmode-chip active" id="qmode-1" onclick="selectQuickSensMode(1, 25.0, 100, 34, 25.0)">
+            <div class="qmode-chip active" id="qmode-1" onclick="selectQuickSensMode(1, 25.0, 25.0, 24.0, 100, 36, 25.0)">
               <div class="qmode-chip-title">⚡ 1. TELEPORT</div>
               <div class="qmode-chip-sub" id="qbtn-1">АКТИВЕН</div>
             </div>
-            <div class="qmode-chip" id="qmode-2" onclick="selectQuickSensMode(2, 22.0, 82, 22, 20.5)">
-              <div class="qmode-chip-title">🎯 2. AWM / DEAGLE</div>
-              <div class="qmode-chip-sub" id="qbtn-2">БЕЗ ТРЯСКИ</div>
+            <div class="qmode-chip" id="qmode-2" onclick="selectQuickSensMode(2, 23.0, 25.0, 21.0, 82, 24, 24.0)">
+              <div class="qmode-chip-title">🦅 2. AWM / DEAGLE</div>
+              <div class="qmode-chip-sub" id="qbtn-2">РЕЗКАЯ КАМЕРА</div>
             </div>
-            <div class="qmode-chip" id="qmode-3" onclick="selectQuickSensMode(3, 24.5, 96, 28, 23.5)">
+            <div class="qmode-chip" id="qmode-3" onclick="selectQuickSensMode(3, 25.0, 24.5, 25.0, 96, 30, 24.0)">
               <div class="qmode-chip-title">🔥 3. AKR TRANSFER</div>
               <div class="qmode-chip-sub" id="qbtn-3">ЗАЖИМ В ТОЧКУ</div>
             </div>
@@ -1292,8 +1292,8 @@
 
           <div class="param-box" style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
             <div style="padding-right:8px;">
-              <div class="param-name">⚡ Отключение сглаживания (Zero-Smoothing Teleport)</div>
-              <div class="param-sub">Мгновенный скачок прицела из точки А в точку Б без промежуточной анимации</div>
+              <div class="param-name">⚡ Вырезать плавную анимацию (Zero-Animation Snap)</div>
+              <div class="param-sub">Мгновенный скачок прицела из точки А в точку Б за 1 кадр</div>
             </div>
             <label class="ios-switch">
               <input type="checkbox" id="zeroDelaySnapToggle" checked onchange="onZeroDelayToggle(this.checked)" />
@@ -1301,48 +1301,134 @@
             </label>
           </div>
 
-          <!-- 4 ПРОФЕССИОНАЛЬНЫХ ДРАЙВЕРНЫХ ПОЛЗУНКА -->
+          <!-- 6 РЕАЛЬНЫХ ПОЛЗУНКОВ: ТЕЛЕПОРТ + РЕЗКОСТЬ КАМЕРЫ X/Y + МИКРО-ФЛИК -->
           <div class="compact-sliders-grid">
             <div class="param-box">
               <div>
-                <div class="param-top"><span class="param-name">1. Резкость Телепорта</span><span id="v-chunks" class="param-val-pill">100%</span></div>
+                <div class="param-top"><span class="param-name">1. Сила Телепорта</span><span id="v-chunks" class="param-val-pill">100%</span></div>
                 <input type="range" id="p-chunks" min="20" max="100" step="2" value="100" oninput="onSensSliderInput()" onchange="onSensSliderCommit()" />
               </div>
-              <div class="param-sub">100% — мгновенный скачок; 82% — чёткая фиксация AWM без тряски</div>
+              <div class="param-sub">100% — скачок без анимации (3 ev/s); 82% — снайперский AWM</div>
             </div>
 
             <div class="param-box">
               <div>
-                <div class="param-top"><span class="param-name">2. Отклик микро-флика</span><span id="v-sharp" class="param-val-pill">25.0</span></div>
+                <div class="param-top"><span class="param-name">2. Резкость камеры X</span><span id="v-sx" class="param-val-pill">25.0</span></div>
+                <input type="range" id="p-sx" min="1" max="25" step="0.5" value="25.0" oninput="onSensSliderInput()" onchange="onSensSliderCommit()" />
+              </div>
+              <div class="param-sub">Горизонтальная резкость флика (бафает Телепорт и AWM)</div>
+            </div>
+
+            <div class="param-box">
+              <div>
+                <div class="param-top"><span class="param-name">3. Резкость камеры Y</span><span id="v-sy" class="param-val-pill">24.0</span></div>
+                <input type="range" id="p-sy" min="1" max="25" step="0.5" value="24.0" oninput="onSensSliderInput()" onchange="onSensSliderCommit()" />
+              </div>
+              <div class="param-sub">Вертикальная послушность прицела для зажима в точку</div>
+            </div>
+
+            <div class="param-box">
+              <div>
+                <div class="param-top"><span class="param-name">4. Микро-флик (Вблизи)</span><span id="v-sharp" class="param-val-pill">25.0</span></div>
                 <input type="range" id="p-sharp" min="1" max="25" step="0.5" value="25.0" oninput="onSensSliderInput()" onchange="onSensSliderCommit()" />
               </div>
-              <div class="param-sub">Мгновенная доводка и перенос спрея на короткой дистанции</div>
+              <div class="param-sub">Мгновенная переводка между целями на малой дистанции</div>
             </div>
 
             <div class="param-box">
               <div>
-                <div class="param-top"><span class="param-name">3. Импульс 90°/180°</span><span id="v-accel" class="param-val-pill">25.0x</span></div>
+                <div class="param-top"><span class="param-name">5. Импульс 90°/180°</span><span id="v-accel" class="param-val-pill">25.0x</span></div>
                 <input type="range" id="p-accel" min="1" max="25" step="0.5" value="25.0" oninput="onSensSliderInput()" onchange="onSensSliderCommit()" />
               </div>
-              <div class="param-sub">Скорость разворота камеры одним коротким движением пальца</div>
+              <div class="param-sub">Мощность широкого разворота камеры одним рывком</div>
             </div>
 
             <div class="param-box">
               <div>
-                <div class="param-top"><span class="param-name">4. Стабилизация точки</span><span id="v-pause" class="param-val-pill">34 мс</span></div>
-                <input type="range" id="p-pause" min="0" max="40" step="2" value="34" oninput="onSensSliderInput()" onchange="onSensSliderCommit()" />
+                <div class="param-top"><span class="param-name">6. Фиксация точки</span><span id="v-pause" class="param-val-pill">36 мс</span></div>
+                <input type="range" id="p-pause" min="0" max="40" step="2" value="36" oninput="onSensSliderInput()" onchange="onSensSliderCommit()" />
               </div>
-              <div class="param-sub">Чёткая остановка прицела ровно на голове без отскока</div>
+              <div class="param-sub">Чёткая остановка прицела на модельке врага без тряски</div>
             </div>
           </div>
 
           <button type="button" class="btn-dark" onclick="testOneMmFlickResponse()">
-            🛠️ ПРИМЕНИТЬ И ОБНОВИТЬ ДРАЙВЕР ТАЧА
+            🛠️ ПРИМЕНИТЬ И ПЕРЕЗАПУСТИТЬ TELEPORT V7
           </button>
         </div>
       </div>
 
-      <!-- ПОДПАНЕЛЬ 1В: РАСТЯГ ЭКРАНА (С ОБХОДОМ ОШИБКИ ANDROID 17) -->
+      <!-- ПОДПАНЕЛЬ 1Б: КАСТОМНЫЙ ПРИЦЕЛ (ВОЗВРАЩЁН НА МЕСТО!) -->
+      <div id="subpanel-crosshair" style="display:none;">
+        <div class="section-card">
+          <div class="section-header-tag">
+            <span>КОНСТРУКТОР КАСТОМНОГО ПРИЦЕЛА (ПО ЦЕНТРУ)</span>
+            <span id="chCornerStatus">ВЫКЛ</span>
+          </div>
+          <div style="height:106px; background:#05070b; border:1px solid rgba(255,255,255,0.24); border-radius:14px; display:flex; align-items:center; justify-content:center; margin-bottom:10px;">
+            <canvas id="chPreviewCanvas" width="240" height="102"></canvas>
+          </div>
+          <div class="pills-grid" style="grid-template-columns:repeat(5,1fr);" id="chShapePills">
+            <div class="choice-pill active" data-shape="off" onclick="selectCrosshairShape('off', 'ВЫКЛ', this)">ВЫКЛ</div>
+            <div class="choice-pill" data-shape="dot" onclick="selectCrosshairShape('dot', 'ТОЧКА', this)">ТОЧКА</div>
+            <div class="choice-pill" data-shape="cross" onclick="selectCrosshairShape('cross', 'КРЕСТ', this)">КРЕСТ</div>
+            <div class="choice-pill" data-shape="crossdot" onclick="selectCrosshairShape('crossdot', 'КРЕСТ+ТЧК', this)">КРЕСТ+ТЧК</div>
+            <div class="choice-pill" data-shape="tshape" onclick="selectCrosshairShape('tshape', 'Т-ФОРМА', this)">Т-ФОРМА</div>
+            <div class="choice-pill" data-shape="circle" onclick="selectCrosshairShape('circle', 'КРУГ', this)">КРУГ</div>
+            <div class="choice-pill" data-shape="circledot" onclick="selectCrosshairShape('circledot', 'КРУГ+ТЧК', this)">КРУГ+ТЧК</div>
+            <div class="choice-pill" data-shape="box" onclick="selectCrosshairShape('box', 'БОКС', this)">БОКС</div>
+            <div class="choice-pill" data-shape="chevron" onclick="selectCrosshairShape('chevron', 'ШЕВРОН ^', this)">ШЕВРОН ^</div>
+            <div class="choice-pill" data-shape="corners" onclick="selectCrosshairShape('corners', 'УГОЛКИ', this)">УГОЛКИ</div>
+          </div>
+          <div class="pills-grid" style="grid-template-columns:repeat(5,1fr);" id="chColorPills">
+            <div class="choice-pill active" onclick="selectCrosshairColor('#ffffff', this)">БЕЛЫЙ</div>
+            <div class="choice-pill" onclick="selectCrosshairColor('#00e5ff', this)">ГОЛУБОЙ</div>
+            <div class="choice-pill" onclick="selectCrosshairColor('#10b981', this)">ЗЕЛЁНЫЙ</div>
+            <div class="choice-pill" onclick="selectCrosshairColor('#ef4444', this)">КРАСНЫЙ</div>
+            <div class="choice-pill" onclick="selectCrosshairColor('#facc15', this)">ЖЁЛТЫЙ</div>
+          </div>
+
+          <div class="compact-sliders-grid">
+            <div class="param-box">
+              <div class="param-top"><span class="param-name">Длина лучей</span><span id="v-chLen" class="param-val-pill">10 px</span></div>
+              <input type="range" id="p-chLen" min="2" max="26" step="1" value="10" oninput="onCrosshairSliderInput()" onchange="onCrosshairSliderCommit()" />
+            </div>
+            <div class="param-box">
+              <div class="param-top"><span class="param-name">Толщина</span><span id="v-chThick" class="param-val-pill">3 px</span></div>
+              <input type="range" id="p-chThick" min="1" max="8" step="1" value="3" oninput="onCrosshairSliderInput()" onchange="onCrosshairSliderCommit()" />
+            </div>
+            <div class="param-box">
+              <div class="param-top"><span class="param-name">Зазор (Gap)</span><span id="v-chGap" class="param-val-pill">3 px</span></div>
+              <input type="range" id="p-chGap" min="0" max="18" step="1" value="3" oninput="onCrosshairSliderInput()" onchange="onCrosshairSliderCommit()" />
+            </div>
+            <div class="param-box">
+              <div class="param-top"><span class="param-name">Точка центра</span><span id="v-chDot" class="param-val-pill">3 px</span></div>
+              <input type="range" id="p-chDot" min="1" max="8" step="1" value="3" oninput="onCrosshairSliderInput()" onchange="onCrosshairSliderCommit()" />
+            </div>
+          </div>
+
+          <div class="param-box">
+            <div class="param-top"><span class="param-name">Прозрачность прицела</span><span id="v-chAlpha" class="param-val-pill">100%</span></div>
+            <input type="range" id="p-chAlpha" min="20" max="100" step="1" value="100" oninput="onCrosshairSliderInput()" onchange="onCrosshairSliderCommit()" />
+          </div>
+
+          <div class="param-box" style="margin-bottom:0; display:flex; justify-content:space-between; align-items:center;">
+            <div>
+              <div class="param-name">Контрастная обводка и свой цвет</div>
+              <div class="param-sub">Автоматическая фиксация ровно в центре экрана (0, 0)</div>
+            </div>
+            <div style="display:flex; align-items:center; gap:8px;">
+              <input type="color" id="customChColorPicker" value="#ffffff" onchange="selectCrosshairColor(this.value, null)" style="width:32px; height:26px; border:none; background:none;" />
+              <label class="ios-switch">
+                <input type="checkbox" id="chOutlineToggle" checked onchange="onCrosshairSliderCommit()" />
+                <span class="ios-slider"></span>
+              </label>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ПОДПАНЕЛЬ 1В: РАСТЯГ ЭКРАНА -->
       <div id="subpanel-stretch" style="display:none;">
         <div class="section-card">
           <div class="section-header-tag">
@@ -1365,8 +1451,8 @@
           </div>
           <div class="param-box" style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
             <div style="padding-right:10px;">
-              <div class="param-name">🎯 Широкие Хитбоксы + Обход Android 17</div>
-              <div class="param-sub">Разблокирует изменение размера окна Standoff 2 без ошибки совместимости</div>
+              <div class="param-name">🎯 Широкие Хитбоксы + Горизонтальный Лок</div>
+              <div class="param-sub">Разблокирует изменение размера окна Standoff 2 без переворота экрана</div>
             </div>
             <label class="ios-switch">
               <input type="checkbox" id="sw-wideHitboxMode" onchange="toggleWideHitboxFeature(this.checked)" />
@@ -1384,7 +1470,7 @@
         </div>
       </div>
 
-      <!-- ПОДПАНЕЛЬ 1Г: СТЯГ ЭКРАНА (УПЛОТНЕНИЕ МОДЕЛЕК И СНИЖЕНИЕ ОТДАЧИ) -->
+      <!-- ПОДПАНЕЛЬ 1Г: СТЯГ ЭКРАНА -->
       <div id="subpanel-shrink" style="display:none;">
         <div class="section-card">
           <div class="section-header-tag">
@@ -1392,7 +1478,7 @@
             <span id="shrinkCornerLabel">90%</span>
           </div>
           <div style="font-size:11px; color:var(--text-muted); margin-bottom:9px; line-height:1.35;">
-            Стяг экрана сжимает пиксельную матрицу и удлиняет обзор (21:9 / 24:10), за счёт чего вертикальная отдача оружия в Standoff 2 ощущается в 2 раза слабее, а FPS держится на максимуме:
+            Стяг экрана сжимает матрицу с жёсткой фиксацией горизонтального режима — вертикальная отдача оружия в Standoff 2 снижается в 2 раза:
           </div>
           <div class="pills-grid" style="grid-template-columns:repeat(3, 1fr);" id="shrinkPillsContainer">
             <div class="choice-pill" onclick="selectShrinkPreset('SHRINK-95', 95, this)">СТЯГ 95% (SOFT)</div>
@@ -1419,9 +1505,9 @@
         </div>
       </div>
     </div>
-        <!-- ================= ВКЛАДКА 2: НАСТРОЙКИ (ТЕМА ПРИЛОЖЕНИЯ + 8 ШУТЕР-ПОЛЗУНКОВ + БУСТЕРЫ) ================= -->
+
+    <!-- ================= ВКЛАДКА 2: НАСТРОЙКИ (ТЕМА ПРИЛОЖЕНИЯ + 8 РАБОЧИХ ШУТЕР-ПОЛЗУНКОВ + PRO КОНФИГИ) ================= -->
     <div id="tab-settings" class="tab-view">
-      <!-- ВЫБОР СТИЛЯ СТЕКЛА (ОСНОВНАЯ — СЕРЕБРИСТАЯ СВЕТЯЩАЯСЯ) -->
       <div class="section-card">
         <div class="section-header-tag">
           <span>🎨 ТЕМА И ПОДСВЕТКА ПРИЛОЖЕНИЯ</span>
@@ -1440,7 +1526,6 @@
         </div>
       </div>
 
-      <!-- 8 ПРОФЕССИОНАЛЬНЫХ ШУТЕР-ПОЛЗУНКОВ (FPS LOCK, FRAME TIME, RECOIL, MULTITOUCH, PING) -->
       <div class="section-card">
         <div class="section-header-tag">
           <span>🚀 ШУТЕР-ОПТИМИЗАТОР И КОНТРОЛЬ ОТДАЧИ</span>
@@ -1469,7 +1554,7 @@
               <div class="param-top"><span class="param-name">3. Приоритет CPU/GPU</span><span id="v-gpuBoost" class="param-val-pill">100%</span></div>
               <input type="range" id="p-gpuBoost" min="40" max="100" step="5" value="100" oninput="onShooterSlidersInput()" onchange="onShooterSlidersCommit()" />
             </div>
-            <div class="param-sub">Мощность потоков рендера под Standoff 2</div>
+            <div class="param-sub">Фиксирует частоты процессора и графики под Standoff 2</div>
           </div>
 
           <div class="param-box">
@@ -1477,7 +1562,7 @@
               <div class="param-top"><span class="param-name">4. Стаб. Фреймтайма</span><span id="v-frameTime" class="param-val-pill">100%</span></div>
               <input type="range" id="p-frameTime" min="30" max="100" step="5" value="100" oninput="onShooterSlidersInput()" onchange="onShooterSlidersCommit()" />
             </div>
-            <div class="param-sub">Убирает микро-фризы при выходе врага из-за угла</div>
+            <div class="param-sub">Опережение фазы кадра SurfaceFlinger (-16 мс без фризов)</div>
           </div>
 
           <div class="param-box">
@@ -1509,9 +1594,13 @@
               <div class="param-top"><span class="param-name">8. Порог троттлинга</span><span id="v-thermalLim" class="param-val-pill">100%</span></div>
               <input type="range" id="p-thermalLim" min="50" max="100" step="5" value="100" oninput="onShooterSlidersInput()" onchange="onShooterSlidersCommit()" />
             </div>
-            <div class="param-sub">Удерживает 120 Гц даже при нагреве телефона</div>
+            <div class="param-sub">Отключает сброс герцовки до 60 Гц при нагреве телефона</div>
           </div>
         </div>
+
+        <button type="button" class="btn-main" style="margin-bottom:8px;" onclick="onShooterSlidersCommit()">
+          ⚡ ПРИМЕНИТЬ БУСТ 120 FPS И ОПТИМИЗАЦИЮ
+        </button>
 
         <div class="param-box">
           <div style="display:flex; justify-content:space-between; align-items:center;">
@@ -1593,17 +1682,18 @@
           🧹 ОЧИСТИТЬ ОЗУ И КЭШ (RAM BOOST)
         </button>
       </div>
-      <!-- ГОТОВЫЕ КИБЕРСПОРТИВНЫЕ КОНФИГИ И ОБМЕН КОДОМ -->
+
+      <!-- ГОТОВЫЕ КИБЕРСПОРТИВНЫЕ КОНФИГИ (ОТДЕЛЬНО TELEPORT, ОТДЕЛЬНО AWM/DEAGLE, ОТДЕЛЬНО AKR) -->
       <div class="section-card">
         <div class="section-header-tag">
           <span>🔥 ПРОФЕССИОНАЛЬНЫЕ КИБЕРСПОРТИВНЫЕ КОНФИГИ</span>
           <span>1-CLICK PRO</span>
         </div>
         <div style="display:grid; grid-template-columns:1fr 1fr; gap:7px; margin-bottom:9px;">
-          <button type="button" class="btn-dark" onclick="loadFullProBundle('TELEPORT (H9IJE TRANSFER)', 25.0, 100, 34, 25.0, 'dot', '#ffffff', true)">⚡ 1. TELEPORT PRO</button>
-          <button type="button" class="btn-dark" onclick="loadFullProBundle('AWM / DEAGLE PRECISION', 22.0, 82, 22, 20.5, 'cross', '#00e5ff', false)">🎯 2. AWM / DEAGLE</button>
-          <button type="button" class="btn-dark" onclick="loadFullProBundle('AKR / M4A1 SPRAY TRANSFER', 24.5, 96, 28, 23.5, 'box', '#10b981', true)">🔥 3. AKR ЗАЖИМ В ТОЧКУ</button>
-          <button type="button" class="btn-dark" onclick="loadFullProBundle('HYBRID TOURNAMENT (AKR + AWM)', 23.5, 90, 26, 22.5, 'corners', '#facc15', true)">👑 4. УНИВЕРСАЛ PRO</button>
+          <button type="button" class="btn-dark" onclick="loadFullProBundle('TELEPORT H9IJE MAX', 25.0, 25.0, 24.0, 100, 36, 25.0, 'dot', '#ffffff', true)">⚡ 1. TELEPORT PRO</button>
+          <button type="button" class="btn-dark" onclick="loadFullProBundle('AWM / DEAGLE SNIPER', 23.0, 25.0, 21.0, 82, 24, 24.0, 'cross', '#00e5ff', false)">🦅 2. AWM / DEAGLE</button>
+          <button type="button" class="btn-dark" onclick="loadFullProBundle('AKR / M4A1 SPRAY CONTROL', 25.0, 24.5, 25.0, 96, 30, 24.0, 'box', '#10b981', true)">🔥 3. AKR ЗАЖИМ В ТОЧКУ</button>
+          <button type="button" class="btn-dark" onclick="loadFullProBundle('HYBRID TOURNAMENT PRO', 24.0, 25.0, 23.5, 92, 28, 24.5, 'corners', '#facc15', true)">👑 4. УНИВЕРСАЛ PRO</button>
         </div>
         <input type="text" id="shareLinkInput" class="cyber-field" placeholder="Вставь код конфига SO2-... или скопируй свой" />
         <div style="display:grid; grid-template-columns:1fr 1fr; gap:7px;">
@@ -1611,9 +1701,9 @@
           <button type="button" class="btn-dark" style="padding:10px;" onclick="generateAndCopyShareLink()">🔗 КОПИРОВАТЬ КОД</button>
         </div>
       </div>
-    </div> <!-- Закрывает tab-settings, чтобы Войс и Профиль всегда отображались! -->
-      
-    <!-- ================= ВКЛАДКА 3: ВОЙС (БОЛЬШАЯ DISCORD STAGE КОМНАТА БЕЗ ШУМА + ОТДЕЛЬНЫЙ ЧАТ ПО КНОПКЕ) ================= -->
+    </div>
+
+    <!-- ================= ВКЛАДКА 3: ВОЙС (DISCORD STAGE КОМНАТА БЕЗ ШУМА + ОТДЕЛЬНЫЙ ЧАТ) ================= -->
     <div id="tab-voice" class="tab-view">
       <div class="section-card">
         <div class="section-header-tag">
@@ -1626,7 +1716,6 @@
           <button type="button" class="btn-dark" onclick="setMyOwnRoomCode()">🎲 СОЗДАТЬ СВОЮ</button>
         </div>
 
-        <!-- БОЛЬШАЯ DISCORD-СЦЕНА УЧАСТНИКОВ -->
         <div class="dc-call-stage">
           <div class="dc-stage-top">
             <div class="dc-room-badge">
@@ -1634,7 +1723,7 @@
               <span id="stageRoomNameLabel">SQUAD-MAIN</span>
               <span>• <span id="voiceRosterCount">0</span> В КАНАЛЕ</span>
             </div>
-            <div id="dcPingQualityBadge" class="dc-ping-tag">ZERO HISS • 300% BOOST</div>
+            <div id="dcPingQualityBadge" class="dc-ping-tag">ZERO HISS • 400% BOOST</div>
           </div>
 
           <div id="voiceRosterList" class="dc-avatars-grid">
@@ -1649,7 +1738,6 @@
             </button>
           </div>
 
-          <!-- 5 КНОПОК УПРАВЛЕНИЯ ВНУТРИ ЗВОНКА (ВКЛЮЧАЯ ОТДЕЛЬНУЮ КНОПКУ ЧАТА) -->
           <div id="voiceControlsActive" class="dc-controls-bar" style="display:none;">
             <button type="button" class="dc-ctrl-btn active-on" id="btnMuteMic" onclick="toggleMicMute()">
               <span class="ico" id="icoMicState">🎤</span>
@@ -1673,7 +1761,6 @@
             </button>
           </div>
 
-          <!-- ОТДЕЛЬНЫЙ ЧАТ КОМНАТЫ (ПОЯВЛЯЕТСЯ ТОЛЬКО В ЗВОНКЕ ПО КНОПКЕ «💬 ЧАТ») -->
           <div id="squadChatDrawer" class="squad-chat-drawer">
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
               <span style="font-size:10.5px; font-weight:900; color:#ffffff; letter-spacing:0.4px;">💬 ЧАТ ГОЛОСОВОЙ КОМНАТЫ</span>
@@ -1707,7 +1794,7 @@
           <div style="padding-right:10px; flex:1;">
             <div class="param-name">🛡️ Шумодав тишины Krisp Gate (<span id="v-noiseGate">18%</span>)</div>
             <input type="range" id="p-noiseGate" min="5" max="45" step="1" value="18" oninput="updateVoiceDspParams()" onchange="updateVoiceDspParams()" />
-            <div class="param-sub">Полностью отключает фоновое шипение, когда никто не говорит</div>
+            <div class="param-sub">Отсекает всех посторонних и фоновый шум, когда тиммейт молчит</div>
           </div>
           <label class="ios-switch">
             <input type="checkbox" id="sw-dspNoiseGate" checked onchange="updateVoiceDspParams()" />
@@ -1716,7 +1803,6 @@
         </div>
       </div>
 
-      <!-- СПИСОК ДРУЗЕЙ И ДОБАВЛЕНИЕ ПО ID -->
       <div class="section-card">
         <div class="section-header-tag">
           <span>👥 ДРУЗЬЯ И ПОИСК ТИММЕЙТОВ</span>
@@ -1738,7 +1824,7 @@
       </div>
     </div>
 
-    <!-- ================= ВКЛАДКА 4: ПРОФИЛЬ ================= -->
+    <!-- ================= ВКЛАДКА 4: ПРОФИЛЬ (РОБОТ ПО УМОЛЧАНИЮ + ГАЛЕРЕЯ) ================= -->
     <div id="tab-profile" class="tab-view">
       <div class="section-card">
         <div class="section-header-tag">
@@ -1764,7 +1850,6 @@
           <span>ЗАГРУЗИТЬ СВОЁ ФОТО ИЗ ГАЛЕРЕИ</span>
         </button>
       </div>
-    </div>
 
       <div class="section-card">
         <div class="section-header-tag">
@@ -1806,7 +1891,7 @@
       </div>
     </div>
   </div>
-
+  
   <!-- ================= НИЖНЯЯ НАВИГАЦИЯ НА 4 ИКОНКИ (ПЕРВАЯ ВКЛАДКА — «ГЛАВНОЕ») ================= -->
   <nav id="bottomDockBar" class="bottom-nav-pill auth-locked">
     <div class="nav-tab-item active" data-tab="tab-sens" onclick="switchMainTab('tab-sens')">
