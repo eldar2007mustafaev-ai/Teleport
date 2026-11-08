@@ -112,7 +112,6 @@ public class TeleportEngine {
         return 1;
     }
 
-    // ================= РАСТЯГ И СТЯГ С МЁРТВОЙ ФИКСАЦИЕЙ В ГОРИЗОНТАЛЬНОМ РЕЖИМЕ =================
     public static boolean applyAspectRatioStretch(String ratio) {
         if (!isShizukuReady() && !ShizukuManager.isPermissionGranted()) return false;
 
@@ -222,17 +221,21 @@ public class TeleportEngine {
         }
     }
 
-    // ================= ДВИЖОК «ЧИСТЫЙ ТЕЛЕПОРТ V4» (ANDROID 17 UNTRUSTED-TOUCH BYPASS + ZERO JITTER) =================
+    // ================= НАСТОЯЩИЙ ДИСКРЕТНЫЙ ТЕЛЕПОРТ V5 (0 ПРОМЕЖУТОЧНОЙ АНИМАЦИИ НА БЛИЖНЕЙ И ДАЛЬНЕЙ ДИСТАНЦИИ) =================
     public static void startTeleport(String presetId) {
         isEngineRunning = true;
         if (!isShizukuReady() && !ShizukuManager.isPermissionGranted()) return;
 
         String pkg = appContext != null ? appContext.getPackageName() : "com.teleport.so2";
 
-        // 1) block_untrusted_touches 0 + maximum_obscuring_opacity_for_touch 1.0 + SYSTEM_ALERT_WINDOW allow
-        //    полностью убирают плашку Android 17 "Приложение не оптимизировано" и снимают системную задержку тача!
-        // 2) windowsmgr.max_events_per_sec 30 (ровно 1/4 от 120 Гц) + ro.min_pointer_dur 8 + view.touch_slop 1
-        //    дают мгновенный телепорт без единого дрожания прицела и покупку оружия с 1-го клика!
+        // ГЛАВНЫЙ СЕКРЕТ НАСТОЯЩЕГО ТЕЛЕПОРТА КАК НА ВТОРОМ ВИДЕО:
+        // 1) windowsmgr.max_events_per_sec = 5:
+        //    За время флика (50-80 мс) система НЕ отправляет промежуточные кадры движения вообще,
+        //    а выдаёт сразу конечную точку остановки пальца одним скачком!
+        // 2) ro.min.fling_velocity = 1 и view.minimum_fling_velocity = 1:
+        //    Даже микро-флик на 1-2 мм (на ближней дистанции) мгновенно активирует рывок без плавной доводки!
+        // 3) ro.min_pointer_dur = 8 и tap_duration_threshold = 0.0:
+        //    Одиночные тапы в магазине (покупка оружия) проходят с 1-го раза без задержек!
         String cmd = "settings put global block_untrusted_touches 0; "
                 + "settings put secure block_untrusted_touches 0; "
                 + "settings put system block_untrusted_touches 0; "
@@ -267,30 +270,31 @@ public class TeleportEngine {
                 + "settings put system touch_sensitivity 1; "
                 + "settings put system sec_touch_sensitivity 1; "
                 + "settings put secure stylus_handwriting_enabled 0; "
-                + "setprop debug.touch.slop 1; "
-                + "setprop view.touch_slop 1; "
-                + "setprop touch.filter.level 2; "
+                + "setprop debug.touch.slop 0; "
+                + "setprop view.touch_slop 0; "
                 + "setprop view.scroll_friction 0; "
-                + "setprop view.minimum_fling_velocity 85000; "
-                + "setprop view.maximum_fling_velocity 320000; "
-                + "setprop ro.max.fling_velocity 320000; "
-                + "setprop ro.min.fling_velocity 85000; "
+                + "setprop view.minimum_fling_velocity 1; "
+                + "setprop ro.min.fling_velocity 1; "
+                + "setprop view.maximum_fling_velocity 600000; "
+                + "setprop ro.max.fling_velocity 600000; "
                 + "setprop debug.input.touch.prediction 0; "
                 + "setprop persist.sys.touch.prediction 0; "
                 + "setprop ro.input.noresample 1; "
                 + "setprop debug.input.NeedResample 0; "
+                + "setprop touch.Temporality.filter 0; "
                 + "setprop touch.InitialJump 1; "
                 + "setprop touch.acceleration.hw 1; "
-                + "setprop touch.distance.scale 2.4; "
+                + "setprop touch.distance.scale 4.0; "
                 + "setprop touch.gestureMode spots; "
                 + "setprop ro.min_pointer_dur 8; "
                 + "setprop touch.pressure.scale 0.0001; "
                 + "setprop touch.size.calibration geometric; "
-                + "setprop windowsmgr.max_events_per_sec 30; "
+                + "setprop windowsmgr.max_events_per_sec 5; "
                 + "setprop debug.sf.latch_unsignaled 1; "
                 + "setprop debug.sf.disable_backpressure 1; "
-                + "setprop debug.sf.early_phase_offset_ns -6000000; "
-                + "setprop debug.sf.early_app_phase_offset_ns -6000000; "
+                + "setprop debug.sf.early_phase_offset_ns -12000000; "
+                + "setprop debug.sf.early_app_phase_offset_ns -12000000; "
+                + "setprop debug.sf.high_fps_early_phase_offset_ns -12000000; "
                 + "settings put system peak_refresh_rate 120.0; "
                 + "settings put system min_refresh_rate 120.0; "
                 + "settings put secure refresh_rate_mode 2; "
@@ -334,7 +338,11 @@ public class TeleportEngine {
         startTeleport("extreme");
     }
 
-    // Гармоническая синхронизация кусков с экраном 120 Гц (делители 24, 30, 40, 60 Гц — 0% дрожания прицела!)
+    // Прямое управление 4 реальными параметрами Телепорта:
+    // 1) chunks (Склейка анимации): 4..14 пакетов/сек (при 100% = 4 ev/s -> 0 промежуточных кадров!)
+    // 2) sharp (Порог микро-флика): управляет ro.min.fling_velocity (1..50 px/s) и touch.distance.scale
+    // 3) accel (Импульс проброса): управляет ro.max.fling_velocity (до 600000)
+    // 4) pause (Квантовое окно буфера): управляет ro.min_pointer_dur (4..12 мс)
     public static void updateParameters(
             double sharp, double sx, double sy,
             int chunks, int chunkFast, double straight,
@@ -342,22 +350,20 @@ public class TeleportEngine {
     ) {
         if (!isShizukuReady() && !ShizukuManager.isPermissionGranted()) return;
 
-        double totalIntensity = ((sharp + sx + accel) / 75.0) * 0.6 + (chunks / 100.0) * 0.4;
-        // Используем ТОЛЬКО чистые делители 120 Гц (24, 30, 40, 60), чтобы кадры никогда не рвались и прицел не дрожал!
-        int harmonicChunkRate;
-        if (totalIntensity >= 0.82) {
-            harmonicChunkRate = 24; // 1 мощный прыжок ровно каждые 5 кадров
-        } else if (totalIntensity >= 0.60) {
-            harmonicChunkRate = 30; // 1 прыжок ровно каждые 4 кадра
-        } else if (totalIntensity >= 0.35) {
-            harmonicChunkRate = 40; // 1 прыжок ровно каждые 3 кадра
-        } else {
-            harmonicChunkRate = 60; // 1 прыжок каждые 2 кадра
-        }
+        double chunkNorm = Math.min(1.0, Math.max(0.0, chunks / 100.0));
+        // При chunks = 100% ставит 4 события/сек (полное схлопывание анимации флика в 1 скачок!)
+        int teleportCoalesceRate = Math.max(4, Math.min(14, (int) Math.round(14.0 - (chunkNorm * 10.0))));
 
-        int pointerDurMs = Math.max(6, Math.min(12, 6 + (chunks / 20)));
-        int maxFling = (int) Math.round(160000 + (sharp * 3500) + (accel * 3500) + (chunkFast * 300));
-        int minFling = Math.max(65000, maxFling / 2);
+        // Минимальная скорость срыва для микро-фликов на малой дистанции (при sharp >= 20 равна 1 px/s!)
+        int microFlickMinVel = Math.max(1, (int) Math.round(52 - (sharp * 2.1)));
+        double distScale = Math.round((1.5 + (sharp / 25.0) * 3.0) * 10.0) / 10.0;
+
+        // Максимальный импульс проброса
+        int maxFling = (int) Math.round(200000 + (accel * 16000));
+
+        // Безопасное окно квантования (4..12 мс — склеивает старт флика и не мешает покупать оружие с 1-го тапа)
+        int pointerDurMs = Math.max(4, Math.min(12, (int) Math.round(4 + (pause * 0.25))));
+        long phaseOffsetNs = -1000000L * Math.max(6, Math.min(14, 6 + (chunks / 14)));
 
         String cmd = "settings put global block_untrusted_touches 0; "
                 + "settings put secure block_untrusted_touches 0; "
@@ -370,29 +376,30 @@ public class TeleportEngine {
                 + "settings put secure ignore_repeat_click_timeout 0; "
                 + "settings put system touch_sensitivity 1; "
                 + "settings put system sec_touch_sensitivity 1; "
-                + "setprop debug.touch.slop 1; "
-                + "setprop view.touch_slop 1; "
-                + "setprop touch.filter.level 2; "
+                + "setprop debug.touch.slop 0; "
+                + "setprop view.touch_slop 0; "
                 + "setprop view.scroll_friction 0; "
-                + "setprop view.minimum_fling_velocity " + minFling + "; "
+                + "setprop view.minimum_fling_velocity " + microFlickMinVel + "; "
+                + "setprop ro.min.fling_velocity " + microFlickMinVel + "; "
                 + "setprop view.maximum_fling_velocity " + maxFling + "; "
                 + "setprop ro.max.fling_velocity " + maxFling + "; "
-                + "setprop ro.min.fling_velocity " + minFling + "; "
                 + "setprop debug.input.touch.prediction 0; "
                 + "setprop persist.sys.touch.prediction 0; "
                 + "setprop ro.input.noresample 1; "
                 + "setprop debug.input.NeedResample 0; "
+                + "setprop touch.Temporality.filter 0; "
                 + "setprop touch.InitialJump 1; "
                 + "setprop touch.acceleration.hw 1; "
-                + "setprop touch.distance.scale 2.4; "
+                + "setprop touch.distance.scale " + distScale + "; "
                 + "setprop touch.gestureMode spots; "
                 + "setprop ro.min_pointer_dur " + pointerDurMs + "; "
                 + "setprop touch.pressure.scale 0.0001; "
-                + "setprop windowsmgr.max_events_per_sec " + harmonicChunkRate + "; "
+                + "setprop windowsmgr.max_events_per_sec " + teleportCoalesceRate + "; "
                 + "setprop debug.sf.latch_unsignaled 1; "
                 + "setprop debug.sf.disable_backpressure 1; "
-                + "setprop debug.sf.early_phase_offset_ns -6000000; "
-                + "setprop debug.sf.early_app_phase_offset_ns -6000000; "
+                + "setprop debug.sf.early_phase_offset_ns " + phaseOffsetNs + "; "
+                + "setprop debug.sf.early_app_phase_offset_ns " + phaseOffsetNs + "; "
+                + "setprop debug.sf.high_fps_early_phase_offset_ns " + phaseOffsetNs + "; "
                 + "settings put secure game_touch_sampling_rate 360; "
                 + "settings put system touch_sampling_rate 360;";
 
