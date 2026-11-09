@@ -114,34 +114,9 @@ public class AndroidBridge {
         for (String k : ownerAndBuyerKeys) {
             if (k.equalsIgnoreCase(cleanKey)) return true;
         }
-
-        String backupBuyerKey = prefs.getString("backup_buyer_key", "");
-        if (!backupBuyerKey.isEmpty() && backupBuyerKey.equalsIgnoreCase(cleanKey)) {
-            return true;
-        }
-
-        String previouslyActivated = ProfileManager.getSavedKey(context);
-        if (!previouslyActivated.isEmpty() && previouslyActivated.equalsIgnoreCase(cleanKey)) {
-            return true;
-        }
-
-        try {
-            InputStream is = context.getAssets().open("keys.json");
-            Scanner s = new Scanner(is).useDelimiter("\\A");
-            String jsonStr = s.hasNext() ? s.next() : "";
-            is.close();
-            JSONObject obj = new JSONObject(jsonStr);
-            JSONArray arr = obj.optJSONArray("valid_keys");
-            if (arr != null) {
-                for (int i = 0; i < arr.length(); i++) {
-                    if (cleanKey.equalsIgnoreCase(arr.getString(i).trim())) {
-                        return true;
-                    }
-                }
-            }
-        } catch (Exception ignored) {}
         return false;
     }
+
 
     private long getDefaultDurationMsForKey(String cleanKey) {
         if (cleanKey == null) return 30L * 24L * 3600L * 1000L;
