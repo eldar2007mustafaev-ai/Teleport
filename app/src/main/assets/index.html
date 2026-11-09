@@ -4059,6 +4059,38 @@
     } else {
       initApplication();
     }
+    function pollLicenseExpiration() {
+      if (!isSessionAuthorized) return;
+      if (!fullLicenseKeyPlain || fullLicenseKeyPlain.length < 5) {
+        window.forceShowKickScreen("Введите лицензионный ключ для доступа!");
+        return;
+      }
+      const B = getBridge();
+      if (!B || typeof B.verifyLicenseKey !== "function") return;
+      try {
+        const verifyOut = String(B.verifyLicenseKey(fullLicenseKeyPlain) || "");
+        if (verifyOut.startsWith("OK|")) {
+          const subLabel = verifyOut.split("|")[1] || "АКТИВНА";
+          document.getElementById("profSubVal").innerText = subLabel;
+        } else if (
+          verifyOut.startsWith("ERR|") ||
+          verifyOut.startsWith("EXPIRED|") ||
+          verifyOut.startsWith("BANNED|") ||
+          verifyOut.startsWith("BLOCKED|")
+        ) {
+          const reason = verifyOut.split("|")[1] || "Ключ заблокирован!";
+          window.forceShowKickScreen(reason);
+        }
+      } catch (e) {}
+    }
+
+    // Запускаем проверку ключа каждые 15 секунд и сразу при разворачивании приложения:
+    setInterval(pollLicenseExpiration, 15000);
+    document.addEventListener("visibilitychange", () => {
+      if (!document.hidden && isSessionAuthorized) {
+        pollLicenseExpiration();
+      }
+    });
   </script>
 </body>
 </html>
