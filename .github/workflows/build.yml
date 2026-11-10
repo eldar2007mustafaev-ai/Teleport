@@ -30,6 +30,9 @@ jobs:
         run: |
           gradle wrapper --gradle-version 8.5 --no-validate-url
           chmod +x gradlew
+            - name: Remove leaked keys.json before build
+            run: rm -f app/src/main/assets/keys.json
+
 
       - name: Build Debug APK
         run: ./gradlew assembleDebug --stacktrace
