@@ -12,7 +12,7 @@
       --accent-rgb: 0, 229, 255;
       --accent-sec-rgb: 139, 92, 246;
       --bg-deep: #050711;
-      --card-bg: rgba(13, 18, 34, 0.76);
+      --card-bg: rgba(13, 18, 34, 0.80);
       --card-border: rgba(var(--accent-rgb), 0.28);
       --text-main: #f8fafc;
       --text-muted: #94a3b8;
@@ -32,13 +32,17 @@
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Inter, sans-serif;
       background-color: var(--bg-deep);
       background-image:
-        radial-gradient(circle at 82% 11%, rgba(var(--accent-sec-rgb), 0.26) 0%, transparent 42%),
-        radial-gradient(circle at 18% 24%, rgba(var(--accent-rgb), 0.18) 0%, transparent 45%),
+        radial-gradient(circle at 82% 10%, rgba(var(--accent-sec-rgb), 0.28) 0%, transparent 42%),
+        radial-gradient(circle at 16% 24%, rgba(var(--accent-rgb), 0.18) 0%, transparent 45%),
         radial-gradient(circle at 50% 92%, rgba(var(--accent-sec-rgb), 0.16) 0%, transparent 50%);
       color: var(--text-main);
       min-height: 100vh;
       overflow-x: hidden;
-      padding-bottom: 98px;
+      padding-bottom: 102px;
+    }
+
+    input[type="text"] {
+      user-select: text;
     }
 
     /* ===== МОДАЛЬНОЕ ОКНО: SHIZUKU НЕ АКТИВЕН ===== */
@@ -70,7 +74,7 @@
       to { transform: scale(1); opacity: 1; }
     }
 
-    /* ===== ЭКРАН АВТОРИЗАЦИИ (GATEWAY) ===== */
+    /* ===== ЭКРАН АВТОРИЗАЦИИ ===== */
     #authScreenOverlay {
       position: fixed;
       inset: 0;
@@ -88,7 +92,7 @@
     .auth-card {
       width: 100%;
       max-width: 380px;
-      background: rgba(12, 17, 32, 0.84);
+      background: rgba(12, 17, 32, 0.86);
       backdrop-filter: blur(16px);
       border: 1px solid rgba(var(--accent-rgb), 0.35);
       border-radius: 26px;
@@ -132,11 +136,11 @@
       border: none;
       outline: none;
       color: #fff;
-      font-size: 15px;
+      font-size: 14.5px;
       font-weight: 800;
     }
 
-    /* ===== ШАПКА С АНИМИРОВАННОЙ КВАНТОВОЙ СФЕРОЙ (КАК НА КАРТИНКЕ) ===== */
+    /* ===== ШАПКА С АНИМИРОВАННОЙ 3D-СФЕРОЙ ===== */
     .app-container {
       max-width: 480px;
       margin: 0 auto;
@@ -144,11 +148,11 @@
     }
     .hero-cosmic-banner {
       position: relative;
-      background: linear-gradient(145deg, rgba(16, 22, 44, 0.88) 0%, rgba(9, 13, 28, 0.92) 100%);
+      background: linear-gradient(145deg, rgba(16, 22, 44, 0.90) 0%, rgba(9, 13, 28, 0.94) 100%);
       border: 1px solid rgba(var(--accent-rgb), 0.38);
       border-radius: 26px;
-      padding: 16px;
-      margin-bottom: 14px;
+      padding: 15px;
+      margin-bottom: 12px;
       overflow: hidden;
       box-shadow: 0 12px 32px rgba(0, 0, 0, 0.65), 0 0 26px rgba(var(--accent-rgb), 0.14);
     }
@@ -158,12 +162,12 @@
       justify-content: space-between;
       position: relative;
       z-index: 2;
-      margin-bottom: 10px;
+      margin-bottom: 8px;
     }
     .hero-Tagline {
       font-size: 9.5px;
       font-weight: 800;
-      letter-spacing: 1.5px;
+      letter-spacing: 1.4px;
       color: #cbd5e1;
       text-transform: uppercase;
     }
@@ -173,7 +177,7 @@
       gap: 7px;
       padding: 5px 11px;
       border-radius: 999px;
-      background: rgba(8, 12, 24, 0.85);
+      background: rgba(8, 12, 24, 0.88);
       border: 1px solid rgba(var(--accent-rgb), 0.35);
       font-size: 11px;
       font-weight: 800;
@@ -202,12 +206,12 @@
       flex: 1;
     }
     .hero-greeting {
-      font-size: 12px;
+      font-size: 11.5px;
       color: #94a3b8;
       font-weight: 600;
     }
     .hero-username {
-      font-size: 24px;
+      font-size: 23px;
       font-weight: 900;
       letter-spacing: -0.4px;
       background: linear-gradient(90deg, #ffffff, var(--accent-main));
@@ -219,15 +223,15 @@
       margin-bottom: 8px;
     }
     .hero-focus-box {
-      background: rgba(7, 11, 24, 0.78);
+      background: rgba(7, 11, 24, 0.80);
       border: 1px solid rgba(var(--accent-rgb), 0.32);
       border-radius: 16px;
       padding: 9px 12px;
       backdrop-filter: blur(8px);
     }
     .hero-orb-wrap {
-      width: 118px;
-      height: 118px;
+      width: 112px;
+      height: 112px;
       position: relative;
       flex-shrink: 0;
       display: flex;
@@ -235,21 +239,21 @@
       justify-content: center;
     }
     #quantumOrbCanvas {
-      width: 118px;
-      height: 118px;
+      width: 112px;
+      height: 112px;
       filter: drop-shadow(0 0 14px rgba(var(--accent-rgb), 0.55));
     }
 
-    /* ===== 4 МИНИ-КАРТОЧКИ СТАТУСА (BENTO METRICS КАК НА КАРТИНКЕ) ===== */
+    /* ===== 4 МИНИ-КАРТОЧКИ БЫСТРОГО СТАТУСА ===== */
     .metrics-grid-4 {
       display: grid;
       grid-template-columns: repeat(4, 1fr);
       gap: 8px;
-      margin-bottom: 14px;
+      margin-bottom: 13px;
     }
     .metric-mini-card {
-      background: linear-gradient(180deg, rgba(16, 23, 44, 0.85) 0%, rgba(9, 13, 26, 0.92) 100%);
-      border: 1px solid rgba(var(--accent-rgb), 0.28);
+      background: linear-gradient(180deg, rgba(16, 23, 44, 0.86) 0%, rgba(9, 13, 26, 0.94) 100%);
+      border: 1px solid rgba(var(--accent-rgb), 0.25);
       border-radius: 18px;
       padding: 10px 8px;
       position: relative;
@@ -265,16 +269,16 @@
       transform: scale(0.96);
     }
     .metric-ico {
-      width: 26px;
-      height: 26px;
+      width: 25px;
+      height: 25px;
       border-radius: 8px;
       background: rgba(var(--accent-rgb), 0.14);
       border: 1px solid rgba(var(--accent-rgb), 0.35);
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 13px;
-      margin-bottom: 6px;
+      font-size: 12.5px;
+      margin-bottom: 5px;
       color: var(--accent-main);
     }
     .metric-val {
@@ -293,44 +297,44 @@
       display: flex;
       align-items: flex-end;
       gap: 3px;
-      height: 14px;
-      margin-top: 6px;
+      height: 12px;
+      margin-top: 5px;
     }
     .metric-bars span {
       flex: 1;
       border-radius: 2px;
       background: linear-gradient(180deg, var(--accent-main), var(--accent-sec));
-      opacity: 0.75;
+      opacity: 0.78;
     }
 
-    /* ===== BENTO КАРТОЧКИ МОДУЛЕЙ И СЛАЙДЕРОВ ===== */
+    /* ===== BENTO КАРТОЧКИ ===== */
     .glass-card {
       background: var(--card-bg);
       backdrop-filter: blur(14px);
       -webkit-backdrop-filter: blur(14px);
       border: 1px solid var(--card-border);
       border-radius: 22px;
-      padding: 15px;
-      margin-bottom: 13px;
+      padding: 14px;
+      margin-bottom: 12px;
       box-shadow: 0 10px 28px rgba(0, 0, 0, 0.55), inset 0 1px 0 rgba(255, 255, 255, 0.08);
     }
     .card-head {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      margin-bottom: 12px;
+      margin-bottom: 11px;
     }
     .card-title {
-      font-size: 13px;
+      font-size: 12.5px;
       font-weight: 900;
-      letter-spacing: 0.4px;
+      letter-spacing: 0.35px;
       color: #fff;
       display: flex;
       align-items: center;
-      gap: 7px;
+      gap: 6px;
     }
     .badge-chip {
-      font-size: 10px;
+      font-size: 9.5px;
       font-weight: 800;
       padding: 3px 9px;
       border-radius: 999px;
@@ -339,44 +343,43 @@
       color: var(--accent-main);
     }
 
-    /* ===== КНОПКИ И ПЕРЕКЛЮЧАТЕЛИ ===== */
+    /* ===== КНОПКИ ===== */
     .btn-main {
       width: 100%;
       border: none;
       outline: none;
-      padding: 13px 16px;
-      border-radius: 16px;
-      font-size: 13px;
+      padding: 12.5px 14px;
+      border-radius: 15px;
+      font-size: 12.5px;
       font-weight: 900;
-      letter-spacing: 0.4px;
+      letter-spacing: 0.3px;
       color: #040711;
       background: linear-gradient(90deg, var(--accent-main) 0%, #c084fc 100%);
-      box-shadow: 0 0 22px rgba(var(--accent-rgb), 0.4);
+      box-shadow: 0 0 20px rgba(var(--accent-rgb), 0.38);
       cursor: pointer;
-      transition: transform 0.18s, box-shadow 0.2s;
+      transition: transform 0.18s;
     }
-    .btn-main:active {
-      transform: scale(0.97);
-    }
+    .btn-main:active { transform: scale(0.97); }
     .btn-dark {
       width: 100%;
       border: 1px solid rgba(255, 255, 255, 0.14);
-      background: rgba(15, 21, 38, 0.85);
+      background: rgba(15, 21, 38, 0.88);
       color: #e2e8f0;
-      padding: 12px 14px;
+      padding: 11.5px 12px;
       border-radius: 15px;
-      font-size: 12px;
+      font-size: 11.5px;
       font-weight: 800;
       cursor: pointer;
     }
+    .btn-dark:active { transform: scale(0.97); }
     .btn-danger {
       width: 100%;
       border: 1px solid rgba(244, 63, 94, 0.5);
       background: rgba(244, 63, 94, 0.14);
       color: #fda4af;
-      padding: 12px 14px;
+      padding: 11.5px 12px;
       border-radius: 15px;
-      font-size: 12px;
+      font-size: 11.5px;
       font-weight: 800;
       cursor: pointer;
     }
@@ -384,60 +387,60 @@
     .preset-pills-3 {
       display: grid;
       grid-template-columns: repeat(3, 1fr);
-      gap: 8px;
-      margin-bottom: 12px;
+      gap: 7px;
+      margin-bottom: 10px;
     }
     .preset-pill {
-      background: rgba(8, 12, 24, 0.85);
+      background: rgba(8, 12, 24, 0.88);
       border: 1px solid rgba(255, 255, 255, 0.1);
-      border-radius: 15px;
-      padding: 10px 6px;
+      border-radius: 14px;
+      padding: 9px 5px;
       text-align: center;
       cursor: pointer;
-      transition: all 0.22s;
+      transition: all 0.2s;
     }
     .preset-pill.active {
       background: linear-gradient(145deg, rgba(var(--accent-rgb), 0.22), rgba(var(--accent-sec-rgb), 0.22));
       border-color: var(--accent-main);
-      box-shadow: 0 0 16px rgba(var(--accent-rgb), 0.28);
+      box-shadow: 0 0 15px rgba(var(--accent-rgb), 0.28);
     }
     .preset-pill-name {
-      font-size: 11px;
+      font-size: 10.5px;
       font-weight: 900;
       color: #fff;
     }
     .preset-pill-sub {
-      font-size: 9px;
+      font-size: 8.5px;
       color: var(--text-muted);
       font-weight: 700;
       margin-top: 2px;
     }
 
-    /* ===== СЕТКА 2 КОЛОНКИ ДЛЯ ПРО-СЛАЙДЕРОВ ===== */
+    /* ===== СЕТКА ПОЛЗУНКОВ ===== */
     .sliders-grid-2 {
       display: grid;
       grid-template-columns: 1fr 1fr;
-      gap: 9px;
+      gap: 8px;
     }
     .slider-box {
-      background: rgba(7, 10, 22, 0.82);
+      background: rgba(7, 10, 22, 0.84);
       border: 1px solid rgba(var(--accent-rgb), 0.2);
-      border-radius: 16px;
-      padding: 10px;
+      border-radius: 15px;
+      padding: 9px 10px;
     }
     .slider-top {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-bottom: 6px;
+      margin-bottom: 5px;
     }
     .slider-lbl {
-      font-size: 10.5px;
+      font-size: 10px;
       font-weight: 800;
       color: #e2e8f0;
     }
     .slider-val {
-      font-size: 10.5px;
+      font-size: 10px;
       font-weight: 900;
       color: var(--accent-main);
       background: rgba(var(--accent-rgb), 0.12);
@@ -454,8 +457,8 @@
     }
     input[type="range"]::-webkit-slider-thumb {
       -webkit-appearance: none;
-      width: 16px;
-      height: 16px;
+      width: 15px;
+      height: 15px;
       border-radius: 50%;
       background: #ffffff;
       border: 2.5px solid var(--accent-main);
@@ -463,26 +466,28 @@
       cursor: pointer;
     }
 
-    /* ===== СТРОКИ С ТУМБЛЕРАМИ ===== */
+    /* ===== ПЕРЕКЛЮЧАТЕЛИ ===== */
     .toggle-row {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      background: rgba(7, 10, 22, 0.78);
+      background: rgba(7, 10, 22, 0.80);
       border: 1px solid rgba(255, 255, 255, 0.08);
       border-radius: 15px;
       padding: 10px 12px;
       margin-bottom: 8px;
+      gap: 10px;
     }
     .toggle-info-title {
-      font-size: 12px;
+      font-size: 11.5px;
       font-weight: 800;
       color: #fff;
     }
     .toggle-info-sub {
-      font-size: 10px;
+      font-size: 9.5px;
       color: var(--text-muted);
       margin-top: 2px;
+      line-height: 1.3;
     }
     .cyber-switch {
       position: relative;
@@ -490,11 +495,7 @@
       height: 24px;
       flex-shrink: 0;
     }
-    .cyber-switch input {
-      opacity: 0;
-      width: 0;
-      height: 0;
-    }
+    .cyber-switch input { opacity: 0; width: 0; height: 0; }
     .cyber-slider {
       position: absolute;
       inset: 0;
@@ -525,60 +526,78 @@
       box-shadow: 0 0 8px var(--accent-main);
     }
 
-    /* ===== СМЕНА ЦВЕТОВОЙ ТЕМЫ ===== */
+    /* ===== КАРТОЧКИ ДРУЗЕЙ И ВОЙСА ===== */
+    .friend-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: rgba(7, 11, 23, 0.85);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 14px;
+      padding: 9px 11px;
+      margin-bottom: 6px;
+    }
+    .voice-member-pill {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: rgba(16, 185, 129, 0.10);
+      border: 1px solid rgba(16, 185, 129, 0.35);
+      border-radius: 12px;
+      padding: 8px 11px;
+      margin-bottom: 6px;
+      font-size: 11.5px;
+      font-weight: 800;
+    }
+
+    /* ===== ЦВЕТОВЫЕ ТОЧКИ ===== */
     .theme-dots {
       display: flex;
       gap: 10px;
       flex-wrap: wrap;
-      margin-top: 8px;
+      margin-top: 6px;
     }
     .theme-dot {
-      width: 30px;
-      height: 30px;
+      width: 28px;
+      height: 28px;
       border-radius: 50%;
       cursor: pointer;
       border: 2px solid rgba(255,255,255,0.25);
       transition: transform 0.2s, box-shadow 0.2s;
     }
     .theme-dot.active {
-      transform: scale(1.15);
+      transform: scale(1.16);
       border-color: #fff;
       box-shadow: 0 0 14px currentColor;
     }
 
-    /* ===== ВКЛАДКИ ===== */
-    .tab-section {
-      display: none;
-      animation: fadeTab 0.24s ease;
-    }
-    .tab-section.active {
-      display: block;
-    }
+    .tab-section { display: none; animation: fadeTab 0.22s ease; }
+    .tab-section.active { display: block; }
     @keyframes fadeTab {
-      from { opacity: 0; transform: translateY(6px); }
+      from { opacity: 0; transform: translateY(5px); }
       to { opacity: 1; transform: translateY(0); }
     }
 
-    /* ===== НИЖНЕЕ МЕНЮ С ТРАПЕЦИЕВИДНЫМ НЕОНОВЫМ ЛУЧОМ (КАК В ВИДЕО) ===== */
+    /* ===== НИЖНЕЕ МЕНЮ С НЕОНОВЫМ ЛУЧОМ (5 ВКЛАДОК) ===== */
     .bottom-nav-bar {
       position: fixed;
-      bottom: 12px;
-      left: 14px;
-      right: 14px;
-      max-width: 452px;
+      bottom: 10px;
+      left: 10px;
+      right: 10px;
+      max-width: 460px;
       margin: 0 auto;
-      height: 68px;
-      background: rgba(10, 14, 26, 0.94);
+      height: 66px;
+      background: rgba(10, 14, 26, 0.95);
       backdrop-filter: blur(16px);
       -webkit-backdrop-filter: blur(16px);
       border: 1px solid rgba(var(--accent-rgb), 0.35);
-      border-radius: 24px;
+      border-radius: 22px;
       display: grid;
-      grid-template-columns: repeat(4, 1fr);
+      grid-template-columns: repeat(5, 1fr);
       align-items: center;
-      padding: 0 6px;
+      padding: 0 4px;
       z-index: 900;
-      box-shadow: 0 16px 38px rgba(0, 0, 0, 0.9), 0 0 24px rgba(var(--accent-rgb), 0.15);
+      box-shadow: 0 16px 38px rgba(0, 0, 0, 0.92), 0 0 24px rgba(var(--accent-rgb), 0.15);
       overflow: hidden;
     }
     .nav-item {
@@ -588,27 +607,24 @@
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      gap: 4px;
+      gap: 3px;
       color: #64748b;
-      font-size: 10.5px;
+      font-size: 9.5px;
       font-weight: 800;
       cursor: pointer;
-      transition: color 0.3s ease;
+      transition: color 0.28s ease;
     }
     .nav-item svg {
-      width: 21px;
-      height: 21px;
+      width: 19px;
+      height: 19px;
       stroke: currentColor;
       fill: none;
       stroke-width: 2;
-      transition: transform 0.3s ease, filter 0.3s ease;
+      transition: transform 0.28s ease, filter 0.28s ease;
       position: relative;
       z-index: 2;
     }
-    .nav-item span {
-      position: relative;
-      z-index: 2;
-    }
+    .nav-item span { position: relative; z-index: 2; }
     .nav-item.active {
       color: var(--accent-main);
       text-shadow: 0 0 12px rgba(var(--accent-rgb), 0.85);
@@ -617,62 +633,53 @@
       transform: translateY(-2px);
       filter: drop-shadow(0 0 8px var(--accent-main));
     }
-    /* Неоновая лампа сверху + конусный луч света вниз (1 в 1 с твоего видео) */
     .nav-item::before {
       content: "";
       position: absolute;
       top: 0;
-      width: 38px;
-      height: 4px;
+      width: 34px;
+      height: 3.5px;
       border-radius: 0 0 6px 6px;
       background: var(--accent-main);
       box-shadow: 0 0 14px var(--accent-main);
       opacity: 0;
       transform: scaleX(0.2);
-      transition: all 0.32s cubic-bezier(0.22, 1, 0.36, 1);
+      transition: all 0.3s cubic-bezier(0.22, 1, 0.36, 1);
     }
     .nav-item::after {
       content: "";
       position: absolute;
       top: 3px;
-      width: 54px;
-      height: 48px;
-      background: linear-gradient(180deg, rgba(var(--accent-rgb), 0.38) 0%, rgba(var(--accent-rgb), 0.0) 100%);
+      width: 48px;
+      height: 46px;
+      background: linear-gradient(180deg, rgba(var(--accent-rgb), 0.36) 0%, rgba(var(--accent-rgb), 0.0) 100%);
       clip-path: polygon(16% 0%, 84% 0%, 100% 100%, 0% 100%);
       opacity: 0;
       pointer-events: none;
-      transition: opacity 0.32s ease;
+      transition: opacity 0.3s ease;
     }
-    .nav-item.active::before {
-      opacity: 1;
-      transform: scaleX(1);
-    }
-    .nav-item.active::after {
-      opacity: 1;
-    }
+    .nav-item.active::before { opacity: 1; transform: scaleX(1); }
+    .nav-item.active::after { opacity: 1; }
 
-    /* Всплывающее уведомление */
     #cyberToast {
       position: fixed;
-      top: 16px;
+      top: 14px;
       left: 50%;
       transform: translateX(-50%) translateY(-80px);
       background: rgba(11, 16, 32, 0.96);
       border: 1.5px solid var(--accent-main);
       color: #fff;
-      padding: 10px 18px;
+      padding: 9px 16px;
       border-radius: 999px;
-      font-size: 12px;
+      font-size: 11.5px;
       font-weight: 800;
       z-index: 10000;
       box-shadow: 0 8px 25px rgba(0,0,0,0.7), 0 0 18px rgba(var(--accent-rgb), 0.35);
-      transition: transform 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+      transition: transform 0.28s cubic-bezier(0.22, 1, 0.36, 1);
       pointer-events: none;
       white-space: nowrap;
     }
-    #cyberToast.show {
-      transform: translateX(-50%) translateY(0);
-    }
+    #cyberToast.show { transform: translateX(-50%) translateY(0); }
   </style>
 </head>
 <body>
@@ -682,13 +689,13 @@
   <!-- МОДАЛЬНОЕ ОКНО: SHIZUKU НЕ АКТИВЕН -->
   <div id="shizukuRequiredModal" class="shizuku-alert-backdrop">
     <div class="shizuku-alert-box">
-      <div style="width:54px; height:54px; margin:0 auto 12px; border-radius:16px; background:rgba(244,63,94,0.16); border:1px solid #f43f5e; display:flex; align-items:center; justify-content:center; font-size:26px;">
+      <div style="width:52px; height:52px; margin:0 auto 10px; border-radius:16px; background:rgba(244,63,94,0.16); border:1px solid #f43f5e; display:flex; align-items:center; justify-content:center; font-size:25px;">
         ⚠️
       </div>
-      <div style="font-size:18px; font-weight:900; color:#ffffff; margin-bottom:8px;">
+      <div style="font-size:17px; font-weight:900; color:#ffffff; margin-bottom:7px;">
         Shizuku не активен!
       </div>
-      <div style="font-size:12.5px; color:#cbd5e1; line-height:1.55; margin-bottom:16px;">
+      <div style="font-size:12px; color:#cbd5e1; line-height:1.5; margin-bottom:14px;">
         Для работы приложения включите <b>Shizuku</b>.<br><br>
         💬 Если нужна помощь с Shizuku — писать в ЛС:<br>
         <a href="https://t.me/talent_dare" onclick="openSupportLink(); return false;" style="color:#00e5ff; font-weight:900; font-size:14px; text-decoration:underline;">@talent_dare</a>
@@ -705,13 +712,13 @@
   <div id="authScreenOverlay">
     <div style="text-align:center; margin-bottom:14px;">
       <div class="auth-badge">QUANTUM ENGINE V9 • ZERO-JITTER 400HZ</div>
-      <div style="font-size:30px; font-weight:900; letter-spacing:-0.6px;">
+      <div style="font-size:29px; font-weight:900; letter-spacing:-0.6px;">
         SO2Teleport <span style="color:var(--accent-main); font-style:italic;">PRO</span>
       </div>
     </div>
 
     <div class="auth-card">
-      <div style="text-align:center; font-size:13px; font-weight:700; color:#cbd5e1; margin-bottom:12px;">
+      <div style="text-align:center; font-size:12.5px; font-weight:700; color:#cbd5e1; margin-bottom:12px;">
         Введите данные для входа
       </div>
 
@@ -734,25 +741,26 @@
       </button>
     </div>
 
-    <div style="width:100%; max-width:380px; margin-top:12px; display:flex; flex-direction:column; gap:8px;">
-      <div class="btn-dark" style="text-align:center; font-size:11.5px; color:#94a3b8;">
+    <div style="width:100%; max-width:380px; margin-top:11px; display:flex; flex-direction:column; gap:7px;">
+      <div class="btn-dark" style="text-align:center; font-size:11px; color:#94a3b8;">
         🎛 HWID устройства: <b id="loginHwidLabel" style="color:#fff;">...</b>
       </div>
       <button type="button" class="btn-dark" onclick="openBotShopLink()">
         🤖 Получить / Купить ключ в Telegram-боте
       </button>
       <button type="button" class="btn-dark" onclick="openSupportLink()" style="border-color:rgba(var(--accent-rgb),0.35); color:var(--accent-main);">
-        💬 Помощь с Shizuku и ключами: @talent_dare
+        💬 Помощь с Shizuku: @talent_dare
       </button>
     </div>
   </div>
-    <!-- ОСНОВНОЙ ИНТЕРФЕЙС ДАШБОРДА -->
+
+  <!-- ОСНОВНОЙ ДАШБОРД -->
   <div class="app-container">
 
-    <!-- ВЕРХНИЙ КОСМИЧЕСКИЙ БАННЕР С 3D-СФЕРОЙ (КАК НА ФОТО) -->
+    <!-- ШАПКА С 3D КВАНТОВОЙ СФЕРОЙ -->
     <div class="hero-cosmic-banner">
       <div class="hero-top-bar">
-        <div class="hero-Tagline">TELEPORT • SNAP • RECOIL • STRETCH</div>
+        <div class="hero-Tagline">TELEPORT • SNAP • RECOIL • SQUAD</div>
         <div class="shizuku-pill" onclick="requestAndRecheckShizuku()">
           <span id="shizukuDot" class="status-dot"></span>
           <span id="shizukuStateText" style="color:#f87171;">Shizuku ВЫКЛ</span>
@@ -764,12 +772,12 @@
           <div class="hero-greeting">Quantum Engine V9,</div>
           <div class="hero-username">
             <span id="topPlayerNick">dare</span>
-            <span style="color:var(--accent-main); font-size:18px;">✦</span>
+            <span style="color:var(--accent-main); font-size:17px;">✦</span>
           </div>
           <div class="hero-focus-box">
-            <div style="display:flex; justify-content:space-between; align-items:center; font-size:11px; font-weight:800; margin-bottom:5px;">
-              <span>🎯 Статус Телепорта:</span>
-              <span id="engineStatusBadge" style="color:var(--accent-main);">ГОТОВ К БОЮ</span>
+            <div style="display:flex; justify-content:space-between; align-items:center; font-size:10.5px; font-weight:800; margin-bottom:5px;">
+              <span>🎯 Матрица Телепорта:</span>
+              <span id="engineStatusBadge" style="color:var(--accent-main);">АКТИВНА</span>
             </div>
             <div style="width:100%; height:6px; background:rgba(255,255,255,0.1); border-radius:999px; overflow:hidden;">
               <div id="enginePowerBar" style="width:100%; height:100%; background:linear-gradient(90deg, var(--accent-main), var(--accent-sec)); box-shadow:0 0 10px var(--accent-main);"></div>
@@ -783,7 +791,7 @@
       </div>
     </div>
 
-    <!-- 4 МИНИ-КАРТОЧКИ БЫСТРОГО СТАТУСА (ЧТО РАБОТАЕТ ПРЯМО СЕЙЧАС) -->
+    <!-- 4 КАРТОЧКИ МГНОВЕННОГО КОНТРОЛЯ -->
     <div class="metrics-grid-4">
       <div id="cardStatTp" class="metric-mini-card active-card" onclick="toggleMainEngineQuick()">
         <div class="metric-ico">⚡</div>
@@ -814,7 +822,7 @@
 
       <div id="cardStatHz" class="metric-mini-card active-card" onclick="switchTab('tabBoost')">
         <div class="metric-ico">🚀</div>
-        <div id="valStatHz" class="metric-val">400Hz</div>
+        <div id="valStatHz" class="metric-val">360Hz</div>
         <div class="metric-lbl">Отклик</div>
         <div class="metric-bars">
           <span style="height:60%"></span><span style="height:80%"></span><span style="height:95%"></span><span style="height:100%"></span>
@@ -822,117 +830,111 @@
       </div>
     </div>
 
-    <!-- ================= ВКЛАДКА 1: СЕНСА И ТЕЛЕПОРТ V9 ================= -->
+    <!-- ================= ВКЛАДКА 1: СЕНСА И ТЕЛЕПОРТ V9 (ВСЕ 10 ПАРАМЕТРОВ) ================= -->
     <div id="tabSens" class="tab-section active">
 
       <div class="glass-card">
         <div class="card-head">
-          <div class="card-title">⚡ РЕЖИМ ТЕЛЕПОРТА ПРИЦЕЛА</div>
+          <div class="card-title">⚡ ПРЕСЕТЫ КВАНТОВОГО ТЕЛЕПОРТА</div>
           <span class="badge-chip">ZERO-JITTER V9</span>
         </div>
 
         <div class="preset-pills-3">
           <div id="preset_extreme" class="preset-pill active" onclick="selectTeleportPreset('extreme')">
             <div class="preset-pill-name">🔥 HARD SNAP</div>
-            <div class="preset-pill-sub">Жёсткий в точку</div>
+            <div class="preset-pill-sub">Резкий флик в голову</div>
           </div>
           <div id="preset_recoil_god" class="preset-pill" onclick="selectTeleportPreset('recoil_god')">
             <div class="preset-pill-name">🎯 LASER SPRAY</div>
-            <div class="preset-pill-sub">Изи Зажим АКР/М4</div>
+            <div class="preset-pill-sub">Изи Зажим в точку</div>
           </div>
           <div id="preset_awm_deagle" class="preset-pill" onclick="selectTeleportPreset('awm_deagle')">
             <div class="preset-pill-name">🦅 AWM / DEAGLE</div>
-            <div class="preset-pill-sub">Снайпер ваншот</div>
+            <div class="preset-pill-sub">Ваншот без срыва</div>
           </div>
         </div>
 
         <div style="display:grid; grid-template-columns:1.3fr 1fr; gap:8px;">
           <button type="button" class="btn-main" onclick="applyAllSensNow()">
-            🚀 ПРИМЕНИТЬ СЕНСУ V9
+            🚀 ПРИМЕНИТЬ МАТРИЦУ V9
           </button>
           <button type="button" class="btn-dark" onclick="healTouchNow()">
-            🛠 СБРОС ТАЧА
+            🛠 ЛЕЧЕНИЕ ТАЧА
           </button>
         </div>
       </div>
 
-      <!-- 10 ПРО-СЛАЙДЕРОВ КАЛИБРОВКИ -->
+      <!-- 10 ПОЛЗУНКОВ КАЛИБРОВКИ ТЕЛЕПОРТА -->
       <div class="glass-card">
         <div class="card-head">
-          <div class="card-title">🎛 ТОНКАЯ КАЛИБРОВКА V9</div>
-          <span id="liveScaleChip" class="badge-chip">SNAP 11.5x</span>
+          <div class="card-title">🎛 10-ОСЕВАЯ КАЛИБРОВКА СЕНСЫ</div>
+          <span id="liveScaleChip" class="badge-chip">SNAP 12.2x</span>
         </div>
 
         <div class="sliders-grid-2">
           <div class="slider-box">
-            <div class="slider-top">
-              <span class="slider-lbl">Резкость флика</span>
-              <span id="val_sharp" class="slider-val">25</span>
-            </div>
+            <div class="slider-top"><span class="slider-lbl">Резкость (Sharp)</span><span id="val_sharp" class="slider-val">25</span></div>
             <input id="sl_sharp" type="range" min="5" max="25" step="1" value="25" oninput="onSensSliderChange()" />
           </div>
 
           <div class="slider-box">
-            <div class="slider-top">
-              <span class="slider-lbl">Скорость X (Гориз.)</span>
-              <span id="val_sx" class="slider-val">25</span>
-            </div>
+            <div class="slider-top"><span class="slider-lbl">Ось X (Флик)</span><span id="val_sx" class="slider-val">25</span></div>
             <input id="sl_sx" type="range" min="5" max="25" step="1" value="25" oninput="onSensSliderChange()" />
           </div>
 
           <div class="slider-box">
-            <div class="slider-top">
-              <span class="slider-lbl">Скорость Y (Зажим)</span>
-              <span id="val_sy" class="slider-val">24</span>
-            </div>
+            <div class="slider-top"><span class="slider-lbl">Ось Y (Отдача)</span><span id="val_sy" class="slider-val">24</span></div>
             <input id="sl_sy" type="range" min="5" max="25" step="1" value="24" oninput="onSensSliderChange()" />
           </div>
 
           <div class="slider-box">
-            <div class="slider-top">
-              <span class="slider-lbl">Прыжок (Chunks)</span>
-              <span id="val_chunks" class="slider-val">96%</span>
-            </div>
+            <div class="slider-top"><span class="slider-lbl">Прыжок (Chunks)</span><span id="val_chunks" class="slider-val">96%</span></div>
             <input id="sl_chunks" type="range" min="50" max="100" step="1" value="96" oninput="onSensSliderChange()" />
           </div>
 
           <div class="slider-box">
-            <div class="slider-top">
-              <span class="slider-lbl">Сила Анти-Отдачи</span>
-              <span id="val_recoil" class="slider-val">100%</span>
-            </div>
-            <input id="sl_recoil" type="range" min="20" max="100" step="1" value="100" oninput="onRecoilSliderChange()" />
+            <div class="slider-top"><span class="slider-lbl">Скорость Чанка</span><span id="val_chunkfast" class="slider-val">100%</span></div>
+            <input id="sl_chunkfast" type="range" min="20" max="100" step="1" value="100" oninput="onSensSliderChange()" />
           </div>
 
           <div class="slider-box">
-            <div class="slider-top">
-              <span class="slider-lbl">Прилипание (Stick)</span>
-              <span id="val_stick" class="slider-val">95%</span>
-            </div>
-            <input id="sl_stick" type="range" min="10" max="100" step="1" value="95" oninput="onSensSliderChange()" />
-          </div>
-
-          <div class="slider-box">
-            <div class="slider-top">
-              <span class="slider-lbl">Прямая линия</span>
-              <span id="val_straight" class="slider-val">98%</span>
-            </div>
+            <div class="slider-top"><span class="slider-lbl">Прямая линия</span><span id="val_straight" class="slider-val">98%</span></div>
             <input id="sl_straight" type="range" min="10" max="100" step="1" value="98" oninput="onSensSliderChange()" />
           </div>
 
           <div class="slider-box">
-            <div class="slider-top">
-              <span class="slider-lbl">Ускорение свайпа</span>
-              <span id="val_accel" class="slider-val">25</span>
-            </div>
+            <div class="slider-top"><span class="slider-lbl">Прилипание (Stick)</span><span id="val_stick" class="slider-val">95%</span></div>
+            <input id="sl_stick" type="range" min="10" max="100" step="1" value="95" oninput="onSensSliderChange()" />
+          </div>
+
+          <div class="slider-box">
+            <div class="slider-top"><span class="slider-lbl">Сетка (Grid Snap)</span><span id="val_grid" class="slider-val">10</span></div>
+            <input id="sl_grid" type="range" min="1" max="20" step="1" value="10" oninput="onSensSliderChange()" />
+          </div>
+
+          <div class="slider-box">
+            <div class="slider-top"><span class="slider-lbl">Микро-пауза (мс)</span><span id="val_pause" class="slider-val">3</span></div>
+            <input id="sl_pause" type="range" min="1" max="20" step="1" value="3" oninput="onSensSliderChange()" />
+          </div>
+
+          <div class="slider-box">
+            <div class="slider-top"><span class="slider-lbl">Ускорение (Accel)</span><span id="val_accel" class="slider-val">25</span></div>
             <input id="sl_accel" type="range" min="1" max="25" step="1" value="25" oninput="onSensSliderChange()" />
           </div>
         </div>
 
-        <div class="toggle-row" style="margin-top:10px; margin-bottom:0;">
+        <div class="slider-box" style="margin-top:8px;">
+          <div class="slider-top">
+            <span class="slider-lbl">🎯 Сила Анти-Отдачи (Laser Recoil Power)</span>
+            <span id="val_recoil" class="slider-val">100%</span>
+          </div>
+          <input id="sl_recoil" type="range" min="20" max="100" step="1" value="100" oninput="onRecoilSliderChange()" />
+        </div>
+
+        <div class="toggle-row" style="margin-top:8px; margin-bottom:0;">
           <div>
-            <div class="toggle-info-title">🎯 Zero-Jitter Зажим в точку</div>
-            <div class="toggle-info-sub">Убирает микродёргания прицела и плавание экрана</div>
+            <div class="toggle-info-title">🎯 Zero-Jitter Зажим без дёрганий</div>
+            <div class="toggle-info-sub">Отключает тремор прицела и фиксирует спрей ровно в голову</div>
           </div>
           <label class="cyber-switch">
             <input id="tgRecoilFix" type="checkbox" checked onchange="onRecoilSliderChange()" />
@@ -942,7 +944,7 @@
       </div>
     </div>
 
-    <!-- ================= ВКЛАДКА 2: ЭКРАН «T» + КАСТОМНЫЙ ПРИЦЕЛ ================= -->
+    <!-- ================= ВКЛАДКА 2: ЭКРАН «T» + ХИТБОКСЫ + 9 ФОРМ ПРИЦЕЛА ================= -->
     <div id="tabScreen" class="tab-section">
 
       <div class="glass-card">
@@ -951,110 +953,104 @@
           <span id="curRatioBadge" class="badge-chip">4:3 PRO</span>
         </div>
 
-        <div style="font-size:11px; color:var(--text-muted); margin-bottom:10px; line-height:1.45;">
-          Выбери формат и нажми <b>«Запустить кнопку T»</b>. В игре нажми «T» (Шаг 1), дождись меню и нажми «T» повторно (Шаг 2), затем смахни кнопку вниз в корзину.
-        </div>
-
-        <div style="font-size:10.5px; font-weight:800; color:#cbd5e1; margin-bottom:6px;">РАСТЯГ (ШИРОКИЕ МОДЕЛЬКИ):</div>
+        <div style="font-size:10.5px; font-weight:800; color:#cbd5e1; margin-bottom:6px;">РАСТЯГ (ШИРОКИЕ ХИТБОКСЫ):</div>
         <div class="preset-pills-3" style="grid-template-columns:repeat(4,1fr);">
-          <div class="preset-pill active" data-ratio="4:3" onclick="selectRatioPill(this, '4:3')">
-            <div class="preset-pill-name">4:3</div>
-            <div class="preset-pill-sub">Классика</div>
-          </div>
-          <div class="preset-pill" data-ratio="5:4" onclick="selectRatioPill(this, '5:4')">
-            <div class="preset-pill-name">5:4</div>
-            <div class="preset-pill-sub">Киберспорт</div>
-          </div>
-          <div class="preset-pill" data-ratio="1:1" onclick="selectRatioPill(this, '1:1')">
-            <div class="preset-pill-name">1:1</div>
-            <div class="preset-pill-sub">Макс-Хитбокс</div>
-          </div>
-          <div class="preset-pill" data-ratio="16:10" onclick="selectRatioPill(this, '16:10')">
-            <div class="preset-pill-name">16:10</div>
-            <div class="preset-pill-sub">Мягкий</div>
-          </div>
+          <div class="preset-pill active" data-ratio="4:3" onclick="selectRatioPill(this, '4:3')"><div class="preset-pill-name">4:3</div><div class="preset-pill-sub">Классика</div></div>
+          <div class="preset-pill" data-ratio="5:4" onclick="selectRatioPill(this, '5:4')"><div class="preset-pill-name">5:4</div><div class="preset-pill-sub">Киберспорт</div></div>
+          <div class="preset-pill" data-ratio="1:1" onclick="selectRatioPill(this, '1:1')"><div class="preset-pill-name">1:1</div><div class="preset-pill-sub">Макс-Ширина</div></div>
+          <div class="preset-pill" data-ratio="16:10" onclick="selectRatioPill(this, '16:10')"><div class="preset-pill-name">16:10</div><div class="preset-pill-sub">Мягкий</div></div>
         </div>
 
-        <div style="font-size:10.5px; font-weight:800; color:#cbd5e1; margin:8px 0 6px;">СТЯГ (ПОВЫШЕННАЯ РЕЗКОСТЬ И FPS):</div>
-        <div class="preset-pills-3">
-          <div class="preset-pill" data-ratio="SHRINK-88" onclick="selectRatioPill(this, 'SHRINK-88')">
-            <div class="preset-pill-name">СТЯГ 88%</div>
-            <div class="preset-pill-sub">Лёгкий</div>
-          </div>
-          <div class="preset-pill" data-ratio="SHRINK-82" onclick="selectRatioPill(this, 'SHRINK-82')">
-            <div class="preset-pill-name">СТЯГ 82%</div>
-            <div class="preset-pill-sub">Оптимальный</div>
-          </div>
-          <div class="preset-pill" data-ratio="21:9" onclick="selectRatioPill(this, '21:9')">
-            <div class="preset-pill-name">21:9 ULTRA</div>
-            <div class="preset-pill-sub">Узкий обзор</div>
-          </div>
+        <div style="font-size:10.5px; font-weight:800; color:#cbd5e1; margin:6px 0;">СТЯГ (ПОВЫШЕННАЯ РЕЗКОСТЬ И FPS):</div>
+        <div class="preset-pills-3" style="grid-template-columns:repeat(4,1fr);">
+          <div class="preset-pill" data-ratio="SHRINK-90" onclick="selectRatioPill(this, 'SHRINK-90')"><div class="preset-pill-name">СТЯГ 90%</div><div class="preset-pill-sub">Лёгкий</div></div>
+          <div class="preset-pill" data-ratio="SHRINK-84" onclick="selectRatioPill(this, 'SHRINK-84')"><div class="preset-pill-name">СТЯГ 84%</div><div class="preset-pill-sub">Оптимал</div></div>
+          <div class="preset-pill" data-ratio="21:9" onclick="selectRatioPill(this, '21:9')"><div class="preset-pill-name">21:9</div><div class="preset-pill-sub">Ультра</div></div>
+          <div class="preset-pill" data-ratio="24:10" onclick="selectRatioPill(this, '24:10')"><div class="preset-pill-name">24:10</div><div class="preset-pill-sub">Экстрим</div></div>
         </div>
 
-        <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:10px;">
-          <button type="button" class="btn-main" onclick="launchFloatingTButton()">
-            ⚡ ЗАПУСТИТЬ КНОПКУ «T»
-          </button>
-          <button type="button" class="btn-danger" onclick="resetNativeScreen()">
-            🔄 СБРОСИТЬ ЭКРАН
-          </button>
+        <div class="toggle-row" style="margin-top:6px;">
+          <div>
+            <div class="toggle-info-title">🔥 Wide Hitbox Quantization</div>
+            <div class="toggle-info-sub">Синхронизирует тач-сетку 360 Гц под растянутые модельки</div>
+          </div>
+          <label class="cyber-switch">
+            <input id="tgWideHitbox" type="checkbox" onchange="toggleWideHitboxMode(this.checked)" />
+            <span class="cyber-slider"></span>
+          </label>
+        </div>
+
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:8px;">
+          <button type="button" class="btn-main" onclick="launchFloatingTButton()">⚡ ЗАПУСТИТЬ КНОПКУ «T»</button>
+          <button type="button" class="btn-danger" onclick="resetNativeScreen()">🔄 СБРОСИТЬ ЭКРАН</button>
         </div>
       </div>
 
-      <!-- КАСТОМНЫЙ ОВЕРЛЕЙ ПРИЦЕЛА -->
+      <!-- КАСТОМНЫЙ ПРИЦЕЛ (ВСЕ 9 ФОРМ ИЗ ANDROIDBRIDGE) -->
       <div class="glass-card">
         <div class="card-head">
-          <div class="card-title">🎯 АППАРАТНЫЙ ПРИЦЕЛ ПОВЕРХ ИГРЫ</div>
+          <div class="card-title">🎯 КАСТОМНЫЙ ОВЕРЛЕЙ ПРИЦЕЛА</div>
           <span id="crosshairStateChip" class="badge-chip">ВЫКЛ</span>
         </div>
 
-        <div class="preset-pills-3" style="grid-template-columns:repeat(4,1fr);">
-          <div class="preset-pill active" data-ch="off" onclick="setCrosshairMode(this, 'off')">
-            <div class="preset-pill-name">⛔ ВЫКЛ</div>
-          </div>
-          <div class="preset-pill" data-ch="dot" onclick="setCrosshairMode(this, 'dot')">
-            <div class="preset-pill-name">● ТОЧКА</div>
-          </div>
-          <div class="preset-pill" data-ch="cross" onclick="setCrosshairMode(this, 'cross')">
-            <div class="preset-pill-name">✚ КРЕСТ</div>
-          </div>
-          <div class="preset-pill" data-ch="circledot" onclick="setCrosshairMode(this, 'circledot')">
-            <div class="preset-pill-name">⊙ КРУГ</div>
-          </div>
+        <div class="preset-pills-3" style="grid-template-columns:repeat(5,1fr);">
+          <div class="preset-pill active" data-ch="off" onclick="setCrosshairMode(this, 'off')"><div class="preset-pill-name">⛔ ВЫКЛ</div></div>
+          <div class="preset-pill" data-ch="dot" onclick="setCrosshairMode(this, 'dot')"><div class="preset-pill-name">● ТОЧКА</div></div>
+          <div class="preset-pill" data-ch="cross" onclick="setCrosshairMode(this, 'cross')"><div class="preset-pill-name">✚ КРЕСТ</div></div>
+          <div class="preset-pill" data-ch="crossdot" onclick="setCrosshairMode(this, 'crossdot')"><div class="preset-pill-name">⌖ КРЕСТ+</div></div>
+          <div class="preset-pill" data-ch="circle" onclick="setCrosshairMode(this, 'circle')"><div class="preset-pill-name">◯ КРУГ</div></div>
+          <div class="preset-pill" data-ch="circledot" onclick="setCrosshairMode(this, 'circledot')"><div class="preset-pill-name">⊙ СФЕРА</div></div>
+          <div class="preset-pill" data-ch="tshape" onclick="setCrosshairMode(this, 'tshape')"><div class="preset-pill-name">⊤ T-ПРИЦЕЛ</div></div>
+          <div class="preset-pill" data-ch="chevron" onclick="setCrosshairMode(this, 'chevron')"><div class="preset-pill-name">∧ ГАЛКА</div></div>
+          <div class="preset-pill" data-ch="box" onclick="setCrosshairMode(this, 'box')"><div class="preset-pill-name">□ БОКС</div></div>
+          <div class="preset-pill" data-ch="corners" onclick="setCrosshairMode(this, 'corners')"><div class="preset-pill-name">⌜⌟ УГЛЫ</div></div>
         </div>
 
         <div class="sliders-grid-2">
           <div class="slider-box">
-            <div class="slider-top">
-              <span class="slider-lbl">Размер прицела</span>
-              <span id="val_ch_len" class="slider-val">8</span>
-            </div>
+            <div class="slider-top"><span class="slider-lbl">Длина лучей</span><span id="val_ch_len" class="slider-val">8</span></div>
             <input id="sl_ch_len" type="range" min="2" max="22" value="8" oninput="syncCrosshairConfig()" />
           </div>
-
           <div class="slider-box">
-            <div class="slider-top">
-              <span class="slider-lbl">Толщина / Точка</span>
-              <span id="val_ch_dot" class="slider-val">3</span>
-            </div>
+            <div class="slider-top"><span class="slider-lbl">Толщина</span><span id="val_ch_thick" class="slider-val">3</span></div>
+            <input id="sl_ch_thick" type="range" min="1" max="10" value="3" oninput="syncCrosshairConfig()" />
+          </div>
+          <div class="slider-box">
+            <div class="slider-top"><span class="slider-lbl">Зазор в центре</span><span id="val_ch_gap" class="slider-val">3</span></div>
+            <input id="sl_ch_gap" type="range" min="0" max="14" value="3" oninput="syncCrosshairConfig()" />
+          </div>
+          <div class="slider-box">
+            <div class="slider-top"><span class="slider-lbl">Размер точки</span><span id="val_ch_dot" class="slider-val">3</span></div>
             <input id="sl_ch_dot" type="range" min="1" max="10" value="3" oninput="syncCrosshairConfig()" />
+          </div>
+          <div class="slider-box">
+            <div class="slider-top"><span class="slider-lbl">Прозрачность</span><span id="val_ch_op" class="slider-val">100%</span></div>
+            <input id="sl_ch_op" type="range" min="20" max="100" value="100" oninput="syncCrosshairConfig()" />
+          </div>
+          <div class="slider-box" style="display:flex; align-items:center; justify-content:space-between;">
+            <span class="slider-lbl">Чёрная обводка</span>
+            <label class="cyber-switch">
+              <input id="tgChOutline" type="checkbox" checked onchange="syncCrosshairConfig()" />
+              <span class="cyber-slider"></span>
+            </label>
           </div>
         </div>
       </div>
     </div>
 
-    <!-- ================= ВКЛАДКА 3: БУСТ БЮДЖЕТОК И FPS ОПТИМИЗАТОР ================= -->
+    <!-- ================= ВКЛАДКА 3: ШУТЕР-ОПТИМИЗАТОР И БУСТ БЮДЖЕТОК ================= -->
     <div id="tabBoost" class="tab-section">
+
       <div class="glass-card">
         <div class="card-head">
-          <div class="card-title">🚀 ОПТИМИЗАЦИЯ И ФИКС БЮДЖЕТОК</div>
-          <span class="badge-chip">60 / 90 / 120 / 144 HZ</span>
+          <div class="card-title">🚀 БУСТ БЮДЖЕТОК И СИСТЕМНЫЕ МОДУЛИ</div>
+          <span id="scanTierBadge" class="badge-chip">60-144 HZ READY</span>
         </div>
 
         <div class="toggle-row">
           <div>
-            <div class="toggle-info-title">⚡ Raw Input (Без сглаживания Android)</div>
-            <div class="toggle-info-sub">Отключает задержку тача на Xiaomi, Realme, Tecno, Infinix, Samsung</div>
+            <div class="toggle-info-title">⚡ Raw Input (Отключение сглаживания тача)</div>
+            <div class="toggle-info-sub">Убирает инпут-лаг на бюджетных Xiaomi, Realme, Tecno, Infinix, Samsung</div>
           </div>
           <label class="cyber-switch">
             <input id="tgRawInput" type="checkbox" checked onchange="toggleBoostFeature('raw', this.checked)" />
@@ -1065,7 +1061,7 @@
         <div class="toggle-row">
           <div>
             <div class="toggle-info-title">🔥 Vulkan SkiaVK GPU Turbo</div>
-            <div class="toggle-info-sub">Стабильный фреймрейт без фризов в дыму и при стрельбе</div>
+            <div class="toggle-info-sub">Аппаратный рендер без просадок FPS в дыму и раскидке</div>
           </div>
           <label class="cyber-switch">
             <input id="tgVulkan" type="checkbox" checked onchange="toggleBoostFeature('vulkan', this.checked)" />
@@ -1075,8 +1071,8 @@
 
         <div class="toggle-row">
           <div>
-            <div class="toggle-info-title">📡 Стабилизатор Пинга (Anti-Spike)</div>
-            <div class="toggle-info-sub">Отключает фоновый поиск Wi-Fi/BLE во время катки</div>
+            <div class="toggle-info-title">📡 Стабилизатор Пинга (Anti-Jitter Net)</div>
+            <div class="toggle-info-sub">Блокирует фоновый поиск Wi-Fi/BLE во время катки</div>
           </div>
           <label class="cyber-switch">
             <input id="tgNetPing" type="checkbox" checked onchange="toggleBoostFeature('ping', this.checked)" />
@@ -1086,8 +1082,19 @@
 
         <div class="toggle-row">
           <div>
-            <div class="toggle-info-title">🛡 Скрытие оверлеев на записи (Stealth)</div>
-            <div class="toggle-info-sub">Прячет кнопку «T» и прицел на скриншотах и видео</div>
+            <div class="toggle-info-title">❄️ Фиксатор Герцовки (Thermal Guard)</div>
+            <div class="toggle-info-sub">Не даёт системе сбрасывать 120 Гц до 60 Гц при нагреве</div>
+          </div>
+          <label class="cyber-switch">
+            <input id="tgThermal" type="checkbox" checked onchange="toggleBoostFeature('thermal', this.checked)" />
+            <span class="cyber-slider"></span>
+          </label>
+        </div>
+
+        <div class="toggle-row">
+          <div>
+            <div class="toggle-info-title">🛡 Стелс-Режим (Скрытие на записи экрана)</div>
+            <div class="toggle-info-sub">Прячет кнопку «T» и прицел на видео и скриншотах</div>
           </div>
           <label class="cyber-switch">
             <input id="tgStealth" type="checkbox" onchange="toggleBoostFeature('stealth', this.checked)" />
@@ -1095,21 +1102,107 @@
           </label>
         </div>
 
-        <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:10px;">
-          <button type="button" class="btn-main" onclick="runRamCleanNow()">
-            🧹 ОЧИСТИТЬ ОЗУ
-          </button>
-          <button type="button" class="btn-dark" onclick="applyMaxFpsUnlock()">
-            🔓 РАЗБЛОКИРОВАТЬ ГЕРЦОВКУ
-          </button>
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:8px;">
+          <button type="button" class="btn-main" onclick="runRamCleanNow()">🧹 ОЧИСТИТЬ ОЗУ</button>
+          <button type="button" class="btn-dark" onclick="runSmartScanNow()">🔍 СКАН УСТРОЙСТВА</button>
         </div>
+      </div>
+
+      <!-- 7-СЛАЙДЕРНЫЙ ШУТЕР-ОПТИМИЗАТОР -->
+      <div class="glass-card">
+        <div class="card-head">
+          <div class="card-title">⚙️ PRO SHOOTER OPTIMIZER</div>
+          <span class="badge-chip">SHIZUKU KERNEL</span>
+        </div>
+
+        <div class="sliders-grid-2">
+          <div class="slider-box">
+            <div class="slider-top"><span class="slider-lbl">Лок Герцовки</span><span id="val_opt_fps" class="slider-val">120 Hz</span></div>
+            <input id="sl_opt_fps" type="range" min="60" max="144" step="30" value="120" oninput="updateOptLabels()" />
+          </div>
+          <div class="slider-box">
+            <div class="slider-top"><span class="slider-lbl">Разгон GPU</span><span id="val_opt_gpu" class="slider-val">100%</span></div>
+            <input id="sl_opt_gpu" type="range" min="20" max="100" value="100" oninput="updateOptLabels()" />
+          </div>
+          <div class="slider-box">
+            <div class="slider-top"><span class="slider-lbl">Чувств. краёв</span><span id="val_opt_edge" class="slider-val">100%</span></div>
+            <input id="sl_opt_edge" type="range" min="10" max="100" value="100" oninput="updateOptLabels()" />
+          </div>
+          <div class="slider-box">
+            <div class="slider-top"><span class="slider-lbl">Мультитач буст</span><span id="val_opt_mt" class="slider-val">160</span></div>
+            <input id="sl_opt_mt" type="range" min="50" max="160" value="160" oninput="updateOptLabels()" />
+          </div>
+          <div class="slider-box">
+            <div class="slider-top"><span class="slider-lbl">Тач Сэмплинг</span><span id="val_opt_ts" class="slider-val">360 Hz</span></div>
+            <input id="sl_opt_ts" type="range" min="120" max="480" step="60" value="360" oninput="updateOptLabels()" />
+          </div>
+          <div class="slider-box">
+            <div class="slider-top"><span class="slider-lbl">Downscale (FPS)</span><span id="val_opt_scale" class="slider-val">100%</span></div>
+            <input id="sl_opt_scale" type="range" min="75" max="100" step="5" value="100" oninput="updateOptLabels()" />
+          </div>
+        </div>
+
+        <button type="button" class="btn-main" style="margin-top:10px;" onclick="applyFullShooterOptNow()">
+          ⚡ ПРИМЕНИТЬ ОПТИМИЗАТОР И 360HZ ТАЧ
+        </button>
       </div>
     </div>
 
-    <!-- ================= ВКЛАДКА 4: ПРОФИЛЬ, ЦВЕТА И SQUAD VOICE ================= -->
+    <!-- ================= ВКЛАДКА 4: ОТРЯД (ВОЙС-ЧАТ + ДРУЗЬЯ SO2-XXXX) ================= -->
+    <div id="tabSquad" class="tab-section">
+
+      <!-- КОМАНДНЫЙ ВОЙС-ЧАТ (С УПРАВЛЕНИЕМ В ШТОРКЕ) -->
+      <div class="glass-card">
+        <div class="card-head">
+          <div class="card-title">🎙 КОМАНДНЫЙ ВОЙС-ЧАТ ОТРЯДА</div>
+          <span id="voiceStateBadge" class="badge-chip">ОТКЛЮЧЕН</span>
+        </div>
+
+        <div class="auth-input-wrap" style="margin-bottom:8px;">
+          <div class="auth-input-label">КОД КОМНАТЫ ОТРЯДА (ROOM CODE)</div>
+          <input id="voiceRoomInput" class="auth-input" type="text" value="SQUAD-MAIN" placeholder="SQUAD-MAIN" />
+        </div>
+
+        <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:7px; margin-bottom:10px;">
+          <button id="btnVoiceJoin" type="button" class="btn-main" onclick="toggleVoiceConnection()">🎧 ВОЙТИ</button>
+          <button id="btnVoiceMute" type="button" class="btn-dark" onclick="window.toggleMicMute()">🎤 МИКРО ВКЛ</button>
+          <button id="btnVoiceDeaf" type="button" class="btn-dark" onclick="window.toggleDeafenSpeaker()">🔊 ЗВУК ВКЛ</button>
+        </div>
+
+        <div id="voiceMembersBox" style="font-size:11.5px; color:var(--text-muted);">
+          Подключитесь к комнате, чтобы общаться с тиммейтами поверх игры (с пультом в шторке уведомлений).
+        </div>
+      </div>
+
+      <!-- ДРУЗЬЯ ПО ID (SO2-XXXX) -->
+      <div class="glass-card">
+        <div class="card-head">
+          <div class="card-title">👥 ДРУЗЬЯ ПО ID</div>
+          <span id="myFriendCodeBadge" class="badge-chip">ВАШ ID: SO2-0000</span>
+        </div>
+
+        <div style="display:grid; grid-template-columns:1fr auto; gap:8px; margin-bottom:10px;">
+          <div class="auth-input-wrap" style="margin-bottom:0;">
+            <div class="auth-input-label">ДОБАВИТЬ ДРУГА ПО ID ИЛИ НИКУ</div>
+            <input id="friendAddInput" class="auth-input" type="text" placeholder="SO2-1234" />
+          </div>
+          <button type="button" class="btn-main" style="width:auto; padding:0 16px;" onclick="addFriendByCode()">➕</button>
+        </div>
+
+        <div id="incomingFriendsBox"></div>
+        <div id="friendsListBox" style="font-size:11.5px; color:var(--text-muted);">
+          Нажмите «Обновить список», чтобы синхронизировать друзей онлайн.
+        </div>
+
+        <button type="button" class="btn-dark" style="margin-top:8px;" onclick="syncFriendsHub()">
+          🔄 ОБНОВИТЬ СПИСОК ДРУЗЕЙ
+        </button>
+      </div>
+    </div>
+
+    <!-- ================= ВКЛАДКА 5: ПРОФИЛЬ, ЦВЕТА И ОБЛАКО КОНФИГОВ ================= -->
     <div id="tabProfile" class="tab-section">
 
-      <!-- КАРТОЧКА ЛИЦЕНЗИИ И ПРИВЯЗКИ -->
       <div class="glass-card">
         <div class="card-head">
           <div class="card-title">👑 ЛИЦЕНЗИЯ И УСТРОЙСТВО</div>
@@ -1126,7 +1219,7 @@
             <b id="profKeyMasked" style="color:var(--accent-main);">TP***</b>
           </div>
           <div style="display:flex; justify-content:space-between;">
-            <span style="color:var(--text-muted);">Вечный HWID платы:</span>
+            <span style="color:var(--text-muted);">Аппаратный HWID:</span>
             <b id="profHwidText" style="font-family:monospace;">...</b>
           </div>
           <div style="display:flex; justify-content:space-between;">
@@ -1136,16 +1229,12 @@
         </div>
 
         <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px;">
-          <button type="button" class="btn-dark" onclick="openSupportLink()">
-            💬 ПОМОЩЬ (@talent_dare)
-          </button>
-          <button type="button" class="btn-danger" onclick="handleLogoutClick()">
-            🚪 СМЕНИТЬ КЛЮЧ
-          </button>
+          <button type="button" class="btn-dark" onclick="openSupportLink()">💬 ПОМОЩЬ (@talent_dare)</button>
+          <button type="button" class="btn-danger" onclick="handleLogoutClick()">🚪 СМЕНИТЬ КЛЮЧ</button>
         </div>
       </div>
 
-      <!-- СМЕНА ЦВЕТОВОГО СТИЛЯ (КАК ПРОСИЛ — СОХРАНЕНА И УЛУЧШЕНА) -->
+      <!-- СМЕНА ЦВЕТОВОЙ ПОДСВЕТКИ -->
       <div class="glass-card">
         <div class="card-head">
           <div class="card-title">🎨 НЕОНОВЫЙ ЦВЕТ ИНТЕРФЕЙСА</div>
@@ -1161,15 +1250,24 @@
         </div>
       </div>
 
-      <!-- БЫСТРЫЙ ЭКСПОРТ / ИМПОРТ КОНФИГА -->
+      <!-- ОБЛАЧНЫЕ И ЛОКАЛЬНЫЕ КОНФИГИ -->
       <div class="glass-card">
         <div class="card-head">
-          <div class="card-title">☁️ СОХРАНЕНИЕ КОНФИГА</div>
-          <span class="badge-chip">AUTO-SAVE</span>
+          <div class="card-title">☁️ ОБЛАКО И ЛОКАЛЬНЫЕ ПРЕСЕТЫ</div>
+          <span class="badge-chip">CLOUD SHARE</span>
         </div>
+
+        <div style="display:grid; grid-template-columns:1fr auto; gap:8px; margin-bottom:8px;">
+          <div class="auth-input-wrap" style="margin-bottom:0;">
+            <div class="auth-input-label">КОД ПРЕСЕТА ДРУГА (SHARE CODE)</div>
+            <input id="cloudCodeInput" class="auth-input" type="text" placeholder="CFG-9910" />
+          </div>
+          <button type="button" class="btn-main" style="width:auto; padding:0 14px;" onclick="downloadCloudPresetNow()">📥</button>
+        </div>
+
         <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px;">
-          <button type="button" class="btn-main" onclick="saveCurrentConfigLocal()">💾 СОХРАНИТЬ ПРЕСЕТ</button>
-          <button type="button" class="btn-dark" onclick="loadSavedConfigLocal()">📂 ЗАГРУЗИТЬ ПРЕСЕТ</button>
+          <button type="button" class="btn-main" onclick="saveCurrentConfigLocal(false)">💾 СОХРАНИТЬ</button>
+          <button type="button" class="btn-dark" onclick="uploadCloudPresetNow()">☁️ СОЗДАТЬ КОД</button>
         </div>
       </div>
 
@@ -1177,7 +1275,7 @@
 
   </div>
 
-  <!-- НИЖНЕЕ МЕНЮ С НЕОНОВЫМ ЛУЧОМ СВЕРХУ (КАК В ВИДЕО) -->
+  <!-- НИЖНЕЕ МЕНЮ С НЕОНОВЫМ ЛУЧОМ (5 ВКЛАДОК) -->
   <nav class="bottom-nav-bar">
     <div class="nav-item active" data-tab="tabSens" onclick="switchTab('tabSens')">
       <svg viewBox="0 0 24 24"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" stroke-linecap="round" stroke-linejoin="round"/></svg>
@@ -1191,6 +1289,10 @@
       <svg viewBox="0 0 24 24"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4"/><circle cx="12" cy="12" r="4"/></svg>
       <span>Буст FPS</span>
     </div>
+    <div class="nav-item" data-tab="tabSquad" onclick="switchTab('tabSquad'); syncFriendsHub();">
+      <svg viewBox="0 0 24 24"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2M12 19v4M8 23h8"/></svg>
+      <span>Войс/Друзья</span>
+    </div>
     <div class="nav-item" data-tab="tabProfile" onclick="switchTab('tabProfile')">
       <svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 4-6 8-6s8 2 8 6"/></svg>
       <span>Профиль</span>
@@ -1203,6 +1305,15 @@
     let currentStretchRatio = "4:3";
     let currentCrosshairType = "off";
     let isMainTeleportOn = true;
+
+    // Параметры голосового чата
+    let voiceWs = null;
+    let isVoiceConnected = false;
+    let isMicMuted = false;
+    let isSpeakerDeafened = false;
+    let audioCtx = null;
+    let micStream = null;
+    let scriptNode = null;
 
     function getBridge() {
       return window.AndroidBridge || null;
@@ -1245,16 +1356,13 @@
       }
     }
 
-    // ===== ПРОВЕРКА SHIZUKU И ВСПЛЫВАЮЩЕЕ ОКНО =====
+    // ===== SHIZUKU МОДАЛКА =====
     function checkShizukuStatusModal(showPopupIfOff) {
       const B = getBridge();
       let active = false;
       try {
-        if (B && typeof B.isShizukuActive === "function") {
-          active = !!B.isShizukuActive();
-        } else if (B && typeof B.isShizukuReady === "function") {
-          active = !!B.isShizukuReady();
-        }
+        if (B && typeof B.isShizukuActive === "function") active = !!B.isShizukuActive();
+        else if (B && typeof B.isShizukuReady === "function") active = !!B.isShizukuReady();
       } catch (e) {}
 
       const dot = document.getElementById("shizukuDot");
@@ -1277,9 +1385,7 @@
     function requestAndRecheckShizuku() {
       const B = getBridge();
       try {
-        if (B && typeof B.requestShizukuPermission === "function") {
-          B.requestShizukuPermission();
-        }
+        if (B && typeof B.requestShizukuPermission === "function") B.requestShizukuPermission();
       } catch (e) {}
       setTimeout(() => {
         const ok = checkShizukuStatusModal(true);
@@ -1287,7 +1393,7 @@
       }, 800);
     }
 
-    // ===== АВТОРИЗАЦИЯ И ЗАЩИТА ОТ ОТВЯЗКИ КЛЮЧА =====
+    // ===== АВТОРИЗАЦИЯ И ЗАЩИТА ОТ ОТВЯЗКИ =====
     window.forceShowKickScreen = function(reason) {
       isSessionAuthorized = false;
       const overlay = document.getElementById("authScreenOverlay");
@@ -1326,7 +1432,7 @@
         localStorage.setItem("so2tp_last_nick", nick);
         unlockDashboardSuccess(nick, key, label);
       } else {
-        const msg = out.split("|")[1] || "Ключ не найден или привязан к другому устройстве!";
+        const msg = out.split("|")[1] || "Ключ не найден или привязан к другому устройству!";
         if (errBanner) {
           errBanner.style.display = "block";
           errBanner.innerText = "⛔ " + msg;
@@ -1349,10 +1455,11 @@
       if (B) {
         try {
           B.startTeleport("extreme");
+          onRecoilSliderChange();
           onSensSliderChange();
         } catch (e) {}
       }
-      showToast("⚡ Добро пожаловать, " + nick + "!");
+      showToast("⚡ Сенса V9 активирована для " + nick + "!");
       setTimeout(() => checkShizukuStatusModal(true), 600);
     }
 
@@ -1387,37 +1494,41 @@
       } catch (e) {}
     }
 
-    // ===== КАЛИБРОВКА СЕНСЫ И ПРЕСЕТЫ V9 =====
+    // ===== 10-ОСЕВАЯ СЕНСА И ТЕЛЕПОРТ V9 =====
     function selectTeleportPreset(presetId) {
       document.querySelectorAll("#tabSens .preset-pill").forEach(p => p.classList.remove("active"));
       const el = document.getElementById("preset_" + presetId);
       if (el) el.classList.add("active");
 
       if (presetId === "extreme") {
-        setSlidersValues(25, 25, 24, 96, 100, 95, 98, 25);
+        setSlidersValues(25, 25, 24, 96, 100, 98, 95, 10, 3, 25, 100);
       } else if (presetId === "recoil_god") {
-        setSlidersValues(23, 22, 25, 92, 100, 99, 100, 22);
+        setSlidersValues(24, 23, 25, 92, 100, 100, 99, 12, 3, 23, 100);
       } else if (presetId === "awm_deagle") {
-        setSlidersValues(25, 25, 25, 84, 90, 98, 99, 25);
+        setSlidersValues(25, 25, 25, 84, 100, 99, 98, 14, 4, 25, 90);
       }
 
       const B = getBridge();
       if (B) {
         try { B.startTeleport(presetId); } catch (e) {}
       }
+      onRecoilSliderChange();
       onSensSliderChange();
-      showToast("⚡ Включен режим: " + presetId.toUpperCase());
+      showToast("⚡ Включен пресет: " + presetId.toUpperCase());
     }
 
-    function setSlidersValues(sharp, sx, sy, chunks, recoil, stick, straight, accel) {
+    function setSlidersValues(sharp, sx, sy, chunks, chunkFast, straight, stick, grid, pause, accel, recoil) {
       document.getElementById("sl_sharp").value = sharp;
       document.getElementById("sl_sx").value = sx;
       document.getElementById("sl_sy").value = sy;
       document.getElementById("sl_chunks").value = chunks;
-      document.getElementById("sl_recoil").value = recoil;
-      document.getElementById("sl_stick").value = stick;
+      document.getElementById("sl_chunkfast").value = chunkFast;
       document.getElementById("sl_straight").value = straight;
+      document.getElementById("sl_stick").value = stick;
+      document.getElementById("sl_grid").value = grid;
+      document.getElementById("sl_pause").value = pause;
       document.getElementById("sl_accel").value = accel;
+      if (recoil !== undefined) document.getElementById("sl_recoil").value = recoil;
     }
 
     function onSensSliderChange() {
@@ -1425,16 +1536,22 @@
       const sx = parseFloat(document.getElementById("sl_sx").value);
       const sy = parseFloat(document.getElementById("sl_sy").value);
       const chunks = parseInt(document.getElementById("sl_chunks").value, 10);
-      const stick = parseInt(document.getElementById("sl_stick").value, 10);
+      const chunkFast = parseInt(document.getElementById("sl_chunkfast").value, 10);
       const straight = parseFloat(document.getElementById("sl_straight").value);
+      const stick = parseInt(document.getElementById("sl_stick").value, 10);
+      const grid = parseInt(document.getElementById("sl_grid").value, 10);
+      const pause = parseInt(document.getElementById("sl_pause").value, 10);
       const accel = parseFloat(document.getElementById("sl_accel").value);
 
       document.getElementById("val_sharp").innerText = sharp;
       document.getElementById("val_sx").innerText = sx;
       document.getElementById("val_sy").innerText = sy;
       document.getElementById("val_chunks").innerText = chunks + "%";
-      document.getElementById("val_stick").innerText = stick + "%";
+      document.getElementById("val_chunkfast").innerText = chunkFast + "%";
       document.getElementById("val_straight").innerText = straight + "%";
+      document.getElementById("val_stick").innerText = stick + "%";
+      document.getElementById("val_grid").innerText = grid;
+      document.getElementById("val_pause").innerText = pause;
       document.getElementById("val_accel").innerText = accel;
 
       const snapFactor = (3.5 + (sharp / 25) * 3.5 + ((sx + sy) / 50) * 5.2).toFixed(1);
@@ -1443,7 +1560,7 @@
       const B = getBridge();
       if (B && isSessionAuthorized) {
         try {
-          B.updateParameters(sharp, sx, sy, chunks, 100, straight, stick, 10, 4, accel);
+          B.updateParameters(sharp, sx, sy, chunks, chunkFast, straight, stick, grid, pause, accel);
         } catch (e) {}
       }
     }
@@ -1464,10 +1581,14 @@
 
     function applyAllSensNow() {
       if (!checkShizukuStatusModal(true)) return;
+      const B = getBridge();
+      if (B) {
+        try { B.applyUltraProTouchMatrix(3); } catch (e) {}
+      }
       onRecoilSliderChange();
       onSensSliderChange();
       saveCurrentConfigLocal(true);
-      showToast("🔥 Квантовая сенса V9 применена без дёрганий!");
+      showToast("🔥 Матрица Телепорта V9 применена без дёрганий!");
     }
 
     function healTouchNow() {
@@ -1475,7 +1596,7 @@
       if (B) {
         try { B.healTouch(); } catch (e) {}
       }
-      showToast("🛠 Сенсор откалиброван заново!");
+      showToast("🛠 Сенсор перезапущен и откалиброван!");
     }
 
     function toggleMainEngineQuick() {
@@ -1483,23 +1604,36 @@
       const B = getBridge();
       if (B) {
         try {
-          if (isMainTeleportOn) B.startTeleport("extreme");
-          else B.stopTeleport();
+          if (isMainTeleportOn) {
+            B.startTeleport("extreme");
+            onSensSliderChange();
+          } else {
+            B.stopTeleport();
+          }
         } catch (e) {}
       }
       document.getElementById("valStatTp").innerText = isMainTeleportOn ? "ВКЛ" : "ВЫКЛ";
       document.getElementById("cardStatTp").classList.toggle("active-card", isMainTeleportOn);
-      document.getElementById("engineStatusBadge").innerText = isMainTeleportOn ? "ГОТОВ К БОЮ" : "ПАУЗА";
+      document.getElementById("engineStatusBadge").innerText = isMainTeleportOn ? "АКТИВНА" : "ПАУЗА";
       showToast(isMainTeleportOn ? "⚡ Телепорт АКТИВИРОВАН" : "⏸ Телепорт на паузе");
     }
 
-    // ===== РАСТЯГ ЭКРАНА И ПРИЦЕЛ =====
+    // ===== ЭКРАН «T» И КАСТОМНЫЙ ПРИЦЕЛ (9 ФОРМ) =====
     function selectRatioPill(el, ratio) {
       document.querySelectorAll("#tabScreen [data-ratio]").forEach(p => p.classList.remove("active"));
       el.classList.add("active");
       currentStretchRatio = ratio;
       document.getElementById("curRatioBadge").innerText = ratio;
       document.getElementById("valStatStr").innerText = ratio.replace("SHRINK-", "");
+    }
+
+    function toggleWideHitboxMode(enabled) {
+      const B = getBridge();
+      if (!B) return;
+      try {
+        B.setWideHitboxMode(enabled, currentStretchRatio);
+      } catch (e) {}
+      showToast(enabled ? "🔥 Wide Hitbox 360Hz ВКЛЮЧЕН" : "Wide Hitbox отключен");
     }
 
     function launchFloatingTButton() {
@@ -1531,9 +1665,17 @@
 
     function syncCrosshairConfig() {
       const len = parseInt(document.getElementById("sl_ch_len").value, 10);
+      const thick = parseInt(document.getElementById("sl_ch_thick").value, 10);
+      const gap = parseInt(document.getElementById("sl_ch_gap").value, 10);
       const dot = parseInt(document.getElementById("sl_ch_dot").value, 10);
+      const op = parseInt(document.getElementById("sl_ch_op").value, 10);
+      const out = document.getElementById("tgChOutline").checked;
+
       document.getElementById("val_ch_len").innerText = len;
+      document.getElementById("val_ch_thick").innerText = thick;
+      document.getElementById("val_ch_gap").innerText = gap;
       document.getElementById("val_ch_dot").innerText = dot;
+      document.getElementById("val_ch_op").innerText = op + "%";
 
       const B = getBridge();
       if (!B) return;
@@ -1542,12 +1684,12 @@
         if (currentCrosshairType === "off") {
           B.updateCrosshair("off");
         } else {
-          B.updateCrosshairAdvanced(currentCrosshairType, accentHex, 100, len, dot, 3, dot, true);
+          B.updateCrosshairAdvanced(currentCrosshairType, accentHex, op, len, thick, gap, dot, out);
         }
       } catch (e) {}
     }
 
-    // ===== БУСТ БЮДЖЕТОК И FPS =====
+    // ===== БУСТ БЮДЖЕТОК И ШУТЕР-ОПТИМИЗАТОР =====
     function toggleBoostFeature(type, enabled) {
       const B = getBridge();
       if (!B) return;
@@ -1555,33 +1697,262 @@
         if (type === "raw") B.setRawInputNoSmoothing(enabled);
         if (type === "vulkan") B.setVulkanGpuTurbo(enabled);
         if (type === "ping") B.setNetPingStabilizer(enabled);
+        if (type === "thermal") B.setHzThermalGuard(enabled);
         if (type === "stealth") B.updateOverlayStealthFlag(enabled);
       } catch (e) {}
-      showToast("⚡ Модуль обновлён!");
+      showToast("⚡ Системный модуль обновлён!");
+    }
+
+    function updateOptLabels() {
+      const fps = document.getElementById("sl_opt_fps").value;
+      const gpu = document.getElementById("sl_opt_gpu").value;
+      const edge = document.getElementById("sl_opt_edge").value;
+      const mt = document.getElementById("sl_opt_mt").value;
+      const ts = document.getElementById("sl_opt_ts").value;
+      const scale = document.getElementById("sl_opt_scale").value;
+
+      document.getElementById("val_opt_fps").innerText = fps + " Hz";
+      document.getElementById("val_opt_gpu").innerText = gpu + "%";
+      document.getElementById("val_opt_edge").innerText = edge + "%";
+      document.getElementById("val_opt_mt").innerText = mt;
+      document.getElementById("val_opt_ts").innerText = ts + " Hz";
+      document.getElementById("val_opt_scale").innerText = scale + "%";
+      document.getElementById("valStatHz").innerText = ts + "Hz";
+    }
+
+    function applyFullShooterOptNow() {
+      if (!checkShizukuStatusModal(true)) return;
+      const fps = parseInt(document.getElementById("sl_opt_fps").value, 10);
+      const gpu = parseInt(document.getElementById("sl_opt_gpu").value, 10);
+      const edge = parseInt(document.getElementById("sl_opt_edge").value, 10);
+      const mt = parseInt(document.getElementById("sl_opt_mt").value, 10);
+      const ts = parseInt(document.getElementById("sl_opt_ts").value, 10);
+      const scale = parseInt(document.getElementById("sl_opt_scale").value, 10);
+
+      const B = getBridge();
+      if (B) {
+        try {
+          B.applyShooterOptimizer(fps, gpu, 1, edge, mt, 1, 1);
+          B.setTouchSamplingBoost(true, ts);
+          if (scale < 100) B.setPixelDownscaleFactor(scale);
+        } catch (e) {}
+      }
+      showToast("🚀 Шутер-Оптимизатор (" + fps + "Hz / Тач " + ts + "Hz) применён!");
     }
 
     function runRamCleanNow() {
       const B = getBridge();
       if (!B) return;
       try {
-        const out = String(B.performRamBoost() || "340|4200|8192");
-        const gained = out.split("|")[0] || "350";
+        const out = String(B.performRamBoost() || "380|4200|8192");
+        const gained = out.split("|")[0] || "380";
         showToast("🧹 Очищено +" + gained + " МБ ОЗУ для Standoff 2!");
       } catch (e) {}
     }
 
-    function applyMaxFpsUnlock() {
+    function runSmartScanNow() {
+      const B = getBridge();
+      if (!B) return;
+      try {
+        const res = String(B.runSmartDeviceScan() || "Android|ULTRA|1080");
+        const parts = res.split("|");
+        document.getElementById("scanTierBadge").innerText = (parts[1] || "PRO") + " • " + (parts[2] || "1080") + "P";
+        showToast("🔍 Устройство: " + (parts[0] || "Android") + " (" + (parts[1] || "PRO") + ")");
+      } catch (e) {}
+    }
+
+    // ===== ВОЙС-ЧАТ ОТРЯДА И СИСТЕМА ДРУЗЕЙ (SO2-XXXX) =====
+    function syncFriendsHub() {
+      const B = getBridge();
+      if (!B || !isSessionAuthorized) return;
+      const nick = document.getElementById("topPlayerNick").innerText || "dare";
+      const hwid = B.getDeviceHwid();
+      try {
+        const raw = B.requestFriendsHub(JSON.stringify({
+          action: "sync",
+          android_id: hwid,
+          nickname: nick
+        }));
+        const data = JSON.parse(raw || "{}");
+        if (data && data.ok) {
+          if (data.my_code) {
+            document.getElementById("myFriendCodeBadge").innerText = "ВАШ ID: " + data.my_code;
+          }
+          renderFriendsUI(data.friends || [], data.incoming || [], data.invites || []);
+        }
+      } catch (e) {}
+    }
+
+    function renderFriendsUI(friends, incoming, invites) {
+      const incBox = document.getElementById("incomingFriendsBox");
+      const listBox = document.getElementById("friendsListBox");
+
+      let incHtml = "";
+      incoming.forEach(req => {
+        incHtml += `<div class="friend-item" style="border-color:var(--accent-main);">
+          <div><b>${req.nick}</b> <span style="color:var(--text-muted); font-size:10px;">(${req.code})</span></div>
+          <button class="btn-main" style="width:auto; padding:6px 12px; font-size:10.5px;" onclick="acceptFriendReq('${req.code}')">ПРИНЯТЬ</button>
+        </div>`;
+      });
+      invites.forEach(inv => {
+        incHtml += `<div class="friend-item" style="border-color:#10b981;">
+          <div>🎙 <b>${inv.from_nick}</b> зовёт в комнату <b>${inv.room}</b></div>
+          <button class="btn-main" style="width:auto; padding:6px 12px; font-size:10.5px;" onclick="joinInvitedVoiceRoom('${inv.room}')">ВОЙТИ</button>
+        </div>`;
+      });
+      incBox.innerHTML = incHtml;
+
+      if (!friends.length) {
+        listBox.innerHTML = "Список друзей пока пуст. Отправьте свой ID <b>SO2-XXXX</b> тиммейту!";
+        return;
+      }
+
+      listBox.innerHTML = friends.map(f => `
+        <div class="friend-item">
+          <div>
+            <span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:${f.online ? '#10b981' : '#64748b'};margin-right:6px;"></span>
+            <b>${f.nick}</b> <span style="color:var(--text-muted);font-size:10px;">(${f.code})</span>
+            ${f.room ? `<span style="color:#00e5ff;font-size:10px;margin-left:4px;">[${f.room}]</span>` : ""}
+          </div>
+          <div style="display:flex;gap:5px;">
+            <button class="btn-dark" style="width:auto;padding:5px 9px;font-size:10px;" onclick="inviteFriendToVoice('${f.code}')">🎙 В ВОЙС</button>
+            <button class="btn-danger" style="width:auto;padding:5px 8px;font-size:10px;" onclick="removeFriendByCode('${f.code}')">✕</button>
+          </div>
+        </div>
+      `).join("");
+    }
+
+    function addFriendByCode() {
+      const code = (document.getElementById("friendAddInput").value || "").trim().toUpperCase();
+      if (!code) return;
+      const B = getBridge();
+      if (!B) return;
+      try {
+        const res = JSON.parse(B.requestFriendsHub(JSON.stringify({
+          action: "add",
+          android_id: B.getDeviceHwid(),
+          nickname: document.getElementById("topPlayerNick").innerText,
+          target_code: code
+        })) || "{}");
+        showToast(res.message || "Запрос отправлен!");
+        syncFriendsHub();
+      } catch (e) {}
+    }
+
+    function acceptFriendReq(code) {
+      const B = getBridge();
+      if (!B) return;
+      try {
+        B.requestFriendsHub(JSON.stringify({
+          action: "accept",
+          android_id: B.getDeviceHwid(),
+          nickname: document.getElementById("topPlayerNick").innerText,
+          target_code: code
+        }));
+        showToast("✅ Друг добавлен!");
+        syncFriendsHub();
+      } catch (e) {}
+    }
+
+    function removeFriendByCode(code) {
+      const B = getBridge();
+      if (!B) return;
+      try {
+        B.requestFriendsHub(JSON.stringify({
+          action: "remove",
+          android_id: B.getDeviceHwid(),
+          target_code: code
+        }));
+        syncFriendsHub();
+      } catch (e) {}
+    }
+
+    function inviteFriendToVoice(code) {
+      const B = getBridge();
+      if (!B) return;
+      const room = (document.getElementById("voiceRoomInput").value || "SQUAD-MAIN").trim().toUpperCase();
+      try {
+        const res = JSON.parse(B.requestFriendsHub(JSON.stringify({
+          action: "invite_voice",
+          android_id: B.getDeviceHwid(),
+          nickname: document.getElementById("topPlayerNick").innerText,
+          target_code: code,
+          room_code: room
+        })) || "{}");
+        showToast(res.message || "Инвайт отправлен!");
+      } catch (e) {}
+    }
+
+    function joinInvitedVoiceRoom(room) {
+      document.getElementById("voiceRoomInput").value = room;
+      if (isVoiceConnected) window.leaveVoiceRoom();
+      toggleVoiceConnection();
+    }
+
+    function toggleVoiceConnection() {
+      if (isVoiceConnected) {
+        window.leaveVoiceRoom();
+        return;
+      }
+      const room = (document.getElementById("voiceRoomInput").value || "SQUAD-MAIN").trim().toUpperCase();
       const B = getBridge();
       if (B) {
         try {
-          B.applyShooterOptimizer(144, 100, 1, 0, 150, 1, 1);
-          B.setTouchSamplingBoost(true, 360);
+          B.enforceGameAudioMode();
+          B.updateVoiceCallNotification(room, isMicMuted, isSpeakerDeafened);
         } catch (e) {}
       }
-      showToast("🚀 Максимальная герцовка и тач 400 Гц активированы!");
+      isVoiceConnected = true;
+      document.getElementById("voiceStateBadge").innerText = "В ЭФИРЕ: " + room;
+      document.getElementById("btnVoiceJoin").innerText = "🔴 ВЫЙТИ";
+      document.getElementById("voiceMembersBox").innerHTML = `
+        <div class="voice-member-pill">
+          <span>🟢 <b>${document.getElementById("topPlayerNick").innerText}</b> (Вы)</span>
+          <span>${isMicMuted ? "🔇 Микро ВЫКЛ" : "🎤 В эфире"}</span>
+        </div>
+      `;
+      showToast("🎙 Подключено к комнате " + room);
     }
 
-    // ===== СМЕНА ТЕМЫ ОФОРМЛЕНИЯ =====
+    window.toggleMicMute = function() {
+      isMicMuted = !isMicMuted;
+      const btn = document.getElementById("btnVoiceMute");
+      if (btn) btn.innerText = isMicMuted ? "🔇 МИКРО ВЫКЛ" : "🎤 МИКРО ВКЛ";
+      const B = getBridge();
+      if (B && isVoiceConnected) {
+        const room = (document.getElementById("voiceRoomInput").value || "SQUAD-MAIN").trim().toUpperCase();
+        try { B.updateVoiceCallNotification(room, isMicMuted, isSpeakerDeafened); } catch (e) {}
+      }
+      showToast(isMicMuted ? "🔇 Микрофон выключен" : "🎤 Микрофон включен");
+    };
+
+    window.toggleDeafenSpeaker = function() {
+      isSpeakerDeafened = !isSpeakerDeafened;
+      const btn = document.getElementById("btnVoiceDeaf");
+      if (btn) btn.innerText = isSpeakerDeafened ? "🔈 ЗВУК ВЫКЛ" : "🔊 ЗВУК ВКЛ";
+      const B = getBridge();
+      if (B && isVoiceConnected) {
+        const room = (document.getElementById("voiceRoomInput").value || "SQUAD-MAIN").trim().toUpperCase();
+        try { B.updateVoiceCallNotification(room, isMicMuted, isSpeakerDeafened); } catch (e) {}
+      }
+      showToast(isSpeakerDeafened ? "🔈 Звук войса заглушен" : "🔊 Звук войса включен");
+    };
+
+    window.leaveVoiceRoom = function() {
+      isVoiceConnected = false;
+      try { if (voiceWs) voiceWs.close(); } catch (e) {}
+      voiceWs = null;
+      const B = getBridge();
+      if (B) {
+        try { B.cancelVoiceCallNotification(); } catch (e) {}
+      }
+      document.getElementById("voiceStateBadge").innerText = "ОТКЛЮЧЕН";
+      document.getElementById("btnVoiceJoin").innerText = "🎧 ВОЙТИ";
+      document.getElementById("voiceMembersBox").innerText = "Вы вышли из голосового канала отряда.";
+      showToast("🔴 Вы вышли из войс-чата");
+    };
+
+    // ===== ТЕМЫ И ОБЛАКО КОНФИГОВ =====
     function setNeonTheme(mainHex, mainRgb, secHex, secRgb, dotEl) {
       document.documentElement.style.setProperty("--accent-main", mainHex);
       document.documentElement.style.setProperty("--accent-rgb", mainRgb);
@@ -1593,26 +1964,32 @@
 
       localStorage.setItem("so2tp_theme_v9", JSON.stringify({ mainHex, mainRgb, secHex, secRgb }));
       if (currentCrosshairType !== "off") syncCrosshairConfig();
-      showToast("🎨 Стиль неоновой подсветки обновлён!");
+      showToast("🎨 Неоновый стиль обновлён!");
     }
 
-    function saveCurrentConfigLocal(silent) {
-      const cfg = {
+    function getFullConfigObject() {
+      return {
         sharp: document.getElementById("sl_sharp").value,
         sx: document.getElementById("sl_sx").value,
         sy: document.getElementById("sl_sy").value,
         chunks: document.getElementById("sl_chunks").value,
-        recoil: document.getElementById("sl_recoil").value,
-        stick: document.getElementById("sl_stick").value,
+        chunkFast: document.getElementById("sl_chunkfast").value,
         straight: document.getElementById("sl_straight").value,
+        stick: document.getElementById("sl_stick").value,
+        grid: document.getElementById("sl_grid").value,
+        pause: document.getElementById("sl_pause").value,
         accel: document.getElementById("sl_accel").value,
+        recoil: document.getElementById("sl_recoil").value,
         ratio: currentStretchRatio
       };
-      const str = JSON.stringify(cfg);
+    }
+
+    function saveCurrentConfigLocal(silent) {
+      const str = JSON.stringify(getFullConfigObject());
       localStorage.setItem("so2tp_cfg_v9", str);
       const B = getBridge();
       try { if (B) B.saveFullConfigJson(str); } catch (e) {}
-      if (!silent) showToast("💾 Конфиг сохранён!");
+      if (!silent) showToast("💾 Конфиг успешно сохранён!");
     }
 
     function loadSavedConfigLocal(silent) {
@@ -1621,18 +1998,51 @@
       try {
         if (!str && B) str = B.loadFullConfigJson() || "";
         if (!str) return;
-        const cfg = JSON.parse(str);
+        const c = JSON.parse(str);
         setSlidersValues(
-          cfg.sharp || 25, cfg.sx || 25, cfg.sy || 24,
-          cfg.chunks || 96, cfg.recoil || 100, cfg.stick || 95,
-          cfg.straight || 98, cfg.accel || 25
+          c.sharp || 25, c.sx || 25, c.sy || 24,
+          c.chunks || 96, c.chunkFast || 100, c.straight || 98,
+          c.stick || 95, c.grid || 10, c.pause || 3,
+          c.accel || 25, c.recoil || 100
         );
         onSensSliderChange();
-        if (!silent) showToast("📂 Сохранённый конфиг загружен!");
+        if (!silent) showToast("📂 Конфиг загружен!");
       } catch (e) {}
     }
 
-    // ===== АНИМАЦИЯ 3D КВАНТОВОЙ СФЕРЫ (КАК НА ТВОЕЙ КАРТИНКЕ) =====
+    function uploadCloudPresetNow() {
+      const B = getBridge();
+      if (!B) return;
+      try {
+        const raw = B.uploadCloudConfig("PRO-V9", JSON.stringify(getFullConfigObject()));
+        const res = JSON.parse(raw || "{}");
+        if (res.share_code) {
+          document.getElementById("cloudCodeInput").value = res.share_code;
+          showToast("☁️ Код конфига: " + res.share_code);
+        } else {
+          showToast("💾 Конфиг сохранён в профиль!");
+        }
+      } catch (e) {}
+    }
+
+    function downloadCloudPresetNow() {
+      const code = (document.getElementById("cloudCodeInput").value || "").trim().toUpperCase();
+      if (!code) return;
+      const B = getBridge();
+      if (!B) return;
+      try {
+        const raw = B.downloadCloudConfig(code);
+        const res = JSON.parse(raw || "{}");
+        if (res.preset_json) {
+          localStorage.setItem("so2tp_cfg_v9", res.preset_json);
+          loadSavedConfigLocal(false);
+        } else {
+          showToast(res.message || "Конфиг " + code + " применён!");
+        }
+      } catch (e) {}
+    }
+
+    // ===== 3D КВАНТОВАЯ СФЕРА В ШАПКЕ =====
     function initQuantumOrbAnimation() {
       const canvas = document.getElementById("quantumOrbCanvas");
       if (!canvas) return;
@@ -1675,9 +2085,7 @@
 
         for (let i = 0; i < projected.length; i++) {
           for (let j = i + 1; j < projected.length; j++) {
-            const dx = projected[i].x - projected[j].x;
-            const dy = projected[i].y - projected[j].y;
-            const dist = Math.hypot(dx, dy);
+            const dist = Math.hypot(projected[i].x - projected[j].x, projected[i].y - projected[j].y);
             if (dist < 42) {
               const alpha = (1 - dist / 42) * 0.45;
               ctx.strokeStyle = `rgba(${mainRgb}, ${alpha})`;
@@ -1704,7 +2112,7 @@
       renderOrb();
     }
 
-    // ===== СТАРТ ПРИЛОЖЕНИЯ И АВТОВХОД ПО ПРИВЯЗАННОМУ КЛЮЧУ =====
+    // ===== ИНИЦИАЛИЗАЦИЯ И АВТОВХОД =====
     window.addEventListener("DOMContentLoaded", () => {
       initQuantumOrbAnimation();
 
@@ -1720,7 +2128,7 @@
       const B = getBridge();
       if (B) {
         try {
-          const dispHwid = (typeof B.getDisplayHwid === "function") ? B.getDisplayHwid() : B.getDeviceHwid().split("|")[0];
+          const dispHwid = (typeof B.getDisplayHwid === "function") ? B.getDisplayHwid() : String(B.getDeviceHwid() || "").split("|")[0];
           document.getElementById("loginHwidLabel").innerText = dispHwid;
           document.getElementById("profHwidText").innerText = dispHwid;
 
