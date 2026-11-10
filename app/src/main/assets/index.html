@@ -1100,9 +1100,121 @@
       box-shadow: 0 12px 28px rgba(0, 0, 0, 0.9);
       display: none;
     }
+    /* ===== СТИЛЬ НИЖНЕГО МЕНЮ С НЕОНОВЫМ ЛУЧОМ СВЕРХУ (КАК НА ВИДЕО) ===== */
+    .bottom-nav-bar {
+      position: fixed;
+      bottom: 12px;
+      left: 14px;
+      right: 14px;
+      height: 66px;
+      background: #0d1017;
+      border: 1px solid rgba(var(--accent-rgb), 0.28);
+      border-radius: 22px;
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      align-items: center;
+      padding: 0 6px;
+      z-index: 900;
+      box-shadow: 0 14px 34px rgba(0, 0, 0, 0.85);
+      overflow: hidden;
+    }
+    .nav-item {
+      position: relative;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
+      color: #64748b;
+      font-size: 10.5px;
+      font-weight: 800;
+      cursor: pointer;
+      transition: color 0.3s ease, transform 0.25s ease;
+    }
+    .nav-item.active {
+      color: var(--accent-main);
+      text-shadow: 0 0 12px rgba(var(--accent-rgb), 0.85);
+    }
+    /* Верхняя неоновая полоска + трапециевидный луч света */
+    .nav-item::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      width: 38px;
+      height: 3.5px;
+      border-radius: 0 0 6px 6px;
+      background: var(--accent-main);
+      box-shadow: 0 0 12px var(--accent-main);
+      opacity: 0;
+      transform: scaleX(0.3);
+      transition: all 0.32s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+    .nav-item::after {
+      content: "";
+      position: absolute;
+      top: 3px;
+      width: 52px;
+      height: 44px;
+      background: linear-gradient(180deg, rgba(var(--accent-rgb), 0.34) 0%, rgba(var(--accent-rgb), 0.0) 100%);
+      clip-path: polygon(18% 0%, 82% 0%, 100% 100%, 0% 100%);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.32s ease;
+    }
+    .nav-item.active::before {
+      opacity: 1;
+      transform: scaleX(1);
+    }
+    .nav-item.active::after {
+      opacity: 1;
+    }
+
+    /* ===== МОДАЛЬНОЕ ОКНО: SHIZUKU НЕ АКТИВЕН ===== */
+    .shizuku-alert-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(4, 6, 11, 0.88);
+      backdrop-filter: blur(8px);
+      z-index: 9999;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+    .shizuku-alert-box {
+      width: 100%;
+      max-width: 360px;
+      background: linear-gradient(180deg, #131824 0%, #0b0e16 100%);
+      border: 1.5px solid rgba(var(--accent-rgb), 0.55);
+      border-radius: 22px;
+      padding: 22px 18px;
+      text-align: center;
+      box-shadow: 0 0 38px rgba(var(--accent-rgb), 0.22);
+    }
   </style>
 </head>
 <body>
+    <!-- МОДАЛЬНОЕ ОКНО ПРИ ВЫКЛЮЧЕННОМ SHIZUKU -->
+  <div id="shizukuRequiredModal" class="shizuku-alert-backdrop">
+    <div class="shizuku-alert-box">
+      <div style="width:54px; height:54px; margin:0 auto 12px; border-radius:16px; background:rgba(239,68,68,0.15); border:1px solid #ef4444; display:flex; align-items:center; justify-content:center; font-size:26px;">
+        ⚠️
+      </div>
+      <div style="font-size:17px; font-weight:900; color:#ffffff; margin-bottom:8px;">
+        Shizuku не активен!
+      </div>
+      <div style="font-size:12.5px; color:#cbd5e1; line-height:1.5; margin-bottom:14px;">
+        Для работы приложения включите <b>Shizuku</b>.<br><br>
+        📖 Гайд есть в ТГК: <b style="color:#38bdf8;">SO2Teleport</b><br>
+        💬 Если нужна помощь — писать в ЛС: <b style="color:#34d399;">@tdlent_dare</b>
+      </div>
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-bottom:8px;">
+        <button type="button" class="btn-main" onclick="requestAndRecheckShizuku()">🔄 ПРОВЕРИТЬ SHIZUKU</button>
+        <button type="button" class="btn-dark" onclick="document.getElementById('shizukuRequiredModal').style.display='none'">ЗАКРЫТЬ ОКНО</button>
+      </div>
+    </div>
+  </div>
   <div id="topToast">⚡ КУСКОВОЙ ТЕЛЕПОРТ V3 активирован!</div>
 
   <!-- ВСПЛЫВАЮЩЕЕ ПРИГЛАШЕНИЕ В ВОЙС -->
@@ -4091,6 +4203,42 @@
         pollLicenseExpiration();
       }
     });
+    function checkShizukuStatusModal(showPopupIfOff) {
+      if (!isSessionAuthorized) return;
+      const B = getBridge();
+      let active = false;
+      try {
+        if (B && typeof B.isShizukuActive === "function") {
+          active = !!B.isShizukuActive();
+        }
+      } catch (e) {}
+
+      const topToggle = document.getElementById("shizukuHeaderToggle");
+      const topLabel = document.getElementById("shizukuStateText");
+      if (topToggle) topToggle.checked = active;
+      if (topLabel) {
+        topLabel.innerText = active ? "Shizuku АКТИВЕН" : "Shizuku ВЫКЛ";
+        topLabel.style.color = active ? "#34d399" : "#f87171";
+      }
+
+      const modal = document.getElementById("shizukuRequiredModal");
+      if (!active && showPopupIfOff && modal) {
+        modal.style.display = "flex";
+      } else if (active && modal) {
+        modal.style.display = "none";
+      }
+    }
+
+    function requestAndRecheckShizuku() {
+      const B = getBridge();
+      try {
+        if (B && typeof B.requestShizukuPermission === "function") B.requestShizukuPermission();
+      } catch (e) {}
+      setTimeout(() => checkShizukuStatusModal(true), 900);
+    }
+
+    setInterval(() => checkShizukuStatusModal(false), 5000);
+    setTimeout(() => checkShizukuStatusModal(true), 1800);
   </script>
 </body>
 </html>
