@@ -22,6 +22,13 @@ jobs:
       - name: Setup Android SDK
         uses: android-actions/setup-android@v3
 
+      - name: Accept Android SDK Licenses
+        run: |
+          yes | sdkmanager --licenses || true
+          mkdir -p $ANDROID_SDK_ROOT/licenses
+          echo -e "\n8933bad161af4178b1185d1a37fbf41ea5269c55" > $ANDROID_SDK_ROOT/licenses/android-sdk-license
+          echo -e "\n24333f8a43b680d23c1748d5f3d3d5f47d4e38ef" >> $ANDROID_SDK_ROOT/licenses/android-sdk-license
+
       - name: Generate Gradle Wrapper
         run: |
           gradle wrapper --gradle-version 8.5 --no-validate-url
