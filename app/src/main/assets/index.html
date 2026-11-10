@@ -1501,11 +1501,11 @@
       if (el) el.classList.add("active");
 
       if (presetId === "extreme") {
-        setSlidersValues(25, 25, 24, 96, 100, 98, 95, 10, 3, 25, 100);
+        setSlidersValues(25, 25, 25, 100, 100, 100, 100, 1, 1, 25, 100);
       } else if (presetId === "recoil_god") {
-        setSlidersValues(24, 23, 25, 92, 100, 100, 99, 12, 3, 23, 100);
+        setSlidersValues(25, 24, 25, 98, 100, 100, 100, 2, 1, 25, 100);
       } else if (presetId === "awm_deagle") {
-        setSlidersValues(25, 25, 25, 84, 100, 99, 98, 14, 4, 25, 90);
+        setSlidersValues(25, 25, 25, 95, 100, 100, 98, 1, 1, 25, 90);
       }
 
       const B = getBridge();
@@ -1514,48 +1514,72 @@
       }
       onRecoilSliderChange();
       onSensSliderChange();
-      showToast("⚡ Включен пресет: " + presetId.toUpperCase());
+      showToast("🔥 Пресет резкости V9 активирован: " + presetId.toUpperCase());
     }
 
     function setSlidersValues(sharp, sx, sy, chunks, chunkFast, straight, stick, grid, pause, accel, recoil) {
-      document.getElementById("sl_sharp").value = sharp;
-      document.getElementById("sl_sx").value = sx;
-      document.getElementById("sl_sy").value = sy;
-      document.getElementById("sl_chunks").value = chunks;
-      document.getElementById("sl_chunkfast").value = chunkFast;
-      document.getElementById("sl_straight").value = straight;
-      document.getElementById("sl_stick").value = stick;
-      document.getElementById("sl_grid").value = grid;
-      document.getElementById("sl_pause").value = pause;
-      document.getElementById("sl_accel").value = accel;
-      if (recoil !== undefined) document.getElementById("sl_recoil").value = recoil;
+      const elSharp = document.getElementById("sl_sharp");
+      const elSx = document.getElementById("sl_sx");
+      const elSy = document.getElementById("sl_sy");
+      const elChunks = document.getElementById("sl_chunks");
+      const elChunkFast = document.getElementById("sl_chunkfast");
+      const elStraight = document.getElementById("sl_straight");
+      const elStick = document.getElementById("sl_stick");
+      const elGrid = document.getElementById("sl_grid");
+      const elPause = document.getElementById("sl_pause");
+      const elAccel = document.getElementById("sl_accel");
+      const elRecoil = document.getElementById("sl_recoil");
+
+      if (elSharp) elSharp.value = sharp;
+      if (elSx) elSx.value = sx;
+      if (elSy) elSy.value = sy;
+      if (elChunks) elChunks.value = chunks;
+      if (elChunkFast) elChunkFast.value = chunkFast;
+      if (elStraight) elStraight.value = straight;
+      if (elStick) elStick.value = stick;
+      if (elGrid) elGrid.value = grid;
+      if (elPause) elPause.value = pause;
+      if (elAccel) elAccel.value = accel;
+      if (elRecoil && recoil !== undefined) elRecoil.value = recoil;
     }
 
     function onSensSliderChange() {
-      const sharp = parseFloat(document.getElementById("sl_sharp").value);
-      const sx = parseFloat(document.getElementById("sl_sx").value);
-      const sy = parseFloat(document.getElementById("sl_sy").value);
-      const chunks = parseInt(document.getElementById("sl_chunks").value, 10);
-      const chunkFast = parseInt(document.getElementById("sl_chunkfast").value, 10);
-      const straight = parseFloat(document.getElementById("sl_straight").value);
-      const stick = parseInt(document.getElementById("sl_stick").value, 10);
-      const grid = parseInt(document.getElementById("sl_grid").value, 10);
-      const pause = parseInt(document.getElementById("sl_pause").value, 10);
-      const accel = parseFloat(document.getElementById("sl_accel").value);
+      const sharpEl = document.getElementById("sl_sharp");
+      const sxEl = document.getElementById("sl_sx");
+      const syEl = document.getElementById("sl_sy");
+      const chunksEl = document.getElementById("sl_chunks");
+      const chunkFastEl = document.getElementById("sl_chunkfast");
+      const straightEl = document.getElementById("sl_straight");
+      const stickEl = document.getElementById("sl_stick");
+      const gridEl = document.getElementById("sl_grid");
+      const pauseEl = document.getElementById("sl_pause");
+      const accelEl = document.getElementById("sl_accel");
 
-      document.getElementById("val_sharp").innerText = sharp;
-      document.getElementById("val_sx").innerText = sx;
-      document.getElementById("val_sy").innerText = sy;
-      document.getElementById("val_chunks").innerText = chunks + "%";
-      document.getElementById("val_chunkfast").innerText = chunkFast + "%";
-      document.getElementById("val_straight").innerText = straight + "%";
-      document.getElementById("val_stick").innerText = stick + "%";
-      document.getElementById("val_grid").innerText = grid;
-      document.getElementById("val_pause").innerText = pause;
-      document.getElementById("val_accel").innerText = accel;
+      const sharp = sharpEl ? parseFloat(sharpEl.value) : 25;
+      const sx = sxEl ? parseFloat(sxEl.value) : 25;
+      const sy = syEl ? parseFloat(syEl.value) : 25;
+      const chunks = chunksEl ? parseInt(chunksEl.value, 10) : 100;
+      const chunkFast = chunkFastEl ? parseInt(chunkFastEl.value, 10) : 100;
+      const straight = straightEl ? parseFloat(straightEl.value) : 100;
+      const stick = stickEl ? parseInt(stickEl.value, 10) : 100;
+      const grid = gridEl ? parseInt(gridEl.value, 10) : 1;
+      const pause = pauseEl ? parseInt(pauseEl.value, 10) : 1;
+      const accel = accelEl ? parseFloat(accelEl.value) : 25;
 
-      const snapFactor = (3.5 + (sharp / 25) * 3.5 + ((sx + sy) / 50) * 5.2).toFixed(1);
-      document.getElementById("liveScaleChip").innerText = "SNAP " + snapFactor + "x";
+      if (document.getElementById("val_sharp")) document.getElementById("val_sharp").innerText = sharp;
+      if (document.getElementById("val_sx")) document.getElementById("val_sx").innerText = sx;
+      if (document.getElementById("val_sy")) document.getElementById("val_sy").innerText = sy;
+      if (document.getElementById("val_chunks")) document.getElementById("val_chunks").innerText = chunks + "%";
+      if (document.getElementById("val_chunkfast")) document.getElementById("val_chunkfast").innerText = chunkFast + "%";
+      if (document.getElementById("val_straight")) document.getElementById("val_straight").innerText = straight + "%";
+      if (document.getElementById("val_stick")) document.getElementById("val_stick").innerText = stick + "%";
+      if (document.getElementById("val_grid")) document.getElementById("val_grid").innerText = grid;
+      if (document.getElementById("val_pause")) document.getElementById("val_pause").innerText = pause;
+      if (document.getElementById("val_accel")) document.getElementById("val_accel").innerText = accel;
+
+      const snapFactor = (5.5 + (sharp / 25) * 4.5 + ((sx + sy) / 50) * 6.0).toFixed(1);
+      const chip = document.getElementById("liveScaleChip");
+      if (chip) chip.innerText = "SNAP " + snapFactor + "x (ULTRA)";
 
       const B = getBridge();
       if (B && isSessionAuthorized) {
