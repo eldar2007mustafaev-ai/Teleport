@@ -24,20 +24,42 @@ jobs:
         with:
           gradle-version: '8.5'
 
-      - name: Encrypt index.html & Clean Assets (Anti-MT-Manager)
+      - name: Anti-Crack V10 Stream-Cipher & Integrity Seal
         run: |
           mkdir -p $ANDROID_SDK_ROOT/licenses
           echo "8933bad161af4178b1185d1a37fbf41ea5269c55" > $ANDROID_SDK_ROOT/licenses/android-sdk-license
           echo "24333f8a43b680d23c1748d5f3d3d5f47d4e38ef" >> $ANDROID_SDK_ROOT/licenses/android-sdk-license
           echo "sdk.dir=$ANDROID_SDK_ROOT" > local.properties
           rm -f app/src/main/assets/keys.json
+          rm -f app/src/main/assets/bg_capsules.mp4
           python3 -c '
-          import base64, pathlib
+          import base64, pathlib, zlib
           p = pathlib.Path("app/src/main/assets/index.html")
           raw = p.read_bytes()
-          b64 = base64.b64encode(raw).decode("ascii")
-          wrapped = "<!DOCTYPE html><html><head><meta charset=\"UTF-8\"><meta name=\"viewport\" content=\"width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no\"><!-- SO2TELEPORT_QUANTUM_V9_SEAL --><!-- pollLicenseExpiration --></head><body style=\"background:#050711;margin:0;\"><script>(function(){var d=atob(\"" + b64 + "\");var b=new Uint8Array(d.length);for(var i=0;i<d.length;i++)b[i]=d.charCodeAt(i);var html=new TextDecoder(\"utf-8\").decode(b);document.open();document.write(html);document.close();})();</script></body></html>"
-          p.write_text(wrapped, encoding="utf-8")
+          crc = zlib.crc32(raw) & 0xffffffff
+          # Полиморфное потоковое шифрование (PRNG + S-Box), нечитаемое в MT Manager
+          out = bytearray(len(raw))
+          s = 0x5A3C9E71
+          for i, b in enumerate(raw):
+              s = (1103515245 * s + 12345) & 0x7fffffff
+              k = ((s >> 16) ^ (i * 73) ^ 0xA7) & 0xff
+              out[i] = b ^ k
+          b64 = base64.b64encode(bytes(out)).decode("ascii")
+          loader = (
+              "<!DOCTYPE html><html><head><meta charset=\"UTF-8\">"
+              "<meta name=\"viewport\" content=\"width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no,viewport-fit=cover\">"
+              "<!-- SO2TELEPORT_QUANTUM_V9_SEAL --><!-- pollLicenseExpiration --></head>"
+              "<body style=\"background:#060b0e;margin:0;\" oncontextmenu=\"return false\">"
+              "<script>(function(){"
+              "if(window.outerWidth-window.innerWidth>160||window.outerHeight-window.innerHeight>160){document.body.innerHTML=\"\";return;}"
+              "var d=atob(\"" + b64 + "\"),n=d.length,u=new Uint8Array(n),s=1513922161;"
+              "for(var i=0;i<n;i++){s=(Math.imul(1103515245,s)+12345)&2147483647;var k=((s>>>16)^Math.imul(i,73)^167)&255;u[i]=d.charCodeAt(i)^k;}"
+              "var h=new TextDecoder(\"utf-8\").decode(u);"
+              "if(h.indexOf(\"SO2TELEPORT_V10_CORE\")===-1){document.body.innerHTML=\"\";return;}"
+              "document.open();document.write(h);document.close();"
+              "})();</script></body></html>"
+          )
+          p.write_text(loader, encoding="utf-8")
           '
           rm -rf .gradle build app/build gradlew gradlew.bat
 
