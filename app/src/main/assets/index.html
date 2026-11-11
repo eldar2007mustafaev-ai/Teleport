@@ -2799,4 +2799,172 @@
         recoil: document.getElementById("sl_recoil").value,
         lead: (document.getElementById("sl_lead") || {}).value || 8,
         stickDelay: (document.getElementById("sl_stick_delay") || {}).value || 29,
-        stickForce: (document.get
+        stickForce: (document.getElementById("sl_stick_force") || {}).value || 8,
+        chunkBypass: (document.getElementById("sl_chunk_bypass") || {}).value || 2,
+        chunkCap: (document.getElementById("sl_chunk_cap") || {}).value || 18,
+        shotPause: (document.getElementById("sl_shot_pause") || {}).value || 1,
+        edgeReach: (document.getElementById("sl_edge_reach") || {}).value || 10,
+        gripCap: (document.getElementById("sl_grip_cap") || {}).value || 10,
+        preset: currentPresetId,
+        padMode: isPadModeEnabled
+      };
+      try { localStorage.setItem("so2tp_saved_config_v10", JSON.stringify(data)); } catch (e) {}
+      if (!silent) showToast("💾 Конфигурация сохранена!");
+    }
+
+    function loadSavedConfigLocal(silent) {
+      try {
+        const raw = localStorage.getItem("so2tp_saved_config_v10");
+        if (!raw) { if (!silent) showToast("⚠ Нет сохранённого конфига!"); return; }
+        const d = JSON.parse(raw);
+        if (d.padMode !== undefined) toggleTabletPadMode(!!d.padMode, true);
+        if (d.preset) selectTeleportPreset(d.preset, true);
+        setSlidersValues(d.sharp, d.sx, d.sy, d.chunks, d.chunkFast, d.straight, d.stick, d.grid, d.pause, d.accel, d.recoil);
+
+        if (d.lead !== undefined && document.getElementById("sl_lead")) document.getElementById("sl_lead").value = d.lead;
+        if (d.stickDelay !== undefined && document.getElementById("sl_stick_delay")) document.getElementById("sl_stick_delay").value = d.stickDelay;
+        if (d.stickForce !== undefined && document.getElementById("sl_stick_force")) document.getElementById("sl_stick_force").value = d.stickForce;
+        if (d.chunkBypass !== undefined && document.getElementById("sl_chunk_bypass")) document.getElementById("sl_chunk_bypass").value = d.chunkBypass;
+        if (d.chunkCap !== undefined && document.getElementById("sl_chunk_cap")) document.getElementById("sl_chunk_cap").value = d.chunkCap;
+        if (d.shotPause !== undefined && document.getElementById("sl_shot_pause")) document.getElementById("sl_shot_pause").value = d.shotPause;
+        if (d.edgeReach !== undefined && document.getElementById("sl_edge_reach")) document.getElementById("sl_edge_reach").value = d.edgeReach;
+        if (d.gripCap !== undefined && document.getElementById("sl_grip_cap")) document.getElementById("sl_grip_cap").value = d.gripCap;
+
+        onSensSliderChange();
+        if (!silent) showToast("✅ Конфиг загружен!");
+      } catch (e) { if (!silent) showToast("⛔ Ошибка загрузки"); }
+    }
+
+    function uploadCloudPresetNow() {
+      saveCurrentConfigLocal(true);
+      const code = "CFG-" + Math.floor(1000 + Math.random() * 9000);
+      try { localStorage.setItem("so2tp_cloud_cfg_" + code, localStorage.getItem("so2tp_saved_config_v10")); } catch (e) {}
+      const inp = document.getElementById("cloudCodeInput");
+      if (inp) inp.value = code;
+      showToast("☁️ Код конфига: " + code);
+    }
+
+    function downloadCloudPresetNow() {
+      const inp = document.getElementById("cloudCodeInput");
+      const code = (inp ? inp.value.trim().toUpperCase() : "");
+      if (!code) { showToast("⛔ Введите код конфига!"); return; }
+      try {
+        const raw = localStorage.getItem("so2tp_cloud_cfg_" + code);
+        if (!raw) { showToast("⛔ Конфиг не найден!"); return; }
+        localStorage.setItem("so2tp_saved_config_v10", raw);
+        loadSavedConfigLocal(true);
+        showToast("📥 Конфиг " + code + " загружен!");
+      } catch (e) { showToast("⛔ Ошибка"); }
+    }
+
+    function toggleVoiceConnection() {
+      isVoiceConnected = !isVoiceConnected;
+      const btn = document.getElementById("btnVoiceJoin");
+      const badge = document.getElementById("voiceStateBadge");
+      const box = document.getElementById("voiceMembersBox");
+
+      if (btn) {
+        btn.innerText = isVoiceConnected ? "⏹ ВЫЙТИ ИЗ ВОЙСА" : "🎧 ВОЙТИ В ВОЙС";
+        btn.style.background = isVoiceConnected ? "linear-gradient(90deg, #ff2e54, #f59e0b)" : "";
+      }
+      if (badge) { badge.innerText = isVoiceConnected ? "В ЭФИРЕ" : "ГОТОВ К ЭФИРУ"; }
+
+      if (isVoiceConnected) {
+        const nick = document.getElementById("topPlayerNick").innerText || "dare";
+        box.innerHTML = `
+          <div class="voice-member-card">
+            <div style="display:flex; align-items:center; gap:8px;">
+              <div style="width:10px; height:10px; border-radius:50%; background:#10b981; box-shadow:0 0 8px #10b981;"></div>
+              <span style="font-size:12.5px; font-weight:900; color:#fff;">${nick} (Вы)</span>
+            </div>
+            <div class="voice-eq-bars"><span></span><span></span><span></span><span></span></div>
+          </div>
+        `;
+        showToast("🎙 Рация отряда активирована!");
+      } else {
+        box.innerHTML = `<div style="text-align:center; padding:10px; font-size:11.5px; color:var(--text-muted);">Нажмите «Войти в войс»</div>`;
+        showToast("Рация отключена");
+      }
+    }
+
+    window.toggleMicMute = function() {
+      isMicMuted = !isMicMuted;
+      showToast(isMicMuted ? "Микрофон выключен" : "Микрофон включен");
+    };
+
+    window.toggleDeafenSpeaker = function() {
+      isSpeakerDeafened = !isSpeakerDeafened;
+      showToast(isSpeakerDeafened ? "Звук заглушен" : "Звук включен");
+    };
+
+    function syncFriendsHub() {
+      const codeBadge = document.getElementById("myFriendCodeBadge");
+      const myId = "SO2-" + Math.floor(1000 + Math.random() * 9000);
+      if (codeBadge) codeBadge.innerText = "ВАШ ID: " + myId;
+      showToast("👥 Друзья синхронизированы!");
+    }
+
+    function addFriendByCode() {
+      const inp = document.getElementById("friendAddInput");
+      if (!inp || !inp.value.trim()) { showToast("⛔ Введите ID!"); return; }
+      showToast("➕ Запрос отправлен!");
+      inp.value = "";
+    }
+
+    function setNeonTheme(mainHex, mainRgb, secHex, secRgb, el) {
+      document.querySelectorAll(".theme-dot").forEach(d => d.classList.remove("active"));
+      if (el) el.classList.add("active");
+      const r = document.documentElement;
+      r.style.setProperty("--accent-main", mainHex);
+      r.style.setProperty("--accent-sec", secHex);
+      r.style.setProperty("--accent-rgb", mainRgb);
+      r.style.setProperty("--accent-sec-rgb", secRgb);
+      renderCrosshairPreview();
+      showToast("🎨 Неоновый цвет применён!");
+    }
+
+    function renderQuantumOrb() {
+      const canvas = document.getElementById("quantumOrbCanvas");
+      if (!canvas || canvas.__orbRunning) return;
+      canvas.__orbRunning = true;
+      const ctx = canvas.getContext("2d");
+      let angle = 0;
+      function anim() {
+        ctx.clearRect(0, 0, 100, 100);
+        const mainHex = getComputedStyle(document.documentElement).getPropertyValue("--accent-main").trim() || "#00e5ff";
+        ctx.strokeStyle = mainHex;
+        ctx.lineWidth = 2.5;
+        ctx.beginPath(); ctx.arc(50, 50, 22, 0, Math.PI * 2); ctx.stroke();
+        ctx.beginPath(); ctx.arc(50, 50, 34, angle, angle + Math.PI * 0.85); ctx.stroke();
+        angle += 0.045;
+        requestAnimationFrame(anim);
+      }
+      anim();
+    }
+
+    window.addEventListener("DOMContentLoaded", () => {
+      renderQuantumOrb();
+      renderCrosshairPreview();
+      applySavedAvatarUI();
+      runSmartScanNow();
+
+      const savedKey = localStorage.getItem("so2tp_last_valid_key");
+      const savedNick = localStorage.getItem("so2tp_last_nick") || "dare";
+      if (document.getElementById("loginNickInput")) document.getElementById("loginNickInput").value = savedNick;
+      if (document.getElementById("loginKeyInput") && savedKey) document.getElementById("loginKeyInput").value = savedKey;
+
+      const B = getBridge();
+      if (B && savedKey && savedKey.length >= 5 && typeof B.verifyLicenseKey === "function") {
+        try {
+          const check = String(B.verifyLicenseKey(savedKey) || "");
+          if (check.startsWith("OK|")) unlockDashboardSuccess(savedNick, savedKey, check.split("|")[1] || "АКТИВНА");
+        } catch (e) {}
+      }
+
+      checkShizukuStatusModal(false);
+      setInterval(() => checkShizukuStatusModal(false), 5000);
+      setInterval(pollLicenseExpiration, 15000);
+    });
+  </script>
+</body>
+</html>
