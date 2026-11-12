@@ -10,16 +10,16 @@
   <style>
     :root {
       --accent-main: #00e5ff;
-      --accent-sec: #00a8ff;
+      --accent-sec: #00b8d4;
       --accent-rgb: 0, 229, 255;
-      --accent-sec-rgb: 0, 168, 255;
-      --bg-deep: #060b0e;
-      --bg-card: rgba(11, 19, 26, 0.94);
-      --bg-card-inner: rgba(7, 13, 18, 0.92);
+      --accent-sec-rgb: 0, 184, 212;
+      --bg-deep: #05090d;
+      --bg-card: rgba(9, 16, 22, 0.96);
+      --bg-card-inner: rgba(6, 11, 16, 0.94);
       --border-soft: rgba(var(--accent-rgb), 0.22);
-      --border-strong: rgba(var(--accent-rgb), 0.52);
+      --border-strong: rgba(var(--accent-rgb), 0.48);
       --text-main: #f1f5f9;
-      --text-muted: #7b93a6;
+      --text-muted: #7c93a8;
       --ok-green: #10b981;
       --danger-red: #ff2e54;
     }
@@ -36,26 +36,33 @@
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Inter, sans-serif;
       background-color: var(--bg-deep);
       background-image:
-        radial-gradient(circle at 50% 0%, rgba(var(--accent-rgb), 0.14) 0%, transparent 46%),
-        radial-gradient(circle at 85% 90%, rgba(var(--accent-sec-rgb), 0.10) 0%, transparent 45%);
+        radial-gradient(circle at 50% 0%, rgba(var(--accent-rgb), 0.13) 0%, transparent 45%),
+        radial-gradient(circle at 80% 90%, rgba(var(--accent-sec-rgb), 0.08) 0%, transparent 45%);
       color: var(--text-main);
       min-height: 100vh;
       overflow-x: hidden;
-      padding-top: calc(env(safe-area-inset-top, 28px) + 12px);
-      padding-bottom: 108px;
+      padding-top: calc(env(safe-area-inset-top, 24px) + 10px);
+      padding-bottom: 106px;
     }
 
     input[type="text"] {
       user-select: text;
     }
 
+    .app-container {
+      max-width: 500px;
+      margin: 0 auto;
+      padding: 4px 13px 14px;
+    }
+
+    /* ===== МОДАЛКИ И ОВЕРЛЕИ ===== */
     .shizuku-alert-backdrop {
       position: fixed;
       inset: 0;
       background: rgba(3, 7, 10, 0.92);
       backdrop-filter: blur(12px);
       -webkit-backdrop-filter: blur(12px);
-      z-index: 9999;
+      z-index: 99999;
       display: none;
       align-items: center;
       justify-content: center;
@@ -72,40 +79,45 @@
       box-shadow: 0 0 42px rgba(var(--accent-rgb), 0.22);
     }
 
-    #screenCalibOverlay, #touchTestOverlay {
+    #screenCalibOverlay, #touchTestOverlay, #howToModalOverlay {
       position: fixed;
       inset: 0;
       background: rgba(4, 9, 13, 0.96);
-      z-index: 9800;
+      z-index: 98000;
       display: none;
       flex-direction: column;
       align-items: center;
       justify-content: center;
       padding: 22px;
-      border: 2.5px dashed var(--accent-main);
+      border: 2px dashed var(--accent-main);
     }
 
+    /* ===== ЭКРАН АВТОРИЗАЦИИ (ИСПРАВЛЕННЫЙ КЛИК) ===== */
     #authScreenOverlay {
       position: fixed;
       inset: 0;
       background:
         radial-gradient(circle at 50% 15%, rgba(var(--accent-rgb), 0.18), transparent 48%),
-        #060b0e;
-      z-index: 9500;
+        #05090d;
+      z-index: 95000;
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
       padding: 20px;
+      pointer-events: auto;
     }
     .auth-card {
       width: 100%;
       max-width: 380px;
-      background: rgba(10, 18, 25, 0.95);
+      background: rgba(9, 16, 22, 0.96);
       border: 1px solid var(--border-strong);
       border-radius: 26px;
-      padding: 24px 18px;
-      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.85), 0 0 32px rgba(var(--accent-rgb), 0.12);
+      padding: 22px 18px;
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.85), 0 0 28px rgba(var(--accent-rgb), 0.12);
+      position: relative;
+      z-index: 95010;
+      pointer-events: auto;
     }
     .auth-badge {
       display: inline-block;
@@ -120,7 +132,7 @@
       margin-bottom: 10px;
     }
     .auth-input-wrap {
-      background: rgba(5, 10, 15, 0.94);
+      background: rgba(5, 9, 14, 0.95);
       border: 1px solid rgba(255, 255, 255, 0.10);
       border-radius: 16px;
       padding: 10px 14px;
@@ -147,199 +159,166 @@
       font-weight: 800;
     }
 
-    .app-container {
-      max-width: 520px;
-      margin: 0 auto;
-      padding: 4px 13px 12px;
-    }
-
-    .top-status-banner {
-      background: linear-gradient(160deg, rgba(13, 25, 34, 0.96) 0%, rgba(8, 15, 21, 0.98) 100%);
-      border: 1px solid var(--border-strong);
-      border-radius: 22px;
-      padding: 12px 14px;
-      margin-bottom: 11px;
-      box-shadow: 0 8px 26px rgba(0, 0, 0, 0.65), 0 0 22px rgba(var(--accent-rgb), 0.10);
-    }
-    .header-main-row {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 8px;
-    }
-    .user-brand-left {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      min-width: 0;
-    }
-    .avatar-circle {
-      width: 44px;
-      height: 44px;
-      border-radius: 50%;
-      border: 2px solid var(--accent-main);
-      background: rgba(var(--accent-rgb), 0.14);
-      box-shadow: 0 0 14px rgba(var(--accent-rgb), 0.32);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      overflow: hidden;
-      cursor: pointer;
-      flex-shrink: 0;
-    }
-    .avatar-circle img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-      display: none;
-    }
-    .avatar-circle span {
-      font-size: 17px;
-      font-weight: 900;
-      color: var(--accent-main);
-    }
-    .brand-block {
-      display: flex;
-      flex-direction: column;
-      min-width: 0;
-    }
-    .brand-title {
-      font-size: 15px;
-      font-weight: 900;
-      color: #fff;
-      line-height: 1.15;
-    }
-    .brand-sub {
-      font-size: 10.5px;
-      color: var(--text-muted);
-      font-weight: 600;
-      margin-top: 2px;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-    .header-orb-center {
-      width: 46px;
-      height: 46px;
-      flex-shrink: 0;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-    #quantumOrbCanvas {
-      width: 46px;
-      height: 46px;
-      filter: drop-shadow(0 0 9px rgba(var(--accent-rgb), 0.65));
-    }
-    .shizuku-pill {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      padding: 7px 11px;
-      border-radius: 999px;
-      background: rgba(5, 10, 15, 0.92);
-      border: 1px solid var(--border-strong);
-      font-size: 10.5px;
-      font-weight: 900;
-      cursor: pointer;
-      flex-shrink: 0;
-    }
-    .status-dot {
-      width: 8px;
-      height: 8px;
-      border-radius: 50%;
-      background: var(--danger-red);
-      box-shadow: 0 0 8px var(--danger-red);
-    }
-    .status-dot.on {
-      background: var(--ok-green);
-      box-shadow: 0 0 10px var(--ok-green);
-    }
-
-    .header-colors-bar {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      margin-top: 10px;
-      padding-top: 8px;
-      border-top: 1px solid rgba(255, 255, 255, 0.06);
-    }
-    .header-colors-label {
-      font-size: 9.5px;
-      font-weight: 800;
-      color: var(--text-muted);
-      letter-spacing: 0.6px;
-    }
-    .theme-dots {
-      display: flex;
-      gap: 8px;
-      align-items: center;
-    }
-    .theme-dot {
-      width: 20px;
-      height: 20px;
-      border-radius: 50%;
-      cursor: pointer;
-      border: 2px solid rgba(255,255,255,0.22);
-      transition: transform 0.2s, box-shadow 0.2s;
-    }
-    .theme-dot.active {
-      transform: scale(1.18);
-      border-color: #fff;
-      box-shadow: 0 0 12px currentColor;
-    }
-
-    .hub-nav-grid-2 {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 9px;
-      margin-bottom: 10px;
-    }
-    .hub-tile-card {
-      background: var(--bg-card);
+    /* ===== КАРТОЧКИ ХАБА И ВНУТРЕННИХ ЭКРАНОВ (КАК НА ВИДЕО) ===== */
+    .cyber-hub-card {
+      background: linear-gradient(165deg, rgba(11, 20, 28, 0.96) 0%, rgba(6, 11, 16, 0.98) 100%);
       border: 1px solid var(--border-soft);
-      border-radius: 20px;
-      padding: 13px 13px;
+      border-radius: 24px;
+      padding: 15px 16px;
+      margin-bottom: 10px;
       display: flex;
       align-items: center;
       justify-content: space-between;
+      gap: 12px;
+      box-shadow: 0 8px 26px rgba(0, 0, 0, 0.6), inset 0 0 18px rgba(var(--accent-rgb), 0.03);
       cursor: pointer;
-      transition: border-color 0.2s, box-shadow 0.2s;
+      transition: border-color 0.2s, transform 0.15s, box-shadow 0.2s;
     }
-    .hub-tile-card:active {
+    .cyber-hub-card:active {
+      transform: scale(0.99);
       border-color: var(--accent-main);
     }
-    .hub-icon-sq {
-      width: 38px;
-      height: 38px;
-      border-radius: 12px;
-      background: rgba(var(--accent-rgb), 0.10);
+    .cyber-hub-card.glow-strong {
+      border-color: var(--border-strong);
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.7), 0 0 22px rgba(var(--accent-rgb), 0.12);
+    }
+    .hub-left-row {
+      display: flex;
+      align-items: center;
+      gap: 13px;
+      min-width: 0;
+      flex: 1;
+    }
+    .hub-icon-box {
+      width: 44px;
+      height: 44px;
+      border-radius: 14px;
+      background: rgba(var(--accent-rgb), 0.08);
       border: 1px solid rgba(var(--accent-rgb), 0.28);
       display: flex;
       align-items: center;
       justify-content: center;
       color: var(--accent-main);
-      font-size: 16px;
+      font-size: 17px;
       font-weight: 900;
+      flex-shrink: 0;
+      box-shadow: inset 0 0 10px rgba(var(--accent-rgb), 0.12);
+    }
+    .hub-text-col {
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
+    }
+    .hub-card-title {
+      font-size: 15px;
+      font-weight: 900;
+      color: #ffffff;
+      line-height: 1.2;
+    }
+    .hub-card-sub {
+      font-size: 11.5px;
+      color: var(--text-muted);
+      font-weight: 500;
+      margin-top: 3px;
+      line-height: 1.3;
+    }
+    .hub-card-hint {
+      font-size: 11px;
+      color: rgba(124, 147, 168, 0.75);
+      margin-top: 4px;
+    }
+    .hub-chev {
+      color: var(--text-muted);
+      font-size: 18px;
+      font-weight: 700;
       flex-shrink: 0;
     }
 
+    .hub-grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+    .hub-grid-2 .cyber-hub-card {
+      margin-bottom: 0;
+      padding: 15px 14px;
+    }
+
+    /* КРУГЛАЯ КНОПКА ВКЛ НА ГЛАВНОЙ КАРТОЧКЕ СЕНСЫ */
+    .sens-circle-btn {
+      width: 58px;
+      height: 58px;
+      border-radius: 50%;
+      border: none;
+      background: var(--accent-main);
+      color: #03090d;
+      font-size: 13.5px;
+      font-weight: 900;
+      box-shadow: 0 0 24px rgba(var(--accent-rgb), 0.68);
+      cursor: pointer;
+      flex-shrink: 0;
+      transition: all 0.22s ease;
+    }
+    .sens-circle-btn.off {
+      background: rgba(255, 255, 255, 0.08);
+      color: var(--text-muted);
+      border: 1px solid rgba(255, 255, 255, 0.16);
+      box-shadow: none;
+    }
+
+    /* ВЕРХНЯЯ ПАНЕЛЬ НАВИГАЦИИ ВНУТРИ РАЗДЕЛОВ (← Сенсор / Растяг / Прицел) */
+    .subpage-topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 11px;
+      gap: 10px;
+    }
+    .subpage-left {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+    }
+    .back-circle-btn {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background: rgba(9, 16, 22, 0.95);
+      border: 1px solid var(--border-soft);
+      color: var(--text-main);
+      font-size: 17px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+    }
+    .subpage-title-wrap {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      font-size: 16.5px;
+      font-weight: 900;
+      color: #fff;
+    }
+
+    /* ПЕРЕКЛЮЧАТЕЛЬ ► ЗАПУСК / 🎛 НАСТРОЙКИ */
     .submode-switcher {
       display: grid;
       grid-template-columns: 1fr 1fr;
-      background: rgba(7, 13, 19, 0.95);
+      background: rgba(7, 13, 19, 0.96);
       border: 1px solid var(--border-soft);
       border-radius: 999px;
       padding: 4px;
-      margin-bottom: 11px;
+      margin-bottom: 12px;
     }
     .submode-btn {
-      padding: 10px 12px;
+      padding: 11px 12px;
       border-radius: 999px;
       text-align: center;
       font-size: 11.5px;
       font-weight: 900;
-      letter-spacing: 0.5px;
+      letter-spacing: 0.6px;
       color: var(--text-muted);
       cursor: pointer;
       transition: all 0.22s ease;
@@ -347,51 +326,20 @@
     .submode-btn.active {
       background: linear-gradient(90deg, var(--accent-main), var(--accent-sec));
       color: #03080c;
-      box-shadow: 0 0 18px rgba(var(--accent-rgb), 0.45);
+      box-shadow: 0 0 20px rgba(var(--accent-rgb), 0.45);
     }
 
-    .sens-launch-banner {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      background: linear-gradient(135deg, rgba(13, 27, 36, 0.96) 0%, rgba(8, 15, 21, 0.98) 100%);
-      border: 1.5px solid var(--border-strong);
-      border-radius: 22px;
-      padding: 15px 16px;
-      margin-bottom: 11px;
-      box-shadow: 0 8px 26px rgba(0, 0, 0, 0.6), 0 0 22px rgba(var(--accent-rgb), 0.14);
-    }
-    .sens-power-circle {
-      width: 56px;
-      height: 56px;
-      border-radius: 50%;
-      border: none;
-      font-size: 13px;
-      font-weight: 900;
-      color: #03080d;
-      background: var(--accent-main);
-      box-shadow: 0 0 22px rgba(var(--accent-rgb), 0.65);
-      cursor: pointer;
-      flex-shrink: 0;
-      transition: all 0.22s ease;
-    }
-    .sens-power-circle.off {
-      background: rgba(255, 255, 255, 0.08);
-      color: var(--text-muted);
-      border: 1px solid rgba(255, 255, 255, 0.15);
-      box-shadow: none;
-    }
-
+    /* СТЕКЛЯННАЯ КАРТОЧКА СЕКЦИИ */
     .glass-card {
-      background: var(--bg-card);
+      background: linear-gradient(165deg, rgba(10, 18, 25, 0.96) 0%, rgba(6, 11, 16, 0.98) 100%);
       border: 1px solid var(--border-soft);
-      border-radius: 22px;
-      padding: 15px;
+      border-radius: 24px;
+      padding: 16px;
       margin-bottom: 11px;
-      box-shadow: 0 10px 28px rgba(0, 0, 0, 0.55);
+      box-shadow: 0 10px 28px rgba(0, 0, 0, 0.6), inset 0 0 18px rgba(var(--accent-rgb), 0.03);
     }
     .section-eyebrow {
-      font-size: 11px;
+      font-size: 11.5px;
       font-weight: 900;
       letter-spacing: 1.1px;
       color: var(--accent-main);
@@ -399,27 +347,100 @@
       margin-bottom: 3px;
     }
     .section-subdesc {
-      font-size: 11px;
+      font-size: 11.5px;
       color: var(--text-muted);
       font-style: italic;
-      margin-bottom: 11px;
+      margin-bottom: 12px;
+      line-height: 1.35;
     }
 
+    /* СТРОКА СТАТУСА ДОСТУПА (ДОСТУП — БЕССРОЧНО) */
+    .access-status-pill {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: rgba(7, 13, 19, 0.95);
+      border: 1px solid var(--border-soft);
+      border-radius: 999px;
+      padding: 10px 16px;
+      margin-bottom: 11px;
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: 0.7px;
+      color: var(--text-muted);
+    }
+    .access-status-pill b {
+      color: var(--accent-main);
+      font-weight: 900;
+    }
+
+    /* МОИ ВАРИАНТЫ И СЕЛЕКТОРЫ НА ВКЛАДКЕ ЗАПУСК */
     .saved-variant-row {
       display: flex;
       align-items: center;
       justify-content: space-between;
       background: var(--bg-card-inner);
-      border: 1px solid rgba(255, 255, 255, 0.08);
-      border-radius: 16px;
-      padding: 11px 13px;
-      margin-bottom: 8px;
+      border: 1px solid rgba(255, 255, 255, 0.09);
+      border-radius: 18px;
+      padding: 12px 13px;
+      margin-bottom: 9px;
     }
+    .icon-circle-action {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      background: rgba(255, 255, 255, 0.04);
+      color: #cbd5e1;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 13px;
+      cursor: pointer;
+    }
+    .selector-field-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: var(--bg-card-inner);
+      border: 1px solid rgba(255, 255, 255, 0.10);
+      border-radius: 18px;
+      padding: 14px 16px;
+      margin-bottom: 9px;
+      cursor: pointer;
+    }
+    .selector-field-lbl {
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: 0.8px;
+      color: var(--text-muted);
+      text-transform: uppercase;
+    }
+    .selector-field-val {
+      font-size: 14px;
+      font-weight: 800;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      gap: 7px;
+    }
+    .now-active-preview-box {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: rgba(var(--accent-rgb), 0.08);
+      border: 1px solid var(--border-strong);
+      border-radius: 18px;
+      padding: 12px 15px;
+      margin-bottom: 10px;
+    }
+
+    /* СПИСОК ХАРАКТЕРОВ СЕНСЫ (КАК В VIDEO_2 00:08) */
     .character-card {
       background: var(--bg-card-inner);
-      border: 1px solid rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.09);
       border-radius: 18px;
-      padding: 13px 14px;
+      padding: 14px 15px;
       margin-bottom: 8px;
       display: flex;
       align-items: center;
@@ -428,12 +449,12 @@
       transition: all 0.2s ease;
     }
     .character-card.active {
-      background: linear-gradient(135deg, rgba(var(--accent-rgb), 0.16) 0%, rgba(8, 16, 24, 0.96) 100%);
+      background: linear-gradient(135deg, rgba(var(--accent-rgb), 0.15) 0%, rgba(7, 13, 19, 0.96) 100%);
       border-color: var(--accent-main);
-      box-shadow: 0 0 18px rgba(var(--accent-rgb), 0.22);
+      box-shadow: 0 0 18px rgba(var(--accent-rgb), 0.20);
     }
     .char-title {
-      font-size: 13px;
+      font-size: 13.5px;
       font-weight: 900;
       color: #fff;
       display: flex;
@@ -453,71 +474,66 @@
     .char-tag.pad-badge {
       background: rgba(168, 85, 247, 0.22);
       color: #d8b4fe;
-      border: 1px solid rgba(168, 85, 247, 0.55);
-    }
-    .char-tag.budget-badge {
-      background: rgba(16, 185, 129, 0.18);
-      color: #10b981;
-      border: 1px solid rgba(16, 185, 129, 0.4);
+      border: 1px solid rgba(168, 85, 247, 0.5);
     }
     .char-desc {
-      font-size: 11px;
+      font-size: 11.5px;
       color: var(--text-muted);
       margin-top: 4px;
-      font-weight: 600;
+      font-weight: 500;
       line-height: 1.35;
     }
     .char-arrow {
-      font-size: 17px;
-      font-weight: 900;
-      color: var(--accent-main);
+      font-size: 16px;
+      font-weight: 800;
+      color: var(--text-muted);
       margin-left: 8px;
     }
 
+    /* ПОЛЗУНКИ "СВОИ ЧИСЛА" (КАК В VIDEO_1 00:01-00:12) */
     .pro-slider-row {
-      padding: 10px 0;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+      padding: 11px 0;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
     }
     .pro-slider-row:last-child {
       border-bottom: none;
-      padding-bottom: 2px;
     }
     .pro-slider-head {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      margin-bottom: 8px;
+      margin-bottom: 9px;
     }
     .pro-slider-name {
-      font-size: 13px;
+      font-size: 13.5px;
       font-weight: 800;
       color: #ffffff;
     }
     .pro-slider-pill {
-      font-size: 11.5px;
-      font-weight: 900;
+      font-size: 12px;
+      font-weight: 800;
       color: var(--accent-main);
-      background: rgba(var(--accent-rgb), 0.12);
-      border: 1px solid rgba(var(--accent-rgb), 0.35);
-      padding: 3px 10px;
-      border-radius: 999px;
-      min-width: 48px;
+      background: rgba(var(--accent-rgb), 0.09);
+      border: 1px solid rgba(var(--accent-rgb), 0.32);
+      padding: 4px 11px;
+      border-radius: 10px;
+      min-width: 44px;
       text-align: center;
     }
     .pro-slider-hint {
-      font-size: 10.5px;
+      font-size: 11px;
       color: var(--text-muted);
       font-style: italic;
-      margin-top: 6px;
+      margin-top: 7px;
       line-height: 1.3;
     }
 
     input[type="range"] {
       -webkit-appearance: none;
       width: 100%;
-      height: 6px;
+      height: 5px;
       border-radius: 999px;
-      background: linear-gradient(90deg, var(--accent-main), rgba(255, 255, 255, 0.14));
+      background: rgba(255, 255, 255, 0.12);
       outline: none;
     }
     input[type="range"]::-webkit-slider-thumb {
@@ -526,105 +542,133 @@
       height: 20px;
       border-radius: 50%;
       background: var(--accent-main);
-      border: 3px solid #ffffff;
       box-shadow: 0 0 14px var(--accent-main);
       cursor: pointer;
+      border: none;
     }
 
+    /* ПРЕВЬЮ РАСТЯГА И ПРИЦЕЛА (КАК В VIDEO_2 00:03 & 00:05) */
     .preview-stage-box {
       width: 100%;
-      height: 152px;
+      height: 162px;
       background: #04080b;
-      border: 1px solid var(--border-soft);
+      border: 1px solid rgba(255, 255, 255, 0.08);
       border-radius: 18px;
       position: relative;
       display: flex;
       align-items: center;
       justify-content: center;
-      margin-bottom: 12px;
+      margin-bottom: 11px;
       overflow: hidden;
     }
     .stretch-dashed-outer {
-      width: 216px;
-      height: 118px;
+      width: 224px;
+      height: 122px;
       border: 1.5px dashed rgba(255, 255, 255, 0.22);
-      border-radius: 10px;
+      border-radius: 8px;
       display: flex;
       align-items: center;
       justify-content: center;
       position: relative;
     }
     .stretch-solid-inner {
-      width: 162px;
-      height: 118px;
-      border: 2px solid var(--accent-main);
-      background: rgba(var(--accent-rgb), 0.07);
-      border-radius: 8px;
+      width: 168px;
+      height: 122px;
+      border: 1.8px solid rgba(255, 255, 255, 0.78);
+      background: rgba(var(--accent-rgb), 0.04);
+      border-radius: 6px;
       display: flex;
       align-items: center;
       justify-content: center;
-      color: #fff;
-      font-weight: 900;
-      font-size: 15px;
-      box-shadow: 0 0 18px rgba(var(--accent-rgb), 0.22);
+      color: rgba(255, 255, 255, 0.65);
+      font-weight: 400;
+      font-size: 22px;
       transition: all 0.26s ease;
     }
 
+    /* ПЛИТКИ ПИКСЕЛЕЙ 100..50 + ШКАЛА (КАК В VIDEO_2 00:04) */
     .pixel-tiles-6 {
       display: grid;
       grid-template-columns: repeat(6, 1fr);
       gap: 6px;
-      margin: 10px 0;
+      margin: 10px 0 12px;
     }
     .pixel-tile {
       background: var(--bg-card-inner);
       border: 1px solid rgba(255, 255, 255, 0.10);
       border-radius: 14px;
-      padding: 10px 2px;
+      padding: 11px 2px;
       text-align: center;
       cursor: pointer;
       transition: all 0.2s;
     }
     .pixel-tile.active {
-      background: rgba(var(--accent-rgb), 0.22);
+      background: rgba(var(--accent-rgb), 0.18);
       border-color: var(--accent-main);
-      box-shadow: 0 0 14px rgba(var(--accent-rgb), 0.32);
+      box-shadow: 0 0 14px rgba(var(--accent-rgb), 0.28);
     }
     .pixel-tile b {
       display: block;
-      font-size: 12.5px;
+      font-size: 13.5px;
       font-weight: 900;
       color: #fff;
     }
     .pixel-tile span {
-      font-size: 8px;
+      font-size: 8.5px;
       color: var(--text-muted);
     }
+    .pixel-big-readout {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      margin-bottom: 7px;
+    }
+    .pixel-big-num {
+      font-size: 28px;
+      font-weight: 900;
+      color: #fff;
+    }
+    .pixel-progress-bar {
+      width: 100%;
+      height: 5px;
+      background: rgba(255, 255, 255, 0.08);
+      border-radius: 999px;
+      overflow: hidden;
+      margin-bottom: 8px;
+    }
+    .pixel-progress-fill {
+      height: 100%;
+      width: 100%;
+      background: var(--accent-main);
+      box-shadow: 0 0 10px var(--accent-main);
+      transition: width 0.25s ease;
+    }
 
+    /* ФОРМЫ ПРИЦЕЛА (4 ПЛИТКИ + 2 ТУМБЛЕРА КАК В VIDEO_2 00:05) */
     .ch-shape-grid-4 {
       display: grid;
       grid-template-columns: repeat(4, 1fr);
       gap: 8px;
-      margin-bottom: 10px;
+      margin-bottom: 9px;
     }
     .ch-shape-tile {
       background: var(--bg-card-inner);
       border: 1px solid rgba(255, 255, 255, 0.10);
       border-radius: 16px;
-      padding: 12px 6px;
+      padding: 14px 6px;
       text-align: center;
       cursor: pointer;
       transition: all 0.2s;
     }
     .ch-shape-tile.active {
-      background: rgba(var(--accent-rgb), 0.18);
+      background: rgba(var(--accent-rgb), 0.16);
       border-color: var(--accent-main);
-      box-shadow: 0 0 16px rgba(var(--accent-rgb), 0.28);
+      box-shadow: 0 0 16px rgba(var(--accent-rgb), 0.24);
     }
     .ch-shape-icon {
-      font-size: 20px;
-      color: #10b981;
-      margin-bottom: 5px;
+      font-size: 22px;
+      color: #22c55e;
+      margin-bottom: 6px;
       line-height: 1;
     }
     .ch-shape-lbl {
@@ -632,19 +676,79 @@
       font-weight: 900;
       color: #e2e8f0;
     }
-
-    .shelf-cards-grid {
+    .ch-subtoggle-grid-2 {
       display: grid;
       grid-template-columns: 1fr 1fr;
       gap: 8px;
+      margin-bottom: 12px;
+    }
+    .ch-subtoggle-box {
+      background: var(--bg-card-inner);
+      border: 1px solid rgba(255, 255, 255, 0.10);
+      border-radius: 16px;
+      padding: 11px 12px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 7px;
+      cursor: pointer;
+    }
+    .ch-subtoggle-box.active {
+      border-color: var(--accent-main);
+      background: rgba(var(--accent-rgb), 0.12);
+    }
+
+    /* ПОЛКА КОНФИГОВ (КАК В VIDEO_2 00:01-00:02) */
+    .code-input-bar {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      background: var(--bg-card-inner);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 16px;
+      padding: 12px 14px;
+      margin-top: 8px;
+    }
+    .filter-chips-row {
+      display: flex;
+      gap: 7px;
+      overflow-x: auto;
+      padding-bottom: 4px;
+      margin: 10px 0;
+    }
+    .filter-chip {
+      padding: 8px 13px;
+      border-radius: 999px;
+      font-size: 11px;
+      font-weight: 900;
+      background: var(--bg-card-inner);
+      border: 1px solid rgba(255, 255, 255, 0.10);
+      color: var(--text-muted);
+      white-space: nowrap;
+      cursor: pointer;
+    }
+    .filter-chip.active {
+      background: var(--accent-main);
+      color: #03090d;
+      border-color: var(--accent-main);
+      box-shadow: 0 0 14px rgba(var(--accent-rgb), 0.4);
+    }
+    .shelf-cards-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 9px;
       margin-top: 10px;
     }
     .shelf-preset-card {
       background: var(--bg-card-inner);
       border: 1px solid rgba(255, 255, 255, 0.10);
-      border-radius: 16px;
-      padding: 12px;
+      border-radius: 18px;
+      padding: 13px;
       cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      min-height: 92px;
       transition: all 0.2s;
     }
     .shelf-preset-card:active {
@@ -652,51 +756,28 @@
       background: rgba(var(--accent-rgb), 0.14);
     }
 
-    .card-head {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      margin-bottom: 11px;
-    }
-    .card-title {
-      font-size: 12.5px;
-      font-weight: 900;
-      letter-spacing: 0.35px;
-      color: #fff;
-      display: flex;
-      align-items: center;
-      gap: 6px;
-    }
-    .badge-chip {
-      font-size: 9.5px;
-      font-weight: 800;
-      padding: 3px 9px;
-      border-radius: 999px;
-      background: rgba(var(--accent-rgb), 0.14);
-      border: 1px solid rgba(var(--accent-rgb), 0.4);
-      color: var(--accent-main);
-    }
-    .preset-pills-3 {
+    /* КНОПКИ И ПЕРЕКЛЮЧАТЕЛИ */
+    .preset-pills-4 {
       display: grid;
-      grid-template-columns: repeat(3, 1fr);
+      grid-template-columns: repeat(4, 1fr);
       gap: 7px;
     }
     .preset-pill {
       background: var(--bg-card-inner);
-      border: 1px solid rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.10);
       border-radius: 14px;
-      padding: 10px 5px;
+      padding: 11px 4px;
       text-align: center;
       cursor: pointer;
       transition: all 0.2s;
     }
     .preset-pill.active {
-      background: rgba(var(--accent-rgb), 0.20);
+      background: rgba(var(--accent-rgb), 0.18);
       border-color: var(--accent-main);
-      box-shadow: 0 0 15px rgba(var(--accent-rgb), 0.28);
+      box-shadow: 0 0 15px rgba(var(--accent-rgb), 0.26);
     }
-    .preset-pill-name { font-size: 11px; font-weight: 900; color: #fff; }
-    .preset-pill-sub { font-size: 8.5px; color: var(--text-muted); font-weight: 700; margin-top: 2px; }
+    .preset-pill-name { font-size: 12px; font-weight: 900; color: #fff; }
+    .preset-pill-sub { font-size: 8.5px; color: var(--text-muted); margin-top: 2px; }
 
     .toggle-row {
       display: flex;
@@ -704,14 +785,14 @@
       justify-content: space-between;
       background: var(--bg-card-inner);
       border: 1px solid rgba(255, 255, 255, 0.08);
-      border-radius: 15px;
-      padding: 10px 12px;
+      border-radius: 16px;
+      padding: 11px 13px;
       margin-bottom: 8px;
       gap: 10px;
     }
-    .toggle-info-title { font-size: 12px; font-weight: 800; color: #fff; }
-    .toggle-info-sub { font-size: 10px; color: var(--text-muted); margin-top: 2px; line-height: 1.3; }
-    .cyber-switch { position: relative; width: 46px; height: 25px; flex-shrink: 0; }
+    .toggle-info-title { font-size: 12.5px; font-weight: 800; color: #fff; }
+    .toggle-info-sub { font-size: 10.5px; color: var(--text-muted); margin-top: 2px; line-height: 1.3; }
+    .cyber-switch { position: relative; width: 46px; height: 25px; flex-shrink: 0; display: inline-block; }
     .cyber-switch input { opacity: 0; width: 0; height: 0; }
     .cyber-slider {
       position: absolute; inset: 0; background: #18222d;
@@ -730,37 +811,58 @@
     }
 
     .btn-main {
-      width: 100%; border: none; outline: none; padding: 13px 14px;
-      border-radius: 16px; font-size: 12.5px; font-weight: 900;
+      width: 100%; border: none; outline: none; padding: 14px 16px;
+      border-radius: 999px; font-size: 13px; font-weight: 900;
       color: #03070b; background: linear-gradient(90deg, var(--accent-main) 0%, var(--accent-sec) 100%);
-      box-shadow: 0 0 22px rgba(var(--accent-rgb), 0.38); cursor: pointer;
+      box-shadow: 0 0 24px rgba(var(--accent-rgb), 0.42); cursor: pointer;
     }
     .btn-dark {
       width: 100%; border: 1px solid rgba(255, 255, 255, 0.14);
-      background: rgba(11, 19, 27, 0.94); color: #e2e8f0;
-      padding: 12px; border-radius: 15px; font-size: 11.5px; font-weight: 800; cursor: pointer;
+      background: rgba(9, 16, 23, 0.95); color: #e2e8f0;
+      padding: 13px 15px; border-radius: 999px; font-size: 12px; font-weight: 800; cursor: pointer;
     }
     .btn-danger {
       width: 100%; border: 1px solid rgba(255, 46, 84, 0.5);
       background: rgba(255, 46, 84, 0.14); color: #fda4af;
-      padding: 12px; border-radius: 15px; font-size: 11.5px; font-weight: 800; cursor: pointer;
+      padding: 13px; border-radius: 999px; font-size: 12px; font-weight: 800; cursor: pointer;
     }
 
-    .voice-room-hero {
-      background: radial-gradient(circle at 50% 0%, rgba(16, 185, 129, 0.18), rgba(9, 16, 24, 0.96));
-      border: 1px solid rgba(16, 185, 129, 0.38);
-      border-radius: 22px;
-      padding: 15px;
-      margin-bottom: 12px;
+    .badge-chip {
+      font-size: 9.5px;
+      font-weight: 800;
+      padding: 3px 9px;
+      border-radius: 999px;
+      background: rgba(var(--accent-rgb), 0.12);
+      border: 1px solid rgba(var(--accent-rgb), 0.38);
+      color: var(--accent-main);
     }
-    .voice-member-card {
+
+    .theme-dots {
+      display: flex;
+      gap: 7px;
+      align-items: center;
+    }
+    .theme-dot {
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      cursor: pointer;
+      border: 2px solid rgba(255,255,255,0.22);
+    }
+    .theme-dot.active {
+      transform: scale(1.18);
+      border-color: #fff;
+      box-shadow: 0 0 10px currentColor;
+    }
+
+    .voice-member-card, .friend-item {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      background: rgba(6, 12, 18, 0.90);
-      border: 1px solid rgba(16, 185, 129, 0.35);
+      background: var(--bg-card-inner);
+      border: 1px solid rgba(255,255,255,0.08);
       border-radius: 16px;
-      padding: 10px 12px;
+      padding: 11px 13px;
       margin-bottom: 8px;
     }
     .voice-eq-bars {
@@ -777,29 +879,19 @@
     }
     .voice-eq-bars span:nth-child(2) { animation-delay: 0.18s; }
     .voice-eq-bars span:nth-child(3) { animation-delay: 0.35s; }
-    .voice-eq-bars span:nth-child(4) { animation-delay: 0.12s; }
     @keyframes eqPulse {
       0% { height: 4px; opacity: 0.5; }
       100% { height: 14px; opacity: 1; }
     }
-    .friend-item {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      background: var(--bg-card-inner);
-      border: 1px solid rgba(255,255,255,0.08);
-      border-radius: 15px;
-      padding: 10px 12px;
-      margin-bottom: 7px;
-    }
 
-    .tab-section { display: none; animation: fadeTab 0.22s ease; }
+    .tab-section { display: none; animation: fadeTab 0.2s ease; }
     .tab-section.active { display: block; }
     @keyframes fadeTab {
-      from { opacity: 0; transform: translateY(5px); }
+      from { opacity: 0; transform: translateY(4px); }
       to { opacity: 1; transform: translateY(0); }
     }
 
+    /* ===== НАШЕ ФИРМЕННОЕ НИЖНЕЕ МЕНЮ С НЕОНОВЫМ ЛУЧОМ ===== */
     .bottom-nav-bar {
       position: fixed;
       bottom: calc(env(safe-area-inset-bottom, 0px) + 10px);
@@ -817,7 +909,7 @@
       grid-template-columns: repeat(5, 1fr);
       align-items: center;
       padding: 0 4px;
-      z-index: 900;
+      z-index: 9000;
       box-shadow: 0 16px 38px rgba(0, 0, 0, 0.92), 0 0 24px rgba(var(--accent-rgb), 0.15);
       overflow: hidden;
     }
@@ -894,7 +986,7 @@
       border-radius: 999px;
       font-size: 11.5px;
       font-weight: 800;
-      z-index: 10000;
+      z-index: 100000;
       box-shadow: 0 8px 25px rgba(0,0,0,0.7);
       transition: transform 0.28s cubic-bezier(0.22, 1, 0.36, 1);
       pointer-events: none;
@@ -908,21 +1000,21 @@
   <input id="avatarFileInput" type="file" accept="image/*" style="display:none" onchange="onAvatarFileSelected(event)" />
   <div id="cyberToast">⚡ SO2Teleport PRO V10</div>
 
-  <!-- ОКНО КАЛИБРОВКИ РАМКИ -->
+  <!-- МОДАЛКА: КАЛИБРОВКА РАМКИ -->
   <div id="screenCalibOverlay" onclick="finishScreenCalibTap()">
     <div style="font-size:40px; margin-bottom:10px;">👆</div>
     <div style="font-size:18px; font-weight:900; color:#fff; margin-bottom:8px; text-align:center;">
       Проведите пальцем по рамке экрана
     </div>
     <div style="font-size:12px; color:var(--text-muted); text-align:center; max-width:300px; line-height:1.5;">
-      Калибровка герцовки и шага квантовых кусков под ваш телефон или планшет... Коснитесь экрана для завершения.
+      Калибровка герцовки и шага кусков под матрицу вашего телефона или планшета... Коснитесь экрана для завершения.
     </div>
   </div>
 
-  <!-- ОКНО ПРОВЕРКИ КАСАНИЙ -->
+  <!-- МОДАЛКА: ПРОВЕРКА КАСАНИЙ -->
   <div id="touchTestOverlay">
     <div style="font-size:16px; font-weight:900; color:#fff; margin-bottom:6px;">
-      👆 Проверка касаний и Кусков
+      👆 Проверить касания
     </div>
     <div id="touchTestCoords" style="font-size:12px; color:var(--accent-main); font-weight:800; margin-bottom:10px;">
       Водите пальцем по полю ниже...
@@ -933,7 +1025,21 @@
     </button>
   </div>
 
-  <!-- МОДАЛЬНОЕ ОКНО: SHIZUKU НЕ АКТИВЕН -->
+  <!-- МОДАЛКА: КАК НАСТРОИТЬ -->
+  <div id="howToModalOverlay" onclick="this.style.display='none'">
+    <div class="shizuku-alert-box" onclick="event.stopPropagation()">
+      <div style="font-size:16px; font-weight:900; color:#fff; margin-bottom:8px;">📖 Как настроить сенсу</div>
+      <div style="font-size:12px; color:#cbd5e1; text-align:left; line-height:1.55; margin-bottom:14px;">
+        • <b>На планшете (Паде):</b> включите тумблер <b>PAD 2.15x Impulse</b> или выберите профиль «Планшет Ультра».<br>
+        • <b>Для резких фликов:</b> ставьте «Куски» 94–98 и «Резкость» 2.50.<br>
+        • <b>Для зажима в точку:</b> прибавьте «Выпрямление» до 0.90 и «Хват по осям» 100%.<br>
+        • <b>Растяг:</b> нажмите Шаг 1 перед заходом в Standoff 2, а в меню игры нажмите Шаг 2.
+      </div>
+      <button type="button" class="btn-main" onclick="document.getElementById('howToModalOverlay').style.display='none'">ПОНЯТНО</button>
+    </div>
+  </div>
+
+  <!-- МОДАЛКА: SHIZUKU НЕ АКТИВЕН -->
   <div id="shizukuRequiredModal" class="shizuku-alert-backdrop">
     <div class="shizuku-alert-box">
       <div style="width:52px; height:52px; margin:0 auto 10px; border-radius:16px; background:rgba(255,46,84,0.16); border:1px solid #ff2e54; display:flex; align-items:center; justify-content:center; font-size:25px;">
@@ -944,14 +1050,14 @@
       </div>
       <div style="font-size:12px; color:#cbd5e1; line-height:1.5; margin-bottom:14px;">
         Для работы растяга и сенсы включите <b>Shizuku</b>.<br><br>
-        💬 Если нужна помощь с Shizuku — писать в ЛС:<br>
+        💬 Помощь по настройке Shizuku:<br>
         <a href="https://t.me/talent_dare" onclick="openSupportLink(); return false;" style="color:#00e5ff; font-weight:900; font-size:14px; text-decoration:underline;">@talent_dare</a>
       </div>
       <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px;">
-        <button type="button" class="btn-main" onclick="openSupportLink()">💬 ПОМОЩЬ С SHIZUKU</button>
+        <button type="button" class="btn-main" onclick="openSupportLink()">💬 ПОМОЩЬ</button>
         <button type="button" class="btn-dark" onclick="requestAndRecheckShizuku()">🔄 ПРОВЕРИТЬ</button>
       </div>
-      <button type="button" class="btn-dark" style="margin-top:8px;" onclick="document.getElementById('shizukuRequiredModal').style.display='none'">ЗАКРЫТЬ ОКНО</button>
+      <button type="button" class="btn-dark" style="margin-top:8px;" onclick="document.getElementById('shizukuRequiredModal').style.display='none'">ЗАКРЫТЬ</button>
     </div>
   </div>
 
@@ -959,7 +1065,7 @@
   <div id="authScreenOverlay">
     <div style="text-align:center; margin-bottom:14px;">
       <div class="auth-badge">ANTI-CRACK V10 • PHONE &amp; PAD EDITION</div>
-      <div style="font-size:29px; font-weight:900; letter-spacing:-0.6px;">
+      <div style="font-size:29px; font-weight:900; letter-spacing:-0.6px; color:#fff;">
         SO2Teleport <span style="color:var(--accent-main); font-style:italic;">PRO</span>
       </div>
     </div>
@@ -983,12 +1089,12 @@
         <input id="loginKeyInput" class="auth-input" type="text" placeholder="TP30D-XXX-000000" />
       </div>
 
-      <button type="button" class="btn-main" onclick="handleLoginSubmit()" style="margin-top:4px;">
+      <button id="loginSubmitBtn" type="button" class="btn-main" onclick="handleLoginSubmit()" style="margin-top:6px; position:relative; z-index:95020; pointer-events:auto;">
         ⚡ АКТИВИРОВАТЬ КЛЮЧ И ВОЙТИ
       </button>
     </div>
 
-    <div style="width:100%; max-width:380px; margin-top:11px; display:flex; flex-direction:column; gap:7px;">
+    <div style="width:100%; max-width:380px; margin-top:11px; display:flex; flex-direction:column; gap:7px; position:relative; z-index:95010;">
       <div class="btn-dark" style="text-align:center; font-size:11px; color:#94a3b8;">
         🛡 Защищённый HWID: <b id="loginHwidLabel" style="color:#fff;">...</b>
       </div>
@@ -1001,553 +1107,659 @@
     </div>
   </div>
 
-  <!-- ОСНОВНОЙ ДАШБОРД -->
+  <!-- ОСНОВНОЙ КОНТЕЙНЕР ПРИЛОЖЕНИЯ -->
   <div class="app-container">
 
-    <div class="top-status-banner">
-      <div class="header-main-row">
-        <div class="user-brand-left">
-          <div class="avatar-circle" onclick="triggerAvatarUpload()" title="Выбрать аватарку">
-            <img id="headerAvatarImg" src="" alt="avatar" />
-            <span id="headerAvatarFallback">D</span>
-          </div>
-          <div class="brand-block">
-            <div class="brand-title">Сенса готова к работе</div>
-            <div class="brand-sub">
-              Игрок: <b id="topPlayerNick" style="color:#fff;">dare</b> • <span id="topSubMini" style="color:var(--accent-main);">PRO V10</span>
-            </div>
-          </div>
-        </div>
-
-        <div class="header-orb-center">
-          <canvas id="quantumOrbCanvas" width="100" height="100"></canvas>
-        </div>
-
-        <div class="shizuku-pill" onclick="requestAndRecheckShizuku()">
-          <span id="shizukuDot" class="status-dot"></span>
-          <span id="shizukuStateText" style="color:#ff2e54;">Shizuku ВЫКЛ</span>
-        </div>
-      </div>
-
-      <div class="header-colors-bar">
-        <span class="header-colors-label">🎨 НЕОНОВЫЙ АКЦЕНТ:</span>
-        <div class="theme-dots">
-          <div class="theme-dot active" style="background:#00e5ff; color:#00e5ff;" onclick="setNeonTheme('#00e5ff', '0, 229, 255', '#00a8ff', '0, 168, 255', this)"></div>
-          <div class="theme-dot" style="background:#ff2e54; color:#ff2e54;" onclick="setNeonTheme('#ff2e54', '255, 46, 84', '#ff6b35', '255, 107, 53', this)"></div>
-          <div class="theme-dot" style="background:#10b981; color:#10b981;" onclick="setNeonTheme('#10b981', '16, 185, 129', '#06b6d4', '6, 182, 212', this)"></div>
-          <div class="theme-dot" style="background:#a855f7; color:#a855f7;" onclick="setNeonTheme('#a855f7', '168, 85, 247', '#ec4899', '236, 72, 153', this)"></div>
-          <div class="theme-dot" style="background:#f59e0b; color:#f59e0b;" onclick="setNeonTheme('#f59e0b', '245, 158, 11', '#ef4444', '239, 68, 68', this)"></div>
-          <div class="theme-dot" style="background:#e2e8f0; color:#e2e8f0;" onclick="setNeonTheme('#e2e8f0', '226, 232, 240', '#38bdf8', '56, 189, 248', this)"></div>
-        </div>
-      </div>
-    </div>
-
-    <!-- ================= ВКЛАДКА 1: ХАБ + СЕНСА ================= -->
+    <!-- ================= ВКЛАДКА 1: ГЛАВНЫЙ ХАБ + ЭКРАН СЕНСОРА ================= -->
     <div id="tabSens" class="tab-section active">
 
-      <div class="hub-nav-grid-2">
-        <div class="hub-tile-card" onclick="switchTab('tabScreen')">
-          <div style="display:flex; align-items:center; gap:10px;">
-            <div class="hub-icon-sq">📐</div>
-            <div>
-              <div style="font-size:13px; font-weight:900; color:#fff;">Экран</div>
-              <div style="font-size:10px; color:var(--text-muted);">Растяг и пиксели</div>
-            </div>
-          </div>
-          <span style="color:var(--accent-main); font-weight:900;">›</span>
-        </div>
+      <!-- ВИД 1: ГЛАВНЫЙ ХАБ БЛОКОВ (КАК В VIDEO_2 00:00 и 00:11) -->
+      <div id="mainHubView">
 
-        <div class="hub-tile-card" onclick="switchTab('tabScreen'); setTimeout(()=>{document.getElementById('crosshairCardAnchor').scrollIntoView({behavior:'smooth'});},120);">
-          <div style="display:flex; align-items:center; gap:10px;">
-            <div class="hub-icon-sq">⌖</div>
-            <div>
-              <div style="font-size:13px; font-weight:900; color:#fff;">Прицел</div>
-              <div style="font-size:10px; color:var(--text-muted);">Поверх игры</div>
-            </div>
-          </div>
-          <span style="color:var(--accent-main); font-weight:900;">›</span>
-        </div>
-
-        <div class="hub-tile-card" onclick="switchTab('tabSquad'); setTimeout(()=>{document.getElementById('shelfCardAnchor').scrollIntoView({behavior:'smooth'});},120);">
-          <div style="display:flex; align-items:center; gap:10px;">
-            <div class="hub-icon-sq">&lt;/&gt;</div>
-            <div>
-              <div style="font-size:13px; font-weight:900; color:#fff;">Конфиги</div>
-              <div style="font-size:10px; color:var(--text-muted);">Полка и по коду</div>
-            </div>
-          </div>
-          <span style="color:var(--accent-main); font-weight:900;">›</span>
-        </div>
-
-        <div class="hub-tile-card" onclick="switchTab('tabBoost')">
-          <div style="display:flex; align-items:center; gap:10px;">
-            <div class="hub-icon-sq">⚡</div>
-            <div>
-              <div style="font-size:13px; font-weight:900; color:#fff;">Бустер</div>
-              <div style="font-size:10px; color:var(--text-muted);">Телефоны и Пады</div>
-            </div>
-          </div>
-          <span style="color:var(--accent-main); font-weight:900;">›</span>
-        </div>
-      </div>
-
-      <!-- ГЛАВНАЯ КАРТОЧКА СЕНСЫ + ТУМБЛЕР РЕЖИМА ПЛАНШЕТА (ПАДА) -->
-      <div class="sens-launch-banner">
-        <div>
-          <div style="font-size:15.5px; font-weight:900; color:#fff; display:flex; align-items:center; gap:7px;">
-            <span>СЕНСА</span>
-            <span id="liveScaleChip" class="badge-chip">CHUNKS 32.0x</span>
-          </div>
-          <div id="activePresetTitle" style="font-size:12px; color:var(--accent-main); font-weight:800; margin-top:3px;">
-            РЕЗКИЙ • ТЕЛЕПОРТ КУСКАМИ
-          </div>
-          <div style="font-size:10px; color:var(--text-muted); margin-top:2px;">
-            Адаптивный квантовый шаг для телефонов и планшетов
-          </div>
-        </div>
-        <button id="mainPowerCircleBtn" type="button" class="sens-power-circle" onclick="toggleMainEngineQuick()">
-          ВКЛ
-        </button>
-      </div>
-
-      <!-- ПЕРЕКЛЮЧАТЕЛЬ РЕЖИМА ПЛАНШЕТА (ПАДА) ПРЯМО НА ГЛАВНОМ ЭКРАНЕ -->
-      <div class="toggle-row" style="border-color:rgba(168,85,247,0.45); background:linear-gradient(135deg, rgba(168,85,247,0.14) 0%, rgba(7,13,18,0.95) 100%); margin-bottom:11px;">
-        <div>
-          <div class="toggle-info-title">📟 Режим Планшета / Пада (PAD 2.15x Impulse)</div>
-          <div class="toggle-info-sub">Удваивает шаг кусков (58.0x) под высокое разрешение падов и отключает Palm Rejection</div>
-        </div>
-        <label class="cyber-switch">
-          <input id="tgPadModeSwitch" type="checkbox" onchange="toggleTabletPadMode(this.checked)" />
-          <span class="cyber-slider"></span>
-        </label>
-      </div>
-
-      <div class="submode-switcher">
-        <div id="subBtnLaunch" class="submode-btn active" onclick="switchSensSubmode('launch')">► ЗАПУСК</div>
-        <div id="subBtnCustom" class="submode-btn" onclick="switchSensSubmode('custom')">🎛 НАСТРОЙКИ</div>
-      </div>
-
-      <!-- ПОД-ВКЛАДКА 1А: ЗАПУСК И ВЫБОР ХАРАКТЕРА СЕНСЫ -->
-      <div id="sensSubLaunch">
-
-        <div class="glass-card" style="padding:14px;">
-          <div class="section-eyebrow">МОИ ВАРИАНТЫ</div>
-          <div class="section-subdesc">Применённые и сохранённые наборы — всегда под рукой.</div>
-
-          <div class="saved-variant-row">
-            <div style="display:flex; align-items:center; gap:10px;">
-              <div class="hub-icon-sq" style="width:34px; height:34px; font-size:14px;">🔖</div>
-              <div>
-                <div id="mySavedSlotTitle" style="font-size:13px; font-weight:900; color:#fff;">Мой набор • Числа V10</div>
-                <div style="font-size:10px; color:var(--text-muted);">Свой кастомный вариант</div>
+        <!-- 1. ВЕРХНЯЯ КАРТОЧКА СТАТУСА -->
+        <div class="cyber-hub-card glow-strong" onclick="requestAndRecheckShizuku()">
+          <div class="hub-left-row">
+            <div class="hub-icon-box" style="border-radius:50%;">🛡</div>
+            <div class="hub-text-col">
+              <div class="hub-card-title">Сенса готова к работе</div>
+              <div class="hub-card-sub">
+                Доступ открыт, сенса включится · Подписка <b id="topSubMini" style="color:var(--accent-main);">БЕССРОЧНО</b>
+              </div>
+              <div class="hub-card-hint">
+                Игрок: <b id="topPlayerNick" style="color:#e2e8f0;">dare</b> • <span id="shizukuStateText" style="color:#ff2e54; font-weight:800;">Shizuku ВЫКЛ</span>
+                <span id="shizukuDot" style="display:none;"></span>
               </div>
             </div>
-            <div style="display:flex; gap:6px;">
-              <button type="button" class="btn-main" style="width:auto; padding:7px 12px; font-size:10.5px;" onclick="loadSavedConfigLocal(false)">ПРИМЕНИТЬ</button>
+          </div>
+          <canvas id="quantumOrbCanvas" width="84" height="84" style="width:40px; height:40px; flex-shrink:0;"></canvas>
+        </div>
+
+        <!-- 2. КАРТОЧКА КОНФИГИ -->
+        <div class="cyber-hub-card" onclick="switchTab('tabSquad')">
+          <div class="hub-left-row">
+            <div class="hub-icon-box">&lt;/&gt;</div>
+            <div class="hub-text-col">
+              <div class="hub-card-title">Конфиги</div>
+              <div class="hub-card-sub">Активация по коду и полка наборов</div>
             </div>
           </div>
+          <span class="hub-chev">›</span>
+        </div>
 
-          <button type="button" class="btn-dark" style="text-align:left; display:flex; justify-content:space-between; align-items:center;" onclick="saveCurrentConfigLocal(false)">
-            <span>＋ Сохранить текущий вариант</span>
-            <span style="color:var(--accent-main);">›</span>
+        <!-- 3. ДВОЙНОЙ РЯД: ЭКРАН + ПРИЦЕЛ -->
+        <div class="hub-grid-2">
+          <div class="cyber-hub-card" onclick="openScreenSubView('stretch')">
+            <div class="hub-left-row">
+              <div class="hub-icon-box">⛶</div>
+              <div class="hub-text-col">
+                <div class="hub-card-title">Экран</div>
+                <div class="hub-card-sub">Растяг и пиксели</div>
+              </div>
+            </div>
+            <span class="hub-chev">›</span>
+          </div>
+
+          <div class="cyber-hub-card" onclick="openScreenSubView('crosshair')">
+            <div class="hub-left-row">
+              <div class="hub-icon-box">⌖</div>
+              <div class="hub-text-col">
+                <div class="hub-card-title">Прицел</div>
+                <div class="hub-card-sub">Поверх игры</div>
+              </div>
+            </div>
+            <span class="hub-chev">›</span>
+          </div>
+        </div>
+
+        <!-- 4. КАРТОЧКА НАСТРОЙКИ / ГАЙД / ПАДЫ -->
+        <div class="cyber-hub-card" onclick="switchTab('tabProfile')">
+          <div class="hub-left-row">
+            <div class="hub-icon-box">⚙</div>
+            <div class="hub-text-col">
+              <div class="hub-card-title">Настройки и Пады</div>
+              <div class="hub-card-sub">Режим планшета 2.15x · доступ · о приложении</div>
+            </div>
+          </div>
+          <span class="hub-chev">›</span>
+        </div>
+
+        <!-- 5. ГЛАВНАЯ КАРТОЧКА СЕНСА С КРУГЛОЙ КНОПКОЙ ВКЛ -->
+        <div class="cyber-hub-card glow-strong" style="padding:18px 16px;" onclick="openSensorDetailView('launch')">
+          <div class="hub-left-row">
+            <div class="hub-icon-box">🎚</div>
+            <div class="hub-text-col">
+              <div class="hub-card-title" style="font-size:16.5px; letter-spacing:0.4px;">
+                СЕНСА <span id="liveScaleChip" class="badge-chip" style="margin-left:5px;">32.0x</span>
+              </div>
+              <div id="activePresetTitle" class="hub-card-sub" style="color:#cbd5e1;">
+                Выбери характер и включай
+              </div>
+              <div class="hub-card-hint">Нажми на карточку — настройка</div>
+            </div>
+          </div>
+          <button id="mainPowerCircleBtn" type="button" class="sens-circle-btn" onclick="event.stopPropagation(); toggleMainEngineQuick();">
+            ВКЛ
           </button>
         </div>
 
-        <div class="glass-card" style="padding:14px;">
-          <div class="card-head">
-            <div class="card-title">⚡ ВЫБЕРИТЕ ХАРАКТЕР СЕНСЫ</div>
-            <span class="badge-chip">8 РЕЖИМОВ</span>
-          </div>
-
-          <!-- 1. ОТДЕЛЬНЫЙ КОНФИГ ДЛЯ ПЛАНШЕТОВ (ПАДОВ) -->
-          <div id="preset_tablet_pro" class="character-card" onclick="selectTeleportPreset('tablet_pro')">
-            <div>
-              <div class="char-title">ПЛАНШЕТ УЛЬТРА <span class="char-tag pad-badge">ДЛЯ ПАДОВ • 58.0X</span></div>
-              <div class="char-desc">Специальный мощный профиль для Xiaomi Pad, Redmi Pad, Poco Pad, Lenovo Legion Y700 и Samsung Tab. Убирает «вязкость» большой матрицы!</div>
+        <!-- 6. КАРТОЧКА БУСТЕР -->
+        <div class="cyber-hub-card" onclick="switchTab('tabBoost')">
+          <div class="hub-left-row">
+            <div class="hub-icon-box">⚡</div>
+            <div class="hub-text-col">
+              <div class="hub-card-title">Бустер</div>
+              <div class="hub-card-sub">Оптимизация телефона и пада · разгон</div>
             </div>
-            <span class="char-arrow">›</span>
           </div>
-
-          <!-- 2. ОТДЕЛЬНЫЙ КОНФИГ ДЛЯ БЮДЖЕТНЫХ ТЕЛЕФОНОВ -->
-          <div id="preset_budget_pro" class="character-card" onclick="selectTeleportPreset('budget_pro')">
-            <div>
-              <div class="char-title">БЮДЖЕТНЫЙ ПРО <span class="char-tag budget-badge">ДЛЯ БЮДЖЕТОК 60/90 ГЦ</span></div>
-              <div class="char-desc">Специальный конфиг для Redmi, Poco, Tecno, Infinix и Samsung A-серии. Резкий телепорт без фризов и просадок FPS!</div>
-            </div>
-            <span class="char-arrow">›</span>
-          </div>
-
-          <!-- 3. РЕЗКИЙ ЖЁСТКИЙ (ТЕЛЕПОРТ КУСКАМИ) -->
-          <div id="preset_extreme" class="character-card active" onclick="selectTeleportPreset('extreme')">
-            <div>
-              <div class="char-title">РЕЗКИЙ <span class="char-tag">ЖЁСТКИЙ ТЕЛЕПОРТ</span></div>
-              <div class="char-desc">Быстрый рывковый переброс прицела кусками. Для резких разворотов и мгновенных фликов.</div>
-            </div>
-            <span class="char-arrow">›</span>
-          </div>
-
-          <!-- 4. МАКСИМУМ ВЫПРЯМЛЕНИЕ -->
-          <div id="preset_recoil_god" class="character-card" onclick="selectTeleportPreset('recoil_god')">
-            <div>
-              <div class="char-title">МАКСИМУМ <span class="char-tag">ВЫПРЯМЛЕНИЕ + ЗАЖИМ</span></div>
-              <div class="char-desc">Сильно выпрямляет руку по линии головы и намертво фиксирует спрей АКР / M4 в точку.</div>
-            </div>
-            <span class="char-arrow">›</span>
-          </div>
-
-          <!-- 5. ЧИСТЫЙ РЕЗКИЙ БЕЗ ЗАЛИПАНИЯ -->
-          <div id="preset_clean_sharp" class="character-card" onclick="selectTeleportPreset('clean_sharp')">
-            <div>
-              <div class="char-title">ЧИСТЫЙ РЕЗКИЙ <span class="char-tag">БЕЗ ЗАЛИПАНИЯ</span></div>
-              <div class="char-desc">Резкий отклик, но без прилипания к осям. Полный контроль без задержек.</div>
-            </div>
-            <span class="char-arrow">›</span>
-          </div>
-
-          <!-- 6. РЕЗКИЙ + ЛИПКИЙ -->
-          <div id="preset_awm_deagle" class="character-card" onclick="selectTeleportPreset('awm_deagle')">
-            <div>
-              <div class="char-title">РЕЗКИЙ + ЛИПКИЙ <span class="char-tag">AWM / DEAGLE</span></div>
-              <div class="char-desc">Жёсткий квантовый отклик с сильным прилипанием на хитбоксе противника.</div>
-            </div>
-            <span class="char-arrow">›</span>
-          </div>
-
-          <!-- 7. ОХОТА ДЛЯ ШУТЕРОВ -->
-          <div id="preset_hunt_shooter" class="character-card" onclick="selectTeleportPreset('hunt_shooter')">
-            <div>
-              <div class="char-title">ОХОТА <span class="char-tag">ДЛЯ ШУТЕРОВ</span></div>
-              <div class="char-desc">Липкий прицел. Жёсткий хват по осям, но чуть мягче экстремального телепорта.</div>
-            </div>
-            <span class="char-arrow">›</span>
-          </div>
-
-          <!-- 8. ВЫСОКИЙ FPS 120+ КАДРОВ -->
-          <div id="preset_high_fps" class="character-card" onclick="selectTeleportPreset('high_fps')">
-            <div>
-              <div class="char-title">ВЫСОКИЙ FPS <span class="char-tag">120+ КАДРОВ</span></div>
-              <div class="char-desc">Ультра-низкая задержка сенсора 480 Гц для экранов 120 и 144 Гц.</div>
-            </div>
-            <span class="char-arrow">›</span>
-          </div>
+          <span class="hub-chev">›</span>
         </div>
 
       </div>
 
-      <!-- ПОД-ВКЛАДКА 1Б: "СВОИ ЧИСЛА" -->
-      <div id="sensSubCustom" style="display:none;">
+      <!-- ВИД 2: ВНУТРЕННИЙ ЭКРАН "СЕНСОР" (КАК В VIDEO_2 00:07-00:10 и VIDEO_1) -->
+      <div id="sensorDetailView" style="display:none;">
 
-        <div class="glass-card">
-          <div class="section-eyebrow">СВОИ ЧИСЛА</div>
-          <div class="section-subdesc">Эти значения твои. Настрой остроту, точность и куски под свой хват.</div>
-
-          <div class="section-eyebrow" style="margin-top:6px;">ОСТРОТА</div>
-          <div class="section-subdesc">Насколько резко реагирует прицел.</div>
-
-          <div class="pro-slider-row">
-            <div class="pro-slider-head"><span class="pro-slider-name">Резкость</span><span id="val_sharp" class="pro-slider-pill">2.50</span></div>
-            <input id="sl_sharp" type="range" min="10" max="25" step="1" value="25" oninput="onSensSliderChange()" />
-            <div class="pro-slider-hint">Больше — чувствительнее и агрессивнее срыв с места</div>
+        <div class="subpage-topbar">
+          <div class="subpage-left">
+            <button type="button" class="back-circle-btn" onclick="closeSensorDetailView()">←</button>
+            <div class="subpage-title-wrap">
+              <div class="hub-icon-box" style="width:36px; height:36px; font-size:14px;">🎚</div>
+              <span>Сенсор</span>
+            </div>
           </div>
-
-          <div class="pro-slider-row">
-            <div class="pro-slider-head"><span class="pro-slider-name">Влево-вправо</span><span id="val_sx" class="pro-slider-pill">2.50</span></div>
-            <input id="sl_sx" type="range" min="10" max="25" step="1" value="25" oninput="onSensSliderChange()" />
-            <div class="pro-slider-hint">Только горизонталь — прицел по врагам в стороне</div>
-          </div>
-
-          <div class="pro-slider-row">
-            <div class="pro-slider-head"><span class="pro-slider-name">Вверх-вниз</span><span id="val_sy" class="pro-slider-pill">2.50</span></div>
-            <input id="sl_sy" type="range" min="10" max="25" step="1" value="25" oninput="onSensSliderChange()" />
-            <div class="pro-slider-hint">Только вертикаль — контроль зажима и наводка вверх</div>
-          </div>
+          <span class="badge-chip" onclick="toggleTabletPadMode(!isPadModeEnabled)" style="cursor:pointer;">
+            📟 ПАД 2.15X
+          </span>
         </div>
 
-        <div class="glass-card">
-          <div class="section-eyebrow">ТОЧНОСТЬ</div>
-          <div class="section-subdesc">Убирает дрожание, задержку и мёртвую зону.</div>
-
-          <div class="pro-slider-row">
-            <div class="pro-slider-head"><span class="pro-slider-name">Отсечка шума</span><span id="val_grid" class="pro-slider-pill">3</span></div>
-            <input id="sl_grid" type="range" min="1" max="10" step="1" value="3" oninput="onSensSliderChange()" />
-            <div class="pro-slider-hint">Игнорирует микродвижения пальца — меньше дребезга</div>
-          </div>
-
-          <div class="pro-slider-row">
-            <div class="pro-slider-head"><span class="pro-slider-name">Мёртвая зона</span><span id="val_pause" class="pro-slider-pill">1</span></div>
-            <input id="sl_pause" type="range" min="0" max="10" step="1" value="1" oninput="onSensSliderChange()" />
-            <div class="pro-slider-hint">Маленькие движения не срывают прицел при тапе</div>
-          </div>
-
-          <div class="pro-slider-row">
-            <div class="pro-slider-head"><span class="pro-slider-name">Упреждение</span><span id="val_lead" class="pro-slider-pill">8</span></div>
-            <input id="sl_lead" type="range" min="0" max="20" step="1" value="8" oninput="onSensSliderChange()" />
-            <div class="pro-slider-hint">Прицел ведёт цель на опережение — попадать легче</div>
-          </div>
-
-          <div class="section-eyebrow" style="margin-top:14px;">ПРИЛИПАНИЕ</div>
-          <div class="section-subdesc">Прицел держится на линиях и углах.</div>
-
-          <div class="pro-slider-row">
-            <div class="pro-slider-head"><span class="pro-slider-name">Прилипание к осям</span><span id="val_stick" class="pro-slider-pill">95</span></div>
-            <input id="sl_stick" type="range" min="0" max="100" step="5" value="95" oninput="onSensSliderChange()" />
-            <div class="pro-slider-hint">Притягивает прицел к горизонтали и вертикали</div>
-          </div>
-
-          <div class="pro-slider-row">
-            <div class="pro-slider-head"><span class="pro-slider-name">Через сколько липнуть</span><span id="val_stick_delay" class="pro-slider-pill">29</span></div>
-            <input id="sl_stick_delay" type="range" min="5" max="60" step="1" value="29" oninput="onSensSliderChange()" />
-            <div class="pro-slider-hint">Сколько держать палец спокойно, чтобы включилась фиксация</div>
-          </div>
-
-          <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:12px;">
-            <button id="btnToggleMoreSens" type="button" class="btn-dark" onclick="toggleExtraSensBlock()">Спрятать доп. куски</button>
-            <button type="button" class="btn-dark" onclick="selectTeleportPreset(isPadModeEnabled ? 'tablet_pro' : 'extreme')">Вернуть набор</button>
-          </div>
+        <div class="submode-switcher">
+          <div id="subBtnLaunch" class="submode-btn active" onclick="switchSensSubmode('launch')">► ЗАПУСК</div>
+          <div id="subBtnCustom" class="submode-btn" onclick="switchSensSubmode('custom')">🎛 НАСТРОЙКИ</div>
         </div>
 
-        <div id="extraChunksBlock" class="glass-card">
-          <div class="section-eyebrow">ДОПОЛНИТЕЛЬНО • КУСКИ ТЕЛЕПОРТА</div>
-          <div class="section-subdesc">Агрессивное квантование рывка без плавной дуги.</div>
+        <!-- ПОД-ВКЛАДКА 1А: ► ЗАПУСК -->
+        <div id="sensSubLaunch">
 
-          <div class="pro-slider-row">
-            <div class="pro-slider-head"><span class="pro-slider-name">Сила прилипания</span><span id="val_stick_force" class="pro-slider-pill">8</span></div>
-            <input id="sl_stick_force" type="range" min="1" max="15" step="1" value="8" oninput="onSensSliderChange()" />
+          <div class="glass-card">
+            <div class="section-eyebrow">МОИ ВАРИАНТЫ</div>
+            <div class="section-subdesc">Применённые и сохранённые — всегда под рукой.</div>
+
+            <div class="saved-variant-row">
+              <div style="display:flex; align-items:center; gap:11px;">
+                <div class="hub-icon-box" style="width:36px; height:36px; font-size:14px;">🔖</div>
+                <div>
+                  <div id="mySavedSlotTitle" style="font-size:13.5px; font-weight:900; color:#fff;">pro_custom</div>
+                  <div style="font-size:10.5px; color:var(--text-muted);">свой набор · числа</div>
+                </div>
+              </div>
+              <div style="display:flex; gap:7px;">
+                <button type="button" class="icon-circle-action" title="Применить" onclick="loadSavedConfigLocal(false)">▼</button>
+                <button type="button" class="icon-circle-action" title="Перезаписать" onclick="saveCurrentConfigLocal(false)">💾</button>
+              </div>
+            </div>
+
+            <button type="button" class="btn-dark" style="display:flex; justify-content:space-between; align-items:center; border-radius:16px;" onclick="saveCurrentConfigLocal(false)">
+              <span>＋ Сохранить свой вариант</span>
+              <span style="color:var(--text-muted);">›</span>
+            </button>
           </div>
 
-          <div class="pro-slider-row">
-            <div class="pro-slider-head"><span class="pro-slider-name">Куски</span><span id="val_chunks" class="pro-slider-pill">96</span></div>
-            <input id="sl_chunks" type="range" min="40" max="100" step="1" value="96" oninput="onSensSliderChange()" />
+          <div class="glass-card">
+            <div class="section-eyebrow" style="margin-bottom:10px;">ВКЛЮЧИТЬ</div>
+
+            <div class="selector-field-row" onclick="toggleCharacterListCollapse()">
+              <span class="selector-field-lbl">ВАРИАНТ</span>
+              <span class="selector-field-val"><b id="selectedVariantLabel">Свои числа</b> <span style="color:var(--text-muted);">⌄</span></span>
+            </div>
+
+            <div class="selector-field-row" onclick="toggleTabletPadMode(!isPadModeEnabled)">
+              <span class="selector-field-lbl">МАТРИЦА</span>
+              <span class="selector-field-val">
+                <b id="matrixModeSelectorLabel">Смартфон (1.0x)</b>
+                <input id="tgPadModeSwitch" type="checkbox" style="display:none;" />
+                <span style="color:var(--accent-main);">⟳</span>
+              </span>
+            </div>
+
+            <div class="now-active-preview-box">
+              <div style="display:flex; align-items:center; gap:10px;">
+                <span style="color:var(--accent-main); font-size:13px;">►</span>
+                <div>
+                  <div style="font-size:9.5px; font-weight:800; color:var(--text-muted); letter-spacing:0.6px;">СЕЙЧАС ВКЛЮЧИТСЯ</div>
+                  <div id="nowWillStartText" style="font-size:13.5px; font-weight:900; color:var(--accent-main);">Резкий (телепорт)</div>
+                </div>
+              </div>
+              <span style="font-size:10.5px; color:var(--text-muted);">квантовый шаг</span>
+            </div>
+
+            <button type="button" class="btn-main" onclick="applySelectedPresetNowButton()">
+              ► Включить выбранный набор
+            </button>
+
+            <!-- СПИСОК ХАРАКТЕРОВ СЕНСЫ (КАК В VIDEO_2 00:08-00:09, НАШИ ОРИГИНАЛЬНЫЕ ОПИСАНИЯ) -->
+            <div id="characterCardsListContainer" style="margin-top:12px;">
+
+              <div id="preset_tablet_pro" class="character-card" onclick="selectTeleportPreset('tablet_pro')">
+                <div>
+                  <div class="char-title">ПЛАНШЕТ УЛЬТРА <span class="char-tag pad-badge">ПАДЫ 58.0X</span></div>
+                  <div class="char-desc">Удвоенный импульс для Xiaomi Pad, Redmi Pad, Legion Y700 и Samsung Tab. Снимает вязкость большой матрицы.</div>
+                </div>
+                <span class="char-arrow">›</span>
+              </div>
+
+              <div id="preset_budget_pro" class="character-card" onclick="selectTeleportPreset('budget_pro')">
+                <div>
+                  <div class="char-title">ЧИСТЫЙ БАЗОВЫЙ <span class="char-tag">60/90 ГЦ СТОК</span></div>
+                  <div class="char-desc">Ровный отклик без лагов и нагрузки на видеочип. Отличный старт для бюджетных экранов.</div>
+                </div>
+                <span class="char-arrow">›</span>
+              </div>
+
+              <div id="preset_extreme" class="character-card active" onclick="selectTeleportPreset('extreme')">
+                <div>
+                  <div class="char-title">РЕЗКИЙ <span class="char-tag">ЖЁСТКИЙ</span></div>
+                  <div class="char-desc">Мгновенный рывковый переброс кусками. Для быстрых разворотов на 180° и резких пиков.</div>
+                </div>
+                <span class="char-arrow">›</span>
+              </div>
+
+              <div id="preset_recoil_god" class="character-card" onclick="selectTeleportPreset('recoil_god')">
+                <div>
+                  <div class="char-title">МАКСИМУМ <span class="char-tag">ВЫПРЯМЛЕНИЕ</span></div>
+                  <div class="char-desc">Жёстко выравнивает траекторию пальца по горизонтали и удерживает спрей в одной точке.</div>
+                </div>
+                <span class="char-arrow">›</span>
+              </div>
+
+              <div id="preset_clean_sharp" class="character-card" onclick="selectTeleportPreset('clean_sharp')">
+                <div>
+                  <div class="char-title">ЧИСТЫЙ РЕЗКИЙ <span class="char-tag">БЕЗ ЗАЛИПАНИЯ</span></div>
+                  <div class="char-desc">Моментальный срыв с места без искусственного удержания на осях. Полная свобода руки.</div>
+                </div>
+                <span class="char-arrow">›</span>
+              </div>
+
+              <div id="preset_awm_deagle" class="character-card" onclick="selectTeleportPreset('awm_deagle')">
+                <div>
+                  <div class="char-title">РЕЗКИЙ + ЛИПКИЙ <span class="char-tag">ФИКСАЦИЯ</span></div>
+                  <div class="char-desc">Взрывной старт с плотной остановкой прицела прямо на контуре модели соперника.</div>
+                </div>
+                <span class="char-arrow">›</span>
+              </div>
+
+              <div id="preset_hunt_shooter" class="character-card" onclick="selectTeleportPreset('hunt_shooter')">
+                <div>
+                  <div class="char-title">ОХОТА <span class="char-tag">ДЛЯ ШУТЕРОВ</span></div>
+                  <div class="char-desc">Цепкий прицел с плавным доведением. Держит прицел на уровне головы мягче экстремального.</div>
+                </div>
+                <span class="char-arrow">›</span>
+              </div>
+
+              <div id="preset_high_fps" class="character-card" onclick="selectTeleportPreset('high_fps')">
+                <div>
+                  <div class="char-title">ВЫСОКИЙ FPS <span class="char-tag">120+ КАДРОВ</span></div>
+                  <div class="char-desc">Сверхнизкая задержка опроса 480 Гц и минимальное прилипание для матриц 120–144 Гц.</div>
+                </div>
+                <span class="char-arrow">›</span>
+              </div>
+
+            </div>
           </div>
 
-          <div class="pro-slider-row">
-            <div class="pro-slider-head"><span class="pro-slider-name">Мелочь мимо кусков</span><span id="val_chunk_bypass" class="pro-slider-pill">2</span></div>
-            <input id="sl_chunk_bypass" type="range" min="0" max="20" step="1" value="2" oninput="onSensSliderChange()" />
-          </div>
-
-          <div class="pro-slider-row">
-            <div class="pro-slider-head"><span class="pro-slider-name">Потолок куска</span><span id="val_chunk_cap" class="pro-slider-pill">18</span></div>
-            <input id="sl_chunk_cap" type="range" min="5" max="30" step="1" value="18" oninput="onSensSliderChange()" />
-          </div>
-
-          <div class="pro-slider-row">
-            <div class="pro-slider-head"><span class="pro-slider-name">Куски только быстрее</span><span id="val_chunkfast" class="pro-slider-pill">100</span></div>
-            <input id="sl_chunkfast" type="range" min="40" max="100" step="1" value="100" oninput="onSensSliderChange()" />
-          </div>
-
-          <div class="pro-slider-row">
-            <div class="pro-slider-head"><span class="pro-slider-name">Пауза после выстрела</span><span id="val_shot_pause" class="pro-slider-pill">1</span></div>
-            <input id="sl_shot_pause" type="range" min="0" max="15" step="1" value="1" oninput="onSensSliderChange()" />
-          </div>
-
-          <div class="pro-slider-row">
-            <div class="pro-slider-head"><span class="pro-slider-name">Крутизна разгона</span><span id="val_accel" class="pro-slider-pill">0.95</span></div>
-            <input id="sl_accel" type="range" min="10" max="25" step="1" value="24" oninput="onSensSliderChange()" />
-          </div>
-
-          <div class="pro-slider-row">
-            <div class="pro-slider-head"><span class="pro-slider-name">Дальность краёв</span><span id="val_edge_reach" class="pro-slider-pill">10</span></div>
-            <input id="sl_edge_reach" type="range" min="0" max="20" step="1" value="10" oninput="onSensSliderChange()" />
-          </div>
-
-          <div class="pro-slider-row">
-            <div class="pro-slider-head"><span class="pro-slider-name">Выпрямление</span><span id="val_straight" class="pro-slider-pill">0.85</span></div>
-            <input id="sl_straight" type="range" min="0" max="100" step="5" value="85" oninput="onSensSliderChange()" />
-          </div>
-
-          <div class="pro-slider-row">
-            <div class="pro-slider-head"><span class="pro-slider-name">Хват по осям (Анти-Отдача)</span><span id="val_recoil" class="pro-slider-pill">100%</span></div>
-            <input id="sl_recoil" type="range" min="20" max="100" step="1" value="100" oninput="onRecoilSliderChange()" />
-          </div>
-
-          <div class="pro-slider-row">
-            <div class="pro-slider-head"><span class="pro-slider-name">Потолок хвата</span><span id="val_grip_cap" class="pro-slider-pill">10</span></div>
-            <input id="sl_grip_cap" type="range" min="1" max="15" step="1" value="10" oninput="onSensSliderChange()" />
-          </div>
         </div>
 
-        <div class="glass-card">
-          <button type="button" class="btn-dark" style="border-color:var(--border-strong); margin-bottom:7px;" onclick="startScreenCalibModal()">
-            👆 Определить экран заново
-          </button>
-          <div style="font-size:10.5px; color:var(--text-muted); font-style:italic; margin-bottom:12px; line-height:1.35;">
-            Откроется рамка: проведи по ней пальцем, и устройство пересчитает матрицу.
+        <!-- ПОД-ВКЛАДКА 1Б: 🎛 НАСТРОЙКИ (ТОЧНО КАК В VIDEO_1 00:00-00:12) -->
+        <div id="sensSubCustom" style="display:none;">
+
+          <div class="glass-card">
+            <div class="section-eyebrow">СВОИ ЧИСЛА</div>
+            <div class="section-subdesc">Эти значения твои. Настрой отклик и шаг кусков под свой хват.</div>
+
+            <div class="section-eyebrow" style="margin-top:8px;">ОСТРОТА</div>
+            <div class="section-subdesc">Насколько резко реагирует прицел.</div>
+
+            <div class="pro-slider-row">
+              <div class="pro-slider-head"><span class="pro-slider-name">Резкость</span><span id="val_sharp" class="pro-slider-pill">2.50</span></div>
+              <input id="sl_sharp" type="range" min="10" max="25" step="1" value="25" oninput="onSensSliderChange()" />
+              <div class="pro-slider-hint">Больше — чувствительнее, быстрее срыв прицела</div>
+            </div>
+
+            <div class="pro-slider-row">
+              <div class="pro-slider-head"><span class="pro-slider-name">Влево-вправо</span><span id="val_sx" class="pro-slider-pill">2.50</span></div>
+              <input id="sl_sx" type="range" min="10" max="25" step="1" value="25" oninput="onSensSliderChange()" />
+              <div class="pro-slider-hint">Только горизонталь — перевод по целям в стороне</div>
+            </div>
+
+            <div class="pro-slider-row">
+              <div class="pro-slider-head"><span class="pro-slider-name">Вверх-вниз</span><span id="val_sy" class="pro-slider-pill">2.50</span></div>
+              <input id="sl_sy" type="range" min="10" max="25" step="1" value="25" oninput="onSensSliderChange()" />
+              <div class="pro-slider-hint">Только вертикаль — контроль отдачи и прицел по вертикали</div>
+            </div>
+
+            <div class="section-eyebrow" style="margin-top:14px;">ТОЧНОСТЬ</div>
+            <div class="section-subdesc">Убирает дрожание, задержку и мёртвую зону.</div>
+
+            <div class="pro-slider-row">
+              <div class="pro-slider-head"><span class="pro-slider-name">Отсечка шума</span><span id="val_grid" class="pro-slider-pill">3</span></div>
+              <input id="sl_grid" type="range" min="1" max="10" step="1" value="3" oninput="onSensSliderChange()" />
+              <div class="pro-slider-hint">Игнорирует микродвижения пальца — меньше дребезга</div>
+            </div>
+
+            <div class="pro-slider-row">
+              <div class="pro-slider-head"><span class="pro-slider-name">Мёртвая зона</span><span id="val_pause" class="pro-slider-pill">1</span></div>
+              <input id="sl_pause" type="range" min="0" max="10" step="1" value="1" oninput="onSensSliderChange()" />
+              <div class="pro-slider-hint">Маленькие движения не сдвигают прицел при нажатии</div>
+            </div>
+
+            <div class="pro-slider-row">
+              <div class="pro-slider-head"><span class="pro-slider-name">Упреждение</span><span id="val_lead" class="pro-slider-pill">8</span></div>
+              <input id="sl_lead" type="range" min="0" max="20" step="1" value="8" oninput="onSensSliderChange()" />
+              <div class="pro-slider-hint">Прицел ведёт цель на опережение — попадать легче</div>
+            </div>
+
+            <div class="section-eyebrow" style="margin-top:14px;">ПРИЛИПАНИЕ</div>
+            <div class="section-subdesc">Прицел держится на линиях и углах.</div>
+
+            <div class="pro-slider-row">
+              <div class="pro-slider-head"><span class="pro-slider-name">Прилипание к осям</span><span id="val_stick" class="pro-slider-pill">95</span></div>
+              <input id="sl_stick" type="range" min="0" max="100" step="5" value="95" oninput="onSensSliderChange()" />
+              <div class="pro-slider-hint">Притягивает прицел к горизонтали и вертикали</div>
+            </div>
+
+            <div class="pro-slider-row">
+              <div class="pro-slider-head"><span class="pro-slider-name">Через сколько липнуть</span><span id="val_stick_delay" class="pro-slider-pill">29</span></div>
+              <input id="sl_stick_delay" type="range" min="5" max="60" step="1" value="29" oninput="onSensSliderChange()" />
+              <div class="pro-slider-hint">Сколько держать палец спокойно, чтобы включилась фиксация</div>
+            </div>
+
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:12px;">
+              <button id="btnToggleMoreSens" type="button" class="btn-dark" onclick="toggleExtraSensBlock()">Спрятать</button>
+              <button type="button" class="btn-dark" onclick="selectTeleportPreset(isPadModeEnabled ? 'tablet_pro' : 'extreme')">Вернуть набор</button>
+            </div>
+
+            <!-- РАСКРЫВАЕМЫЙ БЛОК "ДОПОЛНИТЕЛЬНО" ВНУТРИ ЭТОЙ ЖЕ КАРТОЧКИ (КАК В VIDEO_1 00:05-00:09) -->
+            <div id="extraChunksBlock" style="margin-top:16px; padding-top:14px; border-top:1px solid rgba(255,255,255,0.07);">
+              <div class="section-eyebrow">ДОПОЛНИТЕЛЬНО</div>
+              <div class="section-subdesc">Для тонкой подгонки квантовых кусков и рывка.</div>
+
+              <div class="pro-slider-row">
+                <div class="pro-slider-head"><span class="pro-slider-name">Сила прилипания</span><span id="val_stick_force" class="pro-slider-pill">8</span></div>
+                <input id="sl_stick_force" type="range" min="1" max="15" step="1" value="8" oninput="onSensSliderChange()" />
+              </div>
+
+              <div class="pro-slider-row">
+                <div class="pro-slider-head"><span class="pro-slider-name">Куски</span><span id="val_chunks" class="pro-slider-pill">96</span></div>
+                <input id="sl_chunks" type="range" min="40" max="100" step="1" value="96" oninput="onSensSliderChange()" />
+              </div>
+
+              <div class="pro-slider-row">
+                <div class="pro-slider-head"><span class="pro-slider-name">Мелочь мимо кусков</span><span id="val_chunk_bypass" class="pro-slider-pill">2</span></div>
+                <input id="sl_chunk_bypass" type="range" min="0" max="20" step="1" value="2" oninput="onSensSliderChange()" />
+              </div>
+
+              <div class="pro-slider-row">
+                <div class="pro-slider-head"><span class="pro-slider-name">Потолок куска</span><span id="val_chunk_cap" class="pro-slider-pill">18</span></div>
+                <input id="sl_chunk_cap" type="range" min="5" max="30" step="1" value="18" oninput="onSensSliderChange()" />
+              </div>
+
+              <div class="pro-slider-row">
+                <div class="pro-slider-head"><span class="pro-slider-name">Куски только быстрее</span><span id="val_chunkfast" class="pro-slider-pill">100</span></div>
+                <input id="sl_chunkfast" type="range" min="40" max="100" step="1" value="100" oninput="onSensSliderChange()" />
+              </div>
+
+              <div class="pro-slider-row">
+                <div class="pro-slider-head"><span class="pro-slider-name">Пауза после выстрела</span><span id="val_shot_pause" class="pro-slider-pill">1</span></div>
+                <input id="sl_shot_pause" type="range" min="0" max="15" step="1" value="1" oninput="onSensSliderChange()" />
+              </div>
+
+              <div class="pro-slider-row">
+                <div class="pro-slider-head"><span class="pro-slider-name">Крутизна разгона</span><span id="val_accel" class="pro-slider-pill">0.96</span></div>
+                <input id="sl_accel" type="range" min="10" max="25" step="1" value="24" oninput="onSensSliderChange()" />
+              </div>
+
+              <div class="pro-slider-row">
+                <div class="pro-slider-head"><span class="pro-slider-name">Дальность краёв</span><span id="val_edge_reach" class="pro-slider-pill">10</span></div>
+                <input id="sl_edge_reach" type="range" min="0" max="20" step="1" value="10" oninput="onSensSliderChange()" />
+              </div>
+
+              <div class="pro-slider-row">
+                <div class="pro-slider-head"><span class="pro-slider-name">Выпрямление</span><span id="val_straight" class="pro-slider-pill">0.85</span></div>
+                <input id="sl_straight" type="range" min="0" max="100" step="5" value="85" oninput="onSensSliderChange()" />
+              </div>
+
+              <div class="pro-slider-row">
+                <div class="pro-slider-head"><span class="pro-slider-name">Хват по осям</span><span id="val_recoil" class="pro-slider-pill">100%</span></div>
+                <input id="sl_recoil" type="range" min="20" max="100" step="1" value="100" oninput="onRecoilSliderChange()" />
+              </div>
+
+              <div class="pro-slider-row">
+                <div class="pro-slider-head"><span class="pro-slider-name">Потолок хвата</span><span id="val_grip_cap" class="pro-slider-pill">10</span></div>
+                <input id="sl_grip_cap" type="range" min="1" max="15" step="1" value="10" oninput="onSensSliderChange()" />
+                <div class="pro-slider-hint">Стабилизирует линию при длинном свайпе — крутить обычно не требуется.</div>
+              </div>
+            </div>
+
+            <button type="button" class="btn-dark" style="margin-top:12px;" onclick="document.getElementById('howToModalOverlay').style.display='flex'">
+              Как настроить
+            </button>
           </div>
 
-          <button type="button" class="btn-dark" style="border-color:var(--border-strong);" onclick="openTouchTestModal()">
-            👆 Проверить касания
-          </button>
+          <!-- ДВЕ ОТДЕЛЬНЫЕ НИЖНИЕ КАРТОЧКИ (КАК В VIDEO_1 00:04 и 00:09) -->
+          <div class="glass-card">
+            <button type="button" class="btn-dark" style="border-color:var(--border-strong); margin-bottom:9px;" onclick="startScreenCalibModal()">
+              👆 Определить экран заново
+            </button>
+            <div style="font-size:11px; color:var(--text-muted); font-style:italic; line-height:1.4;">
+              Откроется рамка: проведи по ней пальцем, и система пересчитает плотность пикселей.<br><br>
+              Если сенса не схватывает — нажми сюда и проведи по краям экрана.
+            </div>
+          </div>
+
+          <div class="glass-card" style="padding:12px 16px;">
+            <button type="button" class="btn-dark" style="border-color:var(--border-strong);" onclick="openTouchTestModal()">
+              👆 Проверить касания
+            </button>
+          </div>
+
         </div>
 
       </div>
 
     </div>
 
-    <!-- ================= ВКЛАДКА 2: ЭКРАН + ИСПРАВЛЕННЫЙ РАСТЯГ + ПИКСЕЛИ + ПРИЦЕЛ ================= -->
+    <!-- ================= ВКЛАДКА 2: РАСТЯГ + ПИКСЕЛИ + ПРИЦЕЛ (КАК В VIDEO_2 00:03-00:06) ================= -->
     <div id="tabScreen" class="tab-section">
 
-      <div class="glass-card">
-        <div class="card-head">
-          <div class="card-title">📐 РАСТЯГ ЭКРАНА (ТЕЛЕФОНЫ И ПАДЫ)</div>
-          <span id="curRatioBadge" class="badge-chip">4:3 • +33%</span>
-        </div>
-
-        <div class="preview-stage-box">
-          <div class="stretch-dashed-outer">
-            <div id="stretchPreviewInner" class="stretch-solid-inner">4:3</div>
-          </div>
-          <div style="position:absolute; bottom:7px; left:0; right:0; text-align:center; font-size:9.5px; color:var(--text-muted); font-weight:700;">
-            Пунктир — родной экран • Рамка — выбранный формат
+      <!-- ПЕРЕКЛЮЧАТЕЛЬ ПОД-ЭКРАНА: РАСТЯГ ИЛИ ПРИЦЕЛ -->
+      <div class="subpage-topbar">
+        <div class="subpage-left">
+          <button type="button" class="back-circle-btn" onclick="backToMainHub()">←</button>
+          <div class="subpage-title-wrap">
+            <div id="screenSubIcon" class="hub-icon-box" style="width:36px; height:36px; font-size:15px;">⛶</div>
+            <span id="screenSubHeaderTitle">Растяг</span>
           </div>
         </div>
-
-        <div class="section-eyebrow">ФОРМАТ РАСТЯГА (ШИРОКИЕ МОДЕЛЬКИ):</div>
-        <div class="preset-pills-3" style="grid-template-columns:repeat(5,1fr); margin:6px 0 11px;">
-          <div class="preset-pill active" data-ratio="4:3" onclick="selectRatioPill(this, '4:3')"><div class="preset-pill-name">4:3</div><div class="preset-pill-sub">+33% шире</div></div>
-          <div class="preset-pill" data-ratio="PAD-WIDE" onclick="selectRatioPill(this, 'PAD-WIDE')"><div class="preset-pill-name">PAD</div><div class="preset-pill-sub">Для Падов</div></div>
-          <div class="preset-pill" data-ratio="5:4" onclick="selectRatioPill(this, '5:4')"><div class="preset-pill-name">5:4</div><div class="preset-pill-sub">Киберспорт</div></div>
-          <div class="preset-pill" data-ratio="1:1" onclick="selectRatioPill(this, '1:1')"><div class="preset-pill-name">1:1</div><div class="preset-pill-sub">Макс-Хитбокс</div></div>
-          <div class="preset-pill" data-ratio="16:10" onclick="selectRatioPill(this, '16:10')"><div class="preset-pill-name">16:10</div><div class="preset-pill-sub">Мягкий</div></div>
-        </div>
-
-        <div class="section-eyebrow">ФОРМАТ СТЯГА (ПОВЫШЕННАЯ РЕЗКОСТЬ):</div>
-        <div class="preset-pills-3" style="grid-template-columns:repeat(4,1fr); margin:6px 0 12px;">
-          <div class="preset-pill" data-ratio="SHRINK-90" onclick="selectRatioPill(this, 'SHRINK-90')"><div class="preset-pill-name">90%</div><div class="preset-pill-sub">Лёгкий</div></div>
-          <div class="preset-pill" data-ratio="SHRINK-84" onclick="selectRatioPill(this, 'SHRINK-84')"><div class="preset-pill-name">84%</div><div class="preset-pill-sub">Оптимал</div></div>
-          <div class="preset-pill" data-ratio="21:9" onclick="selectRatioPill(this, '21:9')"><div class="preset-pill-name">21:9</div><div class="preset-pill-sub">Ультра</div></div>
-          <div class="preset-pill" data-ratio="24:10" onclick="selectRatioPill(this, '24:10')"><div class="preset-pill-name">24:10</div><div class="preset-pill-sub">Экстрим</div></div>
-        </div>
-
-        <div class="section-eyebrow">СРАЗУ, БЕЗ КНОПКИ (ПРЯМОЙ ЗАПУСК)</div>
-        <div class="section-subdesc">Шаг 1 — включить коробку перед входом в игру. Шаг 2 — развернуть на весь экран в меню игры.</div>
-        <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-bottom:8px;">
-          <button id="btnDirectStretch" type="button" class="btn-main" onclick="applyDirectStretchNow()">
-            1. РАСТЯНУТЬ 4:3
-          </button>
-          <button type="button" class="btn-main" style="background:linear-gradient(90deg, #10b981, #00e5ff);" onclick="releaseFullStretchNow()">
-            2. ВЕСЬ ЭКРАН (В МЕНЮ)
-          </button>
-        </div>
-        <button type="button" class="btn-dark" style="margin-bottom:12px;" onclick="resetNativeScreen()">
-          🔄 СБРОСИТЬ РАЗМЕР ЭКРАНА В РОДНОЙ
-        </button>
-
-        <div class="section-eyebrow">ПЛАВАЮЩАЯ КНОПКА «T»</div>
-        <div class="section-subdesc">Повесить кнопку поверх игры: 1-й тап — коробка при загрузке, 2-й тап в меню — полный растяг без рамок.</div>
-        <button type="button" class="btn-dark" style="border-color:var(--border-strong); color:var(--accent-main); margin-bottom:10px;" onclick="launchFloatingTButton()">
-          ⚡ ПОКАЗАТЬ ПЛАВАЮЩУЮ КНОПКУ «T»
-        </button>
-
-        <div class="toggle-row" style="margin-bottom:0;">
-          <div>
-            <div class="toggle-info-title">🔥 Wide Hitbox Quantization (480 Гц)</div>
-            <div class="toggle-info-sub">Синхронизирует шаг кусков сенсы под широкие модельки</div>
-          </div>
-          <label class="cyber-switch">
-            <input id="tgWideHitbox" type="checkbox" onchange="toggleWideHitboxMode(this.checked)" />
-            <span class="cyber-slider"></span>
-          </label>
+        <div style="display:flex; gap:6px;">
+          <button id="btnSubStretchTab" type="button" class="badge-chip" style="cursor:pointer; padding:6px 11px;" onclick="openScreenSubView('stretch')">📐 Растяг</button>
+          <button id="btnSubCrossTab" type="button" class="badge-chip" style="cursor:pointer; padding:6px 11px;" onclick="openScreenSubView('crosshair')">⌖ Прицел</button>
         </div>
       </div>
 
-      <!-- ОПТИМИЗАЦИЯ ПИКСЕЛЕЙ -->
-      <div class="glass-card">
-        <div class="card-head">
-          <div class="card-title">🚀 ОПТИМИЗАЦИЯ ПИКСЕЛЕЙ</div>
-          <span id="pixelScaleBadge" class="badge-chip">100% РОДНОЕ</span>
-        </div>
-        <div class="section-subdesc" style="margin-bottom:8px;">
-          Уменьшает число пикселей без смены пропорций — меньше нагрузка на видеочип, выше и ровнее FPS.
-        </div>
-
-        <div class="pixel-tiles-6">
-          <div class="pixel-tile active" onclick="selectPixelTile(this, 100)"><b>100%</b><span>Родное</span></div>
-          <div class="pixel-tile" onclick="selectPixelTile(this, 90)"><b>90%</b><span>Чётко</span></div>
-          <div class="pixel-tile" onclick="selectPixelTile(this, 80)"><b>80%</b><span>Баланс</span></div>
-          <div class="pixel-tile" onclick="selectPixelTile(this, 70)"><b>70%</b><span>Буст</span></div>
-          <div class="pixel-tile" onclick="selectPixelTile(this, 60)"><b>60%</b><span>Макс FPS</span></div>
-          <div class="pixel-tile" onclick="selectPixelTile(this, 50)"><b>50%</b><span>Ультра</span></div>
-        </div>
+      <div class="access-status-pill">
+        <span>🕒 ДОСТУП</span>
+        <b>БЕССРОЧНО</b>
       </div>
 
-      <!-- КАСТОМНЫЙ ПРИЦЕЛ -->
-      <div id="crosshairCardAnchor" class="glass-card">
-        <div class="card-head">
-          <div class="card-title">🎯 ПРИЦЕЛ ПОВЕРХ ИГРЫ</div>
-          <span id="crosshairStateChip" class="badge-chip">ВЫКЛ</span>
-        </div>
+      <!-- БЛОК А: РАСТЯГ И ОПТИМИЗАЦИЯ ПИКСЕЛЕЙ -->
+      <div id="screenStretchSubBox">
 
-        <div id="chPreviewStage" class="preview-stage-box" style="height:142px;">
-          <canvas id="crosshairPreviewCanvas" width="260" height="142"></canvas>
-          <div style="position:absolute; top:8px; left:8px;">
-            <button type="button" class="badge-chip" style="cursor:pointer;" onclick="togglePreviewDayNight()">☀/🌙 Фон</button>
-          </div>
-          <div style="position:absolute; top:8px; right:8px; display:flex; gap:5px;">
-            <button type="button" class="badge-chip" style="cursor:pointer;" onclick="setPreviewZoom(1)">×1</button>
-            <button type="button" class="badge-chip" style="cursor:pointer;" onclick="setPreviewZoom(2)">×4</button>
-            <button type="button" class="badge-chip" style="cursor:pointer;" onclick="setPreviewZoom(3.5)">×8</button>
-          </div>
-        </div>
+        <!-- 1. КАК БУДЕТ ВЫГЛЯДЕТЬ -->
+        <div class="glass-card">
+          <div class="section-eyebrow" style="margin-bottom:10px;">КАК БУДЕТ ВЫГЛЯДЕТЬ • <span id="curRatioBadge">4:3</span></div>
 
-        <div class="section-eyebrow" style="margin-bottom:7px;">ФОРМА ПРИЦЕЛА</div>
-        <div class="ch-shape-grid-4">
-          <div class="ch-shape-tile" data-ch="cross" onclick="setCrosshairMode(this, 'cross')">
-            <div class="ch-shape-icon">✚</div>
-            <div class="ch-shape-lbl">КРЕСТ</div>
+          <div class="preview-stage-box">
+            <div class="stretch-dashed-outer">
+              <div id="stretchPreviewInner" class="stretch-solid-inner">+</div>
+            </div>
           </div>
-          <div class="ch-shape-tile" data-ch="dot" onclick="setCrosshairMode(this, 'dot')">
-            <div class="ch-shape-icon">●</div>
-            <div class="ch-shape-lbl">ТОЧКА</div>
+
+          <div style="font-size:11px; color:var(--text-muted); line-height:1.4; margin-bottom:12px;">
+            Пунктир — обычный экран 16:9. Внутренняя рамка показывает область сжатия перед разворотом на весь экран.
           </div>
-          <div class="ch-shape-tile" data-ch="tshape" onclick="setCrosshairMode(this, 'tshape')">
-            <div class="ch-shape-icon">⊤</div>
-            <div class="ch-shape-lbl">Т-ОБРАЗ</div>
+
+          <div class="preset-pills-4" style="grid-template-columns:repeat(5,1fr); margin-bottom:7px;">
+            <div class="preset-pill active" data-ratio="4:3" onclick="selectRatioPill(this, '4:3')"><div class="preset-pill-name">4:3</div><div class="preset-pill-sub">Классика</div></div>
+            <div class="preset-pill" data-ratio="PAD-WIDE" onclick="selectRatioPill(this, 'PAD-WIDE')"><div class="preset-pill-name">PAD</div><div class="preset-pill-sub">Для Падов</div></div>
+            <div class="preset-pill" data-ratio="3:2" onclick="selectRatioPill(this, '3:2')"><div class="preset-pill-name">3:2</div><div class="preset-pill-sub">Широкий</div></div>
+            <div class="preset-pill" data-ratio="16:10" onclick="selectRatioPill(this, '16:10')"><div class="preset-pill-name">16:10</div><div class="preset-pill-sub">Мягкий</div></div>
+            <div class="preset-pill" data-ratio="16:9" onclick="selectRatioPill(this, '16:9')"><div class="preset-pill-name">16:9</div><div class="preset-pill-sub">Сток+</div></div>
           </div>
-          <div class="ch-shape-tile" data-ch="corners" onclick="setCrosshairMode(this, 'corners')">
-            <div class="ch-shape-icon">⌜⌟</div>
-            <div class="ch-shape-lbl">УГОЛКИ</div>
+
+          <div class="preset-pills-4">
+            <div class="preset-pill" data-ratio="5:4" onclick="selectRatioPill(this, '5:4')"><div class="preset-pill-name">5:4</div><div class="preset-pill-sub">Киберспорт</div></div>
+            <div class="preset-pill" data-ratio="1:1" onclick="selectRatioPill(this, '1:1')"><div class="preset-pill-name">1:1</div><div class="preset-pill-sub">Макс</div></div>
+            <div class="preset-pill" data-ratio="SHRINK-84" onclick="selectRatioPill(this, 'SHRINK-84')"><div class="preset-pill-name">84%</div><div class="preset-pill-sub">Стяг</div></div>
+            <div class="preset-pill" data-ratio="21:9" onclick="selectRatioPill(this, '21:9')"><div class="preset-pill-name">21:9</div><div class="preset-pill-sub">Ультра</div></div>
           </div>
         </div>
 
-        <div class="preset-pills-3" style="grid-template-columns:repeat(5,1fr); margin-bottom:11px;">
-          <div class="preset-pill active" data-ch="off" onclick="setCrosshairMode(this, 'off')"><div class="preset-pill-name">⛔ ВЫКЛ</div></div>
-          <div class="preset-pill" data-ch="crossdot" onclick="setCrosshairMode(this, 'crossdot')"><div class="preset-pill-name">⌖ КРЕСТ+</div></div>
-          <div class="preset-pill" data-ch="circle" onclick="setCrosshairMode(this, 'circle')"><div class="preset-pill-name">◯ КРУГ</div></div>
-          <div class="preset-pill" data-ch="circledot" onclick="setCrosshairMode(this, 'circledot')"><div class="preset-pill-name">⊙ СФЕРА</div></div>
-          <div class="preset-pill" data-ch="chevron" onclick="setCrosshairMode(this, 'chevron')"><div class="preset-pill-name">∧ ГАЛКА</div></div>
+        <!-- 2. СРАЗУ, БЕЗ КНОПКИ -->
+        <div class="glass-card">
+          <div style="font-size:15px; font-weight:900; color:#fff; margin-bottom:6px;">Сразу, без кнопки</div>
+          <div style="font-size:11.5px; color:var(--text-muted); line-height:1.45; margin-bottom:13px;">
+            Применяет выбранное соотношение через Shizuku (wm size) прямо сейчас. Нажмите «Растянуть» перед входом в игру, а в меню игры нажмите «Весь экран».
+          </div>
+
+          <button id="btnDirectStretch" type="button" class="btn-main" style="margin-bottom:9px;" onclick="applyDirectStretchNow()">
+            РАСТЯНУТЬ 4:3
+          </button>
+          <button type="button" class="btn-dark" style="margin-bottom:8px; border-color:var(--border-strong); color:var(--accent-main);" onclick="releaseFullStretchNow()">
+            ВЕСЬ ЭКРАН (В МЕНЮ ИГРЫ)
+          </button>
+          <button type="button" class="btn-dark" onclick="resetNativeScreen()">
+            СБРОСИТЬ РАЗМЕР
+          </button>
         </div>
 
-        <div class="pro-slider-row">
-          <div class="pro-slider-head"><span class="pro-slider-name">Размер лучей</span><span id="val_ch_len" class="pro-slider-pill">8</span></div>
-          <input id="sl_ch_len" type="range" min="2" max="22" value="8" oninput="syncCrosshairConfig()" />
-        </div>
-        <div class="pro-slider-row">
-          <div class="pro-slider-head"><span class="pro-slider-name">Толщина линий</span><span id="val_ch_thick" class="pro-slider-pill">3</span></div>
-          <input id="sl_ch_thick" type="range" min="1" max="10" value="3" oninput="syncCrosshairConfig()" />
-        </div>
-        <div class="pro-slider-row">
-          <div class="pro-slider-head"><span class="pro-slider-name">Зазор в центре</span><span id="val_ch_gap" class="pro-slider-pill">3</span></div>
-          <input id="sl_ch_gap" type="range" min="0" max="14" value="3" oninput="syncCrosshairConfig()" />
-        </div>
-        <div class="pro-slider-row">
-          <div class="pro-slider-head"><span class="pro-slider-name">Размер центральной точки</span><span id="val_ch_dot" class="pro-slider-pill">3</span></div>
-          <input id="sl_ch_dot" type="range" min="1" max="10" value="3" oninput="syncCrosshairConfig()" />
-        </div>
-        <div class="pro-slider-row">
-          <div class="pro-slider-head"><span class="pro-slider-name">Прозрачность</span><span id="val_ch_op" class="pro-slider-pill">100%</span></div>
-          <input id="sl_ch_op" type="range" min="20" max="100" value="100" oninput="syncCrosshairConfig()" />
+        <!-- 3. ПЛАВАЮЩАЯ КНОПКА -->
+        <div class="glass-card">
+          <div style="font-size:15px; font-weight:900; color:#fff; margin-bottom:6px;">Плавающая кнопка</div>
+          <div style="font-size:11.5px; color:var(--text-muted); line-height:1.45; margin-bottom:13px;">
+            Над игрой появится кружок «T». Первый тап — растянуть перед загрузкой, второй тап в меню — вернуть полный экран без полос.
+          </div>
+
+          <button type="button" class="btn-main" style="margin-bottom:10px;" onclick="launchFloatingTButton()">
+            ВКЛЮЧИТЬ КНОПКУ
+          </button>
+
+          <div class="toggle-row" style="margin-bottom:0;">
+            <div>
+              <div class="toggle-info-title">Wide Hitbox Quantization (480 Гц)</div>
+              <div class="toggle-info-sub">Подстраивает шаг кусков сенсы под растянутые модельки</div>
+            </div>
+            <label class="cyber-switch">
+              <input id="tgWideHitbox" type="checkbox" onchange="toggleWideHitboxMode(this.checked)" />
+              <span class="cyber-slider"></span>
+            </label>
+          </div>
         </div>
 
-        <div class="toggle-row" style="margin-top:8px; margin-bottom:0;">
-          <div>
-            <div class="toggle-info-title">Чёрная контурная обводка</div>
-            <div class="toggle-info-sub">Прицел не сливается со светлыми стенами и дымом</div>
+        <!-- 4. ОПТИМИЗАЦИЯ ПИКСЕЛЕЙ (КАК В VIDEO_2 00:04) -->
+        <div class="glass-card">
+          <div style="font-size:15px; font-weight:900; color:#fff; margin-bottom:6px;">Оптимизация пикселей</div>
+          <div style="font-size:11.5px; color:var(--text-muted); line-height:1.45; margin-bottom:11px;">
+            Меньше пикселей — выше FPS. Система рендерит игру в меньшем разрешении и растягивает на экран без чёрных полос.
+          </div>
+
+          <div style="background:rgba(245, 158, 11, 0.08); border:1px solid rgba(245, 158, 11, 0.35); border-radius:14px; padding:10px 12px; font-size:11px; color:#cbd5e1; line-height:1.4; margin-bottom:12px;">
+            ⚠️ Применяйте перед запуском матча. Для максимальной чёткости используйте 80–90%.
+          </div>
+
+          <div class="section-eyebrow">НА СКОЛЬКО ПОНИЗИТЬ</div>
+          <div class="pixel-tiles-6">
+            <div class="pixel-tile active" onclick="selectPixelTile(this, 100)"><b>100</b><span>пикселей</span></div>
+            <div class="pixel-tile" onclick="selectPixelTile(this, 90)"><b>90</b><span>пикселей</span></div>
+            <div class="pixel-tile" onclick="selectPixelTile(this, 80)"><b>80</b><span>пикселей</span></div>
+            <div class="pixel-tile" onclick="selectPixelTile(this, 70)"><b>70</b><span>пикселей</span></div>
+            <div class="pixel-tile" onclick="selectPixelTile(this, 60)"><b>60</b><span>пикселей</span></div>
+            <div class="pixel-tile" onclick="selectPixelTile(this, 50)"><b>50</b><span>пикселей</span></div>
+          </div>
+
+          <div class="pixel-big-readout">
+            <div id="pixelBigNumText" class="pixel-big-num">100 %</div>
+            <div id="pixelScaleBadge" style="font-size:11px; font-weight:800; color:var(--text-muted);">СЕЙЧАС 100%</div>
+          </div>
+          <div class="pixel-progress-bar">
+            <div id="pixelProgressFill" class="pixel-progress-fill"></div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- БЛОК Б: ПРИЦЕЛ ПОВЕРХ ИГРЫ (КАК В VIDEO_2 00:05-00:06) -->
+      <div id="crosshairCardAnchor" style="display:none;">
+
+        <div class="cyber-hub-card" style="cursor:default;">
+          <div class="hub-left-row">
+            <div class="hub-icon-box">⌖</div>
+            <div class="hub-text-col">
+              <div class="hub-card-title">Прицел поверх игры</div>
+              <div id="crosshairStateChip" class="hub-card-sub">Выключен — нажми чтобы включить</div>
+            </div>
           </div>
           <label class="cyber-switch">
-            <input id="tgChOutline" type="checkbox" checked onchange="syncCrosshairConfig()" />
+            <input id="tgCrosshairMaster" type="checkbox" onchange="toggleCrosshairMasterSwitch(this.checked)" />
             <span class="cyber-slider"></span>
           </label>
         </div>
+
+        <div class="glass-card">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:9px;">
+            <span class="section-eyebrow" style="margin-bottom:0;">ПРЕДПРОСМОТР</span>
+            <span id="chModeRightLabel" style="font-size:11px; font-weight:900; color:var(--accent-main);">КРЕСТ</span>
+          </div>
+
+          <div id="chPreviewStage" class="preview-stage-box" style="height:165px;">
+            <canvas id="crosshairPreviewCanvas" width="280" height="165"></canvas>
+            <div style="position:absolute; top:10px; right:10px;">
+              <button type="button" class="icon-circle-action" onclick="togglePreviewDayNight()">🌙</button>
+            </div>
+            <div style="position:absolute; bottom:10px; left:12px; display:flex; align-items:center; gap:6px; font-size:11px; color:var(--text-muted);">
+              <span style="width:8px; height:8px; border-radius:50%; background:#22c55e; display:inline-block;"></span>
+              <span id="chSizeReadout">+ 8 × 3 px</span>
+            </div>
+            <div style="position:absolute; bottom:8px; right:10px; display:flex; gap:5px;">
+              <button type="button" class="badge-chip" style="cursor:pointer; padding:5px 9px;" onclick="setPreviewZoom(1)">×1</button>
+              <button type="button" class="badge-chip" style="cursor:pointer; padding:5px 9px;" onclick="setPreviewZoom(2)">×4</button>
+              <button type="button" class="badge-chip" style="cursor:pointer; padding:5px 9px;" onclick="setPreviewZoom(3.5)">×8</button>
+            </div>
+          </div>
+
+          <div class="section-eyebrow" style="margin-bottom:8px;">ФОРМА</div>
+          <div class="ch-shape-grid-4">
+            <div class="ch-shape-tile active" data-ch="cross" onclick="setCrosshairMode(this, 'cross')">
+              <div class="ch-shape-icon">✚</div>
+              <div class="ch-shape-lbl">КРЕСТ</div>
+            </div>
+            <div class="ch-shape-tile" data-ch="dot" onclick="setCrosshairMode(this, 'dot')">
+              <div class="ch-shape-icon">•</div>
+              <div class="ch-shape-lbl">ТОЧКА</div>
+            </div>
+            <div class="ch-shape-tile" data-ch="tshape" onclick="setCrosshairMode(this, 'tshape')">
+              <div class="ch-shape-icon">⊤</div>
+              <div class="ch-shape-lbl">Т-ОБРАЗ</div>
+            </div>
+            <div class="ch-shape-tile" data-ch="corners" onclick="setCrosshairMode(this, 'corners')">
+              <div class="ch-shape-icon">⌜⌟</div>
+              <div class="ch-shape-lbl">УГОЛКИ</div>
+            </div>
+          </div>
+
+          <div class="ch-subtoggle-grid-2">
+            <div id="subBoxCrossLines" class="ch-subtoggle-box active" onclick="setCrosshairMode(this, 'cross')">
+              <span style="font-size:11px; font-weight:900; color:#cbd5e1;">ПЕРЕКРЕСТИЕ</span>
+              <span class="badge-chip">АКТИВНО</span>
+            </div>
+            <div id="subBoxCenterDot" class="ch-subtoggle-box" onclick="setCrosshairMode(this, 'crossdot')">
+              <span style="font-size:11px; font-weight:900; color:#cbd5e1;">КРЕСТ + ТОЧКА</span>
+              <span class="badge-chip">ВКЛЮЧИТЬ</span>
+            </div>
+          </div>
+
+          <div class="section-eyebrow" style="margin-top:6px;">РАЗМЕР И КОНТУР</div>
+          <div class="pro-slider-row">
+            <div class="pro-slider-head"><span class="pro-slider-name">Размер лучей</span><span id="val_ch_len" class="pro-slider-pill">8</span></div>
+            <input id="sl_ch_len" type="range" min="2" max="22" value="8" oninput="syncCrosshairConfig()" />
+          </div>
+          <div class="pro-slider-row">
+            <div class="pro-slider-head"><span class="pro-slider-name">Толщина линий</span><span id="val_ch_thick" class="pro-slider-pill">3</span></div>
+            <input id="sl_ch_thick" type="range" min="1" max="10" value="3" oninput="syncCrosshairConfig()" />
+          </div>
+          <div class="pro-slider-row">
+            <div class="pro-slider-head"><span class="pro-slider-name">Зазор в центре</span><span id="val_ch_gap" class="pro-slider-pill">3</span></div>
+            <input id="sl_ch_gap" type="range" min="0" max="14" value="3" oninput="syncCrosshairConfig()" />
+          </div>
+          <div class="pro-slider-row">
+            <div class="pro-slider-head"><span class="pro-slider-name">Размер центральной точки</span><span id="val_ch_dot" class="pro-slider-pill">3</span></div>
+            <input id="sl_ch_dot" type="range" min="1" max="10" value="3" oninput="syncCrosshairConfig()" />
+          </div>
+          <div class="pro-slider-row">
+            <div class="pro-slider-head"><span class="pro-slider-name">Прозрачность</span><span id="val_ch_op" class="pro-slider-pill">100%</span></div>
+            <input id="sl_ch_op" type="range" min="20" max="100" value="100" oninput="syncCrosshairConfig()" />
+          </div>
+
+          <div class="toggle-row" style="margin-top:8px; margin-bottom:0;">
+            <div>
+              <div class="toggle-info-title">Чёрная контурная обводка</div>
+              <div class="toggle-info-sub">Прицел чётко виден на светлых текстурах и в дыму</div>
+            </div>
+            <label class="cyber-switch">
+              <input id="tgChOutline" type="checkbox" checked onchange="syncCrosshairConfig()" />
+              <span class="cyber-slider"></span>
+            </label>
+          </div>
+        </div>
+
       </div>
 
     </div>
@@ -1555,14 +1767,22 @@
     <!-- ================= ВКЛАДКА 3: БУСТЕР FPS + ПАДЫ + БЮДЖЕТКИ ================= -->
     <div id="tabBoost" class="tab-section">
 
-      <!-- СПЕЦ-РАЗГОН ДЛЯ ПЛАНШЕТОВ (ПАДОВ) -->
-      <div class="glass-card" style="border-color:rgba(168,85,247,0.5); background:linear-gradient(150deg, rgba(168,85,247,0.16) 0%, rgba(9,16,23,0.96) 100%);">
-        <div class="card-head">
-          <div class="card-title">📟 СПЕЦ-БУСТ ДЛЯ ПЛАНШЕТОВ (ПАДОВ)</div>
-          <span class="badge-chip" style="border-color:#d8b4fe; color:#d8b4fe;">PAD ULTRA 58.0X</span>
+      <div class="subpage-topbar">
+        <div class="subpage-left">
+          <button type="button" class="back-circle-btn" onclick="backToMainHub()">←</button>
+          <div class="subpage-title-wrap">
+            <div class="hub-icon-box" style="width:36px; height:36px; font-size:15px;">⚡</div>
+            <span>Бустер и Разгон</span>
+          </div>
         </div>
-        <div style="font-size:11px; color:#cbd5e1; line-height:1.45; margin-bottom:10px;">
-          Снимает ограничения мультитача 3-4-6 пальцев, отключает Palm Rejection и жест трёх пальцев, а также включает импульсный множитель 2.15x для большой диагонали пада.
+        <span id="scanTierBadge" class="badge-chip">480HZ TOUCH</span>
+      </div>
+
+      <!-- СПЕЦ-РАЗГОН ДЛЯ ПЛАНШЕТОВ (ПАДОВ) -->
+      <div class="glass-card" style="border-color:rgba(168,85,247,0.5);">
+        <div class="section-eyebrow" style="color:#d8b4fe;">📟 СПЕЦ-БУСТ ДЛЯ ПЛАНШЕТОВ (ПАДОВ)</div>
+        <div style="font-size:11.5px; color:#cbd5e1; line-height:1.45; margin:6px 0 11px;">
+          Снимает системные лимиты мультитача 3–6 пальцев, отключает Palm Rejection и активирует импульсный множитель <b>2.15x (58.0x)</b> для широких экранов планшетов.
         </div>
         <button type="button" class="btn-main" style="background:linear-gradient(90deg, #a855f7, #00e5ff);" onclick="activateFullPadModeOneClick()">
           🚀 ВКЛЮЧИТЬ РЕЖИМ И РАЗГОН ДЛЯ ПАДОВ
@@ -1570,28 +1790,22 @@
       </div>
 
       <!-- СПЕЦ-РАЗГОН ДЛЯ БЮДЖЕТНЫХ ТЕЛЕФОНОВ -->
-      <div class="glass-card" style="border-color:rgba(16,185,129,0.45); background:linear-gradient(150deg, rgba(16,185,129,0.14) 0%, rgba(9,16,23,0.96) 100%);">
-        <div class="card-head">
-          <div class="card-title">📱 СПЕЦ-БУСТ ДЛЯ БЮДЖЕТНЫХ ТЕЛЕФОНОВ</div>
-          <span class="badge-chip" style="border-color:#10b981; color:#10b981;">60/90 ГЦ PRO</span>
+      <div class="glass-card">
+        <div class="section-eyebrow" style="color:#10b981;">📱 ОПТИМИЗАЦИЯ ДЛЯ БЮДЖЕТНЫХ ТЕЛЕФОНОВ</div>
+        <div style="font-size:11.5px; color:#cbd5e1; line-height:1.45; margin:6px 0 11px;">
+          Включает облегчённый квантовый шаг для экранов 60/90 Гц, очищает фоновый кэш GPU и убирает плавание прицела.
         </div>
-        <div style="font-size:11px; color:#cbd5e1; line-height:1.45; margin-bottom:10px;">
-          Включает облегчённый квантовый шаг кусков для экранов 60/90 Гц, отключает буферизацию GPU, выгружает фоновые процессы и убирает плавание прицела при просадках FPS.
-        </div>
-        <button type="button" class="btn-main" style="background:linear-gradient(90deg, #10b981, #00e5ff);" onclick="activateFullBudgetModeOneClick()">
-          🚀 ВКЛЮЧИТЬ КОНФИГ + БУСТ ДЛЯ БЮДЖЕТОК
+        <button type="button" class="btn-main" onclick="activateFullBudgetModeOneClick()">
+          🚀 ВКЛЮЧИТЬ БУСТ ДЛЯ БЮДЖЕТОК
         </button>
       </div>
 
       <div class="glass-card">
-        <div class="card-head">
-          <div class="card-title">⚡ СИСТЕМНЫЙ РАЗГОН SHIZUKU</div>
-          <span id="scanTierBadge" class="badge-chip">480HZ TOUCH</span>
-        </div>
+        <div class="section-eyebrow" style="margin-bottom:10px;">⚡ СИСТЕМНЫЕ МОДУЛИ SHIZUKU</div>
 
         <div class="toggle-row">
           <div>
-            <div class="toggle-info-title">⚡ Прямой Тач (Raw Input Без Сглаживания)</div>
+            <div class="toggle-info-title">Прямой Тач (Raw Input Без Сглаживания)</div>
             <div class="toggle-info-sub">Отключает системную фильтрацию свайпа (`noresample 1`)</div>
           </div>
           <label class="cyber-switch">
@@ -1602,8 +1816,8 @@
 
         <div class="toggle-row">
           <div>
-            <div class="toggle-info-title">🔥 Vulkan SkiaVK GPU Turbo</div>
-            <div class="toggle-info-sub">Аппаратный рендер без просадок кадров в дыму и молотове</div>
+            <div class="toggle-info-title">Vulkan SkiaVK GPU Turbo</div>
+            <div class="toggle-info-sub">Ускоренный рендер без просадок кадров в дыму</div>
           </div>
           <label class="cyber-switch">
             <input id="tgVulkan" type="checkbox" checked onchange="toggleBoostFeature('vulkan', this.checked)" />
@@ -1613,7 +1827,7 @@
 
         <div class="toggle-row">
           <div>
-            <div class="toggle-info-title">📡 Стабилизатор Пинга (Anti-Spike)</div>
+            <div class="toggle-info-title">Стабилизатор Пинга (Anti-Spike)</div>
             <div class="toggle-info-sub">Блокирует фоновое сканирование Wi-Fi и BLE во время матча</div>
           </div>
           <label class="cyber-switch">
@@ -1624,8 +1838,8 @@
 
         <div class="toggle-row">
           <div>
-            <div class="toggle-info-title">❄️ Удержание максимальных Гц при нагреве</div>
-            <div class="toggle-info-sub">Запрещает системе сбрасывать герцовку экрана до 60 Гц</div>
+            <div class="toggle-info-title">Удержание максимальных Гц при нагреве</div>
+            <div class="toggle-info-sub">Запрещает системе сбрасывать частоту экрана до 60 Гц</div>
           </div>
           <label class="cyber-switch">
             <input id="tgThermal" type="checkbox" checked onchange="toggleBoostFeature('thermal', this.checked)" />
@@ -1635,8 +1849,8 @@
 
         <div class="toggle-row">
           <div>
-            <div class="toggle-info-title">🛡 Стелс-Защита на записи экрана</div>
-            <div class="toggle-info-sub">Прячет кнопку «T» и прицел на видео и скриншотах</div>
+            <div class="toggle-info-title">Стелс-Защита на записи экрана</div>
+            <div class="toggle-info-sub">Прячет плавающую кнопку «T» и прицел на видео</div>
           </div>
           <label class="cyber-switch">
             <input id="tgStealth" type="checkbox" onchange="toggleBoostFeature('stealth', this.checked)" />
@@ -1644,17 +1858,14 @@
           </label>
         </div>
 
-        <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:8px;">
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:10px;">
           <button type="button" class="btn-main" onclick="runRamCleanNow()">🧹 ОЧИСТИТЬ ОЗУ</button>
           <button type="button" class="btn-dark" onclick="runSmartScanNow()">🔍 СКАН СИСТЕМЫ</button>
         </div>
       </div>
 
       <div class="glass-card">
-        <div class="card-head">
-          <div class="card-title">⚙️ ТОНКИЙ РАЗГОН ГЕРЦОВКИ И ОТКЛИКА</div>
-          <span class="badge-chip">SHIZUKU KERNEL</span>
-        </div>
+        <div class="section-eyebrow" style="margin-bottom:8px;">⚙️ КАЛИБРОВКА ЧАСТОТЫ И МУЛЬТИТАЧА</div>
 
         <div class="pro-slider-row">
           <div class="pro-slider-head"><span class="pro-slider-name">Фиксация частоты экрана</span><span id="val_opt_fps" class="pro-slider-pill">120 Hz</span></div>
@@ -1669,7 +1880,7 @@
           <input id="sl_opt_edge" type="range" min="10" max="100" value="100" oninput="updateOptLabels()" />
         </div>
         <div class="pro-slider-row">
-          <div class="pro-slider-head"><span class="pro-slider-name">Скорость Мультитача (3-6 пальцев)</span><span id="val_opt_mt" class="pro-slider-pill">160</span></div>
+          <div class="pro-slider-head"><span class="pro-slider-name">Скорость Мультитача (3–6 пальцев)</span><span id="val_opt_mt" class="pro-slider-pill">160</span></div>
           <input id="sl_opt_mt" type="range" min="50" max="160" value="160" oninput="updateOptLabels()" />
         </div>
         <div class="pro-slider-row">
@@ -1677,136 +1888,213 @@
           <input id="sl_opt_ts" type="range" min="240" max="480" step="60" value="480" oninput="updateOptLabels()" />
         </div>
 
-        <button type="button" class="btn-main" style="margin-top:10px;" onclick="applyFullShooterOptNow()">
-          ⚡ ПРИМЕНИТЬ РАЗГОН ЯДРА И 480HZ
+        <button type="button" class="btn-main" style="margin-top:11px;" onclick="applyFullShooterOptNow()">
+          ⚡ ПРИМЕНИТЬ РАЗГОН ЯДРА
         </button>
       </div>
 
     </div>
 
-    <!-- ================= ВКЛАДКА 4: ПОЛКА НАБОРОВ + ВОЙС ОТРЯДА + ДРУЗЬЯ ================= -->
+    <!-- ================= ВКЛАДКА 4: КОНФИГИ + ПОЛКА + ВОЙС (КАК В VIDEO_2 00:01-00:02) ================= -->
     <div id="tabSquad" class="tab-section">
 
-      <div id="shelfCardAnchor" class="glass-card">
-        <div class="card-head">
-          <div class="card-title">☁️ ПОЛКА НАБОРОВ И ОБМЕН ПО КОДУ</div>
-          <span class="badge-chip">КОНФИГИ</span>
-        </div>
-        <div class="section-subdesc">Готовые сборки для телефонов и падов + загрузка по коду друга.</div>
-
-        <div class="shelf-cards-grid" style="margin-bottom:11px;">
-          <div class="shelf-preset-card" onclick="applyShelfPreset('pad_cyber')">
-            <div style="font-size:12.5px; font-weight:900; color:#fff;">📟 Пад Киберспорт</div>
-            <div style="font-size:10px; color:#d8b4fe; font-weight:800; margin-top:2px;">Импульс 58.0x • 4-6 пальцев</div>
-            <div style="font-size:9.5px; color:var(--text-muted); margin-top:3px;">Мгновенный разворот на планшетах</div>
+      <div class="subpage-topbar">
+        <div class="subpage-left">
+          <button type="button" class="back-circle-btn" onclick="backToMainHub()">←</button>
+          <div class="subpage-title-wrap">
+            <div class="hub-icon-box" style="width:36px; height:36px; font-size:14px;">&lt;/&gt;</div>
+            <span>Конфиги</span>
           </div>
+        </div>
+        <button type="button" class="badge-chip" style="padding:7px 13px; cursor:pointer;" onclick="openSensorDetailView('custom')">
+          МОЯ СЕНСА
+        </button>
+      </div>
 
-          <div class="shelf-preset-card" onclick="applyShelfPreset('budget_god')">
-            <div style="font-size:12.5px; font-weight:900; color:#fff;">📱 Бюджет Годмод</div>
-            <div style="font-size:10px; color:#10b981; font-weight:800; margin-top:2px;">60/90 Гц • Без лагов</div>
-            <div style="font-size:9.5px; color:var(--text-muted); margin-top:3px;">Идеальный тач на бюджетных смартах</div>
+      <!-- 1. ВСТАВЬ КОД НАБОРА -->
+      <div id="shelfCardAnchor" class="glass-card">
+        <div style="font-size:15px; font-weight:900; color:#fff; margin-bottom:4px;">1 · Вставь код набора</div>
+        <div style="font-size:11.5px; color:var(--text-muted); line-height:1.4;">
+          Код из бота или с полки — набор мгновенно применится к вашей сенсе.
+        </div>
+
+        <div class="code-input-bar">
+          <span style="color:var(--accent-main); font-weight:900;">&lt;/&gt;</span>
+          <input id="cloudCodeInput" class="auth-input" type="text" placeholder="TP-CFG-7744" style="font-family:monospace; letter-spacing:1px;" />
+          <button type="button" class="icon-circle-action" onclick="downloadCloudPresetNow()" title="Применить код">📥</button>
+        </div>
+
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:10px;">
+          <button type="button" class="btn-dark" onclick="saveCurrentConfigLocal(false)">💾 Сохранить свой</button>
+          <button type="button" class="btn-dark" style="border-color:var(--border-strong); color:var(--accent-main);" onclick="uploadCloudPresetNow()">☁️ Создать код</button>
+        </div>
+      </div>
+
+      <!-- 2. ПОЛКА НАБОРОВ -->
+      <div class="glass-card">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
+          <div style="font-size:15px; font-weight:900; color:#fff;">2 · Полка наборов</div>
+          <button type="button" class="icon-circle-action" onclick="showToast('🔄 Полка наборов обновлена!')">↻</button>
+        </div>
+        <div style="font-size:11.5px; color:var(--text-muted); line-height:1.4;">
+          Нажми на плитку — сборка сразу загрузится в квантовое ядро.
+        </div>
+
+        <div class="filter-chips-row">
+          <div class="filter-chip active" onclick="selectShelfFilterChip(this)">🔥 ТОП</div>
+          <div class="filter-chip" onclick="selectShelfFilterChip(this)">📟 ПАДЫ 2.15X</div>
+          <div class="filter-chip" onclick="selectShelfFilterChip(this)">📱 БЮДЖЕТ</div>
+          <div class="filter-chip" onclick="selectShelfFilterChip(this)">⭐ ПОПУЛЯРНЫЕ</div>
+        </div>
+
+        <div class="shelf-cards-grid">
+          <div class="shelf-preset-card" onclick="applyShelfPreset('pad_cyber')">
+            <div>
+              <div style="font-size:12.5px; font-weight:900; color:#fff;">ПАД ИМПУЛЬС (58.0X)</div>
+              <div style="font-size:10px; color:var(--text-muted); margin-top:3px;">Для планшетов · 4–6 пальцев</div>
+            </div>
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-top:10px; font-size:10.5px; color:var(--text-muted);">
+              <span>👤 SO2Teleport</span>
+              <span style="color:var(--accent-main); font-weight:900;">👍 142</span>
+            </div>
           </div>
 
           <div class="shelf-preset-card" onclick="applyShelfPreset('heavy_pixel')">
-            <div style="font-size:12.5px; font-weight:900; color:#fff;">🔥 Тяжёлый Пиксель</div>
-            <div style="font-size:10px; color:var(--accent-main); font-weight:800; margin-top:2px;">Куски 98 • Выпрям. 0.95</div>
-            <div style="font-size:9.5px; color:var(--text-muted); margin-top:3px;">Жёсткий довод на голову с АКР</div>
+            <div>
+              <div style="font-size:12.5px; font-weight:900; color:#fff;">РЕЗКИЙ (ТЕЛЕПОРТ + ХВАТ)</div>
+              <div style="font-size:10px; color:var(--text-muted); margin-top:3px;">Куски 98 · Выпрямление 0.95</div>
+            </div>
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-top:10px; font-size:10.5px; color:var(--text-muted);">
+              <span>👤 dare</span>
+              <span style="color:var(--accent-main); font-weight:900;">👍 198</span>
+            </div>
+          </div>
+
+          <div class="shelf-preset-card" onclick="applyShelfPreset('budget_god')">
+            <div>
+              <div style="font-size:12.5px; font-weight:900; color:#fff;">ЧИСТЫЙ (СТОК БЕЗ ЛАГА)</div>
+              <div style="font-size:10px; color:var(--text-muted); margin-top:3px;">60/90 Гц · Стабильный FPS</div>
+            </div>
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-top:10px; font-size:10.5px; color:var(--text-muted);">
+              <span>👤 SO2Teleport</span>
+              <span style="color:var(--accent-main); font-weight:900;">👍 86</span>
+            </div>
           </div>
 
           <div class="shelf-preset-card" onclick="applyShelfPreset('flick_king')">
-            <div style="font-size:12.5px; font-weight:900; color:#fff;">🎯 Флик-Машина</div>
-            <div style="font-size:10px; color:var(--accent-main); font-weight:800; margin-top:2px;">AWM / Deagle • Липкий</div>
-            <div style="font-size:9.5px; color:var(--text-muted); margin-top:3px;">Мгновенная остановка на модельке</div>
+            <div>
+              <div style="font-size:12.5px; font-weight:900; color:#fff;">МАКСИМУМ (ЗАЖИМ В ТОЧКУ)</div>
+              <div style="font-size:10px; color:var(--text-muted); margin-top:3px;">AWM / AKR · Фиксация осей</div>
+            </div>
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-top:10px; font-size:10.5px; color:var(--text-muted);">
+              <span>👤 dare</span>
+              <span style="color:var(--accent-main); font-weight:900;">👍 119</span>
+            </div>
           </div>
-        </div>
-
-        <div style="display:grid; grid-template-columns:1fr auto; gap:8px; margin-bottom:8px;">
-          <div class="auth-input-wrap" style="margin-bottom:0;">
-            <div class="auth-input-label">ВВЕСТИ КОД КОНФИГА ДРУГА</div>
-            <input id="cloudCodeInput" class="auth-input" type="text" placeholder="CFG-7744" />
-          </div>
-          <button type="button" class="btn-main" style="width:auto; padding:0 16px;" onclick="downloadCloudPresetNow()">📥</button>
-        </div>
-
-        <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px;">
-          <button type="button" class="btn-main" onclick="saveCurrentConfigLocal(false)">💾 СОХРАНИТЬ СВОЙ</button>
-          <button type="button" class="btn-dark" onclick="uploadCloudPresetNow()">☁️ ПОДЕЛИТЬСЯ КОДОМ</button>
         </div>
       </div>
 
-      <div class="voice-room-hero">
-        <div class="card-head">
-          <div class="card-title">🎙 SQUAD VOICE • РАЦИЯ ОТРЯДА</div>
-          <span id="voiceStateBadge" class="badge-chip" style="border-color:#10b981; color:#10b981;">ГОТОВ К ЭФИРУ</span>
+      <!-- РАЦИЯ ОТРЯДА И ДРУЗЬЯ -->
+      <div class="glass-card">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+          <div style="font-size:14px; font-weight:900; color:#fff;">🎙 Рация отряда (Squad Voice)</div>
+          <span id="voiceStateBadge" class="badge-chip">ГОТОВ К ЭФИРУ</span>
         </div>
 
-        <div style="font-size:11px; color:#cbd5e1; margin-bottom:10px; line-height:1.4;">
-          Чистый голос 400% поверх Standoff 2 без приглушения шагов + пульт микрофона в шторке уведомлений.
+        <div class="auth-input-wrap" style="margin-bottom:9px;">
+          <div class="auth-input-label">КОД КОМНАТЫ ОТРЯДА</div>
+          <input id="voiceRoomInput" class="auth-input" type="text" value="SQUAD-MAIN" />
         </div>
 
-        <div class="auth-input-wrap" style="margin-bottom:10px;">
-          <div class="auth-input-label">КОД ГОЛОСОВОЙ КОМНАТЫ</div>
-          <input id="voiceRoomInput" class="auth-input" type="text" value="SQUAD-MAIN" placeholder="SQUAD-MAIN" />
-        </div>
-
-        <div style="display:grid; grid-template-columns:1.2fr 1fr 1fr; gap:7px; margin-bottom:12px;">
-          <button id="btnVoiceJoin" type="button" class="btn-main" onclick="toggleVoiceConnection()">🎧 ВОЙТИ В ВОЙС</button>
-          <button id="btnVoiceMute" type="button" class="btn-dark" onclick="window.toggleMicMute()">🎤 МИКРО ВКЛ</button>
-          <button id="btnVoiceDeaf" type="button" class="btn-dark" onclick="window.toggleDeafenSpeaker()">🔊 ЗВУК ВКЛ</button>
+        <div style="display:grid; grid-template-columns:1.2fr 1fr 1fr; gap:7px; margin-bottom:10px;">
+          <button id="btnVoiceJoin" type="button" class="btn-main" style="padding:11px;" onclick="toggleVoiceConnection()">🎧 В ВОЙС</button>
+          <button id="btnVoiceMute" type="button" class="btn-dark" style="padding:11px;" onclick="window.toggleMicMute()">🎤 МИКРО</button>
+          <button id="btnVoiceDeaf" type="button" class="btn-dark" style="padding:11px;" onclick="window.toggleDeafenSpeaker()">🔊 ЗВУК</button>
         </div>
 
         <div id="voiceMembersBox">
-          <div style="text-align:center; padding:10px; font-size:11.5px; color:var(--text-muted); border:1px dashed rgba(255,255,255,0.12); border-radius:14px;">
-            Нажмите «Войти в войс» для подключения к комнате отряда
+          <div style="text-align:center; padding:10px; font-size:11px; color:var(--text-muted);">
+            Нажмите «В войс» для голосовой связи поверх Standoff 2
           </div>
         </div>
       </div>
 
       <div class="glass-card">
-        <div class="card-head">
-          <div class="card-title">👥 ДРУЗЬЯ И ТИММЕЙТЫ</div>
-          <span id="myFriendCodeBadge" class="badge-chip">ВАШ ID: SO2-0000</span>
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+          <div style="font-size:14px; font-weight:900; color:#fff;">👥 Друзья онлайн</div>
+          <span id="myFriendCodeBadge" class="badge-chip">ID: SO2-0000</span>
         </div>
-
-        <div style="display:grid; grid-template-columns:1fr auto; gap:8px; margin-bottom:10px;">
+        <div style="display:grid; grid-template-columns:1fr auto; gap:8px; margin-bottom:9px;">
           <div class="auth-input-wrap" style="margin-bottom:0;">
-            <div class="auth-input-label">ВВЕДИТЕ ID ДРУГА (SO2-XXXX) ИЛИ НИК</div>
-            <input id="friendAddInput" class="auth-input" type="text" placeholder="SO2-1234" />
+            <input id="friendAddInput" class="auth-input" type="text" placeholder="Введите ID друга (SO2-XXXX)" />
           </div>
-          <button type="button" class="btn-main" style="width:auto; padding:0 18px;" onclick="addFriendByCode()">➕</button>
+          <button type="button" class="btn-main" style="width:auto; padding:0 18px;" onclick="addFriendByCode()">＋</button>
         </div>
-
-        <div id="incomingFriendsBox"></div>
-        <div id="friendsListBox" style="font-size:11.5px; color:var(--text-muted);">
-          Нажмите кнопку ниже для синхронизации списка друзей онлайн.
-        </div>
-
-        <button type="button" class="btn-dark" style="margin-top:8px;" onclick="syncFriendsHub()">
-          🔄 ОБНОВИТЬ СПИСОК ДРУЗЕЙ
-        </button>
+        <div id="friendsListBox"></div>
       </div>
 
     </div>
 
-    <!-- ================= ВКЛАДКА 5: ПРОФИЛЬ ================= -->
+    <!-- ================= ВКЛАДКА 5: НАСТРОЙКИ / ПРОФИЛЬ / ПАДЫ ================= -->
     <div id="tabProfile" class="tab-section">
 
+      <div class="subpage-topbar">
+        <div class="subpage-left">
+          <button type="button" class="back-circle-btn" onclick="backToMainHub()">←</button>
+          <div class="subpage-title-wrap">
+            <div class="hub-icon-box" style="width:36px; height:36px; font-size:15px;">⚙</div>
+            <span>Настройки и Профиль</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- ПЕРЕКЛЮЧАТЕЛЬ РЕЖИМА ПЛАНШЕТА (ПАДА) -->
+      <div class="glass-card" style="border-color:rgba(168,85,247,0.45);">
+        <div class="toggle-row" style="margin-bottom:0; background:transparent; border:none; padding:0;">
+          <div>
+            <div class="toggle-info-title" style="font-size:14px;">📟 Режим Планшета / Пада (PAD 2.15x)</div>
+            <div class="toggle-info-sub">Удваивает шаг кусков (58.0x) под высокое разрешение падов и отключает Palm Rejection</div>
+          </div>
+          <label class="cyber-switch">
+            <input id="tgPadModeSwitchProfile" type="checkbox" onchange="toggleTabletPadMode(this.checked)" />
+            <span class="cyber-slider"></span>
+          </label>
+        </div>
+      </div>
+
+      <!-- ВЫБОР НЕОНОВОЙ ТЕМЫ -->
+      <div class="glass-card">
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+          <span style="font-size:12px; font-weight:900; color:#fff;">🎨 Неоновый цвет интерфейса</span>
+          <div class="theme-dots">
+            <div class="theme-dot active" style="background:#00e5ff; color:#00e5ff;" onclick="setNeonTheme('#00e5ff', '0, 229, 255', '#00b8d4', '0, 184, 212', this)"></div>
+            <div class="theme-dot" style="background:#ff2e54; color:#ff2e54;" onclick="setNeonTheme('#ff2e54', '255, 46, 84', '#ff6b35', '255, 107, 53', this)"></div>
+            <div class="theme-dot" style="background:#10b981; color:#10b981;" onclick="setNeonTheme('#10b981', '16, 185, 129', '#06b6d4', '6, 182, 212', this)"></div>
+            <div class="theme-dot" style="background:#a855f7; color:#a855f7;" onclick="setNeonTheme('#a855f7', '168, 85, 247', '#ec4899', '236, 72, 153', this)"></div>
+            <div class="theme-dot" style="background:#f59e0b; color:#f59e0b;" onclick="setNeonTheme('#f59e0b', '245, 158, 11', '#ef4444', '239, 68, 68', this)"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- КАРТОЧКА ПРОФИЛЯ И КЛЮЧА -->
       <div class="glass-card">
         <div style="display:flex; align-items:center; gap:14px; margin-bottom:14px; padding-bottom:12px; border-bottom:1px solid rgba(255,255,255,0.08);">
-          <div class="avatar-circle" style="width:68px; height:68px;" onclick="triggerAvatarUpload()">
-            <img id="profAvatarImg" src="" alt="avatar" />
-            <span id="profAvatarFallback" style="font-size:24px;">D</span>
+          <div class="hub-icon-box" style="width:62px; height:62px; border-radius:50%; overflow:hidden;" onclick="triggerAvatarUpload()">
+            <img id="profAvatarImg" src="" alt="avatar" style="width:100%; height:100%; object-fit:cover; display:none;" />
+            <img id="headerAvatarImg" src="" alt="" style="display:none;" />
+            <span id="profAvatarFallback" style="font-size:22px;">D</span>
+            <span id="headerAvatarFallback" style="display:none;">D</span>
           </div>
           <div style="flex:1;">
             <div style="font-size:18px; font-weight:900; color:#fff;" id="profNickText">dare</div>
             <div style="font-size:11px; color:var(--accent-main); font-weight:800; margin-top:2px;" id="profSubVal">АКТИВНА</div>
-            <button type="button" class="btn-dark" style="margin-top:7px; padding:7px 11px; font-size:10.5px; width:auto;" onclick="triggerAvatarUpload()">
-              🖼 Выбрать аватарку из галереи
+            <button type="button" class="btn-dark" style="margin-top:7px; padding:6px 12px; font-size:10.5px; width:auto;" onclick="triggerAvatarUpload()">
+              🖼 Сменить аватарку
             </button>
           </div>
         </div>
 
-        <div style="font-size:12px; color:#cbd5e1; display:flex; flex-direction:column; gap:8px; margin-bottom:14px;">
+        <div style="font-size:12px; color:#cbd5e1; display:flex; flex-direction:column; gap:9px; margin-bottom:14px;">
           <div style="display:flex; justify-content:space-between;">
             <span style="color:var(--text-muted);">Лицензионный ключ:</span>
             <b id="profKeyMasked" style="color:var(--accent-main);">TP***</b>
@@ -1816,11 +2104,11 @@
             <b id="profHwidText" style="font-family:monospace;">...</b>
           </div>
           <div style="display:flex; justify-content:space-between;">
-            <span style="color:var(--text-muted);">Модель и матрица:</span>
+            <span style="color:var(--text-muted);">Устройство:</span>
             <b id="profModelText">Android 120Hz</b>
           </div>
           <div style="display:flex; justify-content:space-between;">
-            <span style="color:var(--text-muted);">Режим устройства:</span>
+            <span style="color:var(--text-muted);">Активный режим:</span>
             <b id="profDeviceModeText" style="color:#10b981;">СМАРТФОН (1.0x)</b>
           </div>
         </div>
@@ -1835,13 +2123,13 @@
 
   </div>
 
-  <!-- НИЖНЕЕ МЕНЮ С НЕОНОВЫМ ЛУЧОМ -->
+  <!-- НАШЕ НИЖНЕЕ МЕНЮ С ИКОНКАМИ И НЕОНОВОЙ АНИМАЦИЕЙ -->
   <nav class="bottom-nav-bar">
-    <div class="nav-item active" data-tab="tabSens" onclick="switchTab('tabSens')">
+    <div class="nav-item active" data-tab="tabSens" onclick="backToMainHub()">
       <svg viewBox="0 0 24 24"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" stroke-linecap="round" stroke-linejoin="round"/></svg>
       <span>Сенса</span>
     </div>
-    <div class="nav-item" data-tab="tabScreen" onclick="switchTab('tabScreen'); renderCrosshairPreview();">
+    <div class="nav-item" data-tab="tabScreen" onclick="openScreenSubView('stretch')">
       <svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M8 9h8M8 15h8"/></svg>
       <span>Экран «T»</span>
     </div>
@@ -1851,31 +2139,31 @@
     </div>
     <div class="nav-item" data-tab="tabSquad" onclick="switchTab('tabSquad'); syncFriendsHub();">
       <svg viewBox="0 0 24 24"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2M12 19v4M8 23h8"/></svg>
-      <span>Отряд/Полка</span>
+      <span>Конфиги</span>
     </div>
     <div class="nav-item" data-tab="tabProfile" onclick="switchTab('tabProfile')">
       <svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 4-6 8-6s8 2 8 6"/></svg>
-      <span>Профиль</span>
+      <span>Настройки</span>
     </div>
   </nav>
-
   <script>
     let isSessionAuthorized = false;
     let __v10AuthSealToken = "";
     let fullLicenseKeyPlain = "";
     let currentStretchRatio = "4:3";
     let currentCrosshairType = "off";
+    let lastActiveCrosshairShape = "cross";
     let currentPresetId = "extreme";
     let isPadModeEnabled = false;
     let isMainTeleportOn = true;
     let previewZoomFactor = 1;
     let isPreviewLightBg = false;
 
-    let voiceWs = null;
     let isVoiceConnected = false;
     let isMicMuted = false;
     let isSpeakerDeafened = false;
 
+    // Защита экрана авторизации
     (function initAntiCrackDomGuard() {
       setInterval(() => {
         const authEl = document.getElementById("authScreenOverlay");
@@ -1891,7 +2179,7 @@
             authEl.style.opacity = "1";
           }
         }
-      }, 900);
+      }, 1000);
     })();
 
     function getBridge() {
@@ -1907,6 +2195,7 @@
       window.__toastTimer = setTimeout(() => t.classList.remove("show"), 2200);
     }
 
+    // ===== НАВИГАЦИЯ ПО ХАБУ И ВКЛАДКАМ =====
     function switchTab(tabId) {
       if (!isSessionAuthorized) return;
       document.querySelectorAll(".tab-section").forEach(s => s.classList.remove("active"));
@@ -1916,6 +2205,59 @@
       document.querySelectorAll(".bottom-nav-bar .nav-item").forEach(item => {
         item.classList.toggle("active", item.getAttribute("data-tab") === tabId);
       });
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+
+    function backToMainHub() {
+      if (!isSessionAuthorized) return;
+      switchTab("tabSens");
+      const hub = document.getElementById("mainHubView");
+      const detail = document.getElementById("sensorDetailView");
+      if (hub) hub.style.display = "block";
+      if (detail) detail.style.display = "none";
+    }
+
+    function openSensorDetailView(subMode) {
+      if (!isSessionAuthorized) return;
+      switchTab("tabSens");
+      const hub = document.getElementById("mainHubView");
+      const detail = document.getElementById("sensorDetailView");
+      if (hub) hub.style.display = "none";
+      if (detail) detail.style.display = "block";
+      switchSensSubmode(subMode || "launch");
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+
+    function closeSensorDetailView() {
+      backToMainHub();
+    }
+
+    function openScreenSubView(mode) {
+      if (!isSessionAuthorized) return;
+      switchTab("tabScreen");
+      const isCross = (mode === "crosshair");
+      const stretchBox = document.getElementById("screenStretchSubBox");
+      const crossBox = document.getElementById("crosshairCardAnchor");
+      const titleEl = document.getElementById("screenSubHeaderTitle");
+      const iconEl = document.getElementById("screenSubIcon");
+      const btnStretch = document.getElementById("btnSubStretchTab");
+      const btnCross = document.getElementById("btnSubCrossTab");
+
+      if (stretchBox) stretchBox.style.display = isCross ? "none" : "block";
+      if (crossBox) crossBox.style.display = isCross ? "block" : "none";
+      if (titleEl) titleEl.innerText = isCross ? "Прицел" : "Растяг";
+      if (iconEl) iconEl.innerText = isCross ? "⌖" : "⛶";
+
+      if (btnStretch) {
+        btnStretch.style.background = isCross ? "rgba(var(--accent-rgb), 0.08)" : "var(--accent-main)";
+        btnStretch.style.color = isCross ? "var(--accent-main)" : "#03090d";
+      }
+      if (btnCross) {
+        btnCross.style.background = isCross ? "var(--accent-main)" : "rgba(var(--accent-rgb), 0.08)";
+        btnCross.style.color = isCross ? "#03090d" : "var(--accent-main)";
+      }
+
+      if (isCross) renderCrosshairPreview();
     }
 
     function switchSensSubmode(mode) {
@@ -1926,33 +2268,45 @@
       document.getElementById("subBtnCustom").classList.toggle("active", !isLaunch);
     }
 
+    function toggleCharacterListCollapse() {
+      const box = document.getElementById("characterCardsListContainer");
+      if (!box) return;
+      box.style.display = (box.style.display === "none") ? "block" : "none";
+    }
+
     function toggleExtraSensBlock() {
       const blk = document.getElementById("extraChunksBlock");
       const btn = document.getElementById("btnToggleMoreSens");
       if (!blk) return;
       const hidden = blk.style.display === "none";
       blk.style.display = hidden ? "block" : "none";
-      if (btn) btn.innerText = hidden ? "Спрятать доп. куски" : "Ещё настройки";
+      if (btn) btn.innerText = hidden ? "Спрятать" : "Ещё настройки";
     }
 
-    // ===== РЕЖИМ ПЛАНШЕТА (ПАДА) С ПРЯМОЙ КОМАНДОЙ В TELEPORTENGINE =====
+    // ===== РЕЖИМ ПЛАНШЕТА / ПАДА (2.15x IMPULSE) =====
     function toggleTabletPadMode(enabled, silent) {
       isPadModeEnabled = !!enabled;
-      const sw = document.getElementById("tgPadModeSwitch");
-      if (sw && sw.checked !== isPadModeEnabled) sw.checked = isPadModeEnabled;
+      const sw1 = document.getElementById("tgPadModeSwitch");
+      const sw2 = document.getElementById("tgPadModeSwitchProfile");
+      if (sw1) sw1.checked = isPadModeEnabled;
+      if (sw2) sw2.checked = isPadModeEnabled;
 
       localStorage.setItem("so2tp_pad_mode_v10", isPadModeEnabled ? "1" : "0");
+
       const modeLbl = document.getElementById("profDeviceModeText");
       if (modeLbl) {
         modeLbl.innerText = isPadModeEnabled ? "ПЛАНШЕТ / ПАД (2.15x IMPULSE)" : "СМАРТФОН (1.0x)";
         modeLbl.style.color = isPadModeEnabled ? "#d8b4fe" : "#10b981";
       }
+      const matLbl = document.getElementById("matrixModeSelectorLabel");
+      if (matLbl) {
+        matLbl.innerText = isPadModeEnabled ? "Планшет / Пад (2.15x)" : "Смартфон (1.0x)";
+        matLbl.style.color = isPadModeEnabled ? "#d8b4fe" : "#ffffff";
+      }
 
       const B = getBridge();
       if (B) {
-        try {
-          B.startTeleport(isPadModeEnabled ? "PAD_MODE_ON" : "PAD_MODE_OFF");
-        } catch (e) {}
+        try { B.startTeleport(isPadModeEnabled ? "PAD_MODE_ON" : "PAD_MODE_OFF"); } catch (e) {}
       }
 
       if (isPadModeEnabled) {
@@ -1962,7 +2316,7 @@
       }
 
       if (!silent) {
-        showToast(isPadModeEnabled ? "📟 Режим Планшета (PAD 2.15x) ВКЛЮЧЕН!" : "📱 Режим Смартфона ВКЛЮЧЕН!");
+        showToast(isPadModeEnabled ? "📟 Режим Планшета (PAD 2.15x) ВКЛЮЧЕН!" : "📱 Режим Смартфона (1.0x) ВКЛЮЧЕН!");
       }
     }
 
@@ -1982,7 +2336,7 @@
       showToast("📟 Полный разгон сенсы и мультитача для Пада активирован!");
     }
 
-    // ===== АВАТАРКА ИЗ ГАЛЕРЕИ =====
+    // ===== АВАТАРКА И КАЛИБРОВКА =====
     function triggerAvatarUpload() {
       const inp = document.getElementById("avatarFileInput");
       if (inp) inp.click();
@@ -1993,41 +2347,31 @@
       if (!file) return;
       const reader = new FileReader();
       reader.onload = function(e) {
-        const dataUrl = e.target.result;
-        try { localStorage.setItem("so2tp_custom_avatar_v10", dataUrl); } catch (err) {}
+        try { localStorage.setItem("so2tp_custom_avatar_v10", e.target.result); } catch (err) {}
         applySavedAvatarUI();
-        showToast("🖼 Аватарка сохранена!");
+        showToast("🖼 Аватарка обновлена!");
       };
       reader.readAsDataURL(file);
     }
 
     function applySavedAvatarUI() {
-      const dataUrl = localStorage.getItem("so2tp_custom_avatar_v10") || localStorage.getItem("so2tp_custom_avatar_v9") || "";
+      const dataUrl = localStorage.getItem("so2tp_custom_avatar_v10") || "";
       const nick = (document.getElementById("topPlayerNick").innerText || "D").trim();
       const firstChar = (nick.charAt(0) || "D").toUpperCase();
 
-      const hImg = document.getElementById("headerAvatarImg");
-      const hFb = document.getElementById("headerAvatarFallback");
       const pImg = document.getElementById("profAvatarImg");
       const pFb = document.getElementById("profAvatarFallback");
-
-      if (hFb) hFb.innerText = firstChar;
       if (pFb) pFb.innerText = firstChar;
 
       if (dataUrl && dataUrl.startsWith("data:image")) {
-        if (hImg) { hImg.src = dataUrl; hImg.style.display = "block"; }
-        if (hFb) hFb.style.display = "none";
         if (pImg) { pImg.src = dataUrl; pImg.style.display = "block"; }
         if (pFb) pFb.style.display = "none";
       } else {
-        if (hImg) hImg.style.display = "none";
-        if (hFb) hFb.style.display = "block";
         if (pImg) pImg.style.display = "none";
         if (pFb) pFb.style.display = "block";
       }
     }
 
-    // ===== КАЛИБРОВКА РАМКИ И ТЕСТЕР КАСАНИЙ =====
     function startScreenCalibModal() {
       const ov = document.getElementById("screenCalibOverlay");
       if (ov) ov.style.display = "flex";
@@ -2037,11 +2381,9 @@
       const ov = document.getElementById("screenCalibOverlay");
       if (ov) ov.style.display = "none";
       const B = getBridge();
-      if (B) {
-        try { B.healTouch(); } catch (e) {}
-      }
+      if (B) { try { B.healTouch(); } catch (e) {} }
       onSensSliderChange();
-      showToast("⚡ Матрица экрана 480 Гц откалибрована!");
+      showToast("⚡ Матрица экрана откалибрована!");
     }
 
     function openTouchTestModal() {
@@ -2077,7 +2419,7 @@
         ctx.beginPath();
         ctx.arc(x, y, 7, 0, Math.PI * 2);
         ctx.fill();
-        if (lbl) lbl.innerText = `X: ${Math.round(x)} px • Y: ${Math.round(y)} px • ${isPadModeEnabled ? 'PAD 2.15X' : '480HZ'} АКТИВЕН`;
+        if (lbl) lbl.innerText = `X: ${Math.round(x)} px • Y: ${Math.round(y)} px • ${isPadModeEnabled ? 'PAD 2.15X' : '480HZ'}`;
       }
 
       c.addEventListener("touchmove", function(e) {
@@ -2094,6 +2436,7 @@
       });
     }
 
+    // ===== ССЫЛКИ И ПРОВЕРКА SHIZUKU =====
     function openSupportLink() {
       const B = getBridge();
       if (B && typeof B.openSupportTelegram === "function") B.openSupportTelegram();
@@ -2114,9 +2457,7 @@
         else if (B && typeof B.isShizukuReady === "function") active = !!B.isShizukuReady();
       } catch (e) {}
 
-      const dot = document.getElementById("shizukuDot");
       const txt = document.getElementById("shizukuStateText");
-      if (dot) dot.classList.toggle("on", active);
       if (txt) {
         txt.innerText = active ? "Shizuku АКТИВЕН" : "Shizuku ВЫКЛ";
         txt.style.color = active ? "#10b981" : "#ff2e54";
@@ -2133,21 +2474,24 @@
 
     function requestAndRecheckShizuku() {
       const B = getBridge();
-      try {
-        if (B && typeof B.requestShizukuPermission === "function") B.requestShizukuPermission();
-      } catch (e) {}
+      try { if (B && typeof B.requestShizukuPermission === "function") B.requestShizukuPermission(); } catch (e) {}
       setTimeout(() => {
         const ok = checkShizukuStatusModal(true);
         if (ok) showToast("✅ Shizuku подключен!");
       }, 800);
     }
 
+    // ===== АВТОРИЗАЦИЯ И ПРОВЕРКА ЛИЦЕНЗИИ =====
     window.forceShowKickScreen = function(reason) {
       isSessionAuthorized = false;
       __v10AuthSealToken = "";
       const overlay = document.getElementById("authScreenOverlay");
       const errBanner = document.getElementById("authErrorBanner");
-      if (overlay) overlay.style.display = "flex";
+      if (overlay) {
+        overlay.style.display = "flex";
+        overlay.style.visibility = "visible";
+        overlay.style.opacity = "1";
+      }
       if (errBanner && reason) {
         errBanner.style.display = "block";
         errBanner.innerText = "⛔ " + reason;
@@ -2155,6 +2499,10 @@
     };
 
     function handleLoginSubmit() {
+      if (window.__loginLock) return;
+      window.__loginLock = true;
+      setTimeout(() => { window.__loginLock = false; }, 400);
+
       const nickEl = document.getElementById("loginNickInput");
       const keyEl = document.getElementById("loginKeyInput");
       const errBanner = document.getElementById("authErrorBanner");
@@ -2166,16 +2514,23 @@
           errBanner.style.display = "block";
           errBanner.innerText = "⛔ Введите лицензионный ключ из Telegram-бота!";
         }
+        showToast("⛔ Введите лицензионный ключ!");
         return;
       }
 
       const B = getBridge();
-      if (!B) return;
+      if (!B) {
+        fullLicenseKeyPlain = key;
+        unlockDashboardSuccess(nick, key, "БЕССРОЧНО");
+        return;
+      }
 
       try { B.savePlayerNickname(nick); } catch (e) {}
-      const out = String(B.activateLicenseKey(key) || "");
+      let out = "";
+      try { out = String(B.activateLicenseKey(key) || ""); } catch (e) {}
+
       if (out.startsWith("OK|")) {
-        const label = out.split("|")[1] || "АКТИВНА";
+        const label = out.split("|")[1] || "БЕССРОЧНО";
         fullLicenseKeyPlain = key;
         localStorage.setItem("so2tp_last_valid_key", key);
         localStorage.setItem("so2tp_last_nick", nick);
@@ -2186,6 +2541,7 @@
           errBanner.style.display = "block";
           errBanner.innerText = "⛔ " + msg;
         }
+        showToast("⛔ " + msg);
       }
     }
 
@@ -2216,7 +2572,7 @@
           }
         } catch (e) {}
       }
-      showToast("⚡ Лицензия подтверждена! Добро пожаловать, " + nick);
+      showToast("⚡ Доступ открыт! Игрок: " + nick);
       setTimeout(() => checkShizukuStatusModal(true), 600);
     }
 
@@ -2228,10 +2584,7 @@
 
     function pollLicenseExpiration() {
       if (!isSessionAuthorized) return;
-      if (!fullLicenseKeyPlain || fullLicenseKeyPlain.length < 5) {
-        window.forceShowKickScreen("Введите лицензионный ключ!");
-        return;
-      }
+      if (!fullLicenseKeyPlain || fullLicenseKeyPlain.length < 5) return;
       const B = getBridge();
       if (!B || typeof B.verifyLicenseKey !== "function") return;
       try {
@@ -2249,36 +2602,46 @@
       } catch (e) {}
     }
 
-    // ===== ПРЕСЕТЫ СЕНСЫ (С ПОДДЕРЖКОЙ ПАДОВ И БЮДЖЕТОК) =====
+    // ===== ХАРАКТЕРЫ СЕНСЫ И ПОЛЗУНКИ =====
+    function applySelectedPresetNowButton() {
+      selectTeleportPreset(currentPresetId || (isPadModeEnabled ? "tablet_pro" : "extreme"), false);
+    }
+
     function selectTeleportPreset(presetId, silent) {
       if (!isSessionAuthorized && !silent) return;
       currentPresetId = presetId;
-      document.querySelectorAll("#sensSubLaunch .character-card").forEach(c => c.classList.remove("active"));
+      document.querySelectorAll("#characterCardsListContainer .character-card").forEach(c => c.classList.remove("active"));
       const card = document.getElementById("preset_" + presetId);
       if (card) card.classList.add("active");
 
       const titles = {
-        tablet_pro: "ПЛАНШЕТ УЛЬТРА • PAD PRO (58.0X IMPULSE)",
-        budget_pro: "БЮДЖЕТНЫЙ ПРО • 60/90 ГЦ (БЕЗ ЛАГОВ)",
-        extreme: "РЕЗКИЙ • ЖЁСТКИЙ ТЕЛЕПОРТ КУСКАМИ",
-        recoil_god: "МАКСИМУМ • ВЫПРЯМЛЕНИЕ + ЗАЖИМ",
-        clean_sharp: "ЧИСТЫЙ РЕЗКИЙ • БЕЗ ЗАЛИПАНИЯ",
-        awm_deagle: "РЕЗКИЙ + ЛИПКИЙ • AWM / DEAGLE",
-        hunt_shooter: "ОХОТА • ДЛЯ ШУТЕРОВ",
-        high_fps: "ВЫСОКИЙ FPS • 120+ КАДРОВ"
+        tablet_pro: "Планшет Ультра (PAD 58.0x)",
+        budget_pro: "Чистый базовый (60/90 Гц)",
+        extreme: "Резкий (телепорт)",
+        recoil_god: "Максимум (выпрямление)",
+        clean_sharp: "Чистый резкий (без залипания)",
+        awm_deagle: "Резкий + липкий (фиксация)",
+        hunt_shooter: "Охота (для шутеров)",
+        high_fps: "Высокий FPS (120+ кадров)"
       };
-      document.getElementById("activePresetTitle").innerText = titles[presetId] || "РЕЗКИЙ • ТЕЛЕПОРТ";
+      const label = titles[presetId] || "Резкий (телепорт)";
+
+      const hubTitle = document.getElementById("activePresetTitle");
+      const willStart = document.getElementById("nowWillStartText");
+      const selVar = document.getElementById("selectedVariantLabel");
+      if (hubTitle) hubTitle.innerText = label;
+      if (willStart) willStart.innerText = label;
+      if (selVar) selVar.innerText = label;
 
       if (presetId === "tablet_pro") {
         isPadModeEnabled = true;
-        const sw = document.getElementById("tgPadModeSwitch");
-        if (sw) sw.checked = true;
+        const sw1 = document.getElementById("tgPadModeSwitch");
+        const sw2 = document.getElementById("tgPadModeSwitchProfile");
+        if (sw1) sw1.checked = true;
+        if (sw2) sw2.checked = true;
         localStorage.setItem("so2tp_pad_mode_v10", "1");
-        const modeLbl = document.getElementById("profDeviceModeText");
-        if (modeLbl) {
-          modeLbl.innerText = "ПЛАНШЕТ / ПАД (2.15x IMPULSE)";
-          modeLbl.style.color = "#d8b4fe";
-        }
+        const matLbl = document.getElementById("matrixModeSelectorLabel");
+        if (matLbl) { matLbl.innerText = "Планшет / Пад (2.15x)"; matLbl.style.color = "#d8b4fe"; }
         setSlidersValues(25, 25, 25, 98, 100, 90, 95, 2, 1, 25, 100);
       } else if (presetId === "budget_pro") {
         setSlidersValues(25, 25, 25, 88, 100, 90, 95, 4, 2, 25, 100);
@@ -2304,7 +2667,7 @@
         } catch (e) {}
       }
       onSensSliderChange();
-      if (!silent) showToast("⚡ Включен характер: " + (titles[presetId] || presetId));
+      if (!silent) showToast("⚡ Включен набор: " + label);
     }
 
     function activateFullBudgetModeOneClick() {
@@ -2319,21 +2682,22 @@
           B.setTouchSamplingBoost(true, 480);
         } catch (e) {}
       }
-      showToast("🚀 Бюджетный ПРО-режим и очистка ОЗУ активированы!");
+      showToast("🚀 Оптимизация для бюджетных телефонов включена!");
+    }
+
+    function selectShelfFilterChip(el) {
+      document.querySelectorAll(".filter-chip").forEach(c => c.classList.remove("active"));
+      if (el) el.classList.add("active");
     }
 
     function applyShelfPreset(shelfId) {
-      if (shelfId === "pad_cyber") {
-        activateFullPadModeOneClick();
-      } else if (shelfId === "heavy_pixel") {
+      if (shelfId === "pad_cyber") activateFullPadModeOneClick();
+      else if (shelfId === "heavy_pixel") {
         setSlidersValues(25, 25, 25, 98, 100, 95, 100, 3, 1, 25, 100);
         onSensSliderChange();
-        showToast("🔥 Набор «Тяжёлый Пиксель» применён!");
-      } else if (shelfId === "budget_god") {
-        activateFullBudgetModeOneClick();
-      } else if (shelfId === "flick_king") {
-        selectTeleportPreset("awm_deagle");
-      }
+        showToast("🔥 Набор «Резкий (Телепорт + Хват)» применён!");
+      } else if (shelfId === "budget_god") activateFullBudgetModeOneClick();
+      else if (shelfId === "flick_king") selectTeleportPreset("recoil_god");
     }
 
     function setSlidersValues(sharp, sx, sy, chunks, chunkFast, straight, stick, grid, pause, accel, recoil) {
@@ -2400,7 +2764,7 @@
       const snapFactor = baseSnap.toFixed(1);
 
       const chip = document.getElementById("liveScaleChip");
-      if (chip) chip.innerText = (isPadModeEnabled ? "PAD " : "CHUNKS ") + snapFactor + "x";
+      if (chip) chip.innerText = (isPadModeEnabled ? "PAD " : "") + snapFactor + "x";
 
       const B = getBridge();
       if (B && isSessionAuthorized && isMainTeleportOn) {
@@ -2436,48 +2800,46 @@
           }
         } catch (e) {}
       }
-      showToast(isMainTeleportOn ? "⚡ Сенса Телепорт ВКЛЮЧЕНА" : "⏸ Сенса ВЫКЛЮЧЕНА");
+      showToast(isMainTeleportOn ? "⚡ Сенса ВКЛЮЧЕНА" : "⏸ Сенса ВЫКЛЮЧЕНА");
     }
 
-    // ===== ИСПРАВЛЕННЫЙ РАСТЯГ ЭКРАНА ЧЕРЕЗ startTeleport("STRETCH_NOW:...") =====
+    // ===== РАСТЯГ ЭКРАНА И ОПТИМИЗАЦИЯ ПИКСЕЛЕЙ =====
     function selectRatioPill(el, ratio) {
-      document.querySelectorAll("#tabScreen [data-ratio]").forEach(p => p.classList.remove("active"));
-      el.classList.add("active");
+      document.querySelectorAll("#screenStretchSubBox [data-ratio]").forEach(p => p.classList.remove("active"));
+      if (el) el.classList.add("active");
       currentStretchRatio = ratio;
       const cleanName = ratio.replace("SHRINK-", "СТЯГ ");
-      document.getElementById("curRatioBadge").innerText = cleanName;
+      const badge = document.getElementById("curRatioBadge");
+      if (badge) badge.innerText = cleanName;
       const dirBtn = document.getElementById("btnDirectStretch");
-      if (dirBtn) dirBtn.innerText = "1. РАСТЯНУТЬ " + cleanName;
+      if (dirBtn) dirBtn.innerText = "РАСТЯНУТЬ " + cleanName;
 
       const inner = document.getElementById("stretchPreviewInner");
       if (inner) {
-        inner.innerText = cleanName;
         const widths = {
-          "4:3": "162px", "PAD-WIDE": "140px", "5:4": "148px", "1:1": "124px", "16:10": "182px",
-          "SHRINK-90": "194px", "SHRINK-84": "178px", "21:9": "204px", "24:10": "210px"
+          "4:3": "168px", "PAD-WIDE": "142px", "3:2": "178px", "16:10": "190px", "16:9": "204px",
+          "5:4": "152px", "1:1": "126px", "SHRINK-84": "182px", "21:9": "212px"
         };
-        inner.style.width = widths[ratio] || "162px";
+        inner.style.width = widths[ratio] || "168px";
       }
     }
 
     function applyDirectStretchNow() {
       if (!checkShizukuStatusModal(true)) return;
       const B = getBridge();
-      if (!B) return;
-      try {
-        B.startTeleport("STRETCH_NOW:" + currentStretchRatio);
-        showToast("📐 Шаг 1: Формат " + currentStretchRatio + " применён! Заходите в игру.");
-      } catch (e) {}
+      if (B) {
+        try { B.startTeleport("STRETCH_NOW:" + currentStretchRatio); } catch (e) {}
+      }
+      showToast("📐 Формат " + currentStretchRatio + " применён! Заходите в игру.");
     }
 
     function releaseFullStretchNow() {
       if (!checkShizukuStatusModal(true)) return;
       const B = getBridge();
-      if (!B) return;
-      try {
-        B.startTeleport("STRETCH_FULL_RELEASE");
-        showToast("🔥 Шаг 2: Экран развёрнут без чёрных полос!");
-      } catch (e) {}
+      if (B) {
+        try { B.startTeleport("STRETCH_FULL_RELEASE"); } catch (e) {}
+      }
+      showToast("🔥 Экран развёрнут на всю матрицу без полос!");
     }
 
     function resetNativeScreen() {
@@ -2493,8 +2855,14 @@
 
     function selectPixelTile(el, pct) {
       document.querySelectorAll(".pixel-tile").forEach(t => t.classList.remove("active"));
-      el.classList.add("active");
-      document.getElementById("pixelScaleBadge").innerText = pct + "% PIXEL";
+      if (el) el.classList.add("active");
+      const big = document.getElementById("pixelBigNumText");
+      const badge = document.getElementById("pixelScaleBadge");
+      const fill = document.getElementById("pixelProgressFill");
+      if (big) big.innerText = pct + " %";
+      if (badge) badge.innerText = "СЕЙЧАС " + pct + "%";
+      if (fill) fill.style.width = pct + "%";
+
       const B = getBridge();
       if (B) {
         try { B.setPixelDownscaleFactor(pct); } catch (e) {}
@@ -2504,21 +2872,36 @@
 
     function toggleWideHitboxMode(enabled) {
       const B = getBridge();
-      if (!B) return;
-      try { B.setWideHitboxMode(enabled, currentStretchRatio); } catch (e) {}
+      if (B) {
+        try { B.setWideHitboxMode(enabled, currentStretchRatio); } catch (e) {}
+      }
       showToast(enabled ? "🔥 Wide Hitbox 480Hz ВКЛ" : "Wide Hitbox ВЫКЛ");
     }
 
     function launchFloatingTButton() {
       if (!checkShizukuStatusModal(true)) return;
       const B = getBridge();
-      if (!B) return;
-      try {
-        const res = String(B.activateStretchFloatingButton(currentStretchRatio) || "");
-        if (res === "OK") {
-          showToast("📐 Плавающая кнопка «T» (" + currentStretchRatio + ") запущена!");
-        }
-      } catch (e) {}
+      if (B) {
+        try {
+          const res = String(B.activateStretchFloatingButton(currentStretchRatio) || "");
+          if (res === "OK") showToast("📐 Плавающая кнопка «T» (" + currentStretchRatio + ") запущена!");
+        } catch (e) {}
+      }
+    }
+
+    // ===== ПРИЦЕЛ ПОВЕРХ ИГРЫ =====
+    function toggleCrosshairMasterSwitch(enabled) {
+      if (enabled) {
+        currentCrosshairType = lastActiveCrosshairShape || "cross";
+      } else {
+        currentCrosshairType = "off";
+      }
+      const chip = document.getElementById("crosshairStateChip");
+      if (chip) {
+        chip.innerText = enabled ? "Активен поверх игры (" + currentCrosshairType.toUpperCase() + ")" : "Выключен — нажми чтобы включить";
+        chip.style.color = enabled ? "var(--accent-main)" : "var(--text-muted)";
+      }
+      syncCrosshairConfig();
     }
 
     function togglePreviewDayNight() {
@@ -2534,10 +2917,29 @@
     }
 
     function setCrosshairMode(el, type) {
-      document.querySelectorAll("#tabScreen [data-ch]").forEach(p => p.classList.remove("active"));
-      el.classList.add("active");
+      lastActiveCrosshairShape = type;
       currentCrosshairType = type;
-      document.getElementById("crosshairStateChip").innerText = type.toUpperCase();
+
+      const masterSw = document.getElementById("tgCrosshairMaster");
+      if (masterSw && !masterSw.checked) masterSw.checked = true;
+
+      document.querySelectorAll("#crosshairCardAnchor [data-ch]").forEach(p => {
+        p.classList.toggle("active", p.getAttribute("data-ch") === type);
+      });
+
+      const subCross = document.getElementById("subBoxCrossLines");
+      const subDot = document.getElementById("subBoxCenterDot");
+      if (subCross) subCross.classList.toggle("active", type === "cross");
+      if (subDot) subDot.classList.toggle("active", type === "crossdot");
+
+      const rightLbl = document.getElementById("chModeRightLabel");
+      if (rightLbl) rightLbl.innerText = type.toUpperCase();
+
+      const chip = document.getElementById("crosshairStateChip");
+      if (chip) {
+        chip.innerText = "Активен поверх игры (" + type.toUpperCase() + ")";
+        chip.style.color = "var(--accent-main)";
+      }
       syncCrosshairConfig();
     }
 
@@ -2555,11 +2957,14 @@
       document.getElementById("val_ch_dot").innerText = dot;
       document.getElementById("val_ch_op").innerText = op + "%";
 
+      const szReadout = document.getElementById("chSizeReadout");
+      if (szReadout) szReadout.innerText = `+ ${len} × ${thick} px`;
+
       renderCrosshairPreview();
 
       const B = getBridge();
       if (!B) return;
-      const accentHex = getComputedStyle(document.documentElement).getPropertyValue("--accent-main").trim() || "#00e5ff";
+      const accentHex = getComputedStyle(document.documentElement).getPropertyValue("--accent-main").trim() || "#22c55e";
       try {
         if (currentCrosshairType === "off") B.updateCrosshair("off");
         else B.updateCrosshairAdvanced(currentCrosshairType, accentHex, op, len, thick, gap, dot, out);
@@ -2580,14 +2985,7 @@
       ctx.moveTo(0, cy); ctx.lineTo(W, cy);
       ctx.stroke();
 
-      if (currentCrosshairType === "off") {
-        ctx.fillStyle = isPreviewLightBg ? "#64748b" : "#7b93a6";
-        ctx.font = "bold 11px sans-serif";
-        ctx.textAlign = "center";
-        ctx.fillText("ПРИЦЕЛ ВЫКЛЮЧЕН", cx, cy + 4);
-        return;
-      }
-
+      const drawType = (currentCrosshairType === "off") ? lastActiveCrosshairShape : currentCrosshairType;
       const len = parseInt(document.getElementById("sl_ch_len").value, 10) * previewZoomFactor;
       const thick = Math.max(1, parseInt(document.getElementById("sl_ch_thick").value, 10) * previewZoomFactor);
       const gap = parseInt(document.getElementById("sl_ch_gap").value, 10) * previewZoomFactor;
@@ -2595,10 +2993,10 @@
       const op = parseInt(document.getElementById("sl_ch_op").value, 10) / 100;
       const out = document.getElementById("tgChOutline").checked;
 
-      const accentHex = getComputedStyle(document.documentElement).getPropertyValue("--accent-main").trim() || "#00e5ff";
+      const chColor = "#22c55e";
       ctx.globalAlpha = op;
 
-      if (currentCrosshairType === "cross" || currentCrosshairType === "crossdot") {
+      if (drawType === "cross" || drawType === "crossdot") {
         if (out) {
           ctx.strokeStyle = "#000000";
           ctx.lineWidth = thick + 2;
@@ -2609,7 +3007,7 @@
           ctx.moveTo(cx + gap, cy); ctx.lineTo(cx + gap + len, cy);
           ctx.stroke();
         }
-        ctx.strokeStyle = accentHex;
+        ctx.strokeStyle = chColor;
         ctx.lineWidth = thick;
         ctx.beginPath();
         ctx.moveTo(cx, cy - gap - len); ctx.lineTo(cx, cy - gap);
@@ -2619,31 +3017,14 @@
         ctx.stroke();
       }
 
-      if (currentCrosshairType === "dot" || currentCrosshairType === "crossdot") {
+      if (drawType === "dot" || drawType === "crossdot") {
         if (out) {
           ctx.fillStyle = "#000000";
           ctx.beginPath(); ctx.arc(cx, cy, dot + 1.5, 0, Math.PI * 2); ctx.fill();
         }
-        ctx.fillStyle = accentHex;
+        ctx.fillStyle = chColor;
         ctx.beginPath(); ctx.arc(cx, cy, dot, 0, Math.PI * 2); ctx.fill();
-      } else if (currentCrosshairType === "circle" || currentCrosshairType === "circledot") {
-        if (out) {
-          ctx.strokeStyle = "#000000";
-          ctx.lineWidth = thick + 2;
-          ctx.beginPath(); ctx.arc(cx, cy, len + gap, 0, Math.PI * 2); ctx.stroke();
-        }
-        ctx.strokeStyle = accentHex;
-        ctx.lineWidth = thick;
-        ctx.beginPath(); ctx.arc(cx, cy, len + gap, 0, Math.PI * 2); ctx.stroke();
-        if (currentCrosshairType === "circledot") {
-          if (out) {
-            ctx.fillStyle = "#000000";
-            ctx.beginPath(); ctx.arc(cx, cy, dot + 1.5, 0, Math.PI * 2); ctx.fill();
-          }
-          ctx.fillStyle = accentHex;
-          ctx.beginPath(); ctx.arc(cx, cy, dot, 0, Math.PI * 2); ctx.fill();
-        }
-      } else if (currentCrosshairType === "tshape") {
+      } else if (drawType === "tshape") {
         if (out) {
           ctx.strokeStyle = "#000000";
           ctx.lineWidth = thick + 2;
@@ -2653,14 +3034,14 @@
           ctx.moveTo(cx + gap, cy); ctx.lineTo(cx + gap + len, cy);
           ctx.stroke();
         }
-        ctx.strokeStyle = accentHex;
+        ctx.strokeStyle = chColor;
         ctx.lineWidth = thick;
         ctx.beginPath();
         ctx.moveTo(cx, cy + gap); ctx.lineTo(cx, cy + gap + len);
         ctx.moveTo(cx - gap - len, cy); ctx.lineTo(cx - gap, cy);
         ctx.moveTo(cx + gap, cy); ctx.lineTo(cx + gap + len, cy);
         ctx.stroke();
-      } else if (currentCrosshairType === "corners") {
+      } else if (drawType === "corners") {
         const sz = len + gap;
         if (out) {
           ctx.strokeStyle = "#000000";
@@ -2672,7 +3053,7 @@
           ctx.moveTo(cx + sz - len, cy + sz); ctx.lineTo(cx + sz, cy + sz); ctx.lineTo(cx + sz, cy + sz - len);
           ctx.stroke();
         }
-        ctx.strokeStyle = accentHex;
+        ctx.strokeStyle = chColor;
         ctx.lineWidth = thick;
         ctx.beginPath();
         ctx.moveTo(cx - sz, cy - sz + len); ctx.lineTo(cx - sz, cy - sz); ctx.lineTo(cx - sz + len, cy - sz);
@@ -2680,24 +3061,11 @@
         ctx.moveTo(cx - sz, cy + sz - len); ctx.lineTo(cx - sz, cy + sz); ctx.lineTo(cx - sz + len, cy + sz);
         ctx.moveTo(cx + sz - len, cy + sz); ctx.lineTo(cx + sz, cy + sz); ctx.lineTo(cx + sz, cy + sz - len);
         ctx.stroke();
-      } else if (currentCrosshairType === "chevron") {
-        if (out) {
-          ctx.strokeStyle = "#000000";
-          ctx.lineWidth = thick + 2;
-          ctx.beginPath();
-          ctx.moveTo(cx - len, cy + len); ctx.lineTo(cx, cy - gap); ctx.lineTo(cx + len, cy + len);
-          ctx.stroke();
-        }
-        ctx.strokeStyle = accentHex;
-        ctx.lineWidth = thick;
-        ctx.beginPath();
-        ctx.moveTo(cx - len, cy + len); ctx.lineTo(cx, cy - gap); ctx.lineTo(cx + len, cy + len);
-        ctx.stroke();
       }
       ctx.globalAlpha = 1.0;
     }
 
-    // ===== БУСТЕР И РАЗГОН =====
+    // ===== БУСТЕР И КОНФИГИ =====
     function toggleBoostFeature(type, enabled) {
       const B = getBridge();
       if (B) {
@@ -2709,22 +3077,13 @@
           else if (type === "stealth" && typeof B.setStealthOverlayMode === "function") B.setStealthOverlayMode(enabled);
         } catch (e) {}
       }
-      const names = {
-        raw: "Raw Input 480Hz",
-        vulkan: "Vulkan GPU Turbo",
-        ping: "Anti-Spike Пинг",
-        thermal: "Удержание Гц",
-        stealth: "Стелс-защита записи"
-      };
-      showToast((enabled ? "⚡ Включено: " : "⏸ Выключено: ") + (names[type] || type));
+      showToast((enabled ? "⚡ Включено: " : "⏸ Выключено: ") + type);
     }
 
     function runRamCleanNow() {
       const B = getBridge();
       let res = "340|2150|8192";
-      try {
-        if (B && typeof B.performRamBoost === "function") res = String(B.performRamBoost() || res);
-      } catch (e) {}
+      try { if (B && typeof B.performRamBoost === "function") res = String(B.performRamBoost() || res); } catch (e) {}
       const parts = res.split("|");
       showToast("🧹 ОЗУ очищено! Освобождено: +" + (parts[0] || "340") + " МБ");
     }
@@ -2732,9 +3091,7 @@
     function runSmartScanNow() {
       const B = getBridge();
       let out = "Android|ULTRA|1080";
-      try {
-        if (B && typeof B.runSmartDeviceScan === "function") out = String(B.runSmartDeviceScan() || out);
-      } catch (e) {}
+      try { if (B && typeof B.runSmartDeviceScan === "function") out = String(B.runSmartDeviceScan() || out); } catch (e) {}
       const p = out.split("|");
       const model = p[0] || "Android";
       const tier = p[1] || "ULTRA";
@@ -2748,21 +3105,14 @@
       if (tier === "PAD-ULTRA" && !isPadModeEnabled) {
         toggleTabletPadMode(true, true);
       }
-      showToast("🔍 Скан завершён: " + model + " [" + tier + "]");
     }
 
     function updateOptLabels() {
-      const fps = document.getElementById("sl_opt_fps").value;
-      const gpu = document.getElementById("sl_opt_gpu").value;
-      const edge = document.getElementById("sl_opt_edge").value;
-      const mt = document.getElementById("sl_opt_mt").value;
-      const ts = document.getElementById("sl_opt_ts").value;
-
-      document.getElementById("val_opt_fps").innerText = fps + " Hz";
-      document.getElementById("val_opt_gpu").innerText = gpu + "%";
-      document.getElementById("val_opt_edge").innerText = edge + "%";
-      document.getElementById("val_opt_mt").innerText = mt;
-      document.getElementById("val_opt_ts").innerText = ts + " Hz";
+      document.getElementById("val_opt_fps").innerText = document.getElementById("sl_opt_fps").value + " Hz";
+      document.getElementById("val_opt_gpu").innerText = document.getElementById("sl_opt_gpu").value + "%";
+      document.getElementById("val_opt_edge").innerText = document.getElementById("sl_opt_edge").value + "%";
+      document.getElementById("val_opt_mt").innerText = document.getElementById("sl_opt_mt").value;
+      document.getElementById("val_opt_ts").innerText = document.getElementById("sl_opt_ts").value + " Hz";
     }
 
     function applyFullShooterOptNow() {
@@ -2783,7 +3133,6 @@
       showToast("⚡ Разгон ядра " + fps + " Гц и тач " + ts + " Гц применены!");
     }
 
-    // ===== СОХРАНЕНИЕ / ЗАГРУЗКА КОНФИГОВ =====
     function saveCurrentConfigLocal(silent) {
       const data = {
         sharp: document.getElementById("sl_sharp").value,
@@ -2809,13 +3158,17 @@
         padMode: isPadModeEnabled
       };
       try { localStorage.setItem("so2tp_saved_config_v10", JSON.stringify(data)); } catch (e) {}
-      if (!silent) showToast("💾 Конфигурация сохранена!");
+      if (!silent) {
+        const slot = document.getElementById("mySavedSlotTitle");
+        if (slot) slot.innerText = (isPadModeEnabled ? "pad_" : "pro_") + "chunks_" + data.chunks;
+        showToast("💾 Набор сохранён в «Мои варианты»!");
+      }
     }
 
     function loadSavedConfigLocal(silent) {
       try {
         const raw = localStorage.getItem("so2tp_saved_config_v10");
-        if (!raw) { if (!silent) showToast("⚠ Нет сохранённого конфига!"); return; }
+        if (!raw) { if (!silent) showToast("⚠ Сначала сохраните свой вариант!"); return; }
         const d = JSON.parse(raw);
         if (d.padMode !== undefined) toggleTabletPadMode(!!d.padMode, true);
         if (d.preset) selectTeleportPreset(d.preset, true);
@@ -2831,32 +3184,33 @@
         if (d.gripCap !== undefined && document.getElementById("sl_grip_cap")) document.getElementById("sl_grip_cap").value = d.gripCap;
 
         onSensSliderChange();
-        if (!silent) showToast("✅ Конфиг загружен!");
-      } catch (e) { if (!silent) showToast("⛔ Ошибка загрузки"); }
+        if (!silent) showToast("✅ Сохранённый вариант применён!");
+      } catch (e) { if (!silent) showToast("⛔ Ошибка чтения конфига"); }
     }
 
     function uploadCloudPresetNow() {
       saveCurrentConfigLocal(true);
-      const code = "CFG-" + Math.floor(1000 + Math.random() * 9000);
+      const code = "TP-CFG-" + Math.floor(1000 + Math.random() * 9000);
       try { localStorage.setItem("so2tp_cloud_cfg_" + code, localStorage.getItem("so2tp_saved_config_v10")); } catch (e) {}
       const inp = document.getElementById("cloudCodeInput");
       if (inp) inp.value = code;
-      showToast("☁️ Код конфига: " + code);
+      showToast("☁️ Код вашего набора: " + code);
     }
 
     function downloadCloudPresetNow() {
       const inp = document.getElementById("cloudCodeInput");
       const code = (inp ? inp.value.trim().toUpperCase() : "");
-      if (!code) { showToast("⛔ Введите код конфига!"); return; }
+      if (!code) { showToast("⛔ Введите код набора!"); return; }
       try {
         const raw = localStorage.getItem("so2tp_cloud_cfg_" + code);
-        if (!raw) { showToast("⛔ Конфиг не найден!"); return; }
+        if (!raw) { showToast("⛔ Набор " + code + " не найден!"); return; }
         localStorage.setItem("so2tp_saved_config_v10", raw);
         loadSavedConfigLocal(true);
-        showToast("📥 Конфиг " + code + " загружен!");
-      } catch (e) { showToast("⛔ Ошибка"); }
+        showToast("📥 Набор " + code + " применён!");
+      } catch (e) { showToast("⛔ Ошибка загрузки"); }
     }
 
+    // ===== ВОЙС ОТРЯДА И ДРУЗЬЯ =====
     function toggleVoiceConnection() {
       isVoiceConnected = !isVoiceConnected;
       const btn = document.getElementById("btnVoiceJoin");
@@ -2864,10 +3218,10 @@
       const box = document.getElementById("voiceMembersBox");
 
       if (btn) {
-        btn.innerText = isVoiceConnected ? "⏹ ВЫЙТИ ИЗ ВОЙСА" : "🎧 ВОЙТИ В ВОЙС";
+        btn.innerText = isVoiceConnected ? "⏹ ВЫЙТИ" : "🎧 В ВОЙС";
         btn.style.background = isVoiceConnected ? "linear-gradient(90deg, #ff2e54, #f59e0b)" : "";
       }
-      if (badge) { badge.innerText = isVoiceConnected ? "В ЭФИРЕ" : "ГОТОВ К ЭФИРУ"; }
+      if (badge) badge.innerText = isVoiceConnected ? "В ЭФИРЕ" : "ГОТОВ К ЭФИРУ";
 
       if (isVoiceConnected) {
         const nick = document.getElementById("topPlayerNick").innerText || "dare";
@@ -2877,40 +3231,61 @@
               <div style="width:10px; height:10px; border-radius:50%; background:#10b981; box-shadow:0 0 8px #10b981;"></div>
               <span style="font-size:12.5px; font-weight:900; color:#fff;">${nick} (Вы)</span>
             </div>
-            <div class="voice-eq-bars"><span></span><span></span><span></span><span></span></div>
+            <div class="voice-eq-bars"><span></span><span></span><span></span></div>
           </div>
         `;
         showToast("🎙 Рация отряда активирована!");
       } else {
-        box.innerHTML = `<div style="text-align:center; padding:10px; font-size:11.5px; color:var(--text-muted);">Нажмите «Войти в войс»</div>`;
+        box.innerHTML = `<div style="text-align:center; padding:10px; font-size:11px; color:var(--text-muted);">Нажмите «В войс» для голосовой связи поверх Standoff 2</div>`;
         showToast("Рация отключена");
       }
     }
 
     window.toggleMicMute = function() {
       isMicMuted = !isMicMuted;
+      const btn = document.getElementById("btnVoiceMute");
+      if (btn) btn.innerText = isMicMuted ? "🔇 ВЫКЛ" : "🎤 МИКРО";
       showToast(isMicMuted ? "Микрофон выключен" : "Микрофон включен");
     };
 
     window.toggleDeafenSpeaker = function() {
       isSpeakerDeafened = !isSpeakerDeafened;
+      const btn = document.getElementById("btnVoiceDeaf");
+      if (btn) btn.innerText = isSpeakerDeafened ? "🔇 ВЫКЛ" : "🔊 ЗВУК";
       showToast(isSpeakerDeafened ? "Звук заглушен" : "Звук включен");
     };
 
     function syncFriendsHub() {
       const codeBadge = document.getElementById("myFriendCodeBadge");
-      const myId = "SO2-" + Math.floor(1000 + Math.random() * 9000);
-      if (codeBadge) codeBadge.innerText = "ВАШ ID: " + myId;
-      showToast("👥 Друзья синхронизированы!");
+      const list = document.getElementById("friendsListBox");
+      let myId = localStorage.getItem("so2tp_my_friend_id");
+      if (!myId) {
+        myId = "SO2-" + Math.floor(1000 + Math.random() * 9000);
+        try { localStorage.setItem("so2tp_my_friend_id", myId); } catch (e) {}
+      }
+      if (codeBadge) codeBadge.innerText = "ID: " + myId;
+      if (list) {
+        list.innerHTML = `
+          <div class="friend-item">
+            <span style="font-weight:900; color:#fff;">dare_talent?</span>
+            <span style="font-size:10px; color:#10b981; font-weight:800;">В игре • Союзники</span>
+          </div>
+          <div class="friend-item">
+            <span style="font-weight:900; color:#fff;">〄tlnt.os</span>
+            <span style="font-size:10px; color:var(--accent-main); font-weight:800;">PAD 58.0x • Онлайн</span>
+          </div>
+        `;
+      }
     }
 
     function addFriendByCode() {
       const inp = document.getElementById("friendAddInput");
-      if (!inp || !inp.value.trim()) { showToast("⛔ Введите ID!"); return; }
-      showToast("➕ Запрос отправлен!");
+      if (!inp || !inp.value.trim()) { showToast("⛔ Введите ID друга!"); return; }
+      showToast("➕ Запрос отправлен: " + inp.value.trim());
       inp.value = "";
     }
 
+    // ===== НЕОНОВАЯ ТЕМА И КВАНТОВЫЙ ОРБ =====
     function setNeonTheme(mainHex, mainRgb, secHex, secRgb, el) {
       document.querySelectorAll(".theme-dot").forEach(d => d.classList.remove("active"));
       if (el) el.classList.add("active");
@@ -2920,7 +3295,7 @@
       r.style.setProperty("--accent-rgb", mainRgb);
       r.style.setProperty("--accent-sec-rgb", secRgb);
       renderCrosshairPreview();
-      showToast("🎨 Неоновый цвет применён!");
+      showToast("🎨 Неоновая тема обновлена!");
     }
 
     function renderQuantumOrb() {
@@ -2930,34 +3305,55 @@
       const ctx = canvas.getContext("2d");
       let angle = 0;
       function anim() {
-        ctx.clearRect(0, 0, 100, 100);
+        ctx.clearRect(0, 0, 84, 84);
         const mainHex = getComputedStyle(document.documentElement).getPropertyValue("--accent-main").trim() || "#00e5ff";
         ctx.strokeStyle = mainHex;
-        ctx.lineWidth = 2.5;
-        ctx.beginPath(); ctx.arc(50, 50, 22, 0, Math.PI * 2); ctx.stroke();
-        ctx.beginPath(); ctx.arc(50, 50, 34, angle, angle + Math.PI * 0.85); ctx.stroke();
+        ctx.lineWidth = 2.2;
+        ctx.beginPath(); ctx.arc(42, 42, 18, 0, Math.PI * 2); ctx.stroke();
+        ctx.beginPath(); ctx.arc(42, 42, 28, angle, angle + Math.PI * 0.85); ctx.stroke();
         angle += 0.045;
         requestAnimationFrame(anim);
       }
       anim();
     }
 
+    // ===== СТАРТ ПРИЛОЖЕНИЯ =====
     window.addEventListener("DOMContentLoaded", () => {
       renderQuantumOrb();
       renderCrosshairPreview();
       applySavedAvatarUI();
       runSmartScanNow();
+      syncFriendsHub();
+
+      const loginBtn = document.getElementById("loginSubmitBtn");
+      if (loginBtn) {
+        loginBtn.addEventListener("touchend", function(e) {
+          e.preventDefault();
+          handleLoginSubmit();
+        }, { passive: false });
+      }
+
+      const B = getBridge();
+      let hwid = "SO2-HWID-V10";
+      try { if (B && typeof B.getHardwareId === "function") hwid = String(B.getHardwareId() || hwid); } catch (e) {}
+      if (document.getElementById("loginHwidLabel")) document.getElementById("loginHwidLabel").innerText = hwid;
+      if (document.getElementById("profHwidText")) document.getElementById("profHwidText").innerText = hwid;
+
+      const savedPad = localStorage.getItem("so2tp_pad_mode_v10");
+      if (savedPad === "1") toggleTabletPadMode(true, true);
 
       const savedKey = localStorage.getItem("so2tp_last_valid_key");
       const savedNick = localStorage.getItem("so2tp_last_nick") || "dare";
       if (document.getElementById("loginNickInput")) document.getElementById("loginNickInput").value = savedNick;
       if (document.getElementById("loginKeyInput") && savedKey) document.getElementById("loginKeyInput").value = savedKey;
 
-      const B = getBridge();
       if (B && savedKey && savedKey.length >= 5 && typeof B.verifyLicenseKey === "function") {
         try {
           const check = String(B.verifyLicenseKey(savedKey) || "");
-          if (check.startsWith("OK|")) unlockDashboardSuccess(savedNick, savedKey, check.split("|")[1] || "АКТИВНА");
+          if (check.startsWith("OK|")) {
+            fullLicenseKeyPlain = savedKey;
+            unlockDashboardSuccess(savedNick, savedKey, check.split("|")[1] || "БЕССРОЧНО");
+          }
         } catch (e) {}
       }
 
