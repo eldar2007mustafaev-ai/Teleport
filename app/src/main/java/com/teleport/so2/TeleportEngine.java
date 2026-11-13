@@ -277,7 +277,7 @@ public class TeleportEngine {
     }
 
     public static void execShizukuCommand(final String cmd) {
-        if (!isServerAuthorized || isTamperDetected) return;
+        if (!SecurityShield.isSessionCryptographicallyValid(appContext)) return;
         shizukuQueue.execute(() -> {
             try { ShizukuManager.execCommand(cmd); } catch (Throwable ignored) {}
         });
