@@ -1023,6 +1023,7 @@ public class AndroidBridge {
 
             if (ok) {
                 markKeyActivated(nick, cleanKey, res);
+                SecurityShield.issueVerifiedSessionToken(context, key);
                 String liveLabel = buildLiveSubscriptionLabel(res, cleanKey);
                 if ("EXPIRED".equals(liveLabel)) {
                     forceKickExpiredUser("Срок действия этого ключа истёк!");
