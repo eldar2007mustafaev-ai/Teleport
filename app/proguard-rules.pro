@@ -10,3 +10,17 @@
 -keep class com.teleport.so2.MainActivity { *; }
 -keep class rikka.shizuku.** { *; }
 -dontwarn rikka.shizuku.**
+
+-repackageclasses ''
+-allowaccessmodification
+-overloadaggressively
+
+-obfuscationdictionary dict.txt
+-classobfuscationdictionary dict.txt
+-packageobfuscationdictionary dict.txt
+
+-keepclassmembers class * {
+    @android.webkit.JavascriptInterface <methods>;
+}
+-keep class rikka.shizuku.** { *; }
+-keep class com.teleport.so2.TeleportEngine { *; }
