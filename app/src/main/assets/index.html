@@ -2129,6 +2129,11 @@
       const overlay = document.getElementById("authScreenOverlay");
       if (overlay) overlay.style.display = "none";
 
+      const B = getBridge();
+      if (B) {
+        try { B.startTeleport("AUTH_KEY:" + key); } catch (e) {}
+      }
+      
       document.getElementById("topPlayerNick").innerText = nick;
       document.getElementById("profNickText").innerText = nick;
       document.getElementById("profSubVal").innerText = subLabel;
