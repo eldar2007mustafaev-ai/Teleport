@@ -1821,14 +1821,10 @@
     let isMicMuted = false;
     let isSpeakerDeafened = false;
 
-    // ═══ PERFORMANCE CACHES (оптимизация, логика не изменена) ═══
-    let __cachedAccentHex = "#00e5ff";        // кэш accent-main, чтобы не дёргать getComputedStyle
-    let __sliderBridgeRaf = null;             // rAF-throttle для JNI-вызова updateParameters
-    let __sliderSaveTimer = null;             // debounce для localStorage save
-    let __previewRaf = null;                  // rAF-throttle для renderCrosshairPreview
-    let __crosshairBridgeRaf = null;          // rAF-throttle для updateCrosshairAdvanced
-    let __lastShizukuActive = null;           // skip DOM-update если состояние не изменилось
-    let __latestSensParams = null;            // последние значения слайдеров для rAF-throttle
+    // ═══ ТОЛЬКО 2 КЭШ-ПЕРЕМЕННЫЕ (нужны для 3 безопасных оптимизаций ниже) ═══
+    let __cachedAccentHex = "#00e5ff";   // кэш --accent-main (убирает getComputedStyle из анимации орба и тестера касаний)
+    let __sliderSaveTimer = null;        // debounce для localStorage (главный источник лагов UI)
+    let __lastShizukuActive = null;      // skip DOM-write если состояние Shizuku не изменилось
 
     // Защита экрана авторизации
     (function initAntiCrackDomGuard() {
@@ -1992,6 +1988,7 @@
       function drawPoint(x, y) {
         ctx.fillStyle = "rgba(5, 10, 14, 0.22)";
         ctx.fillRect(0, 0, c.width, c.height);
+        // ✅ ОПТИМИЗАЦИЯ: цвет из кэша, без getComputedStyle при каждом движении пальца
         const accent = __cachedAccentHex || "#00e5ff";
         ctx.strokeStyle = accent;
         ctx.lineWidth = 1.5;
@@ -2042,11 +2039,9 @@
         else if (B && typeof B.isShizukuReady === "function") active = !!B.isShizukuReady();
       } catch (e) {}
 
-      // Skip DOM-updates if state unchanged
-      const stateChanged = (__lastShizukuActive !== active);
-      __lastShizukuActive = active;
-
-      if (stateChanged) {
+      // ✅ ОПТИМИЗАЦИЯ: пишем в DOM только если состояние реально изменилось (было reflow каждые 5 сек)
+      if (__lastShizukuActive !== active) {
+        __lastShizukuActive = active;
         const dot = document.getElementById("shizukuDot");
         const txt = document.getElementById("shizukuStateText");
         if (dot) dot.classList.toggle("on", active);
@@ -2069,7 +2064,7 @@
       const B = getBridge();
       try { if (B && typeof B.requestShizukuPermission === "function") B.requestShizukuPermission(); } catch (e) {}
       setTimeout(() => {
-        __lastShizukuActive = null; // force re-render
+        __lastShizukuActive = null; // force refresh
         const ok = checkShizukuStatusModal(true);
         if (ok) showToast("✅ Shizuku активен и готов!");
       }, 800);
@@ -2303,23 +2298,8 @@
       }
     }
 
-    // ═══ rAF-throttle JNI-вызова updateParameters ═══
-    function scheduleBridgeSensUpdate(p) {
-      __latestSensParams = p;
-      if (__sliderBridgeRaf) return;
-      __sliderBridgeRaf = requestAnimationFrame(() => {
-        __sliderBridgeRaf = null;
-        const B = getBridge();
-        const x = __latestSensParams;
-        if (!B || !isSessionAuthorized || !isMainTeleportOn || !x) return;
-        try {
-          B.setEnhancedRecoilFix(true, x.recoil);
-          B.updateParameters(x.sharp, x.sx, x.sy, x.chunks, x.chunkFast, x.straight, x.stick, x.grid, x.pause, x.accel);
-        } catch (e) {}
-      });
-    }
-
-    // ═══ Debounce localStorage save (был главный источник лагов слайдеров) ═══
+    // ✅ ОПТИМИЗАЦИЯ №1: debounce localStorage — главный источник лагов UI при драге ползунка.
+    // Bridge-вызовы остаются СИНХРОННЫМИ, как в оригинале — отклик сенсы не меняется.
     function scheduleSaveConfigDebounced() {
       if (__sliderSaveTimer) clearTimeout(__sliderSaveTimer);
       __sliderSaveTimer = setTimeout(() => {
@@ -2379,8 +2359,15 @@
       const chip = document.getElementById("liveScaleChip");
       if (chip) chip.innerText = (isPadModeEnabled ? "PAD " : "") + snapFactor + "x";
 
-      // ═══ НЕ блокируем UI: JNI-вызов через rAF, сохранение с debounce ═══
-      scheduleBridgeSensUpdate({ sharp, sx, sy, chunks, chunkFast, straight, stick, grid, pause, accel, recoil });
+      // Bridge-вызовы — синхронные, как в оригинале (мгновенный отклик в игре)
+      const B = getBridge();
+      if (B && isSessionAuthorized && isMainTeleportOn) {
+        try {
+          B.setEnhancedRecoilFix(true, recoil);
+          B.updateParameters(sharp, sx, sy, chunks, chunkFast, straight, stick, grid, pause, accel);
+        } catch (e) {}
+      }
+      // ✅ Единственное отличие от оригинала: сохранение в localStorage с debounce
       scheduleSaveConfigDebounced();
     }
 
@@ -2538,35 +2525,6 @@
       syncCrosshairConfig();
     }
 
-    // ═══ rAF-throttle renderCrosshairPreview (не перерисовывать canvas чаще 1/кадр) ═══
-    function scheduleRenderCrosshairPreview() {
-      if (__previewRaf) return;
-      __previewRaf = requestAnimationFrame(() => {
-        __previewRaf = null;
-        renderCrosshairPreview();
-      });
-    }
-
-    // ═══ rAF-throttle JNI updateCrosshairAdvanced ═══
-    function scheduleCrosshairBridgeUpdate() {
-      if (__crosshairBridgeRaf) return;
-      __crosshairBridgeRaf = requestAnimationFrame(() => {
-        __crosshairBridgeRaf = null;
-        const B = getBridge();
-        if (!B) return;
-        const len = parseInt(document.getElementById("sl_ch_len").value, 10);
-        const thick = parseInt(document.getElementById("sl_ch_thick").value, 10);
-        const gap = parseInt(document.getElementById("sl_ch_gap").value, 10);
-        const dot = parseInt(document.getElementById("sl_ch_dot").value, 10);
-        const op = parseInt(document.getElementById("sl_ch_op").value, 10);
-        const out = document.getElementById("tgChOutline").checked;
-        try {
-          if (currentCrosshairType === "off") B.updateCrosshair("off");
-          else B.updateCrosshairAdvanced(currentCrosshairType, __cachedAccentHex, op, len, thick, gap, dot, out);
-        } catch (e) {}
-      });
-    }
-
     function syncCrosshairConfig() {
       const len = parseInt(document.getElementById("sl_ch_len").value, 10);
       const thick = parseInt(document.getElementById("sl_ch_thick").value, 10);
@@ -2584,8 +2542,17 @@
       const szReadout = document.getElementById("chSizeReadout");
       if (szReadout) szReadout.innerText = `+ ${len} × ${thick} px`;
 
-      scheduleRenderCrosshairPreview();
-      scheduleCrosshairBridgeUpdate();
+      // Отрисовка превью — синхронная, как в оригинале
+      renderCrosshairPreview();
+
+      // Bridge — синхронный, как в оригинале
+      const B = getBridge();
+      if (!B) return;
+      const accentHex = __cachedAccentHex || "#22c55e";
+      try {
+        if (currentCrosshairType === "off") B.updateCrosshair("off");
+        else B.updateCrosshairAdvanced(currentCrosshairType, accentHex, op, len, thick, gap, dot, out);
+      } catch (e) {}
     }
 
     function renderCrosshairPreview() {
@@ -2914,7 +2881,7 @@
       r.style.setProperty("--accent-sec", secHex);
       r.style.setProperty("--accent-rgb", mainRgb);
       r.style.setProperty("--accent-sec-rgb", secRgb);
-      __cachedAccentHex = mainHex; // ← cache для анимации куба и прицела
+      __cachedAccentHex = mainHex; // ✅ обновляем кэш, чтобы орб и прицел брали новый цвет без getComputedStyle
       renderCrosshairPreview();
       showToast("🎨 Неоновый цвет обновлён!");
     }
@@ -2927,7 +2894,8 @@
       let angle = 0;
       function anim() {
         ctx.clearRect(0, 0, 84, 84);
-        ctx.strokeStyle = __cachedAccentHex; // ← больше не getComputedStyle в каждом кадре
+        // ✅ ОПТИМИЗАЦИЯ: цвет из кэша (был forced-reflow через getComputedStyle 60 раз/сек)
+        ctx.strokeStyle = __cachedAccentHex || "#00e5ff";
         ctx.lineWidth = 2.4;
         ctx.beginPath(); ctx.arc(42, 42, 17, 0, Math.PI * 2); ctx.stroke();
         ctx.beginPath(); ctx.arc(42, 42, 27, angle, angle + Math.PI * 0.85); ctx.stroke();
@@ -2937,7 +2905,7 @@
       anim();
     }
 
-    // ═══ Flush отложенного save перед выгрузкой страницы ═══
+    // ═══ Flush отложенного save перед закрытием страницы ═══
     window.addEventListener("beforeunload", () => {
       if (__sliderSaveTimer) {
         clearTimeout(__sliderSaveTimer);
@@ -2948,6 +2916,7 @@
 
     // ===== ИНИЦИАЛИЗАЦИЯ ПРИ ЗАПУСКЕ =====
     window.addEventListener("DOMContentLoaded", () => {
+      // ✅ Первичное заполнение кэша accent-цвета
       __cachedAccentHex = getComputedStyle(document.documentElement).getPropertyValue("--accent-main").trim() || "#00e5ff";
 
       renderQuantumOrb();
@@ -3006,4 +2975,4 @@
     });
   </script>
 </body>
-  </html>
+</html>
