@@ -97,8 +97,9 @@ public class ApiManager {
             return raw;
         } catch (Exception e) {
             sessionVerified = false;
-            return "{\"status\":\"network_error\",\"ok\":false,\"message\":\"Нет связи с сервером авторизации. Проверьте интернет.\"}";
+            return "{\"status\":\"offline\",\"ok\":false,\"blocked\":true,\"message\":\"Нет связи с сервером лицензий!\"}";
         }
+
     }
 
     public static String verifyLicense(String key, String androidId) {
