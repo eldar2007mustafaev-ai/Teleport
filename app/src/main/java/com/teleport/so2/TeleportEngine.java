@@ -33,7 +33,6 @@ import rikka.shizuku.Shizuku;
 
 public class TeleportEngine {
 
-    // Твой VPS сервер (hiplet-136491) уже прописан:
     private static final String SERVER_URL = "http://45.10.165.75:8443/api/v10/engine";
     private static final String MASTER_SALT = "SO2TP_V10_QUANTUM_SERVER_KEY_9941";
 
@@ -114,7 +113,6 @@ public class TeleportEngine {
         nativeLongSide = curLong;
     }
 
-    // Автоматически находит лицензионный ключ во всех SharedPreferences приложения
     private static void autoDetectSavedLicenseKey() {
         if (appContext == null) return;
         try {
@@ -395,7 +393,7 @@ public class TeleportEngine {
             int stick, int grid, int pause, double accel
     ) {
         try {
-            String sig = sharp + "|" + sx + "|" + sy + "|" + chunks + "|" + chunkFast + "|" + stick + "|" + grid + "|" + pause + "|" + accel + "|" + isTabletDeviceMode;
+            String sig = sharp + "|" + sx + "|" + sy + "|" + chunks + "|" + chunkFast + "|" + straight + "|" + stick + "|" + grid + "|" + pause + "|" + accel + "|" + isTabletDeviceMode;
             if (sig.equals(lastPayloadSig)) return;
             lastPayloadSig = sig;
 
