@@ -170,8 +170,7 @@
       position: fixed;
       inset: 0;
       background: rgba(3, 7, 10, 0.92);
-      backdrop-filter: blur(12px);
-      -webkit-backdrop-filter: blur(12px);
+      /* ❌ УБРАН backdrop-filter: blur(12px) — не нужен, модалка и так открывается редко */
       z-index: 99999;
       display: none;
       align-items: center;
@@ -282,6 +281,7 @@
       gap: 12px;
       box-shadow: 0 8px 26px rgba(0, 0, 0, 0.6), inset 0 0 18px rgba(var(--accent-rgb), 0.03);
       transition: border-color 0.2s, box-shadow 0.2s;
+      contain: layout style;
     }
     .cyber-hub-card.glow-strong {
       border-color: var(--border-strong);
@@ -345,7 +345,7 @@
       box-shadow: 0 0 24px rgba(var(--accent-rgb), 0.68);
       cursor: pointer;
       flex-shrink: 0;
-      transition: all 0.22s ease;
+      transition: background-color 0.22s ease, color 0.22s ease, box-shadow 0.22s ease;
     }
     .sens-circle-btn.off {
       background: rgba(255, 255, 255, 0.08);
@@ -362,6 +362,7 @@
       border-radius: 999px;
       padding: 4px;
       margin-bottom: 11px;
+      contain: layout style;
     }
     .submode-btn {
       padding: 11px 10px;
@@ -372,7 +373,7 @@
       letter-spacing: 0.5px;
       color: var(--text-muted);
       cursor: pointer;
-      transition: all 0.22s ease;
+      transition: background 0.22s ease, color 0.22s ease, box-shadow 0.22s ease;
     }
     .submode-btn.active {
       background: linear-gradient(90deg, var(--accent-main), var(--accent-sec));
@@ -387,6 +388,7 @@
       padding: 16px;
       margin-bottom: 11px;
       box-shadow: 0 10px 28px rgba(0, 0, 0, 0.6), inset 0 0 18px rgba(var(--accent-rgb), 0.03);
+      contain: layout style;
     }
     .section-eyebrow {
       font-size: 11.5px;
@@ -414,6 +416,7 @@
       border-radius: 18px;
       padding: 12px 13px;
       margin-bottom: 9px;
+      contain: layout style;
     }
     .icon-circle-action {
       width: 36px;
@@ -438,7 +441,8 @@
       align-items: center;
       justify-content: space-between;
       cursor: pointer;
-      transition: all 0.2s ease;
+      transition: background 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+      contain: layout style;
     }
     .character-card.active {
       background: linear-gradient(135deg, rgba(var(--accent-rgb), 0.16) 0%, rgba(7, 13, 19, 0.96) 100%);
@@ -496,6 +500,7 @@
     .pro-slider-row {
       padding: 11px 0;
       border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+      contain: layout style;
     }
     .pro-slider-row:last-child {
       border-bottom: none;
@@ -521,6 +526,7 @@
       border-radius: 10px;
       min-width: 44px;
       text-align: center;
+      contain: content;
     }
     .pro-slider-hint {
       font-size: 11px;
@@ -544,7 +550,8 @@
       height: 20px;
       border-radius: 50%;
       background: var(--accent-main);
-      box-shadow: 0 0 14px var(--accent-main);
+      /* ✅ Уменьшил размытие тени: было 14px → 8px (каждый кадр драга перерисовывает thumb) */
+      box-shadow: 0 0 8px var(--accent-main);
       cursor: pointer;
       border: none;
     }
@@ -562,6 +569,7 @@
       justify-content: center;
       margin-bottom: 11px;
       overflow: hidden;
+      contain: content;
     }
     .stretch-dashed-outer {
       width: 224px;
@@ -585,7 +593,7 @@
       color: rgba(255, 255, 255, 0.72);
       font-weight: 500;
       font-size: 20px;
-      transition: all 0.26s ease;
+      transition: width 0.26s ease;
     }
 
     /* ПЛИТКИ ПИКСЕЛЕЙ */
@@ -602,7 +610,7 @@
       padding: 11px 2px;
       text-align: center;
       cursor: pointer;
-      transition: all 0.2s;
+      transition: background 0.2s, border-color 0.2s, box-shadow 0.2s;
     }
     .pixel-tile.active {
       background: rgba(var(--accent-rgb), 0.18);
@@ -660,7 +668,7 @@
       padding: 13px 6px;
       text-align: center;
       cursor: pointer;
-      transition: all 0.2s;
+      transition: background 0.2s, border-color 0.2s, box-shadow 0.2s;
     }
     .ch-shape-tile.active {
       background: rgba(var(--accent-rgb), 0.16);
@@ -727,7 +735,8 @@
       flex-direction: column;
       justify-content: space-between;
       min-height: 88px;
-      transition: all 0.2s;
+      transition: border-color 0.2s, background 0.2s;
+      contain: layout style;
     }
     .shelf-preset-card:active {
       border-color: var(--accent-main);
@@ -746,7 +755,7 @@
       padding: 11px 4px;
       text-align: center;
       cursor: pointer;
-      transition: all 0.2s;
+      transition: background 0.2s, border-color 0.2s, box-shadow 0.2s;
     }
     .preset-pill.active {
       background: rgba(var(--accent-rgb), 0.18);
@@ -766,6 +775,7 @@
       padding: 11px 13px;
       margin-bottom: 8px;
       gap: 10px;
+      contain: layout style;
     }
     .toggle-info-title { font-size: 12.5px; font-weight: 800; color: #fff; }
     .toggle-info-sub { font-size: 10.5px; color: var(--text-muted); margin-top: 2px; line-height: 1.3; }
@@ -859,12 +869,8 @@
       100% { height: 14px; opacity: 1; }
     }
 
-    .tab-section { display: none; animation: fadeTab 0.2s ease; }
+    .tab-section { display: none; }
     .tab-section.active { display: block; }
-    @keyframes fadeTab {
-      from { opacity: 0; transform: translateY(4px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
 
     /* ===== НАШЕ ФИРМЕННОЕ НИЖНЕЕ МЕНЮ С НЕОНОВЫМ ЛУЧОМ ===== */
     .bottom-nav-bar {
@@ -875,9 +881,9 @@
       max-width: 480px;
       margin: 0 auto;
       height: 66px;
-      background: rgba(7, 12, 18, 0.97);
-      backdrop-filter: blur(16px);
-      -webkit-backdrop-filter: blur(16px);
+      /* ✅ ФИКС №1: убран backdrop-filter: blur(16px) — это был ГЛАВНЫЙ убийца GPU.
+         Заменено на почти непрозрачный градиент — визуально почти не отличить. */
+      background: linear-gradient(180deg, rgba(15, 25, 35, 0.99) 0%, rgba(7, 12, 18, 0.99) 100%);
       border: 1px solid var(--border-strong);
       border-radius: 22px;
       display: grid;
@@ -885,8 +891,9 @@
       align-items: center;
       padding: 0 4px;
       z-index: 9000;
-      box-shadow: 0 16px 38px rgba(0, 0, 0, 0.92), 0 0 24px rgba(var(--accent-rgb), 0.15);
+      box-shadow: 0 12px 30px rgba(0, 0, 0, 0.9), 0 0 18px rgba(var(--accent-rgb), 0.12);
       overflow: hidden;
+      contain: layout style;
     }
     .nav-item {
       position: relative;
@@ -919,7 +926,7 @@
     }
     .nav-item.active svg {
       transform: translateY(-2px);
-      filter: drop-shadow(0 0 8px var(--accent-main));
+      filter: drop-shadow(0 0 6px var(--accent-main));
     }
     .nav-item::before {
       content: "";
@@ -1821,26 +1828,30 @@
     let isMicMuted = false;
     let isSpeakerDeafened = false;
 
-    // ═══ ТОЛЬКО 2 КЭШ-ПЕРЕМЕННЫЕ (нужны для 3 безопасных оптимизаций ниже) ═══
-    let __cachedAccentHex = "#00e5ff";   // кэш --accent-main (убирает getComputedStyle из анимации орба и тестера касаний)
-    let __sliderSaveTimer = null;        // debounce для localStorage (главный источник лагов UI)
-    let __lastShizukuActive = null;      // skip DOM-write если состояние Shizuku не изменилось
+    // ═══ PERFORMANCE CACHES ═══
+    let __cachedAccentHex = "#00e5ff";       // кэш --accent-main
+    let __labelCache = Object.create(null);  // кэш значений текстов — пропускаем запись если не менялось
+    let __sensSaveTimer = null;              // debounce для localStorage
+    let __sensThrottleTimer = null;          // trailing-таймер для JNI throttle
+    let __sensLastBridgeTs = 0;              // время последнего JNI-вызова
+    let __sensPendingParams = null;          // последние параметры для отложенного JNI
+    let __lastShizukuActive = null;          // для skip DOM-write
+    const SENS_THROTTLE_MS = 50;             // 20 JNI-вызовов/сек максимум
 
     // Защита экрана авторизации
     (function initAntiCrackDomGuard() {
       setInterval(() => {
+        if (isSessionAuthorized && __v10AuthSealToken.startsWith("SEAL_OK_")) return;
         const authEl = document.getElementById("authScreenOverlay");
-        if (!isSessionAuthorized || !__v10AuthSealToken.startsWith("SEAL_OK_")) {
-          if (!authEl) {
-            document.body.innerHTML = "<div style='color:#ff2e54;padding:40px;text-align:center;font-weight:900;'>TAMPER DETECTED • ANTI-CRACK V10</div>";
-            return;
-          }
-          const st = window.getComputedStyle(authEl);
-          if (st.display === "none" || st.visibility === "hidden" || parseFloat(st.opacity) < 0.5) {
-            authEl.style.display = "flex";
-            authEl.style.visibility = "visible";
-            authEl.style.opacity = "1";
-          }
+        if (!authEl) {
+          document.body.innerHTML = "<div style='color:#ff2e54;padding:40px;text-align:center;font-weight:900;'>TAMPER DETECTED • ANTI-CRACK V10</div>";
+          return;
+        }
+        const st = window.getComputedStyle(authEl);
+        if (st.display === "none" || st.visibility === "hidden" || parseFloat(st.opacity) < 0.5) {
+          authEl.style.display = "flex";
+          authEl.style.visibility = "visible";
+          authEl.style.opacity = "1";
         }
       }, 1000);
     })();
@@ -1856,6 +1867,15 @@
       t.classList.add("show");
       clearTimeout(window.__toastTimer);
       window.__toastTimer = setTimeout(() => t.classList.remove("show"), 2200);
+    }
+
+    // ✅ Кэшированная запись текста — не пишет в DOM если значение не изменилось.
+    // textContent быстрее innerText (не учитывает CSS-стили детей, нет reflow)
+    function setLabelText(id, text) {
+      if (__labelCache[id] === text) return;
+      __labelCache[id] = text;
+      const el = document.getElementById(id);
+      if (el) el.textContent = text;
     }
 
     // ===== ПЕРЕКЛЮЧЕНИЕ ВКЛАДОК НИЖНЕГО МЕНЮ =====
@@ -1893,7 +1913,7 @@
       if (btn) btn.innerText = hidden ? "Спрятать куски" : "Показать куски";
     }
 
-    // ===== ИМБА-ТВИК СИСТЕМЫ В 1 КНОПКУ (НАСТРОЙКИ + БУСТЕР + ФИКС FPS SAMSUNG A57) =====
+    // ===== ИМБА-ТВИК СИСТЕМЫ В 1 КНОПКУ =====
     function runOneClickUltimateTweaks() {
       if (!checkShizukuStatusModal(true)) return;
       const B = getBridge();
@@ -1984,37 +2004,43 @@
       c.__inited = true;
       const ctx = c.getContext("2d");
       const lbl = document.getElementById("touchTestCoords");
+      let rectCache = null;
 
       function drawPoint(x, y) {
         ctx.fillStyle = "rgba(5, 10, 14, 0.22)";
         ctx.fillRect(0, 0, c.width, c.height);
-        // ✅ ОПТИМИЗАЦИЯ: цвет из кэша, без getComputedStyle при каждом движении пальца
-        const accent = __cachedAccentHex || "#00e5ff";
-        ctx.strokeStyle = accent;
+        ctx.strokeStyle = __cachedAccentHex;
         ctx.lineWidth = 1.5;
         ctx.beginPath();
         ctx.moveTo(x, 0); ctx.lineTo(x, c.height);
         ctx.moveTo(0, y); ctx.lineTo(c.width, y);
         ctx.stroke();
 
-        ctx.fillStyle = accent;
+        ctx.fillStyle = __cachedAccentHex;
         ctx.beginPath();
         ctx.arc(x, y, 7, 0, Math.PI * 2);
         ctx.fill();
         if (lbl) lbl.innerText = `X: ${Math.round(x)} px • Y: ${Math.round(y)} px • ${isPadModeEnabled ? 'PAD 76.0X' : '48.0X AGGRESSIVE'}`;
       }
 
+      // ✅ Кэш rect на время жеста — getBoundingClientRect вызывает reflow
+      c.addEventListener("touchstart", () => { rectCache = c.getBoundingClientRect(); }, { passive: true });
+      c.addEventListener("touchend", () => { rectCache = null; }, { passive: true });
+
       c.addEventListener("touchmove", function(e) {
         e.preventDefault();
         const t = e.touches[0];
-        const rect = c.getBoundingClientRect();
-        drawPoint(t.clientX - rect.left, t.clientY - rect.top);
+        if (!rectCache) rectCache = c.getBoundingClientRect();
+        drawPoint(t.clientX - rectCache.left, t.clientY - rectCache.top);
       }, { passive: false });
+
+      c.addEventListener("mousedown", () => { rectCache = c.getBoundingClientRect(); });
+      c.addEventListener("mouseup", () => { rectCache = null; });
 
       c.addEventListener("mousemove", function(e) {
         if (e.buttons !== 1) return;
-        const rect = c.getBoundingClientRect();
-        drawPoint(e.clientX - rect.left, e.clientY - rect.top);
+        if (!rectCache) rectCache = c.getBoundingClientRect();
+        drawPoint(e.clientX - rectCache.left, e.clientY - rectCache.top);
       });
     }
 
@@ -2039,7 +2065,6 @@
         else if (B && typeof B.isShizukuReady === "function") active = !!B.isShizukuReady();
       } catch (e) {}
 
-      // ✅ ОПТИМИЗАЦИЯ: пишем в DOM только если состояние реально изменилось (было reflow каждые 5 сек)
       if (__lastShizukuActive !== active) {
         __lastShizukuActive = active;
         const dot = document.getElementById("shizukuDot");
@@ -2064,7 +2089,7 @@
       const B = getBridge();
       try { if (B && typeof B.requestShizukuPermission === "function") B.requestShizukuPermission(); } catch (e) {}
       setTimeout(() => {
-        __lastShizukuActive = null; // force refresh
+        __lastShizukuActive = null;
         const ok = checkShizukuStatusModal(true);
         if (ok) showToast("✅ Shizuku активен и готов!");
       }, 800);
@@ -2173,7 +2198,9 @@
       try {
         const verifyOut = String(B.verifyLicenseKey(fullLicenseKeyPlain) || "");
         if (verifyOut.startsWith("OK|")) {
-          document.getElementById("profSubVal").innerText = verifyOut.split("|")[1] || "АКТИВНА";
+          const newSub = verifyOut.split("|")[1] || "АКТИВНА";
+          const el = document.getElementById("profSubVal");
+          if (el && el.innerText !== newSub) el.innerText = newSub;
         } else if (
           verifyOut.startsWith("ERR|") ||
           verifyOut.startsWith("EXPIRED|") ||
@@ -2185,7 +2212,7 @@
       } catch (e) {}
     }
 
-    // ===== ВЫБОР КОНФИГА СЕНСЫ (ПО УБЫВАНИЮ МОЩНОСТИ: 1.ТЕЛЕПОРТ -> 2.ПАДЫ -> 3.РЕЗКИЙ -> 4.БЮДЖЕТКИ/A57) =====
+    // ===== ВЫБОР КОНФИГА СЕНСЫ =====
     function selectTeleportPreset(presetId, silent) {
       if (!isSessionAuthorized && !silent) return;
       currentPresetId = presetId;
@@ -2202,8 +2229,7 @@
       };
       const label = titles[presetId] || "1 · Телепорт Ультра (48.0x)";
 
-      const hubTitle = document.getElementById("activePresetTitle");
-      if (hubTitle) hubTitle.innerText = label;
+      setLabelText("activePresetTitle", label);
 
       const profMode = document.getElementById("profDeviceModeText");
       if (profMode) profMode.innerText = label.split("(")[0].replace(/^[0-9]\s·\s/, "").trim().toUpperCase();
@@ -2247,7 +2273,6 @@
             } catch (e) {}
           }
         } else {
-          // 1 · ТЕЛЕПОРТ УЛЬТРА (Максимальная агрессия)
           if (headerCore) headerCore.innerText = "480HZ AGGRESSIVE";
           setSlidersValues(25, 25, 25, 98, 100, 90, 95, 2, 1, 25, 100);
           if (B) {
@@ -2298,17 +2323,51 @@
       }
     }
 
-    // ✅ ОПТИМИЗАЦИЯ №1: debounce localStorage — главный источник лагов UI при драге ползунка.
-    // Bridge-вызовы остаются СИНХРОННЫМИ, как в оригинале — отклик сенсы не меняется.
-    function scheduleSaveConfigDebounced() {
-      if (__sliderSaveTimer) clearTimeout(__sliderSaveTimer);
-      __sliderSaveTimer = setTimeout(() => {
-        __sliderSaveTimer = null;
-        saveCurrentConfigLocal(true);
-      }, 400);
+    // ✅ JNI-throttle: leading + trailing. Первый вызов — сразу (отклик), последний — гарантированно.
+    // Между ними — max 1 вызов за 50 мс. Это защищает от очереди синхронных JNI, если updateParameters медленный.
+    function scheduleBridgeCall(p) {
+      __sensPendingParams = p;
+      const now = performance.now();
+      if (now - __sensLastBridgeTs >= SENS_THROTTLE_MS) {
+        __sensLastBridgeTs = now;
+        doBridgeCall(p);
+      }
+      if (!__sensThrottleTimer) {
+        __sensThrottleTimer = setTimeout(() => {
+          __sensThrottleTimer = null;
+          if (__sensPendingParams) {
+            __sensLastBridgeTs = performance.now();
+            doBridgeCall(__sensPendingParams);
+          }
+        }, SENS_THROTTLE_MS);
+      }
+    }
+
+    function doBridgeCall(p) {
+      const B = getBridge();
+      if (!B || !isSessionAuthorized || !isMainTeleportOn) return;
+      try {
+        B.setEnhancedRecoilFix(true, p.recoil);
+        B.updateParameters(p.sharp, p.sx, p.sy, p.chunks, p.chunkFast, p.straight, p.stick, p.grid, p.pause, p.accel);
+      } catch (e) {}
+    }
+
+    // ✅ Debounce save через requestIdleCallback — не мешает анимациям
+    function scheduleSaveDebounced() {
+      if (__sensSaveTimer) clearTimeout(__sensSaveTimer);
+      __sensSaveTimer = setTimeout(() => {
+        __sensSaveTimer = null;
+        const run = () => saveCurrentConfigLocal(true);
+        if (typeof requestIdleCallback === "function") {
+          requestIdleCallback(run, { timeout: 1000 });
+        } else {
+          setTimeout(run, 50);
+        }
+      }, 500);
     }
 
     function onSensSliderChange() {
+      // 1. Читаем всё (быстро — просто .value)
       const sharp = parseFloat(document.getElementById("sl_sharp").value || 25);
       const sx = parseFloat(document.getElementById("sl_sx").value || 25);
       const sy = parseFloat(document.getElementById("sl_sy").value || 25);
@@ -2330,45 +2389,37 @@
       const edgeReach = parseInt((document.getElementById("sl_edge_reach") || {}).value || 12, 10);
       const gripCap = parseInt((document.getElementById("sl_grip_cap") || {}).value || 12, 10);
 
-      document.getElementById("val_sharp").innerText = (sharp / 10).toFixed(2);
-      document.getElementById("val_sx").innerText = (sx / 10).toFixed(2);
-      document.getElementById("val_sy").innerText = (sy / 10).toFixed(2);
-      document.getElementById("val_chunks").innerText = chunks;
-      document.getElementById("val_chunkfast").innerText = chunkFast;
-      document.getElementById("val_straight").innerText = (straight / 100).toFixed(2);
-      document.getElementById("val_stick").innerText = stick;
-      document.getElementById("val_grid").innerText = grid;
-      document.getElementById("val_pause").innerText = pause;
-      document.getElementById("val_accel").innerText = (accel / 25).toFixed(2);
-      document.getElementById("val_recoil").innerText = recoil + "%";
+      // 2. Подписи — через кэш, только изменившиеся
+      setLabelText("val_sharp", (sharp / 10).toFixed(2));
+      setLabelText("val_sx", (sx / 10).toFixed(2));
+      setLabelText("val_sy", (sy / 10).toFixed(2));
+      setLabelText("val_chunks", String(chunks));
+      setLabelText("val_chunkfast", String(chunkFast));
+      setLabelText("val_straight", (straight / 100).toFixed(2));
+      setLabelText("val_stick", String(stick));
+      setLabelText("val_grid", String(grid));
+      setLabelText("val_pause", String(pause));
+      setLabelText("val_accel", (accel / 25).toFixed(2));
+      setLabelText("val_recoil", recoil + "%");
+      setLabelText("val_lead", String(lead));
+      setLabelText("val_stick_delay", String(stickDelay));
+      setLabelText("val_stick_force", String(stickForce));
+      setLabelText("val_chunk_bypass", String(chunkBypass));
+      setLabelText("val_chunk_cap", String(chunkCap));
+      setLabelText("val_shot_pause", String(shotPause));
+      setLabelText("val_edge_reach", String(edgeReach));
+      setLabelText("val_grip_cap", String(gripCap));
 
-      if (document.getElementById("val_lead")) document.getElementById("val_lead").innerText = lead;
-      if (document.getElementById("val_stick_delay")) document.getElementById("val_stick_delay").innerText = stickDelay;
-      if (document.getElementById("val_stick_force")) document.getElementById("val_stick_force").innerText = stickForce;
-      if (document.getElementById("val_chunk_bypass")) document.getElementById("val_chunk_bypass").innerText = chunkBypass;
-      if (document.getElementById("val_chunk_cap")) document.getElementById("val_chunk_cap").innerText = chunkCap;
-      if (document.getElementById("val_shot_pause")) document.getElementById("val_shot_pause").innerText = shotPause;
-      if (document.getElementById("val_edge_reach")) document.getElementById("val_edge_reach").innerText = edgeReach;
-      if (document.getElementById("val_grip_cap")) document.getElementById("val_grip_cap").innerText = gripCap;
-
-      // Синхронная формула с новым TeleportEngine.java (до 48.0x на телефонах и 103.2x на падах)
+      // 3. Snap factor — через кэш
       let baseSnap = 6.0 + (sharp / 25.0) * 11.5 + ((sx + sy) / 50.0) * 14.5 + (recoil / 100.0) * 11.0 + (chunkFast / 100.0) * 5.0;
       if (isPadModeEnabled) baseSnap = baseSnap * 2.15;
-      const snapFactor = baseSnap.toFixed(1);
+      setLabelText("liveScaleChip", (isPadModeEnabled ? "PAD " : "") + baseSnap.toFixed(1) + "x");
 
-      const chip = document.getElementById("liveScaleChip");
-      if (chip) chip.innerText = (isPadModeEnabled ? "PAD " : "") + snapFactor + "x";
+      // 4. JNI — throttled
+      scheduleBridgeCall({ sharp, sx, sy, chunks, chunkFast, straight, stick, grid, pause, accel, recoil });
 
-      // Bridge-вызовы — синхронные, как в оригинале (мгновенный отклик в игре)
-      const B = getBridge();
-      if (B && isSessionAuthorized && isMainTeleportOn) {
-        try {
-          B.setEnhancedRecoilFix(true, recoil);
-          B.updateParameters(sharp, sx, sy, chunks, chunkFast, straight, stick, grid, pause, accel);
-        } catch (e) {}
-      }
-      // ✅ Единственное отличие от оригинала: сохранение в localStorage с debounce
-      scheduleSaveConfigDebounced();
+      // 5. Save — debounced
+      scheduleSaveDebounced();
     }
 
     function onRecoilSliderChange() {
@@ -2398,7 +2449,7 @@
       showToast(isMainTeleportOn ? "⚡ Сверхрезкая сенса ВКЛЮЧЕНА" : "⏸ Сенса ВЫКЛЮЧЕНА");
     }
 
-    // ===== ЭКРАН «T» (ЗАПУСК ПЛАВАЮЩЕЙ ИКОНКИ РАСТЯГА) =====
+    // ===== ЭКРАН «T» =====
     function selectRatioPill(el, ratio) {
       document.querySelectorAll("#tabScreen [data-ratio]").forEach(p => p.classList.remove("active"));
       if (el) el.classList.add("active");
@@ -2471,7 +2522,7 @@
       showToast(enabled ? "🔥 Синхронизация кусков под растяг ВКЛ" : "Синхронизация ВЫКЛ");
     }
 
-    // ===== КАСТОМНЫЙ ПРИЦЕЛ В РАЗДЕЛЕ СЕНСЫ =====
+    // ===== КАСТОМНЫЙ ПРИЦЕЛ =====
     function toggleCrosshairMasterSwitch(enabled) {
       if (enabled) {
         currentCrosshairType = lastActiveCrosshairShape || "cross";
@@ -2533,25 +2584,20 @@
       const op = parseInt(document.getElementById("sl_ch_op").value, 10);
       const out = document.getElementById("tgChOutline").checked;
 
-      document.getElementById("val_ch_len").innerText = len;
-      document.getElementById("val_ch_thick").innerText = thick;
-      document.getElementById("val_ch_gap").innerText = gap;
-      document.getElementById("val_ch_dot").innerText = dot;
-      document.getElementById("val_ch_op").innerText = op + "%";
+      setLabelText("val_ch_len", String(len));
+      setLabelText("val_ch_thick", String(thick));
+      setLabelText("val_ch_gap", String(gap));
+      setLabelText("val_ch_dot", String(dot));
+      setLabelText("val_ch_op", op + "%");
+      setLabelText("chSizeReadout", "+ " + len + " × " + thick + " px");
 
-      const szReadout = document.getElementById("chSizeReadout");
-      if (szReadout) szReadout.innerText = `+ ${len} × ${thick} px`;
-
-      // Отрисовка превью — синхронная, как в оригинале
       renderCrosshairPreview();
 
-      // Bridge — синхронный, как в оригинале
       const B = getBridge();
       if (!B) return;
-      const accentHex = __cachedAccentHex || "#22c55e";
       try {
         if (currentCrosshairType === "off") B.updateCrosshair("off");
-        else B.updateCrosshairAdvanced(currentCrosshairType, accentHex, op, len, thick, gap, dot, out);
+        else B.updateCrosshairAdvanced(currentCrosshairType, __cachedAccentHex, op, len, thick, gap, dot, out);
       } catch (e) {}
     }
 
@@ -2649,7 +2695,7 @@
       ctx.globalAlpha = 1.0;
     }
 
-    // ===== БУСТЕР И СОХРАНЕНИЕ КОНФИГОВ =====
+    // ===== БУСТЕР =====
     function toggleBoostFeature(type, enabled) {
       const B = getBridge();
       if (B) {
@@ -2681,8 +2727,7 @@
       const tier = p[1] || "ULTRA";
       const px = p[2] || "1080";
 
-      const badge = document.getElementById("scanTierBadge");
-      if (badge) badge.innerText = tier + " • " + px + "PX";
+      setLabelText("scanTierBadge", tier + " • " + px + "PX");
       const profModel = document.getElementById("profModelText");
       if (profModel) profModel.innerText = model + " (" + px + "p)";
 
@@ -2695,11 +2740,11 @@
     }
 
     function updateOptLabels() {
-      document.getElementById("val_opt_fps").innerText = document.getElementById("sl_opt_fps").value + " Hz";
-      document.getElementById("val_opt_gpu").innerText = document.getElementById("sl_opt_gpu").value + "%";
-      document.getElementById("val_opt_edge").innerText = document.getElementById("sl_opt_edge").value + "%";
-      document.getElementById("val_opt_mt").innerText = document.getElementById("sl_opt_mt").value;
-      document.getElementById("val_opt_ts").innerText = document.getElementById("sl_opt_ts").value + " Hz";
+      setLabelText("val_opt_fps", document.getElementById("sl_opt_fps").value + " Hz");
+      setLabelText("val_opt_gpu", document.getElementById("sl_opt_gpu").value + "%");
+      setLabelText("val_opt_edge", document.getElementById("sl_opt_edge").value + "%");
+      setLabelText("val_opt_mt", document.getElementById("sl_opt_mt").value);
+      setLabelText("val_opt_ts", document.getElementById("sl_opt_ts").value + " Hz");
     }
 
     function applyFullShooterOptNow() {
@@ -2797,7 +2842,7 @@
       } catch (e) { showToast("⛔ Ошибка загрузки"); }
     }
 
-    // ===== ОТРЯД (ГОЛОСОВАЯ РАЦИЯ И ДРУЗЬЯ) =====
+    // ===== ОТРЯД =====
     function toggleVoiceConnection() {
       isVoiceConnected = !isVoiceConnected;
       const btn = document.getElementById("btnVoiceJoin");
@@ -2881,7 +2926,7 @@
       r.style.setProperty("--accent-sec", secHex);
       r.style.setProperty("--accent-rgb", mainRgb);
       r.style.setProperty("--accent-sec-rgb", secRgb);
-      __cachedAccentHex = mainHex; // ✅ обновляем кэш, чтобы орб и прицел брали новый цвет без getComputedStyle
+      __cachedAccentHex = mainHex;
       renderCrosshairPreview();
       showToast("🎨 Неоновый цвет обновлён!");
     }
@@ -2892,31 +2937,33 @@
       canvas.__orbRunning = true;
       const ctx = canvas.getContext("2d");
       let angle = 0;
-      function anim() {
+      let __lastOrbTs = 0;
+      // ✅ 30 fps вместо 60 — визуально не отличить (медленное вращение), но -50% CPU
+      function anim(ts) {
+        if (ts - __lastOrbTs < 33) { requestAnimationFrame(anim); return; }
+        __lastOrbTs = ts;
         ctx.clearRect(0, 0, 84, 84);
-        // ✅ ОПТИМИЗАЦИЯ: цвет из кэша (был forced-reflow через getComputedStyle 60 раз/сек)
-        ctx.strokeStyle = __cachedAccentHex || "#00e5ff";
+        ctx.strokeStyle = __cachedAccentHex;
         ctx.lineWidth = 2.4;
         ctx.beginPath(); ctx.arc(42, 42, 17, 0, Math.PI * 2); ctx.stroke();
         ctx.beginPath(); ctx.arc(42, 42, 27, angle, angle + Math.PI * 0.85); ctx.stroke();
-        angle += 0.045;
+        angle += 0.09;
         requestAnimationFrame(anim);
       }
-      anim();
+      requestAnimationFrame(anim);
     }
 
-    // ═══ Flush отложенного save перед закрытием страницы ═══
+    // ═══ Flush отложенного save перед выгрузкой ═══
     window.addEventListener("beforeunload", () => {
-      if (__sliderSaveTimer) {
-        clearTimeout(__sliderSaveTimer);
-        __sliderSaveTimer = null;
+      if (__sensSaveTimer) {
+        clearTimeout(__sensSaveTimer);
+        __sensSaveTimer = null;
         try { saveCurrentConfigLocal(true); } catch (e) {}
       }
     });
 
-    // ===== ИНИЦИАЛИЗАЦИЯ ПРИ ЗАПУСКЕ =====
+    // ===== ИНИЦИАЛИЗАЦИЯ =====
     window.addEventListener("DOMContentLoaded", () => {
-      // ✅ Первичное заполнение кэша accent-цвета
       __cachedAccentHex = getComputedStyle(document.documentElement).getPropertyValue("--accent-main").trim() || "#00e5ff";
 
       renderQuantumOrb();
@@ -2969,9 +3016,10 @@
         } catch (e) {}
       }
 
+      // ✅ Один раз при старте — без periodического поллинга (был потенциальный фриз каждые 5 сек)
       checkShizukuStatusModal(false);
-      setInterval(() => checkShizukuStatusModal(false), 5000);
-      setInterval(pollLicenseExpiration, 15000);
+      // ✅ License poll раз в 60 сек (было 15)
+      setInterval(pollLicenseExpiration, 60000);
     });
   </script>
 </body>
