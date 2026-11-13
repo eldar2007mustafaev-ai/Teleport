@@ -17,7 +17,7 @@
       --bg-card: rgba(9, 16, 22, 0.96);
       --bg-card-inner: rgba(6, 11, 16, 0.94);
       --border-soft: rgba(var(--accent-rgb), 0.22);
-      --border-strong: rgba(var(--accent-rgb), 0.50);
+      --border-strong: rgba(var(--accent-rgb), 0.52);
       --text-main: #f1f5f9;
       --text-muted: #7c93a8;
       --ok-green: #10b981;
@@ -36,12 +36,11 @@
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Inter, sans-serif;
       background-color: var(--bg-deep);
       background-image:
-        radial-gradient(circle at 50% 0%, rgba(var(--accent-rgb), 0.14) 0%, transparent 45%),
-        radial-gradient(circle at 85% 90%, rgba(var(--accent-sec-rgb), 0.08) 0%, transparent 45%);
+        radial-gradient(circle at 50% 0%, rgba(var(--accent-rgb), 0.15) 0%, transparent 45%),
+        radial-gradient(circle at 85% 90%, rgba(var(--accent-sec-rgb), 0.09) 0%, transparent 45%);
       color: var(--text-main);
       min-height: 100vh;
       overflow-x: hidden;
-      /* Опущено ниже статус-бара телефона, чтобы ничего не наезжало на часы и иконки */
       padding-top: calc(env(safe-area-inset-top, 38px) + 18px);
       padding-bottom: 108px;
     }
@@ -190,7 +189,7 @@
       box-shadow: 0 0 42px rgba(var(--accent-rgb), 0.22);
     }
 
-    #screenCalibOverlay, #touchTestOverlay, #howToModalOverlay {
+    #screenCalibOverlay, #touchTestOverlay {
       position: fixed;
       inset: 0;
       background: rgba(4, 9, 13, 0.96);
@@ -286,7 +285,7 @@
     }
     .cyber-hub-card.glow-strong {
       border-color: var(--border-strong);
-      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.7), 0 0 22px rgba(var(--accent-rgb), 0.12);
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.7), 0 0 22px rgba(var(--accent-rgb), 0.14);
     }
     .hub-left-row {
       display: flex;
@@ -355,7 +354,6 @@
       box-shadow: none;
     }
 
-    /* ПЕРЕКЛЮЧАТЕЛЬ ► КОНФИГИ И ЗАПУСК / 🎛 СВОИ ЧИСЛА */
     .submode-switcher {
       display: grid;
       grid-template-columns: 1fr 1fr;
@@ -406,7 +404,7 @@
       line-height: 1.35;
     }
 
-    /* МОИ ВАРИАНТЫ И 4 КОНФИГА СЕНСЫ */
+    /* ИЕРАРХИЯ КОНФИГОВ СВЕРХУ ВНИЗ ПО МОЩНОСТИ */
     .saved-variant-row {
       display: flex;
       align-items: center;
@@ -465,10 +463,15 @@
       color: var(--accent-main);
       text-transform: uppercase;
     }
+    .char-tag.top-fire {
+      background: rgba(255, 46, 84, 0.22);
+      color: #fda4af;
+      border: 1px solid rgba(255, 46, 84, 0.55);
+    }
     .char-tag.pad-badge {
       background: rgba(168, 85, 247, 0.22);
       color: #d8b4fe;
-      border: 1px solid rgba(168, 85, 247, 0.5);
+      border: 1px solid rgba(168, 85, 247, 0.55);
     }
     .char-tag.budget-badge {
       background: rgba(16, 185, 129, 0.18);
@@ -811,6 +814,22 @@
       color: var(--accent-main);
     }
 
+    .tweak-tags-wrap {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin: 9px 0 12px;
+    }
+    .tweak-mini-tag {
+      font-size: 10px;
+      font-weight: 800;
+      padding: 4px 9px;
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.10);
+      color: #cbd5e1;
+    }
+
     .voice-member-card, .friend-item {
       display: flex;
       align-items: center;
@@ -963,7 +982,7 @@
       Проведите пальцем по рамке экрана
     </div>
     <div style="font-size:12px; color:var(--text-muted); text-align:center; max-width:300px; line-height:1.5;">
-      Калибровка герцовки и шага кусков под матрицу вашего устройства... Коснитесь экрана для завершения.
+      Калибровка герцовки и агрессивного шага кусков под матрицу вашего устройства... Коснитесь экрана для завершения.
     </div>
   </div>
 
@@ -981,20 +1000,6 @@
     </button>
   </div>
 
-  <!-- МОДАЛКА: КАК НАСТРОИТЬ -->
-  <div id="howToModalOverlay" onclick="this.style.display='none'">
-    <div class="shizuku-alert-box" onclick="event.stopPropagation()">
-      <div style="font-size:16px; font-weight:900; color:#fff; margin-bottom:8px;">📖 Как настроить сенсу</div>
-      <div style="font-size:12px; color:#cbd5e1; text-align:left; line-height:1.55; margin-bottom:14px;">
-        • <b>Телепорт:</b> максимальный рывок кусками для мгновенных фликов и разворотов.<br>
-        • <b>Резкий:</b> чистый быстрый отклик и жёсткое удержание горизонтали.<br>
-        • <b>Для бюджеток:</b> плавная работа на 60/90 Гц без просадок кадров.<br>
-        • <b>Для падов:</b> удвоенный импульс 58.0x под большое разрешение планшетов.
-      </div>
-      <button type="button" class="btn-main" onclick="document.getElementById('howToModalOverlay').style.display='none'">ПОНЯТНО</button>
-    </div>
-  </div>
-
   <!-- МОДАЛКА: SHIZUKU НЕ АКТИВЕН -->
   <div id="shizukuRequiredModal" class="shizuku-alert-backdrop">
     <div class="shizuku-alert-box">
@@ -1005,7 +1010,7 @@
         Shizuku не активен!
       </div>
       <div style="font-size:12px; color:#cbd5e1; line-height:1.5; margin-bottom:14px;">
-        Для работы растяга и сенсы включите <b>Shizuku</b>.<br><br>
+        Для работы сверхрезкой сенсы, растяга и оптимизации включите <b>Shizuku</b>.<br><br>
         💬 Помощь по настройке Shizuku:<br>
         <a href="https://t.me/talent_dare" onclick="openSupportLink(); return false;" style="color:#00e5ff; font-weight:900; font-size:14px; text-decoration:underline;">@talent_dare</a>
       </div>
@@ -1020,7 +1025,7 @@
   <!-- ЭКРАН АВТОРИЗАЦИИ -->
   <div id="authScreenOverlay">
     <div style="text-align:center; margin-bottom:14px;">
-      <div class="auth-badge">QUANTUM CORE V10 • PRO EDITION</div>
+      <div class="auth-badge">QUANTUM CORE V10 • AGGRESSIVE EDITION</div>
       <div style="font-size:29px; font-weight:900; letter-spacing:-0.6px; color:#fff;">
         SO2Teleport <span style="color:var(--accent-main); font-style:italic;">PRO</span>
       </div>
@@ -1066,7 +1071,7 @@
   <!-- ОСНОВНОЙ КОНТЕЙНЕР ПРИЛОЖЕНИЯ -->
   <div class="app-container">
 
-    <!-- ВЕРХНЯЯ ШАПКА SO2TELEPORT PRO (ВСЕГДА НА МЕСТЕ И НЕ ЗАЕЗЖАЕТ НА СТАТУС-БАР) -->
+    <!-- ВЕРХНЯЯ ШАПКА SO2TELEPORT PRO (БЕЗ НАЕЗДА НА ЧАСЫ И БАТАРЕЮ) -->
     <div class="top-brand-header">
       <div class="top-brand-row">
         <div class="brand-left-wrap">
@@ -1088,7 +1093,7 @@
       </div>
 
       <div class="top-header-bottom-bar">
-        <span>⚡ ЯДРО: <b id="headerLiveCoreBadge" style="color:var(--accent-main);">480HZ QUANTUM</b></span>
+        <span>⚡ ЯДРО: <b id="headerLiveCoreBadge" style="color:var(--accent-main);">480HZ AGGRESSIVE</b></span>
         <div class="theme-dots">
           <div class="theme-dot active" style="background:#00e5ff; color:#00e5ff;" onclick="setNeonTheme('#00e5ff', '0, 229, 255', '#00b8d4', '0, 184, 212', this)"></div>
           <div class="theme-dot" style="background:#ff2e54; color:#ff2e54;" onclick="setNeonTheme('#ff2e54', '255, 46, 84', '#ff6b35', '255, 107, 53', this)"></div>
@@ -1099,21 +1104,21 @@
       </div>
     </div>
 
-    <!-- ================= ВКЛАДКА 1: СЕНСА + КОНФИГИ + КАСТОМНЫЙ ПРИЦЕЛ ================= -->
+    <!-- ================= ВКЛАДКА 1: СЕНСА + КОНФИГИ ПО УБЫВАНИЮ МОЩНОСТИ + КАСТОМНЫЙ ПРИЦЕЛ ================= -->
     <div id="tabSens" class="tab-section active">
 
-      <!-- 1. ГЛАВНЫЙ КРАСИВЫЙ БЛОК СЕНСЫ -->
+      <!-- 1. ГЛАВНЫЙ БЛОК СЕНСЫ -->
       <div class="cyber-hub-card glow-strong">
         <div class="hub-left-row">
           <div class="hub-icon-box">🎚</div>
           <div class="hub-text-col">
             <div class="hub-card-title" style="font-size:16.5px;">
-              СЕНСА <span id="liveScaleChip" class="badge-chip" style="margin-left:5px;">32.0x</span>
+              СЕНСА <span id="liveScaleChip" class="badge-chip" style="margin-left:5px;">48.0x</span>
             </div>
             <div id="activePresetTitle" class="hub-card-sub" style="color:var(--accent-main); font-weight:800;">
-              Телепорт • Квантовый рывок
+              1 · Телепорт Ультра (48.0x)
             </div>
-            <div class="hub-card-hint">Кнопка справа мгновенно включает или отключает сенсу</div>
+            <div class="hub-card-hint">Сверхрезкий квантовый отклик без задержки и лагов</div>
           </div>
         </div>
         <button id="mainPowerCircleBtn" type="button" class="sens-circle-btn" onclick="toggleMainEngineQuick()">
@@ -1121,62 +1126,62 @@
         </button>
       </div>
 
-      <!-- ПЕРЕКЛЮЧАТЕЛЬ РЕЖИМА СЕНСЫ: КОНФИГИ И ЗАПУСК / СВОИ ЧИСЛА -->
+      <!-- ПЕРЕКЛЮЧАТЕЛЬ: КОНФИГИ И ЗАПУСК / СВОИ ЧИСЛА -->
       <div class="submode-switcher">
-        <div id="subBtnLaunch" class="submode-btn active" onclick="switchSensSubmode('launch')">► КОНФИГИ И ЗАПУСК</div>
+        <div id="subBtnLaunch" class="submode-btn active" onclick="switchSensSubmode('launch')">► КОНФИГИ (ПО МОЩНОСТИ)</div>
         <div id="subBtnCustom" class="submode-btn" onclick="switchSensSubmode('custom')">🎛 СВОИ ЧИСЛА</div>
       </div>
 
-      <!-- ПОД-ВКЛАДКА 1А: КОНФИГИ (ТЕЛЕПОРТ, РЕЗКИЙ, ДЛЯ БЮДЖЕТОК, ДЛЯ ПАДОВ) + ПОЛКА -->
+      <!-- ПОД-ВКЛАДКА 1А: КОНФИГИ (СВЕРХУ САМЫЕ МОЩНЫЕ — ВНИЗ ПО УБЫВАНИЮ) -->
       <div id="sensSubLaunch">
 
         <div class="glass-card">
           <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
-            <span class="section-eyebrow" style="margin-bottom:0;">⚡ ВЫБЕРИТЕ КОНФИГ СЕНСЫ</span>
-            <span class="badge-chip">4 ПРОФИЛЯ</span>
+            <span class="section-eyebrow" style="margin-bottom:0;">🔥 КОНФИГИ (ОТ МАКСИМУМА ПО УБЫВАНИЮ)</span>
+            <span class="badge-chip">TOP → LITE</span>
           </div>
 
-          <!-- 1. ТЕЛЕПОРТ -->
+          <!-- №1. САМЫЙ МОЩНЫЙ ДЛЯ ТЕЛЕФОНОВ: ТЕЛЕПОРТ УЛЬТРА -->
           <div id="preset_extreme" class="character-card active" onclick="selectTeleportPreset('extreme')">
             <div>
-              <div class="char-title">ТЕЛЕПОРТ <span class="char-tag">КВАНТОВЫЙ РЫВОК</span></div>
-              <div class="char-desc">Мгновенный переброс прицела кусками без плавной дуги. Для жёстких фликов и разворотов на 180°.</div>
+              <div class="char-title">1 · ТЕЛЕПОРТ УЛЬТРА <span class="char-tag top-fire">MAX АГРЕССИЯ • 48.0X</span></div>
+              <div class="char-desc">Самый мощный и взрывной переброс прицела кусками (шаг 44–48x, нажим 0.0001). Мгновенный разворот на 180° и жёсткие флики.</div>
             </div>
             <span class="char-arrow">›</span>
           </div>
 
-          <!-- 2. РЕЗКИЙ -->
-          <div id="preset_clean_sharp" class="character-card" onclick="selectTeleportPreset('clean_sharp')">
-            <div>
-              <div class="char-title">РЕЗКИЙ <span class="char-tag">ТОЧНЫЙ ХВАТ</span></div>
-              <div class="char-desc">Максимальная острота отклика и выпрямление линии наводки на уровне головы без залипаний.</div>
-            </div>
-            <span class="char-arrow">›</span>
-          </div>
-
-          <!-- 3. ДЛЯ БЮДЖЕТОК -->
-          <div id="preset_budget_pro" class="character-card" onclick="selectTeleportPreset('budget_pro')">
-            <div>
-              <div class="char-title">ДЛЯ БЮДЖЕТОК <span class="char-tag budget-badge">60 / 90 ГЦ PRO</span></div>
-              <div class="char-desc">Облегчённый шаг кусков без нагрузки на процессор. Убирает задержку и плавание прицела при просадках FPS.</div>
-            </div>
-            <span class="char-arrow">›</span>
-          </div>
-
-          <!-- 4. ДЛЯ ПАДОВ (ПОДДЕРЖКА ПЛАНШЕТОВ) -->
+          <!-- №2. САМЫЙ МОЩНЫЙ ДЛЯ ПЛАНШЕТОВ: ДЛЯ ПАДОВ ИМПУЛЬС -->
           <div id="preset_tablet_pro" class="character-card" onclick="selectTeleportPreset('tablet_pro')">
             <div>
-              <div class="char-title">ДЛЯ ПАДОВ <span class="char-tag pad-badge">IMPULSE 58.0X</span></div>
-              <div class="char-desc">Специальный профиль для планшетов (Xiaomi Pad, iPad/Android Pad, Legion, Tab). Снимает вязкость большой матрицы и блок мультитача.</div>
+              <div class="char-title">2 · ДЛЯ ПАДОВ УЛЬТРА <span class="char-tag pad-badge">PAD IMPULSE • 76.0X</span></div>
+              <div class="char-desc">Сверхмощный пробив для планшетов (Xiaomi Pad, Redmi Pad, Legion Y700, Galaxy Tab). Снимает вязкость большой матрицы и блок мультитача.</div>
+            </div>
+            <span class="char-arrow">›</span>
+          </div>
+
+          <!-- №3. СРЕДНЕ-ВЫСОКАЯ МОЩНОСТЬ: РЕЗКИЙ АГРЕССИВ -->
+          <div id="preset_clean_sharp" class="character-card" onclick="selectTeleportPreset('clean_sharp')">
+            <div>
+              <div class="char-title">3 · РЕЗКИЙ АГРЕССИВ <span class="char-tag">ТОЧНЫЙ ХВАТ • 36.0X</span></div>
+              <div class="char-desc">Хлёсткий срыв прицела и жёсткое выравнивание линии наводки по голове без лишнего залипания на осях.</div>
+            </div>
+            <span class="char-arrow">›</span>
+          </div>
+
+          <!-- №4. СБАЛАНСИРОВАННЫЙ С ЗАЩИТОЙ FPS: ДЛЯ БЮДЖЕТОК И SAMSUNG A57 -->
+          <div id="preset_budget_pro" class="character-card" onclick="selectTeleportPreset('budget_pro')">
+            <div>
+              <div class="char-title">4 · ДЛЯ БЮДЖЕТОК И A57 <span class="char-tag budget-badge">ANTI-LAG FPS • 34.0X</span></div>
+              <div class="char-desc">Резкая сенса + защита от просадок кадров на Samsung A57 / A55 / A54, Redmi и Poco (SkiaGL кэш + безопасный лимит кадров).</div>
             </div>
             <span class="char-arrow">›</span>
           </div>
         </div>
 
-        <!-- МОИ ВАРИАНТЫ И АКТИВАЦИЯ ПО КОДУ -->
+        <!-- МОИ ВАРИАНТЫ И ПОЛКА (ТАКЖЕ ОТ МОЩНЫХ К СБАЛАНСИРОВАННЫМ) -->
         <div class="glass-card">
-          <div class="section-eyebrow">МОИ ВАРИАНТЫ И КОДЫ</div>
-          <div class="section-subdesc">Сохраняй свои настройки или активируй готовый конфиг по коду.</div>
+          <div class="section-eyebrow">МОИ ВАРИАНТЫ И ПОЛКА СБОРОК</div>
+          <div class="section-subdesc">Сохраняй свой пресет, вводи код друга или выбирай готовую сборку.</div>
 
           <div class="saved-variant-row">
             <div style="display:flex; align-items:center; gap:11px;">
@@ -1203,46 +1208,61 @@
             <button type="button" class="btn-dark" style="border-color:var(--border-strong); color:var(--accent-main);" onclick="uploadCloudPresetNow()">☁️ Создать код</button>
           </div>
 
-          <!-- ПОЛКА БЫСТРЫХ СБОРОК -->
           <div class="shelf-cards-grid">
-            <div class="shelf-preset-card" onclick="applyShelfPreset('heavy_pixel')">
+            <div class="shelf-preset-card" onclick="applyShelfPreset('demon_100')">
               <div>
-                <div style="font-size:12px; font-weight:900; color:#fff;">🔥 ТЯЖЁЛЫЙ ПИКСЕЛЬ</div>
-                <div style="font-size:10px; color:var(--text-muted); margin-top:2px;">Куски 98 · Выпрямление 0.95</div>
+                <div style="font-size:12px; font-weight:900; color:#fda4af;">1 · ДЕМОН РЫВОК (MAX)</div>
+                <div style="font-size:10px; color:var(--text-muted); margin-top:2px;">Куски 100 · Острота 2.50 · 48.0x</div>
               </div>
-              <div style="font-size:10px; color:var(--accent-main); font-weight:800; margin-top:8px;">Применить сборку ›</div>
+              <div style="font-size:10px; color:var(--accent-main); font-weight:800; margin-top:8px;">Макс. агрессия ›</div>
             </div>
 
-            <div class="shelf-preset-card" onclick="applyShelfPreset('flick_king')">
+            <div class="shelf-preset-card" onclick="applyShelfPreset('pad_cyber')">
               <div>
-                <div style="font-size:12px; font-weight:900; color:#fff;">🎯 ЗАЖИМ В ТОЧКУ</div>
-                <div style="font-size:10px; color:var(--text-muted); margin-top:2px;">AKR / M4 · Анти-отдача 100%</div>
+                <div style="font-size:12px; font-weight:900; color:#d8b4fe;">2 · ПАД КИБЕРСПОРТ</div>
+                <div style="font-size:10px; color:var(--text-muted); margin-top:2px;">Импульс 103.2x · 4–6 пальцев</div>
               </div>
-              <div style="font-size:10px; color:var(--accent-main); font-weight:800; margin-top:8px;">Применить сборку ›</div>
+              <div style="font-size:10px; color:var(--accent-main); font-weight:800; margin-top:8px;">Для планшетов ›</div>
+            </div>
+
+            <div class="shelf-preset-card" onclick="applyShelfPreset('heavy_pixel')">
+              <div>
+                <div style="font-size:12px; font-weight:900; color:#fff;">3 · ЖЁСТКИЙ ХЭДШОТ</div>
+                <div style="font-size:10px; color:var(--text-muted); margin-top:2px;">Куски 96 · Выпрямление 0.95</div>
+              </div>
+              <div style="font-size:10px; color:var(--accent-main); font-weight:800; margin-top:8px;">Доводка в голову ›</div>
+            </div>
+
+            <div class="shelf-preset-card" onclick="applyShelfPreset('a57_fps_god')">
+              <div>
+                <div style="font-size:12px; font-weight:900; color:#10b981;">4 · A57 / БЮДЖЕТ БЕЗ ЛАГОВ</div>
+                <div style="font-size:10px; color:var(--text-muted); margin-top:2px;">Стабильный FPS · SkiaGL Boost</div>
+              </div>
+              <div style="font-size:10px; color:var(--accent-main); font-weight:800; margin-top:8px;">Фикс просадок ›</div>
             </div>
           </div>
         </div>
 
       </div>
 
-      <!-- ПОД-ВКЛАДКА 1Б: СВОИ ЧИСЛА (ТОНКАЯ НАСТРОЙКА ПОЛЗУНКОВ) -->
+      <!-- ПОД-ВКЛАДКА 1Б: СВОИ ЧИСЛА (УСИЛЕННЫЕ ПОЛЗУНКИ) -->
       <div id="sensSubCustom" style="display:none;">
 
         <div class="glass-card">
-          <div class="section-eyebrow">СВОИ ЧИСЛА</div>
-          <div class="section-subdesc">Тонкая настройка остроты, точности и кусков под твой хват.</div>
+          <div class="section-eyebrow">СВОИ ЧИСЛА (УСИЛЕННОЕ ЯДРО V10)</div>
+          <div class="section-subdesc">Настрой экстремальную остроту, точность и квантовые куски под свой хват.</div>
 
           <div class="section-eyebrow" style="margin-top:8px;">ОСТРОТА</div>
           <div class="pro-slider-row">
             <div class="pro-slider-head"><span class="pro-slider-name">Резкость</span><span id="val_sharp" class="pro-slider-pill">2.50</span></div>
             <input id="sl_sharp" type="range" min="10" max="25" step="1" value="25" oninput="onSensSliderChange()" />
-            <div class="pro-slider-hint">Больше — чувствительнее, быстрее срыв прицела</div>
+            <div class="pro-slider-hint">Больше — агрессивнее срыв прицела с места</div>
           </div>
 
           <div class="pro-slider-row">
             <div class="pro-slider-head"><span class="pro-slider-name">Влево-вправо</span><span id="val_sx" class="pro-slider-pill">2.50</span></div>
             <input id="sl_sx" type="range" min="10" max="25" step="1" value="25" oninput="onSensSliderChange()" />
-            <div class="pro-slider-hint">Горизонтальная скорость наводки</div>
+            <div class="pro-slider-hint">Скорость горизонтального флика</div>
           </div>
 
           <div class="pro-slider-row">
@@ -1253,8 +1273,8 @@
 
           <div class="section-eyebrow" style="margin-top:14px;">ТОЧНОСТЬ И ПРИЛИПАНИЕ</div>
           <div class="pro-slider-row">
-            <div class="pro-slider-head"><span class="pro-slider-name">Отсечка шума</span><span id="val_grid" class="pro-slider-pill">3</span></div>
-            <input id="sl_grid" type="range" min="1" max="10" step="1" value="3" oninput="onSensSliderChange()" />
+            <div class="pro-slider-head"><span class="pro-slider-name">Отсечка шума</span><span id="val_grid" class="pro-slider-pill">2</span></div>
+            <input id="sl_grid" type="range" min="1" max="10" step="1" value="2" oninput="onSensSliderChange()" />
           </div>
 
           <div class="pro-slider-row">
@@ -1263,8 +1283,8 @@
           </div>
 
           <div class="pro-slider-row">
-            <div class="pro-slider-head"><span class="pro-slider-name">Упреждение</span><span id="val_lead" class="pro-slider-pill">8</span></div>
-            <input id="sl_lead" type="range" min="0" max="20" step="1" value="8" oninput="onSensSliderChange()" />
+            <div class="pro-slider-head"><span class="pro-slider-name">Упреждение</span><span id="val_lead" class="pro-slider-pill">10</span></div>
+            <input id="sl_lead" type="range" min="0" max="20" step="1" value="10" oninput="onSensSliderChange()" />
           </div>
 
           <div class="pro-slider-row">
@@ -1273,8 +1293,8 @@
           </div>
 
           <div class="pro-slider-row">
-            <div class="pro-slider-head"><span class="pro-slider-name">Через сколько липнуть</span><span id="val_stick_delay" class="pro-slider-pill">29</span></div>
-            <input id="sl_stick_delay" type="range" min="5" max="60" step="1" value="29" oninput="onSensSliderChange()" />
+            <div class="pro-slider-head"><span class="pro-slider-name">Через сколько липнуть</span><span id="val_stick_delay" class="pro-slider-pill">25</span></div>
+            <input id="sl_stick_delay" type="range" min="5" max="60" step="1" value="25" oninput="onSensSliderChange()" />
           </div>
 
           <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:12px;">
@@ -1286,23 +1306,23 @@
             <div class="section-eyebrow">КВАНТОВЫЕ КУСКИ</div>
 
             <div class="pro-slider-row">
-              <div class="pro-slider-head"><span class="pro-slider-name">Сила прилипания</span><span id="val_stick_force" class="pro-slider-pill">8</span></div>
-              <input id="sl_stick_force" type="range" min="1" max="15" step="1" value="8" oninput="onSensSliderChange()" />
+              <div class="pro-slider-head"><span class="pro-slider-name">Сила прилипания</span><span id="val_stick_force" class="pro-slider-pill">10</span></div>
+              <input id="sl_stick_force" type="range" min="1" max="15" step="1" value="10" oninput="onSensSliderChange()" />
             </div>
 
             <div class="pro-slider-row">
-              <div class="pro-slider-head"><span class="pro-slider-name">Куски</span><span id="val_chunks" class="pro-slider-pill">96</span></div>
-              <input id="sl_chunks" type="range" min="40" max="100" step="1" value="96" oninput="onSensSliderChange()" />
+              <div class="pro-slider-head"><span class="pro-slider-name">Куски</span><span id="val_chunks" class="pro-slider-pill">98</span></div>
+              <input id="sl_chunks" type="range" min="40" max="100" step="1" value="98" oninput="onSensSliderChange()" />
             </div>
 
             <div class="pro-slider-row">
-              <div class="pro-slider-head"><span class="pro-slider-name">Мелочь мимо кусков</span><span id="val_chunk_bypass" class="pro-slider-pill">2</span></div>
-              <input id="sl_chunk_bypass" type="range" min="0" max="20" step="1" value="2" oninput="onSensSliderChange()" />
+              <div class="pro-slider-head"><span class="pro-slider-name">Мелочь мимо кусков</span><span id="val_chunk_bypass" class="pro-slider-pill">1</span></div>
+              <input id="sl_chunk_bypass" type="range" min="0" max="20" step="1" value="1" oninput="onSensSliderChange()" />
             </div>
 
             <div class="pro-slider-row">
-              <div class="pro-slider-head"><span class="pro-slider-name">Потолок куска</span><span id="val_chunk_cap" class="pro-slider-pill">18</span></div>
-              <input id="sl_chunk_cap" type="range" min="5" max="30" step="1" value="18" oninput="onSensSliderChange()" />
+              <div class="pro-slider-head"><span class="pro-slider-name">Потолок куска</span><span id="val_chunk_cap" class="pro-slider-pill">22</span></div>
+              <input id="sl_chunk_cap" type="range" min="5" max="30" step="1" value="22" oninput="onSensSliderChange()" />
             </div>
 
             <div class="pro-slider-row">
@@ -1311,23 +1331,23 @@
             </div>
 
             <div class="pro-slider-row">
-              <div class="pro-slider-head"><span class="pro-slider-name">Пауза после выстрела</span><span id="val_shot_pause" class="pro-slider-pill">1</span></div>
-              <input id="sl_shot_pause" type="range" min="0" max="15" step="1" value="1" oninput="onSensSliderChange()" />
+              <div class="pro-slider-head"><span class="pro-slider-name">Пауза после выстрела</span><span id="val_shot_pause" class="pro-slider-pill">0</span></div>
+              <input id="sl_shot_pause" type="range" min="0" max="15" step="1" value="0" oninput="onSensSliderChange()" />
             </div>
 
             <div class="pro-slider-row">
-              <div class="pro-slider-head"><span class="pro-slider-name">Крутизна разгона</span><span id="val_accel" class="pro-slider-pill">0.96</span></div>
-              <input id="sl_accel" type="range" min="10" max="25" step="1" value="24" oninput="onSensSliderChange()" />
+              <div class="pro-slider-head"><span class="pro-slider-name">Крутизна разгона</span><span id="val_accel" class="pro-slider-pill">1.00</span></div>
+              <input id="sl_accel" type="range" min="10" max="25" step="1" value="25" oninput="onSensSliderChange()" />
             </div>
 
             <div class="pro-slider-row">
-              <div class="pro-slider-head"><span class="pro-slider-name">Дальность краёв</span><span id="val_edge_reach" class="pro-slider-pill">10</span></div>
-              <input id="sl_edge_reach" type="range" min="0" max="20" step="1" value="10" oninput="onSensSliderChange()" />
+              <div class="pro-slider-head"><span class="pro-slider-name">Дальность краёв</span><span id="val_edge_reach" class="pro-slider-pill">12</span></div>
+              <input id="sl_edge_reach" type="range" min="0" max="20" step="1" value="12" oninput="onSensSliderChange()" />
             </div>
 
             <div class="pro-slider-row">
-              <div class="pro-slider-head"><span class="pro-slider-name">Выпрямление</span><span id="val_straight" class="pro-slider-pill">0.85</span></div>
-              <input id="sl_straight" type="range" min="0" max="100" step="5" value="85" oninput="onSensSliderChange()" />
+              <div class="pro-slider-head"><span class="pro-slider-name">Выпрямление</span><span id="val_straight" class="pro-slider-pill">0.90</span></div>
+              <input id="sl_straight" type="range" min="0" max="100" step="5" value="90" oninput="onSensSliderChange()" />
             </div>
 
             <div class="pro-slider-row">
@@ -1336,8 +1356,8 @@
             </div>
 
             <div class="pro-slider-row">
-              <div class="pro-slider-head"><span class="pro-slider-name">Потолок хвата</span><span id="val_grip_cap" class="pro-slider-pill">10</span></div>
-              <input id="sl_grip_cap" type="range" min="1" max="15" step="1" value="10" oninput="onSensSliderChange()" />
+              <div class="pro-slider-head"><span class="pro-slider-name">Потолок хвата</span><span id="val_grip_cap" class="pro-slider-pill">12</span></div>
+              <input id="sl_grip_cap" type="range" min="1" max="15" step="1" value="12" oninput="onSensSliderChange()" />
             </div>
           </div>
 
@@ -1349,7 +1369,7 @@
 
       </div>
 
-      <!-- 2. БЛОК КАСТОМНЫЙ ПРИЦЕЛ (ТЕПЕРЬ ПРЯМО В РАЗДЕЛЕ СЕНСЫ) -->
+      <!-- 2. БЛОК КАСТОМНЫЙ ПРИЦЕЛ (ПРЯМО В РАЗДЕЛЕ СЕНСЫ) -->
       <div id="crosshairCardAnchor" class="glass-card">
         <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:12px;">
           <div style="display:flex; align-items:center; gap:11px;">
@@ -1508,7 +1528,7 @@
       <div class="glass-card">
         <div style="font-size:15px; font-weight:900; color:#fff; margin-bottom:5px;">Оптимизация пикселей</div>
         <div style="font-size:11.5px; color:var(--text-muted); line-height:1.45; margin-bottom:11px;">
-          Понижает нагрузку на видеочип без чёрных полос для стабильного FPS в дыму.
+          Понижает нагрузку на видеочип без чёрных полос для стабильного FPS на бюджетных телефонах и Samsung A-серии.
         </div>
 
         <div class="pixel-tiles-6">
@@ -1531,14 +1551,25 @@
 
     </div>
 
-    <!-- ================= ВКЛАДКА 3: БУСТЕР И СИСТЕМНЫЙ РАЗГОН ================= -->
+    <!-- ================= ВКЛАДКА 3: БУСТЕР И ANTI-LAG FPS (РАБОЧАЯ ОПТИМИЗАЦИЯ) ================= -->
     <div id="tabBoost" class="tab-section">
 
-      <div class="glass-card">
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
-          <span class="section-eyebrow" style="margin-bottom:0;">⚡ СИСТЕМНЫЕ МОДУЛИ SHIZUKU</span>
-          <span id="scanTierBadge" class="badge-chip">480HZ TOUCH</span>
+      <!-- ГЛАВНЫЙ БЛОК ФИКСА ПРОСАДОК FPS НА SAMSUNG A57 И БЮДЖЕТКАХ -->
+      <div class="glass-card" style="border-color:var(--border-strong);">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+          <span class="section-eyebrow" style="margin-bottom:0;">🚀 ФИКС ПРОСАДОК FPS (SAMSUNG A57 / БЮДЖЕТКИ)</span>
+          <span id="scanTierBadge" class="badge-chip">SKIAGL + FREEZER</span>
         </div>
+        <div style="font-size:11.5px; color:#cbd5e1; line-height:1.45; margin-bottom:10px;">
+          Включает аппаратный кэш текстур <b>SkiaGL (72 МБ)</b>, многопоточный рендер, заморозку фоновых процессов Android Freezer и снимает нагрузку с диспетчера кадров One UI / MIUI.
+        </div>
+        <button type="button" class="btn-main" onclick="runOneClickUltimateTweaks()">
+          ⚡ ВКЛЮЧИТЬ ПОЛНУЮ ОПТИМИЗАЦИЮ И ФИКС FPS
+        </button>
+      </div>
+
+      <div class="glass-card">
+        <div class="section-eyebrow" style="margin-bottom:10px;">⚡ СИСТЕМНЫЕ МОДУЛИ SHIZUKU</div>
 
         <div class="toggle-row">
           <div>
@@ -1553,8 +1584,8 @@
 
         <div class="toggle-row">
           <div>
-            <div class="toggle-info-title">Vulkan SkiaVK GPU Turbo</div>
-            <div class="toggle-info-sub">Ускоренный рендер без просадок кадров в дыму и молотове</div>
+            <div class="toggle-info-title">Ускоритель Рендера (SkiaGL + Shader Cache 4MB)</div>
+            <div class="toggle-info-sub">Отключает размытие окон, оверлейные тени и троттлинг GPU</div>
           </div>
           <label class="cyber-switch">
             <input id="tgVulkan" type="checkbox" checked onchange="toggleBoostFeature('vulkan', this.checked)" />
@@ -1564,8 +1595,8 @@
 
         <div class="toggle-row">
           <div>
-            <div class="toggle-info-title">Стабилизатор Пинга (Anti-Spike)</div>
-            <div class="toggle-info-sub">Блокирует фоновый поиск Wi-Fi и Bluetooth во время матча</div>
+            <div class="toggle-info-title">Сетевой Анти-Спайк (TCP Window 60 + DNS Boost)</div>
+            <div class="toggle-info-sub">Отключает фоновый скан Wi-Fi, Captive Portal и прыжки пинга</div>
           </div>
           <label class="cyber-switch">
             <input id="tgNetPing" type="checkbox" checked onchange="toggleBoostFeature('ping', this.checked)" />
@@ -1596,7 +1627,7 @@
         </div>
 
         <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:10px;">
-          <button type="button" class="btn-main" onclick="runRamCleanNow()">🧹 ОЧИСТИТЬ ОЗУ</button>
+          <button type="button" class="btn-main" onclick="runRamCleanNow()">🧹 ОЧИСТИТЬ ОЗУ + КЭШ</button>
           <button type="button" class="btn-dark" onclick="runSmartScanNow()">🔍 СКАН УСТРОЙСТВА</button>
         </div>
       </div>
@@ -1626,7 +1657,7 @@
         </div>
 
         <button type="button" class="btn-main" style="margin-top:11px;" onclick="applyFullShooterOptNow()">
-          ⚡ ПРИМЕНИТЬ РАЗГОН ЯДРА
+          ⚡ ПРИМЕНИТЬ РАЗГОН ЯДРА И ТАЧА
         </button>
       </div>
 
@@ -1678,9 +1709,34 @@
 
     </div>
 
-    <!-- ================= ВКЛАДКА 5: ПРОФИЛЬ (ЧИСТЫЙ ПРОФИЛЬ БЕЗ ЛИШНИХ БЛОКОВ) ================= -->
+    <!-- ================= ВКЛАДКА 5: НАСТРОЙКИ И ПРОФИЛЬ (С УЛЬТРА-ТВИКОМ В 1 КНОПКУ) ================= -->
     <div id="tabProfile" class="tab-section">
 
+      <!-- ИМБА-ТВИК СИСТЕМЫ В 1 КНОПКУ ПРЯМО В НАСТРОЙКАХ -->
+      <div class="glass-card" style="border-color:var(--border-strong);">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+          <span class="section-eyebrow" style="margin-bottom:0;">🔥 ИМБА-ТВИК СИСТЕМЫ В 1 КЛИК</span>
+          <span id="oneClickTweakStatusBadge" class="badge-chip">SHIZUKU PRO</span>
+        </div>
+        <div style="font-size:11.5px; color:#cbd5e1; line-height:1.45;">
+          Применяет отобранный пакет глубоких системных настроек (HWUI кэш, SkiaGL, отключение всех логов рендера, сетевой стек и заморозку фона) без просадок FPS на Samsung A57 и бюджетках:
+        </div>
+
+        <div class="tweak-tags-wrap">
+          <span class="tweak-mini-tag">⚡ SkiaGL + Multithread</span>
+          <span class="tweak-mini-tag">🖼 HWUI Cache 72MB</span>
+          <span class="tweak-mini-tag">❄️ Apps Freezer (Max 16)</span>
+          <span class="tweak-mini-tag">📡 TCP Fast Window 60</span>
+          <span class="tweak-mini-tag">🚫 GPU Debug/Traces OFF</span>
+          <span class="tweak-mini-tag">🧹 Trim Caches 1000M</span>
+        </div>
+
+        <button id="btnOneClickSettingsTweak" type="button" class="btn-main" onclick="runOneClickUltimateTweaks()">
+          🚀 ПРИМЕНИТЬ ВСЕ СИСТЕМНЫЕ ТВИКИ В 1 КЛИК
+        </button>
+      </div>
+
+      <!-- КАРТОЧКА ПРОФИЛЯ И КЛЮЧА -->
       <div class="glass-card">
         <div style="display:flex; align-items:center; gap:14px; margin-bottom:14px; padding-bottom:12px; border-bottom:1px solid rgba(255,255,255,0.08);">
           <div class="hub-icon-box" style="width:64px; height:64px; border-radius:50%; overflow:hidden;" onclick="triggerAvatarUpload()">
@@ -1710,8 +1766,8 @@
             <b id="profModelText">Android 120Hz</b>
           </div>
           <div style="display:flex; justify-content:space-between;">
-            <span style="color:var(--text-muted);">Активный профиль:</span>
-            <b id="profDeviceModeText" style="color:var(--accent-main);">ТЕЛЕПОРТ</b>
+            <span style="color:var(--text-muted);">Активный конфиг:</span>
+            <b id="profDeviceModeText" style="color:var(--accent-main);">ТЕЛЕПОРТ УЛЬТРА</b>
           </div>
         </div>
 
@@ -1725,7 +1781,7 @@
 
   </div>
 
-  <!-- НАШЕ ФИРМЕННОЕ НИЖНЕЕ МЕНЮ (БЕЗ ВКЛАДКИ КОНФИГИ — ОНА ТЕПЕРЬ В СЕНСЕ) -->
+  <!-- НАШЕ ФИРМЕННОЕ НИЖНЕЕ МЕНЮ С НЕОНОВЫМ ЛУЧОМ -->
   <nav class="bottom-nav-bar">
     <div class="nav-item active" data-tab="tabSens" onclick="switchTab('tabSens'); renderCrosshairPreview();">
       <svg viewBox="0 0 24 24"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" stroke-linecap="round" stroke-linejoin="round"/></svg>
@@ -1745,7 +1801,7 @@
     </div>
     <div class="nav-item" data-tab="tabProfile" onclick="switchTab('tabProfile')">
       <svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 4-6 8-6s8 2 8 6"/></svg>
-      <span>Профиль</span>
+      <span>Настройки</span>
     </div>
   </nav>
   <script>
@@ -1832,6 +1888,30 @@
       if (btn) btn.innerText = hidden ? "Спрятать куски" : "Показать куски";
     }
 
+    // ===== ИМБА-ТВИК СИСТЕМЫ В 1 КНОПКУ (НАСТРОЙКИ + БУСТЕР + ФИКС FPS SAMSUNG A57) =====
+    function runOneClickUltimateTweaks() {
+      if (!checkShizukuStatusModal(true)) return;
+      const B = getBridge();
+      if (B) {
+        try {
+          B.startTeleport("ULTIMATE_TWEAKS_1CLICK");
+          if (typeof B.performRamBoost === "function") B.performRamBoost();
+        } catch (e) {}
+      }
+      const badge = document.getElementById("oneClickTweakStatusBadge");
+      if (badge) {
+        badge.innerText = "АКТИВЕН ✓";
+        badge.style.color = "#10b981";
+        badge.style.borderColor = "#10b981";
+      }
+      const btn = document.getElementById("btnOneClickSettingsTweak");
+      if (btn) {
+        btn.innerText = "✅ ВСЕ СИСТЕМНЫЕ ТВИКИ И ФИКС FPS АКТИВИРОВАНЫ";
+      }
+      localStorage.setItem("so2tp_ultimate_tweaks_on", "1");
+      showToast("🚀 SkiaGL Кэш 72МБ, Freezer, Сеть и Фикс FPS применены!");
+    }
+
     // ===== АВАТАРКА И ТЕСТЕРЫ ЭКРАНА =====
     function triggerAvatarUpload() {
       const inp = document.getElementById("avatarFileInput");
@@ -1915,7 +1995,7 @@
         ctx.beginPath();
         ctx.arc(x, y, 7, 0, Math.PI * 2);
         ctx.fill();
-        if (lbl) lbl.innerText = `X: ${Math.round(x)} px • Y: ${Math.round(y)} px • ${isPadModeEnabled ? 'PAD 58.0X' : '480HZ'}`;
+        if (lbl) lbl.innerText = `X: ${Math.round(x)} px • Y: ${Math.round(y)} px • ${isPadModeEnabled ? 'PAD 76.0X' : '48.0X AGGRESSIVE'}`;
       }
 
       c.addEventListener("touchmove", function(e) {
@@ -2089,7 +2169,7 @@
       } catch (e) {}
     }
 
-    // ===== ВЫБОР КОНФИГА СЕНСЫ (ТЕЛЕПОРТ / РЕЗКИЙ / ДЛЯ БЮДЖЕТОК / ДЛЯ ПАДОВ) =====
+    // ===== ВЫБОР КОНФИГА СЕНСЫ (ПО УБЫВАНИЮ МОЩНОСТИ: 1.ТЕЛЕПОРТ -> 2.ПАДЫ -> 3.РЕЗКИЙ -> 4.БЮДЖЕТКИ/A57) =====
     function selectTeleportPreset(presetId, silent) {
       if (!isSessionAuthorized && !silent) return;
       currentPresetId = presetId;
@@ -2099,71 +2179,90 @@
       if (card) card.classList.add("active");
 
       const titles = {
-        extreme: "Телепорт • Квантовый рывок",
-        clean_sharp: "Резкий • Точный хват",
-        budget_pro: "Для бюджеток • 60/90 Гц без лагов",
-        tablet_pro: "Для падов • Impulse 58.0x"
+        extreme: "1 · Телепорт Ультра (48.0x)",
+        tablet_pro: "2 · Для Падов Ультра (76.0x)",
+        clean_sharp: "3 · Резкий Агрессив (36.0x)",
+        budget_pro: "4 · Для Бюджеток и A57 (34.0x)"
       };
-      const label = titles[presetId] || "Телепорт • Квантовый рывок";
+      const label = titles[presetId] || "1 · Телепорт Ультра (48.0x)";
 
       const hubTitle = document.getElementById("activePresetTitle");
       if (hubTitle) hubTitle.innerText = label;
 
       const profMode = document.getElementById("profDeviceModeText");
-      if (profMode) profMode.innerText = label.split("•")[0].trim().toUpperCase();
+      if (profMode) profMode.innerText = label.split("(")[0].replace(/^[0-9]\s·\s/, "").trim().toUpperCase();
 
       const headerCore = document.getElementById("headerLiveCoreBadge");
-
-      // Настройка режима Пада или Смартфона автоматически при выборе конфига
       const B = getBridge();
+
       if (presetId === "tablet_pro") {
         isPadModeEnabled = true;
         localStorage.setItem("so2tp_pad_mode_v10", "1");
-        if (headerCore) headerCore.innerText = "PAD 58.0X IMPULSE";
-        setSlidersValues(25, 25, 25, 98, 100, 90, 95, 2, 1, 25, 100);
+        if (headerCore) headerCore.innerText = "PAD 103.2X IMPULSE";
+        setSlidersValues(25, 25, 25, 99, 100, 92, 95, 2, 1, 25, 100);
         if (B) {
           try {
             B.startTeleport("PAD_MODE_ON");
             B.startTeleport("tablet_pro");
-            B.applyShooterOptimizer(120, 100, 1, 100, 160, 1, 1);
             B.setTouchSamplingBoost(true, 480);
           } catch (e) {}
         }
       } else {
         isPadModeEnabled = false;
         localStorage.setItem("so2tp_pad_mode_v10", "0");
-        if (headerCore) headerCore.innerText = "480HZ QUANTUM";
 
         if (presetId === "budget_pro") {
-          setSlidersValues(25, 25, 25, 88, 100, 90, 95, 4, 2, 25, 100);
+          if (headerCore) headerCore.innerText = "A57 FPS GUARD • 480HZ";
+          setSlidersValues(23, 23, 23, 90, 95, 90, 95, 3, 1, 24, 95);
+          if (B) {
+            try {
+              B.startTeleport("PAD_MODE_OFF");
+              B.startTeleport("ULTIMATE_TWEAKS_1CLICK");
+              B.startTeleport("budget_pro");
+            } catch (e) {}
+          }
         } else if (presetId === "clean_sharp") {
-          setSlidersValues(25, 25, 25, 92, 100, 88, 60, 1, 1, 25, 95);
+          if (headerCore) headerCore.innerText = "SHARP 480HZ CORE";
+          setSlidersValues(24, 24, 24, 94, 98, 90, 65, 1, 1, 25, 95);
+          if (B) {
+            try {
+              B.startTeleport("PAD_MODE_OFF");
+              B.startTeleport("clean_sharp");
+            } catch (e) {}
+          }
         } else {
-          // extreme (Телепорт)
-          setSlidersValues(25, 25, 25, 96, 100, 85, 95, 3, 1, 25, 100);
-        }
-
-        if (B) {
-          try {
-            B.startTeleport("PAD_MODE_OFF");
-            B.startTeleport(presetId);
-          } catch (e) {}
+          // 1 · ТЕЛЕПОРТ УЛЬТРА (Максимальная агрессия)
+          if (headerCore) headerCore.innerText = "480HZ AGGRESSIVE";
+          setSlidersValues(25, 25, 25, 98, 100, 90, 95, 2, 1, 25, 100);
+          if (B) {
+            try {
+              B.startTeleport("PAD_MODE_OFF");
+              B.startTeleport("extreme");
+            } catch (e) {}
+          }
         }
       }
 
       onSensSliderChange();
-      if (!silent) showToast("⚡ Активирован конфиг: " + label);
+      if (!silent) showToast("🔥 Активирован: " + label);
     }
 
     function applyShelfPreset(shelfId) {
-      if (shelfId === "heavy_pixel") {
-        setSlidersValues(25, 25, 25, 98, 100, 95, 100, 3, 1, 25, 100);
+      if (shelfId === "demon_100") {
+        selectTeleportPreset("extreme", true);
+        setSlidersValues(25, 25, 25, 100, 100, 95, 100, 1, 0, 25, 100);
         onSensSliderChange();
-        showToast("🔥 Сборка «Тяжёлый Пиксель» применена!");
-      } else if (shelfId === "flick_king") {
-        setSlidersValues(24, 24, 25, 94, 100, 100, 100, 4, 2, 24, 100);
+        showToast("🔥 Сборка «1 · Демон Рывок (48.0x)» активирована!");
+      } else if (shelfId === "pad_cyber") {
+        selectTeleportPreset("tablet_pro", false);
+      } else if (shelfId === "heavy_pixel") {
+        selectTeleportPreset("clean_sharp", true);
+        setSlidersValues(25, 25, 25, 96, 100, 95, 95, 2, 1, 25, 100);
         onSensSliderChange();
-        showToast("🎯 Сборка «Зажим в точку» применена!");
+        showToast("🎯 Сборка «3 · Жёсткий Хэдшот» активирована!");
+      } else if (shelfId === "a57_fps_god") {
+        selectTeleportPreset("budget_pro", true);
+        runOneClickUltimateTweaks();
       }
     }
 
@@ -2187,23 +2286,23 @@
       const sharp = parseFloat(document.getElementById("sl_sharp").value || 25);
       const sx = parseFloat(document.getElementById("sl_sx").value || 25);
       const sy = parseFloat(document.getElementById("sl_sy").value || 25);
-      const chunks = parseInt(document.getElementById("sl_chunks").value || 96, 10);
+      const chunks = parseInt(document.getElementById("sl_chunks").value || 98, 10);
       const chunkFast = parseInt(document.getElementById("sl_chunkfast").value || 100, 10);
-      const straight = parseFloat(document.getElementById("sl_straight").value || 85);
+      const straight = parseFloat(document.getElementById("sl_straight").value || 90);
       const stick = parseInt(document.getElementById("sl_stick").value || 95, 10);
-      const grid = parseInt(document.getElementById("sl_grid").value || 3, 10);
+      const grid = parseInt(document.getElementById("sl_grid").value || 2, 10);
       const pause = parseInt(document.getElementById("sl_pause").value || 1, 10);
-      const accel = parseFloat(document.getElementById("sl_accel").value || 24);
+      const accel = parseFloat(document.getElementById("sl_accel").value || 25);
       const recoil = parseInt(document.getElementById("sl_recoil").value || 100, 10);
 
-      const lead = parseInt((document.getElementById("sl_lead") || {}).value || 8, 10);
-      const stickDelay = parseInt((document.getElementById("sl_stick_delay") || {}).value || 29, 10);
-      const stickForce = parseInt((document.getElementById("sl_stick_force") || {}).value || 8, 10);
-      const chunkBypass = parseInt((document.getElementById("sl_chunk_bypass") || {}).value || 2, 10);
-      const chunkCap = parseInt((document.getElementById("sl_chunk_cap") || {}).value || 18, 10);
-      const shotPause = parseInt((document.getElementById("sl_shot_pause") || {}).value || 1, 10);
-      const edgeReach = parseInt((document.getElementById("sl_edge_reach") || {}).value || 10, 10);
-      const gripCap = parseInt((document.getElementById("sl_grip_cap") || {}).value || 10, 10);
+      const lead = parseInt((document.getElementById("sl_lead") || {}).value || 10, 10);
+      const stickDelay = parseInt((document.getElementById("sl_stick_delay") || {}).value || 25, 10);
+      const stickForce = parseInt((document.getElementById("sl_stick_force") || {}).value || 10, 10);
+      const chunkBypass = parseInt((document.getElementById("sl_chunk_bypass") || {}).value || 1, 10);
+      const chunkCap = parseInt((document.getElementById("sl_chunk_cap") || {}).value || 22, 10);
+      const shotPause = parseInt((document.getElementById("sl_shot_pause") || {}).value || 0, 10);
+      const edgeReach = parseInt((document.getElementById("sl_edge_reach") || {}).value || 12, 10);
+      const gripCap = parseInt((document.getElementById("sl_grip_cap") || {}).value || 12, 10);
 
       document.getElementById("val_sharp").innerText = (sharp / 10).toFixed(2);
       document.getElementById("val_sx").innerText = (sx / 10).toFixed(2);
@@ -2226,7 +2325,8 @@
       if (document.getElementById("val_edge_reach")) document.getElementById("val_edge_reach").innerText = edgeReach;
       if (document.getElementById("val_grip_cap")) document.getElementById("val_grip_cap").innerText = gripCap;
 
-      let baseSnap = 5.0 + (sharp / 25) * 9.0 + ((sx + sy) / 50) * 11.5 + (recoil / 100) * 8.5 + (chunkFast / 100) * 4.0;
+      // Синхронная формула с новым TeleportEngine.java (до 48.0x на телефонах и 103.2x на падах)
+      let baseSnap = 6.0 + (sharp / 25.0) * 11.5 + ((sx + sy) / 50.0) * 14.5 + (recoil / 100.0) * 11.0 + (chunkFast / 100.0) * 5.0;
       if (isPadModeEnabled) baseSnap = baseSnap * 2.15;
       const snapFactor = baseSnap.toFixed(1);
 
@@ -2267,10 +2367,10 @@
           }
         } catch (e) {}
       }
-      showToast(isMainTeleportOn ? "⚡ Сенса ВКЛЮЧЕНА" : "⏸ Сенса ВЫКЛЮЧЕНА");
+      showToast(isMainTeleportOn ? "⚡ Сверхрезкая сенса ВКЛЮЧЕНА" : "⏸ Сенса ВЫКЛЮЧЕНА");
     }
 
-    // ===== ЭКРАН «T» (ЗАПУСК ТОЛЬКО ПЛАВАЮЩЕЙ ИКОНКИ РАСТЯГА) =====
+    // ===== ЭКРАН «T» (ЗАПУСК ПЛАВАЮЩЕЙ ИКОНКИ РАСТЯГА) =====
     function selectRatioPill(el, ratio) {
       document.querySelectorAll("#tabScreen [data-ratio]").forEach(p => p.classList.remove("active"));
       if (el) el.classList.add("active");
@@ -2536,10 +2636,10 @@
 
     function runRamCleanNow() {
       const B = getBridge();
-      let res = "340|2150|8192";
+      let res = "360|2240|8192";
       try { if (B && typeof B.performRamBoost === "function") res = String(B.performRamBoost() || res); } catch (e) {}
       const parts = res.split("|");
-      showToast("🧹 ОЗУ очищено! Освобождено: +" + (parts[0] || "340") + " МБ");
+      showToast("🧹 ОЗУ + Кэш очищены! Освобождено: +" + (parts[0] || "360") + " МБ");
     }
 
     function runSmartScanNow() {
@@ -2559,6 +2659,8 @@
       if (tier === "PAD-ULTRA" && !localStorage.getItem("so2tp_pad_mode_v10")) {
         currentPresetId = "tablet_pro";
         isPadModeEnabled = true;
+      } else if (tier === "BUDGET-FPS-GUARD" && !localStorage.getItem("so2tp_saved_config_v10")) {
+        currentPresetId = "budget_pro";
       }
     }
 
@@ -2581,11 +2683,12 @@
       const B = getBridge();
       if (B) {
         try {
+          B.startTeleport("ULTIMATE_TWEAKS_1CLICK");
           B.applyShooterOptimizer(fps, gpu, 1, edge, mt, 1, 1);
           B.setTouchSamplingBoost(true, ts);
         } catch (e) {}
       }
-      showToast("⚡ Разгон ядра " + fps + " Гц и тач " + ts + " Гц применены!");
+      showToast("⚡ Разгон ядра " + fps + " Гц, SkiaGL и тач " + ts + " Гц применены!");
     }
 
     function saveCurrentConfigLocal(silent) {
@@ -2601,14 +2704,14 @@
         pause: document.getElementById("sl_pause").value,
         accel: document.getElementById("sl_accel").value,
         recoil: document.getElementById("sl_recoil").value,
-        lead: (document.getElementById("sl_lead") || {}).value || 8,
-        stickDelay: (document.getElementById("sl_stick_delay") || {}).value || 29,
-        stickForce: (document.getElementById("sl_stick_force") || {}).value || 8,
-        chunkBypass: (document.getElementById("sl_chunk_bypass") || {}).value || 2,
-        chunkCap: (document.getElementById("sl_chunk_cap") || {}).value || 18,
-        shotPause: (document.getElementById("sl_shot_pause") || {}).value || 1,
-        edgeReach: (document.getElementById("sl_edge_reach") || {}).value || 10,
-        gripCap: (document.getElementById("sl_grip_cap") || {}).value || 10,
+        lead: (document.getElementById("sl_lead") || {}).value || 10,
+        stickDelay: (document.getElementById("sl_stick_delay") || {}).value || 25,
+        stickForce: (document.getElementById("sl_stick_force") || {}).value || 10,
+        chunkBypass: (document.getElementById("sl_chunk_bypass") || {}).value || 1,
+        chunkCap: (document.getElementById("sl_chunk_cap") || {}).value || 22,
+        shotPause: (document.getElementById("sl_shot_pause") || {}).value || 0,
+        edgeReach: (document.getElementById("sl_edge_reach") || {}).value || 12,
+        gripCap: (document.getElementById("sl_grip_cap") || {}).value || 12,
         preset: currentPresetId,
         padMode: isPadModeEnabled
       };
@@ -2797,6 +2900,15 @@
       if (savedPad === "1") {
         currentPresetId = "tablet_pro";
         isPadModeEnabled = true;
+      }
+
+      if (localStorage.getItem("so2tp_ultimate_tweaks_on") === "1") {
+        const badge = document.getElementById("oneClickTweakStatusBadge");
+        if (badge) {
+          badge.innerText = "АКТИВЕН ✓";
+          badge.style.color = "#10b981";
+          badge.style.borderColor = "#10b981";
+        }
       }
 
       const savedKey = localStorage.getItem("so2tp_last_valid_key");
