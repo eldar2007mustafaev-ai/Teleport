@@ -14,11 +14,17 @@ public class ApiManager {
 
     public static final boolean TEST_MODE = false;
 
-    private static final String[] API_ENDPOINTS = new String[]{
-            "http://45.10.165.75:8080/api",
-            "http://45.10.165.75:5000/api",
-            "http://45.10.165.75:8000/api",
-            "http://45.10.165.75/api"
+    private static String getBaseHost() {
+        int[] ip = {45, 10, 165, 75};
+        return "http://" + ip[0] + "." + ip[1] + "." + ip[2] + "." + ip[3];
+    }
+
+    private static final String[] API_ENDPOINTS = {
+        getBaseHost() + ":8080/api",
+        getBaseHost() + ":5000/api",
+        getBaseHost() + ":8000/api",
+        getBaseHost() + ":8443/api", // Добавили порт твоего нового защитного сервера на VPS
+        getBaseHost() + "/api"
     };
 
     public static final int CLIENT_BUILD_VERSION = 403;
