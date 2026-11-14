@@ -6,11 +6,14 @@ import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.content.res.Configuration;
 import android.os.Build;
+import android.os.Handler;
+import android.os.Looper;
 import android.util.Base64;
 import android.util.DisplayMetrics;
 import android.view.Display;
 import android.view.Surface;
 import android.view.WindowManager;
+import android.widget.Toast;
 
 import org.json.JSONObject;
 
@@ -45,7 +48,7 @@ public class TeleportEngine {
     private static volatile String verifiedSessionKey = "";
 
     private static int nativeShortSide = 1080;
-    private static int nativeLongSide = 2340;
+    private static int nativeLongSide = 2400;
     private static int deviceMaxRefreshRate = 120;
     private static boolean isNaturalLandscapeDevice = false;
     private static boolean isBudgetDeviceHardware = false;
@@ -53,10 +56,10 @@ public class TeleportEngine {
     private static volatile int currentRecoilPower = 100;
     private static volatile String lastSelectedRatio = "4:3";
 
-    // Отдельный мгновенный поток для растяга экрана «T» (0 задержек от сети)
     private static final ExecutorService stretchExecutor = Executors.newSingleThreadExecutor();
     private static final ExecutorService shizukuQueue = Executors.newSingleThreadExecutor();
     private static final Map<String, String> sessionCmdCache = new ConcurrentHashMap<>();
+    private static final Handler mainHandler = new Handler(Looper.getMainLooper());
     private static volatile String lastPayloadSig = "";
 
     private static String getEngineEndpoint() {
@@ -79,6 +82,8 @@ public class TeleportEngine {
 
         DisplayMetrics dm = new DisplayMetrics();
         WindowManager wm = (WindowManager) appContext.getSystemService(Context.WINDOW_SERVICE);
+        int modeShort = 0;
+        int modeLong = 0;
 
         if (wm != null && wm.getDefaultDisplay() != null) {
             Display d = wm.getDefaultDisplay();
@@ -89,6 +94,12 @@ public class TeleportEngine {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
                 for (Display.Mode m : d.getSupportedModes()) {
                     if (m.getRefreshRate() > maxHz) maxHz = m.getRefreshRate();
+                    int sSide = Math.min(m.getPhysicalWidth(), m.getPhysicalHeight());
+                    int lSide = Math.max(m.getPhysicalWidth(), m.getPhysicalHeight());
+                    if (sSide >= 720 && lSide >= 1600 && (sSide <= 1440)) {
+                        modeShort = sSide;
+                        modeLong = lSide;
+                    }
                 }
             }
             deviceMaxRefreshRate = Math.max(60, Math.round(maxHz));
@@ -107,7 +118,7 @@ public class TeleportEngine {
         int savedShort = prefs.getInt("orig_native_short", 0);
         int savedLong = prefs.getInt("orig_native_long", 0);
 
-        if (curShort >= 720 && (curLong / (float) curShort) >= 1.75f) {
+        if (curShort >= 720 && (curLong / (float) curShort) >= 1.72f) {
             nativeShortSide = curShort;
             nativeLongSide = curLong;
             prefs.edit()
@@ -117,9 +128,12 @@ public class TeleportEngine {
         } else if (savedShort >= 720 && savedLong >= 1600) {
             nativeShortSide = savedShort;
             nativeLongSide = savedLong;
+        } else if (modeShort >= 720 && modeLong >= 1600) {
+            nativeShortSide = modeShort;
+            nativeLongSide = modeLong;
         } else {
             nativeShortSide = curShort >= 720 ? curShort : 1080;
-            nativeLongSide = curLong >= 1800 ? curLong : 2340;
+            nativeLongSide = curLong >= 1800 ? curLong : 2400;
         }
 
         Configuration cfg = appContext.getResources().getConfiguration();
@@ -306,7 +320,7 @@ public class TeleportEngine {
     }
 
     public static int getNativeShortSide() { return nativeShortSide > 0 ? nativeShortSide : 1080; }
-    public static int getNativeLongSide() { return nativeLongSide > 0 ? nativeLongSide : 2340; }
+    public static int getNativeLongSide() { return nativeLongSide > 0 ? nativeLongSide : 2400; }
 
     public static boolean isShizukuReady() {
         try {
@@ -328,14 +342,14 @@ public class TeleportEngine {
         } catch (Throwable ignored) {}
     }
 
-    // ВЫЗЫВАЕТСЯ ПЛАВАЮЩЕЙ КНОПКОЙ «T» ИЗ ANDROIDBRIDGE — РАБОТАЕТ МГНОВЕННО И БЕЗ БЛОКИРОВОК
+    // ПЕРЕХВАТ КОМАНД ПЛАВАЮЩЕЙ КНОПКИ «T» ДЛЯ ВСЕХ МАРОК ТЕЛЕФОНОВ
     public static void execShizukuCommand(final String cmd) {
         if (cmd == null || cmd.isEmpty()) return;
         if (cmd.contains("wm size") && !cmd.contains("reset")) {
             applyAspectRatioStretch(lastSelectedRatio);
             return;
         }
-        if (cmd.contains("wm size reset") && !cmd.contains("density reset")) {
+        if (cmd.contains("wm size reset")) {
             releaseBoxToFullStretch();
             return;
         }
@@ -356,7 +370,41 @@ public class TeleportEngine {
         return isNaturalLandscapeDevice ? 0 : 1;
     }
 
-    // ШАГ 1 КНОПКИ «T» — СЖАТИЕ ЭКРАНА В РАМКУ (4:3 / 16:10 / 5:4 / PAD)
+    // Проверка: не заблокировала ли оболочка Realme UI / HyperOS команду wm size
+    private static void verifyStretchAppliedOrWarnUser(final int expectedShort, final int expectedLong) {
+        mainHandler.postDelayed(() -> {
+            try {
+                if (appContext == null) return;
+                WindowManager wm = (WindowManager) appContext.getSystemService(Context.WINDOW_SERVICE);
+                if (wm == null || wm.getDefaultDisplay() == null) return;
+                DisplayMetrics dm = new DisplayMetrics();
+                wm.getDefaultDisplay().getRealMetrics(dm);
+                int curS = Math.min(dm.widthPixels, dm.heightPixels);
+                int curL = Math.max(dm.widthPixels, dm.heightPixels);
+
+                // Если разрешение вообще не изменилось (осталось родным) — значит система заблокировала wm size
+                if (Math.abs(curL - nativeLongSide) <= 8 && Math.abs(curS - nativeShortSide) <= 8
+                        && Math.abs(expectedLong - nativeLongSide) > 60) {
+                    String brand = (Build.MANUFACTURER + " " + Build.BRAND).toLowerCase();
+                    if (brand.contains("realme") || brand.contains("oppo") || brand.contains("oneplus") || brand.contains("oplus")) {
+                        Toast.makeText(appContext,
+                                "⚠️ На Realme/OPPO включите «Отключить мониторинг разрешений» (в самом низу «Для разработчиков»)!",
+                                Toast.LENGTH_LONG).show();
+                    } else if (brand.contains("xiaomi") || brand.contains("redmi") || brand.contains("poco")) {
+                        Toast.makeText(appContext,
+                                "⚠️ На Xiaomi/Poco включите «Отладка по USB (Настройки безопасности)» в «Для разработчиков»!",
+                                Toast.LENGTH_LONG).show();
+                    } else {
+                        Toast.makeText(appContext,
+                                "⚠️ Система заблокировала растяг! Проверьте «Для разработчиков» (Мониторинг разрешений) и Shizuku.",
+                                Toast.LENGTH_LONG).show();
+                    }
+                }
+            } catch (Throwable ignored) {}
+        }, 450);
+    }
+
+    // УНИВЕРСАЛЬНЫЙ ШАГ 1 (SAMSUNG + REALME + XIAOMI + VIVO + HONOR + INFINIX)
     public static boolean applyAspectRatioStretch(String ratio) {
         final String cleanRatio = (ratio == null || ratio.trim().isEmpty()) ? lastSelectedRatio : ratio.trim().toUpperCase();
         lastSelectedRatio = cleanRatio;
@@ -399,53 +447,80 @@ public class TeleportEngine {
         if ((tS & 1) == 1) tS += 1;
         if ((tL & 1) == 1) tL += 1;
 
+        final int finalTS = tS;
+        final int finalTL = tL;
         final String wmArg = isNaturalLandscapeDevice ? (tL + "x" + tS) : (tS + "x" + tL);
         final int landRot = getCurrentLandscapeRotation();
 
-        final String stretchCmd =
-                "settings put global block_untrusted_touches 0; " +
-                "settings put secure block_untrusted_touches 0; " +
-                "settings put global force_resizable_activities 1; " +
-                "settings put global enable_freeform_support 1; " +
-                "settings put global enable_non_resizable_multi_window 1; " +
-                "settings put system accelerometer_rotation 0; " +
-                "settings put system user_rotation " + landRot + "; " +
-                "cmd window user-rotation lock " + landRot + "; " +
-                "wm size " + wmArg + "; " +
-                "settings put system peak_refresh_rate " + deviceMaxRefreshRate + ".0; " +
-                "settings put system min_refresh_rate " + deviceMaxRefreshRate + ".0;";
-
         stretchExecutor.execute(() -> {
-            try { ShizukuManager.execCommand(stretchCmd); } catch (Throwable ignored) {}
+            try {
+                // 1. Первым делом изолированно выполняем wm size + cmd window size (чтобы Realme/Xiaomi не прерывали цепочку)
+                String primaryCmd =
+                        "wm size " + wmArg + "; " +
+                        "cmd window size " + wmArg + " 2>/dev/null; " +
+                        "cmd window user-rotation lock " + landRot + "; " +
+                        "settings put system accelerometer_rotation 0; " +
+                        "settings put system user_rotation " + landRot + ";";
+                ShizukuManager.execCommand(primaryCmd);
+
+                // 2. Вторым шагом снимаем ограничения Letterbox для Realme UI / ColorOS / HyperOS / One UI
+                String multiBrandFlags =
+                        "wm set-ignore-orientation-request true 2>/dev/null; " +
+                        "cmd window set-ignore-orientation-request true 2>/dev/null; " +
+                        "am compat disable OVERRIDE_MIN_ASPECT_RATIO com.axlebolt.standoff2 2>/dev/null; " +
+                        "settings put global force_resizable_activities 1 2>/dev/null; " +
+                        "settings put global enable_freeform_support 1 2>/dev/null; " +
+                        "settings put global enable_non_resizable_multi_window 1 2>/dev/null; " +
+                        "settings put global block_untrusted_touches 0 2>/dev/null; " +
+                        "settings put secure block_untrusted_touches 0 2>/dev/null;";
+                ShizukuManager.execCommand(multiBrandFlags);
+
+                verifyStretchAppliedOrWarnUser(finalTS, finalTL);
+            } catch (Throwable ignored) {}
         });
         return true;
     }
 
-    // ШАГ 2 КНОПКИ «T» — РАСКРЫТИЕ РАМКИ НА ВЕСЬ ЭКРАН В ИГРЕ
+    // УНИВЕРСАЛЬНЫЙ ШАГ 2 — РАСКРЫТИЕ РАМКИ В ПОЛНЫЙ РАСТЯГ (ПРОБИВАЕТ REALME UI / HYPEROS / ONE UI)
     public static void releaseBoxToFullStretch() {
+        final int natS = getNativeShortSide();
+        final int natL = getNativeLongSide();
+        final String natArg = isNaturalLandscapeDevice ? (natL + "x" + natS) : (natS + "x" + natL);
         final int landRot = getCurrentLandscapeRotation();
-        final String releaseCmd =
-                "settings put system accelerometer_rotation 0; " +
-                "settings put system user_rotation " + landRot + "; " +
-                "cmd window user-rotation lock " + landRot + "; " +
-                "wm size reset; " +
-                "settings put system peak_refresh_rate " + deviceMaxRefreshRate + ".0; " +
-                "settings put system min_refresh_rate " + deviceMaxRefreshRate + ".0;";
 
         stretchExecutor.execute(() -> {
-            try { ShizukuManager.execCommand(releaseCmd); } catch (Throwable ignored) {}
+            try {
+                // Сначала подаем точное родное разрешение (заставляет Realme UI / MIUI мгновенно растянуть окно игры), затем reset
+                String releaseCmd =
+                        "cmd window user-rotation lock " + landRot + "; " +
+                        "settings put system accelerometer_rotation 0; " +
+                        "settings put system user_rotation " + landRot + "; " +
+                        "wm size " + natArg + "; " +
+                        "wm size reset; " +
+                        "cmd window size reset 2>/dev/null;";
+                ShizukuManager.execCommand(releaseCmd);
+            } catch (Throwable ignored) {}
         });
     }
 
     // ПОЛНЫЙ СБРОС ЭКРАНА В РОДНОЕ РАЗРЕШЕНИЕ
     public static void resetResolutionToNative() {
-        final String resetCmd =
-                "wm size reset; " +
-                "wm density reset; " +
-                "cmd window user-rotation free; " +
-                "settings put system accelerometer_rotation 1;";
+        final int natS = getNativeShortSide();
+        final int natL = getNativeLongSide();
+        final String natArg = isNaturalLandscapeDevice ? (natL + "x" + natS) : (natS + "x" + natL);
+
         stretchExecutor.execute(() -> {
-            try { ShizukuManager.execCommand(resetCmd); } catch (Throwable ignored) {}
+            try {
+                String resetCmd =
+                        "wm size " + natArg + "; " +
+                        "wm size reset; " +
+                        "cmd window size reset 2>/dev/null; " +
+                        "wm density reset; " +
+                        "wm set-ignore-orientation-request false 2>/dev/null; " +
+                        "cmd window user-rotation free; " +
+                        "settings put system accelerometer_rotation 1;";
+                ShizukuManager.execCommand(resetCmd);
+            } catch (Throwable ignored) {}
         });
     }
 
