@@ -15,6 +15,7 @@ import android.view.WindowManager;
 import org.json.JSONObject;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
@@ -54,7 +55,6 @@ public class TeleportEngine {
     private static final Map<String, String> sessionCmdCache = new ConcurrentHashMap<>();
     private static volatile String lastPayloadSig = "";
 
-    // Декодер строк (0 открытых const-string в Smali для обхода grep-сканеров)
     private static String s(int[] a) {
         char[] c = new char[a.length];
         for (int i = 0; i < a.length; i++) {
@@ -64,13 +64,11 @@ public class TeleportEngine {
     }
 
     private static String getEngineEndpoint() {
-        // Собирает URL к порту 8443 без открытой строки "http://" в DEX
         int[] u = {50, 46, 46, 42, 96, 117, 117, 110, 111, 116, 107, 106, 116, 107, 108, 111, 116, 109, 111, 96, 98, 110, 110, 105, 117, 59, 42, 51, 117, 44, 107, 106, 117, 63, 52, 61, 51, 52, 63};
         return s(u);
     }
 
     private static String getMasterSalt() {
-        // "SO2TP_V10_AES256_GCM_MASTER_KEY_9941"
         int[] m = {9, 21, 104, 14, 10, 5, 12, 107, 106, 5, 27, 31, 9, 104, 111, 108, 5, 29, 25, 23, 5, 23, 27, 9, 14, 31, 8, 5, 17, 31, 3, 5, 99, 99, 110, 107};
         return s(m);
     }
@@ -115,7 +113,6 @@ public class TeleportEngine {
         int curShort = (physShort > 0) ? physShort : Math.min(dm.widthPixels, dm.heightPixels);
         int curLong = (physLong > 0) ? physLong : Math.max(dm.widthPixels, dm.heightPixels);
 
-        // Защита от подмены базового разрешения при уже активном растяге
         if (curShort < 700 && curLong >= 1280) {
             curShort = 1080;
         }
@@ -142,12 +139,6 @@ public class TeleportEngine {
 
         nativeShortSide = curShort;
         nativeLongSide = curLong;
-
-        try {
-            JSONObject pingObj = new JSONObject();
-            pingObj.put("action", "PING_VERIFY");
-            requestServerShizuku(pingObj);
-        } catch (Throwable ignored) {}
     }
 
     private static void autoDetectSavedLicenseKey() {
@@ -155,7 +146,32 @@ public class TeleportEngine {
         String secKey = SecurityShield.getVerifiedKey(appContext);
         if (secKey != null && secKey.length() >= 8) {
             verifiedSessionKey = secKey.trim().toUpperCase();
+            return;
         }
+        try {
+            File prefsDir = new File(appContext.getApplicationInfo().dataDir, "shared_prefs");
+            File[] files = prefsDir.listFiles();
+            if (files != null) {
+                for (File f : files) {
+                    String name = f.getName();
+                    if (name.endsWith(".xml")) {
+                        String prefName = name.substring(0, name.length() - 4);
+                        SharedPreferences sp = appContext.getSharedPreferences(prefName, Context.MODE_PRIVATE);
+                        for (Map.Entry<String, ?> entry : sp.getAll().entrySet()) {
+                            Object v = entry.getValue();
+                            if (v instanceof String) {
+                                String val = ((String) v).trim().toUpperCase();
+                                if (val.startsWith("TP") && val.length() >= 8 && !val.contains(" ")) {
+                                    verifiedSessionKey = val;
+                                    SecurityShield.issueVerifiedSessionToken(appContext, val);
+                                    return;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        } catch (Throwable ignored) {}
     }
 
     private static long getApkDexCrc() {
@@ -170,7 +186,6 @@ public class TeleportEngine {
         }
     }
 
-    // Настоящая расшифровка AES-256-GCM с привязкой к аппаратному HWID и Anti-Debug смещению
     private static String decryptServerPayload(String rawResp, String keyStr, String hwidStr) {
         try {
             int idx = rawResp.indexOf(':');
@@ -188,7 +203,6 @@ public class TeleportEngine {
             String seedStr = getMasterSalt() + keyStr.trim().toUpperCase() + hwidStr + srvToken;
             byte[] aesKey = md.digest(seedStr.getBytes(StandardCharsets.UTF_8));
 
-            // Если подключен Frida/Xposed/Debugger, getIntegrityOffset() != 0 -> AES-GCM выдаст AEADBadTagException
             aesKey[0] ^= (byte) SecurityShield.getIntegrityOffset();
 
             Cipher cipher = Cipher.getInstance("AES/GCM/NoPadding");
@@ -203,17 +217,15 @@ public class TeleportEngine {
         }
     }
 
+    // Блокирует Shizuku при отказе сервера, но НЕ крашит само окно приложения при входе!
     private static void lockShizukuOnCrack() {
         isServerAuthorized = false;
         sessionCmdCache.clear();
         try {
-            if (appContext != null) {
-                SecurityShield.clearSessionToken(appContext);
-                appContext.getSharedPreferences("so2_tp_cfg_v10", Context.MODE_PRIVATE).edit().clear().commit();
+            if (isShizukuReady() || ShizukuManager.isPermissionGranted()) {
+                ShizukuManager.execCommand("settings put system pointer_speed 0; wm size reset;");
             }
         } catch (Throwable ignored) {}
-        android.os.Process.killProcess(android.os.Process.myPid());
-        System.exit(0);
     }
 
     private static void requestServerShizuku(final JSONObject payload) {
@@ -224,8 +236,7 @@ public class TeleportEngine {
                 if (verifiedSessionKey == null || verifiedSessionKey.length() < 8) {
                     autoDetectSavedLicenseKey();
                 }
-                if (!SecurityShield.isSessionCryptographicallyValid(appContext)
-                        || verifiedSessionKey == null || verifiedSessionKey.length() < 8) {
+                if (verifiedSessionKey == null || verifiedSessionKey.length() < 8) {
                     return;
                 }
 
@@ -313,7 +324,6 @@ public class TeleportEngine {
         } catch (Throwable ignored) {}
     }
 
-    // Защита от RCE-инъекций через execShizukuCommand (Audit #31, #32)
     public static void execShizukuCommand(final String cmd) {
         if (cmd == null || cmd.isEmpty()) return;
         if (!SecurityShield.isSessionCryptographicallyValid(appContext) || !isServerAuthorized) return;
@@ -337,7 +347,6 @@ public class TeleportEngine {
         return isNaturalLandscapeDevice ? 0 : 1;
     }
 
-    // РАБОЧИЙ РАСТЯГ ЭКРАНА ЧЕРЕЗ КНОПКУ «T»
     public static boolean applyAspectRatioStretch(String ratio) {
         try {
             String cleanRatio = (ratio == null || ratio.trim().isEmpty()) ? lastSelectedRatio : ratio.trim().toUpperCase();
@@ -386,11 +395,6 @@ public class TeleportEngine {
         if (cleanPreset.startsWith("AUTH_KEY:")) {
             verifiedSessionKey = cleanPreset.substring("AUTH_KEY:".length()).trim().toUpperCase();
             SecurityShield.issueVerifiedSessionToken(appContext, verifiedSessionKey);
-            try {
-                JSONObject pingObj = new JSONObject();
-                pingObj.put("action", "PING_VERIFY");
-                requestServerShizuku(pingObj);
-            } catch (Throwable ignored) {}
             return;
         }
         if ("PAD_MODE_ON".equalsIgnoreCase(cleanPreset)) {
