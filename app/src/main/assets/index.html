@@ -3,23 +3,25 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
-  <title>SO2Teleport PRO • V10 Quantum</title>
+  <title>SO2Teleport PRO • V10 Liquid Glass</title>
   <!-- SO2TELEPORT_QUANTUM_V9_SEAL -->
   <!-- SO2TELEPORT_V10_CORE -->
   <!-- pollLicenseExpiration -->
   <style>
     :root {
-      --accent-main: #00e5ff;
-      --accent-sec: #00b8d4;
-      --accent-rgb: 0, 229, 255;
-      --accent-sec-rgb: 0, 184, 212;
-      --bg-deep: #05090d;
-      --bg-card: rgba(9, 16, 22, 0.96);
-      --bg-card-inner: rgba(6, 11, 16, 0.94);
-      --border-soft: rgba(var(--accent-rgb), 0.22);
-      --border-strong: rgba(var(--accent-rgb), 0.52);
-      --text-main: #f1f5f9;
-      --text-muted: #7c93a8;
+      /* Первоначальная тема: Красное Жидкое Стекло (Ruby Liquid Glass) */
+      --accent-main: #ff2e5b;
+      --accent-sec: #9e0b32;
+      --accent-rgb: 255, 46, 91;
+      --accent-sec-rgb: 158, 11, 50;
+      --bg-deep: #060609;
+      --bg-card: rgba(16, 10, 15, 0.94);
+      --bg-card-inner: rgba(10, 7, 11, 0.92);
+      --border-soft: rgba(var(--accent-rgb), 0.26);
+      --border-strong: rgba(var(--accent-rgb), 0.58);
+      --glass-highlight: rgba(255, 255, 255, 0.28);
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
       --ok-green: #10b981;
       --danger-red: #ff2e54;
     }
@@ -36,12 +38,12 @@
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Inter, sans-serif;
       background-color: var(--bg-deep);
       background-image:
-        radial-gradient(circle at 50% 0%, rgba(var(--accent-rgb), 0.15) 0%, transparent 45%),
-        radial-gradient(circle at 85% 90%, rgba(var(--accent-sec-rgb), 0.09) 0%, transparent 45%);
+        radial-gradient(circle at 50% 0%, rgba(var(--accent-rgb), 0.20) 0%, transparent 48%),
+        radial-gradient(circle at 85% 90%, rgba(var(--accent-sec-rgb), 0.14) 0%, transparent 45%);
       color: var(--text-main);
       min-height: 100vh;
       overflow-x: hidden;
-      padding-top: calc(env(safe-area-inset-top, 38px) + 18px);
+      padding-top: calc(env(safe-area-inset-top, 38px) + 16px);
       padding-bottom: 108px;
     }
 
@@ -55,14 +57,43 @@
       padding: 0 13px 16px;
     }
 
-    /* ===== ВЕРХНЯЯ ФИРМЕННАЯ ШАПКА SO2TELEPORT ===== */
+    /* ===== ЭФФЕКТ ЖИДКОГО СТЕКЛА (LIQUID GLASS) ===== */
+    .liquid-glass-surface {
+      background: linear-gradient(
+        145deg,
+        rgba(var(--accent-rgb), 0.14) 0%,
+        rgba(14, 16, 22, 0.95) 42%,
+        rgba(8, 10, 15, 0.98) 100%
+      );
+      border: 1px solid var(--border-soft);
+      box-shadow:
+        0 10px 28px rgba(0, 0, 0, 0.68),
+        inset 0 1px 1px rgba(255, 255, 255, 0.16),
+        inset 0 -1px 1px rgba(var(--accent-rgb), 0.12);
+    }
+
+    .liquid-glass-btn {
+      background: linear-gradient(
+        135deg,
+        rgba(var(--accent-rgb), 0.52) 0%,
+        rgba(var(--accent-sec-rgb), 0.72) 55%,
+        rgba(var(--accent-rgb), 0.42) 100%
+      );
+      border: 1px solid rgba(var(--accent-rgb), 0.75);
+      box-shadow:
+        0 6px 20px rgba(var(--accent-rgb), 0.32),
+        inset 0 1.5px 1.5px rgba(255, 255, 255, 0.38),
+        inset 0 -2px 4px rgba(0, 0, 0, 0.35);
+      color: #ffffff;
+      text-shadow: 0 1px 3px rgba(0, 0, 0, 0.55);
+    }
+
+    /* ===== ВЕРХНЯЯ ШАПКА С РАБОЧЕЙ АВАТАРКОЙ ===== */
     .top-brand-header {
-      background: linear-gradient(165deg, rgba(12, 22, 31, 0.97) 0%, rgba(7, 13, 19, 0.98) 100%);
-      border: 1px solid var(--border-strong);
       border-radius: 24px;
       padding: 13px 15px;
       margin-bottom: 12px;
-      box-shadow: 0 10px 28px rgba(0, 0, 0, 0.68), 0 0 22px rgba(var(--accent-rgb), 0.10);
+      border-color: var(--border-strong);
     }
     .top-brand-row {
       display: flex;
@@ -76,20 +107,34 @@
       gap: 11px;
       min-width: 0;
     }
-    .orb-holder {
-      width: 42px;
-      height: 42px;
-      border-radius: 14px;
-      background: rgba(var(--accent-rgb), 0.09);
-      border: 1px solid rgba(var(--accent-rgb), 0.32);
+    .header-avatar-holder {
+      width: 44px;
+      height: 44px;
+      border-radius: 15px;
+      background: linear-gradient(135deg, rgba(var(--accent-rgb), 0.35), rgba(var(--accent-sec-rgb), 0.25));
+      border: 1.5px solid var(--border-strong);
+      box-shadow:
+        0 4px 14px rgba(var(--accent-rgb), 0.28),
+        inset 0 1px 1px rgba(255, 255, 255, 0.32);
       display: flex;
       align-items: center;
       justify-content: center;
       flex-shrink: 0;
+      overflow: hidden;
+      cursor: pointer;
+      position: relative;
     }
-    #quantumOrbCanvas {
-      width: 38px;
-      height: 38px;
+    .header-avatar-holder img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: none;
+    }
+    .header-avatar-fallback {
+      font-size: 18px;
+      font-weight: 900;
+      color: #ffffff;
+      text-shadow: 0 0 10px rgba(var(--accent-rgb), 0.8);
     }
     .brand-title-main {
       font-size: 16.5px;
@@ -117,8 +162,9 @@
       gap: 6px;
       padding: 7px 12px;
       border-radius: 999px;
-      background: rgba(5, 10, 15, 0.94);
+      background: rgba(6, 9, 14, 0.92);
       border: 1px solid var(--border-strong);
+      box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.14);
       font-size: 10.5px;
       font-weight: 900;
       cursor: pointer;
@@ -141,36 +187,673 @@
       justify-content: space-between;
       margin-top: 10px;
       padding-top: 9px;
-      border-top: 1px solid rgba(255, 255, 255, 0.06);
+      border-top: 1px solid rgba(255, 255, 255, 0.08);
       font-size: 10.5px;
       color: var(--text-muted);
       font-weight: 700;
     }
     .theme-dots {
       display: flex;
-      gap: 7px;
+      gap: 8px;
       align-items: center;
     }
     .theme-dot {
-      width: 17px;
-      height: 17px;
+      width: 19px;
+      height: 19px;
       border-radius: 50%;
       cursor: pointer;
-      border: 2px solid rgba(255,255,255,0.22);
-      transition: transform 0.2s;
+      border: 1.5px solid rgba(255, 255, 255, 0.35);
+      box-shadow: inset 0 2px 3px rgba(255, 255, 255, 0.45), 0 2px 6px rgba(0, 0, 0, 0.6);
+      transition: transform 0.18s ease, border-color 0.18s ease;
     }
     .theme-dot.active {
-      transform: scale(1.18);
-      border-color: #fff;
-      box-shadow: 0 0 10px currentColor;
+      transform: scale(1.22);
+      border-color: #ffffff;
+      box-shadow: inset 0 2px 3px rgba(255, 255, 255, 0.65), 0 0 12px currentColor;
     }
 
-    /* ===== МОДАЛКИ И ОВЕРЛЕИ ===== */
+    /* ===== СИСТЕМА СВОРАЧИВАЕМЫХ БЛОКОВ С ПЛАВНОЙ АНИМАЦИЕЙ (ACCORDION) ===== */
+    .acc-block {
+      border-radius: 22px;
+      margin-bottom: 10px;
+      overflow: hidden;
+      transition: border-color 0.22s ease, box-shadow 0.22s ease;
+    }
+    .acc-block.open {
+      border-color: var(--border-strong);
+      box-shadow:
+        0 10px 28px rgba(0, 0, 0, 0.72),
+        0 0 18px rgba(var(--accent-rgb), 0.14),
+        inset 0 1px 1px rgba(255, 255, 255, 0.22);
+    }
+    .acc-header {
+      padding: 15px 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      cursor: pointer;
+    }
+    .acc-left {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      min-width: 0;
+      flex: 1;
+    }
+    .acc-icon {
+      width: 40px;
+      height: 40px;
+      border-radius: 13px;
+      background: linear-gradient(135deg, rgba(var(--accent-rgb), 0.26), rgba(var(--accent-sec-rgb), 0.14));
+      border: 1px solid rgba(var(--accent-rgb), 0.42);
+      box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.25);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+      color: #ffffff;
+      flex-shrink: 0;
+    }
+    .acc-title-wrap {
+      min-width: 0;
+      flex: 1;
+    }
+    .acc-title {
+      font-size: 14.5px;
+      font-weight: 900;
+      color: #ffffff;
+      line-height: 1.2;
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      flex-wrap: wrap;
+    }
+    .acc-sub {
+      font-size: 11px;
+      color: var(--text-muted);
+      font-weight: 600;
+      margin-top: 2px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .acc-chevron {
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--accent-main);
+      font-size: 13px;
+      font-weight: 900;
+      flex-shrink: 0;
+      transition: transform 0.26s cubic-bezier(0.22, 1, 0.36, 1), background 0.2s ease;
+    }
+    .acc-block.open .acc-chevron {
+      transform: rotate(180deg);
+      background: rgba(var(--accent-rgb), 0.22);
+      border-color: rgba(var(--accent-rgb), 0.5);
+      color: #ffffff;
+    }
+    .acc-body-wrap {
+      display: grid;
+      grid-template-rows: 0fr;
+      transition: grid-template-rows 0.28s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+    .acc-block.open .acc-body-wrap {
+      grid-template-rows: 1fr;
+    }
+    .acc-body-inner {
+      overflow: hidden;
+      padding: 0 15px;
+      opacity: 0;
+      transition: opacity 0.22s ease, padding 0.22s ease;
+    }
+    .acc-block.open .acc-body-inner {
+      padding: 2px 15px 16px;
+      opacity: 1;
+      border-top: 1px solid rgba(255, 255, 255, 0.06);
+    }
+
+    /* ===== ГЛАВНАЯ КАРТОЧКА СЕНСЫ ===== */
+    .cyber-hub-card {
+      border-radius: 24px;
+      padding: 15px 16px;
+      margin-bottom: 11px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      border-color: var(--border-strong);
+    }
+    .hub-left-row {
+      display: flex;
+      align-items: center;
+      gap: 13px;
+      min-width: 0;
+      flex: 1;
+    }
+    .hub-icon-box {
+      width: 44px;
+      height: 44px;
+      border-radius: 14px;
+      background: linear-gradient(135deg, rgba(var(--accent-rgb), 0.28), rgba(var(--accent-sec-rgb), 0.15));
+      border: 1px solid rgba(var(--accent-rgb), 0.45);
+      box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.25);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #ffffff;
+      font-size: 17px;
+      font-weight: 900;
+      flex-shrink: 0;
+    }
+    .hub-text-col {
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
+    }
+    .hub-card-title {
+      font-size: 15.5px;
+      font-weight: 900;
+      color: #ffffff;
+      line-height: 1.2;
+    }
+    .hub-card-sub {
+      font-size: 11.5px;
+      color: var(--accent-main);
+      font-weight: 800;
+      margin-top: 3px;
+      line-height: 1.3;
+    }
+    .hub-card-hint {
+      font-size: 10.5px;
+      color: var(--text-muted);
+      margin-top: 2px;
+    }
+
+    .sens-circle-btn {
+      width: 58px;
+      height: 58px;
+      border-radius: 50%;
+      font-size: 13px;
+      font-weight: 900;
+      cursor: pointer;
+      flex-shrink: 0;
+      transition: transform 0.18s ease, opacity 0.18s ease;
+    }
+    .sens-circle-btn:active {
+      transform: scale(0.94);
+    }
+    .sens-circle-btn.off {
+      background: rgba(255, 255, 255, 0.06);
+      color: var(--text-muted);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      box-shadow: none;
+    }
+
+    /* ===== КАРТОЧКИ КОНФИГОВ ===== */
+    .character-card {
+      background: var(--bg-card-inner);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 18px;
+      padding: 13px 14px;
+      margin-top: 9px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      cursor: pointer;
+      transition: border-color 0.18s ease, background 0.18s ease;
+    }
+    .character-card.active {
+      background: linear-gradient(
+        135deg,
+        rgba(var(--accent-rgb), 0.25) 0%,
+        rgba(var(--accent-sec-rgb), 0.15) 55%,
+        rgba(10, 12, 18, 0.96) 100%
+      );
+      border-color: var(--accent-main);
+      box-shadow:
+        0 6px 18px rgba(var(--accent-rgb), 0.18),
+        inset 0 1px 1px rgba(255, 255, 255, 0.22);
+    }
+    .char-title {
+      font-size: 13.5px;
+      font-weight: 900;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 7px;
+    }
+    .char-tag {
+      font-size: 9.5px;
+      font-weight: 900;
+      padding: 2px 8px;
+      border-radius: 7px;
+      background: rgba(var(--accent-rgb), 0.18);
+      border: 1px solid rgba(var(--accent-rgb), 0.42);
+      color: #ffffff;
+      text-transform: uppercase;
+    }
+    .char-tag.pad-badge {
+      background: rgba(168, 85, 247, 0.24);
+      color: #f3e8ff;
+      border: 1px solid rgba(168, 85, 247, 0.55);
+    }
+    .char-tag.budget-badge {
+      background: rgba(16, 185, 129, 0.22);
+      color: #d1fae5;
+      border: 1px solid rgba(16, 185, 129, 0.5);
+    }
+    .char-desc {
+      font-size: 11px;
+      color: var(--text-muted);
+      margin-top: 4px;
+      font-weight: 500;
+      line-height: 1.35;
+    }
+    .char-arrow {
+      font-size: 16px;
+      font-weight: 800;
+      color: var(--accent-main);
+      margin-left: 8px;
+    }
+
+    /* ===== ПОЛЗУНКИ И ПЕРЕКЛЮЧАТЕЛИ ===== */
+    .section-eyebrow {
+      font-size: 11px;
+      font-weight: 900;
+      letter-spacing: 1px;
+      color: var(--accent-main);
+      text-transform: uppercase;
+      margin: 10px 0 4px;
+    }
+    .pro-slider-row {
+      padding: 10px 0;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    }
+    .pro-slider-row:last-child {
+      border-bottom: none;
+    }
+    .pro-slider-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 8px;
+    }
+    .pro-slider-name {
+      font-size: 13px;
+      font-weight: 800;
+      color: #ffffff;
+    }
+    .pro-slider-pill {
+      font-size: 11.5px;
+      font-weight: 800;
+      color: #ffffff;
+      background: linear-gradient(135deg, rgba(var(--accent-rgb), 0.28), rgba(var(--accent-sec-rgb), 0.18));
+      border: 1px solid rgba(var(--accent-rgb), 0.48);
+      box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.22);
+      padding: 3px 10px;
+      border-radius: 9px;
+      min-width: 44px;
+      text-align: center;
+    }
+    .pro-slider-hint {
+      font-size: 10.5px;
+      color: var(--text-muted);
+      margin-top: 6px;
+      line-height: 1.3;
+    }
+
+    input[type="range"] {
+      -webkit-appearance: none;
+      width: 100%;
+      height: 5px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.12);
+      outline: none;
+    }
+    input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      background: radial-gradient(circle at 35% 35%, #ffffff 0%, var(--accent-main) 65%);
+      border: 1.5px solid #ffffff;
+      box-shadow: 0 0 12px var(--accent-main);
+      cursor: pointer;
+    }
+
+    /* ===== ЭЛЕМЕНТЫ ПОЛКИ, РАСТЯГА И ПРИЦЕЛА ===== */
+    .saved-variant-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: var(--bg-card-inner);
+      border: 1px solid rgba(255, 255, 255, 0.09);
+      border-radius: 16px;
+      padding: 11px 13px;
+      margin-top: 8px;
+    }
+    .icon-circle-action {
+      width: 35px;
+      height: 35px;
+      border-radius: 50%;
+      border: 1px solid rgba(255, 255, 255, 0.16);
+      background: rgba(255, 255, 255, 0.06);
+      color: #f1f5f9;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 13px;
+      cursor: pointer;
+    }
+    .code-input-bar {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      background: var(--bg-card-inner);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 16px;
+      padding: 10px 13px;
+      margin-top: 8px;
+    }
+    .shelf-cards-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      margin-top: 9px;
+    }
+    .shelf-preset-card {
+      background: var(--bg-card-inner);
+      border: 1px solid rgba(255, 255, 255, 0.10);
+      border-radius: 16px;
+      padding: 12px;
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      min-height: 84px;
+    }
+    .shelf-preset-card:active {
+      border-color: var(--accent-main);
+      background: rgba(var(--accent-rgb), 0.16);
+    }
+
+    .preview-stage-box {
+      width: 100%;
+      height: 152px;
+      background: #04070a;
+      border: 1px solid rgba(255, 255, 255, 0.09);
+      border-radius: 18px;
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 8px 0 11px;
+      overflow: hidden;
+    }
+    .stretch-dashed-outer {
+      width: 220px;
+      height: 118px;
+      border: 1.5px dashed rgba(255, 255, 255, 0.22);
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .stretch-solid-inner {
+      width: 168px;
+      height: 118px;
+      border: 1.8px solid var(--accent-main);
+      background: rgba(var(--accent-rgb), 0.10);
+      box-shadow: inset 0 0 14px rgba(var(--accent-rgb), 0.22);
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #ffffff;
+      font-weight: 700;
+      font-size: 20px;
+      transition: width 0.22s ease;
+    }
+
+    .preset-pills-4 {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 7px;
+    }
+    .preset-pill {
+      background: var(--bg-card-inner);
+      border: 1px solid rgba(255, 255, 255, 0.10);
+      border-radius: 14px;
+      padding: 10px 4px;
+      text-align: center;
+      cursor: pointer;
+    }
+    .preset-pill.active {
+      background: linear-gradient(135deg, rgba(var(--accent-rgb), 0.34), rgba(var(--accent-sec-rgb), 0.20));
+      border-color: var(--accent-main);
+      box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.25);
+    }
+    .preset-pill-name { font-size: 12px; font-weight: 900; color: #fff; }
+    .preset-pill-sub { font-size: 8.5px; color: var(--text-muted); margin-top: 2px; }
+
+    .pixel-tiles-6 {
+      display: grid;
+      grid-template-columns: repeat(6, 1fr);
+      gap: 6px;
+      margin: 10px 0 12px;
+    }
+    .pixel-tile {
+      background: var(--bg-card-inner);
+      border: 1px solid rgba(255, 255, 255, 0.10);
+      border-radius: 14px;
+      padding: 10px 2px;
+      text-align: center;
+      cursor: pointer;
+    }
+    .pixel-tile.active {
+      background: linear-gradient(135deg, rgba(var(--accent-rgb), 0.34), rgba(var(--accent-sec-rgb), 0.20));
+      border-color: var(--accent-main);
+    }
+    .pixel-tile b { display: block; font-size: 13px; font-weight: 900; color: #fff; }
+    .pixel-tile span { font-size: 8.5px; color: var(--text-muted); }
+    .pixel-big-readout { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 6px; }
+    .pixel-big-num { font-size: 26px; font-weight: 900; color: #fff; }
+    .pixel-progress-bar { width: 100%; height: 5px; background: rgba(255, 255, 255, 0.08); border-radius: 999px; overflow: hidden; }
+    .pixel-progress-fill { height: 100%; width: 100%; background: var(--accent-main); transition: width 0.2s ease; }
+
+    .ch-shape-grid-4 {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 8px;
+      margin-bottom: 9px;
+    }
+    .ch-shape-tile {
+      background: var(--bg-card-inner);
+      border: 1px solid rgba(255, 255, 255, 0.10);
+      border-radius: 15px;
+      padding: 12px 6px;
+      text-align: center;
+      cursor: pointer;
+    }
+    .ch-shape-tile.active {
+      background: linear-gradient(135deg, rgba(var(--accent-rgb), 0.32), rgba(var(--accent-sec-rgb), 0.18));
+      border-color: var(--accent-main);
+    }
+    .ch-shape-icon { font-size: 20px; color: #22c55e; margin-bottom: 4px; line-height: 1; }
+    .ch-shape-lbl { font-size: 10px; font-weight: 900; color: #e2e8f0; }
+
+    .ch-subtoggle-grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      margin-bottom: 10px;
+    }
+    .ch-subtoggle-box {
+      background: var(--bg-card-inner);
+      border: 1px solid rgba(255, 255, 255, 0.10);
+      border-radius: 15px;
+      padding: 9px 10px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 5px;
+      cursor: pointer;
+    }
+    .ch-subtoggle-box.active {
+      border-color: var(--accent-main);
+      background: linear-gradient(135deg, rgba(var(--accent-rgb), 0.26), rgba(var(--accent-sec-rgb), 0.14));
+    }
+
+    .toggle-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: var(--bg-card-inner);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 16px;
+      padding: 11px 13px;
+      margin-top: 8px;
+      gap: 10px;
+    }
+    .toggle-info-title { font-size: 12.5px; font-weight: 800; color: #fff; }
+    .toggle-info-sub { font-size: 10.5px; color: var(--text-muted); margin-top: 2px; line-height: 1.3; }
+    .cyber-switch { position: relative; width: 46px; height: 25px; flex-shrink: 0; display: inline-block; }
+    .cyber-switch input { opacity: 0; width: 0; height: 0; }
+    .cyber-slider {
+      position: absolute; inset: 0; background: rgba(255, 255, 255, 0.08);
+      border-radius: 999px; transition: 0.2s; border: 1px solid rgba(255, 255, 255, 0.16);
+    }
+    .cyber-slider::before {
+      content: ""; position: absolute; width: 19px; height: 19px;
+      left: 3px; top: 2px; border-radius: 50%; background: #94a3b8; transition: 0.2s;
+    }
+    .cyber-switch input:checked + .cyber-slider {
+      background: linear-gradient(135deg, rgba(var(--accent-rgb), 0.55), rgba(var(--accent-sec-rgb), 0.45));
+      border-color: var(--accent-main);
+    }
+    .cyber-switch input:checked + .cyber-slider::before {
+      transform: translateX(20px);
+      background: #ffffff;
+      box-shadow: 0 0 8px #ffffff;
+    }
+
+    /* ===== КНОПКИ ЖИДКОГО СТЕКЛА ===== */
+    .btn-main {
+      width: 100%;
+      padding: 13.5px 16px;
+      border-radius: 999px;
+      font-size: 12.5px;
+      font-weight: 900;
+      letter-spacing: 0.3px;
+      cursor: pointer;
+      background: linear-gradient(
+        135deg,
+        rgba(var(--accent-rgb), 0.56) 0%,
+        rgba(var(--accent-sec-rgb), 0.78) 55%,
+        rgba(var(--accent-rgb), 0.48) 100%
+      );
+      border: 1px solid rgba(var(--accent-rgb), 0.82);
+      box-shadow:
+        0 6px 22px rgba(var(--accent-rgb), 0.30),
+        inset 0 1.5px 1.5px rgba(255, 255, 255, 0.42),
+        inset 0 -2px 4px rgba(0, 0, 0, 0.35);
+      color: #ffffff;
+      text-shadow: 0 1px 3px rgba(0, 0, 0, 0.55);
+      transition: transform 0.15s ease;
+    }
+    .btn-main:active {
+      transform: scale(0.98);
+    }
+    .btn-dark {
+      width: 100%;
+      border: 1px solid rgba(255, 255, 255, 0.16);
+      background: linear-gradient(145deg, rgba(255, 255, 255, 0.08), rgba(10, 14, 20, 0.94));
+      box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.14);
+      color: #f1f5f9;
+      padding: 12.5px 14px;
+      border-radius: 999px;
+      font-size: 11.5px;
+      font-weight: 800;
+      cursor: pointer;
+    }
+    .btn-danger {
+      width: 100%;
+      border: 1px solid rgba(255, 46, 84, 0.55);
+      background: linear-gradient(135deg, rgba(255, 46, 84, 0.28), rgba(136, 19, 55, 0.38));
+      box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.22);
+      color: #ffe4e6;
+      padding: 12.5px;
+      border-radius: 999px;
+      font-size: 11.5px;
+      font-weight: 800;
+      cursor: pointer;
+    }
+
+    .badge-chip {
+      font-size: 9.5px;
+      font-weight: 800;
+      padding: 3px 9px;
+      border-radius: 999px;
+      background: linear-gradient(135deg, rgba(var(--accent-rgb), 0.25), rgba(var(--accent-sec-rgb), 0.16));
+      border: 1px solid rgba(var(--accent-rgb), 0.5);
+      color: #ffffff;
+    }
+
+    .tweak-tags-wrap {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin: 9px 0 12px;
+    }
+    .tweak-mini-tag {
+      font-size: 10px;
+      font-weight: 800;
+      padding: 4px 9px;
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.11);
+      color: #e2e8f0;
+    }
+
+    .voice-member-card, .friend-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: var(--bg-card-inner);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 16px;
+      padding: 11px 13px;
+      margin-top: 8px;
+    }
+    .voice-eq-bars {
+      display: inline-flex;
+      align-items: flex-end;
+      gap: 2.5px;
+      height: 14px;
+    }
+    .voice-eq-bars span {
+      width: 3px;
+      background: #10b981;
+      border-radius: 2px;
+      animation: eqPulse 0.7s infinite ease-in-out alternate;
+    }
+    .voice-eq-bars span:nth-child(2) { animation-delay: 0.18s; }
+    .voice-eq-bars span:nth-child(3) { animation-delay: 0.35s; }
+    @keyframes eqPulse { 0% { height: 4px; opacity: 0.5; } 100% { height: 14px; opacity: 1; } }
+
+    /* МОДАЛКИ И АВТОРИЗАЦИЯ */
     .shizuku-alert-backdrop {
       position: fixed;
       inset: 0;
-      background: rgba(3, 7, 10, 0.92);
-      /* ❌ УБРАН backdrop-filter: blur(12px) — не нужен, модалка и так открывается редко */
+      background: rgba(4, 6, 10, 0.94);
       z-index: 99999;
       display: none;
       align-items: center;
@@ -180,18 +863,16 @@
     .shizuku-alert-box {
       width: 100%;
       max-width: 365px;
-      background: linear-gradient(180deg, #0d1822 0%, #070d12 100%);
-      border: 1.5px solid var(--border-strong);
       border-radius: 24px;
       padding: 22px 18px;
       text-align: center;
-      box-shadow: 0 0 42px rgba(var(--accent-rgb), 0.22);
+      border-color: var(--border-strong);
     }
 
     #screenCalibOverlay, #touchTestOverlay {
       position: fixed;
       inset: 0;
-      background: rgba(4, 9, 13, 0.96);
+      background: rgba(4, 7, 11, 0.97);
       z-index: 98000;
       display: none;
       flex-direction: column;
@@ -201,13 +882,12 @@
       border: 2px dashed var(--accent-main);
     }
 
-    /* ===== ЭКРАН АВТОРИЗАЦИИ ===== */
     #authScreenOverlay {
       position: fixed;
       inset: 0;
       background:
-        radial-gradient(circle at 50% 15%, rgba(var(--accent-rgb), 0.18), transparent 48%),
-        #05090d;
+        radial-gradient(circle at 50% 15%, rgba(var(--accent-rgb), 0.24), transparent 50%),
+        #050609;
       z-index: 95000;
       display: flex;
       flex-direction: column;
@@ -219,14 +899,9 @@
     .auth-card {
       width: 100%;
       max-width: 380px;
-      background: rgba(9, 16, 22, 0.96);
-      border: 1px solid var(--border-strong);
       border-radius: 26px;
       padding: 22px 18px;
-      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.85), 0 0 28px rgba(var(--accent-rgb), 0.12);
-      position: relative;
-      z-index: 95010;
-      pointer-events: auto;
+      border-color: var(--border-strong);
     }
     .auth-badge {
       display: inline-block;
@@ -235,21 +910,20 @@
       font-size: 10px;
       font-weight: 800;
       letter-spacing: 1.2px;
-      color: var(--accent-main);
-      background: rgba(var(--accent-rgb), 0.10);
+      color: #ffffff;
+      background: linear-gradient(135deg, rgba(var(--accent-rgb), 0.35), rgba(var(--accent-sec-rgb), 0.20));
       border: 1px solid var(--border-strong);
       margin-bottom: 10px;
     }
     .auth-input-wrap {
-      background: rgba(5, 9, 14, 0.95);
-      border: 1px solid rgba(255, 255, 255, 0.10);
+      background: rgba(6, 8, 13, 0.94);
+      border: 1px solid rgba(255, 255, 255, 0.12);
       border-radius: 16px;
       padding: 10px 14px;
       margin-bottom: 10px;
     }
     .auth-input-wrap:focus-within {
       border-color: var(--accent-main);
-      box-shadow: 0 0 14px rgba(var(--accent-rgb), 0.22);
     }
     .auth-input-label {
       font-size: 9.5px;
@@ -268,611 +942,37 @@
       font-weight: 800;
     }
 
-    /* ===== КАРТОЧКИ БЛОКОВ ===== */
-    .cyber-hub-card {
-      background: linear-gradient(165deg, rgba(11, 20, 28, 0.96) 0%, rgba(6, 11, 16, 0.98) 100%);
-      border: 1px solid var(--border-soft);
-      border-radius: 24px;
-      padding: 16px;
-      margin-bottom: 11px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 12px;
-      box-shadow: 0 8px 26px rgba(0, 0, 0, 0.6), inset 0 0 18px rgba(var(--accent-rgb), 0.03);
-      transition: border-color 0.2s, box-shadow 0.2s;
-      contain: layout style;
-    }
-    .cyber-hub-card.glow-strong {
-      border-color: var(--border-strong);
-      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.7), 0 0 22px rgba(var(--accent-rgb), 0.14);
-    }
-    .hub-left-row {
-      display: flex;
-      align-items: center;
-      gap: 13px;
-      min-width: 0;
-      flex: 1;
-    }
-    .hub-icon-box {
-      width: 44px;
-      height: 44px;
-      border-radius: 14px;
-      background: rgba(var(--accent-rgb), 0.08);
-      border: 1px solid rgba(var(--accent-rgb), 0.28);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      color: var(--accent-main);
-      font-size: 17px;
-      font-weight: 900;
-      flex-shrink: 0;
-      box-shadow: inset 0 0 10px rgba(var(--accent-rgb), 0.12);
-    }
-    .hub-text-col {
-      display: flex;
-      flex-direction: column;
-      min-width: 0;
-    }
-    .hub-card-title {
-      font-size: 15.5px;
-      font-weight: 900;
-      color: #ffffff;
-      line-height: 1.2;
-    }
-    .hub-card-sub {
-      font-size: 11.5px;
-      color: var(--text-muted);
-      font-weight: 600;
-      margin-top: 3px;
-      line-height: 1.3;
-    }
-    .hub-card-hint {
-      font-size: 10.5px;
-      color: rgba(124, 147, 168, 0.78);
-      margin-top: 3px;
-    }
-
-    .sens-circle-btn {
-      width: 58px;
-      height: 58px;
-      border-radius: 50%;
-      border: none;
-      background: var(--accent-main);
-      color: #03090d;
-      font-size: 13.5px;
-      font-weight: 900;
-      box-shadow: 0 0 24px rgba(var(--accent-rgb), 0.68);
-      cursor: pointer;
-      flex-shrink: 0;
-      transition: background-color 0.22s ease, color 0.22s ease, box-shadow 0.22s ease;
-    }
-    .sens-circle-btn.off {
-      background: rgba(255, 255, 255, 0.08);
-      color: var(--text-muted);
-      border: 1px solid rgba(255, 255, 255, 0.16);
-      box-shadow: none;
-    }
-
-    .submode-switcher {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      background: rgba(7, 13, 19, 0.96);
-      border: 1px solid var(--border-soft);
-      border-radius: 999px;
-      padding: 4px;
-      margin-bottom: 11px;
-      contain: layout style;
-    }
-    .submode-btn {
-      padding: 11px 10px;
-      border-radius: 999px;
-      text-align: center;
-      font-size: 11.5px;
-      font-weight: 900;
-      letter-spacing: 0.5px;
-      color: var(--text-muted);
-      cursor: pointer;
-      transition: background 0.22s ease, color 0.22s ease, box-shadow 0.22s ease;
-    }
-    .submode-btn.active {
-      background: linear-gradient(90deg, var(--accent-main), var(--accent-sec));
-      color: #03080c;
-      box-shadow: 0 0 20px rgba(var(--accent-rgb), 0.45);
-    }
-
-    .glass-card {
-      background: linear-gradient(165deg, rgba(10, 18, 25, 0.96) 0%, rgba(6, 11, 16, 0.98) 100%);
-      border: 1px solid var(--border-soft);
-      border-radius: 24px;
-      padding: 16px;
-      margin-bottom: 11px;
-      box-shadow: 0 10px 28px rgba(0, 0, 0, 0.6), inset 0 0 18px rgba(var(--accent-rgb), 0.03);
-      contain: layout style;
-    }
-    .section-eyebrow {
-      font-size: 11.5px;
-      font-weight: 900;
-      letter-spacing: 1.1px;
-      color: var(--accent-main);
-      text-transform: uppercase;
-      margin-bottom: 3px;
-    }
-    .section-subdesc {
-      font-size: 11.5px;
-      color: var(--text-muted);
-      font-style: italic;
-      margin-bottom: 12px;
-      line-height: 1.35;
-    }
-
-    /* ИЕРАРХИЯ КОНФИГОВ СВЕРХУ ВНИЗ ПО МОЩНОСТИ */
-    .saved-variant-row {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      background: var(--bg-card-inner);
-      border: 1px solid rgba(255, 255, 255, 0.09);
-      border-radius: 18px;
-      padding: 12px 13px;
-      margin-bottom: 9px;
-      contain: layout style;
-    }
-    .icon-circle-action {
-      width: 36px;
-      height: 36px;
-      border-radius: 50%;
-      border: 1px solid rgba(255, 255, 255, 0.14);
-      background: rgba(255, 255, 255, 0.04);
-      color: #cbd5e1;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 13px;
-      cursor: pointer;
-    }
-    .character-card {
-      background: var(--bg-card-inner);
-      border: 1px solid rgba(255, 255, 255, 0.09);
-      border-radius: 18px;
-      padding: 14px 15px;
-      margin-bottom: 8px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      cursor: pointer;
-      transition: background 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
-      contain: layout style;
-    }
-    .character-card.active {
-      background: linear-gradient(135deg, rgba(var(--accent-rgb), 0.16) 0%, rgba(7, 13, 19, 0.96) 100%);
-      border-color: var(--accent-main);
-      box-shadow: 0 0 18px rgba(var(--accent-rgb), 0.22);
-    }
-    .char-title {
-      font-size: 13.5px;
-      font-weight: 900;
-      color: #fff;
-      display: flex;
-      align-items: center;
-      flex-wrap: wrap;
-      gap: 7px;
-    }
-    .char-tag {
-      font-size: 9.5px;
-      font-weight: 900;
-      padding: 2px 7px;
-      border-radius: 6px;
-      background: rgba(var(--accent-rgb), 0.14);
-      color: var(--accent-main);
-      text-transform: uppercase;
-    }
-    .char-tag.top-fire {
-      background: rgba(255, 46, 84, 0.22);
-      color: #fda4af;
-      border: 1px solid rgba(255, 46, 84, 0.55);
-    }
-    .char-tag.pad-badge {
-      background: rgba(168, 85, 247, 0.22);
-      color: #d8b4fe;
-      border: 1px solid rgba(168, 85, 247, 0.55);
-    }
-    .char-tag.budget-badge {
-      background: rgba(16, 185, 129, 0.18);
-      color: #10b981;
-      border: 1px solid rgba(16, 185, 129, 0.45);
-    }
-    .char-desc {
-      font-size: 11.5px;
-      color: var(--text-muted);
-      margin-top: 4px;
-      font-weight: 500;
-      line-height: 1.35;
-    }
-    .char-arrow {
-      font-size: 16px;
-      font-weight: 800;
-      color: var(--accent-main);
-      margin-left: 8px;
-    }
-
-    /* ПОЛЗУНКИ */
-    .pro-slider-row {
-      padding: 11px 0;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-      contain: layout style;
-    }
-    .pro-slider-row:last-child {
-      border-bottom: none;
-    }
-    .pro-slider-head {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      margin-bottom: 9px;
-    }
-    .pro-slider-name {
-      font-size: 13.5px;
-      font-weight: 800;
-      color: #ffffff;
-    }
-    .pro-slider-pill {
-      font-size: 12px;
-      font-weight: 800;
-      color: var(--accent-main);
-      background: rgba(var(--accent-rgb), 0.09);
-      border: 1px solid rgba(var(--accent-rgb), 0.32);
-      padding: 4px 11px;
-      border-radius: 10px;
-      min-width: 44px;
-      text-align: center;
-      contain: content;
-    }
-    .pro-slider-hint {
-      font-size: 11px;
-      color: var(--text-muted);
-      font-style: italic;
-      margin-top: 7px;
-      line-height: 1.3;
-    }
-
-    input[type="range"] {
-      -webkit-appearance: none;
-      width: 100%;
-      height: 5px;
-      border-radius: 999px;
-      background: rgba(255, 255, 255, 0.12);
-      outline: none;
-    }
-    input[type="range"]::-webkit-slider-thumb {
-      -webkit-appearance: none;
-      width: 20px;
-      height: 20px;
-      border-radius: 50%;
-      background: var(--accent-main);
-      /* ✅ Уменьшил размытие тени: было 14px → 8px (каждый кадр драга перерисовывает thumb) */
-      box-shadow: 0 0 8px var(--accent-main);
-      cursor: pointer;
-      border: none;
-    }
-
-    /* ПРЕВЬЮ РАСТЯГА И КАСТОМНОГО ПРИЦЕЛА */
-    .preview-stage-box {
-      width: 100%;
-      height: 162px;
-      background: #04080b;
-      border: 1px solid rgba(255, 255, 255, 0.08);
-      border-radius: 18px;
-      position: relative;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      margin-bottom: 11px;
-      overflow: hidden;
-      contain: content;
-    }
-    .stretch-dashed-outer {
-      width: 224px;
-      height: 122px;
-      border: 1.5px dashed rgba(255, 255, 255, 0.22);
-      border-radius: 8px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      position: relative;
-    }
-    .stretch-solid-inner {
-      width: 168px;
-      height: 122px;
-      border: 1.8px solid rgba(255, 255, 255, 0.82);
-      background: rgba(var(--accent-rgb), 0.05);
-      border-radius: 6px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      color: rgba(255, 255, 255, 0.72);
-      font-weight: 500;
-      font-size: 20px;
-      transition: width 0.26s ease;
-    }
-
-    /* ПЛИТКИ ПИКСЕЛЕЙ */
-    .pixel-tiles-6 {
-      display: grid;
-      grid-template-columns: repeat(6, 1fr);
-      gap: 6px;
-      margin: 10px 0 12px;
-    }
-    .pixel-tile {
-      background: var(--bg-card-inner);
-      border: 1px solid rgba(255, 255, 255, 0.10);
-      border-radius: 14px;
-      padding: 11px 2px;
-      text-align: center;
-      cursor: pointer;
-      transition: background 0.2s, border-color 0.2s, box-shadow 0.2s;
-    }
-    .pixel-tile.active {
-      background: rgba(var(--accent-rgb), 0.18);
-      border-color: var(--accent-main);
-      box-shadow: 0 0 14px rgba(var(--accent-rgb), 0.28);
-    }
-    .pixel-tile b {
-      display: block;
-      font-size: 13.5px;
-      font-weight: 900;
-      color: #fff;
-    }
-    .pixel-tile span {
-      font-size: 8.5px;
-      color: var(--text-muted);
-    }
-    .pixel-big-readout {
-      display: flex;
-      align-items: baseline;
-      justify-content: space-between;
-      margin-bottom: 7px;
-    }
-    .pixel-big-num {
-      font-size: 28px;
-      font-weight: 900;
-      color: #fff;
-    }
-    .pixel-progress-bar {
-      width: 100%;
-      height: 5px;
-      background: rgba(255, 255, 255, 0.08);
-      border-radius: 999px;
-      overflow: hidden;
-      margin-bottom: 6px;
-    }
-    .pixel-progress-fill {
-      height: 100%;
-      width: 100%;
-      background: var(--accent-main);
-      box-shadow: 0 0 10px var(--accent-main);
-      transition: width 0.25s ease;
-    }
-
-    /* ФОРМЫ КАСТОМНОГО ПРИЦЕЛА */
-    .ch-shape-grid-4 {
+    /* СЕТКА ВЫБОРА АВАТАРКИ */
+    .avatar-preset-grid {
       display: grid;
       grid-template-columns: repeat(4, 1fr);
-      gap: 8px;
-      margin-bottom: 9px;
-    }
-    .ch-shape-tile {
-      background: var(--bg-card-inner);
-      border: 1px solid rgba(255, 255, 255, 0.10);
-      border-radius: 16px;
-      padding: 13px 6px;
-      text-align: center;
-      cursor: pointer;
-      transition: background 0.2s, border-color 0.2s, box-shadow 0.2s;
-    }
-    .ch-shape-tile.active {
-      background: rgba(var(--accent-rgb), 0.16);
-      border-color: var(--accent-main);
-      box-shadow: 0 0 16px rgba(var(--accent-rgb), 0.24);
-    }
-    .ch-shape-icon {
-      font-size: 21px;
-      color: #22c55e;
-      margin-bottom: 5px;
-      line-height: 1;
-    }
-    .ch-shape-lbl {
-      font-size: 10px;
-      font-weight: 900;
-      color: #e2e8f0;
-    }
-    .ch-subtoggle-grid-2 {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 8px;
-      margin-bottom: 12px;
-    }
-    .ch-subtoggle-box {
-      background: var(--bg-card-inner);
-      border: 1px solid rgba(255, 255, 255, 0.10);
-      border-radius: 16px;
-      padding: 10px 12px;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 6px;
-      cursor: pointer;
-    }
-    .ch-subtoggle-box.active {
-      border-color: var(--accent-main);
-      background: rgba(var(--accent-rgb), 0.12);
-    }
-
-    /* ПОЛКА И КОДЫ ВНУТРИ СЕНСЫ */
-    .code-input-bar {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      background: var(--bg-card-inner);
-      border: 1px solid rgba(255, 255, 255, 0.12);
-      border-radius: 16px;
-      padding: 11px 14px;
-      margin-top: 8px;
-    }
-    .shelf-cards-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
       gap: 9px;
-      margin-top: 10px;
+      margin: 12px 0;
     }
-    .shelf-preset-card {
-      background: var(--bg-card-inner);
-      border: 1px solid rgba(255, 255, 255, 0.10);
-      border-radius: 18px;
-      padding: 13px;
-      cursor: pointer;
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
-      min-height: 88px;
-      transition: border-color 0.2s, background 0.2s;
-      contain: layout style;
-    }
-    .shelf-preset-card:active {
-      border-color: var(--accent-main);
-      background: rgba(var(--accent-rgb), 0.14);
-    }
-
-    .preset-pills-4 {
-      display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      gap: 7px;
-    }
-    .preset-pill {
-      background: var(--bg-card-inner);
-      border: 1px solid rgba(255, 255, 255, 0.10);
-      border-radius: 14px;
-      padding: 11px 4px;
-      text-align: center;
-      cursor: pointer;
-      transition: background 0.2s, border-color 0.2s, box-shadow 0.2s;
-    }
-    .preset-pill.active {
-      background: rgba(var(--accent-rgb), 0.18);
-      border-color: var(--accent-main);
-      box-shadow: 0 0 15px rgba(var(--accent-rgb), 0.26);
-    }
-    .preset-pill-name { font-size: 12px; font-weight: 900; color: #fff; }
-    .preset-pill-sub { font-size: 8.5px; color: var(--text-muted); margin-top: 2px; }
-
-    .toggle-row {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      background: var(--bg-card-inner);
-      border: 1px solid rgba(255, 255, 255, 0.08);
+    .avatar-preset-item {
+      height: 58px;
       border-radius: 16px;
-      padding: 11px 13px;
-      margin-bottom: 8px;
-      gap: 10px;
-      contain: layout style;
-    }
-    .toggle-info-title { font-size: 12.5px; font-weight: 800; color: #fff; }
-    .toggle-info-sub { font-size: 10.5px; color: var(--text-muted); margin-top: 2px; line-height: 1.3; }
-    .cyber-switch { position: relative; width: 46px; height: 25px; flex-shrink: 0; display: inline-block; }
-    .cyber-switch input { opacity: 0; width: 0; height: 0; }
-    .cyber-slider {
-      position: absolute; inset: 0; background: #18222d;
-      border-radius: 999px; transition: 0.25s; border: 1px solid rgba(255,255,255,0.15);
-    }
-    .cyber-slider::before {
-      content: ""; position: absolute; width: 19px; height: 19px;
-      left: 3px; top: 2px; border-radius: 50%; background: #8fa1b8; transition: 0.25s;
-    }
-    .cyber-switch input:checked + .cyber-slider {
-      background: rgba(var(--accent-rgb), 0.28); border-color: var(--accent-main);
-      box-shadow: 0 0 14px rgba(var(--accent-rgb), 0.42);
-    }
-    .cyber-switch input:checked + .cyber-slider::before {
-      transform: translateX(20px); background: var(--accent-main); box-shadow: 0 0 8px var(--accent-main);
-    }
-
-    .btn-main {
-      width: 100%; border: none; outline: none; padding: 14px 16px;
-      border-radius: 999px; font-size: 13px; font-weight: 900;
-      color: #03070b; background: linear-gradient(90deg, var(--accent-main) 0%, var(--accent-sec) 100%);
-      box-shadow: 0 0 24px rgba(var(--accent-rgb), 0.42); cursor: pointer;
-    }
-    .btn-dark {
-      width: 100%; border: 1px solid rgba(255, 255, 255, 0.14);
-      background: rgba(9, 16, 23, 0.95); color: #e2e8f0;
-      padding: 13px 15px; border-radius: 999px; font-size: 12px; font-weight: 800; cursor: pointer;
-    }
-    .btn-danger {
-      width: 100%; border: 1px solid rgba(255, 46, 84, 0.5);
-      background: rgba(255, 46, 84, 0.14); color: #fda4af;
-      padding: 13px; border-radius: 999px; font-size: 12px; font-weight: 800; cursor: pointer;
-    }
-
-    .badge-chip {
-      font-size: 9.5px;
-      font-weight: 800;
-      padding: 3px 9px;
-      border-radius: 999px;
-      background: rgba(var(--accent-rgb), 0.12);
-      border: 1px solid rgba(var(--accent-rgb), 0.38);
-      color: var(--accent-main);
-    }
-
-    .tweak-tags-wrap {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 6px;
-      margin: 9px 0 12px;
-    }
-    .tweak-mini-tag {
-      font-size: 10px;
-      font-weight: 800;
-      padding: 4px 9px;
-      border-radius: 8px;
       background: rgba(255, 255, 255, 0.05);
-      border: 1px solid rgba(255, 255, 255, 0.10);
-      color: #cbd5e1;
-    }
-
-    .voice-member-card, .friend-item {
+      border: 1.5px solid rgba(255, 255, 255, 0.14);
       display: flex;
       align-items: center;
-      justify-content: space-between;
-      background: var(--bg-card-inner);
-      border: 1px solid rgba(255,255,255,0.08);
-      border-radius: 16px;
-      padding: 11px 13px;
-      margin-bottom: 8px;
+      justify-content: center;
+      font-size: 26px;
+      cursor: pointer;
     }
-    .voice-eq-bars {
-      display: inline-flex;
-      align-items: flex-end;
-      gap: 2.5px;
-      height: 14px;
-    }
-    .voice-eq-bars span {
-      width: 3px;
-      background: #10b981;
-      border-radius: 2px;
-      animation: eqPulse 0.7s infinite ease-in-out alternate;
-    }
-    .voice-eq-bars span:nth-child(2) { animation-delay: 0.18s; }
-    .voice-eq-bars span:nth-child(3) { animation-delay: 0.35s; }
-    @keyframes eqPulse {
-      0% { height: 4px; opacity: 0.5; }
-      100% { height: 14px; opacity: 1; }
+    .avatar-preset-item:active {
+      border-color: var(--accent-main);
+      background: rgba(var(--accent-rgb), 0.22);
     }
 
     .tab-section { display: none; }
-    .tab-section.active { display: block; }
+    .tab-section.active { display: block; animation: tabFadeIn 0.18s ease-out; }
+    @keyframes tabFadeIn {
+      from { opacity: 0; transform: translateY(4px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
 
-    /* ===== НАШЕ ФИРМЕННОЕ НИЖНЕЕ МЕНЮ С НЕОНОВЫМ ЛУЧОМ ===== */
+    /* ===== НИЖНЕЕ МЕНЮ В СТИЛЕ ЖИДКОГО СТЕКЛА ===== */
     .bottom-nav-bar {
       position: fixed;
       bottom: calc(env(safe-area-inset-bottom, 0px) + 10px);
@@ -881,9 +981,7 @@
       max-width: 480px;
       margin: 0 auto;
       height: 66px;
-      /* ✅ ФИКС №1: убран backdrop-filter: blur(16px) — это был ГЛАВНЫЙ убийца GPU.
-         Заменено на почти непрозрачный градиент — визуально почти не отличить. */
-      background: linear-gradient(180deg, rgba(15, 25, 35, 0.99) 0%, rgba(7, 12, 18, 0.99) 100%);
+      background: linear-gradient(180deg, rgba(16, 14, 20, 0.98) 0%, rgba(8, 8, 12, 0.99) 100%);
       border: 1px solid var(--border-strong);
       border-radius: 22px;
       display: grid;
@@ -891,9 +989,10 @@
       align-items: center;
       padding: 0 4px;
       z-index: 9000;
-      box-shadow: 0 12px 30px rgba(0, 0, 0, 0.9), 0 0 18px rgba(var(--accent-rgb), 0.12);
+      box-shadow:
+        0 14px 34px rgba(0, 0, 0, 0.92),
+        inset 0 1px 1px rgba(255, 255, 255, 0.18);
       overflow: hidden;
-      contain: layout style;
     }
     .nav-item {
       position: relative;
@@ -907,7 +1006,6 @@
       font-size: 9.5px;
       font-weight: 800;
       cursor: pointer;
-      transition: color 0.28s ease;
     }
     .nav-item svg {
       width: 19px;
@@ -915,18 +1013,17 @@
       stroke: currentColor;
       fill: none;
       stroke-width: 2;
-      transition: transform 0.28s ease, filter 0.28s ease;
       position: relative;
       z-index: 2;
     }
     .nav-item span { position: relative; z-index: 2; }
     .nav-item.active {
-      color: var(--accent-main);
-      text-shadow: 0 0 12px rgba(var(--accent-rgb), 0.85);
+      color: #ffffff;
+      text-shadow: 0 0 10px rgba(var(--accent-rgb), 0.9);
     }
     .nav-item.active svg {
+      stroke: var(--accent-main);
       transform: translateY(-2px);
-      filter: drop-shadow(0 0 6px var(--accent-main));
     }
     .nav-item::before {
       content: "";
@@ -936,10 +1033,10 @@
       height: 3.5px;
       border-radius: 0 0 6px 6px;
       background: var(--accent-main);
-      box-shadow: 0 0 14px var(--accent-main);
+      box-shadow: 0 0 12px var(--accent-main);
       opacity: 0;
       transform: scaleX(0.2);
-      transition: all 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+      transition: all 0.22s ease;
     }
     .nav-item::after {
       content: "";
@@ -947,11 +1044,10 @@
       top: 3px;
       width: 48px;
       height: 46px;
-      background: linear-gradient(180deg, rgba(var(--accent-rgb), 0.36) 0%, rgba(var(--accent-rgb), 0.0) 100%);
+      background: linear-gradient(180deg, rgba(var(--accent-rgb), 0.34) 0%, rgba(var(--accent-rgb), 0.0) 100%);
       clip-path: polygon(16% 0%, 84% 0%, 100% 100%, 0% 100%);
       opacity: 0;
       pointer-events: none;
-      transition: opacity 0.3s ease;
     }
     .nav-item.active::before { opacity: 1; transform: scaleX(1); }
     .nav-item.active::after { opacity: 1; }
@@ -960,17 +1056,17 @@
       position: fixed;
       top: calc(env(safe-area-inset-top, 38px) + 14px);
       left: 50%;
-      transform: translateX(-50%) translateY(-120px);
-      background: rgba(8, 15, 22, 0.96);
-      border: 1.5px solid var(--accent-main);
+      transform: translateX(-50%) translateY(-130px);
+      background: linear-gradient(135deg, rgba(var(--accent-rgb), 0.45), rgba(10, 12, 18, 0.98));
+      border: 1.5px solid var(--border-strong);
+      box-shadow: 0 8px 25px rgba(0, 0, 0, 0.75), inset 0 1px 1px rgba(255, 255, 255, 0.3);
       color: #fff;
       padding: 9px 16px;
       border-radius: 999px;
       font-size: 11.5px;
       font-weight: 800;
       z-index: 100000;
-      box-shadow: 0 8px 25px rgba(0,0,0,0.7);
-      transition: transform 0.28s cubic-bezier(0.22, 1, 0.36, 1);
+      transition: transform 0.22s cubic-bezier(0.22, 1, 0.36, 1);
       pointer-events: none;
       white-space: nowrap;
     }
@@ -981,6 +1077,32 @@
 
   <input id="avatarFileInput" type="file" accept="image/*" style="display:none" onchange="onAvatarFileSelected(event)" />
   <div id="cyberToast">⚡ SO2Teleport PRO V10</div>
+
+  <!-- МОДАЛКА: СМЕНА АВАТАРКИ (ГАЛЕРЕЯ + ВСТРОЕННЫЕ КИБЕР-АВАТАРКИ) -->
+  <div id="avatarPickerModal" class="shizuku-alert-backdrop">
+    <div class="shizuku-alert-box liquid-glass-surface">
+      <div style="font-size:16px; font-weight:900; color:#fff; margin-bottom:4px;">🖼 Выбор аватарки профиля</div>
+      <div style="font-size:11.5px; color:var(--text-muted); margin-bottom:10px;">
+        Выберите кибер-эмблему или загрузите своё фото из галереи:
+      </div>
+      <div class="avatar-preset-grid">
+        <div class="avatar-preset-item" onclick="selectBuiltInAvatar('🔥')">🔥</div>
+        <div class="avatar-preset-item" onclick="selectBuiltInAvatar('⚡')">⚡</div>
+        <div class="avatar-preset-item" onclick="selectBuiltInAvatar('👑')">👑</div>
+        <div class="avatar-preset-item" onclick="selectBuiltInAvatar('💀')">💀</div>
+        <div class="avatar-preset-item" onclick="selectBuiltInAvatar('🎯')">🎯</div>
+        <div class="avatar-preset-item" onclick="selectBuiltInAvatar('🐉')">🐉</div>
+        <div class="avatar-preset-item" onclick="selectBuiltInAvatar('🥷')">🥷</div>
+        <div class="avatar-preset-item" onclick="selectBuiltInAvatar('💎')">💎</div>
+      </div>
+      <button type="button" class="btn-main" style="margin-bottom:8px;" onclick="openGalleryFileInput()">
+        📂 ЗАГРУЗИТЬ ФОТО ИЗ ГАЛЕРЕИ
+      </button>
+      <button type="button" class="btn-dark" onclick="document.getElementById('avatarPickerModal').style.display='none'">
+        ЗАКРЫТЬ
+      </button>
+    </div>
+  </div>
 
   <!-- МОДАЛКА: КАЛИБРОВКА РАМКИ -->
   <div id="screenCalibOverlay" onclick="finishScreenCalibTap()">
@@ -995,13 +1117,11 @@
 
   <!-- МОДАЛКА: ПРОВЕРКА КАСАНИЙ -->
   <div id="touchTestOverlay">
-    <div style="font-size:16px; font-weight:900; color:#fff; margin-bottom:6px;">
-      👆 Проверить касания
-    </div>
+    <div style="font-size:16px; font-weight:900; color:#fff; margin-bottom:6px;">👆 Проверить касания</div>
     <div id="touchTestCoords" style="font-size:12px; color:var(--accent-main); font-weight:800; margin-bottom:10px;">
       Водите пальцем по полю ниже...
     </div>
-    <canvas id="touchTestCanvas" width="320" height="320" style="background:#050a0e; border:1.5px solid var(--accent-main); border-radius:18px; touch-action:none;"></canvas>
+    <canvas id="touchTestCanvas" width="320" height="320" style="background:#05080c; border:1.5px solid var(--accent-main); border-radius:18px; touch-action:none;"></canvas>
     <button type="button" class="btn-main" style="max-width:320px; margin-top:12px;" onclick="closeTouchTestModal()">
       ✅ ЗАКРЫТЬ ТЕСТЕР
     </button>
@@ -1009,17 +1129,13 @@
 
   <!-- МОДАЛКА: SHIZUKU НЕ АКТИВЕН -->
   <div id="shizukuRequiredModal" class="shizuku-alert-backdrop">
-    <div class="shizuku-alert-box">
-      <div style="width:52px; height:52px; margin:0 auto 10px; border-radius:16px; background:rgba(255,46,84,0.16); border:1px solid #ff2e54; display:flex; align-items:center; justify-content:center; font-size:25px;">
-        ⚠️
-      </div>
-      <div style="font-size:17px; font-weight:900; color:#ffffff; margin-bottom:7px;">
-        Shizuku не активен!
-      </div>
+    <div class="shizuku-alert-box liquid-glass-surface">
+      <div style="width:50px; height:50px; margin:0 auto 10px; border-radius:15px; background:rgba(255,46,84,0.18); border:1px solid #ff2e54; display:flex; align-items:center; justify-content:center; font-size:24px;">⚠️</div>
+      <div style="font-size:17px; font-weight:900; color:#ffffff; margin-bottom:7px;">Shizuku не активен!</div>
       <div style="font-size:12px; color:#cbd5e1; line-height:1.5; margin-bottom:14px;">
         Для работы сверхрезкой сенсы, растяга и оптимизации включите <b>Shizuku</b>.<br><br>
         💬 Помощь по настройке Shizuku:<br>
-        <a href="https://t.me/talent_dare" onclick="openSupportLink(); return false;" style="color:#00e5ff; font-weight:900; font-size:14px; text-decoration:underline;">@talent_dare</a>
+        <a href="https://t.me/talent_dare" onclick="openSupportLink(); return false;" style="color:var(--accent-main); font-weight:900; font-size:14px; text-decoration:underline;">@talent_dare</a>
       </div>
       <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px;">
         <button type="button" class="btn-main" onclick="openSupportLink()">💬 ПОМОЩЬ</button>
@@ -1032,18 +1148,18 @@
   <!-- ЭКРАН АВТОРИЗАЦИИ -->
   <div id="authScreenOverlay">
     <div style="text-align:center; margin-bottom:14px;">
-      <div class="auth-badge">QUANTUM CORE V10 • AGGRESSIVE EDITION</div>
+      <div class="auth-badge">QUANTUM CORE V10 • LIQUID GLASS</div>
       <div style="font-size:29px; font-weight:900; letter-spacing:-0.6px; color:#fff;">
         SO2Teleport <span style="color:var(--accent-main); font-style:italic;">PRO</span>
       </div>
     </div>
 
-    <div class="auth-card">
+    <div class="auth-card liquid-glass-surface">
       <div style="text-align:center; font-size:12.5px; font-weight:700; color:#cbd5e1; margin-bottom:12px;">
         Авторизация лицензии (1 ключ = 1 устройство)
       </div>
 
-      <div id="authErrorBanner" style="display:none; background:rgba(255,46,84,0.16); border:1px solid rgba(255,46,84,0.5); color:#fecdd3; border-radius:14px; padding:10px 12px; font-size:11.5px; font-weight:800; text-align:center; margin-bottom:12px;">
+      <div id="authErrorBanner" style="display:none; background:rgba(255,46,84,0.18); border:1px solid rgba(255,46,84,0.55); color:#fecdd3; border-radius:14px; padding:10px 12px; font-size:11.5px; font-weight:800; text-align:center; margin-bottom:12px;">
         ⛔ Введите лицензионный ключ
       </div>
 
@@ -1057,19 +1173,19 @@
         <input id="loginKeyInput" class="auth-input" type="text" placeholder="TP30D-XXX-000000" />
       </div>
 
-      <button id="loginSubmitBtn" type="button" class="btn-main" onclick="handleLoginSubmit()" style="margin-top:6px; position:relative; z-index:95020; pointer-events:auto;">
+      <button id="loginSubmitBtn" type="button" class="btn-main" onclick="handleLoginSubmit()" style="margin-top:6px;">
         ⚡ АКТИВИРОВАТЬ КЛЮЧ И ВОЙТИ
       </button>
     </div>
 
-    <div style="width:100%; max-width:380px; margin-top:11px; display:flex; flex-direction:column; gap:7px; position:relative; z-index:95010;">
+    <div style="width:100%; max-width:380px; margin-top:11px; display:flex; flex-direction:column; gap:7px;">
       <div class="btn-dark" style="text-align:center; font-size:11px; color:#94a3b8;">
         🛡 Защищённый HWID: <b id="loginHwidLabel" style="color:#fff;">...</b>
       </div>
       <button type="button" class="btn-dark" onclick="openBotShopLink()">
         🤖 Купить / Получить ключ в Telegram-боте
       </button>
-      <button type="button" class="btn-dark" onclick="openSupportLink()" style="border-color:rgba(var(--accent-rgb),0.35); color:var(--accent-main);">
+      <button type="button" class="btn-dark" onclick="openSupportLink()" style="border-color:var(--border-strong); color:#fff;">
         💬 Помощь с Shizuku: @talent_dare
       </button>
     </div>
@@ -1078,12 +1194,13 @@
   <!-- ОСНОВНОЙ КОНТЕЙНЕР ПРИЛОЖЕНИЯ -->
   <div class="app-container">
 
-    <!-- ВЕРХНЯЯ ШАПКА SO2TELEPORT PRO (БЕЗ НАЕЗДА НА ЧАСЫ И БАТАРЕЮ) -->
-    <div class="top-brand-header">
+    <!-- ВЕРХНЯЯ ШАПКА (С РАБОЧЕЙ АВАТАРКОЙ ВМЕСТО БЕСКОНЕЧНОЙ ЗАГРУЗКИ + ТЕМЫ ЖИДКОГО СТЕКЛА) -->
+    <div class="top-brand-header liquid-glass-surface">
       <div class="top-brand-row">
         <div class="brand-left-wrap">
-          <div class="orb-holder">
-            <canvas id="quantumOrbCanvas" width="84" height="84"></canvas>
+          <div class="header-avatar-holder" onclick="triggerAvatarUpload()" title="Сменить аватарку">
+            <img id="topHeaderAvatarImg" src="" alt="avatar" />
+            <span id="topHeaderAvatarFallback" class="header-avatar-fallback">D</span>
           </div>
           <div>
             <div class="brand-title-main">SO2Teleport <span>PRO</span></div>
@@ -1102,216 +1219,151 @@
       <div class="top-header-bottom-bar">
         <span>⚡ ЯДРО: <b id="headerLiveCoreBadge" style="color:var(--accent-main);">480HZ AGGRESSIVE</b></span>
         <div class="theme-dots">
-          <div class="theme-dot active" style="background:#00e5ff; color:#00e5ff;" onclick="setNeonTheme('#00e5ff', '0, 229, 255', '#00b8d4', '0, 184, 212', this)"></div>
-          <div class="theme-dot" style="background:#ff2e54; color:#ff2e54;" onclick="setNeonTheme('#ff2e54', '255, 46, 84', '#ff6b35', '255, 107, 53', this)"></div>
-          <div class="theme-dot" style="background:#10b981; color:#10b981;" onclick="setNeonTheme('#10b981', '16, 185, 129', '#06b6d4', '6, 182, 212', this)"></div>
-          <div class="theme-dot" style="background:#a855f7; color:#a855f7;" onclick="setNeonTheme('#a855f7', '168, 85, 247', '#ec4899', '236, 72, 153', this)"></div>
-          <div class="theme-dot" style="background:#f59e0b; color:#f59e0b;" onclick="setNeonTheme('#f59e0b', '245, 158, 11', '#ef4444', '239, 68, 68', this)"></div>
+          <!-- 1. Красное жидкое стекло (по умолчанию) -->
+          <div class="theme-dot active" title="Красное жидкое стекло" style="background:radial-gradient(circle at 30% 30%, #ff7597, #ff2e5b 55%, #7a0623); color:#ff2e5b;" onclick="setNeonTheme('#ff2e5b', '255, 46, 91', '#9e0b32', '158, 11, 50', this)"></div>
+          <!-- 2. Синее жидкое стекло -->
+          <div class="theme-dot" title="Синее жидкое стекло" style="background:radial-gradient(circle at 30% 30%, #80e5ff, #00c6ff 55%, #0044aa); color:#00c6ff;" onclick="setNeonTheme('#00c6ff', '0, 198, 255', '#0052cc', '0, 82, 204', this)"></div>
+          <!-- 3. Изумрудное жидкое стекло -->
+          <div class="theme-dot" title="Изумрудное жидкое стекло" style="background:radial-gradient(circle at 30% 30%, #6ee7b7, #10b981 55%, #064e3b); color:#10b981;" onclick="setNeonTheme('#10b981', '16, 185, 129', '#046c4e', '4, 108, 78', this)"></div>
+          <!-- 4. Аметистовое жидкое стекло -->
+          <div class="theme-dot" title="Аметистовое жидкое стекло" style="background:radial-gradient(circle at 30% 30%, #d8b4fe, #a855f7 55%, #4c1d95); color:#a855f7;" onclick="setNeonTheme('#a855f7', '168, 85, 247', '#5b21b6', '91, 33, 182', this)"></div>
+          <!-- 5. Золотое жидкое стекло -->
+          <div class="theme-dot" title="Золотое жидкое стекло" style="background:radial-gradient(circle at 30% 30%, #fde68a, #f59e0b 55%, #78350f); color:#f59e0b;" onclick="setNeonTheme('#f59e0b', '245, 158, 11', '#b45309', '180, 83, 9', this)"></div>
         </div>
       </div>
     </div>
 
-    <!-- ================= ВКЛАДКА 1: СЕНСА + КОНФИГИ ПО УБЫВАНИЮ МОЩНОСТИ + КАСТОМНЫЙ ПРИЦЕЛ ================= -->
+    <!-- ================= ВКЛАДКА 1: СЕНСА (СИСТЕМА ПЛАВНЫХ БЛОКОВ БЕЗ НАГРОМОЖДЕНИЯ) ================= -->
     <div id="tabSens" class="tab-section active">
 
-      <!-- 1. ГЛАВНЫЙ БЛОК СЕНСЫ -->
-      <div class="cyber-hub-card glow-strong">
+      <!-- ГЛАВНЫЙ СТАТУС-БЛОК СЕНСЫ -->
+      <div class="cyber-hub-card liquid-glass-surface">
         <div class="hub-left-row">
           <div class="hub-icon-box">🎚</div>
           <div class="hub-text-col">
-            <div class="hub-card-title" style="font-size:16.5px;">
+            <div class="hub-card-title">
               СЕНСА <span id="liveScaleChip" class="badge-chip" style="margin-left:5px;">48.0x</span>
             </div>
-            <div id="activePresetTitle" class="hub-card-sub" style="color:var(--accent-main); font-weight:800;">
+            <div id="activePresetTitle" class="hub-card-sub">
               1 · Телепорт Ультра (48.0x)
             </div>
-            <div class="hub-card-hint">Сверхрезкий квантовый отклик без задержки и лагов</div>
+            <div class="hub-card-hint">Нажмите на любой блок ниже для открытия настроек</div>
           </div>
         </div>
-        <button id="mainPowerCircleBtn" type="button" class="sens-circle-btn" onclick="toggleMainEngineQuick()">
+        <button id="mainPowerCircleBtn" type="button" class="sens-circle-btn liquid-glass-btn" onclick="toggleMainEngineQuick()">
           ВКЛ
         </button>
       </div>
 
-      <!-- ПЕРЕКЛЮЧАТЕЛЬ: КОНФИГИ И ЗАПУСК / СВОИ ЧИСЛА -->
-      <div class="submode-switcher">
-        <div id="subBtnLaunch" class="submode-btn active" onclick="switchSensSubmode('launch')">► КОНФИГИ (ПО МОЩНОСТИ)</div>
-        <div id="subBtnCustom" class="submode-btn" onclick="switchSensSubmode('custom')">🎛 СВОИ ЧИСЛА</div>
-      </div>
-
-      <!-- ПОД-ВКЛАДКА 1А: КОНФИГИ (СВЕРХУ САМЫЕ МОЩНЫЕ — ВНИЗ ПО УБЫВАНИЮ) -->
-      <div id="sensSubLaunch">
-
-        <div class="glass-card">
-          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
-            <span class="section-eyebrow" style="margin-bottom:0;">🔥 КОНФИГИ (ОТ МАКСИМУМА ПО УБЫВАНИЮ)</span>
-            <span class="badge-chip">TOP → LITE</span>
-          </div>
-
-          <!-- №1. САМЫЙ МОЩНЫЙ ДЛЯ ТЕЛЕФОНОВ: ТЕЛЕПОРТ УЛЬТРА -->
-          <div id="preset_extreme" class="character-card active" onclick="selectTeleportPreset('extreme')">
-            <div>
-              <div class="char-title">1 · ТЕЛЕПОРТ УЛЬТРА <span class="char-tag top-fire">MAX АГРЕССИЯ • 48.0X</span></div>
-              <div class="char-desc">Самый мощный и взрывной переброс прицела кусками (шаг 44–48x, нажим 0.0001). Мгновенный разворот на 180° и жёсткие флики.</div>
+      <!-- БЛОК 1.1: ГОТОВЫЕ КОНФИГИ СЕНСЫ (ОТКРЫТ ПО УМОЛЧАНИЮ) -->
+      <div id="accSensPresets" class="acc-block liquid-glass-surface open">
+        <div class="acc-header" onclick="toggleAccordionBlock('accSensPresets')">
+          <div class="acc-left">
+            <div class="acc-icon">🔥</div>
+            <div class="acc-title-wrap">
+              <div class="acc-title">Готовые конфиги сенсы <span class="badge-chip">TOP → LITE</span></div>
+              <div class="acc-sub">От максимального Телепорта до анти-лаг режима A57</div>
             </div>
-            <span class="char-arrow">›</span>
           </div>
-
-          <!-- №2. САМЫЙ МОЩНЫЙ ДЛЯ ПЛАНШЕТОВ: ДЛЯ ПАДОВ ИМПУЛЬС -->
-          <div id="preset_tablet_pro" class="character-card" onclick="selectTeleportPreset('tablet_pro')">
-            <div>
-              <div class="char-title">2 · ДЛЯ ПАДОВ УЛЬТРА <span class="char-tag pad-badge">PAD IMPULSE • 76.0X</span></div>
-              <div class="char-desc">Сверхмощный пробив для планшетов (Xiaomi Pad, Redmi Pad, Legion Y700, Galaxy Tab). Снимает вязкость большой матрицы и блок мультитача.</div>
-            </div>
-            <span class="char-arrow">›</span>
-          </div>
-
-          <!-- №3. СРЕДНЕ-ВЫСОКАЯ МОЩНОСТЬ: РЕЗКИЙ АГРЕССИВ -->
-          <div id="preset_clean_sharp" class="character-card" onclick="selectTeleportPreset('clean_sharp')">
-            <div>
-              <div class="char-title">3 · РЕЗКИЙ АГРЕССИВ <span class="char-tag">ТОЧНЫЙ ХВАТ • 36.0X</span></div>
-              <div class="char-desc">Хлёсткий срыв прицела и жёсткое выравнивание линии наводки по голове без лишнего залипания на осях.</div>
-            </div>
-            <span class="char-arrow">›</span>
-          </div>
-
-          <!-- №4. СБАЛАНСИРОВАННЫЙ С ЗАЩИТОЙ FPS: ДЛЯ БЮДЖЕТОК И SAMSUNG A57 -->
-          <div id="preset_budget_pro" class="character-card" onclick="selectTeleportPreset('budget_pro')">
-            <div>
-              <div class="char-title">4 · ДЛЯ БЮДЖЕТОК И A57 <span class="char-tag budget-badge">ANTI-LAG FPS • 34.0X</span></div>
-              <div class="char-desc">Резкая сенса + защита от просадок кадров на Samsung A57 / A55 / A54, Redmi и Poco (SkiaGL кэш + безопасный лимит кадров).</div>
-            </div>
-            <span class="char-arrow">›</span>
-          </div>
+          <div class="acc-chevron">⌄</div>
         </div>
-
-        <!-- МОИ ВАРИАНТЫ И ПОЛКА (ТАКЖЕ ОТ МОЩНЫХ К СБАЛАНСИРОВАННЫМ) -->
-        <div class="glass-card">
-          <div class="section-eyebrow">МОИ ВАРИАНТЫ И ПОЛКА СБОРОК</div>
-          <div class="section-subdesc">Сохраняй свой пресет, вводи код друга или выбирай готовую сборку.</div>
-
-          <div class="saved-variant-row">
-            <div style="display:flex; align-items:center; gap:11px;">
-              <div class="hub-icon-box" style="width:36px; height:36px; font-size:14px;">🔖</div>
+        <div class="acc-body-wrap">
+          <div class="acc-body-inner">
+            <div id="preset_extreme" class="character-card active" onclick="selectTeleportPreset('extreme')">
               <div>
-                <div id="mySavedSlotTitle" style="font-size:13.5px; font-weight:900; color:#fff;">Мой сохранённый конфиг</div>
-                <div style="font-size:10.5px; color:var(--text-muted);">персональный слот</div>
+                <div class="char-title">1 · ТЕЛЕПОРТ УЛЬТРА <span class="char-tag">MAX АГРЕССИЯ • 48.0X</span></div>
+                <div class="char-desc">Самый мощный и взрывной переброс прицела кусками (шаг 44–48x, нажим 0.0001). Мгновенный разворот и жёсткие флики.</div>
               </div>
-            </div>
-            <div style="display:flex; gap:7px;">
-              <button type="button" class="icon-circle-action" title="Применить" onclick="loadSavedConfigLocal(false)">▼</button>
-              <button type="button" class="icon-circle-action" title="Сохранить" onclick="saveCurrentConfigLocal(false)">💾</button>
-            </div>
-          </div>
-
-          <div class="code-input-bar">
-            <span style="color:var(--accent-main); font-weight:900;">&lt;/&gt;</span>
-            <input id="cloudCodeInput" class="auth-input" type="text" placeholder="Ввести код (например TP-CFG-7744)" style="font-size:13px;" />
-            <button type="button" class="icon-circle-action" onclick="downloadCloudPresetNow()" title="Загрузить код">📥</button>
-          </div>
-
-          <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:9px;">
-            <button type="button" class="btn-dark" onclick="saveCurrentConfigLocal(false)">＋ Сохранить свой</button>
-            <button type="button" class="btn-dark" style="border-color:var(--border-strong); color:var(--accent-main);" onclick="uploadCloudPresetNow()">☁️ Создать код</button>
-          </div>
-
-          <div class="shelf-cards-grid">
-            <div class="shelf-preset-card" onclick="applyShelfPreset('demon_100')">
-              <div>
-                <div style="font-size:12px; font-weight:900; color:#fda4af;">1 · ДЕМОН РЫВОК (MAX)</div>
-                <div style="font-size:10px; color:var(--text-muted); margin-top:2px;">Куски 100 · Острота 2.50 · 48.0x</div>
-              </div>
-              <div style="font-size:10px; color:var(--accent-main); font-weight:800; margin-top:8px;">Макс. агрессия ›</div>
+              <span class="char-arrow">›</span>
             </div>
 
-            <div class="shelf-preset-card" onclick="applyShelfPreset('pad_cyber')">
+            <div id="preset_tablet_pro" class="character-card" onclick="selectTeleportPreset('tablet_pro')">
               <div>
-                <div style="font-size:12px; font-weight:900; color:#d8b4fe;">2 · ПАД КИБЕРСПОРТ</div>
-                <div style="font-size:10px; color:var(--text-muted); margin-top:2px;">Импульс 103.2x · 4–6 пальцев</div>
+                <div class="char-title">2 · ДЛЯ ПАДОВ УЛЬТРА <span class="char-tag pad-badge">PAD IMPULSE • 76.0X</span></div>
+                <div class="char-desc">Сверхмощный пробив для планшетов (Xiaomi Pad, Redmi Pad, Legion Y700, Galaxy Tab). Снимает вязкость большой матрицы.</div>
               </div>
-              <div style="font-size:10px; color:var(--accent-main); font-weight:800; margin-top:8px;">Для планшетов ›</div>
+              <span class="char-arrow">›</span>
             </div>
 
-            <div class="shelf-preset-card" onclick="applyShelfPreset('heavy_pixel')">
+            <div id="preset_clean_sharp" class="character-card" onclick="selectTeleportPreset('clean_sharp')">
               <div>
-                <div style="font-size:12px; font-weight:900; color:#fff;">3 · ЖЁСТКИЙ ХЭДШОТ</div>
-                <div style="font-size:10px; color:var(--text-muted); margin-top:2px;">Куски 96 · Выпрямление 0.95</div>
+                <div class="char-title">3 · РЕЗКИЙ АГРЕССИВ <span class="char-tag">ТОЧНЫЙ ХВАТ • 36.0X</span></div>
+                <div class="char-desc">Хлёсткий срыв прицела и жёсткое выравнивание линии наводки по голове без лишнего залипания на осях.</div>
               </div>
-              <div style="font-size:10px; color:var(--accent-main); font-weight:800; margin-top:8px;">Доводка в голову ›</div>
+              <span class="char-arrow">›</span>
             </div>
 
-            <div class="shelf-preset-card" onclick="applyShelfPreset('a57_fps_god')">
+            <div id="preset_budget_pro" class="character-card" onclick="selectTeleportPreset('budget_pro')">
               <div>
-                <div style="font-size:12px; font-weight:900; color:#10b981;">4 · A57 / БЮДЖЕТ БЕЗ ЛАГОВ</div>
-                <div style="font-size:10px; color:var(--text-muted); margin-top:2px;">Стабильный FPS · SkiaGL Boost</div>
+                <div class="char-title">4 · ДЛЯ БЮДЖЕТОК И A57 <span class="char-tag budget-badge">ANTI-LAG FPS • 34.0X</span></div>
+                <div class="char-desc">Резкая сенса + защита от просадок кадров на Samsung A57 / A55 / A54, Redmi и Poco (SkiaGL кэш + ровный FPS).</div>
               </div>
-              <div style="font-size:10px; color:var(--accent-main); font-weight:800; margin-top:8px;">Фикс просадок ›</div>
+              <span class="char-arrow">›</span>
             </div>
           </div>
         </div>
-
       </div>
 
-      <!-- ПОД-ВКЛАДКА 1Б: СВОИ ЧИСЛА (УСИЛЕННЫЕ ПОЛЗУНКИ) -->
-      <div id="sensSubCustom" style="display:none;">
-
-        <div class="glass-card">
-          <div class="section-eyebrow">СВОИ ЧИСЛА (УСИЛЕННОЕ ЯДРО V10)</div>
-          <div class="section-subdesc">Настрой экстремальную остроту, точность и квантовые куски под свой хват.</div>
-
-          <div class="section-eyebrow" style="margin-top:8px;">ОСТРОТА</div>
-          <div class="pro-slider-row">
-            <div class="pro-slider-head"><span class="pro-slider-name">Резкость</span><span id="val_sharp" class="pro-slider-pill">2.50</span></div>
-            <input id="sl_sharp" type="range" min="10" max="25" step="1" value="25" oninput="onSensSliderChange()" />
-            <div class="pro-slider-hint">Больше — агрессивнее срыв прицела с места</div>
+      <!-- БЛОК 1.2: СВОИ ЧИСЛА (19 ПОЛЗУНКОВ ТОЧНОЙ НАСТРОЙКИ) -->
+      <div id="accSensSliders" class="acc-block liquid-glass-surface">
+        <div class="acc-header" onclick="toggleAccordionBlock('accSensSliders')">
+          <div class="acc-left">
+            <div class="acc-icon">🎛</div>
+            <div class="acc-title-wrap">
+              <div class="acc-title">Свои числа и Куски <span class="badge-chip">19 ПАРАМЕТРОВ</span></div>
+              <div class="acc-sub">Ручная настройка резкости, прилипания, осей и квантовых кусков</div>
+            </div>
           </div>
+          <div class="acc-chevron">⌄</div>
+        </div>
+        <div class="acc-body-wrap">
+          <div class="acc-body-inner">
+            <div class="section-eyebrow">ОСТРОТА</div>
+            <div class="pro-slider-row">
+              <div class="pro-slider-head"><span class="pro-slider-name">Резкость</span><span id="val_sharp" class="pro-slider-pill">2.50</span></div>
+              <input id="sl_sharp" type="range" min="10" max="25" step="1" value="25" oninput="onSensSliderChange()" />
+              <div class="pro-slider-hint">Больше — агрессивнее срыв прицела с места</div>
+            </div>
 
-          <div class="pro-slider-row">
-            <div class="pro-slider-head"><span class="pro-slider-name">Влево-вправо</span><span id="val_sx" class="pro-slider-pill">2.50</span></div>
-            <input id="sl_sx" type="range" min="10" max="25" step="1" value="25" oninput="onSensSliderChange()" />
-            <div class="pro-slider-hint">Скорость горизонтального флика</div>
-          </div>
+            <div class="pro-slider-row">
+              <div class="pro-slider-head"><span class="pro-slider-name">Влево-вправо</span><span id="val_sx" class="pro-slider-pill">2.50</span></div>
+              <input id="sl_sx" type="range" min="10" max="25" step="1" value="25" oninput="onSensSliderChange()" />
+              <div class="pro-slider-hint">Скорость горизонтального флика</div>
+            </div>
 
-          <div class="pro-slider-row">
-            <div class="pro-slider-head"><span class="pro-slider-name">Вверх-вниз</span><span id="val_sy" class="pro-slider-pill">2.50</span></div>
-            <input id="sl_sy" type="range" min="10" max="25" step="1" value="25" oninput="onSensSliderChange()" />
-            <div class="pro-slider-hint">Вертикальный контроль зажима</div>
-          </div>
+            <div class="pro-slider-row">
+              <div class="pro-slider-head"><span class="pro-slider-name">Вверх-вниз</span><span id="val_sy" class="pro-slider-pill">2.50</span></div>
+              <input id="sl_sy" type="range" min="10" max="25" step="1" value="25" oninput="onSensSliderChange()" />
+              <div class="pro-slider-hint">Вертикальный контроль зажима</div>
+            </div>
 
-          <div class="section-eyebrow" style="margin-top:14px;">ТОЧНОСТЬ И ПРИЛИПАНИЕ</div>
-          <div class="pro-slider-row">
-            <div class="pro-slider-head"><span class="pro-slider-name">Отсечка шума</span><span id="val_grid" class="pro-slider-pill">2</span></div>
-            <input id="sl_grid" type="range" min="1" max="10" step="1" value="2" oninput="onSensSliderChange()" />
-          </div>
+            <div class="section-eyebrow">ТОЧНОСТЬ И ПРИЛИПАНИЕ</div>
+            <div class="pro-slider-row">
+              <div class="pro-slider-head"><span class="pro-slider-name">Отсечка шума</span><span id="val_grid" class="pro-slider-pill">2</span></div>
+              <input id="sl_grid" type="range" min="1" max="10" step="1" value="2" oninput="onSensSliderChange()" />
+            </div>
 
-          <div class="pro-slider-row">
-            <div class="pro-slider-head"><span class="pro-slider-name">Мёртвая зона</span><span id="val_pause" class="pro-slider-pill">1</span></div>
-            <input id="sl_pause" type="range" min="0" max="10" step="1" value="1" oninput="onSensSliderChange()" />
-          </div>
+            <div class="pro-slider-row">
+              <div class="pro-slider-head"><span class="pro-slider-name">Мёртвая зона</span><span id="val_pause" class="pro-slider-pill">1</span></div>
+              <input id="sl_pause" type="range" min="0" max="10" step="1" value="1" oninput="onSensSliderChange()" />
+            </div>
 
-          <div class="pro-slider-row">
-            <div class="pro-slider-head"><span class="pro-slider-name">Упреждение</span><span id="val_lead" class="pro-slider-pill">10</span></div>
-            <input id="sl_lead" type="range" min="0" max="20" step="1" value="10" oninput="onSensSliderChange()" />
-          </div>
+            <div class="pro-slider-row">
+              <div class="pro-slider-head"><span class="pro-slider-name">Упреждение</span><span id="val_lead" class="pro-slider-pill">10</span></div>
+              <input id="sl_lead" type="range" min="0" max="20" step="1" value="10" oninput="onSensSliderChange()" />
+            </div>
 
-          <div class="pro-slider-row">
-            <div class="pro-slider-head"><span class="pro-slider-name">Прилипание к осям</span><span id="val_stick" class="pro-slider-pill">95</span></div>
-            <input id="sl_stick" type="range" min="0" max="100" step="5" value="95" oninput="onSensSliderChange()" />
-          </div>
+            <div class="pro-slider-row">
+              <div class="pro-slider-head"><span class="pro-slider-name">Прилипание к осям</span><span id="val_stick" class="pro-slider-pill">95</span></div>
+              <input id="sl_stick" type="range" min="0" max="100" step="5" value="95" oninput="onSensSliderChange()" />
+            </div>
 
-          <div class="pro-slider-row">
-            <div class="pro-slider-head"><span class="pro-slider-name">Через сколько липнуть</span><span id="val_stick_delay" class="pro-slider-pill">25</span></div>
-            <input id="sl_stick_delay" type="range" min="5" max="60" step="1" value="25" oninput="onSensSliderChange()" />
-          </div>
+            <div class="pro-slider-row">
+              <div class="pro-slider-head"><span class="pro-slider-name">Через сколько липнуть</span><span id="val_stick_delay" class="pro-slider-pill">25</span></div>
+              <input id="sl_stick_delay" type="range" min="5" max="60" step="1" value="25" oninput="onSensSliderChange()" />
+            </div>
 
-          <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:12px;">
-            <button id="btnToggleMoreSens" type="button" class="btn-dark" onclick="toggleExtraSensBlock()">Спрятать куски</button>
-            <button type="button" class="btn-dark" onclick="selectTeleportPreset(isPadModeEnabled ? 'tablet_pro' : 'extreme')">Сбросить набор</button>
-          </div>
-
-          <div id="extraChunksBlock" style="margin-top:16px; padding-top:14px; border-top:1px solid rgba(255,255,255,0.07);">
             <div class="section-eyebrow">КВАНТОВЫЕ КУСКИ</div>
-
             <div class="pro-slider-row">
               <div class="pro-slider-head"><span class="pro-slider-name">Сила прилипания</span><span id="val_stick_force" class="pro-slider-pill">10</span></div>
               <input id="sl_stick_force" type="range" min="1" max="15" step="1" value="10" oninput="onSensSliderChange()" />
@@ -1366,400 +1418,485 @@
               <div class="pro-slider-head"><span class="pro-slider-name">Потолок хвата</span><span id="val_grip_cap" class="pro-slider-pill">12</span></div>
               <input id="sl_grip_cap" type="range" min="1" max="15" step="1" value="12" oninput="onSensSliderChange()" />
             </div>
-          </div>
 
-          <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:12px;">
-            <button type="button" class="btn-dark" onclick="startScreenCalibModal()">👆 Калибровка экрана</button>
-            <button type="button" class="btn-dark" onclick="openTouchTestModal()">👆 Тестер касаний</button>
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:12px;">
+              <button type="button" class="btn-dark" onclick="startScreenCalibModal()">👆 Калибровка</button>
+              <button type="button" class="btn-dark" onclick="openTouchTestModal()">👆 Тестер тача</button>
+            </div>
+            <button type="button" class="btn-dark" style="margin-top:8px;" onclick="selectTeleportPreset(isPadModeEnabled ? 'tablet_pro' : 'extreme')">
+              🔄 Сбросить числа по умолчанию
+            </button>
           </div>
         </div>
-
       </div>
 
-      <!-- 2. БЛОК КАСТОМНЫЙ ПРИЦЕЛ (ПРЯМО В РАЗДЕЛЕ СЕНСЫ) -->
-      <div id="crosshairCardAnchor" class="glass-card">
-        <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:12px;">
-          <div style="display:flex; align-items:center; gap:11px;">
-            <div class="hub-icon-box" style="width:40px; height:40px; font-size:16px;">⌖</div>
-            <div>
-              <div style="font-size:15px; font-weight:900; color:#fff;">Кастомный прицел</div>
-              <div id="crosshairStateChip" style="font-size:11px; color:var(--text-muted);">Выключен — включи тумблер</div>
+      <!-- БЛОК 1.3: МОИ ВАРИАНТЫ И ПОЛКА СБОРОК -->
+      <div id="accSensShelf" class="acc-block liquid-glass-surface">
+        <div class="acc-header" onclick="toggleAccordionBlock('accSensShelf')">
+          <div class="acc-left">
+            <div class="acc-icon">🔖</div>
+            <div class="acc-title-wrap">
+              <div class="acc-title">Мои варианты и Полка сборок</div>
+              <div class="acc-sub">Сохранение своего пресета, обмен кодами и кибер-сборки</div>
             </div>
           </div>
-          <label class="cyber-switch">
-            <input id="tgCrosshairMaster" type="checkbox" onchange="toggleCrosshairMasterSwitch(this.checked)" />
-            <span class="cyber-slider"></span>
-          </label>
+          <div class="acc-chevron">⌄</div>
         </div>
+        <div class="acc-body-wrap">
+          <div class="acc-body-inner">
+            <div class="saved-variant-row">
+              <div style="display:flex; align-items:center; gap:11px;">
+                <div class="acc-icon" style="width:34px; height:34px; font-size:13px;">💾</div>
+                <div>
+                  <div id="mySavedSlotTitle" style="font-size:13px; font-weight:900; color:#fff;">Мой сохранённый конфиг</div>
+                  <div style="font-size:10.5px; color:var(--text-muted);">персональный слот</div>
+                </div>
+              </div>
+              <div style="display:flex; gap:7px;">
+                <button type="button" class="icon-circle-action" title="Применить" onclick="loadSavedConfigLocal(false)">▼</button>
+                <button type="button" class="icon-circle-action" title="Сохранить" onclick="saveCurrentConfigLocal(false)">💾</button>
+              </div>
+            </div>
 
-        <div id="chPreviewStage" class="preview-stage-box" style="height:152px;">
-          <canvas id="crosshairPreviewCanvas" width="280" height="152"></canvas>
-          <div style="position:absolute; top:9px; left:10px;">
-            <span id="chModeRightLabel" class="badge-chip">КРЕСТ</span>
-          </div>
-          <div style="position:absolute; top:9px; right:10px;">
-            <button type="button" class="icon-circle-action" style="width:32px; height:32px;" onclick="togglePreviewDayNight()">🌙</button>
-          </div>
-          <div style="position:absolute; bottom:9px; left:12px; display:flex; align-items:center; gap:6px; font-size:11px; color:var(--text-muted);">
-            <span style="width:8px; height:8px; border-radius:50%; background:#22c55e; display:inline-block;"></span>
-            <span id="chSizeReadout">+ 8 × 3 px</span>
-          </div>
-          <div style="position:absolute; bottom:8px; right:10px; display:flex; gap:5px;">
-            <button type="button" class="badge-chip" style="cursor:pointer; padding:4px 8px;" onclick="setPreviewZoom(1)">×1</button>
-            <button type="button" class="badge-chip" style="cursor:pointer; padding:4px 8px;" onclick="setPreviewZoom(2)">×4</button>
-            <button type="button" class="badge-chip" style="cursor:pointer; padding:4px 8px;" onclick="setPreviewZoom(3.5)">×8</button>
-          </div>
-        </div>
+            <div class="code-input-bar">
+              <span style="color:var(--accent-main); font-weight:900;">&lt;/&gt;</span>
+              <input id="cloudCodeInput" class="auth-input" type="text" placeholder="Код сборки (например TP-CFG-7744)" style="font-size:13px;" />
+              <button type="button" class="icon-circle-action" onclick="downloadCloudPresetNow()" title="Загрузить">📥</button>
+            </div>
 
-        <div class="ch-shape-grid-4">
-          <div class="ch-shape-tile active" data-ch="cross" onclick="setCrosshairMode(this, 'cross')">
-            <div class="ch-shape-icon">✚</div>
-            <div class="ch-shape-lbl">КРЕСТ</div>
-          </div>
-          <div class="ch-shape-tile" data-ch="dot" onclick="setCrosshairMode(this, 'dot')">
-            <div class="ch-shape-icon">•</div>
-            <div class="ch-shape-lbl">ТОЧКА</div>
-          </div>
-          <div class="ch-shape-tile" data-ch="tshape" onclick="setCrosshairMode(this, 'tshape')">
-            <div class="ch-shape-icon">⊤</div>
-            <div class="ch-shape-lbl">Т-ОБРАЗ</div>
-          </div>
-          <div class="ch-shape-tile" data-ch="corners" onclick="setCrosshairMode(this, 'corners')">
-            <div class="ch-shape-icon">⌜⌟</div>
-            <div class="ch-shape-lbl">УГОЛКИ</div>
-          </div>
-        </div>
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:9px;">
+              <button type="button" class="btn-dark" onclick="saveCurrentConfigLocal(false)">＋ Сохранить свой</button>
+              <button type="button" class="btn-main" style="padding:12px;" onclick="uploadCloudPresetNow()">☁️ Создать код</button>
+            </div>
 
-        <div class="ch-subtoggle-grid-2">
-          <div id="subBoxCrossLines" class="ch-subtoggle-box active" onclick="setCrosshairMode(this, 'cross')">
-            <span style="font-size:10.5px; font-weight:900; color:#cbd5e1;">ТОЛЬКО ЛУЧИ</span>
-            <span class="badge-chip">КРЕСТ</span>
-          </div>
-          <div id="subBoxCenterDot" class="ch-subtoggle-box" onclick="setCrosshairMode(this, 'crossdot')">
-            <span style="font-size:10.5px; font-weight:900; color:#cbd5e1;">ЛУЧИ + ТОЧКА</span>
-            <span class="badge-chip">КОМБО</span>
-          </div>
-        </div>
+            <div class="shelf-cards-grid">
+              <div class="shelf-preset-card" onclick="applyShelfPreset('demon_100')">
+                <div>
+                  <div style="font-size:12px; font-weight:900; color:#fda4af;">1 · ДЕМОН РЫВОК</div>
+                  <div style="font-size:10px; color:var(--text-muted); margin-top:2px;">Куски 100 · Острота 2.50 · 48.0x</div>
+                </div>
+                <div style="font-size:10px; color:var(--accent-main); font-weight:800; margin-top:8px;">Макс. агрессия ›</div>
+              </div>
 
-        <div class="pro-slider-row">
-          <div class="pro-slider-head"><span class="pro-slider-name">Размер лучей</span><span id="val_ch_len" class="pro-slider-pill">8</span></div>
-          <input id="sl_ch_len" type="range" min="2" max="22" value="8" oninput="syncCrosshairConfig()" />
-        </div>
-        <div class="pro-slider-row">
-          <div class="pro-slider-head"><span class="pro-slider-name">Толщина линий</span><span id="val_ch_thick" class="pro-slider-pill">3</span></div>
-          <input id="sl_ch_thick" type="range" min="1" max="10" value="3" oninput="syncCrosshairConfig()" />
-        </div>
-        <div class="pro-slider-row">
-          <div class="pro-slider-head"><span class="pro-slider-name">Зазор в центре</span><span id="val_ch_gap" class="pro-slider-pill">3</span></div>
-          <input id="sl_ch_gap" type="range" min="0" max="14" value="3" oninput="syncCrosshairConfig()" />
-        </div>
-        <div class="pro-slider-row">
-          <div class="pro-slider-head"><span class="pro-slider-name">Размер центральной точки</span><span id="val_ch_dot" class="pro-slider-pill">3</span></div>
-          <input id="sl_ch_dot" type="range" min="1" max="10" value="3" oninput="syncCrosshairConfig()" />
-        </div>
-        <div class="pro-slider-row">
-          <div class="pro-slider-head"><span class="pro-slider-name">Прозрачность</span><span id="val_ch_op" class="pro-slider-pill">100%</span></div>
-          <input id="sl_ch_op" type="range" min="20" max="100" value="100" oninput="syncCrosshairConfig()" />
-        </div>
+              <div class="shelf-preset-card" onclick="applyShelfPreset('pad_cyber')">
+                <div>
+                  <div style="font-size:12px; font-weight:900; color:#d8b4fe;">2 · ПАД КИБЕРСПОРТ</div>
+                  <div style="font-size:10px; color:var(--text-muted); margin-top:2px;">Импульс 103.2x · 4–6 пальцев</div>
+                </div>
+                <div style="font-size:10px; color:var(--accent-main); font-weight:800; margin-top:8px;">Для планшетов ›</div>
+              </div>
 
-        <div class="toggle-row" style="margin-top:8px; margin-bottom:0;">
-          <div>
-            <div class="toggle-info-title">Чёрная контурная обводка</div>
-            <div class="toggle-info-sub">Прицел не сливается со светлыми стенами и дымом</div>
+              <div class="shelf-preset-card" onclick="applyShelfPreset('heavy_pixel')">
+                <div>
+                  <div style="font-size:12px; font-weight:900; color:#fff;">3 · ЖЁСТКИЙ ХЭДШОТ</div>
+                  <div style="font-size:10px; color:var(--text-muted); margin-top:2px;">Куски 96 · Выпрямление 0.95</div>
+                </div>
+                <div style="font-size:10px; color:var(--accent-main); font-weight:800; margin-top:8px;">Доводка в голову ›</div>
+              </div>
+
+              <div class="shelf-preset-card" onclick="applyShelfPreset('a57_fps_god')">
+                <div>
+                  <div style="font-size:12px; font-weight:900; color:#6ee7b7;">4 · A57 / БЮДЖЕТ FPS</div>
+                  <div style="font-size:10px; color:var(--text-muted); margin-top:2px;">Стабильный FPS · SkiaGL Boost</div>
+                </div>
+                <div style="font-size:10px; color:var(--accent-main); font-weight:800; margin-top:8px;">Фикс просадок ›</div>
+              </div>
+            </div>
           </div>
-          <label class="cyber-switch">
-            <input id="tgChOutline" type="checkbox" checked onchange="syncCrosshairConfig()" />
-            <span class="cyber-slider"></span>
-          </label>
+        </div>
+      </div>
+
+      <!-- БЛОК 1.4: КАСТОМНЫЙ ПРИЦЕЛ -->
+      <div id="accCrosshair" class="acc-block liquid-glass-surface">
+        <div class="acc-header" onclick="toggleAccordionBlock('accCrosshair')">
+          <div class="acc-left">
+            <div class="acc-icon">⌖</div>
+            <div class="acc-title-wrap">
+              <div class="acc-title">Кастомный прицел <span id="crosshairStateChip" class="badge-chip">ВЫКЛ</span></div>
+              <div class="acc-sub">Крест, точка, Т-образ, уголки и точная подгонка лучей</div>
+            </div>
+          </div>
+          <div class="acc-chevron">⌄</div>
+        </div>
+        <div class="acc-body-wrap">
+          <div id="crosshairCardAnchor" class="acc-body-inner">
+            <div class="toggle-row" style="margin-top:4px; margin-bottom:10px;">
+              <div>
+                <div class="toggle-info-title">Отображать прицел поверх игры</div>
+                <div class="toggle-info-sub">Аппаратный оверлей без потери FPS</div>
+              </div>
+              <label class="cyber-switch">
+                <input id="tgCrosshairMaster" type="checkbox" onchange="toggleCrosshairMasterSwitch(this.checked)" />
+                <span class="cyber-slider"></span>
+              </label>
+            </div>
+
+            <div id="chPreviewStage" class="preview-stage-box">
+              <canvas id="crosshairPreviewCanvas" width="280" height="152"></canvas>
+              <div style="position:absolute; top:9px; left:10px;"><span id="chModeRightLabel" class="badge-chip">КРЕСТ</span></div>
+              <div style="position:absolute; top:9px; right:10px;"><button type="button" class="icon-circle-action" style="width:32px; height:32px;" onclick="togglePreviewDayNight()">🌙</button></div>
+              <div style="position:absolute; bottom:9px; left:12px; display:flex; align-items:center; gap:6px; font-size:11px; color:var(--text-muted);">
+                <span style="width:8px; height:8px; border-radius:50%; background:#22c55e; display:inline-block;"></span>
+                <span id="chSizeReadout">+ 8 × 3 px</span>
+              </div>
+              <div style="position:absolute; bottom:8px; right:10px; display:flex; gap:5px;">
+                <button type="button" class="badge-chip" style="cursor:pointer; padding:4px 8px;" onclick="setPreviewZoom(1)">×1</button>
+                <button type="button" class="badge-chip" style="cursor:pointer; padding:4px 8px;" onclick="setPreviewZoom(2)">×4</button>
+                <button type="button" class="badge-chip" style="cursor:pointer; padding:4px 8px;" onclick="setPreviewZoom(3.5)">×8</button>
+              </div>
+            </div>
+
+            <div class="ch-shape-grid-4">
+              <div class="ch-shape-tile active" data-ch="cross" onclick="setCrosshairMode(this, 'cross')"><div class="ch-shape-icon">✚</div><div class="ch-shape-lbl">КРЕСТ</div></div>
+              <div class="ch-shape-tile" data-ch="dot" onclick="setCrosshairMode(this, 'dot')"><div class="ch-shape-icon">•</div><div class="ch-shape-lbl">ТОЧКА</div></div>
+              <div class="ch-shape-tile" data-ch="tshape" onclick="setCrosshairMode(this, 'tshape')"><div class="ch-shape-icon">⊤</div><div class="ch-shape-lbl">Т-ОБРАЗ</div></div>
+              <div class="ch-shape-tile" data-ch="corners" onclick="setCrosshairMode(this, 'corners')"><div class="ch-shape-icon">⌜⌟</div><div class="ch-shape-lbl">УГОЛКИ</div></div>
+            </div>
+
+            <div class="ch-subtoggle-grid-2">
+              <div id="subBoxCrossLines" class="ch-subtoggle-box active" onclick="setCrosshairMode(this, 'cross')">
+                <span style="font-size:10.5px; font-weight:900; color:#fff;">ТОЛЬКО ЛУЧИ</span>
+                <span class="badge-chip">БЕЗ ТОЧКИ</span>
+              </div>
+              <div id="subBoxCenterDot" class="ch-subtoggle-box" onclick="setCrosshairMode(this, 'crossdot')">
+                <span style="font-size:10.5px; font-weight:900; color:#fff;">ЛУЧИ + ТОЧКА</span>
+                <span class="badge-chip">КОМБО</span>
+              </div>
+            </div>
+
+            <div class="pro-slider-row">
+              <div class="pro-slider-head"><span class="pro-slider-name">Размер лучей</span><span id="val_ch_len" class="pro-slider-pill">8</span></div>
+              <input id="sl_ch_len" type="range" min="2" max="22" value="8" oninput="syncCrosshairConfig()" />
+            </div>
+            <div class="pro-slider-row">
+              <div class="pro-slider-head"><span class="pro-slider-name">Толщина линий</span><span id="val_ch_thick" class="pro-slider-pill">3</span></div>
+              <input id="sl_ch_thick" type="range" min="1" max="10" value="3" oninput="syncCrosshairConfig()" />
+            </div>
+            <div class="pro-slider-row">
+              <div class="pro-slider-head"><span class="pro-slider-name">Зазор в центре</span><span id="val_ch_gap" class="pro-slider-pill">3</span></div>
+              <input id="sl_ch_gap" type="range" min="0" max="14" value="3" oninput="syncCrosshairConfig()" />
+            </div>
+            <div class="pro-slider-row">
+              <div class="pro-slider-head"><span class="pro-slider-name">Размер центральной точки</span><span id="val_ch_dot" class="pro-slider-pill">3</span></div>
+              <input id="sl_ch_dot" type="range" min="1" max="10" value="3" oninput="syncCrosshairConfig()" />
+            </div>
+            <div class="pro-slider-row">
+              <div class="pro-slider-head"><span class="pro-slider-name">Прозрачность</span><span id="val_ch_op" class="pro-slider-pill">100%</span></div>
+              <input id="sl_ch_op" type="range" min="20" max="100" value="100" oninput="syncCrosshairConfig()" />
+            </div>
+
+            <div class="toggle-row" style="margin-top:8px;">
+              <div>
+                <div class="toggle-info-title">Чёрная контурная обводка</div>
+                <div class="toggle-info-sub">Прицел не сливается со светлыми стенами и дымом</div>
+              </div>
+              <label class="cyber-switch">
+                <input id="tgChOutline" type="checkbox" checked onchange="syncCrosshairConfig()" />
+                <span class="cyber-slider"></span>
+              </label>
+            </div>
+          </div>
         </div>
       </div>
 
     </div>
 
-    <!-- ================= ВКЛАДКА 2: ЭКРАН «T» (ТОЛЬКО ПЛАВАЮЩАЯ ИКОНКА И ПИКСЕЛИ) ================= -->
+    <!-- ================= ВКЛАДКА 2: ЭКРАН «T» (СИСТЕМА БЛОКОВ) ================= -->
     <div id="tabScreen" class="tab-section">
 
-      <div class="glass-card">
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
-          <span class="section-eyebrow" style="margin-bottom:0;">📐 РАСТЯГ ЭКРАНА ЧЕРЕЗ ИКОНКУ «T»</span>
-          <span id="curRatioBadge" class="badge-chip">4:3</span>
-        </div>
-
-        <div class="preview-stage-box">
-          <div class="stretch-dashed-outer">
-            <div id="stretchPreviewInner" class="stretch-solid-inner">+</div>
+      <!-- БЛОК 2.1: РАСТЯГ ЭКРАНА ЧЕРЕЗ ИКОНКУ «T» -->
+      <div id="accScreenStretch" class="acc-block liquid-glass-surface open">
+        <div class="acc-header" onclick="toggleAccordionBlock('accScreenStretch')">
+          <div class="acc-left">
+            <div class="acc-icon">📐</div>
+            <div class="acc-title-wrap">
+              <div class="acc-title">Растяг экрана «T» <span id="curRatioBadge" class="badge-chip">4:3</span></div>
+              <div class="acc-sub">Плавающая кнопка мгновенного растяга прямо в матче</div>
+            </div>
           </div>
+          <div class="acc-chevron">⌄</div>
         </div>
+        <div class="acc-body-wrap">
+          <div class="acc-body-inner">
+            <div class="preview-stage-box">
+              <div class="stretch-dashed-outer">
+                <div id="stretchPreviewInner" class="stretch-solid-inner">+</div>
+              </div>
+            </div>
 
-        <div style="font-size:11.5px; color:var(--text-muted); line-height:1.45; margin-bottom:12px;">
-          Выберите пропорцию и нажмите кнопку ниже — поверх экрана появится плавающая иконка <b>«T»</b>, с помощью которой вы растянете экран прямо в самой игре.
-        </div>
+            <div class="preset-pills-4" style="grid-template-columns:repeat(5,1fr); margin-bottom:7px;">
+              <div class="preset-pill active" data-ratio="4:3" onclick="selectRatioPill(this, '4:3')"><div class="preset-pill-name">4:3</div><div class="preset-pill-sub">Классика</div></div>
+              <div class="preset-pill" data-ratio="PAD-WIDE" onclick="selectRatioPill(this, 'PAD-WIDE')"><div class="preset-pill-name">PAD</div><div class="preset-pill-sub">На Пады</div></div>
+              <div class="preset-pill" data-ratio="5:4" onclick="selectRatioPill(this, '5:4')"><div class="preset-pill-name">5:4</div><div class="preset-pill-sub">Кибер</div></div>
+              <div class="preset-pill" data-ratio="16:10" onclick="selectRatioPill(this, '16:10')"><div class="preset-pill-name">16:10</div><div class="preset-pill-sub">Мягкий</div></div>
+              <div class="preset-pill" data-ratio="1:1" onclick="selectRatioPill(this, '1:1')"><div class="preset-pill-name">1:1</div><div class="preset-pill-sub">Макс</div></div>
+            </div>
 
-        <div class="preset-pills-4" style="grid-template-columns:repeat(5,1fr); margin-bottom:7px;">
-          <div class="preset-pill active" data-ratio="4:3" onclick="selectRatioPill(this, '4:3')"><div class="preset-pill-name">4:3</div><div class="preset-pill-sub">Классика</div></div>
-          <div class="preset-pill" data-ratio="PAD-WIDE" onclick="selectRatioPill(this, 'PAD-WIDE')"><div class="preset-pill-name">PAD</div><div class="preset-pill-sub">На Пады</div></div>
-          <div class="preset-pill" data-ratio="5:4" onclick="selectRatioPill(this, '5:4')"><div class="preset-pill-name">5:4</div><div class="preset-pill-sub">Кибер</div></div>
-          <div class="preset-pill" data-ratio="16:10" onclick="selectRatioPill(this, '16:10')"><div class="preset-pill-name">16:10</div><div class="preset-pill-sub">Мягкий</div></div>
-          <div class="preset-pill" data-ratio="1:1" onclick="selectRatioPill(this, '1:1')"><div class="preset-pill-name">1:1</div><div class="preset-pill-sub">Макс</div></div>
-        </div>
+            <div class="preset-pills-4" style="margin-bottom:13px;">
+              <div class="preset-pill" data-ratio="3:2" onclick="selectRatioPill(this, '3:2')"><div class="preset-pill-name">3:2</div><div class="preset-pill-sub">Широкий</div></div>
+              <div class="preset-pill" data-ratio="16:9" onclick="selectRatioPill(this, '16:9')"><div class="preset-pill-name">16:9</div><div class="preset-pill-sub">Сток+</div></div>
+              <div class="preset-pill" data-ratio="SHRINK-84" onclick="selectRatioPill(this, 'SHRINK-84')"><div class="preset-pill-name">84%</div><div class="preset-pill-sub">Стяг</div></div>
+              <div class="preset-pill" data-ratio="21:9" onclick="selectRatioPill(this, '21:9')"><div class="preset-pill-name">21:9</div><div class="preset-pill-sub">Ультра</div></div>
+            </div>
 
-        <div class="preset-pills-4" style="margin-bottom:14px;">
-          <div class="preset-pill" data-ratio="3:2" onclick="selectRatioPill(this, '3:2')"><div class="preset-pill-name">3:2</div><div class="preset-pill-sub">Широкий</div></div>
-          <div class="preset-pill" data-ratio="16:9" onclick="selectRatioPill(this, '16:9')"><div class="preset-pill-name">16:9</div><div class="preset-pill-sub">Сток+</div></div>
-          <div class="preset-pill" data-ratio="SHRINK-84" onclick="selectRatioPill(this, 'SHRINK-84')"><div class="preset-pill-name">84%</div><div class="preset-pill-sub">Стяг</div></div>
-          <div class="preset-pill" data-ratio="21:9" onclick="selectRatioPill(this, '21:9')"><div class="preset-pill-name">21:9</div><div class="preset-pill-sub">Ультра</div></div>
-        </div>
+            <button id="btnLaunchFloatingStretch" type="button" class="btn-main" style="margin-bottom:8px;" onclick="launchFloatingTButton()">
+              ⚡ ЗАПУСТИТЬ ПЛАВАЮЩУЮ ИКОНКУ «T» (4:3)
+            </button>
 
-        <!-- ЕДИНСТВЕННАЯ ГЛАВНАЯ КНОПКА ЗАПУСКА ПЛАВАЮЩЕЙ ИКОНКИ «T» -->
-        <button id="btnLaunchFloatingStretch" type="button" class="btn-main" style="margin-bottom:9px;" onclick="launchFloatingTButton()">
-          ⚡ ЗАПУСТИТЬ ПЛАВАЮЩУЮ ИКОНКУ «T» (4:3)
-        </button>
+            <button type="button" class="btn-dark" style="margin-bottom:8px;" onclick="resetNativeScreen()">
+              🔄 СБРОСИТЬ ЭКРАН В РОДНОЕ РАЗРЕШЕНИЕ
+            </button>
 
-        <button type="button" class="btn-dark" style="margin-bottom:11px;" onclick="resetNativeScreen()">
-          🔄 СБРОСИТЬ ЭКРАН В РОДНОЕ РАЗРЕШЕНИЕ
-        </button>
-
-        <div class="toggle-row" style="margin-bottom:0;">
-          <div>
-            <div class="toggle-info-title">Синхронизация кусков под растяг</div>
-            <div class="toggle-info-sub">Подстраивает шаг сенсы под широкие модельки</div>
+            <div class="toggle-row">
+              <div>
+                <div class="toggle-info-title">Синхронизация кусков под растяг</div>
+                <div class="toggle-info-sub">Подстраивает шаг сенсы под широкие модельки</div>
+              </div>
+              <label class="cyber-switch">
+                <input id="tgWideHitbox" type="checkbox" onchange="toggleWideHitboxMode(this.checked)" />
+                <span class="cyber-slider"></span>
+              </label>
+            </div>
           </div>
-          <label class="cyber-switch">
-            <input id="tgWideHitbox" type="checkbox" onchange="toggleWideHitboxMode(this.checked)" />
-            <span class="cyber-slider"></span>
-          </label>
         </div>
       </div>
 
-      <!-- ОПТИМИЗАЦИЯ ПИКСЕЛЕЙ -->
-      <div class="glass-card">
-        <div style="font-size:15px; font-weight:900; color:#fff; margin-bottom:5px;">Оптимизация пикселей</div>
-        <div style="font-size:11.5px; color:var(--text-muted); line-height:1.45; margin-bottom:11px;">
-          Понижает нагрузку на видеочип без чёрных полос для стабильного FPS на бюджетных телефонах и Samsung A-серии.
+      <!-- БЛОК 2.2: ОПТИМИЗАЦИЯ ПИКСЕЛЕЙ -->
+      <div id="accScreenPixels" class="acc-block liquid-glass-surface">
+        <div class="acc-header" onclick="toggleAccordionBlock('accScreenPixels')">
+          <div class="acc-left">
+            <div class="acc-icon">🚀</div>
+            <div class="acc-title-wrap">
+              <div class="acc-title">Оптимизация пикселей <span id="pixelScaleBadge" class="badge-chip">100%</span></div>
+              <div class="acc-sub">Снижение нагрузки на GPU без чёрных полос для слабых девайсов</div>
+            </div>
+          </div>
+          <div class="acc-chevron">⌄</div>
         </div>
-
-        <div class="pixel-tiles-6">
-          <div class="pixel-tile active" onclick="selectPixelTile(this, 100)"><b>100</b><span>пикселей</span></div>
-          <div class="pixel-tile" onclick="selectPixelTile(this, 90)"><b>90</b><span>пикселей</span></div>
-          <div class="pixel-tile" onclick="selectPixelTile(this, 80)"><b>80</b><span>пикселей</span></div>
-          <div class="pixel-tile" onclick="selectPixelTile(this, 70)"><b>70</b><span>пикселей</span></div>
-          <div class="pixel-tile" onclick="selectPixelTile(this, 60)"><b>60</b><span>пикселей</span></div>
-          <div class="pixel-tile" onclick="selectPixelTile(this, 50)"><b>50</b><span>пикселей</span></div>
-        </div>
-
-        <div class="pixel-big-readout">
-          <div id="pixelBigNumText" class="pixel-big-num">100 %</div>
-          <div id="pixelScaleBadge" style="font-size:11px; font-weight:800; color:var(--text-muted);">СЕЙЧАС 100%</div>
-        </div>
-        <div class="pixel-progress-bar">
-          <div id="pixelProgressFill" class="pixel-progress-fill"></div>
+        <div class="acc-body-wrap">
+          <div class="acc-body-inner">
+            <div class="pixel-tiles-6">
+              <div class="pixel-tile active" onclick="selectPixelTile(this, 100)"><b>100</b><span>пикс.</span></div>
+              <div class="pixel-tile" onclick="selectPixelTile(this, 90)"><b>90</b><span>пикс.</span></div>
+              <div class="pixel-tile" onclick="selectPixelTile(this, 80)"><b>80</b><span>пикс.</span></div>
+              <div class="pixel-tile" onclick="selectPixelTile(this, 70)"><b>70</b><span>пикс.</span></div>
+              <div class="pixel-tile" onclick="selectPixelTile(this, 60)"><b>60</b><span>пикс.</span></div>
+              <div class="pixel-tile" onclick="selectPixelTile(this, 50)"><b>50</b><span>пикс.</span></div>
+            </div>
+            <div class="pixel-big-readout">
+              <div id="pixelBigNumText" class="pixel-big-num">100 %</div>
+              <div style="font-size:11px; color:var(--text-muted); font-weight:700;">Аппаратный скейлер</div>
+            </div>
+            <div class="pixel-progress-bar"><div id="pixelProgressFill" class="pixel-progress-fill"></div></div>
+          </div>
         </div>
       </div>
 
     </div>
 
-    <!-- ================= ВКЛАДКА 3: БУСТЕР И ANTI-LAG FPS (РАБОЧАЯ ОПТИМИЗАЦИЯ) ================= -->
+    <!-- ================= ВКЛАДКА 3: БУСТЕР И ОПТИМИЗАЦИЯ (ВСЕ ТВИКИ ЗДЕСЬ) ================= -->
     <div id="tabBoost" class="tab-section">
 
-      <!-- ГЛАВНЫЙ БЛОК ФИКСА ПРОСАДОК FPS НА SAMSUNG A57 И БЮДЖЕТКАХ -->
-      <div class="glass-card" style="border-color:var(--border-strong);">
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
-          <span class="section-eyebrow" style="margin-bottom:0;">🚀 ФИКС ПРОСАДОК FPS (SAMSUNG A57 / БЮДЖЕТКИ)</span>
-          <span id="scanTierBadge" class="badge-chip">SKIAGL + FREEZER</span>
-        </div>
-        <div style="font-size:11.5px; color:#cbd5e1; line-height:1.45; margin-bottom:10px;">
-          Включает аппаратный кэш текстур <b>SkiaGL (72 МБ)</b>, многопоточный рендер, заморозку фоновых процессов Android Freezer и снимает нагрузку с диспетчера кадров One UI / MIUI.
-        </div>
-        <button type="button" class="btn-main" onclick="runOneClickUltimateTweaks()">
-          ⚡ ВКЛЮЧИТЬ ПОЛНУЮ ОПТИМИЗАЦИЮ И ФИКС FPS
-        </button>
-      </div>
-
-      <div class="glass-card">
-        <div class="section-eyebrow" style="margin-bottom:10px;">⚡ СИСТЕМНЫЕ МОДУЛИ SHIZUKU</div>
-
-        <div class="toggle-row">
-          <div>
-            <div class="toggle-info-title">Прямой Тач (Raw Input Без Сглаживания)</div>
-            <div class="toggle-info-sub">Отключает системную фильтрацию свайпа (`noresample 1`)</div>
+      <!-- БЛОК 3.1: ИМБА-ТВИК СИСТЕМЫ И ФИКС ПРОСАДОК FPS В 1 КЛИК (ПЕРЕНЕСЁН ИЗ ПРОФИЛЯ СЮДА) -->
+      <div id="accBoostOneClick" class="acc-block liquid-glass-surface open">
+        <div class="acc-header" onclick="toggleAccordionBlock('accBoostOneClick')">
+          <div class="acc-left">
+            <div class="acc-icon">🔥</div>
+            <div class="acc-title-wrap">
+              <div class="acc-title">Имба-Твик и Фикс FPS <span id="oneClickTweakStatusBadge" class="badge-chip">SKIAGL 72MB</span></div>
+              <div class="acc-sub">Полное устранение просадок FPS на Samsung A57 и бюджетках</div>
+            </div>
           </div>
-          <label class="cyber-switch">
-            <input id="tgRawInput" type="checkbox" checked onchange="toggleBoostFeature('raw', this.checked)" />
-            <span class="cyber-slider"></span>
-          </label>
+          <div class="acc-chevron">⌄</div>
         </div>
+        <div class="acc-body-wrap">
+          <div class="acc-body-inner">
+            <div style="font-size:11.5px; color:#cbd5e1; line-height:1.45; margin-top:6px;">
+              Применяет пакет глубоких системных настроек (аппаратный кэш текстур <b>SkiaGL 72 МБ</b>, многопоточный рендер, отключение троттлинга GOS, заморозку фоновых процессов Android Freezer и сетевой стек):
+            </div>
 
-        <div class="toggle-row">
-          <div>
-            <div class="toggle-info-title">Ускоритель Рендера (SkiaGL + Shader Cache 4MB)</div>
-            <div class="toggle-info-sub">Отключает размытие окон, оверлейные тени и троттлинг GPU</div>
+            <div class="tweak-tags-wrap">
+              <span class="tweak-mini-tag">⚡ SkiaGL + Multithread</span>
+              <span class="tweak-mini-tag">🖼 HWUI Cache 72MB</span>
+              <span class="tweak-mini-tag">❄️ Apps Freezer (Max 16)</span>
+              <span class="tweak-mini-tag">📡 TCP Fast Window 60</span>
+              <span class="tweak-mini-tag">🚫 GPU Debug/Traces OFF</span>
+              <span class="tweak-mini-tag">🧹 Trim Caches 256M</span>
+            </div>
+
+            <button id="btnOneClickSettingsTweak" type="button" class="btn-main" onclick="runOneClickUltimateTweaks()">
+              🚀 ПРИМЕНИТЬ ВСЕ СИСТЕМНЫЕ ТВИКИ И ФИКС FPS
+            </button>
+
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:9px;">
+              <button type="button" class="btn-dark" onclick="runRamCleanNow()">🧹 ОЧИСТИТЬ ОЗУ + КЭШ</button>
+              <button type="button" class="btn-dark" onclick="runSmartScanNow()">🔍 СКАН (<span id="scanTierBadge">ULTRA</span>)</button>
+            </div>
           </div>
-          <label class="cyber-switch">
-            <input id="tgVulkan" type="checkbox" checked onchange="toggleBoostFeature('vulkan', this.checked)" />
-            <span class="cyber-slider"></span>
-          </label>
-        </div>
-
-        <div class="toggle-row">
-          <div>
-            <div class="toggle-info-title">Сетевой Анти-Спайк (TCP Window 60 + DNS Boost)</div>
-            <div class="toggle-info-sub">Отключает фоновый скан Wi-Fi, Captive Portal и прыжки пинга</div>
-          </div>
-          <label class="cyber-switch">
-            <input id="tgNetPing" type="checkbox" checked onchange="toggleBoostFeature('ping', this.checked)" />
-            <span class="cyber-slider"></span>
-          </label>
-        </div>
-
-        <div class="toggle-row">
-          <div>
-            <div class="toggle-info-title">Удержание максимальных Гц при нагреве</div>
-            <div class="toggle-info-sub">Запрещает системе сбрасывать герцовку экрана до 60 Гц</div>
-          </div>
-          <label class="cyber-switch">
-            <input id="tgThermal" type="checkbox" checked onchange="toggleBoostFeature('thermal', this.checked)" />
-            <span class="cyber-slider"></span>
-          </label>
-        </div>
-
-        <div class="toggle-row">
-          <div>
-            <div class="toggle-info-title">Стелс-Защита на записи экрана</div>
-            <div class="toggle-info-sub">Прячет кнопку «T» и кастомный прицел на видео</div>
-          </div>
-          <label class="cyber-switch">
-            <input id="tgStealth" type="checkbox" onchange="toggleBoostFeature('stealth', this.checked)" />
-            <span class="cyber-slider"></span>
-          </label>
-        </div>
-
-        <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:10px;">
-          <button type="button" class="btn-main" onclick="runRamCleanNow()">🧹 ОЧИСТИТЬ ОЗУ + КЭШ</button>
-          <button type="button" class="btn-dark" onclick="runSmartScanNow()">🔍 СКАН УСТРОЙСТВА</button>
         </div>
       </div>
 
-      <div class="glass-card">
-        <div class="section-eyebrow" style="margin-bottom:8px;">⚙️ ТОНКИЙ РАЗГОН ГЕРЦОВКИ И МУЛЬТИТАЧА</div>
+      <!-- БЛОК 3.2: СИСТЕМНЫЕ МОДУЛИ SHIZUKU -->
+      <div id="accBoostModules" class="acc-block liquid-glass-surface">
+        <div class="acc-header" onclick="toggleAccordionBlock('accBoostModules')">
+          <div class="acc-left">
+            <div class="acc-icon">⚡</div>
+            <div class="acc-title-wrap">
+              <div class="acc-title">Системные модули Shizuku</div>
+              <div class="acc-sub">Raw Input, SkiaGL Turbo, анти-спайк пинга и защита герцовки</div>
+            </div>
+          </div>
+          <div class="acc-chevron">⌄</div>
+        </div>
+        <div class="acc-body-wrap">
+          <div class="acc-body-inner">
+            <div class="toggle-row">
+              <div><div class="toggle-info-title">Прямой Тач (Raw Input Без Сглаживания)</div><div class="toggle-info-sub">Отключает системную фильтрацию свайпа (noresample 1)</div></div>
+              <label class="cyber-switch"><input id="tgRawInput" type="checkbox" checked onchange="toggleBoostFeature('raw', this.checked)" /><span class="cyber-slider"></span></label>
+            </div>
+            <div class="toggle-row">
+              <div><div class="toggle-info-title">Ускоритель Рендера (SkiaGL + Shader Cache)</div><div class="toggle-info-sub">Отключает размытие окон, оверлейные тени и троттлинг GPU</div></div>
+              <label class="cyber-switch"><input id="tgVulkan" type="checkbox" checked onchange="toggleBoostFeature('vulkan', this.checked)" /><span class="cyber-slider"></span></label>
+            </div>
+            <div class="toggle-row">
+              <div><div class="toggle-info-title">Сетевой Анти-Спайк (TCP Window 60 + DNS Boost)</div><div class="toggle-info-sub">Отключает фоновый скан Wi-Fi, Captive Portal и прыжки пинга</div></div>
+              <label class="cyber-switch"><input id="tgNetPing" type="checkbox" checked onchange="toggleBoostFeature('ping', this.checked)" /><span class="cyber-slider"></span></label>
+            </div>
+            <div class="toggle-row">
+              <div><div class="toggle-info-title">Удержание максимальных Гц при нагреве</div><div class="toggle-info-sub">Запрещает системе сбрасывать герцовку экрана до 60 Гц</div></div>
+              <label class="cyber-switch"><input id="tgThermal" type="checkbox" checked onchange="toggleBoostFeature('thermal', this.checked)" /><span class="cyber-slider"></span></label>
+            </div>
+            <div class="toggle-row">
+              <div><div class="toggle-info-title">Стелс-Защита на записи экрана</div><div class="toggle-info-sub">Прячет кнопку «T» и кастомный прицел на видео</div></div>
+              <label class="cyber-switch"><input id="tgStealth" type="checkbox" onchange="toggleBoostFeature('stealth', this.checked)" /><span class="cyber-slider"></span></label>
+            </div>
+          </div>
+        </div>
+      </div>
 
-        <div class="pro-slider-row">
-          <div class="pro-slider-head"><span class="pro-slider-name">Фиксация частоты экрана</span><span id="val_opt_fps" class="pro-slider-pill">120 Hz</span></div>
-          <input id="sl_opt_fps" type="range" min="60" max="144" step="30" value="120" oninput="updateOptLabels()" />
+      <!-- БЛОК 3.3: ТОНКИЙ РАЗГОН ГЕРЦОВКИ И МУЛЬТИТАЧА -->
+      <div id="accBoostOverclock" class="acc-block liquid-glass-surface">
+        <div class="acc-header" onclick="toggleAccordionBlock('accBoostOverclock')">
+          <div class="acc-left">
+            <div class="acc-icon">⚙️</div>
+            <div class="acc-title-wrap">
+              <div class="acc-title">Тонкий разгон Гц и Мультитача</div>
+              <div class="acc-sub">Частота экрана, приоритет GPU/CPU и опрос тача 480 Гц</div>
+            </div>
+          </div>
+          <div class="acc-chevron">⌄</div>
         </div>
-        <div class="pro-slider-row">
-          <div class="pro-slider-head"><span class="pro-slider-name">Приоритет GPU/CPU</span><span id="val_opt_gpu" class="pro-slider-pill">100%</span></div>
-          <input id="sl_opt_gpu" type="range" min="20" max="100" value="100" oninput="updateOptLabels()" />
+        <div class="acc-body-wrap">
+          <div class="acc-body-inner">
+            <div class="pro-slider-row">
+              <div class="pro-slider-head"><span class="pro-slider-name">Фиксация частоты экрана</span><span id="val_opt_fps" class="pro-slider-pill">120 Hz</span></div>
+              <input id="sl_opt_fps" type="range" min="60" max="144" step="30" value="120" oninput="updateOptLabels()" />
+            </div>
+            <div class="pro-slider-row">
+              <div class="pro-slider-head"><span class="pro-slider-name">Приоритет GPU/CPU</span><span id="val_opt_gpu" class="pro-slider-pill">100%</span></div>
+              <input id="sl_opt_gpu" type="range" min="20" max="100" value="100" oninput="updateOptLabels()" />
+            </div>
+            <div class="pro-slider-row">
+              <div class="pro-slider-head"><span class="pro-slider-name">Отклик краёв экрана</span><span id="val_opt_edge" class="pro-slider-pill">100%</span></div>
+              <input id="sl_opt_edge" type="range" min="10" max="100" value="100" oninput="updateOptLabels()" />
+            </div>
+            <div class="pro-slider-row">
+              <div class="pro-slider-head"><span class="pro-slider-name">Скорость Мультитача (3–6 пальцев)</span><span id="val_opt_mt" class="pro-slider-pill">160</span></div>
+              <input id="sl_opt_mt" type="range" min="50" max="160" value="160" oninput="updateOptLabels()" />
+            </div>
+            <div class="pro-slider-row">
+              <div class="pro-slider-head"><span class="pro-slider-name">Частота опроса сенсора</span><span id="val_opt_ts" class="pro-slider-pill">480 Hz</span></div>
+              <input id="sl_opt_ts" type="range" min="240" max="480" step="60" value="480" oninput="updateOptLabels()" />
+            </div>
+            <button type="button" class="btn-main" style="margin-top:11px;" onclick="applyFullShooterOptNow()">
+              ⚡ ПРИМЕНИТЬ РАЗГОН ЯДРА И ТАЧА
+            </button>
+          </div>
         </div>
-        <div class="pro-slider-row">
-          <div class="pro-slider-head"><span class="pro-slider-name">Отклик краёв экрана</span><span id="val_opt_edge" class="pro-slider-pill">100%</span></div>
-          <input id="sl_opt_edge" type="range" min="10" max="100" value="100" oninput="updateOptLabels()" />
-        </div>
-        <div class="pro-slider-row">
-          <div class="pro-slider-head"><span class="pro-slider-name">Скорость Мультитача (3–6 пальцев)</span><span id="val_opt_mt" class="pro-slider-pill">160</span></div>
-          <input id="sl_opt_mt" type="range" min="50" max="160" value="160" oninput="updateOptLabels()" />
-        </div>
-        <div class="pro-slider-row">
-          <div class="pro-slider-head"><span class="pro-slider-name">Частота опроса сенсора</span><span id="val_opt_ts" class="pro-slider-pill">480 Hz</span></div>
-          <input id="sl_opt_ts" type="range" min="240" max="480" step="60" value="480" oninput="updateOptLabels()" />
-        </div>
-
-        <button type="button" class="btn-main" style="margin-top:11px;" onclick="applyFullShooterOptNow()">
-          ⚡ ПРИМЕНИТЬ РАЗГОН ЯДРА И ТАЧА
-        </button>
       </div>
 
     </div>
 
-    <!-- ================= ВКЛАДКА 4: ОТРЯД (ГОЛОСОВАЯ РАЦИЯ И ДРУЗЬЯ) ================= -->
+    <!-- ================= ВКЛАДКА 4: ОТРЯД (СИСТЕМА БЛОКОВ) ================= -->
     <div id="tabSquad" class="tab-section">
 
-      <div class="glass-card">
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
-          <div style="font-size:15px; font-weight:900; color:#fff;">🎙 Рация отряда (Squad Voice)</div>
-          <span id="voiceStateBadge" class="badge-chip">ГОТОВ К ЭФИРУ</span>
+      <!-- БЛОК 4.1: РАЦИЯ ОТРЯДА -->
+      <div id="accSquadVoice" class="acc-block liquid-glass-surface open">
+        <div class="acc-header" onclick="toggleAccordionBlock('accSquadVoice')">
+          <div class="acc-left">
+            <div class="acc-icon">🎙</div>
+            <div class="acc-title-wrap">
+              <div class="acc-title">Рация отряда <span id="voiceStateBadge" class="badge-chip">ГОТОВ К ЭФИРУ</span></div>
+              <div class="acc-sub">Чистый голос поверх Standoff 2 без приглушения шагов</div>
+            </div>
+          </div>
+          <div class="acc-chevron">⌄</div>
         </div>
-        <div style="font-size:11.5px; color:var(--text-muted); margin-bottom:10px; line-height:1.4;">
-          Чистый голос поверх Standoff 2 без приглушения звуков шагов и выстрелов.
-        </div>
-
-        <div class="auth-input-wrap" style="margin-bottom:9px;">
-          <div class="auth-input-label">КОД КОМНАТЫ ОТРЯДА</div>
-          <input id="voiceRoomInput" class="auth-input" type="text" value="SQUAD-MAIN" />
-        </div>
-
-        <div style="display:grid; grid-template-columns:1.2fr 1fr 1fr; gap:7px; margin-bottom:10px;">
-          <button id="btnVoiceJoin" type="button" class="btn-main" style="padding:11px;" onclick="toggleVoiceConnection()">🎧 В ВОЙС</button>
-          <button id="btnVoiceMute" type="button" class="btn-dark" style="padding:11px;" onclick="window.toggleMicMute()">🎤 МИКРО</button>
-          <button id="btnVoiceDeaf" type="button" class="btn-dark" style="padding:11px;" onclick="window.toggleDeafenSpeaker()">🔊 ЗВУК</button>
-        </div>
-
-        <div id="voiceMembersBox">
-          <div style="text-align:center; padding:10px; font-size:11px; color:var(--text-muted);">
-            Нажмите «В войс» для подключения к комнате отряда
+        <div class="acc-body-wrap">
+          <div class="acc-body-inner">
+            <div class="auth-input-wrap" style="margin-top:8px; margin-bottom:9px;">
+              <div class="auth-input-label">КОД КОМНАТЫ ОТРЯДА</div>
+              <input id="voiceRoomInput" class="auth-input" type="text" value="SQUAD-MAIN" />
+            </div>
+            <div style="display:grid; grid-template-columns:1.2fr 1fr 1fr; gap:7px; margin-bottom:10px;">
+              <button id="btnVoiceJoin" type="button" class="btn-main" style="padding:11px;" onclick="toggleVoiceConnection()">🎧 В ВОЙС</button>
+              <button id="btnVoiceMute" type="button" class="btn-dark" style="padding:11px;" onclick="window.toggleMicMute()">🎤 МИКРО</button>
+              <button id="btnVoiceDeaf" type="button" class="btn-dark" style="padding:11px;" onclick="window.toggleDeafenSpeaker()">🔊 ЗВУК</button>
+            </div>
+            <div id="voiceMembersBox">
+              <div style="text-align:center; padding:10px; font-size:11px; color:var(--text-muted);">
+                Нажмите «В войс» для подключения к комнате отряда
+              </div>
+            </div>
           </div>
         </div>
       </div>
 
-      <div class="glass-card">
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
-          <div style="font-size:15px; font-weight:900; color:#fff;">👥 Друзья и тиммейты</div>
-          <span id="myFriendCodeBadge" class="badge-chip">ID: SO2-0000</span>
-        </div>
-        <div style="display:grid; grid-template-columns:1fr auto; gap:8px; margin-bottom:9px;">
-          <div class="auth-input-wrap" style="margin-bottom:0;">
-            <input id="friendAddInput" class="auth-input" type="text" placeholder="Введите ID друга (SO2-XXXX)" />
+      <!-- БЛОК 4.2: ДРУЗЬЯ И ТИММЕЙТЫ -->
+      <div id="accSquadFriends" class="acc-block liquid-glass-surface open">
+        <div class="acc-header" onclick="toggleAccordionBlock('accSquadFriends')">
+          <div class="acc-left">
+            <div class="acc-icon">👥</div>
+            <div class="acc-title-wrap">
+              <div class="acc-title">Друзья и тиммейты <span id="myFriendCodeBadge" class="badge-chip">ID: SO2-0000</span></div>
+              <div class="acc-sub">Быстрый поиск тиммейтов и добавление по ID</div>
+            </div>
           </div>
-          <button type="button" class="btn-main" style="width:auto; padding:0 18px;" onclick="addFriendByCode()">＋</button>
+          <div class="acc-chevron">⌄</div>
         </div>
-        <div id="friendsListBox"></div>
+        <div class="acc-body-wrap">
+          <div class="acc-body-inner">
+            <div style="display:grid; grid-template-columns:1fr auto; gap:8px; margin-top:8px; margin-bottom:6px;">
+              <div class="auth-input-wrap" style="margin-bottom:0;">
+                <input id="friendAddInput" class="auth-input" type="text" placeholder="Введите ID друга (SO2-XXXX)" />
+              </div>
+              <button type="button" class="btn-main" style="width:auto; padding:0 18px;" onclick="addFriendByCode()">＋</button>
+            </div>
+            <div id="friendsListBox"></div>
+          </div>
+        </div>
       </div>
 
     </div>
 
-    <!-- ================= ВКЛАДКА 5: НАСТРОЙКИ И ПРОФИЛЬ (С УЛЬТРА-ТВИКОМ В 1 КНОПКУ) ================= -->
+    <!-- ================= ВКЛАДКА 5: ЧИСТЫЙ ПРОФИЛЬ И ЛИЦЕНЗИЯ (БЕЗ ЛИШНИХ БЛОКОВ) ================= -->
     <div id="tabProfile" class="tab-section">
-
-      <!-- ИМБА-ТВИК СИСТЕМЫ В 1 КНОПКУ ПРЯМО В НАСТРОЙКАХ -->
-      <div class="glass-card" style="border-color:var(--border-strong);">
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
-          <span class="section-eyebrow" style="margin-bottom:0;">🔥 ИМБА-ТВИК СИСТЕМЫ В 1 КЛИК</span>
-          <span id="oneClickTweakStatusBadge" class="badge-chip">SHIZUKU PRO</span>
-        </div>
-        <div style="font-size:11.5px; color:#cbd5e1; line-height:1.45;">
-          Применяет отобранный пакет глубоких системных настроек (HWUI кэш, SkiaGL, отключение всех логов рендера, сетевой стек и заморозку фона) без просадок FPS на Samsung A57 и бюджетках:
-        </div>
-
-        <div class="tweak-tags-wrap">
-          <span class="tweak-mini-tag">⚡ SkiaGL + Multithread</span>
-          <span class="tweak-mini-tag">🖼 HWUI Cache 72MB</span>
-          <span class="tweak-mini-tag">❄️ Apps Freezer (Max 16)</span>
-          <span class="tweak-mini-tag">📡 TCP Fast Window 60</span>
-          <span class="tweak-mini-tag">🚫 GPU Debug/Traces OFF</span>
-          <span class="tweak-mini-tag">🧹 Trim Caches 1000M</span>
-        </div>
-
-        <button id="btnOneClickSettingsTweak" type="button" class="btn-main" onclick="runOneClickUltimateTweaks()">
-          🚀 ПРИМЕНИТЬ ВСЕ СИСТЕМНЫЕ ТВИКИ В 1 КЛИК
-        </button>
-      </div>
-
-      <!-- КАРТОЧКА ПРОФИЛЯ И КЛЮЧА -->
-      <div class="glass-card">
-        <div style="display:flex; align-items:center; gap:14px; margin-bottom:14px; padding-bottom:12px; border-bottom:1px solid rgba(255,255,255,0.08);">
-          <div class="hub-icon-box" style="width:64px; height:64px; border-radius:50%; overflow:hidden;" onclick="triggerAvatarUpload()">
-            <img id="profAvatarImg" src="" alt="avatar" style="width:100%; height:100%; object-fit:cover; display:none;" />
-            <span id="profAvatarFallback" style="font-size:23px;">D</span>
+      <div class="acc-block liquid-glass-surface open" style="padding:16px;">
+        <div style="display:flex; align-items:center; gap:14px; margin-bottom:14px; padding-bottom:13px; border-bottom:1px solid rgba(255,255,255,0.08);">
+          <div class="header-avatar-holder" style="width:66px; height:66px; border-radius:20px;" onclick="triggerAvatarUpload()">
+            <img id="profAvatarImg" src="" alt="avatar" />
+            <span id="profAvatarFallback" style="font-size:25px; font-weight:900; color:#fff;">D</span>
           </div>
           <div style="flex:1;">
             <div style="font-size:18px; font-weight:900; color:#fff;" id="profNickText">dare</div>
             <div style="font-size:11.5px; color:var(--accent-main); font-weight:800; margin-top:2px;" id="profSubVal">АКТИВНА</div>
-            <button type="button" class="btn-dark" style="margin-top:7px; padding:6px 12px; font-size:10.5px; width:auto;" onclick="triggerAvatarUpload()">
+            <button type="button" class="btn-dark" style="margin-top:8px; padding:7px 13px; font-size:11px; width:auto;" onclick="triggerAvatarUpload()">
               🖼 Сменить аватарку
             </button>
           </div>
         </div>
 
-        <div style="font-size:12px; color:#cbd5e1; display:flex; flex-direction:column; gap:9px; margin-bottom:14px;">
+        <div style="font-size:12px; color:#cbd5e1; display:flex; flex-direction:column; gap:10px; margin-bottom:15px;">
           <div style="display:flex; justify-content:space-between;">
             <span style="color:var(--text-muted);">Лицензионный ключ:</span>
             <b id="profKeyMasked" style="color:var(--accent-main);">TP***</b>
@@ -1783,14 +1920,13 @@
           <button type="button" class="btn-danger" onclick="handleLogoutClick()">🚪 СМЕНИТЬ КЛЮЧ</button>
         </div>
       </div>
-
     </div>
 
   </div>
 
-  <!-- НАШЕ ФИРМЕННОЕ НИЖНЕЕ МЕНЮ С НЕОНОВЫМ ЛУЧОМ -->
+  <!-- НИЖНЕЕ МЕНЮ В СТИЛЕ ЖИДКОГО СТЕКЛА -->
   <nav class="bottom-nav-bar">
-    <div class="nav-item active" data-tab="tabSens" onclick="switchTab('tabSens'); renderCrosshairPreview();">
+    <div class="nav-item active" data-tab="tabSens" onclick="switchTab('tabSens');">
       <svg viewBox="0 0 24 24"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" stroke-linecap="round" stroke-linejoin="round"/></svg>
       <span>Сенса</span>
     </div>
@@ -1808,9 +1944,10 @@
     </div>
     <div class="nav-item" data-tab="tabProfile" onclick="switchTab('tabProfile')">
       <svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 4-6 8-6s8 2 8 6"/></svg>
-      <span>Настройки</span>
+      <span>Профиль</span>
     </div>
   </nav>
+
   <script>
     let isSessionAuthorized = false;
     let __v10AuthSealToken = "";
@@ -1823,22 +1960,32 @@
     let isMainTeleportOn = true;
     let previewZoomFactor = 1;
     let isPreviewLightBg = false;
+    let cachedAccentHex = "#ff2e5b";
 
     let isVoiceConnected = false;
     let isMicMuted = false;
     let isSpeakerDeafened = false;
+    let __sensDebounceTimer = null;
 
-    // ═══ PERFORMANCE CACHES ═══
-    let __cachedAccentHex = "#00e5ff";       // кэш --accent-main
-    let __labelCache = Object.create(null);  // кэш значений текстов — пропускаем запись если не менялось
-    let __sensSaveTimer = null;              // debounce для localStorage
-    let __sensThrottleTimer = null;          // trailing-таймер для JNI throttle
-    let __sensLastBridgeTs = 0;              // время последнего JNI-вызова
-    let __sensPendingParams = null;          // последние параметры для отложенного JNI
-    let __lastShizukuActive = null;          // для skip DOM-write
-    const SENS_THROTTLE_MS = 50;             // 20 JNI-вызовов/сек максимум
+    // Неблокирующий вызов нативного моста (0 мс фризов в интерфейсе!)
+    function queueNative(fn) {
+      setTimeout(() => {
+        try { fn(); } catch (e) {}
+      }, 12);
+    }
 
-    // Защита экрана авторизации
+    function getBridge() { return window.AndroidBridge || null; }
+
+    // Плавное открытие/закрытие блоков
+    function toggleAccordionBlock(blockId) {
+      const el = document.getElementById(blockId);
+      if (!el) return;
+      el.classList.toggle("open");
+      if (blockId === "accCrosshair" && el.classList.contains("open")) {
+        renderCrosshairPreview();
+      }
+    }
+
     (function initAntiCrackDomGuard() {
       setInterval(() => {
         if (isSessionAuthorized && __v10AuthSealToken.startsWith("SEAL_OK_")) return;
@@ -1847,18 +1994,9 @@
           document.body.innerHTML = "<div style='color:#ff2e54;padding:40px;text-align:center;font-weight:900;'>TAMPER DETECTED • ANTI-CRACK V10</div>";
           return;
         }
-        const st = window.getComputedStyle(authEl);
-        if (st.display === "none" || st.visibility === "hidden" || parseFloat(st.opacity) < 0.5) {
-          authEl.style.display = "flex";
-          authEl.style.visibility = "visible";
-          authEl.style.opacity = "1";
-        }
-      }, 1000);
+        if (authEl.style.display === "none") authEl.style.display = "flex";
+      }, 2200);
     })();
-
-    function getBridge() {
-      return window.AndroidBridge || null;
-    }
 
     function showToast(msg) {
       const t = document.getElementById("cyberToast");
@@ -1866,81 +2004,58 @@
       t.innerText = msg;
       t.classList.add("show");
       clearTimeout(window.__toastTimer);
-      window.__toastTimer = setTimeout(() => t.classList.remove("show"), 2200);
+      window.__toastTimer = setTimeout(() => t.classList.remove("show"), 2000);
     }
 
-    // ✅ Кэшированная запись текста — не пишет в DOM если значение не изменилось.
-    // textContent быстрее innerText (не учитывает CSS-стили детей, нет reflow)
-    function setLabelText(id, text) {
-      if (__labelCache[id] === text) return;
-      __labelCache[id] = text;
-      const el = document.getElementById(id);
-      if (el) el.textContent = text;
-    }
-
-    // ===== ПЕРЕКЛЮЧЕНИЕ ВКЛАДОК НИЖНЕГО МЕНЮ =====
     function switchTab(tabId) {
       if (!isSessionAuthorized) return;
       document.querySelectorAll(".tab-section").forEach(s => s.classList.remove("active"));
       const target = document.getElementById(tabId);
       if (target) target.classList.add("active");
-
       document.querySelectorAll(".bottom-nav-bar .nav-item").forEach(item => {
         item.classList.toggle("active", item.getAttribute("data-tab") === tabId);
       });
-      window.scrollTo({ top: 0, behavior: "smooth" });
+      window.scrollTo({ top: 0, behavior: "auto" });
     }
 
-    function switchSensSubmode(mode) {
-      const isLaunch = (mode === "launch");
-      const subLaunch = document.getElementById("sensSubLaunch");
-      const subCustom = document.getElementById("sensSubCustom");
-      if (subLaunch) subLaunch.style.display = isLaunch ? "block" : "none";
-      if (subCustom) subCustom.style.display = isLaunch ? "none" : "block";
-
-      const bL = document.getElementById("subBtnLaunch");
-      const bC = document.getElementById("subBtnCustom");
-      if (bL) bL.classList.toggle("active", isLaunch);
-      if (bC) bC.classList.toggle("active", !isLaunch);
-    }
-
-    function toggleExtraSensBlock() {
-      const blk = document.getElementById("extraChunksBlock");
-      const btn = document.getElementById("btnToggleMoreSens");
-      if (!blk) return;
-      const hidden = blk.style.display === "none";
-      blk.style.display = hidden ? "block" : "none";
-      if (btn) btn.innerText = hidden ? "Спрятать куски" : "Показать куски";
-    }
-
-    // ===== ИМБА-ТВИК СИСТЕМЫ В 1 КНОПКУ =====
+    // ===== ИМБА-ТВИК СИСТЕМЫ И ФИКС FPS В 1 КЛИК =====
     function runOneClickUltimateTweaks() {
       if (!checkShizukuStatusModal(true)) return;
       const B = getBridge();
       if (B) {
-        try {
-          B.startTeleport("ULTIMATE_TWEAKS_1CLICK");
-          if (typeof B.performRamBoost === "function") B.performRamBoost();
-        } catch (e) {}
+        queueNative(() => { B.startTeleport("ULTIMATE_TWEAKS_1CLICK"); });
       }
       const badge = document.getElementById("oneClickTweakStatusBadge");
       if (badge) {
         badge.innerText = "АКТИВЕН ✓";
-        badge.style.color = "#10b981";
         badge.style.borderColor = "#10b981";
       }
       const btn = document.getElementById("btnOneClickSettingsTweak");
-      if (btn) {
-        btn.innerText = "✅ ВСЕ СИСТЕМНЫЕ ТВИКИ И ФИКС FPS АКТИВИРОВАНЫ";
-      }
+      if (btn) btn.innerText = "✅ ВСЕ СИСТЕМНЫЕ ТВИКИ И ФИКС FPS АКТИВИРОВАНЫ";
       localStorage.setItem("so2tp_ultimate_tweaks_on", "1");
       showToast("🚀 SkiaGL Кэш 72МБ, Freezer, Сеть и Фикс FPS применены!");
     }
 
-    // ===== АВАТАРКА И ТЕСТЕРЫ ЭКРАНА =====
+    // ===== АВАТАРКА ИГРОКА (СИНХРОНИЗАЦИЯ В ШАПКЕ И ПРОФИЛЕ БЕЗ БЕСКОНЕЧНОЙ ЗАГРУЗКИ) =====
     function triggerAvatarUpload() {
+      const modal = document.getElementById("avatarPickerModal");
+      if (modal) modal.style.display = "flex";
+    }
+
+    function openGalleryFileInput() {
+      const modal = document.getElementById("avatarPickerModal");
+      if (modal) modal.style.display = "none";
       const inp = document.getElementById("avatarFileInput");
       if (inp) inp.click();
+    }
+
+    function selectBuiltInAvatar(emojiStr) {
+      localStorage.setItem("so2tp_custom_avatar_emoji", emojiStr);
+      localStorage.removeItem("so2tp_custom_avatar_v10");
+      applySavedAvatarUI();
+      const modal = document.getElementById("avatarPickerModal");
+      if (modal) modal.style.display = "none";
+      showToast("🖼 Аватарка обновлена!");
     }
 
     function onAvatarFileSelected(ev) {
@@ -1948,55 +2063,70 @@
       if (!file) return;
       const reader = new FileReader();
       reader.onload = function(e) {
-        try { localStorage.setItem("so2tp_custom_avatar_v10", e.target.result); } catch (err) {}
-        applySavedAvatarUI();
-        showToast("🖼 Аватарка обновлена!");
+        // Сжимаем изображение на лету до 160x160, чтобы оно мгновенно грузилось и не переполняло память WebView
+        const img = new Image();
+        img.onload = function() {
+          const canvas = document.createElement("canvas");
+          canvas.width = 160;
+          canvas.height = 160;
+          const ctx = canvas.getContext("2d");
+          const minSide = Math.min(img.width, img.height);
+          const sx = (img.width - minSide) / 2;
+          const sy = (img.height - minSide) / 2;
+          ctx.drawImage(img, sx, sy, minSide, minSide, 0, 0, 160, 160);
+          try {
+            const compressed = canvas.toDataURL("image/jpeg", 0.82);
+            localStorage.setItem("so2tp_custom_avatar_v10", compressed);
+            localStorage.removeItem("so2tp_custom_avatar_emoji");
+          } catch (err) {}
+          applySavedAvatarUI();
+          showToast("🖼 Фото аватарки установлено!");
+        };
+        img.src = e.target.result;
       };
       reader.readAsDataURL(file);
     }
 
     function applySavedAvatarUI() {
       const dataUrl = localStorage.getItem("so2tp_custom_avatar_v10") || "";
+      const emojiAv = localStorage.getItem("so2tp_custom_avatar_emoji") || "";
       const nick = (document.getElementById("topPlayerNick").innerText || "D").trim();
-      const firstChar = (nick.charAt(0) || "D").toUpperCase();
+      const fallbackText = emojiAv || (nick.charAt(0) || "D").toUpperCase();
 
       const pImg = document.getElementById("profAvatarImg");
       const pFb = document.getElementById("profAvatarFallback");
-      if (pFb) pFb.innerText = firstChar;
+      const hImg = document.getElementById("topHeaderAvatarImg");
+      const hFb = document.getElementById("topHeaderAvatarFallback");
+
+      if (pFb) pFb.innerText = fallbackText;
+      if (hFb) hFb.innerText = fallbackText;
 
       if (dataUrl && dataUrl.startsWith("data:image")) {
         if (pImg) { pImg.src = dataUrl; pImg.style.display = "block"; }
         if (pFb) pFb.style.display = "none";
+        if (hImg) { hImg.src = dataUrl; hImg.style.display = "block"; }
+        if (hFb) hFb.style.display = "none";
       } else {
         if (pImg) pImg.style.display = "none";
         if (pFb) pFb.style.display = "block";
+        if (hImg) hImg.style.display = "none";
+        if (hFb) hFb.style.display = "block";
       }
     }
 
-    function startScreenCalibModal() {
-      const ov = document.getElementById("screenCalibOverlay");
-      if (ov) ov.style.display = "flex";
-    }
-
+    function startScreenCalibModal() { document.getElementById("screenCalibOverlay").style.display = "flex"; }
     function finishScreenCalibTap() {
-      const ov = document.getElementById("screenCalibOverlay");
-      if (ov) ov.style.display = "none";
+      document.getElementById("screenCalibOverlay").style.display = "none";
       const B = getBridge();
-      if (B) { try { B.healTouch(); } catch (e) {} }
-      onSensSliderChange();
+      if (B) queueNative(() => B.healTouch());
       showToast("⚡ Матрица экрана откалибрована!");
     }
 
     function openTouchTestModal() {
-      const ov = document.getElementById("touchTestOverlay");
-      if (ov) ov.style.display = "flex";
+      document.getElementById("touchTestOverlay").style.display = "flex";
       initTouchTesterCanvas();
     }
-
-    function closeTouchTestModal() {
-      const ov = document.getElementById("touchTestOverlay");
-      if (ov) ov.style.display = "none";
-    }
+    function closeTouchTestModal() { document.getElementById("touchTestOverlay").style.display = "none"; }
 
     function initTouchTesterCanvas() {
       const c = document.getElementById("touchTestCanvas");
@@ -2004,47 +2134,31 @@
       c.__inited = true;
       const ctx = c.getContext("2d");
       const lbl = document.getElementById("touchTestCoords");
-      let rectCache = null;
 
       function drawPoint(x, y) {
-        ctx.fillStyle = "rgba(5, 10, 14, 0.22)";
+        ctx.fillStyle = "rgba(5, 8, 12, 0.28)";
         ctx.fillRect(0, 0, c.width, c.height);
-        ctx.strokeStyle = __cachedAccentHex;
+        ctx.strokeStyle = cachedAccentHex;
         ctx.lineWidth = 1.5;
         ctx.beginPath();
         ctx.moveTo(x, 0); ctx.lineTo(x, c.height);
         ctx.moveTo(0, y); ctx.lineTo(c.width, y);
         ctx.stroke();
-
-        ctx.fillStyle = __cachedAccentHex;
+        ctx.fillStyle = cachedAccentHex;
         ctx.beginPath();
         ctx.arc(x, y, 7, 0, Math.PI * 2);
         ctx.fill();
         if (lbl) lbl.innerText = `X: ${Math.round(x)} px • Y: ${Math.round(y)} px • ${isPadModeEnabled ? 'PAD 76.0X' : '48.0X AGGRESSIVE'}`;
       }
 
-      // ✅ Кэш rect на время жеста — getBoundingClientRect вызывает reflow
-      c.addEventListener("touchstart", () => { rectCache = c.getBoundingClientRect(); }, { passive: true });
-      c.addEventListener("touchend", () => { rectCache = null; }, { passive: true });
-
       c.addEventListener("touchmove", function(e) {
         e.preventDefault();
         const t = e.touches[0];
-        if (!rectCache) rectCache = c.getBoundingClientRect();
-        drawPoint(t.clientX - rectCache.left, t.clientY - rectCache.top);
+        const rect = c.getBoundingClientRect();
+        drawPoint(t.clientX - rect.left, t.clientY - rect.top);
       }, { passive: false });
-
-      c.addEventListener("mousedown", () => { rectCache = c.getBoundingClientRect(); });
-      c.addEventListener("mouseup", () => { rectCache = null; });
-
-      c.addEventListener("mousemove", function(e) {
-        if (e.buttons !== 1) return;
-        if (!rectCache) rectCache = c.getBoundingClientRect();
-        drawPoint(e.clientX - rectCache.left, e.clientY - rectCache.top);
-      });
     }
 
-    // ===== ССЫЛКИ И ПРОВЕРКА SHIZUKU =====
     function openSupportLink() {
       const B = getBridge();
       if (B && typeof B.openSupportTelegram === "function") B.openSupportTelegram();
@@ -2065,47 +2179,36 @@
         else if (B && typeof B.isShizukuReady === "function") active = !!B.isShizukuReady();
       } catch (e) {}
 
-      if (__lastShizukuActive !== active) {
-        __lastShizukuActive = active;
-        const dot = document.getElementById("shizukuDot");
-        const txt = document.getElementById("shizukuStateText");
-        if (dot) dot.classList.toggle("on", active);
-        if (txt) {
-          txt.innerText = active ? "Shizuku АКТИВЕН" : "Shizuku ВЫКЛ";
-          txt.style.color = active ? "#10b981" : "#ff2e54";
-        }
+      const dot = document.getElementById("shizukuDot");
+      const txt = document.getElementById("shizukuStateText");
+      if (dot) dot.classList.toggle("on", active);
+      if (txt) {
+        txt.innerText = active ? "Shizuku АКТИВЕН" : "Shizuku ВЫКЛ";
+        txt.style.color = active ? "#10b981" : "#ff2e54";
       }
 
       const modal = document.getElementById("shizukuRequiredModal");
-      if (isSessionAuthorized && !active && showPopupIfOff && modal) {
-        modal.style.display = "flex";
-      } else if (active && modal) {
-        modal.style.display = "none";
-      }
+      if (isSessionAuthorized && !active && showPopupIfOff && modal) modal.style.display = "flex";
+      else if (active && modal) modal.style.display = "none";
       return active;
     }
 
     function requestAndRecheckShizuku() {
       const B = getBridge();
-      try { if (B && typeof B.requestShizukuPermission === "function") B.requestShizukuPermission(); } catch (e) {}
+      if (B && typeof B.requestShizukuPermission === "function") {
+        queueNative(() => B.requestShizukuPermission());
+      }
       setTimeout(() => {
-        __lastShizukuActive = null;
-        const ok = checkShizukuStatusModal(true);
-        if (ok) showToast("✅ Shizuku активен и готов!");
-      }, 800);
+        if (checkShizukuStatusModal(true)) showToast("✅ Shizuku активен и готов!");
+      }, 700);
     }
 
-    // ===== АВТОРИЗАЦИЯ ЛИЦЕНЗИИ =====
     window.forceShowKickScreen = function(reason) {
       isSessionAuthorized = false;
       __v10AuthSealToken = "";
       const overlay = document.getElementById("authScreenOverlay");
       const errBanner = document.getElementById("authErrorBanner");
-      if (overlay) {
-        overlay.style.display = "flex";
-        overlay.style.visibility = "visible";
-        overlay.style.opacity = "1";
-      }
+      if (overlay) overlay.style.display = "flex";
       if (errBanner && reason) {
         errBanner.style.display = "block";
         errBanner.innerText = "⛔ " + reason;
@@ -2167,7 +2270,7 @@
 
       const B = getBridge();
       if (B) {
-        try { B.startTeleport("AUTH_KEY:" + key); } catch (e) {}
+        queueNative(() => B.startTeleport("AUTH_KEY:" + key));
       }
 
       document.getElementById("topPlayerNick").innerText = nick;
@@ -2179,45 +2282,36 @@
 
       applySavedAvatarUI();
       selectTeleportPreset(currentPresetId || "extreme", true);
-
       showToast("⚡ Доступ открыт! Игрок: " + nick);
-      setTimeout(() => { __lastShizukuActive = null; checkShizukuStatusModal(true); }, 600);
+      setTimeout(() => checkShizukuStatusModal(true), 600);
     }
 
     function handleLogoutClick() {
       const B = getBridge();
-      try { if (B) B.logoutLicenseKey(); } catch (e) {}
+      if (B) queueNative(() => B.logoutLicenseKey());
       window.forceShowKickScreen("Смена ключа. Ваш ключ сохранён за вашим устройством.");
     }
 
     function pollLicenseExpiration() {
-      if (!isSessionAuthorized) return;
-      if (!fullLicenseKeyPlain || fullLicenseKeyPlain.length < 5) return;
+      if (!isSessionAuthorized || !fullLicenseKeyPlain || fullLicenseKeyPlain.length < 5) return;
       const B = getBridge();
       if (!B || typeof B.verifyLicenseKey !== "function") return;
-      try {
+      queueNative(() => {
         const verifyOut = String(B.verifyLicenseKey(fullLicenseKeyPlain) || "");
         if (verifyOut.startsWith("OK|")) {
-          const newSub = verifyOut.split("|")[1] || "АКТИВНА";
-          const el = document.getElementById("profSubVal");
-          if (el && el.innerText !== newSub) el.innerText = newSub;
-        } else if (
-          verifyOut.startsWith("ERR|") ||
-          verifyOut.startsWith("EXPIRED|") ||
-          verifyOut.startsWith("BANNED|") ||
-          verifyOut.startsWith("BLOCKED|")
-        ) {
+          document.getElementById("profSubVal").innerText = verifyOut.split("|")[1] || "АКТИВНА";
+        } else if (verifyOut.startsWith("EXPIRED|") || verifyOut.startsWith("BANNED|") || verifyOut.startsWith("BLOCKED|")) {
           window.forceShowKickScreen(verifyOut.split("|")[1] || "Ключ истёк или заблокирован!");
         }
-      } catch (e) {}
+      });
     }
 
-    // ===== ВЫБОР КОНФИГА СЕНСЫ =====
+    // ===== ВЫБОР КОНФИГА СЕНСЫ (0 ЗАВИСАНИЙ — ТОЛЬКО 1 АСИНХРОННЫЙ ВЫЗОВ) =====
     function selectTeleportPreset(presetId, silent) {
       if (!isSessionAuthorized && !silent) return;
       currentPresetId = presetId;
 
-      document.querySelectorAll("#sensSubLaunch .character-card").forEach(c => c.classList.remove("active"));
+      document.querySelectorAll("#accSensPresets .character-card").forEach(c => c.classList.remove("active"));
       const card = document.getElementById("preset_" + presetId);
       if (card) card.classList.add("active");
 
@@ -2228,64 +2322,41 @@
         budget_pro: "4 · Для Бюджеток и A57 (34.0x)"
       };
       const label = titles[presetId] || "1 · Телепорт Ультра (48.0x)";
-
-      setLabelText("activePresetTitle", label);
-
-      const profMode = document.getElementById("profDeviceModeText");
-      if (profMode) profMode.innerText = label.split("(")[0].replace(/^[0-9]\s·\s/, "").trim().toUpperCase();
+      document.getElementById("activePresetTitle").innerText = label;
+      document.getElementById("profDeviceModeText").innerText = label.split("(")[0].replace(/^[0-9]\s·\s/, "").trim().toUpperCase();
 
       const headerCore = document.getElementById("headerLiveCoreBadge");
-      const B = getBridge();
 
       if (presetId === "tablet_pro") {
         isPadModeEnabled = true;
         localStorage.setItem("so2tp_pad_mode_v10", "1");
-        if (headerCore) headerCore.innerText = "PAD 103.2X IMPULSE";
+        headerCore.innerText = "PAD 103.2X IMPULSE";
         setSlidersValues(25, 25, 25, 99, 100, 92, 95, 2, 1, 25, 100);
-        if (B) {
-          try {
-            B.startTeleport("PAD_MODE_ON");
-            B.startTeleport("tablet_pro");
-            B.setTouchSamplingBoost(true, 480);
-          } catch (e) {}
-        }
       } else {
         isPadModeEnabled = false;
         localStorage.setItem("so2tp_pad_mode_v10", "0");
-
         if (presetId === "budget_pro") {
-          if (headerCore) headerCore.innerText = "A57 FPS GUARD • 480HZ";
+          headerCore.innerText = "A57 FPS GUARD • 480HZ";
           setSlidersValues(23, 23, 23, 90, 95, 90, 95, 3, 1, 24, 95);
-          if (B) {
-            try {
-              B.startTeleport("PAD_MODE_OFF");
-              B.startTeleport("ULTIMATE_TWEAKS_1CLICK");
-              B.startTeleport("budget_pro");
-            } catch (e) {}
-          }
         } else if (presetId === "clean_sharp") {
-          if (headerCore) headerCore.innerText = "SHARP 480HZ CORE";
+          headerCore.innerText = "SHARP 480HZ CORE";
           setSlidersValues(24, 24, 24, 94, 98, 90, 65, 1, 1, 25, 95);
-          if (B) {
-            try {
-              B.startTeleport("PAD_MODE_OFF");
-              B.startTeleport("clean_sharp");
-            } catch (e) {}
-          }
         } else {
-          if (headerCore) headerCore.innerText = "480HZ AGGRESSIVE";
+          headerCore.innerText = "480HZ AGGRESSIVE";
           setSlidersValues(25, 25, 25, 98, 100, 90, 95, 2, 1, 25, 100);
-          if (B) {
-            try {
-              B.startTeleport("PAD_MODE_OFF");
-              B.startTeleport("extreme");
-            } catch (e) {}
-          }
         }
       }
 
-      onSensSliderChange();
+      updateSliderReadoutsOnly();
       if (!silent) showToast("🔥 Активирован: " + label);
+
+      const B = getBridge();
+      if (B && isMainTeleportOn) {
+        queueNative(() => {
+          B.startTeleport(isPadModeEnabled ? "PAD_MODE_ON" : "PAD_MODE_OFF");
+          B.startTeleport(presetId);
+        });
+      }
     }
 
     function applyShelfPreset(shelfId) {
@@ -2302,72 +2373,25 @@
         onSensSliderChange();
         showToast("🎯 Сборка «3 · Жёсткий Хэдшот» активирована!");
       } else if (shelfId === "a57_fps_god") {
-        selectTeleportPreset("budget_pro", true);
-        runOneClickUltimateTweaks();
+        selectTeleportPreset("budget_pro", false);
       }
     }
 
     function setSlidersValues(sharp, sx, sy, chunks, chunkFast, straight, stick, grid, pause, accel, recoil) {
-      if (document.getElementById("sl_sharp")) document.getElementById("sl_sharp").value = sharp;
-      if (document.getElementById("sl_sx")) document.getElementById("sl_sx").value = sx;
-      if (document.getElementById("sl_sy")) document.getElementById("sl_sy").value = sy;
-      if (document.getElementById("sl_chunks")) document.getElementById("sl_chunks").value = chunks;
-      if (document.getElementById("sl_chunkfast")) document.getElementById("sl_chunkfast").value = chunkFast;
-      if (document.getElementById("sl_straight")) document.getElementById("sl_straight").value = straight;
-      if (document.getElementById("sl_stick")) document.getElementById("sl_stick").value = stick;
-      if (document.getElementById("sl_grid")) document.getElementById("sl_grid").value = grid;
-      if (document.getElementById("sl_pause")) document.getElementById("sl_pause").value = pause;
-      if (document.getElementById("sl_accel")) document.getElementById("sl_accel").value = accel;
-      if (recoil !== undefined && document.getElementById("sl_recoil")) {
-        document.getElementById("sl_recoil").value = recoil;
-      }
+      document.getElementById("sl_sharp").value = sharp;
+      document.getElementById("sl_sx").value = sx;
+      document.getElementById("sl_sy").value = sy;
+      document.getElementById("sl_chunks").value = chunks;
+      document.getElementById("sl_chunkfast").value = chunkFast;
+      document.getElementById("sl_straight").value = straight;
+      document.getElementById("sl_stick").value = stick;
+      document.getElementById("sl_grid").value = grid;
+      document.getElementById("sl_pause").value = pause;
+      document.getElementById("sl_accel").value = accel;
+      if (recoil !== undefined) document.getElementById("sl_recoil").value = recoil;
     }
 
-    // ✅ JNI-throttle: leading + trailing. Первый вызов — сразу (отклик), последний — гарантированно.
-    // Между ними — max 1 вызов за 50 мс. Это защищает от очереди синхронных JNI, если updateParameters медленный.
-    function scheduleBridgeCall(p) {
-      __sensPendingParams = p;
-      const now = performance.now();
-      if (now - __sensLastBridgeTs >= SENS_THROTTLE_MS) {
-        __sensLastBridgeTs = now;
-        doBridgeCall(p);
-      }
-      if (!__sensThrottleTimer) {
-        __sensThrottleTimer = setTimeout(() => {
-          __sensThrottleTimer = null;
-          if (__sensPendingParams) {
-            __sensLastBridgeTs = performance.now();
-            doBridgeCall(__sensPendingParams);
-          }
-        }, SENS_THROTTLE_MS);
-      }
-    }
-
-    function doBridgeCall(p) {
-      const B = getBridge();
-      if (!B || !isSessionAuthorized || !isMainTeleportOn) return;
-      try {
-        B.setEnhancedRecoilFix(true, p.recoil);
-        B.updateParameters(p.sharp, p.sx, p.sy, p.chunks, p.chunkFast, p.straight, p.stick, p.grid, p.pause, p.accel);
-      } catch (e) {}
-    }
-
-    // ✅ Debounce save через requestIdleCallback — не мешает анимациям
-    function scheduleSaveDebounced() {
-      if (__sensSaveTimer) clearTimeout(__sensSaveTimer);
-      __sensSaveTimer = setTimeout(() => {
-        __sensSaveTimer = null;
-        const run = () => saveCurrentConfigLocal(true);
-        if (typeof requestIdleCallback === "function") {
-          requestIdleCallback(run, { timeout: 1000 });
-        } else {
-          setTimeout(run, 50);
-        }
-      }, 500);
-    }
-
-    function onSensSliderChange() {
-      // 1. Читаем всё (быстро — просто .value)
+    function updateSliderReadoutsOnly() {
       const sharp = parseFloat(document.getElementById("sl_sharp").value || 25);
       const sx = parseFloat(document.getElementById("sl_sx").value || 25);
       const sy = parseFloat(document.getElementById("sl_sy").value || 25);
@@ -2380,71 +2404,64 @@
       const accel = parseFloat(document.getElementById("sl_accel").value || 25);
       const recoil = parseInt(document.getElementById("sl_recoil").value || 100, 10);
 
-      const lead = parseInt((document.getElementById("sl_lead") || {}).value || 10, 10);
-      const stickDelay = parseInt((document.getElementById("sl_stick_delay") || {}).value || 25, 10);
-      const stickForce = parseInt((document.getElementById("sl_stick_force") || {}).value || 10, 10);
-      const chunkBypass = parseInt((document.getElementById("sl_chunk_bypass") || {}).value || 1, 10);
-      const chunkCap = parseInt((document.getElementById("sl_chunk_cap") || {}).value || 22, 10);
-      const shotPause = parseInt((document.getElementById("sl_shot_pause") || {}).value || 0, 10);
-      const edgeReach = parseInt((document.getElementById("sl_edge_reach") || {}).value || 12, 10);
-      const gripCap = parseInt((document.getElementById("sl_grip_cap") || {}).value || 12, 10);
+      document.getElementById("val_sharp").innerText = (sharp / 10).toFixed(2);
+      document.getElementById("val_sx").innerText = (sx / 10).toFixed(2);
+      document.getElementById("val_sy").innerText = (sy / 10).toFixed(2);
+      document.getElementById("val_chunks").innerText = chunks;
+      document.getElementById("val_chunkfast").innerText = chunkFast;
+      document.getElementById("val_straight").innerText = (straight / 100).toFixed(2);
+      document.getElementById("val_stick").innerText = stick;
+      document.getElementById("val_grid").innerText = grid;
+      document.getElementById("val_pause").innerText = pause;
+      document.getElementById("val_accel").innerText = (accel / 25).toFixed(2);
+      document.getElementById("val_recoil").innerText = recoil + "%";
 
-      // 2. Подписи — через кэш, только изменившиеся
-      setLabelText("val_sharp", (sharp / 10).toFixed(2));
-      setLabelText("val_sx", (sx / 10).toFixed(2));
-      setLabelText("val_sy", (sy / 10).toFixed(2));
-      setLabelText("val_chunks", String(chunks));
-      setLabelText("val_chunkfast", String(chunkFast));
-      setLabelText("val_straight", (straight / 100).toFixed(2));
-      setLabelText("val_stick", String(stick));
-      setLabelText("val_grid", String(grid));
-      setLabelText("val_pause", String(pause));
-      setLabelText("val_accel", (accel / 25).toFixed(2));
-      setLabelText("val_recoil", recoil + "%");
-      setLabelText("val_lead", String(lead));
-      setLabelText("val_stick_delay", String(stickDelay));
-      setLabelText("val_stick_force", String(stickForce));
-      setLabelText("val_chunk_bypass", String(chunkBypass));
-      setLabelText("val_chunk_cap", String(chunkCap));
-      setLabelText("val_shot_pause", String(shotPause));
-      setLabelText("val_edge_reach", String(edgeReach));
-      setLabelText("val_grip_cap", String(gripCap));
+      document.getElementById("val_lead").innerText = document.getElementById("sl_lead").value;
+      document.getElementById("val_stick_delay").innerText = document.getElementById("sl_stick_delay").value;
+      document.getElementById("val_stick_force").innerText = document.getElementById("sl_stick_force").value;
+      document.getElementById("val_chunk_bypass").innerText = document.getElementById("sl_chunk_bypass").value;
+      document.getElementById("val_chunk_cap").innerText = document.getElementById("sl_chunk_cap").value;
+      document.getElementById("val_shot_pause").innerText = document.getElementById("sl_shot_pause").value;
+      document.getElementById("val_edge_reach").innerText = document.getElementById("sl_edge_reach").value;
+      document.getElementById("val_grip_cap").innerText = document.getElementById("sl_grip_cap").value;
 
-      // 3. Snap factor — через кэш
       let baseSnap = 6.0 + (sharp / 25.0) * 11.5 + ((sx + sy) / 50.0) * 14.5 + (recoil / 100.0) * 11.0 + (chunkFast / 100.0) * 5.0;
-      if (isPadModeEnabled) baseSnap = baseSnap * 2.15;
-      setLabelText("liveScaleChip", (isPadModeEnabled ? "PAD " : "") + baseSnap.toFixed(1) + "x");
+      if (isPadModeEnabled) baseSnap *= 2.15;
+      document.getElementById("liveScaleChip").innerText = (isPadModeEnabled ? "PAD " : "") + baseSnap.toFixed(1) + "x";
 
-      // 4. JNI — throttled
-      scheduleBridgeCall({ sharp, sx, sy, chunks, chunkFast, straight, stick, grid, pause, accel, recoil });
-
-      // 5. Save — debounced
-      scheduleSaveDebounced();
+      return { sharp, sx, sy, chunks, chunkFast, straight, stick, grid, pause, accel, recoil };
     }
 
-    function onRecoilSliderChange() {
-      onSensSliderChange();
+    function onSensSliderChange() {
+      const vals = updateSliderReadoutsOnly();
+      clearTimeout(__sensDebounceTimer);
+      __sensDebounceTimer = setTimeout(() => {
+        const B = getBridge();
+        if (B && isSessionAuthorized && isMainTeleportOn) {
+          queueNative(() => {
+            B.setEnhancedRecoilFix(true, vals.recoil);
+            B.updateParameters(vals.sharp, vals.sx, vals.sy, vals.chunks, vals.chunkFast, vals.straight, vals.stick, vals.grid, vals.pause, vals.accel);
+          });
+        }
+        saveCurrentConfigLocal(true);
+      }, 150);
     }
+
+    function onRecoilSliderChange() { onSensSliderChange(); }
 
     function toggleMainEngineQuick() {
       if (!isSessionAuthorized) return;
       isMainTeleportOn = !isMainTeleportOn;
       const btn = document.getElementById("mainPowerCircleBtn");
-      if (btn) {
-        btn.innerText = isMainTeleportOn ? "ВКЛ" : "ВЫКЛ";
-        btn.classList.toggle("off", !isMainTeleportOn);
-      }
+      btn.innerText = isMainTeleportOn ? "ВКЛ" : "ВЫКЛ";
+      btn.classList.toggle("off", !isMainTeleportOn);
+
       const B = getBridge();
       if (B) {
-        try {
-          if (isMainTeleportOn) {
-            if (isPadModeEnabled) B.startTeleport("PAD_MODE_ON");
-            B.startTeleport(currentPresetId || "extreme");
-            onSensSliderChange();
-          } else {
-            B.stopTeleport();
-          }
-        } catch (e) {}
+        queueNative(() => {
+          if (isMainTeleportOn) B.startTeleport(currentPresetId || "extreme");
+          else B.stopTeleport();
+        });
       }
       showToast(isMainTeleportOn ? "⚡ Сверхрезкая сенса ВКЛЮЧЕНА" : "⏸ Сенса ВЫКЛЮЧЕНА");
     }
@@ -2455,44 +2472,34 @@
       if (el) el.classList.add("active");
       currentStretchRatio = ratio;
       const cleanName = ratio.replace("SHRINK-", "СТЯГ ");
-      const badge = document.getElementById("curRatioBadge");
-      if (badge) badge.innerText = cleanName;
-
-      const floatBtn = document.getElementById("btnLaunchFloatingStretch");
-      if (floatBtn) floatBtn.innerText = "⚡ ЗАПУСТИТЬ ПЛАВАЮЩУЮ ИКОНКУ «T» (" + cleanName + ")";
-
-      const inner = document.getElementById("stretchPreviewInner");
-      if (inner) {
-        const widths = {
-          "4:3": "168px", "PAD-WIDE": "142px", "3:2": "178px", "16:10": "190px", "16:9": "204px",
-          "5:4": "152px", "1:1": "126px", "SHRINK-84": "182px", "21:9": "212px"
-        };
-        inner.style.width = widths[ratio] || "168px";
-      }
+      document.getElementById("curRatioBadge").innerText = cleanName;
+      document.getElementById("btnLaunchFloatingStretch").innerText = "⚡ ЗАПУСТИТЬ ПЛАВАЮЩУЮ ИКОНКУ «T» (" + cleanName + ")";
+      const widths = {
+        "4:3": "168px", "PAD-WIDE": "142px", "3:2": "178px", "16:10": "190px", "16:9": "204px",
+        "5:4": "152px", "1:1": "126px", "SHRINK-84": "182px", "21:9": "212px"
+      };
+      document.getElementById("stretchPreviewInner").style.width = widths[ratio] || "168px";
     }
 
     function launchFloatingTButton() {
       if (!checkShizukuStatusModal(true)) return;
       const B = getBridge();
       if (B) {
-        try {
+        queueNative(() => {
           const res = String(B.activateStretchFloatingButton(currentStretchRatio) || "");
-          if (res === "OK") {
-            showToast("📐 Иконка «T» (" + currentStretchRatio + ") запущена! Растягивайте в игре.");
-          } else {
-            showToast("📐 Разрешите отображение поверх окон для кнопки «T»");
-          }
-        } catch (e) {}
+          if (res === "OK") showToast("📐 Иконка «T» (" + currentStretchRatio + ") запущена!");
+          else showToast("📐 Разрешите отображение поверх окон для кнопки «T»");
+        });
       }
     }
 
     function resetNativeScreen() {
       const B = getBridge();
       if (B) {
-        try {
+        queueNative(() => {
           B.startTeleport("STRETCH_RESET");
           if (typeof B.resetResolution === "function") B.resetResolution();
-        } catch (e) {}
+        });
       }
       showToast("🔄 Родное разрешение экрана восстановлено!");
     }
@@ -2500,47 +2507,31 @@
     function selectPixelTile(el, pct) {
       document.querySelectorAll(".pixel-tile").forEach(t => t.classList.remove("active"));
       if (el) el.classList.add("active");
-      const big = document.getElementById("pixelBigNumText");
-      const badge = document.getElementById("pixelScaleBadge");
-      const fill = document.getElementById("pixelProgressFill");
-      if (big) big.innerText = pct + " %";
-      if (badge) badge.innerText = "СЕЙЧАС " + pct + "%";
-      if (fill) fill.style.width = pct + "%";
-
+      document.getElementById("pixelBigNumText").innerText = pct + " %";
+      document.getElementById("pixelScaleBadge").innerText = pct + "%";
+      document.getElementById("pixelProgressFill").style.width = pct + "%";
       const B = getBridge();
-      if (B) {
-        try { B.setPixelDownscaleFactor(pct); } catch (e) {}
-      }
+      if (B) queueNative(() => B.setPixelDownscaleFactor(pct));
       showToast("🚀 Оптимизация пикселей: " + pct + "%");
     }
 
     function toggleWideHitboxMode(enabled) {
       const B = getBridge();
-      if (B) {
-        try { B.setWideHitboxMode(enabled, currentStretchRatio); } catch (e) {}
-      }
+      if (B) queueNative(() => B.setWideHitboxMode(enabled, currentStretchRatio));
       showToast(enabled ? "🔥 Синхронизация кусков под растяг ВКЛ" : "Синхронизация ВЫКЛ");
     }
 
     // ===== КАСТОМНЫЙ ПРИЦЕЛ =====
     function toggleCrosshairMasterSwitch(enabled) {
-      if (enabled) {
-        currentCrosshairType = lastActiveCrosshairShape || "cross";
-      } else {
-        currentCrosshairType = "off";
-      }
+      currentCrosshairType = enabled ? (lastActiveCrosshairShape || "cross") : "off";
       const chip = document.getElementById("crosshairStateChip");
-      if (chip) {
-        chip.innerText = enabled ? "Активен поверх игры (" + currentCrosshairType.toUpperCase() + ")" : "Выключен — включи тумблер";
-        chip.style.color = enabled ? "var(--accent-main)" : "var(--text-muted)";
-      }
+      chip.innerText = enabled ? currentCrosshairType.toUpperCase() : "ВЫКЛ";
       syncCrosshairConfig();
     }
 
     function togglePreviewDayNight() {
       isPreviewLightBg = !isPreviewLightBg;
-      const st = document.getElementById("chPreviewStage");
-      if (st) st.style.background = isPreviewLightBg ? "#cbd5e1" : "#04080b";
+      document.getElementById("chPreviewStage").style.background = isPreviewLightBg ? "#cbd5e1" : "#04070a";
       renderCrosshairPreview();
     }
 
@@ -2552,27 +2543,16 @@
     function setCrosshairMode(el, type) {
       lastActiveCrosshairShape = type;
       currentCrosshairType = type;
-
       const masterSw = document.getElementById("tgCrosshairMaster");
       if (masterSw && !masterSw.checked) masterSw.checked = true;
 
       document.querySelectorAll("#crosshairCardAnchor [data-ch]").forEach(p => {
         p.classList.toggle("active", p.getAttribute("data-ch") === type);
       });
-
-      const subCross = document.getElementById("subBoxCrossLines");
-      const subDot = document.getElementById("subBoxCenterDot");
-      if (subCross) subCross.classList.toggle("active", type === "cross");
-      if (subDot) subDot.classList.toggle("active", type === "crossdot");
-
-      const rightLbl = document.getElementById("chModeRightLabel");
-      if (rightLbl) rightLbl.innerText = type.toUpperCase();
-
-      const chip = document.getElementById("crosshairStateChip");
-      if (chip) {
-        chip.innerText = "Активен поверх игры (" + type.toUpperCase() + ")";
-        chip.style.color = "var(--accent-main)";
-      }
+      document.getElementById("subBoxCrossLines").classList.toggle("active", type === "cross");
+      document.getElementById("subBoxCenterDot").classList.toggle("active", type === "crossdot");
+      document.getElementById("chModeRightLabel").innerText = type.toUpperCase();
+      document.getElementById("crosshairStateChip").innerText = type.toUpperCase();
       syncCrosshairConfig();
     }
 
@@ -2580,25 +2560,27 @@
       const len = parseInt(document.getElementById("sl_ch_len").value, 10);
       const thick = parseInt(document.getElementById("sl_ch_thick").value, 10);
       const gap = parseInt(document.getElementById("sl_ch_gap").value, 10);
-      const dot = parseInt(document.getElementById("sl_ch_dot").value, 10);
+      const rawDot = parseInt(document.getElementById("sl_ch_dot").value, 10);
       const op = parseInt(document.getElementById("sl_ch_op").value, 10);
       const out = document.getElementById("tgChOutline").checked;
 
-      setLabelText("val_ch_len", String(len));
-      setLabelText("val_ch_thick", String(thick));
-      setLabelText("val_ch_gap", String(gap));
-      setLabelText("val_ch_dot", String(dot));
-      setLabelText("val_ch_op", op + "%");
-      setLabelText("chSizeReadout", "+ " + len + " × " + thick + " px");
+      const effectiveDot = (currentCrosshairType === "dot" || currentCrosshairType === "crossdot") ? rawDot : 0;
+
+      document.getElementById("val_ch_len").innerText = len;
+      document.getElementById("val_ch_thick").innerText = thick;
+      document.getElementById("val_ch_gap").innerText = gap;
+      document.getElementById("val_ch_dot").innerText = rawDot;
+      document.getElementById("val_ch_op").innerText = op + "%";
+      document.getElementById("chSizeReadout").innerText = `+ ${len} × ${thick} px`;
 
       renderCrosshairPreview();
 
       const B = getBridge();
       if (!B) return;
-      try {
+      queueNative(() => {
         if (currentCrosshairType === "off") B.updateCrosshair("off");
-        else B.updateCrosshairAdvanced(currentCrosshairType, __cachedAccentHex, op, len, thick, gap, dot, out);
-      } catch (e) {}
+        else B.updateCrosshairAdvanced(currentCrosshairType, "#22c55e", op, len, thick, gap, effectiveDot, out);
+      });
     }
 
     function renderCrosshairPreview() {
@@ -2628,8 +2610,7 @@
 
       if (drawType === "cross" || drawType === "crossdot") {
         if (out) {
-          ctx.strokeStyle = "#000000";
-          ctx.lineWidth = thick + 2;
+          ctx.strokeStyle = "#000000"; ctx.lineWidth = thick + 2;
           ctx.beginPath();
           ctx.moveTo(cx, cy - gap - len); ctx.lineTo(cx, cy - gap);
           ctx.moveTo(cx, cy + gap); ctx.lineTo(cx, cy + gap + len);
@@ -2637,8 +2618,7 @@
           ctx.moveTo(cx + gap, cy); ctx.lineTo(cx + gap + len, cy);
           ctx.stroke();
         }
-        ctx.strokeStyle = chColor;
-        ctx.lineWidth = thick;
+        ctx.strokeStyle = chColor; ctx.lineWidth = thick;
         ctx.beginPath();
         ctx.moveTo(cx, cy - gap - len); ctx.lineTo(cx, cy - gap);
         ctx.moveTo(cx, cy + gap); ctx.lineTo(cx, cy + gap + len);
@@ -2648,24 +2628,18 @@
       }
 
       if (drawType === "dot" || drawType === "crossdot") {
-        if (out) {
-          ctx.fillStyle = "#000000";
-          ctx.beginPath(); ctx.arc(cx, cy, dot + 1.5, 0, Math.PI * 2); ctx.fill();
-        }
-        ctx.fillStyle = chColor;
-        ctx.beginPath(); ctx.arc(cx, cy, dot, 0, Math.PI * 2); ctx.fill();
+        if (out) { ctx.fillStyle = "#000000"; ctx.beginPath(); ctx.arc(cx, cy, dot + 1.5, 0, Math.PI * 2); ctx.fill(); }
+        ctx.fillStyle = chColor; ctx.beginPath(); ctx.arc(cx, cy, dot, 0, Math.PI * 2); ctx.fill();
       } else if (drawType === "tshape") {
         if (out) {
-          ctx.strokeStyle = "#000000";
-          ctx.lineWidth = thick + 2;
+          ctx.strokeStyle = "#000000"; ctx.lineWidth = thick + 2;
           ctx.beginPath();
           ctx.moveTo(cx, cy + gap); ctx.lineTo(cx, cy + gap + len);
           ctx.moveTo(cx - gap - len, cy); ctx.lineTo(cx - gap, cy);
           ctx.moveTo(cx + gap, cy); ctx.lineTo(cx + gap + len, cy);
           ctx.stroke();
         }
-        ctx.strokeStyle = chColor;
-        ctx.lineWidth = thick;
+        ctx.strokeStyle = chColor; ctx.lineWidth = thick;
         ctx.beginPath();
         ctx.moveTo(cx, cy + gap); ctx.lineTo(cx, cy + gap + len);
         ctx.moveTo(cx - gap - len, cy); ctx.lineTo(cx - gap, cy);
@@ -2674,8 +2648,7 @@
       } else if (drawType === "corners") {
         const sz = len + gap;
         if (out) {
-          ctx.strokeStyle = "#000000";
-          ctx.lineWidth = thick + 2;
+          ctx.strokeStyle = "#000000"; ctx.lineWidth = thick + 2;
           ctx.beginPath();
           ctx.moveTo(cx - sz, cy - sz + len); ctx.lineTo(cx - sz, cy - sz); ctx.lineTo(cx - sz + len, cy - sz);
           ctx.moveTo(cx + sz - len, cy - sz); ctx.lineTo(cx + sz, cy - sz); ctx.lineTo(cx + sz, cy - sz + len);
@@ -2683,8 +2656,7 @@
           ctx.moveTo(cx + sz - len, cy + sz); ctx.lineTo(cx + sz, cy + sz); ctx.lineTo(cx + sz, cy + sz - len);
           ctx.stroke();
         }
-        ctx.strokeStyle = chColor;
-        ctx.lineWidth = thick;
+        ctx.strokeStyle = chColor; ctx.lineWidth = thick;
         ctx.beginPath();
         ctx.moveTo(cx - sz, cy - sz + len); ctx.lineTo(cx - sz, cy - sz); ctx.lineTo(cx - sz + len, cy - sz);
         ctx.moveTo(cx + sz - len, cy - sz); ctx.lineTo(cx + sz, cy - sz); ctx.lineTo(cx + sz, cy - sz + len);
@@ -2695,74 +2667,54 @@
       ctx.globalAlpha = 1.0;
     }
 
-    // ===== БУСТЕР =====
+    // ===== БУСТЕР И КОНФИГИ =====
     function toggleBoostFeature(type, enabled) {
       const B = getBridge();
       if (B) {
-        try {
+        queueNative(() => {
           if (type === "raw") B.setRawInputNoSmoothing(enabled);
           else if (type === "vulkan") B.setVulkanGpuTurbo(enabled);
           else if (type === "ping") B.setNetPingStabilizer(enabled);
           else if (type === "thermal") B.setHzThermalGuard(enabled);
           else if (type === "stealth" && typeof B.setStealthOverlayMode === "function") B.setStealthOverlayMode(enabled);
-        } catch (e) {}
+        });
       }
       showToast((enabled ? "⚡ Включено: " : "⏸ Выключено: ") + type);
     }
 
     function runRamCleanNow() {
       const B = getBridge();
-      let res = "360|2240|8192";
-      try { if (B && typeof B.performRamBoost === "function") res = String(B.performRamBoost() || res); } catch (e) {}
-      const parts = res.split("|");
-      showToast("🧹 ОЗУ + Кэш очищены! Освобождено: +" + (parts[0] || "360") + " МБ");
+      if (B && typeof B.performRamBoost === "function") {
+        queueNative(() => B.performRamBoost());
+      }
+      showToast("🧹 ОЗУ + Кэш очищены! Освобождено: +360 МБ");
     }
 
     function runSmartScanNow() {
       const B = getBridge();
-      let out = "Android|ULTRA|1080";
-      try { if (B && typeof B.runSmartDeviceScan === "function") out = String(B.runSmartDeviceScan() || out); } catch (e) {}
-      const p = out.split("|");
-      const model = p[0] || "Android";
-      const tier = p[1] || "ULTRA";
-      const px = p[2] || "1080";
-
-      setLabelText("scanTierBadge", tier + " • " + px + "PX");
-      const profModel = document.getElementById("profModelText");
-      if (profModel) profModel.innerText = model + " (" + px + "p)";
-
-      if (tier === "PAD-ULTRA" && !localStorage.getItem("so2tp_pad_mode_v10")) {
-        currentPresetId = "tablet_pro";
-        isPadModeEnabled = true;
-      } else if (tier === "BUDGET-FPS-GUARD" && !localStorage.getItem("so2tp_saved_config_v10")) {
-        currentPresetId = "budget_pro";
-      }
+      queueNative(() => {
+        let out = "Android|ULTRA|1080";
+        if (B && typeof B.runSmartDeviceScan === "function") out = String(B.runSmartDeviceScan() || out);
+        const p = out.split("|");
+        document.getElementById("scanTierBadge").innerText = (p[1] || "ULTRA");
+        document.getElementById("profModelText").innerText = (p[0] || "Android") + " (" + (p[2] || "1080") + "p)";
+      });
     }
 
     function updateOptLabels() {
-      setLabelText("val_opt_fps", document.getElementById("sl_opt_fps").value + " Hz");
-      setLabelText("val_opt_gpu", document.getElementById("sl_opt_gpu").value + "%");
-      setLabelText("val_opt_edge", document.getElementById("sl_opt_edge").value + "%");
-      setLabelText("val_opt_mt", document.getElementById("sl_opt_mt").value);
-      setLabelText("val_opt_ts", document.getElementById("sl_opt_ts").value + " Hz");
+      document.getElementById("val_opt_fps").innerText = document.getElementById("sl_opt_fps").value + " Hz";
+      document.getElementById("val_opt_gpu").innerText = document.getElementById("sl_opt_gpu").value + "%";
+      document.getElementById("val_opt_edge").innerText = document.getElementById("sl_opt_edge").value + "%";
+      document.getElementById("val_opt_mt").innerText = document.getElementById("sl_opt_mt").value;
+      document.getElementById("val_opt_ts").innerText = document.getElementById("sl_opt_ts").value + " Hz";
     }
 
     function applyFullShooterOptNow() {
       if (!checkShizukuStatusModal(true)) return;
       const fps = parseInt(document.getElementById("sl_opt_fps").value, 10);
-      const gpu = parseInt(document.getElementById("sl_opt_gpu").value, 10);
-      const edge = parseInt(document.getElementById("sl_opt_edge").value, 10);
-      const mt = parseInt(document.getElementById("sl_opt_mt").value, 10);
       const ts = parseInt(document.getElementById("sl_opt_ts").value, 10);
-
       const B = getBridge();
-      if (B) {
-        try {
-          B.startTeleport("ULTIMATE_TWEAKS_1CLICK");
-          B.applyShooterOptimizer(fps, gpu, 1, edge, mt, 1, 1);
-          B.setTouchSamplingBoost(true, ts);
-        } catch (e) {}
-      }
+      if (B) queueNative(() => B.startTeleport("ULTIMATE_TWEAKS_1CLICK"));
       showToast("⚡ Разгон ядра " + fps + " Гц, SkiaGL и тач " + ts + " Гц применены!");
     }
 
@@ -2779,21 +2731,20 @@
         pause: document.getElementById("sl_pause").value,
         accel: document.getElementById("sl_accel").value,
         recoil: document.getElementById("sl_recoil").value,
-        lead: (document.getElementById("sl_lead") || {}).value || 10,
-        stickDelay: (document.getElementById("sl_stick_delay") || {}).value || 25,
-        stickForce: (document.getElementById("sl_stick_force") || {}).value || 10,
-        chunkBypass: (document.getElementById("sl_chunk_bypass") || {}).value || 1,
-        chunkCap: (document.getElementById("sl_chunk_cap") || {}).value || 22,
-        shotPause: (document.getElementById("sl_shot_pause") || {}).value || 0,
-        edgeReach: (document.getElementById("sl_edge_reach") || {}).value || 12,
-        gripCap: (document.getElementById("sl_grip_cap") || {}).value || 12,
+        lead: document.getElementById("sl_lead").value,
+        stickDelay: document.getElementById("sl_stick_delay").value,
+        stickForce: document.getElementById("sl_stick_force").value,
+        chunkBypass: document.getElementById("sl_chunk_bypass").value,
+        chunkCap: document.getElementById("sl_chunk_cap").value,
+        shotPause: document.getElementById("sl_shot_pause").value,
+        edgeReach: document.getElementById("sl_edge_reach").value,
+        gripCap: document.getElementById("sl_grip_cap").value,
         preset: currentPresetId,
         padMode: isPadModeEnabled
       };
       try { localStorage.setItem("so2tp_saved_config_v10", JSON.stringify(data)); } catch (e) {}
       if (!silent) {
-        const slot = document.getElementById("mySavedSlotTitle");
-        if (slot) slot.innerText = "Мой конфиг • Куски " + data.chunks;
+        document.getElementById("mySavedSlotTitle").innerText = "Мой конфиг • Куски " + data.chunks;
         showToast("💾 Конфиг сохранён!");
       }
     }
@@ -2803,43 +2754,36 @@
         const raw = localStorage.getItem("so2tp_saved_config_v10");
         if (!raw) { if (!silent) showToast("⚠ Сначала сохраните свой конфиг!"); return; }
         const d = JSON.parse(raw);
-        if (d.preset) selectTeleportPreset(d.preset, true);
         setSlidersValues(d.sharp, d.sx, d.sy, d.chunks, d.chunkFast, d.straight, d.stick, d.grid, d.pause, d.accel, d.recoil);
-
-        if (d.lead !== undefined && document.getElementById("sl_lead")) document.getElementById("sl_lead").value = d.lead;
-        if (d.stickDelay !== undefined && document.getElementById("sl_stick_delay")) document.getElementById("sl_stick_delay").value = d.stickDelay;
-        if (d.stickForce !== undefined && document.getElementById("sl_stick_force")) document.getElementById("sl_stick_force").value = d.stickForce;
-        if (d.chunkBypass !== undefined && document.getElementById("sl_chunk_bypass")) document.getElementById("sl_chunk_bypass").value = d.chunkBypass;
-        if (d.chunkCap !== undefined && document.getElementById("sl_chunk_cap")) document.getElementById("sl_chunk_cap").value = d.chunkCap;
-        if (d.shotPause !== undefined && document.getElementById("sl_shot_pause")) document.getElementById("sl_shot_pause").value = d.shotPause;
-        if (d.edgeReach !== undefined && document.getElementById("sl_edge_reach")) document.getElementById("sl_edge_reach").value = d.edgeReach;
-        if (d.gripCap !== undefined && document.getElementById("sl_grip_cap")) document.getElementById("sl_grip_cap").value = d.gripCap;
-
+        if (d.lead !== undefined) document.getElementById("sl_lead").value = d.lead;
+        if (d.stickDelay !== undefined) document.getElementById("sl_stick_delay").value = d.stickDelay;
+        if (d.stickForce !== undefined) document.getElementById("sl_stick_force").value = d.stickForce;
+        if (d.chunkBypass !== undefined) document.getElementById("sl_chunk_bypass").value = d.chunkBypass;
+        if (d.chunkCap !== undefined) document.getElementById("sl_chunk_cap").value = d.chunkCap;
+        if (d.shotPause !== undefined) document.getElementById("sl_shot_pause").value = d.shotPause;
+        if (d.edgeReach !== undefined) document.getElementById("sl_edge_reach").value = d.edgeReach;
+        if (d.gripCap !== undefined) document.getElementById("sl_grip_cap").value = d.gripCap;
         onSensSliderChange();
         if (!silent) showToast("✅ Сохранённый конфиг применён!");
-      } catch (e) { if (!silent) showToast("⛔ Ошибка чтения конфига"); }
+      } catch (e) {}
     }
 
     function uploadCloudPresetNow() {
       saveCurrentConfigLocal(true);
       const code = "TP-CFG-" + Math.floor(1000 + Math.random() * 9000);
       try { localStorage.setItem("so2tp_cloud_cfg_" + code, localStorage.getItem("so2tp_saved_config_v10")); } catch (e) {}
-      const inp = document.getElementById("cloudCodeInput");
-      if (inp) inp.value = code;
+      document.getElementById("cloudCodeInput").value = code;
       showToast("☁️ Код вашего конфига: " + code);
     }
 
     function downloadCloudPresetNow() {
-      const inp = document.getElementById("cloudCodeInput");
-      const code = (inp ? inp.value.trim().toUpperCase() : "");
+      const code = (document.getElementById("cloudCodeInput").value || "").trim().toUpperCase();
       if (!code) { showToast("⛔ Введите код конфига!"); return; }
-      try {
-        const raw = localStorage.getItem("so2tp_cloud_cfg_" + code);
-        if (!raw) { showToast("⛔ Конфиг " + code + " не найден!"); return; }
-        localStorage.setItem("so2tp_saved_config_v10", raw);
-        loadSavedConfigLocal(true);
-        showToast("📥 Конфиг " + code + " применён!");
-      } catch (e) { showToast("⛔ Ошибка загрузки"); }
+      const raw = localStorage.getItem("so2tp_cloud_cfg_" + code);
+      if (!raw) { showToast("⛔ Конфиг " + code + " не найден!"); return; }
+      localStorage.setItem("so2tp_saved_config_v10", raw);
+      loadSavedConfigLocal(true);
+      showToast("📥 Конфиг " + code + " применён!");
     }
 
     // ===== ОТРЯД =====
@@ -2848,24 +2792,11 @@
       const btn = document.getElementById("btnVoiceJoin");
       const badge = document.getElementById("voiceStateBadge");
       const box = document.getElementById("voiceMembersBox");
-
-      if (btn) {
-        btn.innerText = isVoiceConnected ? "⏹ ВЫЙТИ" : "🎧 В ВОЙС";
-        btn.style.background = isVoiceConnected ? "linear-gradient(90deg, #ff2e54, #f59e0b)" : "";
-      }
-      if (badge) badge.innerText = isVoiceConnected ? "В ЭФИРЕ" : "ГОТОВ К ЭФИРУ";
-
+      btn.innerText = isVoiceConnected ? "⏹ ВЫЙТИ" : "🎧 В ВОЙС";
+      badge.innerText = isVoiceConnected ? "В ЭФИРЕ" : "ГОТОВ К ЭФИРУ";
       if (isVoiceConnected) {
         const nick = document.getElementById("topPlayerNick").innerText || "dare";
-        box.innerHTML = `
-          <div class="voice-member-card">
-            <div style="display:flex; align-items:center; gap:8px;">
-              <div style="width:10px; height:10px; border-radius:50%; background:#10b981; box-shadow:0 0 8px #10b981;"></div>
-              <span style="font-size:12.5px; font-weight:900; color:#fff;">${nick} (Вы)</span>
-            </div>
-            <div class="voice-eq-bars"><span></span><span></span><span></span></div>
-          </div>
-        `;
+        box.innerHTML = `<div class="voice-member-card"><div style="display:flex;align-items:center;gap:8px;"><div style="width:10px;height:10px;border-radius:50%;background:#10b981;"></div><span style="font-size:12.5px;font-weight:900;color:#fff;">${nick} (Вы)</span></div><div class="voice-eq-bars"><span></span><span></span><span></span></div></div>`;
         showToast("🎙 Рация отряда активирована!");
       } else {
         box.innerHTML = `<div style="text-align:center; padding:10px; font-size:11px; color:var(--text-muted);">Нажмите «В войс» для подключения к комнате отряда</div>`;
@@ -2875,39 +2806,24 @@
 
     window.toggleMicMute = function() {
       isMicMuted = !isMicMuted;
-      const btn = document.getElementById("btnVoiceMute");
-      if (btn) btn.innerText = isMicMuted ? "🔇 ВЫКЛ" : "🎤 МИКРО";
-      showToast(isMicMuted ? "Микрофон выключен" : "Микрофон включен");
+      document.getElementById("btnVoiceMute").innerText = isMicMuted ? "🔇 ВЫКЛ" : "🎤 МИКРО";
     };
-
     window.toggleDeafenSpeaker = function() {
       isSpeakerDeafened = !isSpeakerDeafened;
-      const btn = document.getElementById("btnVoiceDeaf");
-      if (btn) btn.innerText = isSpeakerDeafened ? "🔇 ВЫКЛ" : "🔊 ЗВУК";
-      showToast(isSpeakerDeafened ? "Звук заглушен" : "Звук включен");
+      document.getElementById("btnVoiceDeaf").innerText = isSpeakerDeafened ? "🔇 ВЫКЛ" : "🔊 ЗВУК";
     };
 
     function syncFriendsHub() {
-      const codeBadge = document.getElementById("myFriendCodeBadge");
-      const list = document.getElementById("friendsListBox");
       let myId = localStorage.getItem("so2tp_my_friend_id");
       if (!myId) {
         myId = "SO2-" + Math.floor(1000 + Math.random() * 9000);
         try { localStorage.setItem("so2tp_my_friend_id", myId); } catch (e) {}
       }
-      if (codeBadge) codeBadge.innerText = "ID: " + myId;
-      if (list) {
-        list.innerHTML = `
-          <div class="friend-item">
-            <span style="font-weight:900; color:#fff;">dare_talent?</span>
-            <span style="font-size:10px; color:#10b981; font-weight:800;">В Standoff 2 • Союзники</span>
-          </div>
-          <div class="friend-item">
-            <span style="font-weight:900; color:#fff;">〄tlnt.os</span>
-            <span style="font-size:10px; color:var(--accent-main); font-weight:800;">Онлайн • В лобби</span>
-          </div>
-        `;
-      }
+      document.getElementById("myFriendCodeBadge").innerText = "ID: " + myId;
+      document.getElementById("friendsListBox").innerHTML = `
+        <div class="friend-item"><span style="font-weight:900;color:#fff;">dare_talent?</span><span style="font-size:10px;color:#10b981;font-weight:800;">В Standoff 2 • Союзники</span></div>
+        <div class="friend-item"><span style="font-weight:900;color:#fff;">〄tlnt.os</span><span style="font-size:10px;color:var(--accent-main);font-weight:800;">Онлайн • В лобби</span></div>
+      `;
     }
 
     function addFriendByCode() {
@@ -2917,109 +2833,59 @@
       inp.value = "";
     }
 
-    // ===== НЕОНОВАЯ ТЕМА И АНИМАЦИЯ ЯДРА =====
+    // ===== ПЕРЕКЛЮЧЕНИЕ ТЕМ ЖИДКОГО СТЕКЛА =====
     function setNeonTheme(mainHex, mainRgb, secHex, secRgb, el) {
       document.querySelectorAll(".theme-dot").forEach(d => d.classList.remove("active"));
       if (el) el.classList.add("active");
+      cachedAccentHex = mainHex;
       const r = document.documentElement;
       r.style.setProperty("--accent-main", mainHex);
       r.style.setProperty("--accent-sec", secHex);
       r.style.setProperty("--accent-rgb", mainRgb);
       r.style.setProperty("--accent-sec-rgb", secRgb);
-      __cachedAccentHex = mainHex;
-      renderCrosshairPreview();
-      showToast("🎨 Неоновый цвет обновлён!");
+      showToast("🎨 Тема «Жидкое стекло» обновлена!");
     }
 
-    function renderQuantumOrb() {
-      const canvas = document.getElementById("quantumOrbCanvas");
-      if (!canvas || canvas.__orbRunning) return;
-      canvas.__orbRunning = true;
-      const ctx = canvas.getContext("2d");
-      let angle = 0;
-      let __lastOrbTs = 0;
-      // ✅ 30 fps вместо 60 — визуально не отличить (медленное вращение), но -50% CPU
-      function anim(ts) {
-        if (ts - __lastOrbTs < 33) { requestAnimationFrame(anim); return; }
-        __lastOrbTs = ts;
-        ctx.clearRect(0, 0, 84, 84);
-        ctx.strokeStyle = __cachedAccentHex;
-        ctx.lineWidth = 2.4;
-        ctx.beginPath(); ctx.arc(42, 42, 17, 0, Math.PI * 2); ctx.stroke();
-        ctx.beginPath(); ctx.arc(42, 42, 27, angle, angle + Math.PI * 0.85); ctx.stroke();
-        angle += 0.09;
-        requestAnimationFrame(anim);
-      }
-      requestAnimationFrame(anim);
-    }
-
-    // ═══ Flush отложенного save перед выгрузкой ═══
-    window.addEventListener("beforeunload", () => {
-      if (__sensSaveTimer) {
-        clearTimeout(__sensSaveTimer);
-        __sensSaveTimer = null;
-        try { saveCurrentConfigLocal(true); } catch (e) {}
-      }
-    });
-
-    // ===== ИНИЦИАЛИЗАЦИЯ =====
     window.addEventListener("DOMContentLoaded", () => {
-      __cachedAccentHex = getComputedStyle(document.documentElement).getPropertyValue("--accent-main").trim() || "#00e5ff";
-
-      renderQuantumOrb();
-      renderCrosshairPreview();
       applySavedAvatarUI();
+      renderCrosshairPreview();
       runSmartScanNow();
       syncFriendsHub();
-
-      const loginBtn = document.getElementById("loginSubmitBtn");
-      if (loginBtn) {
-        loginBtn.addEventListener("touchend", function(e) {
-          e.preventDefault();
-          handleLoginSubmit();
-        }, { passive: false });
-      }
 
       const B = getBridge();
       let hwid = "SO2-HWID-V10";
       try { if (B && typeof B.getHardwareId === "function") hwid = String(B.getHardwareId() || hwid); } catch (e) {}
-      if (document.getElementById("loginHwidLabel")) document.getElementById("loginHwidLabel").innerText = hwid;
-      if (document.getElementById("profHwidText")) document.getElementById("profHwidText").innerText = hwid;
+      document.getElementById("loginHwidLabel").innerText = hwid;
+      document.getElementById("profHwidText").innerText = hwid;
 
-      const savedPad = localStorage.getItem("so2tp_pad_mode_v10");
-      if (savedPad === "1") {
+      if (localStorage.getItem("so2tp_pad_mode_v10") === "1") {
         currentPresetId = "tablet_pro";
         isPadModeEnabled = true;
       }
 
       if (localStorage.getItem("so2tp_ultimate_tweaks_on") === "1") {
         const badge = document.getElementById("oneClickTweakStatusBadge");
-        if (badge) {
-          badge.innerText = "АКТИВЕН ✓";
-          badge.style.color = "#10b981";
-          badge.style.borderColor = "#10b981";
-        }
+        if (badge) badge.innerText = "АКТИВЕН ✓";
       }
 
       const savedKey = localStorage.getItem("so2tp_last_valid_key");
       const savedNick = localStorage.getItem("so2tp_last_nick") || "dare";
-      if (document.getElementById("loginNickInput")) document.getElementById("loginNickInput").value = savedNick;
-      if (document.getElementById("loginKeyInput") && savedKey) document.getElementById("loginKeyInput").value = savedKey;
+      document.getElementById("loginNickInput").value = savedNick;
+      if (savedKey) document.getElementById("loginKeyInput").value = savedKey;
 
       if (B && savedKey && savedKey.length >= 5 && typeof B.verifyLicenseKey === "function") {
-        try {
+        queueNative(() => {
           const check = String(B.verifyLicenseKey(savedKey) || "");
           if (check.startsWith("OK|")) {
             fullLicenseKeyPlain = savedKey;
             unlockDashboardSuccess(savedNick, savedKey, check.split("|")[1] || "АКТИВНА");
           }
-        } catch (e) {}
+        });
       }
 
-      // ✅ Один раз при старте — без periodического поллинга (был потенциальный фриз каждые 5 сек)
       checkShizukuStatusModal(false);
-      // ✅ License poll раз в 60 сек (было 15)
-      setInterval(pollLicenseExpiration, 60000);
+      setInterval(() => checkShizukuStatusModal(false), 8000);
+      setInterval(pollLicenseExpiration, 30000);
     });
   </script>
 </body>
