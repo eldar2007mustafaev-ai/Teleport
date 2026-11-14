@@ -2627,15 +2627,17 @@
         "5:4": "152px", "1:1": "126px", "SHRINK-84": "182px", "21:9": "212px"
       };
       document.getElementById("stretchPreviewInner").style.width = widths[ratio] || "168px";
+      queueNative((B) => { B.startTeleport("SET_RATIO:" + ratio); });
       if (!silent) saveAllAppSettingsMaster();
     }
 
     function launchFloatingTButton() {
       if (!checkShizukuStatusModal(true)) return;
       queueNative((B) => {
+        B.startTeleport("SET_RATIO:" + currentStretchRatio);
         const res = String(B.activateStretchFloatingButton(currentStretchRatio) || "");
         if (res === "OK") {
-          showToast("📐 Иконка «T» (" + currentStretchRatio + ") запущена! Нажмите на «T» при входе в игру.");
+          showToast("📐 Иконка «T» (" + currentStretchRatio + ") запущена!");
         } else {
           showToast("📐 Разрешите отображение поверх окон для кнопки «T»");
         }
