@@ -145,6 +145,21 @@ public class TeleportEngine {
         String modelUpper = Build.MODEL != null ? Build.MODEL.toUpperCase() : "";
         boolean isSamsungASeries = modelUpper.contains("SM-A") || modelUpper.contains("A57") || modelUpper.contains("A55") || modelUpper.contains("A54");
         isBudgetDeviceHardware = (!isTabletDeviceMode && (isSamsungASeries || deviceMaxRefreshRate <= 90 || nativeShortSide <= 720 || cores <= 6));
+
+        // Разрешаем изменение пропорций окон один раз при старте (без перезапуска игры!)
+        stretchExecutor.execute(() -> {
+            try {
+                if (isShizukuReady() || ShizukuManager.isPermissionGranted()) {
+                    ShizukuManager.execCommand(
+                            "settings put global force_resizable_activities 1 2>/dev/null; " +
+                            "settings put global enable_freeform_support 1 2>/dev/null; " +
+                            "settings put global enable_non_resizable_multi_window 1 2>/dev/null; " +
+                            "settings put global block_untrusted_touches 0 2>/dev/null; " +
+                            "settings put secure block_untrusted_touches 0 2>/dev/null;"
+                    );
+                }
+            } catch (Throwable ignored) {}
+        });
     }
 
     private static void autoDetectSavedLicenseKey() {
@@ -342,7 +357,7 @@ public class TeleportEngine {
         } catch (Throwable ignored) {}
     }
 
-    // ПЕРЕХВАТ КОМАНД ПЛАВАЮЩЕЙ КНОПКИ «T» ДЛЯ ВСЕХ МАРОК ТЕЛЕФОНОВ
+    // ПЕРЕХВАТ КОМАНД ПЛАВАЮЩЕЙ КНОПКИ «T» БЕЗ ПРИНУДИТЕЛЬНОЙ ОСТАНОВКИ ИГРЫ
     public static void execShizukuCommand(final String cmd) {
         if (cmd == null || cmd.isEmpty()) return;
         if (cmd.contains("wm size") && !cmd.contains("reset")) {
@@ -370,7 +385,6 @@ public class TeleportEngine {
         return isNaturalLandscapeDevice ? 0 : 1;
     }
 
-    // Проверка: не заблокировала ли оболочка Realme UI / HyperOS команду wm size
     private static void verifyStretchAppliedOrWarnUser(final int expectedShort, final int expectedLong) {
         mainHandler.postDelayed(() -> {
             try {
@@ -382,7 +396,6 @@ public class TeleportEngine {
                 int curS = Math.min(dm.widthPixels, dm.heightPixels);
                 int curL = Math.max(dm.widthPixels, dm.heightPixels);
 
-                // Если разрешение вообще не изменилось (осталось родным) — значит система заблокировала wm size
                 if (Math.abs(curL - nativeLongSide) <= 8 && Math.abs(curS - nativeShortSide) <= 8
                         && Math.abs(expectedLong - nativeLongSide) > 60) {
                     String brand = (Build.MANUFACTURER + " " + Build.BRAND).toLowerCase();
@@ -394,17 +407,13 @@ public class TeleportEngine {
                         Toast.makeText(appContext,
                                 "⚠️ На Xiaomi/Poco включите «Отладка по USB (Настройки безопасности)» в «Для разработчиков»!",
                                 Toast.LENGTH_LONG).show();
-                    } else {
-                        Toast.makeText(appContext,
-                                "⚠️ Система заблокировала растяг! Проверьте «Для разработчиков» (Мониторинг разрешений) и Shizuku.",
-                                Toast.LENGTH_LONG).show();
                     }
                 }
             } catch (Throwable ignored) {}
         }, 450);
     }
 
-    // УНИВЕРСАЛЬНЫЙ ШАГ 1 (SAMSUNG + REALME + XIAOMI + VIVO + HONOR + INFINIX)
+    // ШАГ 1 КНОПКИ «T» — МЯГКОЕ СЖАТИЕ В РАМКУ БЕЗ ВЫЛЕТА ИГРЫ
     public static boolean applyAspectRatioStretch(String ratio) {
         final String cleanRatio = (ratio == null || ratio.trim().isEmpty()) ? lastSelectedRatio : ratio.trim().toUpperCase();
         lastSelectedRatio = cleanRatio;
@@ -454,50 +463,33 @@ public class TeleportEngine {
 
         stretchExecutor.execute(() -> {
             try {
-                // 1. Первым делом изолированно выполняем wm size + cmd window size (чтобы Realme/Xiaomi не прерывали цепочку)
-                String primaryCmd =
-                        "wm size " + wmArg + "; " +
-                        "cmd window size " + wmArg + " 2>/dev/null; " +
-                        "cmd window user-rotation lock " + landRot + "; " +
+                // Без am compat и без дублирования команд — игра НЕ закрывается и НЕ теряет Surface!
+                String stretchCmd =
                         "settings put system accelerometer_rotation 0; " +
-                        "settings put system user_rotation " + landRot + ";";
-                ShizukuManager.execCommand(primaryCmd);
-
-                // 2. Вторым шагом снимаем ограничения Letterbox для Realme UI / ColorOS / HyperOS / One UI
-                String multiBrandFlags =
-                        "wm set-ignore-orientation-request true 2>/dev/null; " +
-                        "cmd window set-ignore-orientation-request true 2>/dev/null; " +
-                        "am compat disable OVERRIDE_MIN_ASPECT_RATIO com.axlebolt.standoff2 2>/dev/null; " +
-                        "settings put global force_resizable_activities 1 2>/dev/null; " +
-                        "settings put global enable_freeform_support 1 2>/dev/null; " +
-                        "settings put global enable_non_resizable_multi_window 1 2>/dev/null; " +
-                        "settings put global block_untrusted_touches 0 2>/dev/null; " +
-                        "settings put secure block_untrusted_touches 0 2>/dev/null;";
-                ShizukuManager.execCommand(multiBrandFlags);
-
+                        "settings put system user_rotation " + landRot + "; " +
+                        "cmd window user-rotation lock " + landRot + "; " +
+                        "wm size " + wmArg + "; " +
+                        "settings put system peak_refresh_rate " + deviceMaxRefreshRate + ".0; " +
+                        "settings put system min_refresh_rate " + deviceMaxRefreshRate + ".0;";
+                ShizukuManager.execCommand(stretchCmd);
                 verifyStretchAppliedOrWarnUser(finalTS, finalTL);
             } catch (Throwable ignored) {}
         });
         return true;
     }
 
-    // УНИВЕРСАЛЬНЫЙ ШАГ 2 — РАСКРЫТИЕ РАМКИ В ПОЛНЫЙ РАСТЯГ (ПРОБИВАЕТ REALME UI / HYPEROS / ONE UI)
+    // ШАГ 2 КНОПКИ «T» — ЧИСТОЕ РАСКРЫТИЕ РАМКИ НА ВЕСЬ ЭКРАН БЕЗ ВЫЛЕТА
     public static void releaseBoxToFullStretch() {
-        final int natS = getNativeShortSide();
-        final int natL = getNativeLongSide();
-        final String natArg = isNaturalLandscapeDevice ? (natL + "x" + natS) : (natS + "x" + natL);
         final int landRot = getCurrentLandscapeRotation();
-
         stretchExecutor.execute(() -> {
             try {
-                // Сначала подаем точное родное разрешение (заставляет Realme UI / MIUI мгновенно растянуть окно игры), затем reset
                 String releaseCmd =
-                        "cmd window user-rotation lock " + landRot + "; " +
                         "settings put system accelerometer_rotation 0; " +
                         "settings put system user_rotation " + landRot + "; " +
-                        "wm size " + natArg + "; " +
+                        "cmd window user-rotation lock " + landRot + "; " +
                         "wm size reset; " +
-                        "cmd window size reset 2>/dev/null;";
+                        "settings put system peak_refresh_rate " + deviceMaxRefreshRate + ".0; " +
+                        "settings put system min_refresh_rate " + deviceMaxRefreshRate + ".0;";
                 ShizukuManager.execCommand(releaseCmd);
             } catch (Throwable ignored) {}
         });
@@ -505,18 +497,11 @@ public class TeleportEngine {
 
     // ПОЛНЫЙ СБРОС ЭКРАНА В РОДНОЕ РАЗРЕШЕНИЕ
     public static void resetResolutionToNative() {
-        final int natS = getNativeShortSide();
-        final int natL = getNativeLongSide();
-        final String natArg = isNaturalLandscapeDevice ? (natL + "x" + natS) : (natS + "x" + natL);
-
         stretchExecutor.execute(() -> {
             try {
                 String resetCmd =
-                        "wm size " + natArg + "; " +
                         "wm size reset; " +
-                        "cmd window size reset 2>/dev/null; " +
                         "wm density reset; " +
-                        "wm set-ignore-orientation-request false 2>/dev/null; " +
                         "cmd window user-rotation free; " +
                         "settings put system accelerometer_rotation 1;";
                 ShizukuManager.execCommand(resetCmd);
