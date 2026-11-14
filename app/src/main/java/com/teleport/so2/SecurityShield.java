@@ -1,7 +1,6 @@
 package com.teleport.so2;
 
 import android.content.Context;
-import android.content.SharedPreferences;
 import android.media.MediaDrm;
 import android.os.Build;
 import android.os.Debug;
@@ -23,6 +22,9 @@ import java.nio.charset.StandardCharsets;
 import java.security.KeyStore;
 import java.security.MessageDigest;
 import java.util.UUID;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 import javax.crypto.Cipher;
 import javax.crypto.KeyGenerator;
@@ -34,55 +36,53 @@ import javax.crypto.spec.SecretKeySpec;
 public class SecurityShield {
 
     private static final String KEYSTORE_ALIAS = "so2_hw_tee_v10";
-    private static volatile String runtimeSessionToken = "";
+    private static volatile String cachedHwid = null;
+    private static volatile boolean cachedValidSession = false;
+    private static volatile String cachedVerifiedKey = "";
+    private static volatile boolean guardStarted = false;
+    private static final ScheduledExecutorService bgGuard = Executors.newSingleThreadScheduledExecutor();
 
-    // Расшифровка строк в рантайме (чтобы grep по smali ничего не находил)
-    public static String xorStr(int[] data, int key) {
-        char[] out = new char[data.length];
-        for (int i = 0; i < data.length; i++) {
-            out[i] = (char) (data[i] ^ (key + (i & 7)));
-        }
-        return new String(out);
+    public static void startBackgroundGuard(final Context ctx) {
+        if (guardStarted) return;
+        guardStarted = true;
+        bgGuard.scheduleWithFixedDelay(() -> {
+            enforceAntiDebugAndFrida();
+            if (ctx != null && cachedHwid == null) {
+                getHardwareBoundHwid(ctx);
+            }
+        }, 0, 8, TimeUnit.SECONDS);
     }
 
-    // 1. ЖЁСТКАЯ ЗАЩИТА ОТ ОТЛАДЧИКА, TRACERPID И FRIDA (Убивает процесс мгновенно)
     public static void enforceAntiDebugAndFrida() {
         try {
             if (Debug.isDebuggerConnected() || Debug.waitingForDebugger()) {
                 killNow();
             }
-            // Проверка TracerPid в /proc/self/status
             try (BufferedReader br = new BufferedReader(new FileReader("/proc/self/status"))) {
                 String line;
                 while ((line = br.readLine()) != null) {
                     if (line.startsWith("TracerPid:")) {
                         int tracerPid = Integer.parseInt(line.substring(10).trim());
-                        if (tracerPid != 0) {
-                            killNow();
-                        }
+                        if (tracerPid != 0) killNow();
                         break;
                     }
                 }
             }
-            // Проверка инжектов Frida / Xposed / Substrate в памяти
             try (BufferedReader br = new BufferedReader(new FileReader("/proc/self/maps"))) {
                 String line;
                 while ((line = br.readLine()) != null) {
                     String low = line.toLowerCase();
-                    if (low.contains("frida") || low.contains("xposed") || low.contains("substrate") || low.contains("gum-js-loop")) {
+                    if (low.contains("frida") || low.contains("xposed") || low.contains("gum-js-loop")) {
                         killNow();
                     }
                 }
             }
-            // Проверка стандартных портов Frida-server (27042, 27043)
-            new Thread(() -> {
-                for (int port : new int[]{27042, 27043}) {
-                    try (Socket s = new Socket()) {
-                        s.connect(new InetSocketAddress("127.0.0.1", port), 150);
-                        killNow();
-                    } catch (Throwable ignored) {}
-                }
-            }).start();
+            for (int port : new int[]{27042, 27043}) {
+                try (Socket s = new Socket()) {
+                    s.connect(new InetSocketAddress("127.0.0.1", port), 80);
+                    killNow();
+                } catch (Throwable ignored) {}
+            }
         } catch (Throwable ignored) {}
     }
 
@@ -91,9 +91,11 @@ public class SecurityShield {
         System.exit(10);
     }
 
-    // 2. АППАРАТНЫЙ HWID (AndroidKeyStore + Widevine + Android ID с защитой от подмены)
+    // Вычисляется 1 раз и кэшируется в RAM, чтобы не фризить WebView!
     public static String getHardwareBoundHwid(Context ctx) {
-        enforceAntiDebugAndFrida();
+        if (cachedHwid != null && !cachedHwid.isEmpty()) {
+            return cachedHwid;
+        }
         StringBuilder raw = new StringBuilder();
         try {
             String aid = Settings.Secure.getString(ctx.getContentResolver(), Settings.Secure.ANDROID_ID);
@@ -118,13 +120,13 @@ public class SecurityShield {
             for (int i = 0; i < 8; i++) {
                 hex.append(String.format("%02X", sig[i]));
             }
-            return hex.toString();
+            cachedHwid = hex.toString();
+            return cachedHwid;
         } catch (Throwable t) {
             return "SO2-SEC-ERR";
         }
     }
 
-    // 3. ШИФРОВАНИЕ SHAREDPREFERENCES ЧЕРЕЗ ЧИП KEYSTORE (AES-256-GCM)
     private static SecretKey getOrCreateTeeAesKey() throws Exception {
         KeyStore ks = KeyStore.getInstance("AndroidKeyStore");
         ks.load(null);
@@ -172,19 +174,29 @@ public class SecurityShield {
         }
     }
 
-    // 4. КРИПТОГРАФИЧЕСКИЙ ТОКЕН СЕССИИ (НЕВОЗМОЖНО ПОДДЕЛАТЬ ПРОСТЫМ return "OK")
-    public static void issueVerifiedSessionToken(Context ctx, String licenseKey) {
-        try {
-            String hwid = getHardwareBoundHwid(ctx);
-            byte[] mac = hmacSha256((licenseKey.trim().toUpperCase() + "|" + hwid).getBytes(StandardCharsets.UTF_8), getOrCreateHardwareSecret());
-            runtimeSessionToken = Base64.encodeToString(mac, Base64.NO_WRAP);
-            putSecurePref(ctx, "v10_lic_key", licenseKey.trim().toUpperCase());
-            putSecurePref(ctx, "v10_lic_mac", runtimeSessionToken);
-        } catch (Throwable ignored) {}
+    public static void issueVerifiedSessionToken(final Context ctx, final String licenseKey) {
+        if (licenseKey == null || licenseKey.trim().length() < 5) return;
+        final String clean = licenseKey.trim().toUpperCase();
+        cachedVerifiedKey = clean;
+        cachedValidSession = true;
+        bgGuard.execute(() -> {
+            try {
+                startBackgroundGuard(ctx);
+                String hwid = getHardwareBoundHwid(ctx);
+                byte[] mac = hmacSha256((clean + "|" + hwid).getBytes(StandardCharsets.UTF_8), getOrCreateHardwareSecret());
+                String token = Base64.encodeToString(mac, Base64.NO_WRAP);
+                putSecurePref(ctx, "v10_lic_key", clean);
+                putSecurePref(ctx, "v10_lic_mac", token);
+            } catch (Throwable ignored) {}
+        });
     }
 
+    // Мгновенная проверка за 0 мс из RAM (никаких фризов при нажатии кнопок!)
     public static boolean isSessionCryptographicallyValid(Context ctx) {
-        enforceAntiDebugAndFrida();
+        if (cachedValidSession && cachedVerifiedKey.length() >= 5) {
+            return true;
+        }
+        if (ctx == null) return false;
         try {
             String savedKey = getSecurePref(ctx, "v10_lic_key");
             String savedMac = getSecurePref(ctx, "v10_lic_mac");
@@ -192,18 +204,32 @@ public class SecurityShield {
             String hwid = getHardwareBoundHwid(ctx);
             byte[] expected = hmacSha256((savedKey + "|" + hwid).getBytes(StandardCharsets.UTF_8), getOrCreateHardwareSecret());
             String expectedB64 = Base64.encodeToString(expected, Base64.NO_WRAP);
-            return MessageDigest.isEqual(savedMac.getBytes(StandardCharsets.UTF_8), expectedB64.getBytes(StandardCharsets.UTF_8));
+            boolean ok = MessageDigest.isEqual(savedMac.getBytes(StandardCharsets.UTF_8), expectedB64.getBytes(StandardCharsets.UTF_8));
+            if (ok) {
+                cachedVerifiedKey = savedKey;
+                cachedValidSession = true;
+            }
+            return ok;
         } catch (Throwable t) {
             return false;
         }
     }
 
-    public static void clearSessionToken(Context ctx) {
-        runtimeSessionToken = "";
-        ctx.getSharedPreferences("so2_sec_vault_v10", Context.MODE_PRIVATE).edit().clear().apply();
+    public static String getVerifiedKey(Context ctx) {
+        if (cachedVerifiedKey != null && cachedVerifiedKey.length() >= 5) return cachedVerifiedKey;
+        String k = getSecurePref(ctx, "v10_lic_key");
+        if (k != null && k.length() >= 5) cachedVerifiedKey = k;
+        return cachedVerifiedKey;
     }
 
-    // 5. ЗАЩИТА WEBVIEW И ОВЕРЛЕЕВ (FLAG_SECURE + ОТКЛЮЧЕНИЕ FILE ACCESS И DEVTOOLS)
+    public static void clearSessionToken(Context ctx) {
+        cachedValidSession = false;
+        cachedVerifiedKey = "";
+        if (ctx != null) {
+            ctx.getSharedPreferences("so2_sec_vault_v10", Context.MODE_PRIVATE).edit().clear().apply();
+        }
+    }
+
     public static void hardenWebView(WebView wv, Window window) {
         try {
             WebView.setWebContentsDebuggingEnabled(false);
