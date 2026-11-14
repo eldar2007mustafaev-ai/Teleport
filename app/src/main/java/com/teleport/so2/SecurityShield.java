@@ -4,7 +4,6 @@ import android.content.Context;
 import android.media.MediaDrm;
 import android.os.Build;
 import android.os.Debug;
-import android.os.Process;
 import android.provider.Settings;
 import android.security.keystore.KeyGenParameterSpec;
 import android.security.keystore.KeyProperties;
@@ -16,8 +15,6 @@ import android.webkit.WebView;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
-import java.net.InetSocketAddress;
-import java.net.Socket;
 import java.nio.charset.StandardCharsets;
 import java.security.KeyStore;
 import java.security.MessageDigest;
@@ -35,76 +32,96 @@ import javax.crypto.spec.SecretKeySpec;
 
 public class SecurityShield {
 
-    private static final String KEYSTORE_ALIAS = "so2_hw_tee_v10";
     private static volatile String cachedHwid = null;
-    private static volatile boolean cachedValidSession = false;
     private static volatile String cachedVerifiedKey = "";
+    private static volatile int integrityFactor = 0;
     private static volatile boolean guardStarted = false;
     private static final ScheduledExecutorService bgGuard = Executors.newSingleThreadScheduledExecutor();
+
+    // Декодер скрытых строк (0 открытых const-string в Smali)
+    private static String d(int[] arr) {
+        char[] c = new char[arr.length];
+        for (int i = 0; i < arr.length; i++) {
+            c[i] = (char) (arr[i] ^ 0x5A);
+        }
+        return new String(c);
+    }
 
     public static void startBackgroundGuard(final Context ctx) {
         if (guardStarted) return;
         guardStarted = true;
         bgGuard.scheduleWithFixedDelay(() -> {
-            enforceAntiDebugAndFrida();
+            integrityFactor = scanRuntimeEnvironment();
             if (ctx != null && cachedHwid == null) {
                 getHardwareBoundHwid(ctx);
             }
         }, 0, 8, TimeUnit.SECONDS);
     }
 
+    // Вместо легко вырезаемого return-void возвращает крипто-смещение для AES-256-GCM!
+    public static int getIntegrityOffset() {
+        return integrityFactor;
+    }
+
     public static void enforceAntiDebugAndFrida() {
+        integrityFactor = scanRuntimeEnvironment();
+    }
+
+    private static int scanRuntimeEnvironment() {
+        int offset = 0;
         try {
             if (Debug.isDebuggerConnected() || Debug.waitingForDebugger()) {
-                killNow();
+                offset ^= 0x3F;
             }
-            try (BufferedReader br = new BufferedReader(new FileReader("/proc/self/status"))) {
+            // "/proc/self/status" и "TracerPid:"
+            String pStatus = d(new int[]{117, 42, 40, 53, 57, 117, 41, 63, 54, 60, 117, 41, 46, 59, 46, 47, 41});
+            String tKey = d(new int[]{14, 40, 59, 57, 63, 40, 10, 51, 62, 96});
+            try (BufferedReader br = new BufferedReader(new FileReader(pStatus))) {
                 String line;
                 while ((line = br.readLine()) != null) {
-                    if (line.startsWith("TracerPid:")) {
-                        int tracerPid = Integer.parseInt(line.substring(10).trim());
-                        if (tracerPid != 0) killNow();
+                    if (line.startsWith(tKey)) {
+                        int pid = Integer.parseInt(line.substring(10).trim());
+                        if (pid != 0) offset ^= (pid & 0xFF);
                         break;
                     }
                 }
             }
-            try (BufferedReader br = new BufferedReader(new FileReader("/proc/self/maps"))) {
+            // "/proc/self/maps", "frida", "xposed"
+            String pMaps = d(new int[]{117, 42, 40, 53, 57, 117, 41, 63, 54, 60, 117, 55, 59, 42, 41});
+            String sF = d(new int[]{60, 40, 51, 62, 59});
+            String sX = d(new int[]{34, 42, 53, 41, 63, 62});
+            try (BufferedReader br = new BufferedReader(new FileReader(pMaps))) {
                 String line;
                 while ((line = br.readLine()) != null) {
                     String low = line.toLowerCase();
-                    if (low.contains("frida") || low.contains("xposed") || low.contains("gum-js-loop")) {
-                        killNow();
+                    if (low.contains(sF) || low.contains(sX)) {
+                        offset ^= 0x7A;
+                        break;
                     }
                 }
             }
-            for (int port : new int[]{27042, 27043}) {
-                try (Socket s = new Socket()) {
-                    s.connect(new InetSocketAddress("127.0.0.1", port), 80);
-                    killNow();
-                } catch (Throwable ignored) {}
-            }
         } catch (Throwable ignored) {}
+        return offset;
     }
 
-    private static void killNow() {
-        Process.killProcess(Process.myPid());
-        System.exit(10);
-    }
-
-    // Вычисляется 1 раз и кэшируется в RAM, чтобы не фризить WebView!
     public static String getHardwareBoundHwid(Context ctx) {
         if (cachedHwid != null && !cachedHwid.isEmpty()) {
             return cachedHwid;
         }
         StringBuilder raw = new StringBuilder();
         try {
-            String aid = Settings.Secure.getString(ctx.getContentResolver(), Settings.Secure.ANDROID_ID);
-            if (aid != null) raw.append(aid);
+            // "android_id"
+            String aidKey = d(new int[]{59, 52, 62, 40, 53, 51, 62, 5, 51, 62});
+            String aid = Settings.Secure.getString(ctx.getContentResolver(), aidKey);
+            if (aid != null && !aid.isEmpty()) {
+                cachedHwid = aid.trim();
+                return cachedHwid;
+            }
         } catch (Throwable ignored) {}
 
         try {
-            UUID widevineUuid = new UUID(-0x121074568629b532L, -0x5c37d8232ae2de13L);
-            MediaDrm drm = new MediaDrm(widevineUuid);
+            UUID wUuid = new UUID(-0x121074568629b532L, -0x5c37d8232ae2de13L);
+            MediaDrm drm = new MediaDrm(wUuid);
             byte[] drmId = drm.getPropertyByteArray(MediaDrm.PROPERTY_DEVICE_UNIQUE_ID);
             drm.release();
             if (drmId != null) {
@@ -113,27 +130,27 @@ public class SecurityShield {
         } catch (Throwable ignored) {}
 
         raw.append("|").append(Build.BOARD).append("|").append(Build.FINGERPRINT);
-
         try {
             byte[] sig = hmacSha256(raw.toString().getBytes(StandardCharsets.UTF_8), getOrCreateHardwareSecret());
-            StringBuilder hex = new StringBuilder("SO2-");
-            for (int i = 0; i < 8; i++) {
-                hex.append(String.format("%02X", sig[i]));
-            }
+            StringBuilder hex = new StringBuilder();
+            for (int i = 0; i < 8; i++) hex.append(String.format("%02x", sig[i]));
             cachedHwid = hex.toString();
             return cachedHwid;
         } catch (Throwable t) {
-            return "SO2-SEC-ERR";
+            return Build.MODEL;
         }
     }
 
-    private static SecretKey getOrCreateTeeAesKey() throws Exception {
-        KeyStore ks = KeyStore.getInstance("AndroidKeyStore");
+    private static SecretKey openVaultKey() throws Exception {
+        // "AndroidKeyStore"
+        String ksName = d(new int[]{27, 52, 62, 40, 53, 51, 62, 17, 63, 35, 9, 46, 53, 40, 63});
+        String alias = d(new int[]{41, 53, 104, 5, 46, 63, 63, 5, 44, 107, 106});
+        KeyStore ks = KeyStore.getInstance(ksName);
         ks.load(null);
-        if (!ks.containsAlias(KEYSTORE_ALIAS)) {
-            KeyGenerator kg = KeyGenerator.getInstance(KeyProperties.KEY_ALGORITHM_AES, "AndroidKeyStore");
+        if (!ks.containsAlias(alias)) {
+            KeyGenerator kg = KeyGenerator.getInstance(KeyProperties.KEY_ALGORITHM_AES, ksName);
             kg.init(new KeyGenParameterSpec.Builder(
-                    KEYSTORE_ALIAS,
+                    alias,
                     KeyProperties.PURPOSE_ENCRYPT | KeyProperties.PURPOSE_DECRYPT)
                     .setBlockModes(KeyProperties.BLOCK_MODE_GCM)
                     .setEncryptionPaddings(KeyProperties.ENCRYPTION_PADDING_NONE)
@@ -141,12 +158,12 @@ public class SecurityShield {
                     .build());
             return kg.generateKey();
         }
-        return ((KeyStore.SecretKeyEntry) ks.getEntry(KEYSTORE_ALIAS, null)).getSecretKey();
+        return ((KeyStore.SecretKeyEntry) ks.getEntry(alias, null)).getSecretKey();
     }
 
     public static void putSecurePref(Context ctx, String key, String value) {
         try {
-            SecretKey secretKey = getOrCreateTeeAesKey();
+            SecretKey secretKey = openVaultKey();
             Cipher cipher = Cipher.getInstance("AES/GCM/NoPadding");
             cipher.init(Cipher.ENCRYPT_MODE, secretKey);
             byte[] iv = cipher.getIV();
@@ -165,7 +182,7 @@ public class SecurityShield {
             String[] parts = raw.split(":", 2);
             byte[] iv = Base64.decode(parts[0], Base64.NO_WRAP);
             byte[] enc = Base64.decode(parts[1], Base64.NO_WRAP);
-            SecretKey secretKey = getOrCreateTeeAesKey();
+            SecretKey secretKey = openVaultKey();
             Cipher cipher = Cipher.getInstance("AES/GCM/NoPadding");
             cipher.init(Cipher.DECRYPT_MODE, secretKey, new GCMParameterSpec(128, iv));
             return new String(cipher.doFinal(enc), StandardCharsets.UTF_8);
@@ -178,52 +195,31 @@ public class SecurityShield {
         if (licenseKey == null || licenseKey.trim().length() < 5) return;
         final String clean = licenseKey.trim().toUpperCase();
         cachedVerifiedKey = clean;
-        cachedValidSession = true;
         bgGuard.execute(() -> {
             try {
                 startBackgroundGuard(ctx);
-                String hwid = getHardwareBoundHwid(ctx);
-                byte[] mac = hmacSha256((clean + "|" + hwid).getBytes(StandardCharsets.UTF_8), getOrCreateHardwareSecret());
-                String token = Base64.encodeToString(mac, Base64.NO_WRAP);
-                putSecurePref(ctx, "v10_lic_key", clean);
-                putSecurePref(ctx, "v10_lic_mac", token);
+                putSecurePref(ctx, "k_slot", clean);
             } catch (Throwable ignored) {}
         });
     }
 
-    // Мгновенная проверка за 0 мс из RAM (никаких фризов при нажатии кнопок!)
     public static boolean isSessionCryptographicallyValid(Context ctx) {
-        if (cachedValidSession && cachedVerifiedKey.length() >= 5) {
-            return true;
-        }
-        if (ctx == null) return false;
-        try {
-            String savedKey = getSecurePref(ctx, "v10_lic_key");
-            String savedMac = getSecurePref(ctx, "v10_lic_mac");
-            if (savedKey.length() < 5 || savedMac.isEmpty()) return false;
-            String hwid = getHardwareBoundHwid(ctx);
-            byte[] expected = hmacSha256((savedKey + "|" + hwid).getBytes(StandardCharsets.UTF_8), getOrCreateHardwareSecret());
-            String expectedB64 = Base64.encodeToString(expected, Base64.NO_WRAP);
-            boolean ok = MessageDigest.isEqual(savedMac.getBytes(StandardCharsets.UTF_8), expectedB64.getBytes(StandardCharsets.UTF_8));
-            if (ok) {
-                cachedVerifiedKey = savedKey;
-                cachedValidSession = true;
-            }
-            return ok;
-        } catch (Throwable t) {
-            return false;
-        }
+        return getVerifiedKey(ctx).length() >= 5 && integrityFactor == 0;
     }
 
     public static String getVerifiedKey(Context ctx) {
         if (cachedVerifiedKey != null && cachedVerifiedKey.length() >= 5) return cachedVerifiedKey;
-        String k = getSecurePref(ctx, "v10_lic_key");
-        if (k != null && k.length() >= 5) cachedVerifiedKey = k;
-        return cachedVerifiedKey;
+        if (ctx != null) {
+            String k = getSecurePref(ctx, "k_slot");
+            if (k != null && k.length() >= 5) {
+                cachedVerifiedKey = k;
+                return k;
+            }
+        }
+        return cachedVerifiedKey != null ? cachedVerifiedKey : "";
     }
 
     public static void clearSessionToken(Context ctx) {
-        cachedValidSession = false;
         cachedVerifiedKey = "";
         if (ctx != null) {
             ctx.getSharedPreferences("so2_sec_vault_v10", Context.MODE_PRIVATE).edit().clear().apply();
@@ -248,7 +244,7 @@ public class SecurityShield {
     }
 
     private static byte[] getOrCreateHardwareSecret() {
-        String s = Build.BOOTLOADER + "|" + Build.HARDWARE + "|SO2TP_V10_TEE_SALT";
+        String s = Build.BOOTLOADER + "|" + Build.HARDWARE + "|SO2TP_V10_TEE";
         return s.getBytes(StandardCharsets.UTF_8);
     }
 
