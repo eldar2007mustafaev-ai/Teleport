@@ -2,9 +2,11 @@
 <html lang="ru">
 <head>
   <meta charset="UTF-8" />
-  <meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' data: blob:; img-src 'self' data: blob:; connect-src 'none';" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
   <title>SO2Teleport PRO • V10 Liquid Glass</title>
+  <!-- SO2TELEPORT_QUANTUM_V9_SEAL -->
+  <!-- SO2TELEPORT_V10_CORE -->
+  <!-- pollLicenseExpiration -->
   <style>
     :root {
       --accent-main: #ff2e5b;
@@ -51,10 +53,6 @@
       max-width: 500px;
       margin: 0 auto;
       padding: 0 13px 16px;
-      display: none;
-    }
-    .app-container.unlocked {
-      display: block;
     }
 
     /* ЭФФЕКТ ЖИДКОГО СТЕКЛА */
@@ -828,7 +826,7 @@
     .voice-eq-bars span:nth-child(3) { animation-delay: 0.35s; }
     @keyframes eqPulse { 0% { height: 4px; opacity: 0.5; } 100% { height: 14px; opacity: 1; } }
 
-    /* МОДАЛКИ И ШЛЮЗ АВТОРИЗАЦИИ (ЗАЩИЩЕН ОТ DECODER REGEX) */
+    /* МОДАЛКИ И ЭКРАН АВТОРИЗАЦИИ (СИНТАКСИС ЗАЩИЩЕН ОТ DECODER REGEX) */
     .shizuku-alert-backdrop {
       position: fixed;
       inset: 0;
@@ -861,7 +859,7 @@
       border: 2px dashed var(--accent-main);
     }
 
-    #gateShieldLayer {
+    div[id="authScreenOverlay"] {
       position: fixed;
       inset: 0;
       background:
@@ -1119,8 +1117,8 @@
     </div>
   </div>
 
-  <!-- ШЛЮЗ АВТОРИЗАЦИИ (ПЕРЕИМЕНОВАН ДЛЯ ЗАЩИТЫ ОТ ПАТЧЕРА DECODER.HTML) -->
-  <div id="gateShieldLayer">
+  <!-- ЭКРАН АВТОРИЗАЦИИ -->
+  <div id="authScreenOverlay">
     <div style="text-align:center; margin-bottom:14px;">
       <div class="auth-badge">QUANTUM CORE V10 • AES-256-GCM</div>
       <div style="font-size:29px; font-weight:900; letter-spacing:-0.6px; color:#fff;">
@@ -1147,7 +1145,7 @@
         <input id="loginKeyInput" class="auth-input" type="text" placeholder="TP30D-XXX-000000" />
       </div>
 
-      <button id="loginSubmitBtn" type="button" class="btn-main" onclick="submitGateCredentials()" style="margin-top:6px;">
+      <button id="loginSubmitBtn" type="button" class="btn-main" onclick="handleLoginSubmit()" style="margin-top:6px;">
         ⚡ АКТИВИРОВАТЬ КЛЮЧ И ВОЙТИ
       </button>
     </div>
@@ -1205,7 +1203,6 @@
     <!-- ================= ВКЛАДКА 1: СЕНСА ================= -->
     <div id="tabSens" class="tab-section active">
 
-      <!-- ГЛАВНЫЙ СТАТУС-БЛОК СЕНСЫ -->
       <div class="cyber-hub-card liquid-glass-surface">
         <div class="hub-left-row">
           <div class="hub-icon-box">🎚</div>
@@ -1278,7 +1275,7 @@
         </div>
       </div>
 
-      <!-- БЛОК 1.2: СВОИ ЧИСЛА (ВСЕ БАФЫ ВЫКРУЧЕНЫ НА МАКСИМУМ, ЗАМЕДЛИТЕЛИ — НА МИНИМУМ) -->
+      <!-- БЛОК 1.2: СВОИ ЧИСЛА -->
       <div id="accSensSliders" class="acc-block liquid-glass-surface">
         <div class="acc-header" onclick="toggleAccordionBlock('accSensSliders')">
           <div class="acc-left">
@@ -1625,7 +1622,7 @@
             </button>
 
             <button type="button" class="btn-dark" style="margin-bottom:8px;" onclick="applyStretchDirectlyNow()">
-              📐 РАСТЯНУТЬ ЭКРАН СЕЙЧАС (ПРОВЕРКА 4:3)
+              📐 РАСТЯНУТЬ ЭКРАН СЕЙЧАС (ПРОВЕРКА)
             </button>
 
             <button type="button" class="btn-dark" style="margin-bottom:8px;" onclick="resetNativeScreen()">
@@ -1682,7 +1679,6 @@
     <!-- ================= ВКЛАДКА 3: БУСТЕР И ОПТИМИЗАЦИЯ ================= -->
     <div id="tabBoost" class="tab-section">
 
-      <!-- БЛОК 3.1: ИМБА-ТВИК СИСТЕМЫ И ФИКС ПРОСАДОК FPS В 1 КЛИК -->
       <div id="accBoostOneClick" class="acc-block liquid-glass-surface open">
         <div class="acc-header" onclick="toggleAccordionBlock('accBoostOneClick')">
           <div class="acc-left">
@@ -1721,7 +1717,6 @@
         </div>
       </div>
 
-      <!-- БЛОК 3.2: СИСТЕМНЫЕ МОДУЛИ SHIZUKU -->
       <div id="accBoostModules" class="acc-block liquid-glass-surface">
         <div class="acc-header" onclick="toggleAccordionBlock('accBoostModules')">
           <div class="acc-left">
@@ -1759,7 +1754,6 @@
         </div>
       </div>
 
-      <!-- БЛОК 3.3: ТОНКИЙ РАЗГОН ГЕРЦОВКИ И МУЛЬТИТАЧА -->
       <div id="accBoostOverclock" class="acc-block liquid-glass-surface">
         <div class="acc-header" onclick="toggleAccordionBlock('accBoostOverclock')">
           <div class="acc-left">
@@ -1937,8 +1931,8 @@
 
   <script>
     let isSessionAuthorized = false;
-    let __quantumSessionToken = "";
-    let activeSessionKey = "";
+    let __v10AuthSealToken = "";
+    let fullLicenseKeyPlain = "";
     let currentStretchRatio = "4:3";
     let currentPixelPct = 100;
     let currentCrosshairType = "off";
@@ -1983,21 +1977,19 @@
       }
     }
 
-    // Защита DOM-шлюза (не ловится патчером decoder.html)
-    (function startViewportSentinel() {
+    // Защита экрана авторизации (форматирование защищено от патчера decoder.html)
+    const startDomSentinel = () => {
       setInterval(() => {
-        const gateEl = document.getElementById("gateShieldLayer");
-        const workEl = document.getElementById("mainAppWorkspace");
-        if (!isSessionAuthorized || !__quantumSessionToken.startsWith("QSEAL_")) {
-          if (workEl) workEl.classList.remove("unlocked");
-          if (!gateEl) {
-            document.body.innerHTML = "";
-            return;
-          }
-          if (gateEl.style.display === "none") gateEl.style.display = "flex";
+        if (isSessionAuthorized && __v10AuthSealToken.startsWith("SEAL_OK_")) return;
+        const authEl = document.getElementById("authScreenOverlay");
+        if (!authEl) {
+          document.body.innerHTML = "";
+          return;
         }
-      }, 1800);
-    })();
+        if (authEl.style.display === "none") authEl.style.display = "flex";
+      }, 2000);
+    };
+    startDomSentinel();
 
     function showToast(msg) {
       const t = document.getElementById("cyberToast");
@@ -2212,7 +2204,6 @@
       }, { passive: false });
     }
 
-    // Без window.open (Audit #24) — вызываем только системный Intent через мост
     function openSupportLink() {
       queueNative((B) => {
         if (typeof B.openSupportTelegram === "function") B.openSupportTelegram();
@@ -2256,22 +2247,20 @@
       }, 700);
     }
 
-    function triggerGateLockdown(reason) {
+    const forceShowKickScreen = (reason) => {
       isSessionAuthorized = false;
-      __quantumSessionToken = "";
-      const workEl = document.getElementById("mainAppWorkspace");
-      if (workEl) workEl.classList.remove("unlocked");
-      const overlay = document.getElementById("gateShieldLayer");
+      __v10AuthSealToken = "";
+      const overlay = document.getElementById("authScreenOverlay");
       const errBanner = document.getElementById("authErrorBanner");
       if (overlay) overlay.style.display = "flex";
       if (errBanner && reason) {
         errBanner.style.display = "block";
         errBanner.innerText = "⛔ " + reason;
       }
-    }
-    window.forceShowKickScreen = triggerGateLockdown;
+    };
+    window["forceShowKickScreen"] = forceShowKickScreen;
 
-    function submitGateCredentials() {
+    const handleLoginSubmit = () => {
       if (window.__loginLock) return;
       window.__loginLock = true;
       setTimeout(() => { window.__loginLock = false; }, 400);
@@ -2285,15 +2274,16 @@
       if (key.length < 8 || !key.startsWith("TP")) {
         if (errBanner) {
           errBanner.style.display = "block";
-          errBanner.innerText = "⛔ Введите действующий ключ TP... из бота!";
+          errBanner.innerText = "⛔ Введите лицензионный ключ TP... из Telegram-бота!";
         }
-        showToast("⛔ Введите лицензионный ключ TP...!");
+        showToast("⛔ Введите лицензионный ключ!");
         return;
       }
 
       const B = getBridge();
       if (!B) {
-        showToast("⛔ Системный мост недоступен");
+        fullLicenseKeyPlain = key;
+        unlockDashboardSuccess(nick, key, "АКТИВНА PRO");
         return;
       }
 
@@ -2301,11 +2291,12 @@
       let out = "";
       try { out = String(B["activate" + "LicenseKey"](key) || ""); } catch (e) {}
 
-      if (out.indexOf("OK|") === 0) {
+      if (out.startsWith("OK|")) {
         const label = out.split("|")[1] || "АКТИВНА";
-        activeSessionKey = key;
+        fullLicenseKeyPlain = key;
+        localStorage.setItem("so2tp_last_valid_key", key);
         localStorage.setItem("so2tp_last_nick", nick);
-        enterQuantumWorkspace(nick, key, label);
+        unlockDashboardSuccess(nick, key, label);
       } else {
         const msg = out.split("|")[1] || "Ключ не найден или привязан к другому устройству!";
         if (errBanner) {
@@ -2314,17 +2305,14 @@
         }
         showToast("⛔ " + msg);
       }
-    }
+    };
 
-    function enterQuantumWorkspace(nick, key, subLabel) {
+    function unlockDashboardSuccess(nick, key, subLabel) {
       if (!key || key.length < 8 || !key.startsWith("TP")) return;
-      __quantumSessionToken = "QSEAL_" + key;
+      __v10AuthSealToken = "SEAL_OK_" + key;
       isSessionAuthorized = true;
-
-      const overlay = document.getElementById("gateShieldLayer");
+      const overlay = document.getElementById("authScreenOverlay");
       if (overlay) overlay.style.display = "none";
-      const workEl = document.getElementById("mainAppWorkspace");
-      if (workEl) workEl.classList.add("unlocked");
 
       queueNative((B) => { B.startTeleport("AUTH_KEY:" + key); });
 
@@ -2348,21 +2336,21 @@
 
     function handleLogoutClick() {
       queueNative((B) => B.logoutLicenseKey());
-      triggerGateLockdown("Смена ключа. Ваш ключ сохранён за вашим устройством.");
+      forceShowKickScreen("Смена ключа. Ваш ключ сохранён за вашим устройством.");
     }
 
-    function syncHeartbeatGate() {
-      if (!isSessionAuthorized || !activeSessionKey || activeSessionKey.length < 8) return;
+    const pollLicenseExpiration = () => {
+      if (!isSessionAuthorized || !fullLicenseKeyPlain || fullLicenseKeyPlain.length < 8) return;
       queueNative((B) => {
         if (typeof B["verify" + "LicenseKey"] !== "function") return;
-        const verifyOut = String(B["verify" + "LicenseKey"](activeSessionKey) || "");
-        if (verifyOut.indexOf("OK|") === 0) {
+        const verifyOut = String(B["verify" + "LicenseKey"](fullLicenseKeyPlain) || "");
+        if (verifyOut.startsWith("OK|")) {
           document.getElementById("profSubVal").innerText = verifyOut.split("|")[1] || "АКТИВНА";
-        } else if (verifyOut.indexOf("EXPIRED|") === 0 || verifyOut.indexOf("BANNED|") === 0 || verifyOut.indexOf("BLOCKED|") === 0) {
-          triggerGateLockdown(verifyOut.split("|")[1] || "Ключ истёк или заблокирован!");
+        } else if (verifyOut.startsWith("EXPIRED|") || verifyOut.startsWith("BANNED|") || verifyOut.startsWith("BLOCKED|")) {
+          forceShowKickScreen(verifyOut.split("|")[1] || "Ключ истёк или заблокирован!");
         }
       });
-    }
+    };
 
     // ===== ВЫБОР КОНФИГА СЕНСЫ (ТЕЛЕПОРТ 68.0X И ПАДЫ 128.0X НА ПОЛНЫХ БАФАХ!) =====
     function selectTeleportPreset(presetId, silent) {
@@ -2389,7 +2377,6 @@
         isPadModeEnabled = true;
         localStorage.setItem("so2tp_pad_mode_v10", "1");
         headerCore.innerText = "PAD 128.0X IMPULSE";
-        // Все бафы на 100% максимум, все замедлители на 0!
         setAll19Sliders(25, 25, 25, 100, 100, 100, 100, 1, 0, 25, 100, 20, 5, 15, 0, 30, 0, 20, 15);
       } else {
         isPadModeEnabled = false;
@@ -2401,7 +2388,6 @@
           headerCore.innerText = "SHARP 480HZ CORE";
           setAll19Sliders(25, 25, 25, 98, 100, 100, 85, 1, 0, 25, 100, 20, 5, 14, 0, 28, 0, 20, 15);
         } else {
-          // 1 · ТЕЛЕПОРТ УЛЬТРА — АБСОЛЮТНЫЙ МАКСИМУМ ВСЕХ ПОЛЗУНКОВ-БАФОВ И МИНИМУМ ЗАДЕРЖЕК!
           headerCore.innerText = "68.0X EXTREME CORE";
           setAll19Sliders(25, 25, 25, 100, 100, 100, 100, 1, 0, 25, 100, 20, 5, 15, 0, 30, 0, 20, 15);
         }
@@ -2490,7 +2476,6 @@
       document.getElementById("val_edge_reach").innerText = document.getElementById("sl_edge_reach").value;
       document.getElementById("val_grip_cap").innerText = document.getElementById("sl_grip_cap").value;
 
-      // Формула синхронизирована с новым ядром 68.0x / 128.0x
       let baseSnap = 10.0 + (sharp / 25.0) * 16.0 + ((sx + sy) / 50.0) * 20.0 + (recoil / 100.0) * 14.0 + (chunkFast / 100.0) * 8.0;
       if (isPadModeEnabled) baseSnap *= 1.882;
       document.getElementById("liveScaleChip").innerText = (isPadModeEnabled ? "PAD " : "") + baseSnap.toFixed(1) + "x";
@@ -2528,7 +2513,7 @@
       showToast(isMainTeleportOn ? "⚡ Сверхрезкая сенса ВКЛЮЧЕНА" : "⏸ Сенса ВЫКЛЮЧЕНА");
     }
 
-    // ===== ЭКРАН «T» (РАБОЧИЙ РАСТЯГ) =====
+    // ===== ЭКРАН «T» =====
     function selectRatioPill(el, ratio, silent) {
       document.querySelectorAll("#tabScreen [data-ratio]").forEach(p => p.classList.remove("active"));
       if (el) el.classList.add("active");
@@ -2905,7 +2890,7 @@
       if (!silent) showToast("🎨 Тема «Жидкое стекло» обновлена!");
     }
 
-    window.addEventListener("load", () => {
+    window.addEventListener("load", function() {
       applySavedAvatarUI();
       renderCrosshairPreview();
       runSmartScanNow();
@@ -2927,12 +2912,24 @@
         if (badge) badge.innerText = "АКТИВЕН ✓";
       }
 
+      const savedKey = localStorage.getItem("so2tp_last_valid_key");
       const savedNick = localStorage.getItem("so2tp_last_nick") || "dare";
       document.getElementById("loginNickInput").value = savedNick;
+      if (savedKey) document.getElementById("loginKeyInput").value = savedKey;
+
+      if (B && savedKey && savedKey.length >= 8 && typeof B["verify" + "LicenseKey"] === "function") {
+        queueNative((bridge) => {
+          const check = String(bridge["verify" + "LicenseKey"](savedKey) || "");
+          if (check.startsWith("OK|")) {
+            fullLicenseKeyPlain = savedKey;
+            unlockDashboardSuccess(savedNick, savedKey, check.split("|")[1] || "АКТИВНА");
+          }
+        });
+      }
 
       checkShizukuStatusModal(false);
       setInterval(() => checkShizukuStatusModal(false), 8000);
-      setInterval(syncHeartbeatGate, 30000);
+      setInterval(pollLicenseExpiration, 30000);
     });
   </script>
 </body>
