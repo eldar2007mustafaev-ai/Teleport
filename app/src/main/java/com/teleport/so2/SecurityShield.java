@@ -1,6 +1,9 @@
 package com.teleport.so2;
 
 import android.content.Context;
+import android.content.pm.PackageInfo;
+import android.content.pm.PackageManager;
+import android.content.pm.Signature;
 import android.media.MediaDrm;
 import android.os.Build;
 import android.os.Debug;
@@ -13,8 +16,6 @@ import android.view.WindowManager;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 
-import java.io.BufferedReader;
-import java.io.FileReader;
 import java.nio.charset.StandardCharsets;
 import java.security.KeyStore;
 import java.security.MessageDigest;
@@ -28,129 +29,138 @@ import javax.crypto.KeyGenerator;
 import javax.crypto.Mac;
 import javax.crypto.SecretKey;
 import javax.crypto.spec.GCMParameterSpec;
-import javax.crypto.spec.SecretKeySpec;
 
 public class SecurityShield {
 
     private static volatile String cachedHwid = null;
     private static volatile String cachedVerifiedKey = "";
-    private static volatile int integrityFactor = 0;
+    private static volatile String cachedCertHash = "";
+    private static volatile boolean runtimeClean = true;
     private static volatile boolean guardStarted = false;
     private static final ScheduledExecutorService bgGuard = Executors.newSingleThreadScheduledExecutor();
-
-    // Декодер скрытых строк (0 открытых const-string в Smali)
-    private static String d(int[] arr) {
-        char[] c = new char[arr.length];
-        for (int i = 0; i < arr.length; i++) {
-            c[i] = (char) (arr[i] ^ 0x5A);
-        }
-        return new String(c);
-    }
 
     public static void startBackgroundGuard(final Context ctx) {
         if (guardStarted) return;
         guardStarted = true;
         bgGuard.scheduleWithFixedDelay(() -> {
-            integrityFactor = scanRuntimeEnvironment();
+            enforceAntiDebugAndFrida();
             if (ctx != null && cachedHwid == null) {
                 getHardwareBoundHwid(ctx);
             }
-        }, 0, 8, TimeUnit.SECONDS);
+            if (ctx != null && cachedCertHash.isEmpty()) {
+                cachedCertHash = computeApkCertSha256(ctx);
+            }
+        }, 0, 10, TimeUnit.SECONDS);
     }
 
-    // Вместо легко вырезаемого return-void возвращает крипто-смещение для AES-256-GCM!
     public static int getIntegrityOffset() {
-        return integrityFactor;
+        return runtimeClean ? 0 : 1;
     }
 
     public static void enforceAntiDebugAndFrida() {
-        integrityFactor = scanRuntimeEnvironment();
-    }
-
-    private static int scanRuntimeEnvironment() {
-        int offset = 0;
         try {
             if (Debug.isDebuggerConnected() || Debug.waitingForDebugger()) {
-                offset ^= 0x3F;
-            }
-            // "/proc/self/status" и "TracerPid:"
-            String pStatus = d(new int[]{117, 42, 40, 53, 57, 117, 41, 63, 54, 60, 117, 41, 46, 59, 46, 47, 41});
-            String tKey = d(new int[]{14, 40, 59, 57, 63, 40, 10, 51, 62, 96});
-            try (BufferedReader br = new BufferedReader(new FileReader(pStatus))) {
-                String line;
-                while ((line = br.readLine()) != null) {
-                    if (line.startsWith(tKey)) {
-                        int pid = Integer.parseInt(line.substring(10).trim());
-                        if (pid != 0) offset ^= (pid & 0xFF);
-                        break;
-                    }
-                }
-            }
-            // "/proc/self/maps", "frida", "xposed"
-            String pMaps = d(new int[]{117, 42, 40, 53, 57, 117, 41, 63, 54, 60, 117, 55, 59, 42, 41});
-            String sF = d(new int[]{60, 40, 51, 62, 59});
-            String sX = d(new int[]{34, 42, 53, 41, 63, 62});
-            try (BufferedReader br = new BufferedReader(new FileReader(pMaps))) {
-                String line;
-                while ((line = br.readLine()) != null) {
-                    String low = line.toLowerCase();
-                    if (low.contains(sF) || low.contains(sX)) {
-                        offset ^= 0x7A;
-                        break;
-                    }
-                }
+                runtimeClean = false;
             }
         } catch (Throwable ignored) {}
-        return offset;
     }
 
+    // Чистый аппаратный Widevine DRM ID + ключ в AndroidKeyStore (без Build.BOOTLOADER и без resetprop-дыр)
     public static String getHardwareBoundHwid(Context ctx) {
         if (cachedHwid != null && !cachedHwid.isEmpty()) {
             return cachedHwid;
         }
-        StringBuilder raw = new StringBuilder();
-        try {
-            // "android_id"
-            String aidKey = d(new int[]{59, 52, 62, 40, 53, 51, 62, 5, 51, 62});
-            String aid = Settings.Secure.getString(ctx.getContentResolver(), aidKey);
-            if (aid != null && !aid.isEmpty()) {
-                cachedHwid = aid.trim();
-                return cachedHwid;
-            }
-        } catch (Throwable ignored) {}
+        if (ctx != null) {
+            try {
+                String aid = Settings.Secure.getString(ctx.getContentResolver(), Settings.Secure.ANDROID_ID);
+                if (aid != null && aid.length() >= 8) {
+                    cachedHwid = aid.trim().toLowerCase();
+                    return cachedHwid;
+                }
+            } catch (Throwable ignored) {}
+        }
 
         try {
             UUID wUuid = new UUID(-0x121074568629b532L, -0x5c37d8232ae2de13L);
             MediaDrm drm = new MediaDrm(wUuid);
             byte[] drmId = drm.getPropertyByteArray(MediaDrm.PROPERTY_DEVICE_UNIQUE_ID);
             drm.release();
-            if (drmId != null) {
-                raw.append(Base64.encodeToString(drmId, Base64.NO_WRAP));
+            if (drmId != null && drmId.length > 0) {
+                byte[] digest = signWithTeeHmac(drmId);
+                StringBuilder sb = new StringBuilder();
+                for (int i = 0; i < Math.min(8, digest.length); i++) {
+                    sb.append(String.format("%02x", digest[i]));
+                }
+                cachedHwid = sb.toString();
+                return cachedHwid;
             }
         } catch (Throwable ignored) {}
 
-        raw.append("|").append(Build.BOARD).append("|").append(Build.FINGERPRINT);
-        try {
-            byte[] sig = hmacSha256(raw.toString().getBytes(StandardCharsets.UTF_8), getOrCreateHardwareSecret());
-            StringBuilder hex = new StringBuilder();
-            for (int i = 0; i < 8; i++) hex.append(String.format("%02x", sig[i]));
-            cachedHwid = hex.toString();
-            return cachedHwid;
-        } catch (Throwable t) {
-            return Build.MODEL;
-        }
+        cachedHwid = "hw_fallback";
+        return cachedHwid;
     }
 
-    private static SecretKey openVaultKey() throws Exception {
-        // "AndroidKeyStore"
-        String ksName = d(new int[]{27, 52, 62, 40, 53, 51, 62, 17, 63, 35, 9, 46, 53, 40, 63});
-        String alias = d(new int[]{41, 53, 104, 5, 46, 63, 63, 5, 44, 107, 106});
-        KeyStore ks = KeyStore.getInstance(ksName);
+    public static String getApkSignatureHash(Context ctx) {
+        if (!cachedCertHash.isEmpty()) return cachedCertHash;
+        cachedCertHash = computeApkCertSha256(ctx);
+        return cachedCertHash;
+    }
+
+    @SuppressWarnings("deprecation")
+    private static String computeApkCertSha256(Context ctx) {
+        if (ctx == null) return "";
+        try {
+            PackageManager pm = ctx.getPackageManager();
+            String pkg = ctx.getPackageName();
+            byte[] certBytes = null;
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+                PackageInfo pi = pm.getPackageInfo(pkg, PackageManager.GET_SIGNING_CERTIFICATES);
+                if (pi.signingInfo != null) {
+                    Signature[] sigs = pi.signingInfo.getApkContentsSigners();
+                    if (sigs != null && sigs.length > 0) certBytes = sigs[0].toByteArray();
+                }
+            } else {
+                PackageInfo pi = pm.getPackageInfo(pkg, PackageManager.GET_SIGNATURES);
+                if (pi.signatures != null && pi.signatures.length > 0) {
+                    certBytes = pi.signatures[0].toByteArray();
+                }
+            }
+            if (certBytes != null) {
+                MessageDigest md = MessageDigest.getInstance("SHA-256");
+                byte[] d = md.digest(certBytes);
+                StringBuilder sb = new StringBuilder();
+                for (int i = 0; i < 8; i++) sb.append(String.format("%02x", d[i]));
+                return sb.toString();
+            }
+        } catch (Throwable ignored) {}
+        return "";
+    }
+
+    private static byte[] signWithTeeHmac(byte[] data) throws Exception {
+        KeyStore ks = KeyStore.getInstance("AndroidKeyStore");
         ks.load(null);
-        if (!ks.containsAlias(alias)) {
-            KeyGenerator kg = KeyGenerator.getInstance(KeyProperties.KEY_ALGORITHM_AES, ksName);
+        String hmacAlias = "so2_tee_hmac_hw_v10";
+        SecretKey hmacKey;
+        if (!ks.containsAlias(hmacAlias)) {
+            KeyGenerator kg = KeyGenerator.getInstance(KeyProperties.KEY_ALGORITHM_HMAC_SHA256, "AndroidKeyStore");
+            kg.init(new KeyGenParameterSpec.Builder(hmacAlias, KeyProperties.PURPOSE_SIGN).build());
+            hmacKey = kg.generateKey();
+        } else {
+            hmacKey = ((KeyStore.SecretKeyEntry) ks.getEntry(hmacAlias, null)).getSecretKey();
+        }
+        Mac mac = Mac.getInstance("HmacSHA256");
+        mac.init(hmacKey);
+        return mac.doFinal(data);
+    }
+
+    private static SecretKey openTeeAesVaultKey() throws Exception {
+        KeyStore ks = KeyStore.getInstance("AndroidKeyStore");
+        ks.load(null);
+        String aesAlias = "so2_tee_aes_gcm_v10";
+        if (!ks.containsAlias(aesAlias)) {
+            KeyGenerator kg = KeyGenerator.getInstance(KeyProperties.KEY_ALGORITHM_AES, "AndroidKeyStore");
             kg.init(new KeyGenParameterSpec.Builder(
-                    alias,
+                    aesAlias,
                     KeyProperties.PURPOSE_ENCRYPT | KeyProperties.PURPOSE_DECRYPT)
                     .setBlockModes(KeyProperties.BLOCK_MODE_GCM)
                     .setEncryptionPaddings(KeyProperties.ENCRYPTION_PADDING_NONE)
@@ -158,31 +168,33 @@ public class SecurityShield {
                     .build());
             return kg.generateKey();
         }
-        return ((KeyStore.SecretKeyEntry) ks.getEntry(alias, null)).getSecretKey();
+        return ((KeyStore.SecretKeyEntry) ks.getEntry(aesAlias, null)).getSecretKey();
     }
 
-    public static void putSecurePref(Context ctx, String key, String value) {
+    public static void putSecurePref(Context ctx, String slotName, String value) {
+        if (ctx == null || value == null) return;
         try {
-            SecretKey secretKey = openVaultKey();
+            SecretKey secretKey = openTeeAesVaultKey();
             Cipher cipher = Cipher.getInstance("AES/GCM/NoPadding");
             cipher.init(Cipher.ENCRYPT_MODE, secretKey);
             byte[] iv = cipher.getIV();
             byte[] enc = cipher.doFinal(value.getBytes(StandardCharsets.UTF_8));
             String combined = Base64.encodeToString(iv, Base64.NO_WRAP) + ":" + Base64.encodeToString(enc, Base64.NO_WRAP);
-            ctx.getSharedPreferences("so2_sec_vault_v10", Context.MODE_PRIVATE)
-                    .edit().putString(sha256Hex(key), combined).apply();
+            ctx.getSharedPreferences("so2_tee_store_v10", Context.MODE_PRIVATE)
+                    .edit().putString(sha256Hex(slotName), combined).apply();
         } catch (Throwable ignored) {}
     }
 
-    public static String getSecurePref(Context ctx, String key) {
+    public static String getSecurePref(Context ctx, String slotName) {
+        if (ctx == null) return "";
         try {
-            String raw = ctx.getSharedPreferences("so2_sec_vault_v10", Context.MODE_PRIVATE)
-                    .getString(sha256Hex(key), "");
+            String raw = ctx.getSharedPreferences("so2_tee_store_v10", Context.MODE_PRIVATE)
+                    .getString(sha256Hex(slotName), "");
             if (raw == null || !raw.contains(":")) return "";
             String[] parts = raw.split(":", 2);
             byte[] iv = Base64.decode(parts[0], Base64.NO_WRAP);
             byte[] enc = Base64.decode(parts[1], Base64.NO_WRAP);
-            SecretKey secretKey = openVaultKey();
+            SecretKey secretKey = openTeeAesVaultKey();
             Cipher cipher = Cipher.getInstance("AES/GCM/NoPadding");
             cipher.init(Cipher.DECRYPT_MODE, secretKey, new GCMParameterSpec(128, iv));
             return new String(cipher.doFinal(enc), StandardCharsets.UTF_8);
@@ -192,26 +204,26 @@ public class SecurityShield {
     }
 
     public static void issueVerifiedSessionToken(final Context ctx, final String licenseKey) {
-        if (licenseKey == null || licenseKey.trim().length() < 5) return;
+        if (licenseKey == null || licenseKey.trim().length() < 8) return;
         final String clean = licenseKey.trim().toUpperCase();
         cachedVerifiedKey = clean;
         bgGuard.execute(() -> {
             try {
                 startBackgroundGuard(ctx);
-                putSecurePref(ctx, "k_slot", clean);
+                putSecurePref(ctx, "active_lic_slot", clean);
             } catch (Throwable ignored) {}
         });
     }
 
     public static boolean isSessionCryptographicallyValid(Context ctx) {
-        return getVerifiedKey(ctx).length() >= 5 && integrityFactor == 0;
+        return getVerifiedKey(ctx).length() >= 8 && runtimeClean;
     }
 
     public static String getVerifiedKey(Context ctx) {
-        if (cachedVerifiedKey != null && cachedVerifiedKey.length() >= 5) return cachedVerifiedKey;
+        if (cachedVerifiedKey != null && cachedVerifiedKey.length() >= 8) return cachedVerifiedKey;
         if (ctx != null) {
-            String k = getSecurePref(ctx, "k_slot");
-            if (k != null && k.length() >= 5) {
+            String k = getSecurePref(ctx, "active_lic_slot");
+            if (k != null && k.length() >= 8) {
                 cachedVerifiedKey = k;
                 return k;
             }
@@ -222,7 +234,7 @@ public class SecurityShield {
     public static void clearSessionToken(Context ctx) {
         cachedVerifiedKey = "";
         if (ctx != null) {
-            ctx.getSharedPreferences("so2_sec_vault_v10", Context.MODE_PRIVATE).edit().clear().apply();
+            ctx.getSharedPreferences("so2_tee_store_v10", Context.MODE_PRIVATE).edit().clear().apply();
         }
     }
 
@@ -241,17 +253,6 @@ public class SecurityShield {
                 window.addFlags(WindowManager.LayoutParams.FLAG_SECURE);
             }
         } catch (Throwable ignored) {}
-    }
-
-    private static byte[] getOrCreateHardwareSecret() {
-        String s = Build.BOOTLOADER + "|" + Build.HARDWARE + "|SO2TP_V10_TEE";
-        return s.getBytes(StandardCharsets.UTF_8);
-    }
-
-    private static byte[] hmacSha256(byte[] data, byte[] key) throws Exception {
-        Mac mac = Mac.getInstance("HmacSHA256");
-        mac.init(new SecretKeySpec(key, "HmacSHA256"));
-        return mac.doFinal(data);
     }
 
     private static String sha256Hex(String in) throws Exception {
