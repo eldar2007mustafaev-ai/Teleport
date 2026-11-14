@@ -55,6 +55,7 @@ public class TeleportEngine {
     private static volatile boolean isTabletDeviceMode = false;
     private static volatile int currentRecoilPower = 100;
     private static volatile String lastSelectedRatio = "4:3";
+    private static volatile int lockedLandscapeRot = 1;
 
     private static final ExecutorService stretchExecutor = Executors.newSingleThreadExecutor();
     private static final ExecutorService shizukuQueue = Executors.newSingleThreadExecutor();
@@ -146,14 +147,16 @@ public class TeleportEngine {
         boolean isSamsungASeries = modelUpper.contains("SM-A") || modelUpper.contains("A57") || modelUpper.contains("A55") || modelUpper.contains("A54");
         isBudgetDeviceHardware = (!isTabletDeviceMode && (isSamsungASeries || deviceMaxRefreshRate <= 90 || nativeShortSide <= 720 || cores <= 6));
 
-        // Разрешаем изменение пропорций окон один раз при старте (без перезапуска игры!)
+        // Сбрасываем багованный флаг force_resizable_activities в 0, чтобы Standoff 2 НИКОГДА не переворачивался вертикально!
         stretchExecutor.execute(() -> {
             try {
                 if (isShizukuReady() || ShizukuManager.isPermissionGranted()) {
                     ShizukuManager.execCommand(
-                            "settings put global force_resizable_activities 1 2>/dev/null; " +
-                            "settings put global enable_freeform_support 1 2>/dev/null; " +
-                            "settings put global enable_non_resizable_multi_window 1 2>/dev/null; " +
+                            "settings put global force_resizable_activities 0 2>/dev/null; " +
+                            "settings put global enable_freeform_support 0 2>/dev/null; " +
+                            "settings put global enable_non_resizable_multi_window 0 2>/dev/null; " +
+                            "wm set-ignore-orientation-request false 2>/dev/null; " +
+                            "cmd window set-ignore-orientation-request false 2>/dev/null; " +
                             "settings put global block_untrusted_touches 0 2>/dev/null; " +
                             "settings put secure block_untrusted_touches 0 2>/dev/null;"
                     );
@@ -357,7 +360,6 @@ public class TeleportEngine {
         } catch (Throwable ignored) {}
     }
 
-    // ПЕРЕХВАТ КОМАНД ПЛАВАЮЩЕЙ КНОПКИ «T» БЕЗ ПРИНУДИТЕЛЬНОЙ ОСТАНОВКИ ИГРЫ
     public static void execShizukuCommand(final String cmd) {
         if (cmd == null || cmd.isEmpty()) return;
         if (cmd.contains("wm size") && !cmd.contains("reset")) {
@@ -373,16 +375,40 @@ public class TeleportEngine {
         });
     }
 
+    // Всегда возвращает СТРОГО горизонтальную ориентацию (1 = Landscape 90°, 3 = Seascape 270°)
     private static int getCurrentLandscapeRotation() {
         try {
             WindowManager wm = (WindowManager) appContext.getSystemService(Context.WINDOW_SERVICE);
             if (wm != null && wm.getDefaultDisplay() != null) {
                 int rot = wm.getDefaultDisplay().getRotation();
-                if (rot == Surface.ROTATION_270) return 3;
-                if (isNaturalLandscapeDevice && (rot == Surface.ROTATION_0 || rot == Surface.ROTATION_180)) return rot;
+                if (rot == Surface.ROTATION_270) {
+                    lockedLandscapeRot = 3;
+                    return 3;
+                }
+                if (rot == Surface.ROTATION_90) {
+                    lockedLandscapeRot = 1;
+                    return 1;
+                }
+                if (isNaturalLandscapeDevice && (rot == Surface.ROTATION_0 || rot == Surface.ROTATION_180)) {
+                    lockedLandscapeRot = rot;
+                    return rot;
+                }
             }
         } catch (Throwable ignored) {}
-        return isNaturalLandscapeDevice ? 0 : 1;
+        return isNaturalLandscapeDevice ? 0 : lockedLandscapeRot;
+    }
+
+    // Команда ЖЁСТКОЙ фиксации горизонтального экрана (блокирует любой переворот в портрет)
+    private static String buildHardLandscapeLockCmd(int landRot) {
+        return "settings put global force_resizable_activities 0 2>/dev/null; " +
+               "wm set-ignore-orientation-request false 2>/dev/null; " +
+               "cmd window set-ignore-orientation-request false 2>/dev/null; " +
+               "settings put system accelerometer_rotation 0; " +
+               "settings put system user_rotation " + landRot + "; " +
+               "cmd window user-rotation lock " + landRot + "; " +
+               "wm user-rotation lock " + landRot + " 2>/dev/null; " +
+               "cmd window set-fix-to-user-rotation enabled 2>/dev/null; " +
+               "wm set-fix-to-user-rotation enabled 2>/dev/null; ";
     }
 
     private static void verifyStretchAppliedOrWarnUser(final int expectedShort, final int expectedLong) {
@@ -413,7 +439,7 @@ public class TeleportEngine {
         }, 450);
     }
 
-    // ШАГ 1 КНОПКИ «T» — МЯГКОЕ СЖАТИЕ В РАМКУ БЕЗ ВЫЛЕТА ИГРЫ
+    // ШАГ 1 КНОПКИ «T» — НАМЕРТВО ЗАПИРАЕТ ГОРИЗОНТАЛЬНЫЙ ЭКРАН И СЖИМАЕТ РАМКУ
     public static boolean applyAspectRatioStretch(String ratio) {
         final String cleanRatio = (ratio == null || ratio.trim().isEmpty()) ? lastSelectedRatio : ratio.trim().toUpperCase();
         lastSelectedRatio = cleanRatio;
@@ -463,11 +489,8 @@ public class TeleportEngine {
 
         stretchExecutor.execute(() -> {
             try {
-                // Без am compat и без дублирования команд — игра НЕ закрывается и НЕ теряет Surface!
                 String stretchCmd =
-                        "settings put system accelerometer_rotation 0; " +
-                        "settings put system user_rotation " + landRot + "; " +
-                        "cmd window user-rotation lock " + landRot + "; " +
+                        buildHardLandscapeLockCmd(landRot) +
                         "wm size " + wmArg + "; " +
                         "settings put system peak_refresh_rate " + deviceMaxRefreshRate + ".0; " +
                         "settings put system min_refresh_rate " + deviceMaxRefreshRate + ".0;";
@@ -478,15 +501,13 @@ public class TeleportEngine {
         return true;
     }
 
-    // ШАГ 2 КНОПКИ «T» — ЧИСТОЕ РАСКРЫТИЕ РАМКИ НА ВЕСЬ ЭКРАН БЕЗ ВЫЛЕТА
+    // ШАГ 2 КНОПКИ «T» — РАСКРЫВАЕТ ИГРУ НА ВЕСЬ ЭКРАН И ДЕРЖИТ СТРОГО ГОРИЗОНТАЛЬНО
     public static void releaseBoxToFullStretch() {
         final int landRot = getCurrentLandscapeRotation();
         stretchExecutor.execute(() -> {
             try {
                 String releaseCmd =
-                        "settings put system accelerometer_rotation 0; " +
-                        "settings put system user_rotation " + landRot + "; " +
-                        "cmd window user-rotation lock " + landRot + "; " +
+                        buildHardLandscapeLockCmd(landRot) +
                         "wm size reset; " +
                         "settings put system peak_refresh_rate " + deviceMaxRefreshRate + ".0; " +
                         "settings put system min_refresh_rate " + deviceMaxRefreshRate + ".0;";
@@ -495,14 +516,17 @@ public class TeleportEngine {
         });
     }
 
-    // ПОЛНЫЙ СБРОС ЭКРАНА В РОДНОЕ РАЗРЕШЕНИЕ
+    // ПОЛНЫЙ СБРОС ЭКРАНА В РОДНОЕ РАЗРЕШЕНИЕ (СНИМАЕТ ГОРИЗОНТАЛЬНЫЙ ЗАМОК ПРИ ВЫХОДЕ)
     public static void resetResolutionToNative() {
         stretchExecutor.execute(() -> {
             try {
                 String resetCmd =
                         "wm size reset; " +
                         "wm density reset; " +
+                        "cmd window set-fix-to-user-rotation disabled 2>/dev/null; " +
+                        "wm set-fix-to-user-rotation disabled 2>/dev/null; " +
                         "cmd window user-rotation free; " +
+                        "wm user-rotation free 2>/dev/null; " +
                         "settings put system accelerometer_rotation 1;";
                 ShizukuManager.execCommand(resetCmd);
             } catch (Throwable ignored) {}
