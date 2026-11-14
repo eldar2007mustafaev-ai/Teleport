@@ -2,6 +2,7 @@
 <html lang="ru">
 <head>
   <meta charset="UTF-8" />
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' data: blob:; img-src 'self' data: blob:; connect-src 'none'; object-src 'none'; frame-src 'none';" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
   <title>SO2Teleport PRO • V10 Liquid Glass</title>
   <!-- SO2TELEPORT_QUANTUM_V9_SEAL -->
@@ -666,7 +667,7 @@
       background: linear-gradient(135deg, rgba(var(--accent-rgb), 0.32), rgba(var(--accent-sec-rgb), 0.18));
       border-color: var(--accent-main);
     }
-    .ch-shape-icon { font-size: 20px; color: #22c55e; margin-bottom: 4px; line-height: 1; }
+    .ch-shape-icon { font-size: 20px; color: #22c55e; margin-bottom: 4px; line-height: 1; transition: color 0.18s ease; }
     .ch-shape-lbl { font-size: 10px; font-weight: 900; color: #e2e8f0; }
 
     .ch-subtoggle-grid-2 {
@@ -689,6 +690,50 @@
     .ch-subtoggle-box.active {
       border-color: var(--accent-main);
       background: linear-gradient(135deg, rgba(var(--accent-rgb), 0.26), rgba(var(--accent-sec-rgb), 0.14));
+    }
+
+    /* ПАЛИТРА ЦВЕТОВ КАСТОМНОГО ПРИЦЕЛА */
+    .ch-color-palette-bar {
+      background: var(--bg-card-inner);
+      border: 1px solid rgba(255, 255, 255, 0.09);
+      border-radius: 16px;
+      padding: 11px 13px;
+      margin-bottom: 10px;
+    }
+    .ch-color-dots-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 7px;
+      margin-top: 8px;
+    }
+    .ch-color-swatch {
+      width: 27px;
+      height: 27px;
+      border-radius: 50%;
+      cursor: pointer;
+      border: 2px solid rgba(255, 255, 255, 0.28);
+      box-shadow: inset 0 1px 2px rgba(255, 255, 255, 0.45), 0 2px 6px rgba(0, 0, 0, 0.6);
+      transition: transform 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease;
+      flex-shrink: 0;
+    }
+    .ch-color-swatch.active {
+      transform: scale(1.20);
+      border-color: #ffffff;
+      box-shadow: 0 0 12px currentColor, inset 0 1px 2px rgba(255, 255, 255, 0.7);
+    }
+    .ch-custom-color-btn {
+      width: 30px;
+      height: 27px;
+      border-radius: 10px;
+      border: 1.5px dashed rgba(255, 255, 255, 0.4);
+      background: rgba(255, 255, 255, 0.06);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 13px;
+      cursor: pointer;
+      flex-shrink: 0;
     }
 
     .toggle-row {
@@ -826,7 +871,7 @@
     .voice-eq-bars span:nth-child(3) { animation-delay: 0.35s; }
     @keyframes eqPulse { 0% { height: 4px; opacity: 0.5; } 100% { height: 14px; opacity: 1; } }
 
-    /* МОДАЛКИ И ЭКРАН АВТОРИЗАЦИИ (СИНТАКСИС ЗАЩИЩЕН ОТ DECODER REGEX) */
+    /* МОДАЛКИ И ЭКРАН АВТОРИЗАЦИИ */
     .shizuku-alert-backdrop {
       position: fixed;
       inset: 0;
@@ -1050,6 +1095,7 @@
 <body>
 
   <input id="avatarFileInput" type="file" accept="image/*" style="display:none" onchange="onAvatarFileSelected(event)" />
+  <input id="chCustomColorPicker" type="color" value="#22c55e" style="display:none" onchange="onCustomCrosshairColorPicked(this.value)" />
   <div id="cyberToast">⚡ SO2Teleport PRO V10</div>
 
   <!-- МОДАЛКА: СМЕНА АВАТАРКИ -->
@@ -1120,7 +1166,7 @@
   <!-- ЭКРАН АВТОРИЗАЦИИ -->
   <div id="authScreenOverlay">
     <div style="text-align:center; margin-bottom:14px;">
-      <div class="auth-badge">QUANTUM CORE V10 • AES-256-GCM</div>
+      <div class="auth-badge">QUANTUM CORE V10 • PBKDF2-HMAC</div>
       <div style="font-size:29px; font-weight:900; letter-spacing:-0.6px; color:#fff;">
         SO2Teleport <span style="color:var(--accent-main); font-style:italic;">PRO</span>
       </div>
@@ -1484,14 +1530,14 @@
         </div>
       </div>
 
-      <!-- БЛОК 1.4: КАСТОМНЫЙ ПРИЦЕЛ -->
+      <!-- БЛОК 1.4: КАСТОМНЫЙ ПРИЦЕЛ (С ВЫБОРОМ ЦВЕТА) -->
       <div id="accCrosshair" class="acc-block liquid-glass-surface">
         <div class="acc-header" onclick="toggleAccordionBlock('accCrosshair')">
           <div class="acc-left">
             <div class="acc-icon">⌖</div>
             <div class="acc-title-wrap">
               <div class="acc-title">Кастомный прицел <span id="crosshairStateChip" class="badge-chip">ВЫКЛ</span></div>
-              <div class="acc-sub">Крест, точка, Т-образ, уголки и точная подгонка лучей</div>
+              <div class="acc-sub">Выбор формы, цвета прицела и точная подгонка лучей</div>
             </div>
           </div>
           <div class="acc-chevron">⌄</div>
@@ -1514,13 +1560,32 @@
               <div style="position:absolute; top:9px; left:10px;"><span id="chModeRightLabel" class="badge-chip">КРЕСТ</span></div>
               <div style="position:absolute; top:9px; right:10px;"><button type="button" class="icon-circle-action" style="width:32px; height:32px;" onclick="togglePreviewDayNight()">🌙</button></div>
               <div style="position:absolute; bottom:9px; left:12px; display:flex; align-items:center; gap:6px; font-size:11px; color:var(--text-muted);">
-                <span style="width:8px; height:8px; border-radius:50%; background:#22c55e; display:inline-block;"></span>
+                <span id="chColorLiveDot" style="width:9px; height:9px; border-radius:50%; background:#22c55e; box-shadow:0 0 8px #22c55e; display:inline-block;"></span>
                 <span id="chSizeReadout">+ 8 × 3 px</span>
               </div>
               <div style="position:absolute; bottom:8px; right:10px; display:flex; gap:5px;">
                 <button type="button" class="badge-chip" style="cursor:pointer; padding:4px 8px;" onclick="setPreviewZoom(1)">×1</button>
                 <button type="button" class="badge-chip" style="cursor:pointer; padding:4px 8px;" onclick="setPreviewZoom(2)">×4</button>
                 <button type="button" class="badge-chip" style="cursor:pointer; padding:4px 8px;" onclick="setPreviewZoom(3.5)">×8</button>
+              </div>
+            </div>
+
+            <!-- ВЫБОР ЦВЕТА КАСТОМНОГО ПРИЦЕЛА -->
+            <div class="ch-color-palette-bar">
+              <div style="display:flex; align-items:center; justify-content:space-between;">
+                <span style="font-size:12px; font-weight:900; color:#fff;">🎨 Цвет прицела</span>
+                <span id="chColorHexBadge" class="badge-chip" style="font-family:monospace;">#22C55E</span>
+              </div>
+              <div class="ch-color-dots-row">
+                <div class="ch-color-swatch active" data-ch-color="#22c55e" style="background:#22c55e; color:#22c55e;" onclick="setCrosshairColor('#22c55e', this)" title="Неоновый зелёный"></div>
+                <div class="ch-color-swatch" data-ch-color="#00e5ff" style="background:#00e5ff; color:#00e5ff;" onclick="setCrosshairColor('#00e5ff', this)" title="Кибер-голубой"></div>
+                <div class="ch-color-swatch" data-ch-color="#ff2e5b" style="background:#ff2e5b; color:#ff2e5b;" onclick="setCrosshairColor('#ff2e5b', this)" title="Рубиновый красный"></div>
+                <div class="ch-color-swatch" data-ch-color="#facc15" style="background:#facc15; color:#facc15;" onclick="setCrosshairColor('#facc15', this)" title="Лазерный жёлтый"></div>
+                <div class="ch-color-swatch" data-ch-color="#a855f7" style="background:#a855f7; color:#a855f7;" onclick="setCrosshairColor('#a855f7', this)" title="Аметистовый"></div>
+                <div class="ch-color-swatch" data-ch-color="#ff6b35" style="background:#ff6b35; color:#ff6b35;" onclick="setCrosshairColor('#ff6b35', this)" title="Оранжевый"></div>
+                <div class="ch-color-swatch" data-ch-color="#ffffff" style="background:#ffffff; color:#ffffff;" onclick="setCrosshairColor('#ffffff', this)" title="Чистый белый"></div>
+                <div class="ch-color-swatch" data-ch-color="#ec4899" style="background:#ec4899; color:#ec4899;" onclick="setCrosshairColor('#ec4899', this)" title="Розовый неон"></div>
+                <div class="ch-custom-color-btn" onclick="document.getElementById('chCustomColorPicker').click()" title="Свой цвет">🌈</div>
               </div>
             </div>
 
@@ -1573,6 +1638,10 @@
                 <span class="cyber-slider"></span>
               </label>
             </div>
+
+            <button type="button" class="btn-main" style="margin-top:11px;" onclick="saveAllAppSettingsMaster()">
+              💾 СОХРАНИТЬ ЦВЕТ И ФОРМУ ПРИЦЕЛА
+            </button>
           </div>
         </div>
       </div>
@@ -1621,9 +1690,14 @@
               ⚡ ЗАПУСТИТЬ ПЛАВАЮЩУЮ ИКОНКУ «T» (4:3)
             </button>
 
-            <button type="button" class="btn-dark" style="margin-bottom:8px;" onclick="applyStretchDirectlyNow()">
-              📐 РАСТЯНУТЬ ЭКРАН СЕЙЧАС (ПРОВЕРКА)
-            </button>
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-bottom:8px;">
+              <button type="button" class="btn-dark" onclick="applyStretchDirectlyNow()">
+                📐 ШАГ 1: СЖАТЬ ЭКРАН
+              </button>
+              <button type="button" class="btn-dark" onclick="releaseStretchFullNow()">
+                🔥 ШАГ 2: РАСТЯНУТЬ
+              </button>
+            </div>
 
             <button type="button" class="btn-dark" style="margin-bottom:8px;" onclick="resetNativeScreen()">
               🔄 СБРОСИТЬ ЭКРАН В РОДНОЕ РАЗРЕШЕНИЕ
@@ -1748,7 +1822,7 @@
             </div>
             <div class="toggle-row">
               <div><div class="toggle-info-title">Стелс-Защита на записи экрана</div><div class="toggle-info-sub">Прячет кнопку «T» и кастомный прицел на видео</div></div>
-              <label class="cyber-switch"><input id="tgStealth" type="checkbox" onchange="toggleBoostFeature('stealth', this.checked)" /><span class="cyber-slider"></span></label>
+              <label class="cyber-switch"><input id="tgStealth" type="checkbox" checked onchange="toggleBoostFeature('stealth', this.checked)" /><span class="cyber-slider"></span></label>
             </div>
           </div>
         </div>
@@ -1883,8 +1957,8 @@
             <b id="profHwidText" style="font-family:monospace;">...</b>
           </div>
           <div style="display:flex; justify-content:space-between;">
-            <span style="color:var(--text-muted);">Статус шифрования:</span>
-            <b id="profModelText" style="color:#10b981;">AES-256-GCM TEE</b>
+            <span style="color:var(--text-muted);">Защита канала:</span>
+            <b id="profModelText" style="color:#10b981;">PBKDF2-HMAC + TEE</b>
           </div>
           <div style="display:flex; justify-content:space-between;">
             <span style="color:var(--text-muted);">Активный конфиг:</span>
@@ -1930,6 +2004,29 @@
   </nav>
 
   <script>
+    // Изоляция нативного JS-моста от внешнего доступа (Фикс уязвимости №1 WebView RCE)
+    const __privateBridge = (() => {
+      const ref = window.AndroidBridge || null;
+      try {
+        Object.defineProperty(window, "AndroidBridge", {
+          get: function() { return null; },
+          set: function() {},
+          configurable: false
+        });
+      } catch (e) {}
+      return ref;
+    })();
+
+    function getBridge() {
+      return __privateBridge;
+    }
+
+    function escapeSafeText(str) {
+      return String(str || "").replace(/[&<>"']/g, function(c) {
+        return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c];
+      });
+    }
+
     let isSessionAuthorized = false;
     let __v10AuthSealToken = "";
     let fullLicenseKeyPlain = "";
@@ -1937,6 +2034,7 @@
     let currentPixelPct = 100;
     let currentCrosshairType = "off";
     let lastActiveCrosshairShape = "cross";
+    let currentCrosshairColor = "#22c55e";
     let currentPresetId = "extreme";
     let isPadModeEnabled = false;
     let isMainTeleportOn = true;
@@ -1960,13 +2058,11 @@
 
     function queueNative(fn) {
       setTimeout(() => {
-        const B = window.AndroidBridge || null;
+        const B = getBridge();
         if (!B) return;
         try { fn(B); } catch (e) {}
       }, 10);
     }
-
-    function getBridge() { return window.AndroidBridge || null; }
 
     function toggleAccordionBlock(blockId) {
       const el = document.getElementById(blockId);
@@ -1977,7 +2073,6 @@
       }
     }
 
-    // Защита экрана авторизации (форматирование защищено от патчера decoder.html)
     const startDomSentinel = () => {
       setInterval(() => {
         if (isSessionAuthorized && __v10AuthSealToken.startsWith("SEAL_OK_")) return;
@@ -2019,6 +2114,7 @@
         pixelPct: currentPixelPct,
         chType: currentCrosshairType,
         chShape: lastActiveCrosshairShape,
+        chColor: currentCrosshairColor,
         chLen: document.getElementById("sl_ch_len").value,
         chThick: document.getElementById("sl_ch_thick").value,
         chGap: document.getElementById("sl_ch_gap").value,
@@ -2037,7 +2133,7 @@
       } catch (e) {}
       const chunksVal = document.getElementById("sl_chunks").value;
       document.getElementById("mySavedSlotTitle").innerText = "Мой конфиг • Куски " + chunksVal + " (" + currentStretchRatio + ")";
-      showToast("💾 Все настройки (Сенса, Растяг, Прицел и Тема) сохранены!");
+      showToast("💾 Все настройки (Сенса, Растяг, Прицел и Цвет) сохранены!");
     }
 
     function restoreMasterAppSettings() {
@@ -2054,6 +2150,10 @@
           const rPill = document.querySelector(`#tabScreen [data-ratio="${st.ratio}"]`);
           selectRatioPill(rPill, st.ratio, true);
         }
+        if (st.chColor) {
+          const swEl = document.querySelector(`.ch-color-swatch[data-ch-color="${st.chColor.toLowerCase()}"]`);
+          setCrosshairColor(st.chColor, swEl, true);
+        }
         if (st.chLen) document.getElementById("sl_ch_len").value = st.chLen;
         if (st.chThick) document.getElementById("sl_ch_thick").value = st.chThick;
         if (st.chGap) document.getElementById("sl_ch_gap").value = st.chGap;
@@ -2066,6 +2166,7 @@
         if (st.optMt) document.getElementById("sl_opt_mt").value = st.optMt;
         if (st.optTs) document.getElementById("sl_opt_ts").value = st.optTs;
         updateOptLabels();
+        renderCrosshairPreview();
       } catch (e) {}
     }
 
@@ -2513,7 +2614,7 @@
       showToast(isMainTeleportOn ? "⚡ Сверхрезкая сенса ВКЛЮЧЕНА" : "⏸ Сенса ВЫКЛЮЧЕНА");
     }
 
-    // ===== ЭКРАН «T» =====
+    // ===== ЭКРАН «T» (РАБОЧИЙ РАСТЯГ С СИНХРОНИЗАЦИЕЙ) =====
     function selectRatioPill(el, ratio, silent) {
       document.querySelectorAll("#tabScreen [data-ratio]").forEach(p => p.classList.remove("active"));
       if (el) el.classList.add("active");
@@ -2534,7 +2635,7 @@
       queueNative((B) => {
         const res = String(B.activateStretchFloatingButton(currentStretchRatio) || "");
         if (res === "OK") {
-          showToast("📐 Иконка «T» (" + currentStretchRatio + ") запущена! Нажмите на «T» в игре.");
+          showToast("📐 Иконка «T» (" + currentStretchRatio + ") запущена! Нажмите на «T» при входе в игру.");
         } else {
           showToast("📐 Разрешите отображение поверх окон для кнопки «T»");
         }
@@ -2545,8 +2646,19 @@
       if (!checkShizukuStatusModal(true)) return;
       queueNative((B) => {
         B.startTeleport("STRETCH_NOW:" + currentStretchRatio);
+        if (typeof B.applyDirectStretchRatio === "function") {
+          B.applyDirectStretchRatio(currentStretchRatio);
+        }
       });
-      showToast("📐 Растяг " + currentStretchRatio + " отправлен в Shizuku!");
+      showToast("📐 Шаг 1 (" + currentStretchRatio + "): Экран сжат в рамку!");
+    }
+
+    function releaseStretchFullNow() {
+      if (!checkShizukuStatusModal(true)) return;
+      queueNative((B) => {
+        B.startTeleport("STRETCH_FULL_RELEASE");
+      });
+      showToast("🔥 Шаг 2: Экран раскрыт в полный растяг!");
     }
 
     function resetNativeScreen() {
@@ -2573,7 +2685,38 @@
       showToast(enabled ? "🔥 Синхронизация кусков под растяг ВКЛ" : "Синхронизация ВЫКЛ");
     }
 
-    // ===== КАСТОМНЫЙ ПРИЦЕЛ =====
+    // ===== КАСТОМНЫЙ ПРИЦЕЛ + ВЫБОР ЦВЕТА =====
+    function setCrosshairColor(hexColor, el, silent) {
+      if (!hexColor) return;
+      currentCrosshairColor = hexColor;
+      document.querySelectorAll(".ch-color-swatch").forEach(s => s.classList.remove("active"));
+      if (el) el.classList.add("active");
+
+      const badge = document.getElementById("chColorHexBadge");
+      if (badge) badge.innerText = hexColor.toUpperCase();
+
+      const liveDot = document.getElementById("chColorLiveDot");
+      if (liveDot) {
+        liveDot.style.background = hexColor;
+        liveDot.style.boxShadow = "0 0 8px " + hexColor;
+      }
+
+      document.querySelectorAll(".ch-shape-icon").forEach(ic => {
+        ic.style.color = hexColor;
+      });
+
+      syncCrosshairConfig();
+      if (!silent) {
+        saveAllAppSettingsMaster();
+        showToast("🎨 Цвет прицела: " + hexColor.toUpperCase());
+      }
+    }
+
+    function onCustomCrosshairColorPicked(val) {
+      if (!val) return;
+      setCrosshairColor(val, null, false);
+    }
+
     function toggleCrosshairMasterSwitch(enabled) {
       currentCrosshairType = enabled ? (lastActiveCrosshairShape || "cross") : "off";
       const chip = document.getElementById("crosshairStateChip");
@@ -2628,8 +2771,11 @@
       renderCrosshairPreview();
 
       queueNative((B) => {
-        if (currentCrosshairType === "off") B.updateCrosshair("off");
-        else B.updateCrosshairAdvanced(currentCrosshairType, "#22c55e", op, len, thick, gap, effectiveDot, out);
+        if (currentCrosshairType === "off") {
+          B.updateCrosshair("off");
+        } else {
+          B.updateCrosshairAdvanced(currentCrosshairType, currentCrosshairColor || "#22c55e", op, len, thick, gap, effectiveDot, out);
+        }
       });
     }
 
@@ -2655,7 +2801,7 @@
       const op = parseInt(document.getElementById("sl_ch_op").value, 10) / 100;
       const out = document.getElementById("tgChOutline").checked;
 
-      const chColor = "#22c55e";
+      const chColor = currentCrosshairColor || "#22c55e";
       ctx.globalAlpha = op;
 
       if (drawType === "cross" || drawType === "crossdot") {
@@ -2838,7 +2984,7 @@
       btn.innerText = isVoiceConnected ? "⏹ ВЫЙТИ" : "🎧 В ВОЙС";
       badge.innerText = isVoiceConnected ? "В ЭФИРЕ" : "ГОТОВ К ЭФИРУ";
       if (isVoiceConnected) {
-        const nick = document.getElementById("topPlayerNick").innerText || "dare";
+        const nick = escapeSafeText(document.getElementById("topPlayerNick").innerText || "dare");
         box.innerHTML = `<div class="voice-member-card"><div style="display:flex;align-items:center;gap:8px;"><div style="width:10px;height:10px;border-radius:50%;background:#10b981;"></div><span style="font-size:12.5px;font-weight:900;color:#fff;">${nick} (Вы)</span></div><div class="voice-eq-bars"><span></span><span></span><span></span></div></div>`;
         showToast("🎙 Рация отряда активирована!");
       } else {
@@ -2872,7 +3018,7 @@
     function addFriendByCode() {
       const inp = document.getElementById("friendAddInput");
       if (!inp || !inp.value.trim()) { showToast("⛔ Введите ID друга!"); return; }
-      showToast("➕ Запрос отправлен: " + inp.value.trim());
+      showToast("➕ Запрос отправлен: " + escapeSafeText(inp.value.trim()));
       inp.value = "";
     }
 
