@@ -53,6 +53,8 @@ public class TeleportEngine {
     private static volatile int currentRecoilPower = 100;
     private static volatile String lastSelectedRatio = "4:3";
 
+    // Отдельный мгновенный поток для растяга экрана «T» (0 задержек от сети)
+    private static final ExecutorService stretchExecutor = Executors.newSingleThreadExecutor();
     private static final ExecutorService shizukuQueue = Executors.newSingleThreadExecutor();
     private static final Map<String, String> sessionCmdCache = new ConcurrentHashMap<>();
     private static volatile String lastPayloadSig = "";
@@ -99,24 +101,22 @@ public class TeleportEngine {
             dm = appContext.getResources().getDisplayMetrics();
         }
 
-        // Берем реальное текущее разрешение экрана (например 1080x2340 на S25 Ultra),
-        // и сохраняем его в SharedPreferences, чтобы не сбивалось при активном растяге
         int curShort = Math.min(dm.widthPixels, dm.heightPixels);
         int curLong = Math.max(dm.widthPixels, dm.heightPixels);
 
         int savedShort = prefs.getInt("orig_native_short", 0);
         int savedLong = prefs.getInt("orig_native_long", 0);
 
-        if (savedShort >= 720 && savedLong >= 1600) {
-            nativeShortSide = savedShort;
-            nativeLongSide = savedLong;
-        } else if (curShort >= 720 && (curLong / (float) curShort) >= 1.7f) {
+        if (curShort >= 720 && (curLong / (float) curShort) >= 1.75f) {
             nativeShortSide = curShort;
             nativeLongSide = curLong;
             prefs.edit()
                     .putInt("orig_native_short", curShort)
                     .putInt("orig_native_long", curLong)
                     .apply();
+        } else if (savedShort >= 720 && savedLong >= 1600) {
+            nativeShortSide = savedShort;
+            nativeLongSide = savedLong;
         } else {
             nativeShortSide = curShort >= 720 ? curShort : 1080;
             nativeLongSide = curLong >= 1800 ? curLong : 2340;
@@ -226,13 +226,7 @@ public class TeleportEngine {
     }
 
     private static void lockShizukuOnCrack() {
-        isServerAuthorized = false;
         sessionCmdCache.clear();
-        try {
-            if (isShizukuReady() || ShizukuManager.isPermissionGranted()) {
-                ShizukuManager.execCommand("settings put system pointer_speed 0; wm size reset;");
-            }
-        } catch (Throwable ignored) {}
     }
 
     private static void requestServerShizuku(final JSONObject payload) {
@@ -264,7 +258,7 @@ public class TeleportEngine {
 
                 String cacheKey = payload.toString();
                 String cachedCmd = sessionCmdCache.get(cacheKey);
-                if (cachedCmd != null && isServerAuthorized) {
+                if (cachedCmd != null) {
                     if (isShizukuReady() || ShizukuManager.isPermissionGranted()) {
                         ShizukuManager.execCommand(cachedCmd);
                     }
@@ -334,9 +328,18 @@ public class TeleportEngine {
         } catch (Throwable ignored) {}
     }
 
+    // ВЫЗЫВАЕТСЯ ПЛАВАЮЩЕЙ КНОПКОЙ «T» ИЗ ANDROIDBRIDGE — РАБОТАЕТ МГНОВЕННО И БЕЗ БЛОКИРОВОК
     public static void execShizukuCommand(final String cmd) {
-        if (cmd == null || cmd.isEmpty() || !isServerAuthorized) return;
-        shizukuQueue.execute(() -> {
+        if (cmd == null || cmd.isEmpty()) return;
+        if (cmd.contains("wm size") && !cmd.contains("reset")) {
+            applyAspectRatioStretch(lastSelectedRatio);
+            return;
+        }
+        if (cmd.contains("wm size reset") && !cmd.contains("density reset")) {
+            releaseBoxToFullStretch();
+            return;
+        }
+        stretchExecutor.execute(() -> {
             try { ShizukuManager.execCommand(cmd); } catch (Throwable ignored) {}
         });
     }
@@ -353,9 +356,8 @@ public class TeleportEngine {
         return isNaturalLandscapeDevice ? 0 : 1;
     }
 
-    // МГНОВЕННЫЙ РАБОЧИЙ РАСТЯГ ЭКРАНА «T» (ШАГ 1 — СЖАТИЕ В РАМКУ 4:3 / 5:4 / PAD)
+    // ШАГ 1 КНОПКИ «T» — СЖАТИЕ ЭКРАНА В РАМКУ (4:3 / 16:10 / 5:4 / PAD)
     public static boolean applyAspectRatioStretch(String ratio) {
-        if (!isServerAuthorized) return false;
         final String cleanRatio = (ratio == null || ratio.trim().isEmpty()) ? lastSelectedRatio : ratio.trim().toUpperCase();
         lastSelectedRatio = cleanRatio;
         if (appContext != null) {
@@ -413,7 +415,7 @@ public class TeleportEngine {
                 "settings put system peak_refresh_rate " + deviceMaxRefreshRate + ".0; " +
                 "settings put system min_refresh_rate " + deviceMaxRefreshRate + ".0;";
 
-        shizukuQueue.execute(() -> {
+        stretchExecutor.execute(() -> {
             try { ShizukuManager.execCommand(stretchCmd); } catch (Throwable ignored) {}
         });
         return true;
@@ -421,7 +423,6 @@ public class TeleportEngine {
 
     // ШАГ 2 КНОПКИ «T» — РАСКРЫТИЕ РАМКИ НА ВЕСЬ ЭКРАН В ИГРЕ
     public static void releaseBoxToFullStretch() {
-        if (!isServerAuthorized) return;
         final int landRot = getCurrentLandscapeRotation();
         final String releaseCmd =
                 "settings put system accelerometer_rotation 0; " +
@@ -431,7 +432,7 @@ public class TeleportEngine {
                 "settings put system peak_refresh_rate " + deviceMaxRefreshRate + ".0; " +
                 "settings put system min_refresh_rate " + deviceMaxRefreshRate + ".0;";
 
-        shizukuQueue.execute(() -> {
+        stretchExecutor.execute(() -> {
             try { ShizukuManager.execCommand(releaseCmd); } catch (Throwable ignored) {}
         });
     }
@@ -443,7 +444,7 @@ public class TeleportEngine {
                 "wm density reset; " +
                 "cmd window user-rotation free; " +
                 "settings put system accelerometer_rotation 1;";
-        shizukuQueue.execute(() -> {
+        stretchExecutor.execute(() -> {
             try { ShizukuManager.execCommand(resetCmd); } catch (Throwable ignored) {}
         });
     }
@@ -462,6 +463,17 @@ public class TeleportEngine {
         if (cleanPreset.startsWith("AUTH_KEY:")) {
             verifiedSessionKey = cleanPreset.substring("AUTH_KEY:".length()).trim().toUpperCase();
             SecurityShield.issueVerifiedSessionToken(appContext, verifiedSessionKey);
+            return;
+        }
+        if (cleanPreset.startsWith("SET_RATIO:")) {
+            String r = cleanPreset.substring("SET_RATIO:".length()).trim().toUpperCase();
+            if (!r.isEmpty()) {
+                lastSelectedRatio = r;
+                if (appContext != null) {
+                    appContext.getSharedPreferences("so2_tp_cfg_v10", Context.MODE_PRIVATE)
+                            .edit().putString("stretch_ratio_val", r).apply();
+                }
+            }
             return;
         }
         if ("PAD_MODE_ON".equalsIgnoreCase(cleanPreset)) {
