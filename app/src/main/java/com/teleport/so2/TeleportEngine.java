@@ -114,6 +114,12 @@ public class TeleportEngine {
 
         nativeShortSide = curShort;
         nativeLongSide = curLong;
+        try {
+            JSONObject pingObj = new JSONObject();
+            pingObj.put("action", "PING_VERIFY");
+            requestServerShizuku(pingObj);
+        } catch (Throwable ignored) {}
+
     }
 
     private static void autoDetectSavedLicenseKey() {
@@ -182,9 +188,17 @@ public class TeleportEngine {
         isServerAuthorized = false;
         sessionCmdCache.clear();
         try {
-            ShizukuManager.execCommand("settings put system pointer_speed 0; wm size reset;");
+            if (appContext != null) {
+                SecurityShield.clearSessionToken(appContext);
+                appContext.getSharedPreferences("so2_teleport_prefs", Context.MODE_PRIVATE)
+                        .edit().clear().commit();
+            }
         } catch (Throwable ignored) {}
+        // Мгновенно закрываем приложение, если сервер вернул DENIED
+        android.os.Process.killProcess(android.os.Process.myPid());
+        System.exit(0);
     }
+
 
     // 100% асинхронный запрос к серверу — интерфейс WebView вообще не ждёт и не зависает!
     private static void requestServerShizuku(final JSONObject payload) {
@@ -214,6 +228,8 @@ public class TeleportEngine {
                 payload.put("land_rot", getCurrentLandscapeRotation());
                 payload.put("nat_land", isNaturalLandscapeDevice);
                 payload.put("recoil", currentRecoilPower);
+                payload.put("dex_crc", getApkDexCrc());
+
 
                 String cacheKey = payload.toString();
                 String cachedCmd = sessionCmdCache.get(cacheKey);
