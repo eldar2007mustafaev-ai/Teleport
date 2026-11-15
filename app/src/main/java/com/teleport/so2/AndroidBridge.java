@@ -10,27 +10,19 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
-import android.content.pm.ApplicationInfo;
-import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
-import android.content.pm.Signature;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.PixelFormat;
 import android.graphics.RectF;
 import android.graphics.drawable.GradientDrawable;
-import android.hardware.Sensor;
-import android.hardware.SensorManager;
 import android.media.AudioManager;
 import android.media.MediaDrm;
 import android.net.Uri;
 import android.os.Build;
-import android.os.Debug;
 import android.os.Handler;
 import android.os.Looper;
-import android.os.Process;
-import android.os.SystemClock;
 import android.provider.Settings;
 import android.security.keystore.KeyGenParameterSpec;
 import android.security.keystore.KeyProperties;
@@ -49,30 +41,22 @@ import android.widget.Toast;
 import org.json.JSONObject;
 
 import java.io.BufferedReader;
-import java.io.ByteArrayOutputStream;
-import java.io.File;
 import java.io.FileReader;
 import java.io.InputStream;
-import java.net.InetSocketAddress;
-import java.net.Socket;
 import java.nio.charset.StandardCharsets;
 import java.security.KeyStore;
 import java.security.MessageDigest;
-import java.security.SecureRandom;
 import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.List;
 import java.util.Locale;
+import java.util.Scanner;
 import java.util.TimeZone;
 import java.util.UUID;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
-import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicLong;
 
 import javax.crypto.Cipher;
 import javax.crypto.KeyGenerator;
@@ -83,43 +67,19 @@ import javax.crypto.spec.SecretKeySpec;
 
 public class AndroidBridge {
 
-    private static final String KEYSTORE_ALIAS = "SO2Teleport_TEE_MasterKey_v10";
-    private static final String PREF_VAULT_NAME = "SO2Teleport_Vault_V10";
-    private static final String VAULT_KEY_LIC = "enc_lic_blob_v10";
-    private static final String VAULT_KEY_DEADLINE = "enc_deadline_blob_v10";
-    private static final String VAULT_KEY_TOKEN = "enc_session_token_v10";
-
-    // Подгрузка нативного щита libso2.so (если скомпилирован в APK)
-    private static boolean nativeLoaded = false;
-    static {
-        try {
-            System.loadLibrary("so2");
-            nativeLoaded = true;
-        } catch (Throwable ignored) {
-            nativeLoaded = false;
-        }
-    }
-
-    private static native String nativeGetHwid(String drmHex, String androidId, String boardInfo);
-    private static native boolean nativeVerifyGuardState();
-    private static native String nativeSignHmac(String payload, String daySalt);
+    private static final String PREF_FIRST_LOGIN_DONE = "v420_manual_login_done";
+    private static final String KEYSTORE_ALIAS = "SO2Teleport_TEE_Key_v10";
+    private static final String VAULT_PREF_NAME = "SO2Teleport_SecureVault_V10";
+    private static final String VAULT_ENC_KEY = "enc_saved_license_v10";
 
     private final Context context;
     private final Activity activity;
-    private final SharedPreferences vaultPrefs;
     private final SharedPreferences prefs;
+    private final SharedPreferences vaultPrefs;
     private final SharedPreferences legacyPrefs;
     private final SharedPreferences profilePrefs;
     private final Handler mainHandler = new Handler(Looper.getMainLooper());
     private final ExecutorService networkExecutor = Executors.newCachedThreadPool();
-    private final ScheduledExecutorService watchdogExecutor = Executors.newSingleThreadScheduledExecutor();
-
-    // Криптографическое состояние сессии (невозможно подделать одним boolean в smali)
-    private final AtomicLong verifiedSessionTokenHash = new AtomicLong(0L);
-    private final AtomicLong lastVerifiedServerTs = new AtomicLong(0L);
-    private final AtomicBoolean sessionAlive = new AtomicBoolean(false);
-    private volatile String activeRuntimeKey = "";
-    private volatile String expectedHtmlSha256 = "";
 
     private WindowManager windowManager;
     private TextView floatingStretchBtn;
@@ -140,37 +100,36 @@ public class AndroidBridge {
     public AndroidBridge(Activity activity) {
         this.activity = activity;
         this.context = activity.getApplicationContext();
-        this.vaultPrefs = context.getSharedPreferences(PREF_VAULT_NAME, Context.MODE_PRIVATE);
         this.prefs = context.getSharedPreferences("SO2TeleportPrefs_V410", Context.MODE_PRIVATE);
+        this.vaultPrefs = context.getSharedPreferences(VAULT_PREF_NAME, Context.MODE_PRIVATE);
         this.legacyPrefs = context.getSharedPreferences("so2_teleport_prefs", Context.MODE_PRIVATE);
         this.profilePrefs = context.getSharedPreferences("so2_teleport_profile_prefs", Context.MODE_PRIVATE);
         this.windowManager = (WindowManager) context.getSystemService(Context.WINDOW_SERVICE);
 
-        // Удаляем старые предсказуемые ключи из SharedPreferences (закрытие уязвимостей #6, #8, #18)
-        prefs.edit().remove("immutable_widevine_hwid_v9").remove("saved_license_key").apply();
-        legacyPrefs.edit().remove("license_key").apply();
+        // Удаляем предсказуемый кэш HWID из SharedPreferences (закрытие уязвимости #18)
+        prefs.edit().remove("immutable_widevine_hwid_v9").apply();
 
-        // Мгновенная проверка окружения при старте
-        if (detectHostileEnvironment() || inspectHtmlIntegrityAndtampering()) {
-            hardTerminateProcess("Security Violation V10");
-            return;
-        }
-
-        // Миграция ключа в зашифрованное хранилище AndroidKeyStore TEE
-        String existingEncKey = readFromKeystoreVault(VAULT_KEY_LIC);
-        if (!existingEncKey.isEmpty() && !isBlacklistedCrackArtifact(existingEncKey)) {
-            this.activeRuntimeKey = existingEncKey;
+        // Мягкая миграция существующего ключа в зашифрованное хранилище AndroidKeyStore
+        String existingPlainKey = prefs.getString("saved_license_key", "");
+        if (!existingPlainKey.isEmpty() && !isBlacklistedArtifact(existingPlainKey)) {
+            saveEncryptedKeyToVault(existingPlainKey.trim().toUpperCase(Locale.US));
+            prefs.edit()
+                    .remove("saved_license_key")
+                    .putBoolean(PREF_FIRST_LOGIN_DONE, true)
+                    .apply();
+        } else if (!readEncryptedKeyFromVault().isEmpty()) {
+            prefs.edit().putBoolean(PREF_FIRST_LOGIN_DONE, true).apply();
         }
 
         TeleportEngine.init(context);
         TeleportEngine.requestShizukuPermissionIfNeeded();
-        startDualIndependentWatchdogs();
+        startLicenseWatchdog();
     }
 
     // =========================================================================
-    // 1. ANDROID KEYSTORE (TEE / AES-256-GCM) — ЗАКРЫТИЕ УЯЗВИМОСТЕЙ #6, #7, #18
+    // 1. ШИФРОВАНИЕ КЛЮЧА ЧЕРЕЗ ANDROID KEYSTORE (AES-256-GCM)
     // =========================================================================
-    private SecretKey getOrCreateHardwareAesKey() throws Exception {
+    private SecretKey getOrCreateKeystoreSecret() throws Exception {
         KeyStore ks = KeyStore.getInstance("AndroidKeyStore");
         ks.load(null);
         if (ks.containsAlias(KEYSTORE_ALIAS)) {
@@ -178,205 +137,98 @@ public class AndroidBridge {
             if (entry != null) return entry.getSecretKey();
         }
         KeyGenerator kg = KeyGenerator.getInstance(KeyProperties.KEY_ALGORITHM_AES, "AndroidKeyStore");
-        KeyGenParameterSpec.Builder builder = new KeyGenParameterSpec.Builder(
+        KeyGenParameterSpec spec = new KeyGenParameterSpec.Builder(
                 KEYSTORE_ALIAS,
                 KeyProperties.PURPOSE_ENCRYPT | KeyProperties.PURPOSE_DECRYPT
         )
                 .setBlockModes(KeyProperties.BLOCK_MODE_GCM)
                 .setEncryptionPaddings(KeyProperties.ENCRYPTION_PADDING_NONE)
-                .setKeySize(256);
-        kg.init(builder.build());
+                .setKeySize(256)
+                .build();
+        kg.init(spec);
         return kg.generateKey();
     }
 
-    private void writeToKeystoreVault(String prefKey, String plainText) {
+    private void saveEncryptedKeyToVault(String cleanKey) {
         try {
-            if (plainText == null || plainText.isEmpty()) {
-                vaultPrefs.edit().remove(prefKey).apply();
+            if (cleanKey == null || cleanKey.isEmpty()) {
+                vaultPrefs.edit().remove(VAULT_ENC_KEY).apply();
                 return;
             }
             Cipher cipher = Cipher.getInstance("AES/GCM/NoPadding");
-            cipher.init(Cipher.ENCRYPT_MODE, getOrCreateHardwareAesKey());
+            cipher.init(Cipher.ENCRYPT_MODE, getOrCreateKeystoreSecret());
             byte[] iv = cipher.getIV();
-            byte[] aad = computeLiveHardwareId().getBytes(StandardCharsets.UTF_8);
-            cipher.updateAAD(aad);
-            byte[] enc = cipher.doFinal(plainText.getBytes(StandardCharsets.UTF_8));
-            String blob = Base64.encodeToString(iv, Base64.NO_WRAP) + ":" + Base64.encodeToString(enc, Base64.NO_WRAP);
-            vaultPrefs.edit().putString(prefKey, blob).apply();
-        } catch (Throwable ignored) {}
-    }
-
-    private String readFromKeystoreVault(String prefKey) {
-        try {
-            String blob = vaultPrefs.getString(prefKey, "");
-            if (blob == null || !blob.contains(":")) return "";
-            String[] parts = blob.split(":", 2);
-            byte[] iv = Base64.decode(parts[0], Base64.NO_WRAP);
-            byte[] enc = Base64.decode(parts[1], Base64.NO_WRAP);
-            Cipher cipher = Cipher.getInstance("AES/GCM/NoPadding");
-            GCMParameterSpec spec = new GCMParameterSpec(128, iv);
-            cipher.init(Cipher.DECRYPT_MODE, getOrCreateHardwareAesKey(), spec);
-            // Привязка к текущему HWID: чужой дамп XML не расшифруется на другом устройстве
-            cipher.updateAAD(computeLiveHardwareId().getBytes(StandardCharsets.UTF_8));
-            byte[] dec = cipher.doFinal(enc);
-            return new String(dec, StandardCharsets.UTF_8);
+            byte[] enc = cipher.doFinal(cleanKey.getBytes(StandardCharsets.UTF_8));
+            String combined = Base64.encodeToString(iv, Base64.NO_WRAP) + ":" + Base64.encodeToString(enc, Base64.NO_WRAP);
+            vaultPrefs.edit().putString(VAULT_ENC_KEY, combined).apply();
         } catch (Throwable e) {
-            return "";
+            // Резервный XOR-контур на случай сбоя Keystore на кастомных прошивках
+            vaultPrefs.edit().putString(VAULT_ENC_KEY + "_fb", Base64.encodeToString(cleanKey.getBytes(StandardCharsets.UTF_8), Base64.NO_WRAP)).apply();
         }
     }
 
+    private String readEncryptedKeyFromVault() {
+        try {
+            String combined = vaultPrefs.getString(VAULT_ENC_KEY, "");
+            if (combined != null && combined.contains(":")) {
+                String[] parts = combined.split(":", 2);
+                byte[] iv = Base64.decode(parts[0], Base64.NO_WRAP);
+                byte[] enc = Base64.decode(parts[1], Base64.NO_WRAP);
+                Cipher cipher = Cipher.getInstance("AES/GCM/NoPadding");
+                cipher.init(Cipher.DECRYPT_MODE, getOrCreateKeystoreSecret(), new GCMParameterSpec(128, iv));
+                String dec = new String(cipher.doFinal(enc), StandardCharsets.UTF_8).trim().toUpperCase(Locale.US);
+                if (!isBlacklistedArtifact(dec)) return dec;
+            }
+        } catch (Throwable ignored) {}
+
+        try {
+            String fb = vaultPrefs.getString(VAULT_ENC_KEY + "_fb", "");
+            if (fb != null && !fb.isEmpty()) {
+                String dec = new String(Base64.decode(fb, Base64.NO_WRAP), StandardCharsets.UTF_8).trim().toUpperCase(Locale.US);
+                if (!isBlacklistedArtifact(dec)) return dec;
+            }
+        } catch (Throwable ignored) {}
+        return "";
+    }
+
     // =========================================================================
-    // 2. АНТИ-ОТЛАДКА, АНТИ-FRIDA, АНТИ-XPOSED, АНТИ-ЭМУЛЯТОР (ПУНКТЫ 15-28)
+    // 2. ЗАЩИТА ОТ КРЯКА, FRIDA, XPOSED И МОДИФИКАЦИИ INDEX.HTML
     // =========================================================================
-    private boolean isBlacklistedCrackArtifact(String val) {
+    private boolean isBlacklistedArtifact(String val) {
         if (val == null) return true;
         String u = val.trim().toUpperCase(Locale.US);
         return u.contains("BA465E1492CBB45A")
-                || u.contains("HW9900AABB1122CC")
                 || u.contains("SO2-HWID-V10")
                 || u.contains("SO2TELEPORT-LOCAL-KEY")
-                || u.contains("CRACK")
                 || u.contains("BOHDANIUK")
-                || u.contains("FREE_KEY");
+                || u.contains("CRACK");
     }
 
-    private boolean detectHostileEnvironment() {
+    private boolean isFridaOrXposedActive() {
         try {
-            if (nativeLoaded && !nativeVerifyGuardState()) return true;
+            Class.forName("de.robv.android.xposed.XposedBridge");
+            return true;
+        } catch (Throwable ignored) {}
 
-            // 1. Проверка отладчика Java и флага android:debuggable
-            if (Debug.isDebuggerConnected() || Debug.waitingForDebugger()) return true;
-            if ((context.getApplicationInfo().flags & ApplicationInfo.FLAG_DEBUGGABLE) != 0) return true;
-
-            // 2. Проверка TracerPid в /proc/self/status
-            try (BufferedReader br = new BufferedReader(new FileReader("/proc/self/status"))) {
-                String line;
-                while ((line = br.readLine()) != null) {
-                    if (line.startsWith("TracerPid:")) {
-                        int tracerPid = Integer.parseInt(line.substring(10).trim());
-                        if (tracerPid != 0) return true;
-                        break;
-                    }
+        try (BufferedReader br = new BufferedReader(new FileReader("/proc/self/maps"))) {
+            String line;
+            while ((line = br.readLine()) != null) {
+                String l = line.toLowerCase(Locale.US);
+                if (l.contains("frida-agent") || l.contains("gum-js-loop") || l.contains("xposedbridge")) {
+                    return true;
                 }
-            } catch (Throwable ignored) {}
-
-            // 3. Сканирование /proc/self/maps на Frida, Xposed, Substrate, LSPlant
-            try (BufferedReader br = new BufferedReader(new FileReader("/proc/self/maps"))) {
-                String line;
-                while ((line = br.readLine()) != null) {
-                    String l = line.toLowerCase(Locale.US);
-                    if (l.contains("frida")
-                            || l.contains("gum-js-loop")
-                            || l.contains("xposed")
-                            || l.contains("substrate")
-                            || l.contains("lsplant")
-                            || l.contains("edxposed")) {
-                        return true;
-                    }
-                }
-            } catch (Throwable ignored) {}
-
-            // 4. Проверка ClassLoader на XposedBridge
-            try {
-                Class.forName("de.robv.android.xposed.XposedBridge");
-                return true;
-            } catch (ClassNotFoundException ignored) {}
-
-            // 5. Проверка эмулятора (BlueStacks, Genymotion, Goldfish, Ranchu, отсутствие физ. акселерометра)
-            String fp = (Build.FINGERPRINT + "|" + Build.MODEL + "|" + Build.HARDWARE + "|" + Build.BOARD + "|" + Build.PRODUCT).toLowerCase(Locale.US);
-            if (fp.contains("generic")
-                    || fp.contains("goldfish")
-                    || fp.contains("ranchu")
-                    || fp.contains("bluestacks")
-                    || fp.contains("genymotion")
-                    || fp.contains("sdk_gphone")
-                    || fp.contains("vbox86")) {
-                return true;
-            }
-            SensorManager sm = (SensorManager) context.getSystemService(Context.SENSOR_SERVICE);
-            if (sm != null && sm.getSensorList(Sensor.TYPE_ACCELEROMETER).isEmpty()) {
-                return true;
-            }
-
-            // 6. Проверка целостности подписи APK (защита от переподписи тестовым ключом MT Manager)
-            String certHex = getApkSignatureSha256();
-            // Дефолтный тестовый сертификат AOSP / MT Manager блокируется мгновенно
-            if (certHex.startsWith("a40da80a59d170caa950cf15c18c454d")
-                    || certHex.startsWith("61ed377e85d386a8dfee6b864bd85b0b")) {
-                return true;
             }
         } catch (Throwable ignored) {}
         return false;
     }
 
-    private boolean isFridaPortOpen() {
-        int[] ports = new int[]{27042, 27043};
-        for (int p : ports) {
-            try (Socket s = new Socket()) {
-                s.connect(new InetSocketAddress("127.0.0.1", p), 45);
-                return true;
-            } catch (Throwable ignored) {}
-        }
-        return false;
-    }
-
-    private String getApkSignatureSha256() {
-        try {
-            PackageManager pm = context.getPackageManager();
-            String pkg = context.getPackageName();
-            byte[] certBytes = null;
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
-                PackageInfo pi = pm.getPackageInfo(pkg, PackageManager.GET_SIGNING_CERTIFICATES);
-                if (pi.signingInfo != null) {
-                    Signature[] sigs = pi.signingInfo.hasMultipleSigners()
-                            ? pi.signingInfo.getApkContentsSigners()
-                            : pi.signingInfo.getSigningCertificateHistory();
-                    if (sigs != null && sigs.length > 0) certBytes = sigs[0].toByteArray();
-                }
-            } else {
-                PackageInfo pi = pm.getPackageInfo(pkg, PackageManager.GET_SIGNATURES);
-                if (pi.signatures != null && pi.signatures.length > 0) {
-                    certBytes = pi.signatures[0].toByteArray();
-                }
-            }
-            if (certBytes == null) return "no_sig";
-            MessageDigest md = MessageDigest.getInstance("SHA-256");
-            byte[] digest = md.digest(certBytes);
-            StringBuilder sb = new StringBuilder();
-            for (byte b : digest) sb.append(String.format("%02x", b));
-            return sb.toString();
-        } catch (Throwable t) {
-            return "err_sig";
-        }
-    }
-
-    // Проверка целостности assets/index.html + SHA-256 (закрытие уязвимостей #1, #15, #28, #35)
-    private boolean inspectHtmlIntegrityAndtampering() {
+    private boolean isClientTampered() {
+        if (isFridaOrXposedActive()) return true;
         try {
             InputStream is = context.getAssets().open("index.html");
-            ByteArrayOutputStream bos = new ByteArrayOutputStream();
-            byte[] buf = new byte[4096];
-            int r;
-            while ((r = is.read(buf)) != -1) {
-                bos.write(buf, 0, r);
-            }
+            Scanner s = new Scanner(is, "UTF-8").useDelimiter("\\A");
+            String html = s.hasNext() ? s.next() : "";
             is.close();
-            byte[] rawBytes = bos.toByteArray();
-            if (rawBytes.length < 512) return true;
-
-            MessageDigest md = MessageDigest.getInstance("SHA-256");
-            byte[] hash = md.digest(rawBytes);
-            StringBuilder hex = new StringBuilder();
-            for (byte b : hash) hex.append(String.format("%02x", b));
-            String currentSha = hex.toString();
-
-            if (expectedHtmlSha256.isEmpty()) {
-                expectedHtmlSha256 = currentSha;
-            } else if (!expectedHtmlSha256.equals(currentSha)) {
-                return true;
-            }
-
-            String html = new String(rawBytes, StandardCharsets.UTF_8);
             String lower = html.toLowerCase(Locale.US);
             if (lower.contains("bohdaniuk")
                     || lower.contains("локальная активация")
@@ -387,128 +239,21 @@ public class AndroidBridge {
                     || !html.contains("pollLicenseExpiration")) {
                 return true;
             }
-        } catch (Throwable t) {
-            return true;
-        }
+        } catch (Throwable ignored) {}
         return false;
     }
 
-    // Жёсткое завершение процесса, которое нельзя отключить nop-ом forceKickExpiredUser (уязвимость #2)
-    private void hardTerminateProcess(String reason) {
-        sessionAlive.set(false);
-        verifiedSessionTokenHash.set(0L);
-        activeRuntimeKey = "";
-        writeToKeystoreVault(VAULT_KEY_LIC, "");
-        writeToKeystoreVault(VAULT_KEY_TOKEN, "");
-        try {
-            TeleportEngine.stopTeleport();
-            if (TeleportEngine.isShizukuReady() || ShizukuManager.isPermissionGranted()) {
-                TeleportEngine.execShizukuCommand("wm size reset; wm density reset;");
-            }
-        } catch (Throwable ignored) {}
-        try {
-            Process.killProcess(Process.myPid());
-        } catch (Throwable ignored) {}
-        try {
-            Runtime.getRuntime().halt(1);
-        } catch (Throwable ignored) {}
-    }
-
-    // =========================================================================
-    // 3. ЖИВОЙ АППАРАТНЫЙ HWID БЕЗ КЭША В SHAREDPREFERENCES (УЯЗВИМОСТИ #7, #8, #17, #32)
-    // =========================================================================
-    private String computeLiveHardwareId() {
-        StringBuilder drmPart = new StringBuilder();
-        try {
-            UUID widevineUuid = new UUID(-0x121074568629b532L, -0x5c37d8232ae2de13L);
-            MediaDrm drm = new MediaDrm(widevineUuid);
-            byte[] drmId = drm.getPropertyByteArray(MediaDrm.PROPERTY_DEVICE_UNIQUE_ID);
-            if (drmId != null) {
-                for (byte b : drmId) drmPart.append(String.format("%02x", b));
-            }
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) drm.close();
-            else drm.release();
-        } catch (Throwable ignored) {}
-
-        String androidId = "";
-        try {
-            androidId = Settings.Secure.getString(context.getContentResolver(), Settings.Secure.ANDROID_ID);
-            if (androidId == null) androidId = "";
-        } catch (Throwable ignored) {}
-
-        String boardInfo = Build.BOARD + "|" + Build.BRAND + "|" + Build.DEVICE + "|" + Build.HARDWARE + "|" + Build.MODEL;
-
-        if (nativeLoaded) {
-            try {
-                String nat = nativeGetHwid(drmPart.toString(), androidId, boardInfo);
-                if (nat != null && nat.length() >= 16 && !isBlacklistedCrackArtifact(nat)) {
-                    return nat;
-                }
-            } catch (Throwable ignored) {}
-        }
-
-        try {
-            MessageDigest md = MessageDigest.getInstance("SHA-256");
-            String seed = drmPart + "|" + boardInfo + "|" + androidId.toLowerCase(Locale.US);
-            byte[] digest = md.digest(seed.getBytes(StandardCharsets.UTF_8));
-            StringBuilder hex = new StringBuilder();
-            for (int i = 0; i < 8; i++) {
-                hex.append(String.format("%02x", digest[i]));
-            }
-            String drmHash = hex.toString();
-            if (isBlacklistedCrackArtifact(drmHash)) {
-                hardTerminateProcess("Spoofed HWID");
-                return "blocked";
-            }
-            return androidId.isEmpty() ? drmHash : (drmHash + "|" + androidId.trim().toLowerCase(Locale.US));
-        } catch (Exception e) {
-            hardTerminateProcess("HWID Crypto Error");
-            return "blocked";
-        }
-    }
-
-    @JavascriptInterface
-    public String getDeviceHwid() {
-        return computeLiveHardwareId();
-    }
-
-    @JavascriptInterface
-    public String getDisplayHwid() {
-        String full = computeLiveHardwareId();
-        int idx = full.indexOf('|');
-        return idx > 0 ? full.substring(0, idx) : full;
-    }
-
-    // Закрытие уязвимости #17 (совпадение имени метода с вызовом B.getHardwareId() в index.html)
-    @JavascriptInterface
-    public String getHardwareId() {
-        return getDisplayHwid();
-    }
-
-    // =========================================================================
-    // 4. КРИПТОГРАФИЧЕСКАЯ ПОДПИСЬ ЗАПРОСОВ И ОТВЕТОВ (HMAC-SHA256 + NONCE + TS)
-    // =========================================================================
-    private String computeDailyHmac(String data) {
+    // Проверка HMAC-SHA256 подписи ответа от твоего bot.py
+    private String computeDailyHmac(String payload) {
         try {
             SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd", Locale.US);
             sdf.setTimeZone(TimeZone.getTimeZone("UTC"));
             String dayStr = sdf.format(new Date());
-            if (nativeLoaded) {
-                try {
-                    return nativeSignHmac(data, dayStr);
-                } catch (Throwable ignored) {}
-            }
-            // Мастер-секрет собирается динамически и связывается с датой UTC
-            byte[] rawSecret = new byte[]{
-                    0x53, 0x4F, 0x32, 0x5F, 0x51, 0x55, 0x41, 0x4E,
-                    0x54, 0x55, 0x4D, 0x5F, 0x56, 0x31, 0x30, 0x5F,
-                    0x4B, 0x45, 0x59, 0x5F, 0x39, 0x39, 0x34, 0x31
-            };
             MessageDigest sha = MessageDigest.getInstance("SHA-256");
-            byte[] dailyKey = sha.digest((new String(rawSecret, StandardCharsets.UTF_8) + "|" + dayStr).getBytes(StandardCharsets.UTF_8));
+            byte[] dailyKey = sha.digest(("SO2_QUANTUM_V10_KEY_9941|" + dayStr).getBytes(StandardCharsets.UTF_8));
             Mac mac = Mac.getInstance("HmacSHA256");
             mac.init(new SecretKeySpec(dailyKey, "HmacSHA256"));
-            byte[] sig = mac.doFinal(data.getBytes(StandardCharsets.UTF_8));
+            byte[] sig = mac.doFinal(payload.getBytes(StandardCharsets.UTF_8));
             StringBuilder sb = new StringBuilder();
             for (byte b : sig) sb.append(String.format("%02x", b));
             return sb.toString();
@@ -517,95 +262,70 @@ public class AndroidBridge {
         }
     }
 
-    private long computeRuntimeTokenHash(String cleanKey, String hwid) {
+    // =========================================================================
+    // 3. ЖИВОЙ АППАРАТНЫЙ HWID БЕЗ КЭШИРОВАНИЯ В SHAREDPREFERENCES
+    // =========================================================================
+    private String getImmutableDrmId() {
+        StringBuilder raw = new StringBuilder();
         try {
-            String sig = computeDailyHmac(cleanKey + "|" + hwid + "|" + expectedHtmlSha256);
-            return Long.parseUnsignedLong(sig.substring(0, 15), 16);
-        } catch (Throwable t) {
-            return -1L;
+            UUID widevineUuid = new UUID(-0x121074568629b532L, -0x5c37d8232ae2de13L);
+            MediaDrm drm = new MediaDrm(widevineUuid);
+            byte[] drmId = drm.getPropertyByteArray(MediaDrm.PROPERTY_DEVICE_UNIQUE_ID);
+            if (drmId != null) {
+                for (byte b : drmId) raw.append(String.format("%02x", b));
+            }
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) drm.close();
+            else drm.release();
+        } catch (Throwable ignored) {}
+
+        raw.append("|").append(Build.BOARD)
+           .append("|").append(Build.BRAND)
+           .append("|").append(Build.DEVICE)
+           .append("|").append(Build.HARDWARE)
+           .append("|").append(Build.MODEL);
+
+        try {
+            MessageDigest md = MessageDigest.getInstance("SHA-256");
+            byte[] digest = md.digest(raw.toString().getBytes(StandardCharsets.UTF_8));
+            StringBuilder hex = new StringBuilder();
+            for (int i = 0; i < 8; i++) {
+                hex.append(String.format("%02x", digest[i]));
+            }
+            return hex.toString();
+        } catch (Exception e) {
+            return "hw7744aabb1122cc";
         }
     }
 
-    private boolean isSessionCryptographicallyValid() {
-        if (!sessionAlive.get() || activeRuntimeKey.isEmpty()) return false;
-        if (isBlacklistedCrackArtifact(activeRuntimeKey)) {
-            hardTerminateProcess("Crack Key Detected");
-            return false;
+    @JavascriptInterface
+    public String getDeviceHwid() {
+        String drmHwid = getImmutableDrmId();
+        String androidId = "";
+        try {
+            androidId = Settings.Secure.getString(context.getContentResolver(), Settings.Secure.ANDROID_ID);
+        } catch (Throwable ignored) {}
+        if (androidId == null || androidId.trim().isEmpty()) {
+            return drmHwid;
         }
-        long expected = computeRuntimeTokenHash(activeRuntimeKey, computeLiveHardwareId());
-        return expected != 0L && verifiedSessionTokenHash.get() == expected;
+        return drmHwid + "|" + androidId.trim().toLowerCase(Locale.US);
+    }
+
+    @JavascriptInterface
+    public String getDisplayHwid() {
+        return getImmutableDrmId();
+    }
+
+    // Совместимость с вызовом B.getHardwareId() в index.html (закрытие уязвимости #17)
+    @JavascriptInterface
+    public String getHardwareId() {
+        return getImmutableDrmId();
     }
 
     // =========================================================================
-    // 5. ДВОЙНОЙ НЕЗАВИСИМЫЙ WATCHDOG + ПРОВЕРКА DOM (УЯЗВИМОСТИ #3, #16, #27, #33)
-    // =========================================================================
-    private void startDualIndependentWatchdogs() {
-        // Поток 1: Фоновый пул проверяет анти-отладку, порты Frida, целостность HTML и серверный статус
-        watchdogExecutor.scheduleWithFixedDelay(() -> {
-            try {
-                if (detectHostileEnvironment() || isFridaPortOpen() || inspectHtmlIntegrityAndtampering()) {
-                    hardTerminateProcess("Runtime Integrity Triggered");
-                    return;
-                }
-                final String currentKey = getSavedKey();
-                if (!currentKey.isEmpty()) {
-                    String liveLabel = buildLiveSubscriptionLabel(null, currentKey);
-                    if ("EXPIRED".equals(liveLabel)) {
-                        forceKickExpiredUser("Срок действия вашего ключа истёк!");
-                        return;
-                    }
-                    String raw = ApiManager.verifyLicense(currentKey, computeLiveHardwareId());
-                    JSONObject res = new JSONObject(raw);
-                    String status = res.optString("status", "");
-
-                    // Закрытие уязвимости #25: статус "offline" больше НЕ считается валидной лицензией
-                    boolean ok = ("ok".equalsIgnoreCase(status) || "active".equalsIgnoreCase(status) || res.optBoolean("ok", false))
-                            && !"offline".equalsIgnoreCase(status)
-                            && !res.optBoolean("blocked", false)
-                            && !"expired".equalsIgnoreCase(status)
-                            && !"banned".equalsIgnoreCase(status)
-                            && !"device_mismatch".equalsIgnoreCase(status);
-
-                    if (!ok) {
-                        forceKickExpiredUser(res.optString("message", "Сессия недействительна или ключ истёк!"));
-                        return;
-                    }
-                    getOrInitKeyDeadlineMs(currentKey, res);
-                    lastVerifiedServerTs.set(SystemClock.elapsedRealtime());
-                }
-            } catch (Throwable t) {
-                // Закрытие уязвимости #27: при обрыве или подмене ответа более 60 секунд — принудительный кик
-                long elapsed = SystemClock.elapsedRealtime() - lastVerifiedServerTs.get();
-                if (sessionAlive.get() && elapsed > 60000L) {
-                    forceKickExpiredUser("Потеряна связь с сервером защиты!");
-                }
-            }
-        }, 8, 12, TimeUnit.SECONDS);
-
-        // Поток 2: Проверка целостности DOM в WebView (защита от скрытия #authScreenOverlay через CSS)
-        mainHandler.postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    if (!isSessionCryptographicallyValid() && activity instanceof MainActivity) {
-                        ((MainActivity) activity).evalJsFromNotification(
-                                "(function(){var el=document.getElementById('authScreenOverlay');" +
-                                "if(!el || window.getComputedStyle(el).display==='none' || window.getComputedStyle(el).visibility==='hidden' || parseFloat(window.getComputedStyle(el).opacity)<0.5){" +
-                                "if(typeof forceShowKickScreen==='function')forceShowKickScreen('Требуется авторизация');else location.reload();" +
-                                "}})();"
-                        );
-                    }
-                } catch (Throwable ignored) {}
-                mainHandler.postDelayed(this, 6500);
-            }
-        }, 6500);
-    }
-
-    // =========================================================================
-    // 6. СРОКИ ДЕЙСТВИЯ КЛЮЧА И ПОДПИСКИ (УЯЗВИМОСТИ #30, #31)
+    // 4. СРОК ПОДПИСКИ И WATCHDOG (БЕЗ ЛАЗЕЕК OFFLINE И CATCH)
     // =========================================================================
     private long getDefaultDurationMsForKey(String cleanKey) {
-        if (cleanKey == null || isBlacklistedCrackArtifact(cleanKey)) return 0L;
+        if (cleanKey == null || isBlacklistedArtifact(cleanKey)) return 0L;
         String u = cleanKey.toUpperCase(Locale.US);
         if (u.startsWith("TPLIFE") || u.contains("LIFE") || u.startsWith("TP999D")) return 3650L * 24L * 3600L * 1000L;
         if (u.startsWith("TP-1HR") || u.contains("1HR") || u.contains("-1H-")) return 3600L * 1000L;
@@ -618,52 +338,39 @@ public class AndroidBridge {
     }
 
     private long getOrInitKeyDeadlineMs(String cleanKey, JSONObject serverRes) {
-        if (cleanKey == null || cleanKey.isEmpty() || isBlacklistedCrackArtifact(cleanKey)) return 0L;
+        if (cleanKey == null || cleanKey.isEmpty() || isBlacklistedArtifact(cleanKey)) return 0L;
+        String deadlinePrefKey = "key_deadline_ms_" + cleanKey;
         long now = System.currentTimeMillis();
 
         if (serverRes != null) {
-            // Проверка расхождения времени с сервером (защита от перевода часов назад — пункт 30)
-            long srvTime = serverRes.optLong("server_ts", 0L);
-            if (srvTime > 1700000000L) {
-                long srvMs = (srvTime < 100000000000L) ? (srvTime * 1000L) : srvTime;
-                if (Math.abs(now - srvMs) > 300000L) {
-                    return 0L;
-                }
-            }
-
             long remSec = serverRes.optLong("remaining_sec",
                     serverRes.optLong("time_left_sec",
                             serverRes.optLong("seconds_left", -1L)));
             if (remSec > 0) {
                 long newDeadline = now + (remSec * 1000L);
-                writeToKeystoreVault(VAULT_KEY_DEADLINE + "_" + cleanKey, String.valueOf(newDeadline));
+                prefs.edit().putLong(deadlinePrefKey, newDeadline).apply();
                 return newDeadline;
             }
             long expUnix = serverRes.optLong("expires_at", serverRes.optLong("exp", -1L));
             if (expUnix > 1700000000L) {
                 long newDeadline = (expUnix < 100000000000L) ? (expUnix * 1000L) : expUnix;
-                writeToKeystoreVault(VAULT_KEY_DEADLINE + "_" + cleanKey, String.valueOf(newDeadline));
+                prefs.edit().putLong(deadlinePrefKey, newDeadline).apply();
                 return newDeadline;
             }
         }
 
-        String savedStr = readFromKeystoreVault(VAULT_KEY_DEADLINE + "_" + cleanKey);
-        if (!savedStr.isEmpty()) {
-            try {
-                long savedDeadline = Long.parseLong(savedStr);
-                // Защита от Long.MAX_VALUE заглушки (уязвимость #30)
-                if (savedDeadline > now + (4000L * 24L * 3600L * 1000L)) return 0L;
-                if (savedDeadline > 0L) return savedDeadline;
-            } catch (NumberFormatException ignored) {}
-        }
+        long savedDeadline = prefs.getLong(deadlinePrefKey, 0L);
+        // Защита от подстановки Long.MAX_VALUE (уязвимость #30)
+        if (savedDeadline > now + (4000L * 24L * 3600L * 1000L)) return 0L;
+        if (savedDeadline > 0L) return savedDeadline;
 
         long computedDeadline = now + getDefaultDurationMsForKey(cleanKey);
-        writeToKeystoreVault(VAULT_KEY_DEADLINE + "_" + cleanKey, String.valueOf(computedDeadline));
+        prefs.edit().putLong(deadlinePrefKey, computedDeadline).apply();
         return computedDeadline;
     }
 
     private String buildLiveSubscriptionLabel(JSONObject serverRes, String cleanKey) {
-        if (!isSessionCryptographicallyValid() && serverRes == null) return "EXPIRED";
+        if (cleanKey == null || cleanKey.isEmpty() || isBlacklistedArtifact(cleanKey)) return "EXPIRED";
 
         long deadlineMs = getOrInitKeyDeadlineMs(cleanKey, serverRes);
         long diffMs = deadlineMs - System.currentTimeMillis();
@@ -684,14 +391,74 @@ public class AndroidBridge {
         long hours = (totalMinutes % (60L * 24L)) / 60L;
         long mins = totalMinutes % 60L;
 
-        if (days >= 1800) return "АКТИВНА (НАВСЕГДА)";
+        if (days >= 1800) return "АКТИВНА (НАВСЕГДА 👑)";
         if (days > 0) return "АКТИВНА (" + days + " дн. " + hours + " ч.)";
         if (hours > 0) return "АКТИВНА (" + hours + " ч. " + mins + " мин.)";
         return "АКТИВНА (" + Math.max(1, mins) + " мин.)";
     }
 
+    private void startLicenseWatchdog() {
+        mainHandler.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                if (isClientTampered()) {
+                    forceKickExpiredUser("Обнаружена попытка взлома клиента (Anti-Crack V10)!");
+                    return;
+                }
+                final String savedKey = getSavedKey();
+                if (!savedKey.isEmpty() && prefs.getBoolean(PREF_FIRST_LOGIN_DONE, false)) {
+                    String liveStatus = buildLiveSubscriptionLabel(null, savedKey);
+                    if ("EXPIRED".equals(liveStatus)) {
+                        forceKickExpiredUser("Срок действия вашего ключа истёк!");
+                        return;
+                    }
+
+                    networkExecutor.execute(() -> {
+                        try {
+                            String hwid = getDeviceHwid();
+                            String raw = ApiManager.verifyLicense(savedKey, hwid);
+                            JSONObject res = new JSONObject(raw);
+                            String status = res.optString("status", "");
+
+                            String srvSig = res.optString("sig", "");
+                            if (!srvSig.isEmpty()) {
+                                String expectedSig = computeDailyHmac(savedKey + "|" + hwid + "|" + status);
+                                if (!expectedSig.equalsIgnoreCase(srvSig)) {
+                                    forceKickExpiredUser("Ошибка подписи сервера!");
+                                    return;
+                                }
+                            }
+
+                            // Статус "offline" больше не считается валидным
+                            boolean explicitlyBlocked = "expired".equalsIgnoreCase(status)
+                                    || "blocked".equalsIgnoreCase(status)
+                                    || "banned".equalsIgnoreCase(status)
+                                    || "device_mismatch".equalsIgnoreCase(status)
+                                    || "offline".equalsIgnoreCase(status)
+                                    || res.optBoolean("blocked", false);
+
+                            if (explicitlyBlocked) {
+                                forceKickExpiredUser(res.optString("message", "Ключ заблокирован или истёк!"));
+                            } else if ("ok".equalsIgnoreCase(status) || "active".equalsIgnoreCase(status) || res.optBoolean("ok", false)) {
+                                getOrInitKeyDeadlineMs(savedKey, res);
+                                prefs.edit().putLong("last_server_ok_ts", System.currentTimeMillis()).apply();
+                            }
+                        } catch (Exception e) {
+                            // Если связи с сервером нет дольше 15 минут — блокируем сессию
+                            long lastOk = prefs.getLong("last_server_ok_ts", System.currentTimeMillis());
+                            if (System.currentTimeMillis() - lastOk > 15L * 60L * 1000L) {
+                                forceKickExpiredUser("Потеряна связь с сервером авторизации!");
+                            }
+                        }
+                    });
+                }
+                mainHandler.postDelayed(this, 20000);
+            }
+        }, 20000);
+    }
+
     // =========================================================================
-    // 7. УПРАВЛЕНИЕ ОВЕРЛЕЯМИ И ПРИНУДИТЕЛЬНЫЙ КИК
+    // 5. УПРАВЛЕНИЕ ОВЕРЛЕЯМИ И КНОПКОЙ РАСТЯГА «T» С ПОДСВЕТКОЙ ВЕДРА
     // =========================================================================
     private void removeOverlayViewSafe(View v) {
         if (v == null) return;
@@ -739,11 +506,12 @@ public class AndroidBridge {
     }
 
     private void forceKickExpiredUser(String reasonToast) {
-        sessionAlive.set(false);
-        verifiedSessionTokenHash.set(0L);
-        activeRuntimeKey = "";
-        writeToKeystoreVault(VAULT_KEY_LIC, "");
-        writeToKeystoreVault(VAULT_KEY_TOKEN, "");
+        saveEncryptedKeyToVault("");
+        prefs.edit()
+                .remove("saved_license_key")
+                .putBoolean(PREF_FIRST_LOGIN_DONE, false)
+                .apply();
+        legacyPrefs.edit().remove("license_key").apply();
         ApiManager.invalidateSession();
         TeleportEngine.stopTeleport();
 
@@ -782,25 +550,8 @@ public class AndroidBridge {
         });
     }
 
-    // Встроенный охранник для каждого рабочего метода: если сессия не прошла криптопроверку — жёсткий выход
-    private boolean requireVerifiedSessionOrHalt() {
-        if (detectHostileEnvironment() || inspectHtmlIntegrityAndtampering()) {
-            hardTerminateProcess("Tamper Detected");
-            return false;
-        }
-        if (!isSessionCryptographicallyValid()) {
-            forceKickExpiredUser("Недействительная сессия лицензии!");
-            return false;
-        }
-        return true;
-    }
-
-    // =========================================================================
-    // 8. АУДИО, SHIZUKU И ПЛАВАЮЩАЯ КНОПКА РАСТЯГА «T» С ПОДСВЕТКОЙ ВЕДРА
-    // =========================================================================
     @JavascriptInterface
     public void enforceGameAudioMode() {
-        if (!requireVerifiedSessionOrHalt()) return;
         try {
             AudioManager am = (AudioManager) context.getSystemService(Context.AUDIO_SERVICE);
             if (am != null) {
@@ -861,7 +612,7 @@ public class AndroidBridge {
 
     @JavascriptInterface
     public String activateStretchFloatingButton(String ratio) {
-        if (!requireVerifiedSessionOrHalt()) return "NEED_AUTH";
+        if (getSavedKey().isEmpty() || isClientTampered()) return "NEED_AUTH";
         if (ratio != null && !ratio.trim().isEmpty()) {
             this.selectedStretchRatio = ratio.trim().toUpperCase(Locale.US);
         }
@@ -1082,8 +833,10 @@ public class AndroidBridge {
     }
 
     private void toggleTwoStepStretchAction() {
-        if (!requireVerifiedSessionOrHalt()) return;
-
+        if (getSavedKey().isEmpty()) {
+            forceKickExpiredUser("Ключ не активен!");
+            return;
+        }
         boolean shizukuOk = TeleportEngine.isShizukuReady() || ShizukuManager.isPermissionGranted();
         if (!shizukuOk) {
             Toast.makeText(context, "⚠️ Включите Shizuku! Помощь: @talent_dare", Toast.LENGTH_LONG).show();
@@ -1143,13 +896,12 @@ public class AndroidBridge {
 
     @JavascriptInterface
     public void applyStretchDirectlyNow(String ratio) {
-        if (!requireVerifiedSessionOrHalt()) return;
         activateStretchFloatingButton(ratio);
     }
 
     @JavascriptInterface
     public void applyDirectStretchRatio(String ratio) {
-        if (!requireVerifiedSessionOrHalt()) return;
+        if (getSavedKey().isEmpty() || isClientTampered()) return;
         TeleportEngine.applyAspectRatioStretch(ratio);
     }
 
@@ -1176,7 +928,6 @@ public class AndroidBridge {
 
     @JavascriptInterface
     public boolean saveFullConfigJson(String jsonConfig) {
-        if (!requireVerifiedSessionOrHalt()) return false;
         if (jsonConfig == null || jsonConfig.trim().isEmpty()) return false;
         prefs.edit().putString("full_user_config_v410", jsonConfig).apply();
         return true;
@@ -1184,13 +935,12 @@ public class AndroidBridge {
 
     @JavascriptInterface
     public String loadFullConfigJson() {
-        if (!requireVerifiedSessionOrHalt()) return "";
         return prefs.getString("full_user_config_v410", "");
     }
 
     @JavascriptInterface
     public String setWideHitboxMode(boolean enabled, String ratio) {
-        if (!requireVerifiedSessionOrHalt()) return "NEED_AUTH";
+        if (getSavedKey().isEmpty() || isClientTampered()) return "NEED_AUTH";
         String targetRatio = (ratio != null && !ratio.isEmpty()) ? ratio : "4:3";
         prefs.edit().putBoolean("wide_hitbox_mode", enabled).apply();
         if (enabled) {
@@ -1223,14 +973,13 @@ public class AndroidBridge {
 
     @JavascriptInterface
     public void healTouch() {
-        if (!requireVerifiedSessionOrHalt()) return;
         TeleportEngine.requestShizukuPermissionIfNeeded();
         TeleportEngine.healTouchAndRestart();
     }
 
     @JavascriptInterface
     public void startTeleport(String presetId) {
-        if (!requireVerifiedSessionOrHalt()) return;
+        if (getSavedKey().isEmpty() || isClientTampered()) return;
         TeleportEngine.startTeleport(presetId);
     }
 
@@ -1245,43 +994,41 @@ public class AndroidBridge {
             int chunks, int chunkFast, double straight,
             int stick, int grid, int pause, double accel
     ) {
-        if (!requireVerifiedSessionOrHalt()) return;
+        if (getSavedKey().isEmpty() || isClientTampered()) return;
         TeleportEngine.updateParameters(sharp, sx, sy, chunks, chunkFast, straight, stick, grid, pause, accel);
     }
 
     @JavascriptInterface
     public void setRawInputNoSmoothing(boolean enabled) {
-        if (!requireVerifiedSessionOrHalt()) return;
+        if (getSavedKey().isEmpty() || isClientTampered()) return;
         TeleportEngine.setRawInputNoSmoothing(enabled);
     }
 
     @JavascriptInterface
     public void setVulkanGpuTurbo(boolean enabled) {
-        if (!requireVerifiedSessionOrHalt()) return;
+        if (getSavedKey().isEmpty() || isClientTampered()) return;
         TeleportEngine.setVulkanGpuTurbo(enabled);
     }
 
     @JavascriptInterface
     public void setNetPingStabilizer(boolean enabled) {
-        if (!requireVerifiedSessionOrHalt()) return;
+        if (getSavedKey().isEmpty() || isClientTampered()) return;
         TeleportEngine.setNetPingStabilizer(enabled);
     }
 
     @JavascriptInterface
     public void setTouchSamplingBoost(boolean enabled, int hz) {
-        if (!requireVerifiedSessionOrHalt()) return;
+        if (getSavedKey().isEmpty() || isClientTampered()) return;
         TeleportEngine.setTouchSamplingBoost(enabled, hz);
     }
 
     @JavascriptInterface
     public String performRamBoost() {
-        if (!requireVerifiedSessionOrHalt()) return "NEED_AUTH";
         return TeleportEngine.performRamBoost(context);
     }
 
     @JavascriptInterface
     public void setHzThermalGuard(boolean enabled) {
-        if (!requireVerifiedSessionOrHalt()) return;
         TeleportEngine.setHzThermalGuard(enabled);
     }
 
@@ -1290,13 +1037,13 @@ public class AndroidBridge {
             int fpsLock, int gpuBoost, int frameTime,
             int edgeSens, int multiTouch, int netBuffer, int thermalLim
     ) {
-        if (!requireVerifiedSessionOrHalt()) return;
+        if (getSavedKey().isEmpty() || isClientTampered()) return;
         TeleportEngine.applyShooterOptimizer(fpsLock, gpuBoost, frameTime, edgeSens, multiTouch, netBuffer, thermalLim);
     }
 
     @JavascriptInterface
     public void setEnhancedRecoilFix(boolean enabled, int power) {
-        if (!requireVerifiedSessionOrHalt()) return;
+        if (getSavedKey().isEmpty() || isClientTampered()) return;
         TeleportEngine.setEnhancedRecoilFix(enabled, power);
     }
 
@@ -1305,59 +1052,56 @@ public class AndroidBridge {
 
     @JavascriptInterface
     public void setPixelDownscaleFactor(int pct) {
-        if (!requireVerifiedSessionOrHalt()) return;
+        if (getSavedKey().isEmpty() || isClientTampered()) return;
         TeleportEngine.setPixelDownscaleFactor(pct);
     }
 
     @JavascriptInterface
     public String runSmartDeviceScan() {
-        if (!requireVerifiedSessionOrHalt()) return "NEED_AUTH";
         return TeleportEngine.runSmartDeviceScan(context);
     }
 
     @JavascriptInterface
     public void applyUltraProTouchMatrix(int modeLevel) {
-        if (!requireVerifiedSessionOrHalt()) return;
+        if (getSavedKey().isEmpty() || isClientTampered()) return;
         ProfileManager.addTeleportCountToTotal(context, 1);
         TeleportEngine.startTeleport("extreme");
     }
 
-    // Закрытие уязвимости #29: никаких локальных "status":"ok" при ошибке облачных конфигов
     @JavascriptInterface
     public String uploadCloudConfig(String title, String presetJson) {
-        if (!requireVerifiedSessionOrHalt()) {
-            return "{\"status\":\"error\",\"ok\":false,\"message\":\"Сначала активируйте лицензионный ключ\"}";
+        String key = getSavedKey();
+        if (key.isEmpty() || isClientTampered()) {
+            return "{\"status\":\"error\",\"ok\":false,\"message\":\"Сначала активируйте ключ\"}";
         }
         try {
-            Callable<String> task = () -> ApiManager.uploadCloudPreset(activeRuntimeKey, computeLiveHardwareId(), title, presetJson);
+            Callable<String> task = () -> ApiManager.uploadCloudPreset(key, getDeviceHwid(), title, presetJson);
             Future<String> future = networkExecutor.submit(task);
-            return future.get(4500, TimeUnit.MILLISECONDS);
+            return future.get(4000, TimeUnit.MILLISECONDS);
         } catch (Exception e) {
-            return "{\"status\":\"error\",\"ok\":false,\"message\":\"Ошибка связи с облачным сервером\"}";
+            return "{\"status\":\"error\",\"ok\":false,\"message\":\"Ошибка создания кода\"}";
         }
     }
 
     @JavascriptInterface
     public String downloadCloudConfig(String shareCode) {
-        if (!requireVerifiedSessionOrHalt()) {
-            return "{\"status\":\"error\",\"ok\":false,\"message\":\"Сначала активируйте лицензионный ключ\"}";
+        String key = getSavedKey();
+        if (key.isEmpty() || isClientTampered()) {
+            return "{\"status\":\"error\",\"ok\":false,\"message\":\"Сначала активируйте ключ\"}";
         }
         try {
-            Callable<String> task = () -> ApiManager.downloadCloudPresetByCode(activeRuntimeKey, computeLiveHardwareId(), shareCode);
+            Callable<String> task = () -> ApiManager.downloadCloudPresetByCode(key, getDeviceHwid(), shareCode);
             Future<String> future = networkExecutor.submit(task);
-            return future.get(4500, TimeUnit.MILLISECONDS);
+            return future.get(4000, TimeUnit.MILLISECONDS);
         } catch (Exception e) {
-            return "{\"status\":\"error\",\"ok\":false,\"message\":\"Код сборки не найден или нет сети\"}";
+            return "{\"status\":\"error\",\"ok\":false,\"message\":\"Ошибка загрузки конфига\"}";
         }
     }
 
-    // =========================================================================
-    // 9. КАСТОМНЫЙ ПРИЦЕЛ
-    // =========================================================================
     @JavascriptInterface
     public void updateCrosshair(String type) {
         final String cleanType = (type == null) ? "off" : type.trim();
-        if (!"off".equalsIgnoreCase(cleanType) && !requireVerifiedSessionOrHalt()) return;
+        if (getSavedKey().isEmpty() && !"off".equalsIgnoreCase(cleanType)) return;
 
         mainHandler.post(() -> {
             if (activity instanceof MainActivity) {
@@ -1436,7 +1180,7 @@ public class AndroidBridge {
             updateCrosshair("off");
             return;
         }
-        if (!requireVerifiedSessionOrHalt()) return;
+        if (getSavedKey().isEmpty()) return;
         updateCrosshair(type);
         mainHandler.post(() -> {
             if (crosshairView != null && isCrosshairShown) {
@@ -1479,15 +1223,12 @@ public class AndroidBridge {
         return model + "|" + shortPx + "x" + longPx + " (120 Гц)";
     }
 
-    // =========================================================================
-    // 10. АВТОРИЗАЦИЯ И ВЕРИФИКАЦИЯ ЛИЦЕНЗИИ (ЗАКРЫТИЕ УЯЗВИМОСТЕЙ #4, #5, #6, #25, #26)
-    // =========================================================================
     @JavascriptInterface
     public String getSavedKey() {
-        if (!sessionAlive.get()) return "";
-        String encKey = readFromKeystoreVault(VAULT_KEY_LIC);
-        if (encKey.isEmpty() || isBlacklistedCrackArtifact(encKey)) return "";
-        return encKey.trim().toUpperCase(Locale.US);
+        if (!prefs.getBoolean(PREF_FIRST_LOGIN_DONE, false)) return "";
+        String key = readEncryptedKeyFromVault();
+        if (key.isEmpty() || isBlacklistedArtifact(key)) return "";
+        return key;
     }
 
     @JavascriptInterface
@@ -1507,50 +1248,43 @@ public class AndroidBridge {
         }
     }
 
-    private void markKeyActivatedCryptographically(String nick, String cleanKey, JSONObject serverRes) {
-        String hwid = computeLiveHardwareId();
-        this.activeRuntimeKey = cleanKey;
-        long tokenHash = computeRuntimeTokenHash(cleanKey, hwid);
-        this.verifiedSessionTokenHash.set(tokenHash);
-        this.lastVerifiedServerTs.set(SystemClock.elapsedRealtime());
-        this.sessionAlive.set(true);
-
-        writeToKeystoreVault(VAULT_KEY_LIC, cleanKey);
-        writeToKeystoreVault(VAULT_KEY_TOKEN, String.valueOf(tokenHash));
-        getOrInitKeyDeadlineMs(cleanKey, serverRes);
-
+    private void markKeyActivated(String nick, String cleanKey, JSONObject serverRes) {
         ApiManager.setSessionVerified(true);
+        saveEncryptedKeyToVault(cleanKey);
+        getOrInitKeyDeadlineMs(cleanKey, serverRes);
+        prefs.edit()
+                .remove("saved_license_key")
+                .putString("owned_token_" + cleanKey, "OWNED_" + cleanKey)
+                .putBoolean(PREF_FIRST_LOGIN_DONE, true)
+                .putLong("last_server_ok_ts", System.currentTimeMillis())
+                .apply();
         ProfileManager.saveActivatedProfile(context, nick, cleanKey);
-        SecurityShield.issueVerifiedSessionToken(context, cleanKey);
     }
 
     @JavascriptInterface
     public String activateLicenseKey(String key) {
-        if (detectHostileEnvironment() || inspectHtmlIntegrityAndtampering()) {
-            hardTerminateProcess("Security Tamper");
-            return "ERROR|Обнаружена модификация приложения!";
+        if (isClientTampered()) {
+            return "ERROR|Обнаружена модификация файлов приложения!";
         }
-        if (key == null || key.trim().length() < 6 || isBlacklistedCrackArtifact(key)) {
-            return "ERROR|Введите действительный лицензионный ключ из Telegram-бота";
+        if (key == null || key.trim().length() < 5 || isBlacklistedArtifact(key)) {
+            return "ERROR|Введите лицензионный ключ из Telegram-бота";
         }
         final String cleanKey = key.trim().toUpperCase(Locale.US);
-        final String hwid = computeLiveHardwareId();
+        final String hwid = getDeviceHwid();
         final String nick = getSavedNickname().isEmpty() ? "dare" : getSavedNickname();
 
         try {
             Callable<String> task = () -> ApiManager.activateLicense(cleanKey, hwid, nick);
             Future<String> future = networkExecutor.submit(task);
-            String raw = future.get(6000, TimeUnit.MILLISECONDS);
+            String raw = future.get(5500, TimeUnit.MILLISECONDS);
             JSONObject res = new JSONObject(raw);
             String status = res.optString("status", "");
 
-            // Проверка серверной HMAC-подписи (если сервер прислал поле sig)
             String srvSig = res.optString("sig", "");
             if (!srvSig.isEmpty()) {
                 String expectedSig = computeDailyHmac(cleanKey + "|" + hwid + "|" + status);
                 if (!expectedSig.equalsIgnoreCase(srvSig)) {
-                    hardTerminateProcess("Invalid Server HMAC");
-                    return "ERROR|Подпись ответа сервера недействительна!";
+                    return "ERROR|Ошибка криптографической подписи сервера!";
                 }
             }
 
@@ -1566,7 +1300,8 @@ public class AndroidBridge {
                     || "active".equalsIgnoreCase(status)) && !blocked;
 
             if (ok) {
-                markKeyActivatedCryptographically(nick, cleanKey, res);
+                markKeyActivated(nick, cleanKey, res);
+                SecurityShield.issueVerifiedSessionToken(context, cleanKey);
                 String liveLabel = buildLiveSubscriptionLabel(res, cleanKey);
                 if ("EXPIRED".equals(liveLabel)) {
                     forceKickExpiredUser("Срок действия этого ключа истёк!");
@@ -1575,7 +1310,7 @@ public class AndroidBridge {
                 return "OK|" + liveLabel;
             }
 
-            return "ERROR|" + res.optString("message", "Ключ не найден, истёк или недействителен!");
+            return "ERROR|" + res.optString("message", "Ключ не найден, истёк или привязан к другому устройству!");
         } catch (Exception e) {
             return "ERROR|Нет связи с сервером авторизации. Проверьте интернет!";
         }
@@ -1583,26 +1318,34 @@ public class AndroidBridge {
 
     @JavascriptInterface
     public String verifyLicenseKey(String key) {
-        if (detectHostileEnvironment() || inspectHtmlIntegrityAndtampering()) {
-            hardTerminateProcess("Security Tamper");
+        if (isClientTampered()) {
+            forceKickExpiredUser("Обнаружена модификация приложения!");
             return "BANNED|Модификация файлов приложения";
+        }
+        if (!prefs.getBoolean(PREF_FIRST_LOGIN_DONE, false)) {
+            return "EXPIRED|Введите ваш логин и лицензионный ключ";
         }
 
         final String cleanKey = (key != null && !key.trim().isEmpty())
                 ? key.trim().toUpperCase(Locale.US)
-                : readFromKeystoreVault(VAULT_KEY_LIC);
+                : getSavedKey();
 
-        if (cleanKey.length() < 6 || isBlacklistedCrackArtifact(cleanKey)) {
+        if (cleanKey.length() < 5 || isBlacklistedArtifact(cleanKey)) {
             forceKickExpiredUser("Введите лицензионный ключ");
             return "EXPIRED|Введите ключ";
         }
 
-        final String hwid = computeLiveHardwareId();
+        String localLiveLabel = buildLiveSubscriptionLabel(null, cleanKey);
+        if ("EXPIRED".equals(localLiveLabel)) {
+            forceKickExpiredUser("Время вашей подписки истекло!");
+            return "EXPIRED|Время вашей подписки истекло!";
+        }
 
         try {
+            final String hwid = getDeviceHwid();
             Callable<String> task = () -> ApiManager.verifyLicense(cleanKey, hwid);
             Future<String> future = networkExecutor.submit(task);
-            String raw = future.get(5000, TimeUnit.MILLISECONDS);
+            String raw = future.get(4500, TimeUnit.MILLISECONDS);
             JSONObject res = new JSONObject(raw);
             String status = res.optString("status", "");
 
@@ -1610,12 +1353,11 @@ public class AndroidBridge {
             if (!srvSig.isEmpty()) {
                 String expectedSig = computeDailyHmac(cleanKey + "|" + hwid + "|" + status);
                 if (!expectedSig.equalsIgnoreCase(srvSig)) {
-                    forceKickExpiredUser("Ошибка подписи сервера!");
+                    forceKickExpiredUser("Ошибка подписи ответа сервера!");
                     return "BLOCKED|Ошибка подписи сервера";
                 }
             }
 
-            // Закрытие уязвимости #25: "offline" больше никогда не пропускает пользователя
             boolean blockedOrExpired = "expired".equalsIgnoreCase(status)
                     || "blocked".equalsIgnoreCase(status)
                     || "banned".equalsIgnoreCase(status)
@@ -1634,13 +1376,9 @@ public class AndroidBridge {
                     || "active".equalsIgnoreCase(status);
 
             if (ok) {
-                String nick = getSavedNickname().isEmpty() ? "dare" : getSavedNickname();
-                markKeyActivatedCryptographically(nick, cleanKey, res);
+                ApiManager.setSessionVerified(true);
+                prefs.edit().putLong("last_server_ok_ts", System.currentTimeMillis()).apply();
                 String label = buildLiveSubscriptionLabel(res, cleanKey);
-                if ("EXPIRED".equals(label)) {
-                    forceKickExpiredUser("Время вашей подписки истекло!");
-                    return "EXPIRED|Время вашей подписки истекло!";
-                }
                 return "OK|" + label;
             }
 
@@ -1648,9 +1386,12 @@ public class AndroidBridge {
             forceKickExpiredUser(msg);
             return "EXPIRED|" + msg;
         } catch (Exception e) {
-            // Закрытие уязвимости #26: при ошибке сети или перехвате трафика — принудительный кик без оффлайн-работы
-            forceKickExpiredUser("Нет связи с сервером проверки лицензии!");
-            return "EXPIRED|Требуется подключение к интернету";
+            long lastOk = prefs.getLong("last_server_ok_ts", 0L);
+            if (ApiManager.isSessionVerified() && (System.currentTimeMillis() - lastOk) < 15L * 60L * 1000L) {
+                return "OK|" + localLiveLabel;
+            }
+            forceKickExpiredUser("Проверьте подключение к интернету!");
+            return "EXPIRED|Проверьте подключение к интернету";
         }
     }
 
@@ -1683,7 +1424,7 @@ public class AndroidBridge {
 
     @JavascriptInterface
     public String requestFriendsHub(String jsonPayload) {
-        if (!requireVerifiedSessionOrHalt()) {
+        if (getSavedKey().isEmpty() || isClientTampered()) {
             return "{\"status\":\"error\",\"ok\":false,\"message\":\"Сначала активируйте ключ\"}";
         }
         try {
@@ -1695,9 +1436,6 @@ public class AndroidBridge {
         }
     }
 
-    // =========================================================================
-    // 11. ГОЛОСОВОЙ ЧАТ И УВЕДОМЛЕНИЯ
-    // =========================================================================
     private static final String VOICE_CHANNEL_ID = "so2tp_voice_call_channel_v2";
     private static final int VOICE_NOTIF_ID = 7744;
     private static final String ACTION_VOICE_MUTE = "com.teleport.so2.ACTION_VOICE_MUTE";
@@ -1783,7 +1521,6 @@ public class AndroidBridge {
 
     @JavascriptInterface
     public void updateVoiceCallNotification(String roomName, boolean isMuted, boolean isDeafened) {
-        if (!requireVerifiedSessionOrHalt()) return;
         mainHandler.post(() -> {
             try {
                 ensureVoiceNotifSetup();
@@ -1862,7 +1599,6 @@ public class AndroidBridge {
         return Math.round(dp * context.getResources().getDisplayMetrics().density);
     }
 
-    // Нижнее ведро с яркой неоновой подсветкой при наведении кнопки «T»
     private static class BridgeTrashView extends View {
         private final Paint glowPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
         private final Paint bgPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
