@@ -1203,6 +1203,263 @@
     }
     #cyberToast.show { transform: translateX(-50%) translateY(0); }
   </style>
+  <!-- ====== LIQUID GLASS 3D THEME OVERRIDE ====== -->
+<svg width="0" height="0" style="position:absolute;pointer-events:none;">
+  <defs>
+    <filter id="so2-liquid-refract" x="-10%" y="-10%" width="120%" height="120%">
+      <feTurbulence type="fractalNoise" baseFrequency="0.015" numOctaves="2" result="noise" />
+      <feDisplacementMap in="SourceGraphic" in2="noise" scale="3" xChannelSelector="R" yChannelSelector="G" />
+    </filter>
+  </defs>
+</svg>
+
+<style id="so2-liquid-glass-v10">
+  :root {
+    --lg-bg-deep: #060911;
+    --lg-cyan: #00e5ff;
+    --lg-blue: #38bdf8;
+    --lg-emerald: #10b981;
+    --lg-crimson: #ff2e5b;
+    --lg-glass-surface: linear-gradient(
+      135deg,
+      rgba(255, 255, 255, 0.14) 0%,
+      rgba(20, 30, 48, 0.34) 42%,
+      rgba(10, 15, 26, 0.46) 78%,
+      rgba(0, 229, 255, 0.08) 100%
+    );
+    --lg-glass-border: rgba(255, 255, 255, 0.22);
+    --lg-glass-shadow:
+      0 18px 42px -10px rgba(0, 0, 0, 0.78),
+      0 4px 16px rgba(0, 229, 255, 0.07),
+      inset 0 1.5px 1px 0 rgba(255, 255, 255, 0.42),
+      inset 0 -1.5px 2px 0 rgba(0, 229, 255, 0.20),
+      inset 1px 0 1px 0 rgba(255, 255, 255, 0.16);
+  }
+
+  /* Живой подсвеченный фон под стеклом (чтобы прозрачность реально преломляла свет) */
+  body, html {
+    background-color: var(--lg-bg-deep) !important;
+    background-image:
+      radial-gradient(circle at 12% 18%, rgba(0, 229, 255, 0.22) 0%, transparent 42%),
+      radial-gradient(circle at 88% 28%, rgba(56, 189, 248, 0.18) 0%, transparent 46%),
+      radial-gradient(circle at 22% 78%, rgba(16, 185, 129, 0.17) 0%, transparent 45%),
+      radial-gradient(circle at 82% 85%, rgba(255, 46, 91, 0.16) 0%, transparent 42%) !important;
+    background-attachment: fixed !important;
+  }
+
+  body::before,
+  body::after {
+    content: "";
+    position: fixed;
+    width: 280px;
+    height: 280px;
+    border-radius: 50%;
+    filter: blur(75px);
+    pointer-events: none;
+    z-index: 0;
+    opacity: 0.55;
+    animation: liquidOrbFloat 11s ease-in-out infinite alternate;
+  }
+
+  body::before {
+    top: 8%;
+    left: -60px;
+    background: radial-gradient(circle, rgba(0, 229, 255, 0.45), rgba(56, 189, 248, 0.05));
+  }
+
+  body::after {
+    bottom: 12%;
+    right: -60px;
+    background: radial-gradient(circle, rgba(16, 185, 129, 0.38), rgba(255, 46, 91, 0.12));
+    animation-delay: -5.5s;
+  }
+
+  @keyframes liquidOrbFloat {
+    0% { transform: translate3d(0, 0, 0) scale(1); }
+    100% { transform: translate3d(35px, 45px, 0) scale(1.18); }
+  }
+
+  /* Основной материал жидкого стекла для всех карточек, секций и блоков */
+  .card,
+  .glass-card,
+  .section-card,
+  .panel,
+  .box,
+  .preset-card,
+  .preset-item,
+  .config-card,
+  .booster-card,
+  .modal-content,
+  [class*="card"],
+  [class*="panel"],
+  [class*="block"] {
+    position: relative;
+    background: var(--lg-glass-surface) !important;
+    backdrop-filter: blur(28px) saturate(210%) contrast(106%) !important;
+    -webkit-backdrop-filter: blur(28px) saturate(210%) contrast(106%) !important;
+    border: 1px solid rgba(255, 255, 255, 0.18) !important;
+    border-top-color: rgba(255, 255, 255, 0.38) !important;
+    border-left-color: rgba(255, 255, 255, 0.26) !important;
+    border-radius: 24px !important;
+    box-shadow: var(--lg-glass-shadow) !important;
+    overflow: hidden;
+    transition: transform 0.22s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.22s ease, border-color 0.22s ease !important;
+  }
+
+  /* Верхний жидкий блик линзы на каждой карточке */
+  .card::before,
+  .glass-card::before,
+  .section-card::before,
+  .preset-card::before,
+  [class*="card"]::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 6%;
+    right: 6%;
+    height: 1.5px;
+    background: linear-gradient(
+      90deg,
+      transparent 0%,
+      rgba(255, 255, 255, 0.78) 35%,
+      rgba(0, 229, 255, 0.65) 65%,
+      transparent 100%
+    );
+    pointer-events: none;
+    z-index: 2;
+  }
+
+  /* Диагональное стеклянное отражение внутри карточек */
+  .card::after,
+  .glass-card::after,
+  .section-card::after {
+    content: "";
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(
+      ellipse at 25% 20%,
+      rgba(255, 255, 255, 0.09) 0%,
+      rgba(255, 255, 255, 0.02) 32%,
+      transparent 60%
+    );
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* Сетка пресетов (1 · УЛЬТРА, 2 · ПАД, 3 · AKR, 4 · A57) — эффект выпуклых стеклянных капсул */
+  .preset-card,
+  .preset-item,
+  [onclick*="Preset"],
+  [onclick*="preset"] {
+    background: linear-gradient(
+      145deg,
+      rgba(255, 255, 255, 0.16) 0%,
+      rgba(15, 23, 42, 0.38) 55%,
+      rgba(0, 229, 255, 0.10) 100%
+    ) !important;
+    backdrop-filter: blur(24px) saturate(220%) !important;
+    -webkit-backdrop-filter: blur(24px) saturate(220%) !important;
+    border-radius: 20px !important;
+    border: 1px solid rgba(255, 255, 255, 0.22) !important;
+    box-shadow:
+      0 10px 26px rgba(0, 0, 0, 0.55),
+      inset 0 1.5px 1px rgba(255, 255, 255, 0.45),
+      inset 0 -1px 2px rgba(0, 229, 255, 0.22) !important;
+  }
+
+  .preset-card:active,
+  .preset-item:active,
+  button:active,
+  .btn:active {
+    transform: scale(0.97) !important;
+    box-shadow:
+      0 6px 18px rgba(0, 229, 255, 0.25),
+      inset 0 2px 3px rgba(255, 255, 255, 0.55),
+      inset 0 0 14px rgba(0, 229, 255, 0.28) !important;
+  }
+
+  /* Поля ввода и селекты (эффект вдавленного мокрого стекла) */
+  input[type="text"],
+  input[type="number"],
+  input[type="password"],
+  select,
+  textarea,
+  .input-box {
+    background: rgba(8, 13, 24, 0.42) !important;
+    backdrop-filter: blur(18px) saturate(180%) !important;
+    -webkit-backdrop-filter: blur(18px) saturate(180%) !important;
+    border: 1px solid rgba(255, 255, 255, 0.16) !important;
+    border-top-color: rgba(0, 0, 0, 0.45) !important;
+    border-bottom-color: rgba(255, 255, 255, 0.28) !important;
+    border-radius: 16px !important;
+    box-shadow:
+      inset 0 2px 6px rgba(0, 0, 0, 0.65),
+      inset 0 -1px 1px rgba(255, 255, 255, 0.18),
+      0 2px 10px rgba(0, 229, 255, 0.05) !important;
+    color: #ffffff !important;
+  }
+
+  input:focus,
+  select:focus {
+    border-color: rgba(0, 229, 255, 0.65) !important;
+    box-shadow:
+      inset 0 2px 6px rgba(0, 0, 0, 0.55),
+      0 0 16px rgba(0, 229, 255, 0.28) !important;
+    outline: none !important;
+  }
+
+  /* Кнопки — стеклянные капсулы с неоновым свечением */
+  button,
+  .btn,
+  [class*="btn"] {
+    backdrop-filter: blur(20px) saturate(200%) !important;
+    -webkit-backdrop-filter: blur(20px) saturate(200%) !important;
+    border-top: 1px solid rgba(255, 255, 255, 0.48) !important;
+    border-left: 1px solid rgba(255, 255, 255, 0.28) !important;
+    border-right: 1px solid rgba(255, 255, 255, 0.14) !important;
+    border-bottom: 1px solid rgba(0, 229, 255, 0.28) !important;
+    box-shadow:
+      0 8px 22px rgba(0, 0, 0, 0.48),
+      inset 0 1.5px 1px rgba(255, 255, 255, 0.45),
+      inset 0 -2px 6px rgba(0, 229, 255, 0.16) !important;
+  }
+
+  /* Нижнее навигационное меню (Главное / Экран «T» / Бустер) — парящая стеклянная док-панель */
+  nav,
+  .bottom-nav,
+  .nav-bar,
+  .tab-bar,
+  [class*="bottom-nav"],
+  [class*="navbar"],
+  [class*="tabbar"] {
+    background: linear-gradient(
+      180deg,
+      rgba(255, 255, 255, 0.16) 0%,
+      rgba(12, 18, 32, 0.48) 45%,
+      rgba(8, 12, 22, 0.62) 100%
+    ) !important;
+    backdrop-filter: blur(32px) saturate(240%) !important;
+    -webkit-backdrop-filter: blur(32px) saturate(240%) !important;
+    border: 1px solid rgba(255, 255, 255, 0.24) !important;
+    border-top: 1.5px solid rgba(255, 255, 255, 0.48) !important;
+    box-shadow:
+      0 -10px 35px rgba(0, 0, 0, 0.65),
+      0 10px 30px rgba(0, 229, 255, 0.12),
+      inset 0 1.5px 1px rgba(255, 255, 255, 0.45),
+      inset 0 -1px 2px rgba(0, 229, 255, 0.22) !important;
+    border-radius: 26px !important;
+  }
+
+  /* Ползунки (range sliders) в стиле жидкого неона */
+  input[type="range"] {
+    accent-color: var(--lg-cyan) !important;
+    filter: drop-shadow(0 0 8px rgba(0, 229, 255, 0.38));
+  }
+</style>
+<!-- ====== END LIQUID GLASS 3D THEME ====== -->
 </head>
 <body>
 
