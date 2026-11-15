@@ -26,6 +26,7 @@ import android.os.Looper;
 import android.provider.Settings;
 import android.util.DisplayMetrics;
 import android.view.Gravity;
+import android.view.HapticFeedbackConstants;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.WindowManager;
@@ -159,8 +160,6 @@ public class AndroidBridge {
         }
     }
 
-    // Отправляет на твой bot.py оба ID через "|": Вечный_DRM_ID|Текущий_ANDROID_ID
-    // Благодаря этому is_same_device_hwid в твоём bot.py узнает устройство и по старому, и по новому ID!
     @JavascriptInterface
     public String getDeviceHwid() {
         String drmHwid = getImmutableDrmId();
@@ -179,10 +178,15 @@ public class AndroidBridge {
         return getImmutableDrmId();
     }
 
+    @JavascriptInterface
+    public String getHardwareId() {
+        return getImmutableDrmId();
+    }
+
     private long getDefaultDurationMsForKey(String cleanKey) {
         if (cleanKey == null) return 30L * 24L * 3600L * 1000L;
         String u = cleanKey.toUpperCase();
-        if (u.startsWith("TPLIFE") || u.contains("LIFE")) return 3650L * 24L * 3600L * 1000L;
+        if (u.startsWith("TPLIFE") || u.contains("LIFE") || u.startsWith("TP999D")) return 3650L * 24L * 3600L * 1000L;
         if (u.startsWith("TP-1HR") || u.contains("1HR") || u.contains("-1H-")) return 3600L * 1000L;
         if (u.startsWith("TP1D") || u.contains("-1D-") || u.contains("24H")) return 24L * 3600L * 1000L;
         if (u.startsWith("TP7D") || u.contains("-7D-")) return 7L * 24L * 3600L * 1000L;
@@ -286,9 +290,26 @@ public class AndroidBridge {
         }, 20000);
     }
 
+    // Гарантированное удаление любого системного оверлея без «призрачных» окон на Realme / Xiaomi / Samsung
+    private void removeOverlayViewSafe(View v) {
+        if (v == null) return;
+        try {
+            v.clearAnimation();
+            v.setVisibility(View.GONE);
+        } catch (Throwable ignored) {}
+        if (windowManager == null) return;
+        try {
+            windowManager.removeViewImmediate(v);
+            return;
+        } catch (Throwable ignored) {}
+        try {
+            windowManager.removeView(v);
+        } catch (Throwable ignored) {}
+    }
+
     private void detachTrashOverlaySafe() {
-        if (isTrashAttached && trashContainer != null && windowManager != null) {
-            try { windowManager.removeView(trashContainer); } catch (Exception ignored) {}
+        if (trashContainer != null) {
+            removeOverlayViewSafe(trashContainer);
         }
         isTrashAttached = false;
     }
@@ -296,12 +317,22 @@ public class AndroidBridge {
     private void attachTrashOverlaySafe() {
         if (!isTrashAttached && trashContainer != null && trashParams != null && windowManager != null) {
             try {
+                if (trashPillView != null) {
+                    trashPillView.setHovered(false);
+                }
                 trashContainer.setVisibility(View.VISIBLE);
                 trashContainer.setAlpha(0f);
                 windowManager.addView(trashContainer, trashParams);
-                trashContainer.animate().alpha(0.78f).setDuration(120).start();
+                trashContainer.animate().alpha(0.95f).setDuration(110).start();
                 isTrashAttached = true;
-            } catch (Exception ignored) {}
+            } catch (Exception ignored) {
+                try {
+                    trashContainer.setVisibility(View.VISIBLE);
+                    trashContainer.setAlpha(0.95f);
+                    windowManager.updateViewLayout(trashContainer, trashParams);
+                    isTrashAttached = true;
+                } catch (Exception ignored2) {}
+            }
         }
     }
 
@@ -315,16 +346,16 @@ public class AndroidBridge {
 
         mainHandler.post(() -> {
             detachTrashOverlaySafe();
-            if (floatingStretchBtn != null && windowManager != null) {
-                try { windowManager.removeView(floatingStretchBtn); } catch (Exception ignored) {}
+            if (floatingStretchBtn != null) {
+                removeOverlayViewSafe(floatingStretchBtn);
                 floatingStretchBtn = null;
             }
             trashContainer = null;
             trashPillView = null;
             isStretchOverlayShown = false;
 
-            if (isCrosshairShown && crosshairView != null && windowManager != null) {
-                try { windowManager.removeView(crosshairView); } catch (Exception ignored) {}
+            if (isCrosshairShown && crosshairView != null) {
+                removeOverlayViewSafe(crosshairView);
                 crosshairView = null;
                 isCrosshairShown = false;
             }
@@ -412,13 +443,15 @@ public class AndroidBridge {
     public String activateStretchFloatingButton(String ratio) {
         if (getSavedKey().isEmpty()) return "NEED_AUTH";
         if (ratio != null && !ratio.trim().isEmpty()) {
-            this.selectedStretchRatio = ratio.trim();
+            this.selectedStretchRatio = ratio.trim().toUpperCase();
         }
         prefs.edit().putString("saved_stretch_ratio", this.selectedStretchRatio).apply();
         legacyPrefs.edit()
                 .putString("stretch_ratio", this.selectedStretchRatio)
                 .putBoolean("float_btn_enabled", true)
                 .apply();
+
+        TeleportEngine.startTeleport("SET_RATIO:" + this.selectedStretchRatio);
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && !Settings.canDrawOverlays(context)) {
             requestOverlayPermission();
@@ -437,11 +470,14 @@ public class AndroidBridge {
                 if (activity instanceof MainActivity) {
                     ((MainActivity) activity).toggleFloatingButton(false);
                 }
-                if (isStretchOverlayShown && floatingStretchBtn != null) {
-                    updateFloatingBtnAppearance();
-                    Toast.makeText(context, "⚡ Кнопка «T» обновлена на формат " + selectedStretchRatio, Toast.LENGTH_SHORT).show();
-                    return;
+
+                // Сносим любые старые инстансы перед созданием или обновлением, чтобы кнопка никогда не зависала
+                detachTrashOverlaySafe();
+                if (floatingStretchBtn != null) {
+                    removeOverlayViewSafe(floatingStretchBtn);
+                    floatingStretchBtn = null;
                 }
+                isStretchOverlayShown = false;
 
                 int overlayType = (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O)
                         ? WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY
@@ -449,7 +485,7 @@ public class AndroidBridge {
 
                 trashContainer = new FrameLayout(context);
                 trashPillView = new BridgeTrashView(context);
-                FrameLayout.LayoutParams pillLp = new FrameLayout.LayoutParams(dpToPx(260), dpToPx(54), Gravity.CENTER);
+                FrameLayout.LayoutParams pillLp = new FrameLayout.LayoutParams(dpToPx(276), dpToPx(58), Gravity.CENTER);
                 trashContainer.addView(trashPillView, pillLp);
 
                 int trashFlags = WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE
@@ -459,20 +495,20 @@ public class AndroidBridge {
                 if (stealthOverlayFlag) trashFlags |= WindowManager.LayoutParams.FLAG_SECURE;
 
                 trashParams = new WindowManager.LayoutParams(
-                        dpToPx(280), dpToPx(74), overlayType, trashFlags, PixelFormat.TRANSLUCENT
+                        dpToPx(300), dpToPx(84), overlayType, trashFlags, PixelFormat.TRANSLUCENT
                 );
                 trashParams.gravity = Gravity.BOTTOM | Gravity.CENTER_HORIZONTAL;
-                trashParams.y = dpToPx(16);
-                trashParams.alpha = 0.78f;
+                trashParams.y = dpToPx(22);
+                trashParams.alpha = 0.95f;
 
                 floatingStretchBtn = new TextView(context);
-                floatingStretchBtn.setText("T\n" + selectedStretchRatio);
+                floatingStretchBtn.setText("T\n" + selectedStretchRatio.replace("SHRINK-", ""));
                 floatingStretchBtn.setTextColor(Color.WHITE);
                 floatingStretchBtn.setTextSize(11.5f);
                 floatingStretchBtn.setGravity(Gravity.CENTER);
                 floatingStretchBtn.setIncludeFontPadding(false);
 
-                int sizePx = dpToPx(52);
+                int sizePx = dpToPx(54);
                 int btnFlags = WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE
                         | WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL
                         | WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN;
@@ -492,7 +528,8 @@ public class AndroidBridge {
                     private int initialX, initialY;
                     private float initialTouchX, initialTouchY;
                     private boolean isDragging = false;
-                    private final int touchSlop = dpToPx(10);
+                    private boolean wasInTrashZone = false;
+                    private final int touchSlop = dpToPx(8);
 
                     @Override
                     public boolean onTouch(View v, MotionEvent event) {
@@ -503,24 +540,36 @@ public class AndroidBridge {
                                 initialTouchX = event.getRawX();
                                 initialTouchY = event.getRawY();
                                 isDragging = false;
+                                wasInTrashZone = false;
                                 v.setScaleX(0.92f);
                                 v.setScaleY(0.92f);
                                 return true;
 
                             case MotionEvent.ACTION_MOVE:
-                                int dx = (int) (event.getRawX() - initialTouchX);
-                                int dy = (int) (event.getRawY() - initialTouchY);
-                                if (Math.abs(dx) > touchSlop || Math.abs(dy) > touchSlop) {
+                                int dx = Math.round(event.getRawX() - initialTouchX);
+                                int dy = Math.round(event.getRawY() - initialTouchY);
+                                if (!isDragging && (Math.abs(dx) > touchSlop || Math.abs(dy) > touchSlop)) {
                                     isDragging = true;
                                     attachTrashOverlaySafe();
                                 }
                                 if (isDragging && windowManager != null && floatingStretchBtn != null) {
                                     stretchParams.x = initialX + dx;
                                     stretchParams.y = initialY + dy;
-                                    try { windowManager.updateViewLayout(floatingStretchBtn, stretchParams); } catch (Exception ignored) {}
+                                    try {
+                                        windowManager.updateViewLayout(floatingStretchBtn, stretchParams);
+                                    } catch (Exception ignored) {}
+
+                                    boolean inTrash = isTouchOverTrashZone(event.getRawX(), event.getRawY());
                                     if (trashPillView != null) {
-                                        trashPillView.setHovered(isTouchOverTrashZone(event.getRawX(), event.getRawY()));
+                                        trashPillView.setHovered(inTrash);
                                     }
+                                    floatingStretchBtn.setAlpha(inTrash ? 0.62f : 1.0f);
+                                    if (inTrash && !wasInTrashZone) {
+                                        try {
+                                            floatingStretchBtn.performHapticFeedback(HapticFeedbackConstants.LONG_PRESS);
+                                        } catch (Throwable ignored) {}
+                                    }
+                                    wasInTrashZone = inTrash;
                                 }
                                 return true;
 
@@ -528,15 +577,25 @@ public class AndroidBridge {
                             case MotionEvent.ACTION_CANCEL:
                                 v.setScaleX(1.0f);
                                 v.setScaleY(1.0f);
-                                boolean droppedInTrash = isDragging && isTouchOverTrashZone(event.getRawX(), event.getRawY());
-                                if (trashPillView != null) trashPillView.setHovered(false);
-                                detachTrashOverlaySafe();
+                                v.setAlpha(1.0f);
 
-                                if (droppedInTrash) {
-                                    removeFloatingTpButtonOnly();
+                                if (isDragging) {
+                                    boolean droppedInTrash = wasInTrashZone || isTouchOverTrashZone(event.getRawX(), event.getRawY());
+                                    if (trashPillView != null) {
+                                        trashPillView.setHovered(false);
+                                    }
+                                    detachTrashOverlaySafe();
+                                    isDragging = false;
+                                    wasInTrashZone = false;
+
+                                    if (droppedInTrash) {
+                                        removeFloatingTpButtonOnly();
+                                    }
                                     return true;
                                 }
-                                if (!isDragging) toggleTwoStepStretchAction();
+
+                                detachTrashOverlaySafe();
+                                toggleTwoStepStretchAction();
                                 return true;
                         }
                         return false;
@@ -554,26 +613,56 @@ public class AndroidBridge {
         return "OK";
     }
 
+    // Надёжное определение наведения на нижнее ведро при любой ориентации и после wm size
     private boolean isTouchOverTrashZone(float rawX, float rawY) {
-        DisplayMetrics dm = new DisplayMetrics();
-        if (windowManager != null && windowManager.getDefaultDisplay() != null) {
-            windowManager.getDefaultDisplay().getRealMetrics(dm);
-        } else {
-            dm = context.getResources().getDisplayMetrics();
-        }
-        if (trashPillView != null && isTrashAttached) {
-            int[] loc = new int[2];
-            trashPillView.getLocationOnScreen(loc);
-            int padX = dpToPx(65), padY = dpToPx(65);
-            if (rawX >= loc[0] - padX && rawX <= loc[0] + trashPillView.getWidth() + padX
-                    && rawY >= loc[1] - padY && rawY <= loc[1] + trashPillView.getHeight() + padY) {
-                return true;
+        try {
+            DisplayMetrics dm = new DisplayMetrics();
+            if (windowManager != null && windowManager.getDefaultDisplay() != null) {
+                windowManager.getDefaultDisplay().getRealMetrics(dm);
+            } else {
+                dm = context.getResources().getDisplayMetrics();
             }
+
+            int sw = dm.widthPixels;
+            int sh = dm.heightPixels;
+            int btnSize = dpToPx(54);
+
+            // 1. Проверка по реальным экранным координатам ведра и кнопки «T»
+            if (trashPillView != null && isTrashAttached && trashPillView.getWidth() > 0) {
+                int[] tLoc = new int[2];
+                trashPillView.getLocationOnScreen(tLoc);
+                int padX = dpToPx(55);
+                int padY = dpToPx(55);
+
+                if (rawX >= tLoc[0] - padX && rawX <= tLoc[0] + trashPillView.getWidth() + padX
+                        && rawY >= tLoc[1] - padY && rawY <= tLoc[1] + trashPillView.getHeight() + padY) {
+                    return true;
+                }
+
+                if (floatingStretchBtn != null) {
+                    int[] bLoc = new int[2];
+                    floatingStretchBtn.getLocationOnScreen(bLoc);
+                    float bCx = bLoc[0] + floatingStretchBtn.getWidth() / 2f;
+                    float bCy = bLoc[1] + floatingStretchBtn.getHeight() / 2f;
+                    if (bCx >= tLoc[0] - padX && bCx <= tLoc[0] + trashPillView.getWidth() + padX
+                            && bCy >= tLoc[1] - padY && bCy <= tLoc[1] + trashPillView.getHeight() + padY) {
+                        return true;
+                    }
+                }
+            }
+
+            // 2. Универсальная нижняя зона под текущую высоту экрана (работает даже при сжатом wm size)
+            boolean yNearBottom = rawY >= (sh - dpToPx(140))
+                    || (stretchParams != null && (stretchParams.y + btnSize) >= (sh - dpToPx(140)))
+                    || (stretchParams != null && stretchParams.y >= (sh * 0.68f));
+
+            boolean xNearCenter = Math.abs(rawX - (sw / 2f)) <= (sw * 0.38f)
+                    || (stretchParams != null && Math.abs((stretchParams.x + btnSize / 2f) - (sw / 2f)) <= (sw * 0.38f));
+
+            return yNearBottom && xNearCenter;
+        } catch (Throwable t) {
+            return false;
         }
-        int curH = dm.heightPixels;
-        int shortSide = Math.min(dm.widthPixels, dm.heightPixels);
-        if (rawY >= (curH - dpToPx(135)) || rawY >= (shortSide - dpToPx(135))) return true;
-        return stretchParams != null && stretchParams.y >= (shortSide * 0.68f);
     }
 
     private void toggleTwoStepStretchAction() {
@@ -592,12 +681,12 @@ public class AndroidBridge {
             boolean ok = TeleportEngine.applyAspectRatioStretch(selectedStretchRatio);
             if (ok) {
                 isBoxBarsActive = true;
-                Toast.makeText(context, "⬛ Шаг 1 (" + selectedStretchRatio + ") включен! Дождись меню игры и нажми «T» снова", Toast.LENGTH_SHORT).show();
+                Toast.makeText(context, "⬛ Шаг 1 (" + selectedStretchRatio + ") включен! Зайди в игру и нажми «T» снова", Toast.LENGTH_SHORT).show();
             }
         } else {
             TeleportEngine.releaseBoxToFullStretch();
             isBoxBarsActive = false;
-            Toast.makeText(context, "🔥 Шаг 2: Экран применён! Перетяни кнопку «T» вниз в корзину", Toast.LENGTH_SHORT).show();
+            Toast.makeText(context, "🔥 Шаг 2: Растяг применён! Перетяни кнопку «T» вниз в ведро", Toast.LENGTH_SHORT).show();
         }
         updateFloatingBtnAppearance();
     }
@@ -609,29 +698,31 @@ public class AndroidBridge {
                 isBoxBarsActive = false;
             }
             detachTrashOverlaySafe();
-            if (floatingStretchBtn != null && windowManager != null) {
-                try { windowManager.removeView(floatingStretchBtn); } catch (Exception ignored) {}
+            if (floatingStretchBtn != null) {
+                removeOverlayViewSafe(floatingStretchBtn);
                 floatingStretchBtn = null;
             }
             trashContainer = null;
             trashPillView = null;
             isStretchOverlayShown = false;
-            Toast.makeText(context, "🗑️ Кнопка «T» удалена, приятной катки!", Toast.LENGTH_SHORT).show();
+            legacyPrefs.edit().putBoolean("float_btn_enabled", false).apply();
+            Toast.makeText(context, "🗑️ Кнопка «T» убрана с экрана, приятной катки!", Toast.LENGTH_SHORT).show();
         });
     }
 
     private void updateFloatingBtnAppearance() {
         if (floatingStretchBtn == null) return;
+        String shortLabel = selectedStretchRatio.replace("SHRINK-", "");
         GradientDrawable bg = new GradientDrawable();
         bg.setShape(GradientDrawable.OVAL);
         if (isBoxBarsActive) {
             bg.setColor(Color.parseColor("#E610B981"));
             bg.setStroke(dpToPx(2), Color.WHITE);
-            floatingStretchBtn.setText("ON\n" + selectedStretchRatio);
+            floatingStretchBtn.setText("2\n" + shortLabel);
         } else {
-            bg.setColor(Color.parseColor("#D90B1622"));
-            bg.setStroke(dpToPx(2), Color.parseColor("#38BDF8"));
-            floatingStretchBtn.setText("T\n" + selectedStretchRatio);
+            bg.setColor(Color.parseColor("#E60B0E14"));
+            bg.setStroke(dpToPx(2), Color.parseColor("#FF2E5B"));
+            floatingStretchBtn.setText("T\n" + shortLabel);
         }
         floatingStretchBtn.setBackground(bg);
     }
@@ -639,6 +730,11 @@ public class AndroidBridge {
     @JavascriptInterface
     public void applyStretchDirectlyNow(String ratio) {
         activateStretchFloatingButton(ratio);
+    }
+
+    @JavascriptInterface
+    public void applyDirectStretchRatio(String ratio) {
+        TeleportEngine.applyAspectRatioStretch(ratio);
     }
 
     @JavascriptInterface
@@ -651,8 +747,8 @@ public class AndroidBridge {
             TeleportEngine.resetResolutionToNative();
             isBoxBarsActive = false;
             detachTrashOverlaySafe();
-            if (floatingStretchBtn != null && windowManager != null) {
-                try { windowManager.removeView(floatingStretchBtn); } catch (Exception ignored) {}
+            if (floatingStretchBtn != null) {
+                removeOverlayViewSafe(floatingStretchBtn);
                 floatingStretchBtn = null;
             }
             trashContainer = null;
@@ -842,12 +938,7 @@ public class AndroidBridge {
             if ("off".equalsIgnoreCase(cleanType) || "none".equalsIgnoreCase(cleanType) || cleanType.isEmpty()) {
                 if (crosshairView != null) {
                     crosshairView.setCrosshairType("off");
-                    crosshairView.setVisibility(View.GONE);
-                    if (windowManager != null) {
-                        try { windowManager.removeViewImmediate(crosshairView); } catch (Exception e) {
-                            try { windowManager.removeView(crosshairView); } catch (Exception ignored) {}
-                        }
-                    }
+                    removeOverlayViewSafe(crosshairView);
                 }
                 crosshairView = null;
                 isCrosshairShown = false;
@@ -945,6 +1036,11 @@ public class AndroidBridge {
                 }
             } catch (Exception ignored) {}
         });
+    }
+
+    @JavascriptInterface
+    public void setStealthOverlayMode(boolean stealth) {
+        updateOverlayStealthFlag(stealth);
     }
 
     @JavascriptInterface
@@ -1311,20 +1407,23 @@ public class AndroidBridge {
         return Math.round(dp * context.getResources().getDisplayMetrics().density);
     }
 
+    // Нижнее ведро с яркой неоновой подсветкой при наведении кнопки «T»
     private static class BridgeTrashView extends View {
+        private final Paint glowPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
         private final Paint bgPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
         private final Paint borderPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
         private final Paint textPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+        private final RectF outerRect = new RectF();
         private final RectF rect = new RectF();
+        private final float density;
         private boolean hovered = false;
 
         public BridgeTrashView(Context context) {
             super(context);
-            float d = context.getResources().getDisplayMetrics().density;
+            this.density = context.getResources().getDisplayMetrics().density;
             borderPaint.setStyle(Paint.Style.STROKE);
-            borderPaint.setStrokeWidth(2f * d);
             textPaint.setColor(Color.WHITE);
-            textPaint.setTextSize(12f * d);
+            textPaint.setTextSize(12f * density);
             textPaint.setFakeBoldText(true);
             textPaint.setTextAlign(Paint.Align.CENTER);
         }
@@ -1332,7 +1431,11 @@ public class AndroidBridge {
         public void setHovered(boolean h) {
             if (this.hovered != h) {
                 this.hovered = h;
-                animate().scaleX(h ? 1.08f : 1.0f).scaleY(h ? 1.08f : 1.0f).setDuration(110).start();
+                animate()
+                        .scaleX(h ? 1.15f : 1.0f)
+                        .scaleY(h ? 1.15f : 1.0f)
+                        .setDuration(110)
+                        .start();
                 invalidate();
             }
         }
@@ -1340,21 +1443,31 @@ public class AndroidBridge {
         @Override
         protected void onDraw(Canvas canvas) {
             super.onDraw(canvas);
-            float pad = 6f;
+            float pad = 6f * density;
             rect.set(pad, pad, getWidth() - pad, getHeight() - pad);
+
             if (hovered) {
-                bgPaint.setColor(Color.parseColor("#EE4C0519"));
-                borderPaint.setColor(Color.parseColor("#FF2E93"));
-                textPaint.setColor(Color.parseColor("#FFE4E6"));
-            } else {
-                bgPaint.setColor(Color.parseColor("#E60B1622"));
-                borderPaint.setColor(Color.parseColor("#38BDF8"));
+                // Внешний неоновый ореол подсветки ведра
+                outerRect.set(pad * 0.35f, pad * 0.35f, getWidth() - pad * 0.35f, getHeight() - pad * 0.35f);
+                glowPaint.setColor(Color.parseColor("#66FF1744"));
+                canvas.drawRoundRect(outerRect, 999f, 999f, glowPaint);
+
+                // Ярко-алая заливка и белая неоновая рамка
+                bgPaint.setColor(Color.parseColor("#F5FF1744"));
+                borderPaint.setStrokeWidth(2.8f * density);
+                borderPaint.setColor(Color.WHITE);
                 textPaint.setColor(Color.WHITE);
+            } else {
+                bgPaint.setColor(Color.parseColor("#E610131C"));
+                borderPaint.setStrokeWidth(2.0f * density);
+                borderPaint.setColor(Color.parseColor("#FF2E5B"));
+                textPaint.setColor(Color.parseColor("#FCA5A5"));
             }
+
             canvas.drawRoundRect(rect, 999f, 999f, bgPaint);
             canvas.drawRoundRect(rect, 999f, 999f, borderPaint);
 
-            String label = hovered ? "🗑️ ОТПУСТИТЕ ДЛЯ УДАЛЕНИЯ" : "🗑️ УДАЛИТЬ КНОПКУ «T»";
+            String label = hovered ? "🔥 ОТПУСТИТЕ, ЧТОБЫ УБРАТЬ «T»" : "🗑️ ПЕРЕТАЩИТЕ СЮДА ДЛЯ УДАЛЕНИЯ";
             Paint.FontMetrics fm = textPaint.getFontMetrics();
             float cy = getHeight() / 2f - (fm.ascent + fm.descent) / 2f;
             canvas.drawText(label, getWidth() / 2f, cy, textPaint);
