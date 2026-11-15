@@ -145,8 +145,9 @@ public class ApiManager {
             }
             return raw;
         } catch (Exception e) {
-            return "{\"status\":\"offline\",\"ok\":true,\"blocked\":false,\"message\":\"Проверка сети\"}";
+            return "{\"status\":\"error\",\"ok\":false,\"blocked\":true,\"message\":\"Нет связи с сервером лицензий\"}";
         }
+
     }
 
     public static String uploadCloudPreset(String key, String androidId, String title, String presetJson) {
