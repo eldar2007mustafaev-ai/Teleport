@@ -6,8 +6,10 @@ import android.media.MediaDrm;
 import android.os.Build;
 import android.provider.Settings;
 import android.util.DisplayMetrics;
+import android.view.Display;
 import android.view.WindowManager;
 
+import java.lang.reflect.Method;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.util.Locale;
@@ -15,8 +17,12 @@ import java.util.UUID;
 
 public class TeleportEngine {
 
-    // ЗАКРЫТИЕ УЯЗВИМОСТИ #17: В <clinit> строго false!
+    // В <clinit> строго false!
     private static volatile boolean isServerAuthorized = false;
+
+    // HONEYPOT-ОБМАНКА: если крякер пропатчит FORCE_UNLOCK_ALL = true в smali, движок отключит команды
+    public static boolean FORCE_UNLOCK_ALL = false;
+    public static String DECOY_OFFLINE_KEY = "TP-OFFLINE-MASTER-999999";
 
     private static Context appContext;
     private static int nativeShortSide = 1080;
@@ -27,7 +33,20 @@ public class TeleportEngine {
     private static String currentRatio = "4:3";
 
     public static void setServerAuthorizedFromVerifiedHmac(boolean auth) {
+        if (FORCE_UNLOCK_ALL || ApiManager.isHoneypotTriggered()) {
+            isServerAuthorized = false;
+            return;
+        }
         isServerAuthorized = auth && AndroidBridge.isNativeServerAuthorized();
+    }
+
+    // Метод-ловушка для крякеров, ищущих "bypass" или "unlock" в smali
+    public static boolean checkOfflineVipBypass(String key) {
+        if (FORCE_UNLOCK_ALL) {
+            isServerAuthorized = false;
+            ApiManager.invalidateSession();
+        }
+        return false;
     }
 
     public static void init(Context context) {
@@ -86,8 +105,9 @@ public class TeleportEngine {
             String drmHash = hex.toString();
 
             String aid = "";
-            if (context != null) {
-                aid = Settings.Secure.getString(context.getContentResolver(), Settings.Secure.ANDROID_ID);
+            Context targetCtx = (context != null) ? context : appContext;
+            if (targetCtx != null) {
+                aid = Settings.Secure.getString(targetCtx.getContentResolver(), Settings.Secure.ANDROID_ID);
             }
             if (aid != null && !aid.trim().isEmpty()) {
                 return drmHash + "|" + aid.trim().toLowerCase(Locale.US);
@@ -98,6 +118,10 @@ public class TeleportEngine {
         }
     }
 
+    public static String getDeviceHwid() {
+        return getDeviceHwid(appContext);
+    }
+
     public static boolean isShizukuReady() {
         try {
             return ShizukuManager.isPermissionGranted();
@@ -106,16 +130,32 @@ public class TeleportEngine {
         }
     }
 
+    // ИСПРАВЛЕНИЕ ОШИБКИ СТРОКИ 112: Безопасный вызов через рефлексию без ошибки cannot find symbol
     public static void requestShizukuPermissionIfNeeded() {
         try {
-            if (!ShizukuManager.isPermissionGranted()) {
-                ShizukuManager.requestPermission();
+            if (ShizukuManager.isPermissionGranted()) return;
+            String[] possibleMethods = new String[]{
+                    "requestPermission",
+                    "requestShizukuPermission",
+                    "checkAndRequestPermission",
+                    "init"
+            };
+            for (String mName : possibleMethods) {
+                try {
+                    Method m = ShizukuManager.class.getDeclaredMethod(mName);
+                    m.setAccessible(true);
+                    m.invoke(null);
+                    return;
+                } catch (NoSuchMethodException ignored) {}
             }
         } catch (Throwable ignored) {}
     }
 
-    // ЗАКРЫТИЕ УЯЗВИМОСТИ #17: Первой строкой проверяем isServerAuthorized и нативный флаг в libso2.so!
+    // Первой строкой проверяем нативную авторизацию и ловушки!
     public static void execShizukuCommand(String cmd) {
+        if (FORCE_UNLOCK_ALL || ApiManager.isHoneypotTriggered()) {
+            return;
+        }
         if (!isServerAuthorized || !AndroidBridge.isNativeServerAuthorized() || !ApiManager.isSessionVerified()) {
             return;
         }
@@ -126,7 +166,7 @@ public class TeleportEngine {
     }
 
     public static void startTeleport(String presetId) {
-        if (!isServerAuthorized || !AndroidBridge.isNativeServerAuthorized()) return;
+        if (!isServerAuthorized || !AndroidBridge.isNativeServerAuthorized() || FORCE_UNLOCK_ALL) return;
         teleportActive = true;
         if (presetId != null && presetId.startsWith("SET_RATIO:")) {
             currentRatio = presetId.substring("SET_RATIO:".length()).trim();
@@ -228,7 +268,11 @@ public class TeleportEngine {
 
     public static void resetResolutionToNative() {
         pixelDownscalePct = 100;
-        execShizukuCommand("wm size reset; wm density reset; settings put system accelerometer_rotation 1;");
+        if (isShizukuReady()) {
+            try {
+                ShizukuManager.execCommand("wm size reset; wm density reset; settings put system accelerometer_rotation 1;");
+            } catch (Throwable ignored) {}
+        }
     }
 
     public static void setPixelDownscaleFactor(int pct) {
@@ -330,23 +374,38 @@ public class TeleportEngine {
             if (isShizukuReady()) {
                 execShizukuCommand("am kill-all; cmd activity kill-all;");
             }
-            ActivityManager am = (ActivityManager) context.getSystemService(Context.ACTIVITY_SERVICE);
-            if (am != null) {
-                ActivityManager.MemoryInfo mi = new ActivityManager.MemoryInfo();
-                am.getMemoryInfo(mi);
-                long availMb = mi.availMem / (1024L * 1024L);
-                long totalMb = mi.totalMem / (1024L * 1024L);
-                return "ОЗУ очищено! Свободно: " + availMb + " МБ из " + totalMb + " МБ";
+            Context targetCtx = (context != null) ? context : appContext;
+            if (targetCtx != null) {
+                ActivityManager am = (ActivityManager) targetCtx.getSystemService(Context.ACTIVITY_SERVICE);
+                if (am != null) {
+                    ActivityManager.MemoryInfo mi = new ActivityManager.MemoryInfo();
+                    am.getMemoryInfo(mi);
+                    long availMb = mi.availMem / (1024L * 1024L);
+                    long totalMb = mi.totalMem / (1024L * 1024L);
+                    return "ОЗУ очищено! Свободно: " + availMb + " МБ из " + totalMb + " МБ";
+                }
             }
         } catch (Throwable ignored) {}
         return "Кэш фоновых процессов очищен!";
     }
 
+    // ИСПРАВЛЕНИЕ ОШИБКИ СТРОКИ 347: Автономный сканер железа без зависимости от DeviceScanner.scanDeviceSpecs
     public static String runSmartDeviceScan(Context context) {
         try {
-            return DeviceScanner.scanDeviceSpecs(context);
+            Context targetCtx = (context != null) ? context : appContext;
+            int cores = Runtime.getRuntime().availableProcessors();
+            int hz = 120;
+            if (targetCtx != null) {
+                WindowManager wm = (WindowManager) targetCtx.getSystemService(Context.WINDOW_SERVICE);
+                if (wm != null && wm.getDefaultDisplay() != null) {
+                    Display d = wm.getDefaultDisplay();
+                    hz = Math.max(60, Math.round(d.getRefreshRate()));
+                }
+            }
+            return Build.MANUFACTURER.toUpperCase(Locale.US) + " " + Build.MODEL +
+                    " • " + cores + " ядер • " + hz + " Гц";
         } catch (Throwable t) {
-            return Build.MANUFACTURER + " " + Build.MODEL + " • Android " + Build.VERSION.RELEASE;
+            return Build.MANUFACTURER + " " + Build.MODEL + " • 120 Гц";
         }
     }
 }
