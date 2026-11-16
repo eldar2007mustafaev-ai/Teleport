@@ -25,7 +25,6 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Handler;
 import android.os.Looper;
-import android.os.Process;
 import android.os.SystemClock;
 import android.provider.Settings;
 import android.security.keystore.KeyGenParameterSpec;
@@ -45,9 +44,7 @@ import android.widget.Toast;
 import org.json.JSONObject;
 
 import java.io.BufferedReader;
-import java.io.ByteArrayOutputStream;
 import java.io.FileReader;
-import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.security.KeyStore;
 import java.security.MessageDigest;
@@ -97,7 +94,7 @@ public class AndroidBridge {
         }
     }
 
-    // JNI-методы в libso2.so (полное совпадение сигнатур с so2_native.cpp)
+    // JNI-методы в libso2.so
     private static native String nativeGetEncryptedEndpoint(int mode);
     private static native boolean nativeUnlockOfflineVipMode();
     private static native String nativeComputeHwid(String drmHex, String androidId, String boardInfo);
@@ -144,14 +141,12 @@ public class AndroidBridge {
         this.profilePrefs = context.getSharedPreferences("so2_teleport_profile_prefs", Context.MODE_PRIVATE);
         this.windowManager = (WindowManager) context.getSystemService(Context.WINDOW_SERVICE);
 
-        // Полное удаление старых уязвимых ключей из обычных SharedPreferences (#16, #18)
         prefs.edit()
                 .remove("immutable_widevine_hwid_v9")
                 .remove("last_server_ok_ts")
                 .remove("saved_license_key")
                 .apply();
 
-        // До первого крипто-ответа сервера доступ к командам Shizuku строго закрыт (#17)
         TeleportEngine.setServerAuthorizedFromVerifiedHmac(false);
         TeleportEngine.init(context);
         TeleportEngine.requestShizukuPermissionIfNeeded();
@@ -159,13 +154,12 @@ public class AndroidBridge {
     }
 
     // =========================================================================
-    // 1. СРЫТИЕ IP СЕРВЕРА В NATIVE И КОНТРОЛЬ КАПКАНОВ (HONEYPOTS)
+    // 1. СКРЫТИЕ IP СЕРВЕРА В NATIVE И КОНТРОЛЬ КАПКАНОВ (HONEYPOTS)
     // =========================================================================
     public static boolean isBridgeHoneypotTripped() {
         return CRACK_BYPASS_ACTIVE || OFFLINE_PRO_UNLOCKED || ApiManager.isHoneypotTriggered();
     }
 
-    // Метод-приманка: если крякер вызовет его, нативный слой заблокирует сессию навсегда
     public static boolean enableVipCrackBypass() {
         CRACK_BYPASS_ACTIVE = true;
         if (isNativeLoaded) {
@@ -186,7 +180,6 @@ public class AndroidBridge {
                 if (url != null && !url.isEmpty()) return url;
             } catch (Throwable ignored) {}
         }
-        // Fallback из маскированных байтов (никаких открытых строк IP в dex!)
         int[] b = new int[]{45 ^ 0x42, 10 ^ 0x42, 165 ^ 0x42, 75 ^ 0x42};
         String host = (b[0] ^ 0x42) + "." + (b[1] ^ 0x42) + "." + (b[2] ^ 0x42) + "." + (b[3] ^ 0x42);
         if (mode == 1) return "http://" + host + ":8443";
@@ -210,7 +203,6 @@ public class AndroidBridge {
         return getEncryptedServerEndpoint(2);
     }
 
-    // Вызывается первой строкой в TeleportEngine.execShizukuCommand (#17)
     public static boolean isNativeServerAuthorized() {
         if (isBridgeHoneypotTripped()) return false;
         long lastMono = MONO_LAST_SERVER_OK_MS.get();
@@ -238,19 +230,10 @@ public class AndroidBridge {
         TeleportEngine.setServerAuthorizedFromVerifiedHmac(false);
     }
 
+    // ИСПРАВЛЕННЫЙ МЕТОД №1 (без убийства процесса и чёрного экрана!)
     private void executeNativeKillOnTamper() {
         revokeAllRuntimeAuth();
-        if (isNativeLoaded) {
-            try {
-                nativeForceTerminate();
-            } catch (Throwable ignored) {}
-        }
-        try {
-            Process.killProcess(Process.myPid());
-        } catch (Throwable ignored) {}
-        try {
-            Runtime.getRuntime().halt(1);
-        } catch (Throwable ignored) {}
+        forceKickExpiredUser("Требуется повторная авторизация лицензии");
     }
 
     // =========================================================================
@@ -339,7 +322,7 @@ public class AndroidBridge {
     }
 
     // =========================================================================
-    // 3. НАТИВНАЯ ПРОВЕРКА ЧЁРНОГО СПИСКА, HTML И СТРОГАЯ СВЕРКА HMAC СЕРВЕРА
+    // 3. НАТИВНАЯ ПРОВЕРКА ЧЁРНОГО СПИСКА И СТРОГАЯ СВЕРКА HMAC СЕРВЕРА
     // =========================================================================
     private boolean isBlacklistedArtifact(String val) {
         if (val == null || val.trim().isEmpty()) return true;
@@ -376,41 +359,12 @@ public class AndroidBridge {
         return false;
     }
 
+    // ИСПРАВЛЕННЫЙ МЕТОД №2 (проверяет только Frida/Xposed и Honeypots, не блокируя новый index.html)
     private boolean isClientTampered() {
         if (isBridgeHoneypotTripped() || isFridaOrXposedActive()) return true;
-        try {
-            InputStream is = context.getAssets().open("index.html");
-            ByteArrayOutputStream bos = new ByteArrayOutputStream();
-            byte[] buf = new byte[4096];
-            int r;
-            while ((r = is.read(buf)) != -1) {
-                bos.write(buf, 0, r);
-            }
-            is.close();
-            byte[] htmlBytes = bos.toByteArray();
-
-            if (isNativeLoaded) {
-                try {
-                    if (nativeIsHtmlTampered(htmlBytes)) return true;
-                } catch (Throwable ignored) {}
-            }
-
-            String html = new String(htmlBytes, StandardCharsets.UTF_8);
-            String lower = html.toLowerCase(Locale.US);
-            if (lower.contains("bohdaniuk")
-                    || lower.contains("локальная активация")
-                    || lower.contains("cracked")
-                    || lower.contains("so2teleport-local-key")
-                    || lower.contains("ba465e1492cbb45a")
-                    || !html.contains("SO2TELEPORT_QUANTUM_V9_SEAL")
-                    || !html.contains("pollLicenseExpiration")) {
-                return true;
-            }
-        } catch (Throwable ignored) {}
         return false;
     }
 
-    // Строгая проверка HMAC-подписи ответа сервера: пустой sig никогда не принимается!
     private boolean verifyServerResponseSignature(String cleanKey, String hwid, String status, String srvSig) {
         if (isBridgeHoneypotTripped() || srvSig == null || srvSig.trim().length() < 32) {
             revokeAllRuntimeAuth();
@@ -555,7 +509,7 @@ public class AndroidBridge {
     }
 
     // =========================================================================
-    // 5. СРОК ДЕЙСТВИЯ КЛЮЧА И WATCHDOG НА МОНОТОННОМ ТАЙМЕРЕ (ФИКС #16)
+    // 5. СРОК ДЕЙСТВИЯ КЛЮЧА И WATCHDOG НА МОНОТОННОМ ТАЙМЕРЕ
     // =========================================================================
     private long getDefaultDurationMsForKey(String cleanKey) {
         if (cleanKey == null || isBlacklistedArtifact(cleanKey)) return 0L;
@@ -635,7 +589,6 @@ public class AndroidBridge {
             public void run() {
                 if (isClientTampered()) {
                     forceKickExpiredUser("Обнаружена модификация клиента (Anti-Crack V12)!");
-                    executeNativeKillOnTamper();
                     return;
                 }
                 final String savedKey = readEncryptedKeyFromVault();
@@ -1475,7 +1428,7 @@ public class AndroidBridge {
     }
 
     // =========================================================================
-    // 8. АВТОРИЗАЦИЯ И ПРОВЕРКА КЛЮЧА БЕЗ ЗАГЛУШЕК В SHAREDPREFERENCES
+    // 8. АВТОРИЗАЦИЯ И ПРОВЕРКА КЛЮЧА
     // =========================================================================
     @JavascriptInterface
     public String getSavedKey() {
@@ -1526,7 +1479,6 @@ public class AndroidBridge {
     public String activateLicenseKey(String key) {
         if (isClientTampered()) {
             forceKickExpiredUser("Обнаружена модификация файлов приложения!");
-            executeNativeKillOnTamper();
             return "ERROR|Обнаружена модификация файлов приложения!";
         }
         if (key == null || key.trim().length() < 5 || isBlacklistedArtifact(key)) {
@@ -1585,7 +1537,6 @@ public class AndroidBridge {
     public String verifyLicenseKey(String key) {
         if (isClientTampered()) {
             forceKickExpiredUser("Обнаружена модификация приложения!");
-            executeNativeKillOnTamper();
             return "BANNED|Модификация файлов приложения";
         }
         if (!prefs.getBoolean(PREF_FIRST_LOGIN_DONE, false)) {
