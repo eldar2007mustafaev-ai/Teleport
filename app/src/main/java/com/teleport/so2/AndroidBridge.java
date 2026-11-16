@@ -78,7 +78,12 @@ public class AndroidBridge {
     private static final String VAULT_PREF_NAME = "SO2Teleport_SecureVault_V12";
     private static final String VAULT_ENC_KEY = "enc_saved_license_v12";
 
-    // Монотонный таймер в оперативной памяти (не в SharedPreferences! Закрытие уязвимости #16)
+    // HONEYPOT-ОБМАНКИ для ловли smali-патчеров и Frida-скриптов:
+    public static boolean CRACK_BYPASS_ACTIVE = false;
+    public static boolean OFFLINE_PRO_UNLOCKED = false;
+    private static final String DECOY_AUTH_SERVER = "https://gate-eu.so2teleport-auth.org:9443/api/v9/verify";
+
+    // Монотонный таймер от старта процессора (НЕ в SharedPreferences — закрытие уязвимости #16)
     private static final AtomicLong MONO_LAST_SERVER_OK_MS = new AtomicLong(0L);
     private static final long MAX_MONO_SILENCE_MS = 15L * 60L * 1000L;
 
@@ -92,7 +97,9 @@ public class AndroidBridge {
         }
     }
 
-    // JNI-методы в libso2.so
+    // JNI-методы в libso2.so (полное совпадение сигнатур с so2_native.cpp)
+    private static native String nativeGetEncryptedEndpoint(int mode);
+    private static native boolean nativeUnlockOfflineVipMode();
     private static native String nativeComputeHwid(String drmHex, String androidId, String boardInfo);
     private static native String nativeComputeDailyHmac(String payload, String dayUtc);
     private static native boolean nativeVerifyServerHmac(String cleanKey, String hwid, String status, String serverSig, String dayUtc);
@@ -137,22 +144,75 @@ public class AndroidBridge {
         this.profilePrefs = context.getSharedPreferences("so2_teleport_profile_prefs", Context.MODE_PRIVATE);
         this.windowManager = (WindowManager) context.getSystemService(Context.WINDOW_SERVICE);
 
-        // Полное удаление старых уязвимых полей из SharedPreferences (#16, #18)
+        // Полное удаление старых уязвимых ключей из обычных SharedPreferences (#16, #18)
         prefs.edit()
                 .remove("immutable_widevine_hwid_v9")
                 .remove("last_server_ok_ts")
                 .remove("saved_license_key")
                 .apply();
 
-        // При старте до ответа сервера авторизация в TeleportEngine всегда false (#17)
+        // До первого крипто-ответа сервера доступ к командам Shizuku строго закрыт (#17)
         TeleportEngine.setServerAuthorizedFromVerifiedHmac(false);
         TeleportEngine.init(context);
         TeleportEngine.requestShizukuPermissionIfNeeded();
         startLicenseWatchdog();
     }
 
-    // Проверка нативной авторизации + монотонных часов ядра (вызывается из TeleportEngine.execShizukuCommand)
+    // =========================================================================
+    // 1. СРЫТИЕ IP СЕРВЕРА В NATIVE И КОНТРОЛЬ КАПКАНОВ (HONEYPOTS)
+    // =========================================================================
+    public static boolean isBridgeHoneypotTripped() {
+        return CRACK_BYPASS_ACTIVE || OFFLINE_PRO_UNLOCKED || ApiManager.isHoneypotTriggered();
+    }
+
+    // Метод-приманка: если крякер вызовет его, нативный слой заблокирует сессию навсегда
+    public static boolean enableVipCrackBypass() {
+        CRACK_BYPASS_ACTIVE = true;
+        if (isNativeLoaded) {
+            try {
+                nativeUnlockOfflineVipMode();
+            } catch (Throwable ignored) {}
+        }
+        return false;
+    }
+
+    public static String getEncryptedServerEndpoint(int mode) {
+        if (isBridgeHoneypotTripped()) {
+            return "http://127.0.0.1:65534";
+        }
+        if (isNativeLoaded) {
+            try {
+                String url = nativeGetEncryptedEndpoint(mode);
+                if (url != null && !url.isEmpty()) return url;
+            } catch (Throwable ignored) {}
+        }
+        // Fallback из маскированных байтов (никаких открытых строк IP в dex!)
+        int[] b = new int[]{45 ^ 0x42, 10 ^ 0x42, 165 ^ 0x42, 75 ^ 0x42};
+        String host = (b[0] ^ 0x42) + "." + (b[1] ^ 0x42) + "." + (b[2] ^ 0x42) + "." + (b[3] ^ 0x42);
+        if (mode == 1) return "http://" + host + ":8443";
+        if (mode == 2) return "ws://" + host + ":8080/ws/voice";
+        return "http://" + host + ":8080";
+    }
+
+    public static String signPayloadNative(String payload, String dayUtc) {
+        if (isBridgeHoneypotTripped()) return "";
+        if (isNativeLoaded) {
+            try {
+                return nativeComputeDailyHmac(payload, dayUtc);
+            } catch (Throwable ignored) {}
+        }
+        return "";
+    }
+
+    @JavascriptInterface
+    public String getVoiceServerEndpoint() {
+        if (!isNativeServerAuthorized()) return "";
+        return getEncryptedServerEndpoint(2);
+    }
+
+    // Вызывается первой строкой в TeleportEngine.execShizukuCommand (#17)
     public static boolean isNativeServerAuthorized() {
+        if (isBridgeHoneypotTripped()) return false;
         long lastMono = MONO_LAST_SERVER_OK_MS.get();
         if (lastMono <= 0L || (SystemClock.elapsedRealtime() - lastMono) > MAX_MONO_SILENCE_MS) {
             return false;
@@ -194,7 +254,7 @@ public class AndroidBridge {
     }
 
     // =========================================================================
-    // 1. ANDROID KEYSTORE С ПОДДЕРЖКОЙ STRONGBOX (AES-256-GCM)
+    // 2. ANDROID KEYSTORE С ПОДДЕРЖКОЙ STRONGBOX (AES-256-GCM)
     // =========================================================================
     private SecretKey getOrCreateKeystoreSecret() throws Exception {
         KeyStore ks = KeyStore.getInstance("AndroidKeyStore");
@@ -261,6 +321,7 @@ public class AndroidBridge {
     }
 
     private String readEncryptedKeyFromVault() {
+        if (isBridgeHoneypotTripped()) return "";
         try {
             String blob = vaultPrefs.getString(VAULT_ENC_KEY, "");
             if (blob != null && blob.contains(":")) {
@@ -278,7 +339,7 @@ public class AndroidBridge {
     }
 
     // =========================================================================
-    // 2. НАТИВНАЯ ПРОВЕРКА ЧЁРНОГО СПИСКА, HTML И СТРОГАЯ СВЕРКА HMAC СЕРВЕРА
+    // 3. НАТИВНАЯ ПРОВЕРКА ЧЁРНОГО СПИСКА, HTML И СТРОГАЯ СВЕРКА HMAC СЕРВЕРА
     // =========================================================================
     private boolean isBlacklistedArtifact(String val) {
         if (val == null || val.trim().isEmpty()) return true;
@@ -316,7 +377,7 @@ public class AndroidBridge {
     }
 
     private boolean isClientTampered() {
-        if (isFridaOrXposedActive()) return true;
+        if (isBridgeHoneypotTripped() || isFridaOrXposedActive()) return true;
         try {
             InputStream is = context.getAssets().open("index.html");
             ByteArrayOutputStream bos = new ByteArrayOutputStream();
@@ -349,9 +410,9 @@ public class AndroidBridge {
         return false;
     }
 
-    // Строгая проверка HMAC-подписи ответа сервера: пустой sig НИКОГДА не принимается!
+    // Строгая проверка HMAC-подписи ответа сервера: пустой sig никогда не принимается!
     private boolean verifyServerResponseSignature(String cleanKey, String hwid, String status, String srvSig) {
-        if (srvSig == null || srvSig.trim().length() < 32) {
+        if (isBridgeHoneypotTripped() || srvSig == null || srvSig.trim().length() < 32) {
             revokeAllRuntimeAuth();
             return false;
         }
@@ -421,7 +482,7 @@ public class AndroidBridge {
     }
 
     // =========================================================================
-    // 3. ЖИВОЙ АППАРАТНЫЙ HWID ЧЕРЕЗ NATIVE + MEDIA DRM
+    // 4. ЖИВОЙ АППАРАТНЫЙ HWID ЧЕРЕЗ NATIVE + MEDIA DRM
     // =========================================================================
     private String getImmutableDrmId() {
         StringBuilder drmHex = new StringBuilder();
@@ -494,7 +555,7 @@ public class AndroidBridge {
     }
 
     // =========================================================================
-    // 4. СРОК ДЕЙСТВИЯ КЛЮЧА И WATCHDOG НА МОНОТОННОМ ТАЙМЕРЕ (ФИКС #16)
+    // 5. СРОК ДЕЙСТВИЯ КЛЮЧА И WATCHDOG НА МОНОТОННОМ ТАЙМЕРЕ (ФИКС #16)
     // =========================================================================
     private long getDefaultDurationMsForKey(String cleanKey) {
         if (cleanKey == null || isBlacklistedArtifact(cleanKey)) return 0L;
@@ -613,7 +674,6 @@ public class AndroidBridge {
                                 forceKickExpiredUser("Сессия недействительна!");
                             }
                         } catch (Exception e) {
-                            // Никакого чтения last_server_ok_ts из SharedPreferences (#16)!
                             forceKickExpiredUser("Потеряна связь с сервером лицензий!");
                         }
                     });
@@ -624,7 +684,7 @@ public class AndroidBridge {
     }
 
     // =========================================================================
-    // 5. УПРАВЛЕНИЕ ОВЕРЛЕЯМИ И ПРИНУДИТЕЛЬНЫЙ КИК
+    // 6. УПРАВЛЕНИЕ ОВЕРЛЕЯМИ И ПРИНУДИТЕЛЬНЫЙ КИК
     // =========================================================================
     private void removeOverlayViewSafe(View v) {
         if (v == null) return;
@@ -718,7 +778,7 @@ public class AndroidBridge {
     }
 
     // =========================================================================
-    // 6. КНОПКА РАСТЯГА «T» И ВЕДРО В СТИЛЕ 3D LIQUID GLASS
+    // 7. КНОПКА РАСТЯГА «T» И ВЕДРО В СТИЛЕ 3D LIQUID GLASS
     // =========================================================================
     @JavascriptInterface
     public void enforceGameAudioMode() {
@@ -1415,11 +1475,11 @@ public class AndroidBridge {
     }
 
     // =========================================================================
-    // 7. АВТОРИЗАЦИЯ И ПРОВЕРКА КЛЮЧА БЕЗ ЗАГЛУШЕК В SHAREDPREFERENCES
+    // 8. АВТОРИЗАЦИЯ И ПРОВЕРКА КЛЮЧА БЕЗ ЗАГЛУШЕК В SHAREDPREFERENCES
     // =========================================================================
     @JavascriptInterface
     public String getSavedKey() {
-        if (!prefs.getBoolean(PREF_FIRST_LOGIN_DONE, false)) return "";
+        if (isBridgeHoneypotTripped() || !prefs.getBoolean(PREF_FIRST_LOGIN_DONE, false)) return "";
         String vaultKey = readEncryptedKeyFromVault();
         if (vaultKey.isEmpty() || isBlacklistedArtifact(vaultKey)) return "";
 
@@ -1638,7 +1698,7 @@ public class AndroidBridge {
     }
 
     // =========================================================================
-    // 8. ГОЛОСОВОЙ ЧАТ И УВЕДОМЛЕНИЯ
+    // 9. ГОЛОСОВОЙ ЧАТ И УВЕДОМЛЕНИЯ
     // =========================================================================
     private static final String VOICE_CHANNEL_ID = "so2tp_voice_call_channel_v2";
     private static final int VOICE_NOTIF_ID = 7744;
