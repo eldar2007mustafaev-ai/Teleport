@@ -2356,6 +2356,43 @@
       }
     } catch (e) {}
   });
+  // Живой замер реального FPS + аппаратной герцовки экрана
+  (function initLiveFpsAndTouchInjector() {
+    var frameCount = 0;
+    var lastTime = performance.now();
+
+    function measureFrame(now) {
+      frameCount++;
+      if (now - lastTime >= 1000) {
+        var realFps = Math.round((frameCount * 1000) / (now - lastTime));
+        frameCount = 0;
+        lastTime = now;
+
+        var br = getBridge();
+        var hwHz = (br && br.getLiveScreenRefreshRate) ? br.getLiveScreenRefreshRate() : realFps;
+        var summaryEl = document.getElementById('boosterDeviceSummary');
+        if (summaryEl) {
+          summaryEl.textContent = realFps + ' FPS • Экран ' + hwHz + ' Гц';
+        }
+      }
+      requestAnimationFrame(measureFrame);
+    }
+    requestAnimationFrame(measureFrame);
+
+    // Автоматическое включение нативного инжекта касаний при активации сенсы
+    var origPushSens = window.pushCurrentSensToNative;
+    window.pushCurrentSensToNative = function() {
+      if (typeof origPushSens === 'function') origPushSens();
+      try {
+        var br = getBridge();
+        if (br && br.setTouchInjectorActive) {
+          var sharpVal = parseFloat(document.getElementById('rngSharp').value) || 2.5;
+          var power = Math.min(100, Math.max(20, Math.round(sharpVal * 32)));
+          br.setTouchInjectorActive(masterSensEnabled, 3, power);
+        }
+      } catch (e) {}
+    };
+  })();
 </script>
 </body>
 </html>
