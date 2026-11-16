@@ -1,7 +1,5 @@
 package com.teleport.so2;
 
-import android.os.SystemClock;
-
 import org.json.JSONObject;
 
 import java.io.BufferedReader;
@@ -11,151 +9,70 @@ import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
-import java.security.MessageDigest;
 import java.security.SecureRandom;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
 import java.util.TimeZone;
-import java.util.concurrent.atomic.AtomicLong;
-
-import javax.crypto.Mac;
-import javax.crypto.spec.SecretKeySpec;
 
 public class ApiManager {
 
-    // HONEYPOT-ОБМАНКИ (Нужны для компиляции ProfileManager.java:159 и ловли крякеров!)
-    // Если крякер изменит любое из этих полей на true в smali/Frida — сработает капкан!
+    // Поле оставлено для совместимости с ProfileManager.java:159 и проверяется из C++ (JNI Honeypot)
     public static boolean TEST_MODE = false;
-    public static boolean LOCAL_VIP_BYPASS = false;
-    public static volatile boolean sessionVerified = false;
-    private static final String DECOY_MASTER_HOST = "https://api-v9-auth.so2teleport-cloud.net:8443";
-    private static final String DECOY_SECRET_SALT = "SO2_LEGIT_CRACK_TRAP_KEY_2026_V9";
 
-    private static final AtomicLong VERIFIED_SESSION_STAMP = new AtomicLong(0L);
-    private static final AtomicLong VERIFIED_MONO_STAMP = new AtomicLong(0L);
-    private static final long MAX_SESSION_SILENCE_MS = 15L * 60L * 1000L;
-    private static final long SESSION_MAGIC_MASK = 0x5A93F10C7744E2B1L;
     private static final SecureRandom RNG = new SecureRandom();
 
-    // Проверка: не попался ли крякер в ловушку (патч boolean-полей в smali)
     public static boolean isHoneypotTriggered() {
-        if (TEST_MODE || LOCAL_VIP_BYPASS) {
-            return true;
-        }
-        // Если кто-то принудительно выставил sessionVerified = true, но крипто-штамп пуст — это кряк!
-        if (sessionVerified && VERIFIED_SESSION_STAMP.get() == 0L) {
-            return true;
-        }
-        return false;
+        return TEST_MODE;
     }
 
     public static void setSessionVerified(boolean verified) {
-        if (isHoneypotTriggered()) {
-            VERIFIED_SESSION_STAMP.set(0L);
-            VERIFIED_MONO_STAMP.set(0L);
-            sessionVerified = false;
-            return;
-        }
-        if (verified) {
-            long nowSlice = (System.currentTimeMillis() / 60000L) ^ SESSION_MAGIC_MASK;
-            VERIFIED_SESSION_STAMP.set(nowSlice);
-            VERIFIED_MONO_STAMP.set(SystemClock.elapsedRealtime());
-            sessionVerified = true;
-        } else {
-            VERIFIED_SESSION_STAMP.set(0L);
-            VERIFIED_MONO_STAMP.set(0L);
-            sessionVerified = false;
+        if (!verified || TEST_MODE) {
+            AndroidBridge.revokeNativeSessionFromApi();
         }
     }
 
     public static boolean isSessionVerified() {
-        if (isHoneypotTriggered()) {
-            VERIFIED_SESSION_STAMP.set(0L);
-            VERIFIED_MONO_STAMP.set(0L);
-            return false;
-        }
-        long stamp = VERIFIED_SESSION_STAMP.get();
-        if (stamp == 0L) return false;
-        long decoded = stamp ^ SESSION_MAGIC_MASK;
-        long currentSlice = System.currentTimeMillis() / 60000L;
-        boolean wallClockOk = Math.abs(currentSlice - decoded) <= 1440L;
-        // Монотонные часы ядра не поддаются сдвигу системного времени.
-        long mono = VERIFIED_MONO_STAMP.get();
-        boolean monoOk = mono > 0L
-                && SystemClock.elapsedRealtime() >= mono
-                && (SystemClock.elapsedRealtime() - mono) <= MAX_SESSION_SILENCE_MS;
-        return wallClockOk && monoOk;
+        if (TEST_MODE) return false;
+        return AndroidBridge.isNativeServerAuthorized();
     }
 
     public static void invalidateSession() {
-        VERIFIED_SESSION_STAMP.set(0L);
-        VERIFIED_MONO_STAMP.set(0L);
-        sessionVerified = false;
+        AndroidBridge.revokeNativeSessionFromApi();
     }
 
-    // Обманка для реверсеров (возвращает фейковый хост при статическом анализе, если нативка не загружена)
-    public static String getDecoyBackupHost() {
-        return DECOY_MASTER_HOST + "/api/v2/auth?salt=" + DECOY_SECRET_SALT;
-    }
-
-    // Реальный адрес расшифровывается только внутри C++ (libso2.so) — в Java IP больше нет!
     public static String getBaseHost() {
-        if (isHoneypotTriggered()) {
-            return "http://127.0.0.1:65534";
-        }
         return AndroidBridge.getEncryptedServerEndpoint(0);
     }
 
     private static String getEngineHost() {
-        if (isHoneypotTriggered()) {
-            return "http://127.0.0.1:65534";
-        }
         return AndroidBridge.getEncryptedServerEndpoint(1);
     }
 
+    // 100% нативная подпись запроса без Java fallback (Пункты #1, #16, #41)
     private static String computeRequestHmac(String body, String nonce, long ts) {
         try {
             SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd", Locale.US);
             sdf.setTimeZone(TimeZone.getTimeZone("UTC"));
             String dayUtc = sdf.format(new Date());
-
-            String natSig = AndroidBridge.signPayloadNative(body + "|" + nonce + "|" + ts, dayUtc);
-            if (natSig != null && !natSig.isEmpty()) {
-                return natSig;
-            }
-
-            byte[] enc = new byte[]{
-                    0x06, 0x1A, 0x67, 0x0A, 0x04, 0x00, 0x14, 0x1B,
-                    0x01, 0x00, 0x18, 0x0A, 0x03, 0x64, 0x65, 0x0A,
-                    0x1E, 0x10, 0x0C, 0x0A, 0x6C, 0x6C, 0x61, 0x64
-            };
-            byte[] raw = new byte[enc.length];
-            for (int i = 0; i < enc.length; i++) raw[i] = (byte) (enc[i] ^ 0x55);
-
-            MessageDigest sha = MessageDigest.getInstance("SHA-256");
-            byte[] dailyKey = sha.digest((new String(raw, StandardCharsets.UTF_8) + "|" + dayUtc).getBytes(StandardCharsets.UTF_8));
-            Mac mac = Mac.getInstance("HmacSHA256");
-            mac.init(new SecretKeySpec(dailyKey, "HmacSHA256"));
-            String msg = body + "|" + nonce + "|" + ts;
-            byte[] sig = mac.doFinal(msg.getBytes(StandardCharsets.UTF_8));
-            StringBuilder sb = new StringBuilder();
-            for (byte b : sig) sb.append(String.format("%02x", b));
-            return sb.toString();
+            return AndroidBridge.signPayloadNative(body + "|" + nonce + "|" + ts, dayUtc);
         } catch (Throwable t) {
             return "";
         }
     }
 
     public static String postJson(String urlStr, String jsonBody) {
-        if (isHoneypotTriggered()) {
-            return "{\"status\":\"banned\",\"ok\":false,\"blocked\":true,\"message\":\"Integrity check failed\"}";
+        if (TEST_MODE || urlStr == null || urlStr.isEmpty()) {
+            return "{\"status\":\"error\",\"ok\":false,\"blocked\":true,\"message\":\"Auth endpoint unavailable\"}";
         }
         HttpURLConnection conn = null;
         try {
             long ts = System.currentTimeMillis() / 1000L;
             String nonce = Long.toHexString(RNG.nextLong()) + Long.toHexString(System.nanoTime());
             String reqSig = computeRequestHmac(jsonBody, nonce, ts);
+            if (reqSig == null || reqSig.length() < 64) {
+                return "{\"status\":\"error\",\"ok\":false,\"blocked\":true,\"message\":\"Native signature error\"}";
+            }
 
             URL url = new URL(urlStr);
             conn = (HttpURLConnection) url.openConnection();
@@ -179,7 +96,7 @@ public class ApiManager {
             int code = conn.getResponseCode();
             InputStream is = (code >= 200 && code < 400) ? conn.getInputStream() : conn.getErrorStream();
             if (is == null) {
-                return "{\"status\":\"error\",\"ok\":false,\"blocked\":true,\"message\":\"Пустой ответ сервера\"}";
+                return "{\"status\":\"error\",\"ok\":false,\"blocked\":true,\"message\":\"Empty server response\"}";
             }
 
             StringBuilder resp = new StringBuilder();
@@ -191,11 +108,11 @@ public class ApiManager {
             }
             String result = resp.toString().trim();
             if (result.isEmpty() || !result.startsWith("{")) {
-                return "{\"status\":\"error\",\"ok\":false,\"blocked\":true,\"message\":\"Некорректный ответ сервера\"}";
+                return "{\"status\":\"error\",\"ok\":false,\"blocked\":true,\"message\":\"Invalid server response\"}";
             }
             return result;
         } catch (Exception e) {
-            return "{\"status\":\"error\",\"ok\":false,\"blocked\":true,\"message\":\"Нет связи с сервером авторизации\"}";
+            return "{\"status\":\"error\",\"ok\":false,\"blocked\":true,\"message\":\"Connection failed\"}";
         } finally {
             if (conn != null) {
                 try { conn.disconnect(); } catch (Throwable ignored) {}
@@ -204,23 +121,28 @@ public class ApiManager {
     }
 
     public static String postWithFallback(String endpointPath, String jsonBody) {
-        String primaryUrl = getBaseHost() + endpointPath;
-        String res = postJson(primaryUrl, jsonBody);
-        try {
-            JSONObject obj = new JSONObject(res);
-            if (!"error".equalsIgnoreCase(obj.optString("status")) || obj.has("sig")) {
-                return res;
-            }
-        } catch (Throwable ignored) {}
+        String primaryHost = getBaseHost();
+        if (!primaryHost.isEmpty()) {
+            String res = postJson(primaryHost + endpointPath, jsonBody);
+            try {
+                JSONObject obj = new JSONObject(res);
+                if (!"error".equalsIgnoreCase(obj.optString("status")) || obj.has("sig")) {
+                    return res;
+                }
+            } catch (Throwable ignored) {}
+        }
 
-        String secondaryUrl = getEngineHost() + endpointPath;
-        return postJson(secondaryUrl, jsonBody);
+        String secondaryHost = getEngineHost();
+        if (!secondaryHost.isEmpty()) {
+            return postJson(secondaryHost + endpointPath, jsonBody);
+        }
+        return "{\"status\":\"error\",\"ok\":false,\"blocked\":true,\"message\":\"Server unreachable\"}";
     }
 
     public static String activateLicense(String key, String hwid, String nickname) {
-        if (isHoneypotTriggered()) {
+        if (TEST_MODE) {
             invalidateSession();
-            return "{\"status\":\"banned\",\"ok\":false,\"blocked\":true,\"message\":\"Обнаружена модификация клиента\"}";
+            return "{\"status\":\"banned\",\"ok\":false,\"blocked\":true,\"message\":\"Client integrity error\"}";
         }
         try {
             String cleanKey = (key == null) ? "" : key.trim().toUpperCase(Locale.US);
@@ -234,25 +156,17 @@ public class ApiManager {
             req.put("nickname", cleanNick);
             req.put("ts", System.currentTimeMillis() / 1000L);
 
-            String raw = postWithFallback("/api/activate", req.toString());
-            JSONObject res = new JSONObject(raw);
-            String status = res.optString("status", "error");
-            if ("ok".equalsIgnoreCase(status) && !res.optBoolean("blocked", false)) {
-                setSessionVerified(true);
-            } else {
-                invalidateSession();
-            }
-            return raw;
+            return postWithFallback("/api/activate", req.toString());
         } catch (Exception e) {
             invalidateSession();
-            return "{\"status\":\"error\",\"ok\":false,\"blocked\":true,\"message\":\"Ошибка сети при активации\"}";
+            return "{\"status\":\"error\",\"ok\":false,\"blocked\":true,\"message\":\"Activation network error\"}";
         }
     }
 
     public static String verifyLicense(String key, String hwid) {
-        if (isHoneypotTriggered()) {
+        if (TEST_MODE) {
             invalidateSession();
-            return "{\"status\":\"banned\",\"ok\":false,\"blocked\":true,\"message\":\"Обнаружена модификация клиента\"}";
+            return "{\"status\":\"banned\",\"ok\":false,\"blocked\":true,\"message\":\"Client integrity error\"}";
         }
         try {
             String cleanKey = (key == null) ? "" : key.trim().toUpperCase(Locale.US);
@@ -264,20 +178,9 @@ public class ApiManager {
             req.put("hwid", cleanHwid);
             req.put("ts", System.currentTimeMillis() / 1000L);
 
-            String raw = postWithFallback("/api/verify", req.toString());
-            JSONObject res = new JSONObject(raw);
-            String status = res.optString("status", "error");
-
-            if ("ok".equalsIgnoreCase(status) && !res.optBoolean("blocked", false)) {
-                setSessionVerified(true);
-                return raw;
-            } else {
-                invalidateSession();
-                return raw;
-            }
+            return postWithFallback("/api/verify", req.toString());
         } catch (Exception e) {
-            invalidateSession();
-            return "{\"status\":\"error\",\"ok\":false,\"blocked\":true,\"message\":\"Нет связи с сервером лицензий\"}";
+            return "{\"status\":\"error\",\"ok\":false,\"blocked\":true,\"message\":\"Verification network error\"}";
         }
     }
 
