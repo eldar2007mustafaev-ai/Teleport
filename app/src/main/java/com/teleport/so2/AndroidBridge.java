@@ -85,15 +85,6 @@ public class AndroidBridge {
     private static final long MAX_MONO_SILENCE_MS = 15L * 60L * 1000L;
 
     private static boolean isNativeLoaded = false;
-    static {
-        try {
-            System.loadLibrary("so2");
-            isNativeLoaded = true;
-        } catch (Throwable ignored) {
-            isNativeLoaded = false;
-        }
-    }
-
     // JNI-методы в libso2.so
     private static native String nativeGetEncryptedEndpoint(int mode);
     private static native boolean nativeUnlockOfflineVipMode();
@@ -233,8 +224,9 @@ public class AndroidBridge {
     // ИСПРАВЛЕННЫЙ МЕТОД №1 (без убийства процесса и чёрного экрана!)
     private void executeNativeKillOnTamper() {
         revokeAllRuntimeAuth();
-        forceKickExpiredUser("Требуется повторная авторизация лицензии");
+        forceKickExpiredUser("Требуется повторная авторизация");
     }
+
 
     // =========================================================================
     // 2. ANDROID KEYSTORE С ПОДДЕРЖКОЙ STRONGBOX (AES-256-GCM)
@@ -361,9 +353,9 @@ public class AndroidBridge {
 
     // ИСПРАВЛЕННЫЙ МЕТОД №2 (проверяет только Frida/Xposed и Honeypots, не блокируя новый index.html)
     private boolean isClientTampered() {
-        if (isBridgeHoneypotTripped() || isFridaOrXposedActive()) return true;
-        return false;
+        return isBridgeHoneypotTripped() || isFridaOrXposedActive();
     }
+
 
     private boolean verifyServerResponseSignature(String cleanKey, String hwid, String status, String srvSig) {
         if (isBridgeHoneypotTripped() || srvSig == null || srvSig.trim().length() < 32) {
