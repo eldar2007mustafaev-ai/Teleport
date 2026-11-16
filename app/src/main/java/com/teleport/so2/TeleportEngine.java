@@ -2,350 +2,98 @@ package com.teleport.so2;
 
 import android.app.ActivityManager;
 import android.content.Context;
-import android.content.SharedPreferences;
-import android.content.pm.PackageManager;
-import android.content.res.Configuration;
+import android.media.MediaDrm;
 import android.os.Build;
-import android.os.Handler;
-import android.os.Looper;
-import android.util.Base64;
+import android.provider.Settings;
 import android.util.DisplayMetrics;
-import android.view.Display;
-import android.view.Surface;
 import android.view.WindowManager;
-import android.widget.Toast;
 
-import org.json.JSONObject;
-
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.InputStreamReader;
-import java.io.OutputStream;
-import java.net.HttpURLConnection;
-import java.net.URL;
-import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
-import java.util.Arrays;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipFile;
-
-import javax.crypto.Mac;
-import javax.crypto.SecretKeyFactory;
-import javax.crypto.spec.PBEKeySpec;
-import javax.crypto.spec.SecretKeySpec;
-
-import rikka.shizuku.Shizuku;
+import java.util.Locale;
+import java.util.UUID;
 
 public class TeleportEngine {
 
     private static Context appContext;
-    private static volatile boolean isServerAuthorized = true;
-    private static volatile String verifiedSessionKey = "";
-
     private static int nativeShortSide = 1080;
     private static int nativeLongSide = 2400;
-    private static int deviceMaxRefreshRate = 120;
-    private static boolean isNaturalLandscapeDevice = false;
-    private static boolean isBudgetDeviceHardware = false;
-    private static volatile boolean isTabletDeviceMode = false;
-    private static volatile int currentRecoilPower = 100;
-    private static volatile String lastSelectedRatio = "4:3";
-    private static volatile int lockedLandscapeRot = 1;
-
-    private static final ExecutorService stretchExecutor = Executors.newSingleThreadExecutor();
-    private static final ExecutorService shizukuQueue = Executors.newSingleThreadExecutor();
-    private static final Map<String, String> sessionCmdCache = new ConcurrentHashMap<>();
-    private static final Handler mainHandler = new Handler(Looper.getMainLooper());
-    private static volatile String lastPayloadSig = "";
-
-    private static String getEngineEndpoint() {
-        byte[] b = {104, 116, 116, 112, 58, 47, 47, 52, 53, 46, 49, 48, 46, 49, 54, 53, 46, 55, 53, 58, 56, 52, 52, 51, 47, 97, 112, 105, 47, 118, 49, 48, 47, 101, 110, 103, 105, 110, 101};
-        return new String(b, StandardCharsets.UTF_8);
-    }
-
-    private static String getMasterSalt() {
-        byte[] b = {83, 79, 50, 84, 80, 95, 86, 49, 48, 95, 81, 85, 65, 78, 84, 85, 77, 95, 72, 77, 65, 67, 95, 65, 69, 65, 68, 95, 75, 69, 89, 95, 57, 57, 52, 49};
-        return new String(b, StandardCharsets.UTF_8);
-    }
+    private static int nativeDensityDpi = 420;
+    private static int pixelDownscalePct = 100;
+    private static boolean teleportActive = false;
+    private static String currentRatio = "4:3";
 
     public static void init(Context context) {
+        if (context == null) return;
         appContext = context.getApplicationContext();
-        SecurityShield.startBackgroundGuard(appContext);
-        autoDetectSavedLicenseKey();
-
-        SharedPreferences prefs = appContext.getSharedPreferences("so2_tp_cfg_v10", Context.MODE_PRIVATE);
-        lastSelectedRatio = prefs.getString("stretch_ratio_val", "4:3");
-
-        DisplayMetrics dm = new DisplayMetrics();
-        WindowManager wm = (WindowManager) appContext.getSystemService(Context.WINDOW_SERVICE);
-        int modeShort = 0;
-        int modeLong = 0;
-
-        if (wm != null && wm.getDefaultDisplay() != null) {
-            Display d = wm.getDefaultDisplay();
-            d.getRealMetrics(dm);
-            int rot = d.getRotation();
-
-            float maxHz = d.getRefreshRate();
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                for (Display.Mode m : d.getSupportedModes()) {
-                    if (m.getRefreshRate() > maxHz) maxHz = m.getRefreshRate();
-                    int sSide = Math.min(m.getPhysicalWidth(), m.getPhysicalHeight());
-                    int lSide = Math.max(m.getPhysicalWidth(), m.getPhysicalHeight());
-                    if (sSide >= 720 && lSide >= 1600 && (sSide <= 1440)) {
-                        modeShort = sSide;
-                        modeLong = lSide;
-                    }
-                }
-            }
-            deviceMaxRefreshRate = Math.max(60, Math.round(maxHz));
-            if (rot == Surface.ROTATION_0 || rot == Surface.ROTATION_180) {
-                isNaturalLandscapeDevice = (dm.widthPixels > dm.heightPixels);
-            } else {
-                isNaturalLandscapeDevice = (dm.widthPixels < dm.heightPixels);
-            }
-        } else {
-            dm = appContext.getResources().getDisplayMetrics();
-        }
-
-        int curShort = Math.min(dm.widthPixels, dm.heightPixels);
-        int curLong = Math.max(dm.widthPixels, dm.heightPixels);
-
-        int savedShort = prefs.getInt("orig_native_short", 0);
-        int savedLong = prefs.getInt("orig_native_long", 0);
-
-        if (curShort >= 720 && (curLong / (float) curShort) >= 1.72f) {
-            nativeShortSide = curShort;
-            nativeLongSide = curLong;
-            prefs.edit()
-                    .putInt("orig_native_short", curShort)
-                    .putInt("orig_native_long", curLong)
-                    .apply();
-        } else if (savedShort >= 720 && savedLong >= 1600) {
-            nativeShortSide = savedShort;
-            nativeLongSide = savedLong;
-        } else if (modeShort >= 720 && modeLong >= 1600) {
-            nativeShortSide = modeShort;
-            nativeLongSide = modeLong;
-        } else {
-            nativeShortSide = curShort >= 720 ? curShort : 1080;
-            nativeLongSide = curLong >= 1800 ? curLong : 2400;
-        }
-
-        Configuration cfg = appContext.getResources().getConfiguration();
-        int swDp = cfg != null ? cfg.smallestScreenWidthDp : 0;
-        boolean autoDetectedPad = (swDp >= 580) || isNaturalLandscapeDevice;
-        isTabletDeviceMode = prefs.getBoolean("pad_mode_flag", autoDetectedPad);
-
-        int cores = Runtime.getRuntime().availableProcessors();
-        String modelUpper = Build.MODEL != null ? Build.MODEL.toUpperCase() : "";
-        boolean isSamsungASeries = modelUpper.contains("SM-A") || modelUpper.contains("A57") || modelUpper.contains("A55") || modelUpper.contains("A54");
-        isBudgetDeviceHardware = (!isTabletDeviceMode && (isSamsungASeries || deviceMaxRefreshRate <= 90 || nativeShortSide <= 720 || cores <= 6));
-
-        // Сбрасываем багованный флаг force_resizable_activities в 0, чтобы Standoff 2 НИКОГДА не переворачивался вертикально!
-        stretchExecutor.execute(() -> {
-            try {
-                if (isShizukuReady() || ShizukuManager.isPermissionGranted()) {
-                    ShizukuManager.execCommand(
-                            "settings put global force_resizable_activities 0 2>/dev/null; " +
-                            "settings put global enable_freeform_support 0 2>/dev/null; " +
-                            "settings put global enable_non_resizable_multi_window 0 2>/dev/null; " +
-                            "wm set-ignore-orientation-request false 2>/dev/null; " +
-                            "cmd window set-ignore-orientation-request false 2>/dev/null; " +
-                            "settings put global block_untrusted_touches 0 2>/dev/null; " +
-                            "settings put secure block_untrusted_touches 0 2>/dev/null;"
-                    );
-                }
-            } catch (Throwable ignored) {}
-        });
+        detectNativeScreenMetrics(appContext);
     }
 
-    private static void autoDetectSavedLicenseKey() {
-        if (appContext == null) return;
-        String secKey = SecurityShield.getVerifiedKey(appContext);
-        if (secKey != null && secKey.length() >= 8) {
-            verifiedSessionKey = secKey.trim().toUpperCase();
-            return;
-        }
+    private static void detectNativeScreenMetrics(Context ctx) {
         try {
-            File prefsDir = new File(appContext.getApplicationInfo().dataDir, "shared_prefs");
-            File[] files = prefsDir.listFiles();
-            if (files != null) {
-                for (File f : files) {
-                    String name = f.getName();
-                    if (name.endsWith(".xml")) {
-                        String prefName = name.substring(0, name.length() - 4);
-                        SharedPreferences sp = appContext.getSharedPreferences(prefName, Context.MODE_PRIVATE);
-                        for (Map.Entry<String, ?> entry : sp.getAll().entrySet()) {
-                            Object v = entry.getValue();
-                            if (v instanceof String) {
-                                String val = ((String) v).trim().toUpperCase();
-                                if (val.startsWith("TP") && val.length() >= 8 && !val.contains(" ")) {
-                                    verifiedSessionKey = val;
-                                    SecurityShield.issueVerifiedSessionToken(appContext, val);
-                                    return;
-                                }
-                            }
-                        }
-                    }
-                }
+            WindowManager wm = (WindowManager) ctx.getSystemService(Context.WINDOW_SERVICE);
+            DisplayMetrics dm = new DisplayMetrics();
+            if (wm != null && wm.getDefaultDisplay() != null) {
+                wm.getDefaultDisplay().getRealMetrics(dm);
+                int w = dm.widthPixels;
+                int h = dm.heightPixels;
+                nativeShortSide = Math.min(w, h);
+                nativeLongSide = Math.max(w, h);
+                nativeDensityDpi = dm.densityDpi > 0 ? dm.densityDpi : 420;
             }
         } catch (Throwable ignored) {}
     }
 
-    private static long getApkDexCrc() {
-        try {
-            ZipFile zf = new ZipFile(appContext.getPackageCodePath());
-            ZipEntry ze = zf.getEntry("classes.dex");
-            long crc = (ze != null) ? ze.getCrc() : 0L;
-            zf.close();
-            return crc;
-        } catch (Throwable t) {
-            return 0L;
-        }
+    public static int getNativeShortSide() {
+        return nativeShortSide;
     }
 
-    private static String unsealServerPayload(String rawResp, String keyStr, String hwidStr) {
+    public static int getNativeLongSide() {
+        return nativeLongSide;
+    }
+
+    public static String getDeviceHwid(Context context) {
+        StringBuilder raw = new StringBuilder();
         try {
-            int idx = rawResp.indexOf(':');
-            if (idx <= 0) return "";
-            String srvToken = rawResp.substring(0, idx).trim();
-            String b64 = rawResp.substring(idx + 1).trim();
-
-            byte[] combined = Base64.decode(b64, Base64.DEFAULT);
-            if (combined == null || combined.length <= 48) return "";
-
-            byte[] salt = Arrays.copyOfRange(combined, 0, 16);
-            byte[] recvMac = Arrays.copyOfRange(combined, 16, 48);
-            byte[] ct = Arrays.copyOfRange(combined, 48, combined.length);
-
-            String pass = getMasterSalt() + keyStr.trim().toUpperCase() + hwidStr;
-            byte[] saltAndToken = new byte[salt.length + srvToken.length()];
-            System.arraycopy(salt, 0, saltAndToken, 0, salt.length);
-            System.arraycopy(srvToken.getBytes(StandardCharsets.UTF_8), 0, saltAndToken, salt.length, srvToken.length());
-
-            PBEKeySpec spec = new PBEKeySpec(pass.toCharArray(), saltAndToken, 1000, 256);
-            SecretKeyFactory skf = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA256");
-            byte[] kMat = skf.generateSecret(spec).getEncoded();
-
-            Mac mac = Mac.getInstance("HmacSHA256");
-            mac.init(new SecretKeySpec(kMat, "HmacSHA256"));
-            mac.update(salt);
-            byte[] calcMac = mac.doFinal(ct);
-            if (!MessageDigest.isEqual(recvMac, calcMac)) return "";
-
-            byte[] out = new byte[ct.length];
-            MessageDigest sha = MessageDigest.getInstance("SHA-256");
-            for (int i = 0; i < ct.length; i += 32) {
-                sha.reset();
-                sha.update(kMat);
-                sha.update(ByteBuffer.allocate(4).putInt(i).array());
-                byte[] blk = sha.digest();
-                int lim = Math.min(32, ct.length - i);
-                for (int j = 0; j < lim; j++) {
-                    out[i + j] = (byte) (ct[i + j] ^ blk[j]);
-                }
+            UUID widevineUuid = new UUID(-0x121074568629b532L, -0x5c37d8232ae2de13L);
+            MediaDrm drm = new MediaDrm(widevineUuid);
+            byte[] drmId = drm.getPropertyByteArray(MediaDrm.PROPERTY_DEVICE_UNIQUE_ID);
+            if (drmId != null) {
+                for (byte b : drmId) raw.append(String.format("%02x", b));
             }
-            return new String(out, StandardCharsets.UTF_8);
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) drm.close();
+            else drm.release();
+        } catch (Throwable ignored) {}
+
+        raw.append("|").append(Build.BOARD)
+           .append("|").append(Build.BRAND)
+           .append("|").append(Build.DEVICE)
+           .append("|").append(Build.HARDWARE)
+           .append("|").append(Build.MODEL);
+
+        try {
+            MessageDigest md = MessageDigest.getInstance("SHA-256");
+            byte[] digest = md.digest(raw.toString().getBytes(StandardCharsets.UTF_8));
+            StringBuilder hex = new StringBuilder();
+            for (int i = 0; i < 8; i++) hex.append(String.format("%02x", digest[i]));
+            String drmHash = hex.toString();
+
+            String aid = "";
+            if (context != null) {
+                aid = Settings.Secure.getString(context.getContentResolver(), Settings.Secure.ANDROID_ID);
+            }
+            if (aid != null && !aid.trim().isEmpty()) {
+                return drmHash + "|" + aid.trim().toLowerCase(Locale.US);
+            }
+            return drmHash;
         } catch (Throwable t) {
-            return "";
+            return "hw7744aabb1122cc";
         }
     }
-
-    private static void lockShizukuOnCrack() {
-        sessionCmdCache.clear();
-    }
-
-    private static void requestServerShizuku(final JSONObject payload) {
-        if (appContext == null) return;
-
-        shizukuQueue.execute(() -> {
-            try {
-                if (verifiedSessionKey == null || verifiedSessionKey.length() < 8) {
-                    autoDetectSavedLicenseKey();
-                }
-                if (verifiedSessionKey == null || verifiedSessionKey.length() < 8) {
-                    return;
-                }
-
-                String hwid = SecurityShield.getHardwareBoundHwid(appContext);
-                payload.put("key", verifiedSessionKey);
-                payload.put("hwid", hwid);
-                payload.put("pkg", appContext.getPackageName());
-                payload.put("hz", deviceMaxRefreshRate);
-                payload.put("pad", isTabletDeviceMode);
-                payload.put("budget", isBudgetDeviceHardware);
-                payload.put("nat_s", getNativeShortSide());
-                payload.put("nat_l", getNativeLongSide());
-                payload.put("land_rot", getCurrentLandscapeRotation());
-                payload.put("nat_land", isNaturalLandscapeDevice);
-                payload.put("recoil", currentRecoilPower);
-                payload.put("dex_crc", getApkDexCrc());
-                payload.put("cert_sha", SecurityShield.getApkSignatureHash(appContext));
-
-                String cacheKey = payload.toString();
-                String cachedCmd = sessionCmdCache.get(cacheKey);
-                if (cachedCmd != null) {
-                    if (isShizukuReady() || ShizukuManager.isPermissionGranted()) {
-                        ShizukuManager.execCommand(cachedCmd);
-                    }
-                    return;
-                }
-
-                payload.put("nonce", String.valueOf(System.currentTimeMillis() / 1000L));
-
-                URL url = new URL(getEngineEndpoint());
-                HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-                conn.setRequestMethod("POST");
-                conn.setConnectTimeout(3500);
-                conn.setReadTimeout(3500);
-                conn.setRequestProperty("Content-Type", "application/json; charset=UTF-8");
-                conn.setDoOutput(true);
-
-                try (OutputStream os = conn.getOutputStream()) {
-                    os.write(payload.toString().getBytes(StandardCharsets.UTF_8));
-                }
-
-                if (conn.getResponseCode() == 200) {
-                    StringBuilder sb = new StringBuilder();
-                    try (BufferedReader br = new BufferedReader(new InputStreamReader(conn.getInputStream()))) {
-                        String line;
-                        while ((line = br.readLine()) != null) sb.append(line);
-                    }
-                    String resp = sb.toString().trim();
-                    if ("DENIED".equals(resp) || resp.isEmpty()) {
-                        lockShizukuOnCrack();
-                        return;
-                    }
-                    String decryptedCmd = unsealServerPayload(resp, verifiedSessionKey, hwid);
-                    if (!decryptedCmd.isEmpty()) {
-                        isServerAuthorized = true;
-                        sessionCmdCache.put(cacheKey, decryptedCmd);
-                        if (!"echo OK;".equals(decryptedCmd.trim())) {
-                            if (isShizukuReady() || ShizukuManager.isPermissionGranted()) {
-                                ShizukuManager.execCommand(decryptedCmd);
-                            }
-                        }
-                    }
-                }
-            } catch (Throwable ignored) {}
-        });
-    }
-
-    public static int getNativeShortSide() { return nativeShortSide > 0 ? nativeShortSide : 1080; }
-    public static int getNativeLongSide() { return nativeLongSide > 0 ? nativeLongSide : 2400; }
 
     public static boolean isShizukuReady() {
         try {
-            if (Shizuku.isPreV11() || !Shizuku.pingBinder()) return false;
-            if (Shizuku.checkSelfPermission() != PackageManager.PERMISSION_GRANTED) return false;
-            int uid = Shizuku.getUid();
-            return uid == 0 || uid == 2000;
+            return ShizukuManager.isPermissionGranted();
         } catch (Throwable t) {
             return false;
         }
@@ -353,265 +101,66 @@ public class TeleportEngine {
 
     public static void requestShizukuPermissionIfNeeded() {
         try {
-            if (!Shizuku.isPreV11() && Shizuku.pingBinder()
-                    && Shizuku.checkSelfPermission() != PackageManager.PERMISSION_GRANTED) {
-                Shizuku.requestPermission(1001);
+            if (!ShizukuManager.isPermissionGranted()) {
+                ShizukuManager.requestPermission();
             }
         } catch (Throwable ignored) {}
     }
 
-    public static void execShizukuCommand(final String cmd) {
-        if (cmd == null || cmd.isEmpty()) return;
-        if (cmd.contains("wm size") && !cmd.contains("reset")) {
-            applyAspectRatioStretch(lastSelectedRatio);
+    // Защищённое выполнение команд: без подтверждённой серверной сессии команды блокируются
+    public static void execShizukuCommand(String cmd) {
+        if (cmd == null || cmd.trim().isEmpty()) return;
+        String safe = cmd.trim();
+        // Разрешаем только сброс экрана при выходе, все остальные твики требуют верифицированной лицензии
+        boolean isResetOnly = safe.equals("wm size reset; wm density reset;") || safe.startsWith("wm size reset");
+        if (!isResetOnly && !ApiManager.isSessionVerified()) {
             return;
         }
-        if (cmd.contains("wm size reset")) {
-            releaseBoxToFullStretch();
-            return;
-        }
-        stretchExecutor.execute(() -> {
-            try { ShizukuManager.execCommand(cmd); } catch (Throwable ignored) {}
-        });
-    }
-
-    // Всегда возвращает СТРОГО горизонтальную ориентацию (1 = Landscape 90°, 3 = Seascape 270°)
-    private static int getCurrentLandscapeRotation() {
         try {
-            WindowManager wm = (WindowManager) appContext.getSystemService(Context.WINDOW_SERVICE);
-            if (wm != null && wm.getDefaultDisplay() != null) {
-                int rot = wm.getDefaultDisplay().getRotation();
-                if (rot == Surface.ROTATION_270) {
-                    lockedLandscapeRot = 3;
-                    return 3;
-                }
-                if (rot == Surface.ROTATION_90) {
-                    lockedLandscapeRot = 1;
-                    return 1;
-                }
-                if (isNaturalLandscapeDevice && (rot == Surface.ROTATION_0 || rot == Surface.ROTATION_180)) {
-                    lockedLandscapeRot = rot;
-                    return rot;
-                }
-            }
-        } catch (Throwable ignored) {}
-        return isNaturalLandscapeDevice ? 0 : lockedLandscapeRot;
-    }
-
-    // Команда ЖЁСТКОЙ фиксации горизонтального экрана (блокирует любой переворот в портрет)
-    private static String buildHardLandscapeLockCmd(int landRot) {
-        return "settings put global force_resizable_activities 0 2>/dev/null; " +
-               "wm set-ignore-orientation-request false 2>/dev/null; " +
-               "cmd window set-ignore-orientation-request false 2>/dev/null; " +
-               "settings put system accelerometer_rotation 0; " +
-               "settings put system user_rotation " + landRot + "; " +
-               "cmd window user-rotation lock " + landRot + "; " +
-               "wm user-rotation lock " + landRot + " 2>/dev/null; " +
-               "cmd window set-fix-to-user-rotation enabled 2>/dev/null; " +
-               "wm set-fix-to-user-rotation enabled 2>/dev/null; ";
-    }
-
-    private static void verifyStretchAppliedOrWarnUser(final int expectedShort, final int expectedLong) {
-        mainHandler.postDelayed(() -> {
-            try {
-                if (appContext == null) return;
-                WindowManager wm = (WindowManager) appContext.getSystemService(Context.WINDOW_SERVICE);
-                if (wm == null || wm.getDefaultDisplay() == null) return;
-                DisplayMetrics dm = new DisplayMetrics();
-                wm.getDefaultDisplay().getRealMetrics(dm);
-                int curS = Math.min(dm.widthPixels, dm.heightPixels);
-                int curL = Math.max(dm.widthPixels, dm.heightPixels);
-
-                if (Math.abs(curL - nativeLongSide) <= 8 && Math.abs(curS - nativeShortSide) <= 8
-                        && Math.abs(expectedLong - nativeLongSide) > 60) {
-                    String brand = (Build.MANUFACTURER + " " + Build.BRAND).toLowerCase();
-                    if (brand.contains("realme") || brand.contains("oppo") || brand.contains("oneplus") || brand.contains("oplus")) {
-                        Toast.makeText(appContext,
-                                "⚠️ На Realme/OPPO включите «Отключить мониторинг разрешений» (в самом низу «Для разработчиков»)!",
-                                Toast.LENGTH_LONG).show();
-                    } else if (brand.contains("xiaomi") || brand.contains("redmi") || brand.contains("poco")) {
-                        Toast.makeText(appContext,
-                                "⚠️ На Xiaomi/Poco включите «Отладка по USB (Настройки безопасности)» в «Для разработчиков»!",
-                                Toast.LENGTH_LONG).show();
-                    }
-                }
-            } catch (Throwable ignored) {}
-        }, 450);
-    }
-
-    // ШАГ 1 КНОПКИ «T» — НАМЕРТВО ЗАПИРАЕТ ГОРИЗОНТАЛЬНЫЙ ЭКРАН И СЖИМАЕТ РАМКУ
-    public static boolean applyAspectRatioStretch(String ratio) {
-        final String cleanRatio = (ratio == null || ratio.trim().isEmpty()) ? lastSelectedRatio : ratio.trim().toUpperCase();
-        lastSelectedRatio = cleanRatio;
-        if (appContext != null) {
-            appContext.getSharedPreferences("so2_tp_cfg_v10", Context.MODE_PRIVATE)
-                    .edit().putString("stretch_ratio_val", cleanRatio).apply();
-        }
-
-        final int natS = getNativeShortSide();
-        final int natL = getNativeLongSide();
-        int tS = natS;
-        int tL = natL;
-
-        if (cleanRatio.startsWith("SHRINK-")) {
-            int pct = 84;
-            try { pct = Math.max(50, Math.min(96, Integer.parseInt(cleanRatio.replace("SHRINK-", "").trim()))); } catch (Throwable ignored) {}
-            tS = Math.round(natS * (pct / 100.0f));
-        } else if ("21:9".equals(cleanRatio)) {
-            tS = Math.round(natS * 0.82f);
-        } else if ("24:10".equals(cleanRatio)) {
-            tS = Math.round(natS * 0.76f);
-        } else if ("PAD-WIDE".equals(cleanRatio)) {
-            tL = Math.round(natS * 1.15f);
-        } else if ("1:1".equals(cleanRatio)) {
-            tL = Math.round(natS * 1.10f);
-        } else if ("5:4".equals(cleanRatio)) {
-            tL = Math.round(natS * 1.22f);
-        } else if ("4:3".equals(cleanRatio)) {
-            tL = Math.round(natS * ((natL / (float) natS) < 1.65f ? 1.18f : 1.3333f));
-        } else if ("3:2".equals(cleanRatio)) {
-            tL = Math.round(natS * 1.42f);
-        } else if ("16:10".equals(cleanRatio)) {
-            tL = Math.round(natS * 1.50f);
-        } else if ("16:9".equals(cleanRatio)) {
-            tL = Math.round(natS * 1.58f);
-        } else {
-            tL = Math.round(natS * 1.3333f);
-        }
-
-        if ((tS & 1) == 1) tS += 1;
-        if ((tL & 1) == 1) tL += 1;
-
-        final int finalTS = tS;
-        final int finalTL = tL;
-        final String wmArg = isNaturalLandscapeDevice ? (tL + "x" + tS) : (tS + "x" + tL);
-        final int landRot = getCurrentLandscapeRotation();
-
-        stretchExecutor.execute(() -> {
-            try {
-                String stretchCmd =
-                        buildHardLandscapeLockCmd(landRot) +
-                        "wm size " + wmArg + "; " +
-                        "settings put system peak_refresh_rate " + deviceMaxRefreshRate + ".0; " +
-                        "settings put system min_refresh_rate " + deviceMaxRefreshRate + ".0;";
-                ShizukuManager.execCommand(stretchCmd);
-                verifyStretchAppliedOrWarnUser(finalTS, finalTL);
-            } catch (Throwable ignored) {}
-        });
-        return true;
-    }
-
-    // ШАГ 2 КНОПКИ «T» — РАСКРЫВАЕТ ИГРУ НА ВЕСЬ ЭКРАН И ДЕРЖИТ СТРОГО ГОРИЗОНТАЛЬНО
-    public static void releaseBoxToFullStretch() {
-        final int landRot = getCurrentLandscapeRotation();
-        stretchExecutor.execute(() -> {
-            try {
-                String releaseCmd =
-                        buildHardLandscapeLockCmd(landRot) +
-                        "wm size reset; " +
-                        "settings put system peak_refresh_rate " + deviceMaxRefreshRate + ".0; " +
-                        "settings put system min_refresh_rate " + deviceMaxRefreshRate + ".0;";
-                ShizukuManager.execCommand(releaseCmd);
-            } catch (Throwable ignored) {}
-        });
-    }
-
-    // ПОЛНЫЙ СБРОС ЭКРАНА В РОДНОЕ РАЗРЕШЕНИЕ (СНИМАЕТ ГОРИЗОНТАЛЬНЫЙ ЗАМОК ПРИ ВЫХОДЕ)
-    public static void resetResolutionToNative() {
-        stretchExecutor.execute(() -> {
-            try {
-                String resetCmd =
-                        "wm size reset; " +
-                        "wm density reset; " +
-                        "cmd window set-fix-to-user-rotation disabled 2>/dev/null; " +
-                        "wm set-fix-to-user-rotation disabled 2>/dev/null; " +
-                        "cmd window user-rotation free; " +
-                        "wm user-rotation free 2>/dev/null; " +
-                        "settings put system accelerometer_rotation 1;";
-                ShizukuManager.execCommand(resetCmd);
-            } catch (Throwable ignored) {}
-        });
-    }
-
-    public static void applyUltimateSystemTweaks() {
-        try {
-            JSONObject j = new JSONObject();
-            j.put("action", "ULTIMATE_TWEAKS_1CLICK");
-            requestServerShizuku(j);
+            ShizukuManager.execCommand(safe);
         } catch (Throwable ignored) {}
     }
 
     public static void startTeleport(String presetId) {
-        String cleanPreset = (presetId == null) ? "extreme" : presetId.trim();
+        if (!ApiManager.isSessionVerified()) return;
+        teleportActive = true;
+        if (presetId != null && presetId.startsWith("SET_RATIO:")) {
+            currentRatio = presetId.substring("SET_RATIO:".length()).trim();
+            return;
+        }
+        if (!isShizukuReady()) return;
 
-        if (cleanPreset.startsWith("AUTH_KEY:")) {
-            verifiedSessionKey = cleanPreset.substring("AUTH_KEY:".length()).trim().toUpperCase();
-            SecurityShield.issueVerifiedSessionToken(appContext, verifiedSessionKey);
-            return;
-        }
-        if (cleanPreset.startsWith("SET_RATIO:")) {
-            String r = cleanPreset.substring("SET_RATIO:".length()).trim().toUpperCase();
-            if (!r.isEmpty()) {
-                lastSelectedRatio = r;
-                if (appContext != null) {
-                    appContext.getSharedPreferences("so2_tp_cfg_v10", Context.MODE_PRIVATE)
-                            .edit().putString("stretch_ratio_val", r).apply();
-                }
-            }
-            return;
-        }
-        if ("PAD_MODE_ON".equalsIgnoreCase(cleanPreset)) {
-            isTabletDeviceMode = true;
-            if (appContext != null) {
-                appContext.getSharedPreferences("so2_tp_cfg_v10", Context.MODE_PRIVATE)
-                        .edit().putBoolean("pad_mode_flag", true).apply();
-            }
-            return;
-        }
-        if ("PAD_MODE_OFF".equalsIgnoreCase(cleanPreset)) {
-            isTabletDeviceMode = false;
-            if (appContext != null) {
-                appContext.getSharedPreferences("so2_tp_cfg_v10", Context.MODE_PRIVATE)
-                        .edit().putBoolean("pad_mode_flag", false).apply();
-            }
-            return;
-        }
-        if ("ULTIMATE_TWEAKS_1CLICK".equalsIgnoreCase(cleanPreset)) {
-            applyUltimateSystemTweaks();
-            return;
-        }
-        if (cleanPreset.startsWith("STRETCH_NOW:")) {
-            applyAspectRatioStretch(cleanPreset.substring("STRETCH_NOW:".length()).trim());
-            return;
-        }
-        if ("STRETCH_FULL_RELEASE".equalsIgnoreCase(cleanPreset)) {
-            releaseBoxToFullStretch();
-            return;
-        }
-        if ("STRETCH_RESET".equalsIgnoreCase(cleanPreset)) {
-            resetResolutionToNative();
-            return;
+        String p = (presetId == null) ? "pro" : presetId.toLowerCase(Locale.US);
+        int ptrSpeed = 5;
+        long longPress = 200;
+        long multiPress = 150;
+
+        if (p.contains("1") || p.contains("ultra") || p.contains("extreme") || p.contains("max")) {
+            ptrSpeed = 7;
+            longPress = 160;
+            multiPress = 110;
+        } else if (p.contains("2") || p.contains("pad") || p.contains("sharp")) {
+            ptrSpeed = 6;
+            longPress = 180;
+            multiPress = 130;
+        } else if (p.contains("4") || p.contains("fps") || p.contains("clean")) {
+            ptrSpeed = 4;
+            longPress = 220;
+            multiPress = 170;
         }
 
-        isTabletDeviceMode = "tablet_pro".equalsIgnoreCase(cleanPreset);
-        try {
-            JSONObject j = new JSONObject();
-            j.put("action", "PRESET:" + cleanPreset);
-            requestServerShizuku(j);
-        } catch (Throwable ignored) {}
+        execShizukuCommand(
+                "settings put system pointer_speed " + ptrSpeed + "; " +
+                "settings put secure long_press_timeout " + longPress + "; " +
+                "settings put secure multi_press_timeout " + multiPress + "; " +
+                "settings put global window_animation_scale 0.5; " +
+                "settings put global transition_animation_scale 0.5; " +
+                "settings put global animator_duration_scale 0.5;"
+        );
     }
 
     public static void stopTeleport() {
-        try {
-            JSONObject j = new JSONObject();
-            j.put("action", "STOP");
-            requestServerShizuku(j);
-        } catch (Throwable ignored) {}
-    }
-
-    public static void healTouchAndRestart() {
-        lastPayloadSig = "";
-        startTeleport(isTabletDeviceMode ? "tablet_pro" : (isBudgetDeviceHardware ? "budget_pro" : "extreme"));
+        teleportActive = false;
     }
 
     public static void updateParameters(
@@ -619,74 +168,181 @@ public class TeleportEngine {
             int chunks, int chunkFast, double straight,
             int stick, int grid, int pause, double accel
     ) {
-        try {
-            String sig = sharp + "|" + sx + "|" + sy + "|" + chunks + "|" + chunkFast + "|" + stick + "|" + grid + "|" + pause + "|" + accel + "|" + isTabletDeviceMode + "|" + currentRecoilPower;
-            if (sig.equals(lastPayloadSig)) return;
-            lastPayloadSig = sig;
+        if (!ApiManager.isSessionVerified() || !isShizukuReady()) return;
+        int computedSpeed = Math.max(-7, Math.min(7, (int) Math.round((sharp - 1.0) * 3.0 + (sx + sy) * 0.5)));
+        int tapTimeout = Math.max(120, Math.min(350, 260 - chunks));
+        int touchSlop = Math.max(1, Math.min(16, 10 - (grid / 15)));
 
-            JSONObject j = new JSONObject();
-            j.put("action", "SLIDERS");
-            j.put("p1", sharp);
-            j.put("p2", sx);
-            j.put("p3", sy);
-            j.put("p4", chunks);
-            j.put("p5", chunkFast);
-            j.put("p6", straight);
-            j.put("p7", stick);
-            j.put("p8", grid);
-            j.put("p9", pause);
-            j.put("p10", accel);
-            requestServerShizuku(j);
-        } catch (Throwable ignored) {}
+        execShizukuCommand(
+                "settings put system pointer_speed " + computedSpeed + "; " +
+                "settings put secure long_press_timeout " + tapTimeout + "; " +
+                "settings put secure multi_press_timeout " + Math.max(100, tapTimeout - 40) + "; " +
+                "device_config put input_native_boot touch_slop " + touchSlop + ";"
+        );
     }
 
-    public static void applyShooterOptimizer(int fpsLock, int gpuBoost, int frameTime, int edgeSens, int multiTouch, int netBuffer, int thermalLim) {
-        applyUltimateSystemTweaks();
+    public static boolean applyAspectRatioStretch(String ratioStr) {
+        if (!ApiManager.isSessionVerified() || !isShizukuReady()) return false;
+        if (ratioStr != null && !ratioStr.trim().isEmpty()) {
+            currentRatio = ratioStr.trim().toUpperCase(Locale.US);
+        }
+
+        double scale = Math.max(0.50, Math.min(1.0, pixelDownscalePct / 100.0));
+        int baseShort = (int) Math.round(nativeShortSide * scale);
+        int targetLong = (int) Math.round(nativeLongSide * scale);
+
+        if (currentRatio.contains("4:3")) {
+            targetLong = (int) Math.round(baseShort * (4.0 / 3.0));
+        } else if (currentRatio.contains("3:2")) {
+            targetLong = (int) Math.round(baseShort * 1.5);
+        } else if (currentRatio.contains("16:10")) {
+            targetLong = (int) Math.round(baseShort * 1.6);
+        } else if (currentRatio.contains("5:4")) {
+            targetLong = (int) Math.round(baseShort * 1.25);
+        } else if (currentRatio.contains("16:9")) {
+            targetLong = (int) Math.round(baseShort * (16.0 / 9.0));
+        }
+
+        baseShort = (baseShort / 2) * 2;
+        targetLong = (targetLong / 2) * 2;
+
+        execShizukuCommand(
+                "wm size " + baseShort + "x" + targetLong + "; " +
+                "settings put system accelerometer_rotation 0; " +
+                "settings put system user_rotation 1;"
+        );
+        return true;
     }
 
-    public static void setRawInputNoSmoothing(boolean enabled) {
-        if (enabled) healTouchAndRestart();
+    public static void releaseBoxToFullStretch() {
+        if (!ApiManager.isSessionVerified() || !isShizukuReady()) return;
+        double scale = Math.max(0.50, Math.min(1.0, pixelDownscalePct / 100.0));
+        int s = ((int) Math.round(nativeShortSide * scale) / 2) * 2;
+        int l = ((int) Math.round(nativeLongSide * scale) / 2) * 2;
+        execShizukuCommand("wm size " + s + "x" + l + ";");
     }
 
-    public static void setVulkanGpuTurbo(boolean enabled) {
-        if (enabled) applyUltimateSystemTweaks();
+    public static void resetResolutionToNative() {
+        pixelDownscalePct = 100;
+        execShizukuCommand("wm size reset; wm density reset; settings put system accelerometer_rotation 1;");
     }
-
-    public static void setNetPingStabilizer(boolean enabled) {
-        if (enabled) applyUltimateSystemTweaks();
-    }
-
-    public static void setTouchSamplingBoost(boolean enabled, int hz) {}
-    public static void setHzThermalGuard(boolean enabled) {}
-    public static void enableWideHitboxQuantization(boolean enable) {}
-    public static void setAutoGameDpi(boolean enabled, int dpi) {}
 
     public static void setPixelDownscaleFactor(int pct) {
-        if (pct >= 50 && pct < 100) {
-            applyAspectRatioStretch("SHRINK-" + pct);
-        } else if (pct == 100) {
-            resetResolutionToNative();
+        if (!ApiManager.isSessionVerified()) return;
+        pixelDownscalePct = Math.max(50, Math.min(100, pct));
+        if (!isShizukuReady()) return;
+
+        if (pixelDownscalePct >= 100) {
+            execShizukuCommand("wm size reset; wm density reset;");
+        } else {
+            double factor = pixelDownscalePct / 100.0;
+            int w = ((int) Math.round(nativeShortSide * factor) / 2) * 2;
+            int h = ((int) Math.round(nativeLongSide * factor) / 2) * 2;
+            int d = Math.max(160, (int) Math.round(nativeDensityDpi * factor));
+            execShizukuCommand("wm size " + w + "x" + h + "; wm density " + d + ";");
         }
     }
 
+    public static void healTouchAndRestart() {
+        if (!ApiManager.isSessionVerified() || !isShizukuReady()) return;
+        execShizukuCommand(
+                "settings put secure long_press_timeout 250; " +
+                "settings put secure multi_press_timeout 200; " +
+                "settings put system pointer_speed 3; " +
+                "settings put global block_untrusted_touches 0;"
+        );
+    }
+
+    public static void setRawInputNoSmoothing(boolean enabled) {
+        if (!ApiManager.isSessionVerified() || !isShizukuReady()) return;
+        execShizukuCommand(
+                "settings put global window_animation_scale " + (enabled ? "0.0" : "0.5") + "; " +
+                "settings put global transition_animation_scale " + (enabled ? "0.0" : "0.5") + "; " +
+                "settings put global animator_duration_scale " + (enabled ? "0.0" : "0.5") + ";"
+        );
+    }
+
+    public static void setVulkanGpuTurbo(boolean enabled) {
+        if (!ApiManager.isSessionVerified() || !isShizukuReady()) return;
+        execShizukuCommand(
+                "setprop debug.hwui.renderer " + (enabled ? "skiavk" : "opengl") + "; " +
+                "setprop debug.egl.hw 1; " +
+                "setprop debug.sf.latch_unsignaled 1;"
+        );
+    }
+
+    public static void setNetPingStabilizer(boolean enabled) {
+        if (!ApiManager.isSessionVerified() || !isShizukuReady()) return;
+        execShizukuCommand(
+                "settings put global wifi_scan_always_enabled " + (enabled ? "0" : "1") + "; " +
+                "settings put global ble_scan_always_enabled " + (enabled ? "0" : "1") + ";"
+        );
+    }
+
+    public static void setTouchSamplingBoost(boolean enabled, int hz) {
+        if (!ApiManager.isSessionVerified() || !isShizukuReady()) return;
+        execShizukuCommand(
+                "setprop debug.sf.early_phase_offset_ns " + (enabled ? "500000" : "1000000") + "; " +
+                "settings put system peak_refresh_rate " + hz + ".0; " +
+                "settings put system min_refresh_rate " + (enabled ? hz + ".0" : "60.0") + ";"
+        );
+    }
+
+    public static void setHzThermalGuard(boolean enabled) {
+        if (!ApiManager.isSessionVerified() || !isShizukuReady()) return;
+        execShizukuCommand(
+                "settings put system peak_refresh_rate " + (enabled ? "120.0" : "60.0") + "; " +
+                "settings put secure refresh_rate_mode " + (enabled ? "2" : "0") + ";"
+        );
+    }
+
     public static void setEnhancedRecoilFix(boolean enabled, int power) {
-        currentRecoilPower = enabled ? Math.max(20, Math.min(100, power)) : 0;
+        if (!ApiManager.isSessionVerified() || !isShizukuReady()) return;
+        int speed = enabled ? Math.min(7, 2 + (power / 20)) : 0;
+        execShizukuCommand("settings put system pointer_speed " + speed + ";");
     }
 
-    public static String performRamBoost(Context ctx) {
-        ActivityManager am = (ActivityManager) ctx.getSystemService(Context.ACTIVITY_SERVICE);
-        ActivityManager.MemoryInfo mi = new ActivityManager.MemoryInfo();
-        am.getMemoryInfo(mi);
-        long availAfterMb = mi.availMem / (1024 * 1024);
-        long totalMb = mi.totalMem / (1024 * 1024);
-        System.gc();
-        applyUltimateSystemTweaks();
-        return "360|" + availAfterMb + "|" + totalMb;
+    public static void enableWideHitboxQuantization(boolean enabled) {
+        if (!ApiManager.isSessionVerified() || !isShizukuReady()) return;
+        execShizukuCommand("setprop debug.sf.disable_backpressure " + (enabled ? "1" : "0") + ";");
     }
 
-    public static String runSmartDeviceScan(Context ctx) {
-        int shortPx = getNativeShortSide();
-        String tier = isTabletDeviceMode ? "PAD-ULTRA" : (isBudgetDeviceHardware ? "BUDGET-FPS-GUARD" : "ULTRA");
-        return "Android|" + tier + "|" + shortPx;
+    public static void applyShooterOptimizer(
+            int fpsLock, int gpuBoost, int frameTime,
+            int edgeSens, int multiTouch, int netBuffer, int thermalLim
+    ) {
+        if (!ApiManager.isSessionVerified() || !isShizukuReady()) return;
+        execShizukuCommand(
+                "settings put system peak_refresh_rate " + fpsLock + ".0; " +
+                "settings put system min_refresh_rate " + fpsLock + ".0; " +
+                "setprop debug.hwui.renderer skiagl; " +
+                "cmd power set-fixed-performance-mode-enabled true;"
+        );
+    }
+
+    public static String performRamBoost(Context context) {
+        if (!ApiManager.isSessionVerified()) return "NEED_AUTH";
+        try {
+            if (isShizukuReady()) {
+                execShizukuCommand("am kill-all; cmd activity kill-all;");
+            }
+            ActivityManager am = (ActivityManager) context.getSystemService(Context.ACTIVITY_SERVICE);
+            if (am != null) {
+                ActivityManager.MemoryInfo mi = new ActivityManager.MemoryInfo();
+                am.getMemoryInfo(mi);
+                long availMb = mi.availMem / (1024L * 1024L);
+                long totalMb = mi.totalMem / (1024L * 1024L);
+                return "ОЗУ очищено! Свободно: " + availMb + " МБ из " + totalMb + " МБ";
+            }
+        } catch (Throwable ignored) {}
+        return "Кэш фоновых процессов очищен!";
+    }
+
+    public static String runSmartDeviceScan(Context context) {
+        try {
+            return DeviceScanner.scanDeviceSpecs(context);
+        } catch (Throwable t) {
+            return Build.MANUFACTURER + " " + Build.MODEL + " • Android " + Build.VERSION.RELEASE;
+        }
     }
 }
