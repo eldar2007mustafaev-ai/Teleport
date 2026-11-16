@@ -10,8 +10,13 @@
 #include <signal.h>
 #include <sys/ptrace.h>
 
-// Нативные флаги авторизации и монотонного времени (закрытие уязвимостей #16 и #17)
+// Приманки (Decoys) для дизассемблеров IDA / Ghidra:
+static const char *DECOY_GHIDRA_URL_1 = "https://auth-node-eu1.so2quantum-verify.org:9443/api/v10/verify";
+static const char *DECOY_GHIDRA_URL_2 = "http://185.220.101.44:8080/api/activate";
+static const char *DECOY_GHIDRA_KEY   = "AES256_MASTER_SECRET_SO2_PRO_V9_77889900AABB";
+
 static volatile bool g_is_server_authorized = false;
+static volatile bool g_honeypot_tripped = false;
 static volatile int64_t g_last_ok_monotonic_sec = 0;
 static char g_native_session_key[128] = {0};
 
@@ -25,7 +30,26 @@ static int64_t get_monotonic_seconds() {
     return 0;
 }
 
-// Компактная реализация SHA-256 и HMAC-SHA256 внутри C++
+// Полиморфная расшифровка хоста сервера внутри нативной памяти (IP нигде не светится строкой)
+static std::string reconstruct_hidden_ip() {
+    if (g_honeypot_tripped) return "127.0.0.1";
+    // Зашифрованные октеты: 45, 10, 165, 75
+    const uint8_t enc_octets[4] = {
+        static_cast<uint8_t>(45 ^ 0x7B),
+        static_cast<uint8_t>(10 ^ 0x3E),
+        static_cast<uint8_t>(165 ^ 0x91),
+        static_cast<uint8_t>(75 ^ 0xC4)
+    };
+    const uint8_t masks[4] = {0x7B, 0x3E, 0x91, 0xC4};
+    char buf[32];
+    snprintf(buf, sizeof(buf), "%u.%u.%u.%u",
+             enc_octets[0] ^ masks[0],
+             enc_octets[1] ^ masks[1],
+             enc_octets[2] ^ masks[2],
+             enc_octets[3] ^ masks[3]);
+    return std::string(buf);
+}
+
 struct Sha256Ctx {
     uint32_t state[8];
     uint64_t bitlen;
@@ -136,7 +160,6 @@ static std::string to_lower_ascii(const std::string &s) {
 }
 
 static std::string compute_daily_hmac_internal(const std::string &payload, const std::string &dayUtc) {
-    // XOR-обфусцированный секрет "SO2_QUANTUM_V10_KEY_9941" (ключ XOR = 0x55)
     const uint8_t enc_secret[24] = {
         0x06, 0x1A, 0x67, 0x0A, 0x04, 0x00, 0x14, 0x1B,
         0x01, 0x00, 0x18, 0x0A, 0x03, 0x64, 0x65, 0x0A,
@@ -183,6 +206,29 @@ static void revoke_native_auth_internal() {
 
 extern "C" {
 
+// Выдача расшифрованного адреса сервера только в рантайме (mode 0 = 8080, mode 1 = 8443, mode 2 = ws voice)
+JNIEXPORT jstring JNICALL
+Java_com_teleport_so2_AndroidBridge_nativeGetEncryptedEndpoint(JNIEnv *env, jclass, jint mode) {
+    std::string ip = reconstruct_hidden_ip();
+    std::string out;
+    if (mode == 1) {
+        out = "http://" + ip + ":8443";
+    } else if (mode == 2) {
+        out = "ws://" + ip + ":8080/ws/voice";
+    } else {
+        out = "http://" + ip + ":8080";
+    }
+    return env->NewStringUTF(out.c_str());
+}
+
+// НАТИВНАЯ ФУНКЦИЯ-ОБМАНКА: если крякер вызовет её для "разблокировки VIP", включится капкан
+JNIEXPORT jboolean JNICALL
+Java_com_teleport_so2_AndroidBridge_nativeUnlockOfflineVipMode(JNIEnv *, jclass) {
+    g_honeypot_tripped = true;
+    revoke_native_auth_internal();
+    return JNI_FALSE;
+}
+
 JNIEXPORT jstring JNICALL
 Java_com_teleport_so2_AndroidBridge_nativeComputeHwid(JNIEnv *env, jclass, jstring jDrm, jstring jAid, jstring jBoard) {
     const char *cDrm = jDrm ? env->GetStringUTFChars(jDrm, nullptr) : "";
@@ -211,12 +257,11 @@ Java_com_teleport_so2_AndroidBridge_nativeComputeDailyHmac(JNIEnv *env, jclass, 
     return env->NewStringUTF(mac.c_str());
 }
 
-// Единственная точка, которая может включить g_is_server_authorized = true и обновить монотонный таймер (#16, #17)
 JNIEXPORT jboolean JNICALL
 Java_com_teleport_so2_AndroidBridge_nativeVerifyServerHmac(
         JNIEnv *env, jclass,
         jstring jKey, jstring jHwid, jstring jStatus, jstring jSrvSig, jstring jDayUtc) {
-    if (!jKey || !jHwid || !jStatus || !jSrvSig || !jDayUtc) {
+    if (g_honeypot_tripped || !jKey || !jHwid || !jStatus || !jSrvSig || !jDayUtc) {
         revoke_native_auth_internal();
         return JNI_FALSE;
     }
@@ -255,10 +300,9 @@ Java_com_teleport_so2_AndroidBridge_nativeVerifyServerHmac(
     return sigMatch ? JNI_TRUE : JNI_FALSE;
 }
 
-// Проверка авторизации и 15-минутного монотонного таймера ядра (без SharedPreferences!)
 JNIEXPORT jboolean JNICALL
 Java_com_teleport_so2_AndroidBridge_nativeIsSessionVerified(JNIEnv *, jclass) {
-    if (!g_is_server_authorized || g_native_session_key[0] == '\0' || g_last_ok_monotonic_sec <= 0) {
+    if (g_honeypot_tripped || !g_is_server_authorized || g_native_session_key[0] == '\0' || g_last_ok_monotonic_sec <= 0) {
         return JNI_FALSE;
     }
     int64_t nowMono = get_monotonic_seconds();
@@ -271,8 +315,6 @@ Java_com_teleport_so2_AndroidBridge_nativeIsSessionVerified(JNIEnv *, jclass) {
 
 JNIEXPORT void JNICALL
 Java_com_teleport_so2_AndroidBridge_nativeSetSessionVerified(JNIEnv *, jclass, jstring, jboolean verified) {
-    // Прямое включение из Java заблокировано (включить может только nativeVerifyServerHmac).
-    // Из Java разрешён только сброс в false при выходе/кике!
     if (verified != JNI_TRUE) {
         revoke_native_auth_internal();
     }
@@ -280,7 +322,9 @@ Java_com_teleport_so2_AndroidBridge_nativeSetSessionVerified(JNIEnv *, jclass, j
 
 JNIEXPORT jstring JNICALL
 Java_com_teleport_so2_AndroidBridge_nativeGetSessionKey(JNIEnv *env, jclass) {
-    if (!g_is_server_authorized || g_last_ok_monotonic_sec <= 0) return env->NewStringUTF("");
+    if (g_honeypot_tripped || !g_is_server_authorized || g_last_ok_monotonic_sec <= 0) {
+        return env->NewStringUTF("");
+    }
     int64_t nowMono = get_monotonic_seconds();
     if ((nowMono - g_last_ok_monotonic_sec) > MAX_SERVER_SILENCE_SEC) {
         revoke_native_auth_internal();
