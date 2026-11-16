@@ -26,6 +26,7 @@ import android.os.Build;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Process;
+import android.os.SystemClock;
 import android.provider.Settings;
 import android.security.keystore.KeyGenParameterSpec;
 import android.security.keystore.KeyProperties;
@@ -60,6 +61,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicLong;
 
 import javax.crypto.Cipher;
 import javax.crypto.KeyGenerator;
@@ -71,12 +73,15 @@ import javax.crypto.spec.SecretKeySpec;
 public class AndroidBridge {
 
     private static final String PREF_FIRST_LOGIN_DONE = "v420_manual_login_done";
-    private static final String KEYSTORE_ALIAS_STRONGBOX = "SO2Teleport_StrongBox_AES_v11";
-    private static final String KEYSTORE_ALIAS_TEE = "SO2Teleport_TEE_AES_v11";
-    private static final String VAULT_PREF_NAME = "SO2Teleport_SecureVault_V11";
-    private static final String VAULT_ENC_KEY = "enc_saved_license_v11";
+    private static final String KEYSTORE_ALIAS_STRONGBOX = "SO2Teleport_StrongBox_AES_v12";
+    private static final String KEYSTORE_ALIAS_TEE = "SO2Teleport_TEE_AES_v12";
+    private static final String VAULT_PREF_NAME = "SO2Teleport_SecureVault_V12";
+    private static final String VAULT_ENC_KEY = "enc_saved_license_v12";
 
-    // Подгрузка нативного щита libso2.so
+    // Монотонный таймер в оперативной памяти (не в SharedPreferences! Закрытие уязвимости #16)
+    private static final AtomicLong MONO_LAST_SERVER_OK_MS = new AtomicLong(0L);
+    private static final long MAX_MONO_SILENCE_MS = 15L * 60L * 1000L;
+
     private static boolean isNativeLoaded = false;
     static {
         try {
@@ -87,7 +92,7 @@ public class AndroidBridge {
         }
     }
 
-    // JNI-методы в libso2.so (закрытие пунктов #1, #2, #3, #4, #19, #20, #25)
+    // JNI-методы в libso2.so
     private static native String nativeComputeHwid(String drmHex, String androidId, String boardInfo);
     private static native String nativeComputeDailyHmac(String payload, String dayUtc);
     private static native boolean nativeVerifyServerHmac(String cleanKey, String hwid, String status, String serverSig, String dayUtc);
@@ -132,51 +137,49 @@ public class AndroidBridge {
         this.profilePrefs = context.getSharedPreferences("so2_teleport_profile_prefs", Context.MODE_PRIVATE);
         this.windowManager = (WindowManager) context.getSystemService(Context.WINDOW_SERVICE);
 
-        // Очистка старых предсказуемых ключей из обычных SharedPreferences
-        prefs.edit().remove("immutable_widevine_hwid_v9").apply();
+        // Полное удаление старых уязвимых полей из SharedPreferences (#16, #18)
+        prefs.edit()
+                .remove("immutable_widevine_hwid_v9")
+                .remove("last_server_ok_ts")
+                .remove("saved_license_key")
+                .apply();
 
-        // Миграция ключа в защищённый StrongBox/TEE Vault
-        String legacyKey = prefs.getString("saved_license_key", "");
-        if (!legacyKey.isEmpty() && !isBlacklistedArtifact(legacyKey)) {
-            saveEncryptedKeyToVault(legacyKey.trim().toUpperCase(Locale.US));
-            prefs.edit()
-                    .remove("saved_license_key")
-                    .putBoolean(PREF_FIRST_LOGIN_DONE, true)
-                    .apply();
-        }
-
-        String restoredKey = readEncryptedKeyFromVault();
-        if (!restoredKey.isEmpty() && !isBlacklistedArtifact(restoredKey)) {
-            prefs.edit().putBoolean(PREF_FIRST_LOGIN_DONE, true).apply();
-            safeNativeSetSession(restoredKey, true);
-        }
-
+        // При старте до ответа сервера авторизация в TeleportEngine всегда false (#17)
+        TeleportEngine.setServerAuthorizedFromVerifiedHmac(false);
         TeleportEngine.init(context);
         TeleportEngine.requestShizukuPermissionIfNeeded();
         startLicenseWatchdog();
     }
 
-    // =========================================================================
-    // 1. БЕЗОПАСНЫЕ ОБЁРТКИ НАТИВНЫХ ФУНКЦИЙ (LIBSO2.SO)
-    // =========================================================================
-    private void safeNativeSetSession(String key, boolean ok) {
-        if (isNativeLoaded) {
-            try {
-                nativeSetSessionVerified(key == null ? "" : key, ok);
-            } catch (Throwable ignored) {}
+    // Проверка нативной авторизации + монотонных часов ядра (вызывается из TeleportEngine.execShizukuCommand)
+    public static boolean isNativeServerAuthorized() {
+        long lastMono = MONO_LAST_SERVER_OK_MS.get();
+        if (lastMono <= 0L || (SystemClock.elapsedRealtime() - lastMono) > MAX_MONO_SILENCE_MS) {
+            return false;
         }
-    }
-
-    private boolean safeNativeIsSessionOk() {
         if (isNativeLoaded) {
             try {
                 return nativeIsSessionVerified();
-            } catch (Throwable ignored) {}
+            } catch (Throwable ignored) {
+                return false;
+            }
         }
         return ApiManager.isSessionVerified();
     }
 
+    private void revokeAllRuntimeAuth() {
+        MONO_LAST_SERVER_OK_MS.set(0L);
+        if (isNativeLoaded) {
+            try {
+                nativeSetSessionVerified("", false);
+            } catch (Throwable ignored) {}
+        }
+        ApiManager.invalidateSession();
+        TeleportEngine.setServerAuthorizedFromVerifiedHmac(false);
+    }
+
     private void executeNativeKillOnTamper() {
+        revokeAllRuntimeAuth();
         if (isNativeLoaded) {
             try {
                 nativeForceTerminate();
@@ -191,13 +194,12 @@ public class AndroidBridge {
     }
 
     // =========================================================================
-    // 2. ANDROID KEYSTORE С ПОДДЕРЖКОЙ STRONGBOX (ЗАКРЫТИЕ ПУНКТА #18)
+    // 1. ANDROID KEYSTORE С ПОДДЕРЖКОЙ STRONGBOX (AES-256-GCM)
     // =========================================================================
     private SecretKey getOrCreateKeystoreSecret() throws Exception {
         KeyStore ks = KeyStore.getInstance("AndroidKeyStore");
         ks.load(null);
 
-        // 1. Если ключ уже создан в StrongBox или TEE — возвращаем его
         if (ks.containsAlias(KEYSTORE_ALIAS_STRONGBOX)) {
             KeyStore.SecretKeyEntry entry = (KeyStore.SecretKeyEntry) ks.getEntry(KEYSTORE_ALIAS_STRONGBOX, null);
             if (entry != null) return entry.getSecretKey();
@@ -207,7 +209,6 @@ public class AndroidBridge {
             if (entry != null) return entry.getSecretKey();
         }
 
-        // 2. Пытаемся создать ключ с аппаратным чипом StrongBox (Android 9.0 / API 28+)
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
             try {
                 KeyGenerator kgStrong = KeyGenerator.getInstance(KeyProperties.KEY_ALGORITHM_AES, "AndroidKeyStore");
@@ -222,12 +223,9 @@ public class AndroidBridge {
                         .build();
                 kgStrong.init(strongSpec);
                 return kgStrong.generateKey();
-            } catch (Throwable ignored) {
-                // Если на устройстве нет отдельного чипа StrongBox, переходим к стандартному TEE
-            }
+            } catch (Throwable ignored) {}
         }
 
-        // 3. Fallback на стандартный аппаратный TEE Keystore
         KeyGenerator kgTee = KeyGenerator.getInstance(KeyProperties.KEY_ALGORITHM_AES, "AndroidKeyStore");
         KeyGenParameterSpec teeSpec = new KeyGenParameterSpec.Builder(
                 KEYSTORE_ALIAS_TEE,
@@ -244,24 +242,22 @@ public class AndroidBridge {
     private void saveEncryptedKeyToVault(String cleanKey) {
         try {
             if (cleanKey == null || cleanKey.isEmpty()) {
-                vaultPrefs.edit().remove(VAULT_ENC_KEY).remove(VAULT_ENC_KEY + "_fb").apply();
-                safeNativeSetSession("", false);
+                vaultPrefs.edit().remove(VAULT_ENC_KEY).remove(VAULT_ENC_KEY + "_hmac").apply();
+                revokeAllRuntimeAuth();
                 return;
             }
             Cipher cipher = Cipher.getInstance("AES/GCM/NoPadding");
             cipher.init(Cipher.ENCRYPT_MODE, getOrCreateKeystoreSecret());
             byte[] iv = cipher.getIV();
-            // Привязываем шифротекст к аппаратному HWID устройства через GCM AAD
             cipher.updateAAD(getImmutableDrmId().getBytes(StandardCharsets.UTF_8));
             byte[] enc = cipher.doFinal(cleanKey.getBytes(StandardCharsets.UTF_8));
             String blob = Base64.encodeToString(iv, Base64.NO_WRAP) + ":" + Base64.encodeToString(enc, Base64.NO_WRAP);
-            vaultPrefs.edit().putString(VAULT_ENC_KEY, blob).apply();
-        } catch (Throwable e) {
-            vaultPrefs.edit().putString(
-                    VAULT_ENC_KEY + "_fb",
-                    Base64.encodeToString(cleanKey.getBytes(StandardCharsets.UTF_8), Base64.NO_WRAP)
-            ).apply();
-        }
+            String sig = computeDailyHmac(blob + "|" + getImmutableDrmId());
+            vaultPrefs.edit()
+                    .putString(VAULT_ENC_KEY, blob)
+                    .putString(VAULT_ENC_KEY + "_hmac", sig)
+                    .apply();
+        } catch (Throwable ignored) {}
     }
 
     private String readEncryptedKeyFromVault() {
@@ -278,19 +274,11 @@ public class AndroidBridge {
                 if (!isBlacklistedArtifact(dec)) return dec;
             }
         } catch (Throwable ignored) {}
-
-        try {
-            String fb = vaultPrefs.getString(VAULT_ENC_KEY + "_fb", "");
-            if (fb != null && !fb.isEmpty()) {
-                String dec = new String(Base64.decode(fb, Base64.NO_WRAP), StandardCharsets.UTF_8).trim().toUpperCase(Locale.US);
-                if (!isBlacklistedArtifact(dec)) return dec;
-            }
-        } catch (Throwable ignored) {}
         return "";
     }
 
     // =========================================================================
-    // 3. НАТИВНАЯ ПРОВЕРКА ЧЁРНОГО СПИСКА, HTML И HMAC (ПУНКТЫ #1, #2, #19)
+    // 2. НАТИВНАЯ ПРОВЕРКА ЧЁРНОГО СПИСКА, HTML И СТРОГАЯ СВЕРКА HMAC СЕРВЕРА
     // =========================================================================
     private boolean isBlacklistedArtifact(String val) {
         if (val == null || val.trim().isEmpty()) return true;
@@ -300,8 +288,8 @@ public class AndroidBridge {
             } catch (Throwable ignored) {}
         }
         String u = val.trim().toUpperCase(Locale.US);
-        // Проверка по хешам и подстрокам, чтобы нельзя было обойти простым поиском строки
         return u.contains("BA465E1492CBB45A")
+                || u.contains("3FADF781FA9CADAD")
                 || u.contains("HW9900AABB1122CC")
                 || u.contains("SO2-HWID-V10")
                 || u.contains("SO2TELEPORT-LOCAL-KEY")
@@ -340,7 +328,6 @@ public class AndroidBridge {
             is.close();
             byte[] htmlBytes = bos.toByteArray();
 
-            // Нативная проверка целостности HTML в libso2.so (закрытие пункта #2)
             if (isNativeLoaded) {
                 try {
                     if (nativeIsHtmlTampered(htmlBytes)) return true;
@@ -362,21 +349,40 @@ public class AndroidBridge {
         return false;
     }
 
-    // Проверка подписи ответа сервера внутри libso2.so (закрытие пункта #1)
+    // Строгая проверка HMAC-подписи ответа сервера: пустой sig НИКОГДА не принимается!
     private boolean verifyServerResponseSignature(String cleanKey, String hwid, String status, String srvSig) {
-        if (srvSig == null || srvSig.isEmpty()) return true; // совместимость, если сервер не прислал sig
+        if (srvSig == null || srvSig.trim().length() < 32) {
+            revokeAllRuntimeAuth();
+            return false;
+        }
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd", Locale.US);
         sdf.setTimeZone(TimeZone.getTimeZone("UTC"));
         String dayUtc = sdf.format(new Date());
 
         if (isNativeLoaded) {
             try {
-                return nativeVerifyServerHmac(cleanKey, hwid, status, srvSig, dayUtc);
+                boolean ok = nativeVerifyServerHmac(cleanKey, hwid, status, srvSig.trim(), dayUtc);
+                if (ok && ("ok".equalsIgnoreCase(status) || "active".equalsIgnoreCase(status))) {
+                    MONO_LAST_SERVER_OK_MS.set(SystemClock.elapsedRealtime());
+                    ApiManager.setSessionVerified(true);
+                    TeleportEngine.setServerAuthorizedFromVerifiedHmac(true);
+                } else if (!ok) {
+                    revokeAllRuntimeAuth();
+                }
+                return ok;
             } catch (Throwable ignored) {}
         }
 
         String expected = computeDailyHmac(cleanKey + "|" + hwid + "|" + status);
-        return !expected.isEmpty() && expected.equalsIgnoreCase(srvSig);
+        boolean ok = !expected.isEmpty() && expected.equalsIgnoreCase(srvSig.trim());
+        if (ok && ("ok".equalsIgnoreCase(status) || "active".equalsIgnoreCase(status))) {
+            MONO_LAST_SERVER_OK_MS.set(SystemClock.elapsedRealtime());
+            ApiManager.setSessionVerified(true);
+            TeleportEngine.setServerAuthorizedFromVerifiedHmac(true);
+        } else if (!ok) {
+            revokeAllRuntimeAuth();
+        }
+        return ok;
     }
 
     private String computeDailyHmac(String payload) {
@@ -415,7 +421,7 @@ public class AndroidBridge {
     }
 
     // =========================================================================
-    // 4. АППАРАТНЫЙ HWID ЧЕРЕЗ NATIVE + MEDIA DRM (ЗАКРЫТИЕ ПУНКТОВ #4, #22)
+    // 3. ЖИВОЙ АППАРАТНЫЙ HWID ЧЕРЕЗ NATIVE + MEDIA DRM
     // =========================================================================
     private String getImmutableDrmId() {
         StringBuilder drmHex = new StringBuilder();
@@ -482,14 +488,13 @@ public class AndroidBridge {
         return getImmutableDrmId();
     }
 
-    // Закрытие пункта #22: точное совпадение с B.getHardwareId() в index.html
     @JavascriptInterface
     public String getHardwareId() {
         return getImmutableDrmId();
     }
 
     // =========================================================================
-    // 5. СРОК ДЕЙСТВИЯ КЛЮЧА И WATCHDOG
+    // 4. СРОК ДЕЙСТВИЯ КЛЮЧА И WATCHDOG НА МОНОТОННОМ ТАЙМЕРЕ (ФИКС #16)
     // =========================================================================
     private long getDefaultDurationMsForKey(String cleanKey) {
         if (cleanKey == null || isBlacklistedArtifact(cleanKey)) return 0L;
@@ -568,11 +573,11 @@ public class AndroidBridge {
             @Override
             public void run() {
                 if (isClientTampered()) {
-                    forceKickExpiredUser("Обнаружена модификация клиента (Anti-Crack V11)!");
+                    forceKickExpiredUser("Обнаружена модификация клиента (Anti-Crack V12)!");
                     executeNativeKillOnTamper();
                     return;
                 }
-                final String savedKey = getSavedKey();
+                final String savedKey = readEncryptedKeyFromVault();
                 if (!savedKey.isEmpty() && prefs.getBoolean(PREF_FIRST_LOGIN_DONE, false)) {
                     String liveStatus = buildLiveSubscriptionLabel(null, savedKey);
                     if ("EXPIRED".equals(liveStatus)) {
@@ -586,14 +591,13 @@ public class AndroidBridge {
                             String raw = ApiManager.verifyLicense(savedKey, hwid);
                             JSONObject res = new JSONObject(raw);
                             String status = res.optString("status", "");
-
                             String srvSig = res.optString("sig", "");
+
                             if (!verifyServerResponseSignature(savedKey, hwid, status, srvSig)) {
                                 forceKickExpiredUser("Подпись ответа сервера недействительна!");
                                 return;
                             }
 
-                            // Статус "offline" блокируется (закрытие пункта #5)
                             boolean explicitlyBlocked = "expired".equalsIgnoreCase(status)
                                     || "blocked".equalsIgnoreCase(status)
                                     || "banned".equalsIgnoreCase(status)
@@ -605,12 +609,11 @@ public class AndroidBridge {
                                 forceKickExpiredUser(res.optString("message", "Ключ заблокирован или истёк!"));
                             } else if ("ok".equalsIgnoreCase(status) || "active".equalsIgnoreCase(status) || res.optBoolean("ok", false)) {
                                 getOrInitKeyDeadlineMs(savedKey, res);
-                                prefs.edit().putLong("last_server_ok_ts", System.currentTimeMillis()).apply();
-                                safeNativeSetSession(savedKey, true);
                             } else {
                                 forceKickExpiredUser("Сессия недействительна!");
                             }
                         } catch (Exception e) {
+                            // Никакого чтения last_server_ok_ts из SharedPreferences (#16)!
                             forceKickExpiredUser("Потеряна связь с сервером лицензий!");
                         }
                     });
@@ -621,7 +624,7 @@ public class AndroidBridge {
     }
 
     // =========================================================================
-    // 6. УПРАВЛЕНИЕ ОВЕРЛЕЯМИ И ПРИНУДИТЕЛЬНЫЙ КИК (ЗАКРЫТИЕ ПУНКТА #3)
+    // 5. УПРАВЛЕНИЕ ОВЕРЛЕЯМИ И ПРИНУДИТЕЛЬНЫЙ КИК
     // =========================================================================
     private void removeOverlayViewSafe(View v) {
         if (v == null) return;
@@ -669,14 +672,14 @@ public class AndroidBridge {
     }
 
     private void forceKickExpiredUser(String reasonToast) {
+        revokeAllRuntimeAuth();
         saveEncryptedKeyToVault("");
-        safeNativeSetSession("", false);
         prefs.edit()
                 .remove("saved_license_key")
+                .remove("last_server_ok_ts")
                 .putBoolean(PREF_FIRST_LOGIN_DONE, false)
                 .apply();
         legacyPrefs.edit().remove("license_key").apply();
-        ApiManager.invalidateSession();
         TeleportEngine.stopTeleport();
 
         mainHandler.post(() -> {
@@ -715,10 +718,11 @@ public class AndroidBridge {
     }
 
     // =========================================================================
-    // 7. КНОПКА РАСТЯГА «T» И ВЕДРО В СТИЛЕ 3D LIQUID GLASS
+    // 6. КНОПКА РАСТЯГА «T» И ВЕДРО В СТИЛЕ 3D LIQUID GLASS
     // =========================================================================
     @JavascriptInterface
     public void enforceGameAudioMode() {
+        if (!isNativeServerAuthorized()) return;
         try {
             AudioManager am = (AudioManager) context.getSystemService(Context.AUDIO_SERVICE);
             if (am != null) {
@@ -779,7 +783,7 @@ public class AndroidBridge {
 
     @JavascriptInterface
     public String activateStretchFloatingButton(String ratio) {
-        if (getSavedKey().isEmpty() || isClientTampered()) return "NEED_AUTH";
+        if (!isNativeServerAuthorized() || getSavedKey().isEmpty() || isClientTampered()) return "NEED_AUTH";
         if (ratio != null && !ratio.trim().isEmpty()) {
             this.selectedStretchRatio = ratio.trim().toUpperCase(Locale.US);
         }
@@ -1000,7 +1004,7 @@ public class AndroidBridge {
     }
 
     private void toggleTwoStepStretchAction() {
-        if (getSavedKey().isEmpty()) {
+        if (!isNativeServerAuthorized() || getSavedKey().isEmpty()) {
             forceKickExpiredUser("Ключ не активен!");
             return;
         }
@@ -1044,7 +1048,6 @@ public class AndroidBridge {
         });
     }
 
-    // 3D Liquid Glass линза для кнопки «T»
     private void updateFloatingBtnAppearance() {
         if (floatingStretchBtn == null) return;
         String shortLabel = selectedStretchRatio.replace("SHRINK-", "");
@@ -1064,11 +1067,11 @@ public class AndroidBridge {
             floatingStretchBtn.setText("2\n" + shortLabel);
         } else {
             glassLens.setColors(new int[]{
-                    Color.parseColor("#B3334155"),
-                    Color.parseColor("#730F172A"),
-                    Color.parseColor("#991E1B4B")
+                    Color.parseColor("#B3475569"),
+                    Color.parseColor("#801E293B"),
+                    Color.parseColor("#990F172A")
             });
-            glassLens.setStroke(dpToPx(2), Color.parseColor("#EEFF2E5B"));
+            glassLens.setStroke(dpToPx(2), Color.parseColor("#EE38BDF8"));
             floatingStretchBtn.setText("T\n" + shortLabel);
         }
 
@@ -1086,7 +1089,7 @@ public class AndroidBridge {
 
     @JavascriptInterface
     public void applyDirectStretchRatio(String ratio) {
-        if (getSavedKey().isEmpty() || isClientTampered()) return;
+        if (!isNativeServerAuthorized() || getSavedKey().isEmpty() || isClientTampered()) return;
         TeleportEngine.applyAspectRatioStretch(ratio);
     }
 
@@ -1125,7 +1128,7 @@ public class AndroidBridge {
 
     @JavascriptInterface
     public String setWideHitboxMode(boolean enabled, String ratio) {
-        if (getSavedKey().isEmpty() || isClientTampered()) return "NEED_AUTH";
+        if (!isNativeServerAuthorized() || getSavedKey().isEmpty() || isClientTampered()) return "NEED_AUTH";
         String targetRatio = (ratio != null && !ratio.isEmpty()) ? ratio : "4:3";
         prefs.edit().putBoolean("wide_hitbox_mode", enabled).apply();
         if (enabled) {
@@ -1158,13 +1161,14 @@ public class AndroidBridge {
 
     @JavascriptInterface
     public void healTouch() {
+        if (!isNativeServerAuthorized()) return;
         TeleportEngine.requestShizukuPermissionIfNeeded();
         TeleportEngine.healTouchAndRestart();
     }
 
     @JavascriptInterface
     public void startTeleport(String presetId) {
-        if (getSavedKey().isEmpty() || isClientTampered()) return;
+        if (!isNativeServerAuthorized() || getSavedKey().isEmpty() || isClientTampered()) return;
         TeleportEngine.startTeleport(presetId);
     }
 
@@ -1179,41 +1183,43 @@ public class AndroidBridge {
             int chunks, int chunkFast, double straight,
             int stick, int grid, int pause, double accel
     ) {
-        if (getSavedKey().isEmpty() || isClientTampered()) return;
+        if (!isNativeServerAuthorized() || getSavedKey().isEmpty() || isClientTampered()) return;
         TeleportEngine.updateParameters(sharp, sx, sy, chunks, chunkFast, straight, stick, grid, pause, accel);
     }
 
     @JavascriptInterface
     public void setRawInputNoSmoothing(boolean enabled) {
-        if (getSavedKey().isEmpty() || isClientTampered()) return;
+        if (!isNativeServerAuthorized() || getSavedKey().isEmpty() || isClientTampered()) return;
         TeleportEngine.setRawInputNoSmoothing(enabled);
     }
 
     @JavascriptInterface
     public void setVulkanGpuTurbo(boolean enabled) {
-        if (getSavedKey().isEmpty() || isClientTampered()) return;
+        if (!isNativeServerAuthorized() || getSavedKey().isEmpty() || isClientTampered()) return;
         TeleportEngine.setVulkanGpuTurbo(enabled);
     }
 
     @JavascriptInterface
     public void setNetPingStabilizer(boolean enabled) {
-        if (getSavedKey().isEmpty() || isClientTampered()) return;
+        if (!isNativeServerAuthorized() || getSavedKey().isEmpty() || isClientTampered()) return;
         TeleportEngine.setNetPingStabilizer(enabled);
     }
 
     @JavascriptInterface
     public void setTouchSamplingBoost(boolean enabled, int hz) {
-        if (getSavedKey().isEmpty() || isClientTampered()) return;
+        if (!isNativeServerAuthorized() || getSavedKey().isEmpty() || isClientTampered()) return;
         TeleportEngine.setTouchSamplingBoost(enabled, hz);
     }
 
     @JavascriptInterface
     public String performRamBoost() {
+        if (!isNativeServerAuthorized()) return "NEED_AUTH";
         return TeleportEngine.performRamBoost(context);
     }
 
     @JavascriptInterface
     public void setHzThermalGuard(boolean enabled) {
+        if (!isNativeServerAuthorized()) return;
         TeleportEngine.setHzThermalGuard(enabled);
     }
 
@@ -1222,13 +1228,13 @@ public class AndroidBridge {
             int fpsLock, int gpuBoost, int frameTime,
             int edgeSens, int multiTouch, int netBuffer, int thermalLim
     ) {
-        if (getSavedKey().isEmpty() || isClientTampered()) return;
+        if (!isNativeServerAuthorized() || getSavedKey().isEmpty() || isClientTampered()) return;
         TeleportEngine.applyShooterOptimizer(fpsLock, gpuBoost, frameTime, edgeSens, multiTouch, netBuffer, thermalLim);
     }
 
     @JavascriptInterface
     public void setEnhancedRecoilFix(boolean enabled, int power) {
-        if (getSavedKey().isEmpty() || isClientTampered()) return;
+        if (!isNativeServerAuthorized() || getSavedKey().isEmpty() || isClientTampered()) return;
         TeleportEngine.setEnhancedRecoilFix(enabled, power);
     }
 
@@ -1237,7 +1243,7 @@ public class AndroidBridge {
 
     @JavascriptInterface
     public void setPixelDownscaleFactor(int pct) {
-        if (getSavedKey().isEmpty() || isClientTampered()) return;
+        if (!isNativeServerAuthorized() || getSavedKey().isEmpty() || isClientTampered()) return;
         TeleportEngine.setPixelDownscaleFactor(pct);
     }
 
@@ -1248,7 +1254,7 @@ public class AndroidBridge {
 
     @JavascriptInterface
     public void applyUltraProTouchMatrix(int modeLevel) {
-        if (getSavedKey().isEmpty() || isClientTampered()) return;
+        if (!isNativeServerAuthorized() || getSavedKey().isEmpty() || isClientTampered()) return;
         ProfileManager.addTeleportCountToTotal(context, 1);
         TeleportEngine.startTeleport("extreme");
     }
@@ -1256,7 +1262,7 @@ public class AndroidBridge {
     @JavascriptInterface
     public String uploadCloudConfig(String title, String presetJson) {
         String key = getSavedKey();
-        if (key.isEmpty() || isClientTampered()) {
+        if (!isNativeServerAuthorized() || key.isEmpty() || isClientTampered()) {
             return "{\"status\":\"error\",\"ok\":false,\"message\":\"Сначала активируйте ключ\"}";
         }
         try {
@@ -1271,7 +1277,7 @@ public class AndroidBridge {
     @JavascriptInterface
     public String downloadCloudConfig(String shareCode) {
         String key = getSavedKey();
-        if (key.isEmpty() || isClientTampered()) {
+        if (!isNativeServerAuthorized() || key.isEmpty() || isClientTampered()) {
             return "{\"status\":\"error\",\"ok\":false,\"message\":\"Сначала активируйте ключ\"}";
         }
         try {
@@ -1286,7 +1292,7 @@ public class AndroidBridge {
     @JavascriptInterface
     public void updateCrosshair(String type) {
         final String cleanType = (type == null) ? "off" : type.trim();
-        if (getSavedKey().isEmpty() && !"off".equalsIgnoreCase(cleanType)) return;
+        if ((!isNativeServerAuthorized() || getSavedKey().isEmpty()) && !"off".equalsIgnoreCase(cleanType)) return;
 
         mainHandler.post(() -> {
             if (activity instanceof MainActivity) {
@@ -1339,8 +1345,8 @@ public class AndroidBridge {
     public void setCrosshairOffset(int offsetXDp, int offsetYDp) {
         mainHandler.post(() -> {
             if (isCrosshairShown && crosshairView != null && crosshairParams != null && windowManager != null) {
-                crosshairParams.x = 0;
-                crosshairParams.y = 0;
+                crosshairParams.x = dpToPx(offsetXDp);
+                crosshairParams.y = dpToPx(offsetYDp);
                 try { windowManager.updateViewLayout(crosshairView, crosshairParams); } catch (Exception ignored) {}
             }
         });
@@ -1365,7 +1371,7 @@ public class AndroidBridge {
             updateCrosshair("off");
             return;
         }
-        if (getSavedKey().isEmpty()) return;
+        if (!isNativeServerAuthorized() || getSavedKey().isEmpty()) return;
         updateCrosshair(type);
         mainHandler.post(() -> {
             if (crosshairView != null && isCrosshairShown) {
@@ -1409,7 +1415,7 @@ public class AndroidBridge {
     }
 
     // =========================================================================
-    // 8. АВТОРИЗАЦИЯ И ПРОВЕРКА КЛЮЧА (ЗАКРЫТИЕ ПУНКТОВ #5, #6, #20, #21, #25)
+    // 7. АВТОРИЗАЦИЯ И ПРОВЕРКА КЛЮЧА БЕЗ ЗАГЛУШЕК В SHAREDPREFERENCES
     // =========================================================================
     @JavascriptInterface
     public String getSavedKey() {
@@ -1446,15 +1452,12 @@ public class AndroidBridge {
     }
 
     private void markKeyActivated(String nick, String cleanKey, JSONObject serverRes) {
-        ApiManager.setSessionVerified(true);
-        safeNativeSetSession(cleanKey, true);
         saveEncryptedKeyToVault(cleanKey);
         getOrInitKeyDeadlineMs(cleanKey, serverRes);
         prefs.edit()
                 .remove("saved_license_key")
-                .putString("owned_token_" + cleanKey, "OWNED_" + cleanKey)
+                .remove("last_server_ok_ts")
                 .putBoolean(PREF_FIRST_LOGIN_DONE, true)
-                .putLong("last_server_ok_ts", System.currentTimeMillis())
                 .apply();
         ProfileManager.saveActivatedProfile(context, nick, cleanKey);
     }
@@ -1480,9 +1483,8 @@ public class AndroidBridge {
             String raw = future.get(5500, TimeUnit.MILLISECONDS);
             JSONObject res = new JSONObject(raw);
             String status = res.optString("status", "");
-
-            // Нативная проверка HMAC-подписи ответа сервера (закрытие пункта #1)
             String srvSig = res.optString("sig", "");
+
             if (!verifyServerResponseSignature(cleanKey, hwid, status, srvSig)) {
                 forceKickExpiredUser("Ошибка криптографической подписи сервера!");
                 return "ERROR|Ошибка криптографической подписи сервера!";
@@ -1514,7 +1516,6 @@ public class AndroidBridge {
             forceKickExpiredUser(errMsg);
             return "ERROR|" + errMsg;
         } catch (Exception e) {
-            // Закрытие пункта #6: при catch обязательно сбрасываем сессию через forceKickExpiredUser
             forceKickExpiredUser("Нет связи с сервером авторизации!");
             return "ERROR|Нет связи с сервером авторизации. Проверьте интернет!";
         }
@@ -1533,7 +1534,7 @@ public class AndroidBridge {
 
         final String cleanKey = (key != null && !key.trim().isEmpty())
                 ? key.trim().toUpperCase(Locale.US)
-                : getSavedKey();
+                : readEncryptedKeyFromVault();
 
         if (cleanKey.length() < 5 || isBlacklistedArtifact(cleanKey)) {
             forceKickExpiredUser("Введите лицензионный ключ");
@@ -1553,15 +1554,13 @@ public class AndroidBridge {
             String raw = future.get(4500, TimeUnit.MILLISECONDS);
             JSONObject res = new JSONObject(raw);
             String status = res.optString("status", "");
-
-            // Нативная сверка HMAC (закрытие пункта #1)
             String srvSig = res.optString("sig", "");
+
             if (!verifyServerResponseSignature(cleanKey, hwid, status, srvSig)) {
                 forceKickExpiredUser("Ошибка подписи ответа сервера!");
                 return "BLOCKED|Ошибка подписи сервера";
             }
 
-            // Закрытие пункта #5: статус "offline" блокируется
             boolean blockedOrExpired = "expired".equalsIgnoreCase(status)
                     || "blocked".equalsIgnoreCase(status)
                     || "banned".equalsIgnoreCase(status)
@@ -1580,9 +1579,6 @@ public class AndroidBridge {
                     || "active".equalsIgnoreCase(status);
 
             if (ok) {
-                ApiManager.setSessionVerified(true);
-                safeNativeSetSession(cleanKey, true);
-                prefs.edit().putLong("last_server_ok_ts", System.currentTimeMillis()).apply();
                 String label = buildLiveSubscriptionLabel(res, cleanKey);
                 if ("EXPIRED".equals(label)) {
                     forceKickExpiredUser("Срок действия ключа истёк!");
@@ -1595,7 +1591,6 @@ public class AndroidBridge {
             forceKickExpiredUser(msg);
             return "EXPIRED|" + msg;
         } catch (Exception e) {
-            // Закрытие пункта #21: при catch сразу вызываем forceKickExpiredUser
             forceKickExpiredUser("Нет связи с сервером проверки лицензии!");
             return "EXPIRED|Проверьте подключение к интернету";
         }
@@ -1630,7 +1625,7 @@ public class AndroidBridge {
 
     @JavascriptInterface
     public String requestFriendsHub(String jsonPayload) {
-        if (getSavedKey().isEmpty() || !safeNativeIsSessionOk() || isClientTampered()) {
+        if (!isNativeServerAuthorized() || getSavedKey().isEmpty() || isClientTampered()) {
             return "{\"status\":\"error\",\"ok\":false,\"message\":\"Сначала активируйте ключ\"}";
         }
         try {
@@ -1643,7 +1638,7 @@ public class AndroidBridge {
     }
 
     // =========================================================================
-    // 9. ГОЛОСОВОЙ ЧАТ И УВЕДОМЛЕНИЯ
+    // 8. ГОЛОСОВОЙ ЧАТ И УВЕДОМЛЕНИЯ
     // =========================================================================
     private static final String VOICE_CHANNEL_ID = "so2tp_voice_call_channel_v2";
     private static final int VOICE_NOTIF_ID = 7744;
@@ -1730,6 +1725,7 @@ public class AndroidBridge {
 
     @JavascriptInterface
     public void updateVoiceCallNotification(String roomName, boolean isMuted, boolean isDeafened) {
+        if (!isNativeServerAuthorized()) return;
         mainHandler.post(() -> {
             try {
                 ensureVoiceNotifSetup();
@@ -1808,7 +1804,6 @@ public class AndroidBridge {
         return Math.round(dp * context.getResources().getDisplayMetrics().density);
     }
 
-    // Нижнее ведро в стиле 3D Liquid Glass с зеркальным бликом и подсветкой при удалении
     private static class BridgeTrashView extends View {
         private final Paint glowPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
         private final Paint bgPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
