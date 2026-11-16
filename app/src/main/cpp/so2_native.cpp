@@ -1,5 +1,4 @@
 #include <jni.h>
-#include <stdint.h>
 #include <string>
 #include <vector>
 #include <cstring>
@@ -9,45 +8,46 @@
 #include <ctime>
 #include <unistd.h>
 #include <signal.h>
-#include <sys/ptrace.h>
-
-// Приманки (Decoys) для дизассемблеров IDA / Ghidra:
-static const char *DECOY_GHIDRA_URL_1 = "https://auth-node-eu1.so2quantum-verify.org:9443/api/v10/verify";
-static const char *DECOY_GHIDRA_URL_2 = "http://185.220.101.44:8080/api/activate";
-static const char *DECOY_GHIDRA_KEY   = "AES256_MASTER_SECRET_SO2_PRO_V9_77889900AABB";
+#include <sys/system_properties.h>
 
 static volatile bool g_is_server_authorized = false;
 static volatile bool g_honeypot_tripped = false;
 static volatile int64_t g_last_ok_monotonic_sec = 0;
 static char g_native_session_key[128] = {0};
 
-static const int64_t MAX_SERVER_SILENCE_SEC = 900; // 15 минут по монотонным часам ядра
+static const int64_t MAX_SERVER_SILENCE_SEC = 900; // 15 минут по часам ядра CLOCK_MONOTONIC
 
 static int64_t get_monotonic_seconds() {
     struct timespec ts{};
     if (clock_gettime(CLOCK_MONOTONIC, &ts) == 0) {
         return static_cast<int64_t>(ts.tv_sec);
     }
-    return 0;
+    return -1;
 }
 
-// Полиморфная расшифровка хоста сервера внутри нативной памяти (IP нигде не светится строкой)
+static std::string get_sys_prop(const char *name) {
+    char value[PROP_VALUE_MAX] = {0};
+    if (__system_property_get(name, value) > 0) {
+        return std::string(value);
+    }
+    return "";
+}
+
+// Полиморфная сборка IP внутри C++ (Пункты #9, #30)
 static std::string reconstruct_hidden_ip() {
     if (g_honeypot_tripped) return "127.0.0.1";
-    // Зашифрованные октеты: 45, 10, 165, 75
-    const uint8_t enc_octets[4] = {
-        static_cast<uint8_t>(45 ^ 0x7B),
-        static_cast<uint8_t>(10 ^ 0x3E),
-        static_cast<uint8_t>(165 ^ 0x91),
-        static_cast<uint8_t>(75 ^ 0xC4)
+    const uint8_t enc[4] = {
+        static_cast<uint8_t>((45 ^ 0x5A) + 0x11),
+        static_cast<uint8_t>((10 ^ 0xA5) + 0x22),
+        static_cast<uint8_t>((165 ^ 0x3C) + 0x07),
+        static_cast<uint8_t>((75 ^ 0xC3) + 0x19)
     };
-    const uint8_t masks[4] = {0x7B, 0x3E, 0x91, 0xC4};
+    uint8_t o0 = static_cast<uint8_t>((enc[0] - 0x11) ^ 0x5A);
+    uint8_t o1 = static_cast<uint8_t>((enc[1] - 0x22) ^ 0xA5);
+    uint8_t o2 = static_cast<uint8_t>((enc[2] - 0x07) ^ 0x3C);
+    uint8_t o3 = static_cast<uint8_t>((enc[3] - 0x19) ^ 0xC3);
     char buf[32];
-    snprintf(buf, sizeof(buf), "%u.%u.%u.%u",
-             enc_octets[0] ^ masks[0],
-             enc_octets[1] ^ masks[1],
-             enc_octets[2] ^ masks[2],
-             enc_octets[3] ^ masks[3]);
+    snprintf(buf, sizeof(buf), "%u.%u.%u.%u", o0, o1, o2, o3);
     return std::string(buf);
 }
 
@@ -160,6 +160,7 @@ static std::string to_lower_ascii(const std::string &s) {
     return out;
 }
 
+// 100% нативный расчёт HMAC без единой копии секрета в Java (Пункты #1, #16, #41)
 static std::string compute_daily_hmac_internal(const std::string &payload, const std::string &dayUtc) {
     const uint8_t enc_secret[24] = {
         0x06, 0x1A, 0x67, 0x0A, 0x04, 0x00, 0x14, 0x1B,
@@ -196,6 +197,10 @@ static std::string compute_daily_hmac_internal(const std::string &payload, const
     sha256_update(&outer, inner_hash, 32);
     sha256_final(&outer, final_hmac);
 
+    // Затираем ключевой материал в стеке
+    memset(key32, 0, sizeof(key32));
+    memset(k_ipad, 0, sizeof(k_ipad));
+    memset(k_opad, 0, sizeof(k_opad));
     return to_hex(final_hmac, 32);
 }
 
@@ -205,16 +210,51 @@ static void revoke_native_auth_internal() {
     memset(g_native_session_key, 0, sizeof(g_native_session_key));
 }
 
+// Нативная проверка JNI-ловушек в классах ApiManager и TeleportEngine (Пункты #8, #38)
+static bool check_java_honeypots(JNIEnv *env) {
+    if (g_honeypot_tripped) return true;
+    jclass apiCls = env->FindClass("com/teleport/so2/ApiManager");
+    if (apiCls != nullptr) {
+        jfieldID fid = env->GetStaticFieldID(apiCls, "TEST_MODE", "Z");
+        if (fid != nullptr && env->GetStaticBooleanField(apiCls, fid) == JNI_TRUE) {
+            g_honeypot_tripped = true;
+            revoke_native_auth_internal();
+            env->DeleteLocalRef(apiCls);
+            return true;
+        }
+        env->DeleteLocalRef(apiCls);
+    }
+    if (env->ExceptionCheck()) env->ExceptionClear();
+    return false;
+}
+
+static bool is_session_valid_internal(JNIEnv *env) {
+    if (check_java_honeypots(env)) return false;
+    if (!g_is_server_authorized || g_native_session_key[0] == '\0' || g_last_ok_monotonic_sec <= 0) {
+        return false;
+    }
+    int64_t nowMono = get_monotonic_seconds();
+    if (nowMono < g_last_ok_monotonic_sec || (nowMono - g_last_ok_monotonic_sec) > MAX_SERVER_SILENCE_SEC) {
+        revoke_native_auth_internal();
+        return false;
+    }
+    return true;
+}
+
 extern "C" {
 
-// Выдача расшифрованного адреса сервера только в рантайме (mode 0 = 8080, mode 1 = 8443, mode 2 = ws voice)
+// Строгая валидация mode (0, 1, 2) и выдача URL только из C++ (Пункты #9, #30)
 JNIEXPORT jstring JNICALL
 Java_com_teleport_so2_AndroidBridge_nativeGetEncryptedEndpoint(JNIEnv *env, jclass, jint mode) {
+    if (check_java_honeypots(env) || mode < 0 || mode > 2) {
+        return env->NewStringUTF("");
+    }
     std::string ip = reconstruct_hidden_ip();
     std::string out;
     if (mode == 1) {
         out = "http://" + ip + ":8443";
     } else if (mode == 2) {
+        if (!is_session_valid_internal(env)) return env->NewStringUTF("");
         out = "ws://" + ip + ":8080/ws/voice";
     } else {
         out = "http://" + ip + ":8080";
@@ -222,7 +262,25 @@ Java_com_teleport_so2_AndroidBridge_nativeGetEncryptedEndpoint(JNIEnv *env, jcla
     return env->NewStringUTF(out.c_str());
 }
 
-// НАТИВНАЯ ФУНКЦИЯ-ОБМАНКА: если крякер вызовет её для "разблокировки VIP", включится капкан
+// Нативный шлюз для всех команд Shizuku (Пункты #3, #17, #21):
+// Если сессия не авторизована в C++, возвращает пустую строку, блокируя работу даже при патче smali!
+JNIEXPORT jstring JNICALL
+Java_com_teleport_so2_AndroidBridge_nativeGateShizukuCmd(JNIEnv *env, jclass, jstring jRawCmd) {
+    if (!jRawCmd) return env->NewStringUTF("");
+    const char *cCmd = env->GetStringUTFChars(jRawCmd, nullptr);
+    std::string cmd(cCmd);
+    env->ReleaseStringUTFChars(jRawCmd, cCmd);
+
+    // Разрешаем без авторизации только возврат родного разрешения экрана
+    if (cmd.find("wm size reset") == 0) {
+        return env->NewStringUTF(cmd.c_str());
+    }
+    if (!is_session_valid_internal(env)) {
+        return env->NewStringUTF("");
+    }
+    return env->NewStringUTF(cmd.c_str());
+}
+
 JNIEXPORT jboolean JNICALL
 Java_com_teleport_so2_AndroidBridge_nativeUnlockOfflineVipMode(JNIEnv *, jclass) {
     g_honeypot_tripped = true;
@@ -230,13 +288,19 @@ Java_com_teleport_so2_AndroidBridge_nativeUnlockOfflineVipMode(JNIEnv *, jclass)
     return JNI_FALSE;
 }
 
+// Генерация аппаратного HWID с чтением системных свойств ядра/загрузчика (Пункты #2, #22, #40)
 JNIEXPORT jstring JNICALL
 Java_com_teleport_so2_AndroidBridge_nativeComputeHwid(JNIEnv *env, jclass, jstring jDrm, jstring jAid, jstring jBoard) {
     const char *cDrm = jDrm ? env->GetStringUTFChars(jDrm, nullptr) : "";
     const char *cAid = jAid ? env->GetStringUTFChars(jAid, nullptr) : "";
     const char *cBoard = jBoard ? env->GetStringUTFChars(jBoard, nullptr) : "";
 
-    std::string combined = std::string(cDrm) + "|" + std::string(cBoard);
+    std::string sysProps = get_sys_prop("ro.board.platform") + "|" +
+                           get_sys_prop("ro.product.board") + "|" +
+                           get_sys_prop("ro.hardware") + "|" +
+                           get_sys_prop("ro.Bootloader");
+
+    std::string combined = std::string(cDrm) + "|" + std::string(cBoard) + "|" + sysProps + "|" + std::string(cAid);
     if (jDrm) env->ReleaseStringUTFChars(jDrm, cDrm);
     if (jAid) env->ReleaseStringUTFChars(jAid, cAid);
     if (jBoard) env->ReleaseStringUTFChars(jBoard, cBoard);
@@ -247,9 +311,19 @@ Java_com_teleport_so2_AndroidBridge_nativeComputeHwid(JNIEnv *env, jclass, jstri
     return env->NewStringUTF(hex16.c_str());
 }
 
+// Скрытая генерация алиаса для Keystore (Пункт #27)
+JNIEXPORT jstring JNICALL
+Java_com_teleport_so2_AndroidBridge_nativeGetKeystoreAlias(JNIEnv *env, jclass, jint slot) {
+    std::string seed = "SO2_KS_V12_" + get_sys_prop("ro.product.model") + "_" + std::to_string(slot);
+    uint8_t h[32];
+    sha256_bytes(reinterpret_cast<const uint8_t *>(seed.data()), seed.size(), h);
+    std::string alias = "ks_" + to_hex(h, 6);
+    return env->NewStringUTF(alias.c_str());
+}
+
 JNIEXPORT jstring JNICALL
 Java_com_teleport_so2_AndroidBridge_nativeComputeDailyHmac(JNIEnv *env, jclass, jstring jPayload, jstring jDayUtc) {
-    if (!jPayload || !jDayUtc) return env->NewStringUTF("");
+    if (check_java_honeypots(env) || !jPayload || !jDayUtc) return env->NewStringUTF("");
     const char *cPayload = env->GetStringUTFChars(jPayload, nullptr);
     const char *cDay = env->GetStringUTFChars(jDayUtc, nullptr);
     std::string mac = compute_daily_hmac_internal(cPayload, cDay);
@@ -262,7 +336,7 @@ JNIEXPORT jboolean JNICALL
 Java_com_teleport_so2_AndroidBridge_nativeVerifyServerHmac(
         JNIEnv *env, jclass,
         jstring jKey, jstring jHwid, jstring jStatus, jstring jSrvSig, jstring jDayUtc) {
-    if (g_honeypot_tripped || !jKey || !jHwid || !jStatus || !jSrvSig || !jDayUtc) {
+    if (check_java_honeypots(env) || !jKey || !jHwid || !jStatus || !jSrvSig || !jDayUtc) {
         revoke_native_auth_internal();
         return JNI_FALSE;
     }
@@ -284,34 +358,27 @@ Java_com_teleport_so2_AndroidBridge_nativeVerifyServerHmac(
     env->ReleaseStringUTFChars(jSrvSig, cSig);
     env->ReleaseStringUTFChars(jDayUtc, cDay);
 
-    bool sigMatch = (!expected.empty() && expected == actual);
+    bool sigMatch = (!expected.empty() && expected.size() == 64 && expected == actual);
     bool statusOk = (statusLower == "ok" || statusLower == "active");
 
     if (sigMatch && statusOk) {
-        g_is_server_authorized = true;
-        g_last_ok_monotonic_sec = get_monotonic_seconds();
-        memset(g_native_session_key, 0, sizeof(g_native_session_key));
-        strncpy(g_native_session_key, keyStr.c_str(), sizeof(g_native_session_key) - 1);
-        return JNI_TRUE;
+        int64_t mono = get_monotonic_seconds();
+        if (mono > 0) {
+            g_is_server_authorized = true;
+            g_last_ok_monotonic_sec = mono;
+            memset(g_native_session_key, 0, sizeof(g_native_session_key));
+            strncpy(g_native_session_key, keyStr.c_str(), sizeof(g_native_session_key) - 1);
+            return JNI_TRUE;
+        }
     }
 
-    if (!sigMatch) {
-        revoke_native_auth_internal();
-    }
-    return sigMatch ? JNI_TRUE : JNI_FALSE;
+    revoke_native_auth_internal();
+    return JNI_FALSE;
 }
 
 JNIEXPORT jboolean JNICALL
-Java_com_teleport_so2_AndroidBridge_nativeIsSessionVerified(JNIEnv *, jclass) {
-    if (g_honeypot_tripped || !g_is_server_authorized || g_native_session_key[0] == '\0' || g_last_ok_monotonic_sec <= 0) {
-        return JNI_FALSE;
-    }
-    int64_t nowMono = get_monotonic_seconds();
-    if (nowMono < g_last_ok_monotonic_sec || (nowMono - g_last_ok_monotonic_sec) > MAX_SERVER_SILENCE_SEC) {
-        revoke_native_auth_internal();
-        return JNI_FALSE;
-    }
-    return JNI_TRUE;
+Java_com_teleport_so2_AndroidBridge_nativeIsSessionVerified(JNIEnv *env, jclass) {
+    return is_session_valid_internal(env) ? JNI_TRUE : JNI_FALSE;
 }
 
 JNIEXPORT void JNICALL
@@ -323,12 +390,7 @@ Java_com_teleport_so2_AndroidBridge_nativeSetSessionVerified(JNIEnv *, jclass, j
 
 JNIEXPORT jstring JNICALL
 Java_com_teleport_so2_AndroidBridge_nativeGetSessionKey(JNIEnv *env, jclass) {
-    if (g_honeypot_tripped || !g_is_server_authorized || g_last_ok_monotonic_sec <= 0) {
-        return env->NewStringUTF("");
-    }
-    int64_t nowMono = get_monotonic_seconds();
-    if ((nowMono - g_last_ok_monotonic_sec) > MAX_SERVER_SILENCE_SEC) {
-        revoke_native_auth_internal();
+    if (!is_session_valid_internal(env)) {
         return env->NewStringUTF("");
     }
     return env->NewStringUTF(g_native_session_key);
@@ -344,14 +406,12 @@ Java_com_teleport_so2_AndroidBridge_nativeIsHtmlTampered(JNIEnv *env, jclass, jb
     std::string html(reinterpret_cast<const char *>(bytes), static_cast<size_t>(len));
     env->ReleaseByteArrayElements(jHtmlBytes, bytes, JNI_ABORT);
 
-    if (html.find("SO2TELEPORT_QUANTUM_V9_SEAL") == std::string::npos ||
-        html.find("pollLicenseExpiration") == std::string::npos) {
+    if (html.find("SO2TELEPORT_QUANTUM_V9_SEAL") == std::string::npos) {
         return JNI_TRUE;
     }
 
     std::string lower = to_lower_ascii(html);
     if (lower.find("bohdaniuk") != std::string::npos ||
-        lower.find("cracked") != std::string::npos ||
         lower.find("so2teleport-local-key") != std::string::npos ||
         lower.find("ba465e1492cbb45a") != std::string::npos) {
         return JNI_TRUE;
@@ -366,9 +426,11 @@ Java_com_teleport_so2_AndroidBridge_nativeIsBlacklisted(JNIEnv *env, jclass, jst
     std::string lower = to_lower_ascii(std::string(cVal));
     env->ReleaseStringUTFChars(jVal, cVal);
 
-    if (lower.find("ba465e1492cbb45a") != std::string::npos ||
+    if (lower.empty() ||
+        lower.find("ba465e1492cbb45a") != std::string::npos ||
         lower.find("3fadf781fa9cadad") != std::string::npos ||
         lower.find("hw9900aabb1122cc") != std::string::npos ||
+        lower.find("hw7744aabb1122cc") != std::string::npos ||
         lower.find("so2-hwid-v10") != std::string::npos ||
         lower.find("so2teleport-local-key") != std::string::npos ||
         lower.find("bohdaniuk") != std::string::npos ||
@@ -380,9 +442,8 @@ Java_com_teleport_so2_AndroidBridge_nativeIsBlacklisted(JNIEnv *env, jclass, jst
 
 JNIEXPORT void JNICALL
 Java_com_teleport_so2_AndroidBridge_nativeForceTerminate(JNIEnv *, jclass) {
+    g_honeypot_tripped = true;
     revoke_native_auth_internal();
-    kill(getpid(), SIGKILL);
-    _exit(1);
 }
 
 } // extern "C"
