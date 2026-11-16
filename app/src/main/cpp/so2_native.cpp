@@ -5,15 +5,27 @@
 #include <cstdlib>
 #include <cstdio>
 #include <cctype>
+#include <ctime>
 #include <unistd.h>
 #include <signal.h>
 #include <sys/ptrace.h>
 
-// Защищённое состояние сессии в нативной памяти (закрытие пункта #20 и #25)
-static bool g_native_session_verified = false;
+// Нативные флаги авторизации и монотонного времени (закрытие уязвимостей #16 и #17)
+static volatile bool g_is_server_authorized = false;
+static volatile int64_t g_last_ok_monotonic_sec = 0;
 static char g_native_session_key[128] = {0};
 
-// Компактная реализация SHA-256 и HMAC-SHA256 внутри C++ (без внешних зависимостей)
+static const int64_t MAX_SERVER_SILENCE_SEC = 900; // 15 минут по монотонным часам ядра
+
+static int64_t get_monotonic_seconds() {
+    struct timespec ts{};
+    if (clock_gettime(CLOCK_MONOTONIC, &ts) == 0) {
+        return static_cast<int64_t>(ts.tv_sec);
+    }
+    return 0;
+}
+
+// Компактная реализация SHA-256 и HMAC-SHA256 внутри C++
 struct Sha256Ctx {
     uint32_t state[8];
     uint64_t bitlen;
@@ -117,8 +129,14 @@ static std::string to_hex(const uint8_t *bytes, size_t len) {
     return res;
 }
 
+static std::string to_lower_ascii(const std::string &s) {
+    std::string out = s;
+    for (char &c : out) c = static_cast<char>(std::tolower(static_cast<unsigned char>(c)));
+    return out;
+}
+
 static std::string compute_daily_hmac_internal(const std::string &payload, const std::string &dayUtc) {
-    // XOR-обфусцированный мастер-секрет "SO2_QUANTUM_V10_KEY_9941" (ключ XOR = 0x55)
+    // XOR-обфусцированный секрет "SO2_QUANTUM_V10_KEY_9941" (ключ XOR = 0x55)
     const uint8_t enc_secret[24] = {
         0x06, 0x1A, 0x67, 0x0A, 0x04, 0x00, 0x14, 0x1B,
         0x01, 0x00, 0x18, 0x0A, 0x03, 0x64, 0x65, 0x0A,
@@ -157,15 +175,14 @@ static std::string compute_daily_hmac_internal(const std::string &payload, const
     return to_hex(final_hmac, 32);
 }
 
-static std::string to_lower_ascii(const std::string &s) {
-    std::string out = s;
-    for (char &c : out) c = static_cast<char>(std::tolower(static_cast<unsigned char>(c)));
-    return out;
+static void revoke_native_auth_internal() {
+    g_is_server_authorized = false;
+    g_last_ok_monotonic_sec = 0;
+    memset(g_native_session_key, 0, sizeof(g_native_session_key));
 }
 
 extern "C" {
 
-// 1. Нативный расчёт HWID (закрытие пункта #4)
 JNIEXPORT jstring JNICALL
 Java_com_teleport_so2_AndroidBridge_nativeComputeHwid(JNIEnv *env, jclass, jstring jDrm, jstring jAid, jstring jBoard) {
     const char *cDrm = jDrm ? env->GetStringUTFChars(jDrm, nullptr) : "";
@@ -183,7 +200,6 @@ Java_com_teleport_so2_AndroidBridge_nativeComputeHwid(JNIEnv *env, jclass, jstri
     return env->NewStringUTF(hex16.c_str());
 }
 
-// 2. Нативный расчёт HMAC-SHA256 (закрытие пункта #1)
 JNIEXPORT jstring JNICALL
 Java_com_teleport_so2_AndroidBridge_nativeComputeDailyHmac(JNIEnv *env, jclass, jstring jPayload, jstring jDayUtc) {
     if (!jPayload || !jDayUtc) return env->NewStringUTF("");
@@ -195,19 +211,24 @@ Java_com_teleport_so2_AndroidBridge_nativeComputeDailyHmac(JNIEnv *env, jclass, 
     return env->NewStringUTF(mac.c_str());
 }
 
-// 3. Нативная проверка HMAC-подписи ответа сервера (невозможно обойти подменой computeDailyHmac)
+// Единственная точка, которая может включить g_is_server_authorized = true и обновить монотонный таймер (#16, #17)
 JNIEXPORT jboolean JNICALL
 Java_com_teleport_so2_AndroidBridge_nativeVerifyServerHmac(
         JNIEnv *env, jclass,
         jstring jKey, jstring jHwid, jstring jStatus, jstring jSrvSig, jstring jDayUtc) {
-    if (!jKey || !jHwid || !jStatus || !jSrvSig || !jDayUtc) return JNI_FALSE;
+    if (!jKey || !jHwid || !jStatus || !jSrvSig || !jDayUtc) {
+        revoke_native_auth_internal();
+        return JNI_FALSE;
+    }
     const char *cKey = env->GetStringUTFChars(jKey, nullptr);
     const char *cHwid = env->GetStringUTFChars(jHwid, nullptr);
     const char *cStatus = env->GetStringUTFChars(jStatus, nullptr);
     const char *cSig = env->GetStringUTFChars(jSrvSig, nullptr);
     const char *cDay = env->GetStringUTFChars(jDayUtc, nullptr);
 
-    std::string payload = std::string(cKey) + "|" + std::string(cHwid) + "|" + std::string(cStatus);
+    std::string keyStr(cKey);
+    std::string statusLower = to_lower_ascii(std::string(cStatus));
+    std::string payload = keyStr + "|" + std::string(cHwid) + "|" + std::string(cStatus);
     std::string expected = to_lower_ascii(compute_daily_hmac_internal(payload, cDay));
     std::string actual = to_lower_ascii(std::string(cSig));
 
@@ -217,10 +238,57 @@ Java_com_teleport_so2_AndroidBridge_nativeVerifyServerHmac(
     env->ReleaseStringUTFChars(jSrvSig, cSig);
     env->ReleaseStringUTFChars(jDayUtc, cDay);
 
-    return (!expected.empty() && expected == actual) ? JNI_TRUE : JNI_FALSE;
+    bool sigMatch = (!expected.empty() && expected == actual);
+    bool statusOk = (statusLower == "ok" || statusLower == "active");
+
+    if (sigMatch && statusOk) {
+        g_is_server_authorized = true;
+        g_last_ok_monotonic_sec = get_monotonic_seconds();
+        memset(g_native_session_key, 0, sizeof(g_native_session_key));
+        strncpy(g_native_session_key, keyStr.c_str(), sizeof(g_native_session_key) - 1);
+        return JNI_TRUE;
+    }
+
+    if (!sigMatch) {
+        revoke_native_auth_internal();
+    }
+    return sigMatch ? JNI_TRUE : JNI_FALSE;
 }
 
-// 4. Нативная проверка целостности index.html (закрытие пункта #2)
+// Проверка авторизации и 15-минутного монотонного таймера ядра (без SharedPreferences!)
+JNIEXPORT jboolean JNICALL
+Java_com_teleport_so2_AndroidBridge_nativeIsSessionVerified(JNIEnv *, jclass) {
+    if (!g_is_server_authorized || g_native_session_key[0] == '\0' || g_last_ok_monotonic_sec <= 0) {
+        return JNI_FALSE;
+    }
+    int64_t nowMono = get_monotonic_seconds();
+    if (nowMono < g_last_ok_monotonic_sec || (nowMono - g_last_ok_monotonic_sec) > MAX_SERVER_SILENCE_SEC) {
+        revoke_native_auth_internal();
+        return JNI_FALSE;
+    }
+    return JNI_TRUE;
+}
+
+JNIEXPORT void JNICALL
+Java_com_teleport_so2_AndroidBridge_nativeSetSessionVerified(JNIEnv *, jclass, jstring, jboolean verified) {
+    // Прямое включение из Java заблокировано (включить может только nativeVerifyServerHmac).
+    // Из Java разрешён только сброс в false при выходе/кике!
+    if (verified != JNI_TRUE) {
+        revoke_native_auth_internal();
+    }
+}
+
+JNIEXPORT jstring JNICALL
+Java_com_teleport_so2_AndroidBridge_nativeGetSessionKey(JNIEnv *env, jclass) {
+    if (!g_is_server_authorized || g_last_ok_monotonic_sec <= 0) return env->NewStringUTF("");
+    int64_t nowMono = get_monotonic_seconds();
+    if ((nowMono - g_last_ok_monotonic_sec) > MAX_SERVER_SILENCE_SEC) {
+        revoke_native_auth_internal();
+        return env->NewStringUTF("");
+    }
+    return env->NewStringUTF(g_native_session_key);
+}
+
 JNIEXPORT jboolean JNICALL
 Java_com_teleport_so2_AndroidBridge_nativeIsHtmlTampered(JNIEnv *env, jclass, jbyteArray jHtmlBytes) {
     if (!jHtmlBytes) return JNI_TRUE;
@@ -246,7 +314,6 @@ Java_com_teleport_so2_AndroidBridge_nativeIsHtmlTampered(JNIEnv *env, jclass, jb
     return JNI_FALSE;
 }
 
-// 5. Нативный чёрный список крякнутых HWID и ключей (закрытие пункта #19)
 JNIEXPORT jboolean JNICALL
 Java_com_teleport_so2_AndroidBridge_nativeIsBlacklisted(JNIEnv *env, jclass, jstring jVal) {
     if (!jVal) return JNI_TRUE;
@@ -255,6 +322,7 @@ Java_com_teleport_so2_AndroidBridge_nativeIsBlacklisted(JNIEnv *env, jclass, jst
     env->ReleaseStringUTFChars(jVal, cVal);
 
     if (lower.find("ba465e1492cbb45a") != std::string::npos ||
+        lower.find("3fadf781fa9cadad") != std::string::npos ||
         lower.find("hw9900aabb1122cc") != std::string::npos ||
         lower.find("so2-hwid-v10") != std::string::npos ||
         lower.find("so2teleport-local-key") != std::string::npos ||
@@ -265,34 +333,9 @@ Java_com_teleport_so2_AndroidBridge_nativeIsBlacklisted(JNIEnv *env, jclass, jst
     return JNI_FALSE;
 }
 
-// 6. Хранение сессии в нативной памяти (закрытие пунктов #20 и #25)
-JNIEXPORT void JNICALL
-Java_com_teleport_so2_AndroidBridge_nativeSetSessionVerified(JNIEnv *env, jclass, jstring jKey, jboolean verified) {
-    g_native_session_verified = (verified == JNI_TRUE);
-    memset(g_native_session_key, 0, sizeof(g_native_session_key));
-    if (verified == JNI_TRUE && jKey != nullptr) {
-        const char *cKey = env->GetStringUTFChars(jKey, nullptr);
-        strncpy(g_native_session_key, cKey, sizeof(g_native_session_key) - 1);
-        env->ReleaseStringUTFChars(jKey, cKey);
-    }
-}
-
-JNIEXPORT jboolean JNICALL
-Java_com_teleport_so2_AndroidBridge_nativeIsSessionVerified(JNIEnv *, jclass) {
-    return (g_native_session_verified && g_native_session_key[0] != '\0') ? JNI_TRUE : JNI_FALSE;
-}
-
-JNIEXPORT jstring JNICALL
-Java_com_teleport_so2_AndroidBridge_nativeGetSessionKey(JNIEnv *env, jclass) {
-    if (!g_native_session_verified) return env->NewStringUTF("");
-    return env->NewStringUTF(g_native_session_key);
-}
-
-// 7. Неотключаемый нативный кик (закрытие пункта #3)
 JNIEXPORT void JNICALL
 Java_com_teleport_so2_AndroidBridge_nativeForceTerminate(JNIEnv *, jclass) {
-    g_native_session_verified = false;
-    memset(g_native_session_key, 0, sizeof(g_native_session_key));
+    revoke_native_auth_internal();
     kill(getpid(), SIGKILL);
     _exit(1);
 }
