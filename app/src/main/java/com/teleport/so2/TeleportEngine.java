@@ -10,62 +10,88 @@ import android.view.Display;
 import android.view.WindowManager;
 
 import java.lang.reflect.Method;
-import java.nio.charset.StandardCharsets;
-import java.security.MessageDigest;
 import java.util.Locale;
 import java.util.UUID;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 public class TeleportEngine {
 
-    // В <clinit> строго false!
     private static volatile boolean isServerAuthorized = false;
-
-    // HONEYPOT-ОБМАНКА: если крякер пропатчит FORCE_UNLOCK_ALL = true в smali, движок отключит команды
-    public static boolean FORCE_UNLOCK_ALL = false;
-    public static String DECOY_OFFLINE_KEY = "TP-OFFLINE-MASTER-999999";
-
     private static Context appContext;
+
+    // Истинные физические размеры матрицы экрана (не искажаются при повторном запуске)
     private static int nativeShortSide = 1080;
     private static int nativeLongSide = 2400;
     private static int nativeDensityDpi = 420;
+    private static int currentRefreshRateHz = 120;
+    private static int maxHardwareRefreshRateHz = 120;
+
     private static int pixelDownscalePct = 100;
-    private static boolean teleportActive = false;
+    private static boolean isStretchActive = false;
     private static String currentRatio = "4:3";
 
-    public static void setServerAuthorizedFromVerifiedHmac(boolean auth) {
-        if (FORCE_UNLOCK_ALL || ApiManager.isHoneypotTriggered()) {
-            isServerAuthorized = false;
-            return;
-        }
-        isServerAuthorized = auth && AndroidBridge.isNativeServerAuthorized();
-    }
+    // Движок инжекта касаний (Touch Injection Daemon)
+    private static final AtomicBoolean touchInjectorActive = new AtomicBoolean(false);
+    private static volatile int touchInjectorMode = 1; // 1 = Recoil Assist, 2 = Ultra Tap, 3 = Full Matrix
+    private static volatile int touchInjectorPower = 75;
+    private static final ExecutorService touchInjectExecutor = Executors.newSingleThreadExecutor();
 
-    // Метод-ловушка для крякеров, ищущих "bypass" или "unlock" в smali
-    public static boolean checkOfflineVipBypass(String key) {
-        if (FORCE_UNLOCK_ALL) {
-            isServerAuthorized = false;
-            ApiManager.invalidateSession();
+    public static void setServerAuthorizedFromVerifiedHmac(boolean auth) {
+        isServerAuthorized = auth && AndroidBridge.isNativeServerAuthorized();
+        if (!isServerAuthorized) {
+            touchInjectorActive.set(false);
         }
-        return false;
     }
 
     public static void init(Context context) {
         if (context == null) return;
         appContext = context.getApplicationContext();
-        detectNativeScreenMetrics(appContext);
+        detectTrueHardwareScreenMetrics(appContext);
     }
 
-    private static void detectNativeScreenMetrics(Context ctx) {
+    // ФИКС СНИЖЕНИЯ РАЗРЕШЕНИЯ И ОПРЕДЕЛЕНИЯ FPS/ГЦ:
+    // Считываем истинное физическое разрешение из Display.Mode, чтобы не брать уже сжатый wm size!
+    public static void detectTrueHardwareScreenMetrics(Context ctx) {
         try {
             WindowManager wm = (WindowManager) ctx.getSystemService(Context.WINDOW_SERVICE);
-            DisplayMetrics dm = new DisplayMetrics();
             if (wm != null && wm.getDefaultDisplay() != null) {
-                wm.getDefaultDisplay().getRealMetrics(dm);
-                int w = dm.widthPixels;
-                int h = dm.heightPixels;
-                nativeShortSide = Math.min(w, h);
-                nativeLongSide = Math.max(w, h);
-                nativeDensityDpi = dm.densityDpi > 0 ? dm.densityDpi : 420;
+                Display d = wm.getDefaultDisplay();
+                DisplayMetrics dm = new DisplayMetrics();
+                d.getRealMetrics(dm);
+
+                int bestShort = Math.min(dm.widthPixels, dm.heightPixels);
+                int bestLong = Math.max(dm.widthPixels, dm.heightPixels);
+                float liveHz = d.getRefreshRate();
+                float maxHz = liveHz;
+
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                    Display.Mode[] modes = d.getSupportedModes();
+                    if (modes != null) {
+                        for (Display.Mode m : modes) {
+                            int ms = Math.min(m.getPhysicalWidth(), m.getPhysicalHeight());
+                            int ml = Math.max(m.getPhysicalWidth(), m.getPhysicalHeight());
+                            if (ms >= bestShort && ml >= bestLong) {
+                                bestShort = ms;
+                                bestLong = ml;
+                            }
+                            if (m.getRefreshRate() > maxHz) {
+                                maxHz = m.getRefreshRate();
+                            }
+                        }
+                    }
+                }
+
+                if (bestShort >= 720 && bestLong >= 1280) {
+                    nativeShortSide = bestShort;
+                    nativeLongSide = bestLong;
+                }
+                if (dm.densityDpi > 0) {
+                    nativeDensityDpi = dm.densityDpi;
+                }
+                currentRefreshRateHz = Math.max(60, Math.round(liveHz));
+                maxHardwareRefreshRateHz = Math.max(currentRefreshRateHz, Math.round(maxHz));
             }
         } catch (Throwable ignored) {}
     }
@@ -78,48 +104,47 @@ public class TeleportEngine {
         return nativeLongSide;
     }
 
+    public static int getLiveRefreshRateHz(Context ctx) {
+        try {
+            Context target = (ctx != null) ? ctx : appContext;
+            if (target != null) {
+                WindowManager wm = (WindowManager) target.getSystemService(Context.WINDOW_SERVICE);
+                if (wm != null && wm.getDefaultDisplay() != null) {
+                    currentRefreshRateHz = Math.max(60, Math.round(wm.getDefaultDisplay().getRefreshRate()));
+                }
+            }
+        } catch (Throwable ignored) {}
+        return currentRefreshRateHz;
+    }
+
+    public static int getMaxHardwareRefreshRateHz() {
+        return maxHardwareRefreshRateHz;
+    }
+
     public static String getDeviceHwid(Context context) {
-        StringBuilder raw = new StringBuilder();
+        StringBuilder drmHex = new StringBuilder();
         try {
             UUID widevineUuid = new UUID(-0x121074568629b532L, -0x5c37d8232ae2de13L);
             MediaDrm drm = new MediaDrm(widevineUuid);
             byte[] drmId = drm.getPropertyByteArray(MediaDrm.PROPERTY_DEVICE_UNIQUE_ID);
             if (drmId != null) {
-                for (byte b : drmId) raw.append(String.format("%02x", b));
+                for (byte b : drmId) drmHex.append(String.format("%02x", b));
             }
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) drm.close();
             else drm.release();
         } catch (Throwable ignored) {}
 
-        raw.append("|").append(Build.BOARD)
-           .append("|").append(Build.BRAND)
-           .append("|").append(Build.DEVICE)
-           .append("|").append(Build.HARDWARE)
-           .append("|").append(Build.MODEL);
-
+        String boardInfo = Build.BOARD + "|" + Build.BRAND + "|" + Build.DEVICE + "|" + Build.HARDWARE + "|" + Build.MODEL;
+        String aid = "";
         try {
-            MessageDigest md = MessageDigest.getInstance("SHA-256");
-            byte[] digest = md.digest(raw.toString().getBytes(StandardCharsets.UTF_8));
-            StringBuilder hex = new StringBuilder();
-            for (int i = 0; i < 8; i++) hex.append(String.format("%02x", digest[i]));
-            String drmHash = hex.toString();
-
-            String aid = "";
             Context targetCtx = (context != null) ? context : appContext;
             if (targetCtx != null) {
                 aid = Settings.Secure.getString(targetCtx.getContentResolver(), Settings.Secure.ANDROID_ID);
+                if (aid == null) aid = "";
             }
-            if (aid != null && !aid.trim().isEmpty()) {
-                return drmHash + "|" + aid.trim().toLowerCase(Locale.US);
-            }
-            return drmHash;
-        } catch (Throwable t) {
-            return "hw7744aabb1122cc";
-        }
-    }
+        } catch (Throwable ignored) {}
 
-    public static String getDeviceHwid() {
-        return getDeviceHwid(appContext);
+        return AndroidBridge.computeNativeHwidOnly(drmHex.toString(), aid, boardInfo);
     }
 
     public static boolean isShizukuReady() {
@@ -130,7 +155,6 @@ public class TeleportEngine {
         }
     }
 
-    // ИСПРАВЛЕНИЕ ОШИБКИ СТРОКИ 112: Безопасный вызов через рефлексию без ошибки cannot find symbol
     public static void requestShizukuPermissionIfNeeded() {
         try {
             if (ShizukuManager.isPermissionGranted()) return;
@@ -151,46 +175,103 @@ public class TeleportEngine {
         } catch (Throwable ignored) {}
     }
 
-    // Первой строкой проверяем нативную авторизацию и ловушки!
+    // Все команды проходят через нативный C++ шлюз (Пункты #3, #17, #21)
     public static void execShizukuCommand(String cmd) {
-        if (FORCE_UNLOCK_ALL || ApiManager.isHoneypotTriggered()) {
-            return;
-        }
-        if (!isServerAuthorized || !AndroidBridge.isNativeServerAuthorized() || !ApiManager.isSessionVerified()) {
-            return;
-        }
         if (cmd == null || cmd.trim().isEmpty()) return;
+        String gatedCmd = AndroidBridge.gateCommandThroughNative(cmd.trim());
+        if (gatedCmd == null || gatedCmd.isEmpty()) return;
+        if (!cmd.startsWith("wm size reset") && !isServerAuthorized) return;
         try {
-            ShizukuManager.execCommand(cmd.trim());
+            ShizukuManager.execCommand(gatedCmd);
         } catch (Throwable ignored) {}
     }
 
+    // =========================================================================
+    // ИНЖЕКТ КАСАНИЙ (TOUCH INJECTION & LOW-LATENCY INPUT ENGINE)
+    // =========================================================================
+    public static void setTouchInjectorActive(boolean enabled, int mode, int power) {
+        if (!isServerAuthorized || !AndroidBridge.isNativeServerAuthorized()) {
+            touchInjectorActive.set(false);
+            return;
+        }
+        touchInjectorMode = Math.max(1, Math.min(3, mode));
+        touchInjectorPower = Math.max(10, Math.min(100, power));
+        touchInjectorActive.set(enabled);
+
+        if (!isShizukuReady()) return;
+
+        if (enabled) {
+            int ptrSpeed = Math.min(7, 3 + (touchInjectorPower / 25));
+            int touchSlop = Math.max(1, 8 - (touchInjectorPower / 15));
+            long phaseOffsetNs = (touchInjectorMode == 3) ? 250000L : 500000L;
+
+            execShizukuCommand(
+                    "settings put global block_untrusted_touches 0; " +
+                    "settings put secure block_untrusted_touches 0; " +
+                    "device_config put input_native_boot maximum_obscuring_opacity_for_touch 1.0; " +
+                    "device_config put input_native_boot touch_slop " + touchSlop + "; " +
+                    "settings put system pointer_speed " + ptrSpeed + "; " +
+                    "settings put secure long_press_timeout 150; " +
+                    "settings put secure multi_press_timeout 110; " +
+                    "setprop debug.sf.early_phase_offset_ns " + phaseOffsetNs + "; " +
+                    "setprop debug.sf.early_gl_phase_offset_ns " + phaseOffsetNs + "; " +
+                    "setprop debug.input. resampling 0;"
+            );
+        } else {
+            execShizukuCommand(
+                    "device_config put input_native_boot touch_slop 8; " +
+                    "settings put system pointer_speed 2; " +
+                    "settings put secure long_press_timeout 250;"
+            );
+        }
+    }
+
+    // Аппаратный инжект мгновенного тапа через input tap в фоновом потоке
+    public static void injectTouchTap(final int x, final int y) {
+        if (!touchInjectorActive.get() || !isServerAuthorized || !isShizukuReady()) return;
+        touchInjectExecutor.execute(() -> {
+            int safeX = Math.max(0, Math.min(nativeLongSide, x));
+            int safeY = Math.max(0, Math.min(nativeShortSide, y));
+            execShizukuCommand("input tap " + safeX + " " + safeY);
+        });
+    }
+
+    // Аппаратный инжект микро-свайпа (компенсация вертикальной отдачи / рывок)
+    public static void injectRecoilSwipe(final int startX, final int startY, final int deltaX, final int deltaY, final int durationMs) {
+        if (!touchInjectorActive.get() || !isServerAuthorized || !isShizukuReady()) return;
+        touchInjectExecutor.execute(() -> {
+            int endX = Math.max(0, startX + deltaX);
+            int endY = Math.max(0, startY + deltaY);
+            int dur = Math.max(8, Math.min(250, durationMs));
+            execShizukuCommand("input swipe " + startX + " " + startY + " " + endX + " " + endY + " " + dur);
+        });
+    }
+
     public static void startTeleport(String presetId) {
-        if (!isServerAuthorized || !AndroidBridge.isNativeServerAuthorized() || FORCE_UNLOCK_ALL) return;
-        teleportActive = true;
+        if (!isServerAuthorized || !AndroidBridge.isNativeServerAuthorized()) return;
         if (presetId != null && presetId.startsWith("SET_RATIO:")) {
             currentRatio = presetId.substring("SET_RATIO:".length()).trim();
             return;
         }
         if (!isShizukuReady()) return;
 
-        String p = (presetId == null) ? "pro" : presetId.toLowerCase(Locale.US);
+        String p = (presetId == null) ? "sharp" : presetId.toLowerCase(Locale.US);
         int ptrSpeed = 5;
-        long longPress = 200;
-        long multiPress = 150;
+        long longPress = 190;
+        long multiPress = 140;
 
-        if (p.contains("1") || p.contains("ultra") || p.contains("extreme") || p.contains("max")) {
+        if (p.contains("sharp") || p.contains("max") || p.contains("hardlock") || p.contains("sniper")) {
             ptrSpeed = 7;
-            longPress = 160;
-            multiPress = 110;
-        } else if (p.contains("2") || p.contains("pad") || p.contains("sharp")) {
+            longPress = 150;
+            multiPress = 105;
+        } else if (p.contains("clean_sharp") || p.contains("onetap")) {
             ptrSpeed = 6;
-            longPress = 180;
-            multiPress = 130;
-        } else if (p.contains("4") || p.contains("fps") || p.contains("clean")) {
+            longPress = 170;
+            multiPress = 120;
+        } else if (p.contains("fps") || p.contains("clean")) {
             ptrSpeed = 4;
-            longPress = 220;
-            multiPress = 170;
+            longPress = 210;
+            multiPress = 160;
         }
 
         execShizukuCommand(
@@ -204,7 +285,7 @@ public class TeleportEngine {
     }
 
     public static void stopTeleport() {
-        teleportActive = false;
+        touchInjectorActive.set(false);
     }
 
     public static void updateParameters(
@@ -225,11 +306,15 @@ public class TeleportEngine {
         );
     }
 
+    // =========================================================================
+    // ФИКС РАСТЯГА ЭКРАНА И СНИЖЕНИЯ РАЗРЕШЕНИЯ (ПИКСЕЛЕЙ)
+    // =========================================================================
     public static boolean applyAspectRatioStretch(String ratioStr) {
         if (!isServerAuthorized || !AndroidBridge.isNativeServerAuthorized() || !isShizukuReady()) return false;
         if (ratioStr != null && !ratioStr.trim().isEmpty()) {
             currentRatio = ratioStr.trim().toUpperCase(Locale.US);
         }
+        isStretchActive = true;
 
         double scale = Math.max(0.50, Math.min(1.0, pixelDownscalePct / 100.0));
         int baseShort = (int) Math.round(nativeShortSide * scale);
@@ -237,18 +322,18 @@ public class TeleportEngine {
 
         if (currentRatio.contains("4:3")) {
             targetLong = (int) Math.round(baseShort * (4.0 / 3.0));
+        } else if (currentRatio.contains("5:4")) {
+            targetLong = (int) Math.round(baseShort * 1.25);
         } else if (currentRatio.contains("3:2")) {
             targetLong = (int) Math.round(baseShort * 1.5);
         } else if (currentRatio.contains("16:10")) {
             targetLong = (int) Math.round(baseShort * 1.6);
-        } else if (currentRatio.contains("5:4")) {
-            targetLong = (int) Math.round(baseShort * 1.25);
         } else if (currentRatio.contains("16:9")) {
             targetLong = (int) Math.round(baseShort * (16.0 / 9.0));
         }
 
-        baseShort = (baseShort / 2) * 2;
-        targetLong = (targetLong / 2) * 2;
+        baseShort = Math.max(360, (baseShort / 2) * 2);
+        targetLong = Math.max(480, (targetLong / 2) * 2);
 
         execShizukuCommand(
                 "wm size " + baseShort + "x" + targetLong + "; " +
@@ -260,33 +345,39 @@ public class TeleportEngine {
 
     public static void releaseBoxToFullStretch() {
         if (!isServerAuthorized || !AndroidBridge.isNativeServerAuthorized() || !isShizukuReady()) return;
+        isStretchActive = false;
         double scale = Math.max(0.50, Math.min(1.0, pixelDownscalePct / 100.0));
-        int s = ((int) Math.round(nativeShortSide * scale) / 2) * 2;
-        int l = ((int) Math.round(nativeLongSide * scale) / 2) * 2;
+        int s = Math.max(360, ((int) Math.round(nativeShortSide * scale) / 2) * 2);
+        int l = Math.max(640, ((int) Math.round(nativeLongSide * scale) / 2) * 2);
         execShizukuCommand("wm size " + s + "x" + l + ";");
     }
 
     public static void resetResolutionToNative() {
         pixelDownscalePct = 100;
-        if (isShizukuReady()) {
-            try {
-                ShizukuManager.execCommand("wm size reset; wm density reset; settings put system accelerometer_rotation 1;");
-            } catch (Throwable ignored) {}
-        }
+        isStretchActive = false;
+        execShizukuCommand("wm size reset; wm density reset; settings put system accelerometer_rotation 1;");
     }
 
+    // Исправленное снижение разрешения (работает как отдельно, так и поверх активного растяга!)
     public static void setPixelDownscaleFactor(int pct) {
         if (!isServerAuthorized || !AndroidBridge.isNativeServerAuthorized()) return;
         pixelDownscalePct = Math.max(50, Math.min(100, pct));
         if (!isShizukuReady()) return;
 
-        if (pixelDownscalePct >= 100) {
+        if (pixelDownscalePct >= 100 && !isStretchActive) {
             execShizukuCommand("wm size reset; wm density reset;");
+            return;
+        }
+
+        if (isStretchActive) {
+            applyAspectRatioStretch(currentRatio);
+            int scaledDpi = Math.max(180, (int) Math.round(nativeDensityDpi * (pixelDownscalePct / 100.0)));
+            execShizukuCommand("wm density " + scaledDpi + ";");
         } else {
             double factor = pixelDownscalePct / 100.0;
-            int w = ((int) Math.round(nativeShortSide * factor) / 2) * 2;
-            int h = ((int) Math.round(nativeLongSide * factor) / 2) * 2;
-            int d = Math.max(160, (int) Math.round(nativeDensityDpi * factor));
+            int w = Math.max(360, ((int) Math.round(nativeShortSide * factor) / 2) * 2);
+            int h = Math.max(640, ((int) Math.round(nativeLongSide * factor) / 2) * 2);
+            int d = Math.max(180, (int) Math.round(nativeDensityDpi * factor));
             execShizukuCommand("wm size " + w + "x" + h + "; wm density " + d + ";");
         }
     }
@@ -297,7 +388,10 @@ public class TeleportEngine {
                 "settings put secure long_press_timeout 250; " +
                 "settings put secure multi_press_timeout 200; " +
                 "settings put system pointer_speed 3; " +
-                "settings put global block_untrusted_touches 0;"
+                "settings put global block_untrusted_touches 0; " +
+                "settings put global window_animation_scale 0.5; " +
+                "settings put global transition_animation_scale 0.5; " +
+                "settings put global animator_duration_scale 0.5;"
         );
     }
 
@@ -329,17 +423,20 @@ public class TeleportEngine {
 
     public static void setTouchSamplingBoost(boolean enabled, int hz) {
         if (!isServerAuthorized || !AndroidBridge.isNativeServerAuthorized() || !isShizukuReady()) return;
+        int targetHz = Math.max(60, Math.min(240, hz));
         execShizukuCommand(
                 "setprop debug.sf.early_phase_offset_ns " + (enabled ? "500000" : "1000000") + "; " +
-                "settings put system peak_refresh_rate " + hz + ".0; " +
-                "settings put system min_refresh_rate " + (enabled ? hz + ".0" : "60.0") + ";"
+                "settings put system peak_refresh_rate " + targetHz + ".0; " +
+                "settings put system min_refresh_rate " + (enabled ? targetHz + ".0" : "60.0") + ";"
         );
     }
 
     public static void setHzThermalGuard(boolean enabled) {
         if (!isServerAuthorized || !AndroidBridge.isNativeServerAuthorized() || !isShizukuReady()) return;
+        int maxHz = getMaxHardwareRefreshRateHz();
         execShizukuCommand(
-                "settings put system peak_refresh_rate " + (enabled ? "120.0" : "60.0") + "; " +
+                "settings put system peak_refresh_rate " + maxHz + ".0; " +
+                "settings put system min_refresh_rate " + (enabled ? maxHz + ".0" : "60.0") + "; " +
                 "settings put secure refresh_rate_mode " + (enabled ? "2" : "0") + ";"
         );
     }
@@ -360,9 +457,10 @@ public class TeleportEngine {
             int edgeSens, int multiTouch, int netBuffer, int thermalLim
     ) {
         if (!isServerAuthorized || !AndroidBridge.isNativeServerAuthorized() || !isShizukuReady()) return;
+        int validFps = Math.max(60, Math.min(240, fpsLock));
         execShizukuCommand(
-                "settings put system peak_refresh_rate " + fpsLock + ".0; " +
-                "settings put system min_refresh_rate " + fpsLock + ".0; " +
+                "settings put system peak_refresh_rate " + validFps + ".0; " +
+                "settings put system min_refresh_rate " + validFps + ".0; " +
                 "setprop debug.hwui.renderer skiagl; " +
                 "cmd power set-fixed-performance-mode-enabled true;"
         );
@@ -389,23 +487,22 @@ public class TeleportEngine {
         return "Кэш фоновых процессов очищен!";
     }
 
-    // ИСПРАВЛЕНИЕ ОШИБКИ СТРОКИ 347: Автономный сканер железа без зависимости от DeviceScanner.scanDeviceSpecs
+    // Реальное сканирование герцовки, ядер и разрешения
     public static String runSmartDeviceScan(Context context) {
         try {
             Context targetCtx = (context != null) ? context : appContext;
-            int cores = Runtime.getRuntime().availableProcessors();
-            int hz = 120;
             if (targetCtx != null) {
-                WindowManager wm = (WindowManager) targetCtx.getSystemService(Context.WINDOW_SERVICE);
-                if (wm != null && wm.getDefaultDisplay() != null) {
-                    Display d = wm.getDefaultDisplay();
-                    hz = Math.max(60, Math.round(d.getRefreshRate()));
-                }
+                detectTrueHardwareScreenMetrics(targetCtx);
             }
+            int cores = Runtime.getRuntime().availableProcessors();
+            int liveHz = getLiveRefreshRateHz(targetCtx);
+            int maxHz = getMaxHardwareRefreshRateHz();
+            String hzStr = (liveHz == maxHz) ? (liveHz + " Гц") : (liveHz + "/" + maxHz + " Гц");
             return Build.MANUFACTURER.toUpperCase(Locale.US) + " " + Build.MODEL +
-                    " • " + cores + " ядер • " + hz + " Гц";
+                    " • " + nativeShortSide + "x" + nativeLongSide +
+                    " • " + cores + " ядер • " + hzStr;
         } catch (Throwable t) {
-            return Build.MANUFACTURER + " " + Build.MODEL + " • 120 Гц";
+            return Build.MANUFACTURER + " " + Build.MODEL + " • " + currentRefreshRateHz + " Гц";
         }
     }
 }
