@@ -22,20 +22,51 @@ import javax.crypto.spec.SecretKeySpec;
 
 public class ApiManager {
 
+    // HONEYPOT-ОБМАНКИ (Нужны для компиляции ProfileManager.java:159 и ловли крякеров!)
+    // Если крякер изменит любое из этих полей на true в smali/Frida — сработает капкан!
+    public static boolean TEST_MODE = false;
+    public static boolean LOCAL_VIP_BYPASS = false;
+    public static volatile boolean sessionVerified = false;
+    private static final String DECOY_MASTER_HOST = "https://api-v9-auth.so2teleport-cloud.net:8443";
+    private static final String DECOY_SECRET_SALT = "SO2_LEGIT_CRACK_TRAP_KEY_2026_V9";
+
     private static final AtomicLong VERIFIED_SESSION_STAMP = new AtomicLong(0L);
     private static final long SESSION_MAGIC_MASK = 0x5A93F10C7744E2B1L;
     private static final SecureRandom RNG = new SecureRandom();
 
+    // Проверка: не попался ли крякер в ловушку (патч boolean-полей в smali)
+    public static boolean isHoneypotTriggered() {
+        if (TEST_MODE || LOCAL_VIP_BYPASS) {
+            return true;
+        }
+        // Если кто-то принудительно выставил sessionVerified = true, но крипто-штамп пуст — это кряк!
+        if (sessionVerified && VERIFIED_SESSION_STAMP.get() == 0L) {
+            return true;
+        }
+        return false;
+    }
+
     public static void setSessionVerified(boolean verified) {
+        if (isHoneypotTriggered()) {
+            VERIFIED_SESSION_STAMP.set(0L);
+            sessionVerified = false;
+            return;
+        }
         if (verified) {
             long nowSlice = (System.currentTimeMillis() / 60000L) ^ SESSION_MAGIC_MASK;
             VERIFIED_SESSION_STAMP.set(nowSlice);
+            sessionVerified = true;
         } else {
             VERIFIED_SESSION_STAMP.set(0L);
+            sessionVerified = false;
         }
     }
 
     public static boolean isSessionVerified() {
+        if (isHoneypotTriggered()) {
+            VERIFIED_SESSION_STAMP.set(0L);
+            return false;
+        }
         long stamp = VERIFIED_SESSION_STAMP.get();
         if (stamp == 0L) return false;
         long decoded = stamp ^ SESSION_MAGIC_MASK;
@@ -45,19 +76,27 @@ public class ApiManager {
 
     public static void invalidateSession() {
         VERIFIED_SESSION_STAMP.set(0L);
+        sessionVerified = false;
     }
 
+    // Обманка для реверсеров (возвращает фейковый хост при статическом анализе, если нативка не загружена)
+    public static String getDecoyBackupHost() {
+        return DECOY_MASTER_HOST + "/api/v2/auth?salt=" + DECOY_SECRET_SALT;
+    }
+
+    // Реальный адрес расшифровывается только внутри C++ (libso2.so) — в Java IP больше нет!
     public static String getBaseHost() {
-        // Обфусцированная сборка хоста 45.10.165.75:8080
-        int[] p = new int[]{45 ^ 0x33, 10 ^ 0x33, 165 ^ 0x33, 75 ^ 0x33};
-        String ip = (p[0] ^ 0x33) + "." + (p[1] ^ 0x33) + "." + (p[2] ^ 0x33) + "." + (p[3] ^ 0x33);
-        return "http://" + ip + ":8080";
+        if (isHoneypotTriggered()) {
+            return "http://127.0.0.1:65534";
+        }
+        return AndroidBridge.getEncryptedServerEndpoint(0);
     }
 
     private static String getEngineHost() {
-        int[] p = new int[]{45 ^ 0x5A, 10 ^ 0x5A, 165 ^ 0x5A, 75 ^ 0x5A};
-        String ip = (p[0] ^ 0x5A) + "." + (p[1] ^ 0x5A) + "." + (p[2] ^ 0x5A) + "." + (p[3] ^ 0x5A);
-        return "http://" + ip + ":8443";
+        if (isHoneypotTriggered()) {
+            return "http://127.0.0.1:65534";
+        }
+        return AndroidBridge.getEncryptedServerEndpoint(1);
     }
 
     private static String computeRequestHmac(String body, String nonce, long ts) {
@@ -65,6 +104,11 @@ public class ApiManager {
             SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd", Locale.US);
             sdf.setTimeZone(TimeZone.getTimeZone("UTC"));
             String dayUtc = sdf.format(new Date());
+
+            String natSig = AndroidBridge.signPayloadNative(body + "|" + nonce + "|" + ts, dayUtc);
+            if (natSig != null && !natSig.isEmpty()) {
+                return natSig;
+            }
 
             byte[] enc = new byte[]{
                     0x06, 0x1A, 0x67, 0x0A, 0x04, 0x00, 0x14, 0x1B,
@@ -89,6 +133,9 @@ public class ApiManager {
     }
 
     public static String postJson(String urlStr, String jsonBody) {
+        if (isHoneypotTriggered()) {
+            return "{\"status\":\"banned\",\"ok\":false,\"blocked\":true,\"message\":\"Integrity check failed\"}";
+        }
         HttpURLConnection conn = null;
         try {
             long ts = System.currentTimeMillis() / 1000L;
@@ -103,7 +150,7 @@ public class ApiManager {
             conn.setDoOutput(true);
             conn.setUseCaches(false);
             conn.setRequestProperty("Content-Type", "application/json; charset=utf-8");
-            conn.setRequestProperty("User-Agent", "SO2Teleport-Quantum-V11");
+            conn.setRequestProperty("User-Agent", "SO2Teleport-Quantum-V12");
             conn.setRequestProperty("X-SO2-Ts", String.valueOf(ts));
             conn.setRequestProperty("X-SO2-Nonce", nonce);
             conn.setRequestProperty("X-SO2-Sig", reqSig);
@@ -136,7 +183,7 @@ public class ApiManager {
             return "{\"status\":\"error\",\"ok\":false,\"blocked\":true,\"message\":\"Нет связи с сервером авторизации\"}";
         } finally {
             if (conn != null) {
-                try { conn.disconnect(); } catch ( Throwable ignored) {}
+                try { conn.disconnect(); } catch (Throwable ignored) {}
             }
         }
     }
@@ -156,6 +203,10 @@ public class ApiManager {
     }
 
     public static String activateLicense(String key, String hwid, String nickname) {
+        if (isHoneypotTriggered()) {
+            invalidateSession();
+            return "{\"status\":\"banned\",\"ok\":false,\"blocked\":true,\"message\":\"Обнаружена модификация клиента\"}";
+        }
         try {
             String cleanKey = (key == null) ? "" : key.trim().toUpperCase(Locale.US);
             String cleanHwid = (hwid == null) ? "" : hwid.trim();
@@ -184,6 +235,10 @@ public class ApiManager {
     }
 
     public static String verifyLicense(String key, String hwid) {
+        if (isHoneypotTriggered()) {
+            invalidateSession();
+            return "{\"status\":\"banned\",\"ok\":false,\"blocked\":true,\"message\":\"Обнаружена модификация клиента\"}";
+        }
         try {
             String cleanKey = (key == null) ? "" : key.trim().toUpperCase(Locale.US);
             String cleanHwid = (hwid == null) ? "" : hwid.trim();
@@ -198,7 +253,6 @@ public class ApiManager {
             JSONObject res = new JSONObject(raw);
             String status = res.optString("status", "error");
 
-            // НИКАКОГО "offline" ok:true! Любая ошибка или блокировка закрывает сессию
             if ("ok".equalsIgnoreCase(status) && !res.optBoolean("blocked", false)) {
                 setSessionVerified(true);
                 return raw;
