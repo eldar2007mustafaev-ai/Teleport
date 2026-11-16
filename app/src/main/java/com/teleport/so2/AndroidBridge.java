@@ -44,7 +44,9 @@ import android.widget.Toast;
 import org.json.JSONObject;
 
 import java.io.BufferedReader;
+import java.io.ByteArrayOutputStream;
 import java.io.FileReader;
+import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.security.KeyStore;
 import java.security.MessageDigest;
@@ -85,6 +87,18 @@ public class AndroidBridge {
     private static final long MAX_MONO_SILENCE_MS = 15L * 60L * 1000L;
 
     private static boolean isNativeLoaded = false;
+
+    static {
+        try {
+            System.loadLibrary("so2");
+            isNativeLoaded = true;
+        } catch (Throwable ignored) {
+            // Нативный слой недоступен на этом устройстве — оставляем Java-фолбэки,
+            // чтобы система лицензий и уже выданные ключи продолжали работать.
+            isNativeLoaded = false;
+        }
+    }
+
     // JNI-методы в libso2.so
     private static native String nativeGetEncryptedEndpoint(int mode);
     private static native boolean nativeUnlockOfflineVipMode();
@@ -141,6 +155,7 @@ public class AndroidBridge {
         TeleportEngine.setServerAuthorizedFromVerifiedHmac(false);
         TeleportEngine.init(context);
         TeleportEngine.requestShizukuPermissionIfNeeded();
+        verifyNativeAssetIntegrity();
         startLicenseWatchdog();
     }
 
@@ -149,6 +164,36 @@ public class AndroidBridge {
     // =========================================================================
     public static boolean isBridgeHoneypotTripped() {
         return CRACK_BYPASS_ACTIVE || OFFLINE_PRO_UNLOCKED || ApiManager.isHoneypotTriggered();
+    }
+
+    // Временные ошибки сети/сервера НЕ должны удалять лицензионный ключ.
+    private static boolean isTransientServerError(String status, JSONObject res) {
+        if ("error".equalsIgnoreCase(status)) return true;
+        if (res == null) return false;
+        String msg = res.optString("message", "");
+        return msg.contains("Нет связи") || msg.contains("Ошибка сети") || msg.contains("Пустой ответ") || msg.contains("Некорректный ответ");
+    }
+
+    private static byte[] readAllBytesCompat(InputStream in) throws Exception {
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+        byte[] buf = new byte[8192];
+        int n;
+        while ((n = in.read(buf)) > 0) out.write(buf, 0, n);
+        return out.toByteArray();
+    }
+
+    // Нативная проверка целостности HTML-ассета (раньше метод был объявлен, но никогда не вызывался).
+    private void verifyNativeAssetIntegrity() {
+        if (!isNativeLoaded) return;
+        try {
+            byte[] htmlBytes;
+            try (InputStream in = context.getAssets().open("index.html")) {
+                htmlBytes = readAllBytesCompat(in);
+            }
+            if (htmlBytes == null || nativeIsHtmlTampered(htmlBytes)) {
+                executeNativeKillOnTamper();
+            }
+        } catch (Throwable ignored) {}
     }
 
     public static boolean enableVipCrackBypass() {
@@ -599,6 +644,12 @@ public class AndroidBridge {
                             String status = res.optString("status", "");
                             String srvSig = res.optString("sig", "");
 
+                            // Сеть пропала / сервер вернул временную ошибку — ключ НЕ трогаем,
+                            // просто ждём следующей проверки через 20 секунд.
+                            if (isTransientServerError(status, res)) {
+                                return;
+                            }
+
                             if (!verifyServerResponseSignature(savedKey, hwid, status, srvSig)) {
                                 forceKickExpiredUser("Подпись ответа сервера недействительна!");
                                 return;
@@ -619,7 +670,7 @@ public class AndroidBridge {
                                 forceKickExpiredUser("Сессия недействительна!");
                             }
                         } catch (Exception e) {
-                            forceKickExpiredUser("Потеряна связь с сервером лицензий!");
+                            // Временная потеря связи не является причиной удаления ключа.
                         }
                     });
                 }
@@ -1489,6 +1540,10 @@ public class AndroidBridge {
             String status = res.optString("status", "");
             String srvSig = res.optString("sig", "");
 
+            if (isTransientServerError(status, res)) {
+                return "ERROR|" + res.optString("message", "Нет связи с сервером авторизации. Проверьте интернет!");
+            }
+
             if (!verifyServerResponseSignature(cleanKey, hwid, status, srvSig)) {
                 forceKickExpiredUser("Ошибка криптографической подписи сервера!");
                 return "ERROR|Ошибка криптографической подписи сервера!";
@@ -1520,7 +1575,6 @@ public class AndroidBridge {
             forceKickExpiredUser(errMsg);
             return "ERROR|" + errMsg;
         } catch (Exception e) {
-            forceKickExpiredUser("Нет связи с сервером авторизации!");
             return "ERROR|Нет связи с сервером авторизации. Проверьте интернет!";
         }
     }
@@ -1559,6 +1613,11 @@ public class AndroidBridge {
             String status = res.optString("status", "");
             String srvSig = res.optString("sig", "");
 
+            // Временная недоступность сервера — не блокировка ключа. Сообщаем UI о повторе.
+            if (isTransientServerError(status, res)) {
+                return "NETWORK|Нет связи с сервером лицензий. Повторная проверка через 20 сек.";
+            }
+
             if (!verifyServerResponseSignature(cleanKey, hwid, status, srvSig)) {
                 forceKickExpiredUser("Ошибка подписи ответа сервера!");
                 return "BLOCKED|Ошибка подписи сервера";
@@ -1594,8 +1653,7 @@ public class AndroidBridge {
             forceKickExpiredUser(msg);
             return "EXPIRED|" + msg;
         } catch (Exception e) {
-            forceKickExpiredUser("Нет связи с сервером проверки лицензии!");
-            return "EXPIRED|Проверьте подключение к интернету";
+            return "NETWORK|Нет связи с сервером проверки лицензии. Повторная проверка через 20 сек.";
         }
     }
 

@@ -1,5 +1,7 @@
 package com.teleport.so2;
 
+import android.os.SystemClock;
+
 import org.json.JSONObject;
 
 import java.io.BufferedReader;
@@ -31,6 +33,8 @@ public class ApiManager {
     private static final String DECOY_SECRET_SALT = "SO2_LEGIT_CRACK_TRAP_KEY_2026_V9";
 
     private static final AtomicLong VERIFIED_SESSION_STAMP = new AtomicLong(0L);
+    private static final AtomicLong VERIFIED_MONO_STAMP = new AtomicLong(0L);
+    private static final long MAX_SESSION_SILENCE_MS = 15L * 60L * 1000L;
     private static final long SESSION_MAGIC_MASK = 0x5A93F10C7744E2B1L;
     private static final SecureRandom RNG = new SecureRandom();
 
@@ -49,15 +53,18 @@ public class ApiManager {
     public static void setSessionVerified(boolean verified) {
         if (isHoneypotTriggered()) {
             VERIFIED_SESSION_STAMP.set(0L);
+            VERIFIED_MONO_STAMP.set(0L);
             sessionVerified = false;
             return;
         }
         if (verified) {
             long nowSlice = (System.currentTimeMillis() / 60000L) ^ SESSION_MAGIC_MASK;
             VERIFIED_SESSION_STAMP.set(nowSlice);
+            VERIFIED_MONO_STAMP.set(SystemClock.elapsedRealtime());
             sessionVerified = true;
         } else {
             VERIFIED_SESSION_STAMP.set(0L);
+            VERIFIED_MONO_STAMP.set(0L);
             sessionVerified = false;
         }
     }
@@ -65,17 +72,25 @@ public class ApiManager {
     public static boolean isSessionVerified() {
         if (isHoneypotTriggered()) {
             VERIFIED_SESSION_STAMP.set(0L);
+            VERIFIED_MONO_STAMP.set(0L);
             return false;
         }
         long stamp = VERIFIED_SESSION_STAMP.get();
         if (stamp == 0L) return false;
         long decoded = stamp ^ SESSION_MAGIC_MASK;
         long currentSlice = System.currentTimeMillis() / 60000L;
-        return Math.abs(currentSlice - decoded) <= 1440L;
+        boolean wallClockOk = Math.abs(currentSlice - decoded) <= 1440L;
+        // Монотонные часы ядра не поддаются сдвигу системного времени.
+        long mono = VERIFIED_MONO_STAMP.get();
+        boolean monoOk = mono > 0L
+                && SystemClock.elapsedRealtime() >= mono
+                && (SystemClock.elapsedRealtime() - mono) <= MAX_SESSION_SILENCE_MS;
+        return wallClockOk && monoOk;
     }
 
     public static void invalidateSession() {
         VERIFIED_SESSION_STAMP.set(0L);
+        VERIFIED_MONO_STAMP.set(0L);
         sessionVerified = false;
     }
 

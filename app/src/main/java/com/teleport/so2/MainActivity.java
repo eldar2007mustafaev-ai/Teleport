@@ -15,6 +15,8 @@ import android.graphics.drawable.GradientDrawable;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.provider.Settings;
 import android.util.DisplayMetrics;
 import android.view.Gravity;
@@ -201,6 +203,13 @@ public class MainActivity extends Activity {
         ws.setMediaPlaybackRequiresUserGesture(false);
         ws.setCacheMode(WebSettings.LOAD_DEFAULT);
 
+        // Нативная защита WebView: отладка и доступ к чужим file:// закрыты,
+        // но доступ к собственному ассету и ws:// для голосового чата сохранён.
+        WebView.setWebContentsDebuggingEnabled(false);
+        ws.setSavePassword(false);
+        ws.setAllowFileAccessFromFileURLs(false);
+        ws.setAllowUniversalAccessFromFileURLs(false);
+
         webView.setBackgroundColor(Color.parseColor("#060709"));
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
@@ -249,7 +258,17 @@ public class MainActivity extends Activity {
             }
         });
 
-        webView.setWebViewClient(new WebViewClient());
+        webView.setWebViewClient(new WebViewClient() {
+            @Override
+            public void onPageFinished(WebView view, String url) {
+                scheduleRenderFallback(view);
+            }
+
+            @Override
+            public void onReceivedError(WebView view, int errorCode, String description, String failingUrl) {
+                showRenderError(view);
+            }
+        });
         webView.addJavascriptInterface(new AndroidBridge(this), "AndroidBridge");
         webView.loadUrl("file:///android_asset/index.html");
 
@@ -280,6 +299,41 @@ public class MainActivity extends Activity {
             }
             filePathCallback.onReceiveValue(results);
             filePathCallback = null;
+        }
+    }
+
+    private final Handler renderCheckHandler = new Handler(Looper.getMainLooper());
+    private Runnable renderCheckRunnable;
+
+    // Если защищённый HTML не отрисовался (например, сработал старый лоудер),
+    // показываем видимое сообщение вместо чёрного экрана.
+    private void scheduleRenderFallback(final WebView view) {
+        if (renderCheckRunnable != null) renderCheckHandler.removeCallbacks(renderCheckRunnable);
+        renderCheckRunnable = new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    view.evaluateJavascript(
+                            "(function(){try{return ((document.body&&document.body.innerText)||'').trim().length;}catch(e){return -1;}})()",
+                            value -> {
+                                try {
+                                    int len = Integer.parseInt(value);
+                                    if (len < 12) showRenderError(view);
+                                } catch (Throwable ignored) {}
+                            });
+                } catch (Throwable ignored) {}
+            }
+        };
+        renderCheckHandler.postDelayed(renderCheckRunnable, 3500);
+    }
+
+    private void showRenderError(final WebView view) {
+        try {
+            view.evaluateJavascript(
+                    "document.body.innerHTML=\"<div style='margin:80px 24px;padding:20px;border:1px solid #f43f5e;border-radius:16px;color:#fda4af;background:#14080d;font:600 15px sans-serif;text-align:center'>Не удалось загрузить защищённый интерфейс. Перезапустите приложение.</div>\";",
+                    null);
+        } catch (Throwable ignored) {
+            Toast.makeText(this, "Не удалось загрузить интерфейс", Toast.LENGTH_LONG).show();
         }
     }
 

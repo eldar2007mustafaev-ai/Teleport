@@ -4,7 +4,7 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
 <title>SO2Teleport PRO — Grey Liquid Glass</title>
-<!-- SO2TELEPORT_QUANTUM_V9_SEAL -->
+<!-- SO2TELEPORT_QUANTUM_V9_SEAL --><!-- SO2TELEPORT_V10_CORE -->
 <style>
   :root {
     --bg-deep: #0b0e13;
@@ -2300,6 +2300,9 @@
         updateAllSubscriptionBadges(label);
       } else {
         var msg = (ver && ver.indexOf('|') !== -1) ? ver.split('|')[1] : 'Сессия лицензии истекла';
+        if (ver && ver.indexOf('NETWORK|') === 0) {
+          showGlassToast('⏳ ' + msg);
+        }
         forceShowKickScreen(msg);
       }
 

@@ -43,13 +43,22 @@ public class ProfileManager {
     }
 
     public static String getSavedKey(Context context) {
+        String secure = SecurityShield.getSecurePref(context, "profile_lic_slot");
+        if (secure != null && !secure.trim().isEmpty()) return secure.trim();
         SharedPreferences prefs = context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE);
-        return prefs.getString("activated_key", "");
+        String legacy = prefs.getString("activated_key", "");
+        if (legacy != null && !legacy.trim().isEmpty()) {
+            String clean = legacy.trim().toUpperCase(Locale.US);
+            SecurityShield.putSecurePref(context, "profile_lic_slot", clean);
+            prefs.edit().remove("activated_key").apply();
+            return clean;
+        }
+        return "";
     }
 
     public static boolean isActivated(Context context) {
         SharedPreferences prefs = context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE);
-        String savedKey = prefs.getString("activated_key", "");
+        String savedKey = getSavedKey(context);
         String boundAid = prefs.getString("bound_android_id", "");
         String currentAid = getHardwareAndroidId(context);
         return !savedKey.isEmpty() && boundAid.equals(currentAid);
@@ -58,9 +67,12 @@ public class ProfileManager {
     public static void saveActivatedProfile(Context context, String nickname, String key) {
         SharedPreferences prefs = context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE);
         String now = new SimpleDateFormat("dd.MM.yyyy HH:mm", Locale.getDefault()).format(new Date());
+        if (key != null && !key.trim().isEmpty()) {
+            SecurityShield.putSecurePref(context, "profile_lic_slot", key.trim().toUpperCase(Locale.US));
+        }
         prefs.edit()
+                .remove("activated_key")
                 .putString("nickname", nickname.trim())
-                .putString("activated_key", key.trim().toUpperCase())
                 .putString("bound_android_id", getHardwareAndroidId(context))
                 .putString("activated_date", now)
                 .putBoolean("onboarding_done", true)
@@ -149,7 +161,7 @@ public class ProfileManager {
         JSONObject obj = new JSONObject();
         try {
             obj.put("nickname", prefs.getString("nickname", "Игрок"));
-            obj.put("key", prefs.getString("activated_key", "-"));
+            obj.put("key", getSavedKey(context));
             obj.put("android_id", getHardwareAndroidId(context));
             obj.put("active_preset", prefs.getString("active_preset", "teleport"));
             obj.put("cfg_chunk", getChunk(context));
