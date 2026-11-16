@@ -15,6 +15,9 @@ import java.util.UUID;
 
 public class TeleportEngine {
 
+    // ЗАКРЫТИЕ УЯЗВИМОСТИ #17: В <clinit> строго false!
+    private static volatile boolean isServerAuthorized = false;
+
     private static Context appContext;
     private static int nativeShortSide = 1080;
     private static int nativeLongSide = 2400;
@@ -22,6 +25,10 @@ public class TeleportEngine {
     private static int pixelDownscalePct = 100;
     private static boolean teleportActive = false;
     private static String currentRatio = "4:3";
+
+    public static void setServerAuthorizedFromVerifiedHmac(boolean auth) {
+        isServerAuthorized = auth && AndroidBridge.isNativeServerAuthorized();
+    }
 
     public static void init(Context context) {
         if (context == null) return;
@@ -107,22 +114,19 @@ public class TeleportEngine {
         } catch (Throwable ignored) {}
     }
 
-    // Защищённое выполнение команд: без подтверждённой серверной сессии команды блокируются
+    // ЗАКРЫТИЕ УЯЗВИМОСТИ #17: Первой строкой проверяем isServerAuthorized и нативный флаг в libso2.so!
     public static void execShizukuCommand(String cmd) {
-        if (cmd == null || cmd.trim().isEmpty()) return;
-        String safe = cmd.trim();
-        // Разрешаем только сброс экрана при выходе, все остальные твики требуют верифицированной лицензии
-        boolean isResetOnly = safe.equals("wm size reset; wm density reset;") || safe.startsWith("wm size reset");
-        if (!isResetOnly && !ApiManager.isSessionVerified()) {
+        if (!isServerAuthorized || !AndroidBridge.isNativeServerAuthorized() || !ApiManager.isSessionVerified()) {
             return;
         }
+        if (cmd == null || cmd.trim().isEmpty()) return;
         try {
-            ShizukuManager.execCommand(safe);
+            ShizukuManager.execCommand(cmd.trim());
         } catch (Throwable ignored) {}
     }
 
     public static void startTeleport(String presetId) {
-        if (!ApiManager.isSessionVerified()) return;
+        if (!isServerAuthorized || !AndroidBridge.isNativeServerAuthorized()) return;
         teleportActive = true;
         if (presetId != null && presetId.startsWith("SET_RATIO:")) {
             currentRatio = presetId.substring("SET_RATIO:".length()).trim();
@@ -168,7 +172,7 @@ public class TeleportEngine {
             int chunks, int chunkFast, double straight,
             int stick, int grid, int pause, double accel
     ) {
-        if (!ApiManager.isSessionVerified() || !isShizukuReady()) return;
+        if (!isServerAuthorized || !AndroidBridge.isNativeServerAuthorized() || !isShizukuReady()) return;
         int computedSpeed = Math.max(-7, Math.min(7, (int) Math.round((sharp - 1.0) * 3.0 + (sx + sy) * 0.5)));
         int tapTimeout = Math.max(120, Math.min(350, 260 - chunks));
         int touchSlop = Math.max(1, Math.min(16, 10 - (grid / 15)));
@@ -182,7 +186,7 @@ public class TeleportEngine {
     }
 
     public static boolean applyAspectRatioStretch(String ratioStr) {
-        if (!ApiManager.isSessionVerified() || !isShizukuReady()) return false;
+        if (!isServerAuthorized || !AndroidBridge.isNativeServerAuthorized() || !isShizukuReady()) return false;
         if (ratioStr != null && !ratioStr.trim().isEmpty()) {
             currentRatio = ratioStr.trim().toUpperCase(Locale.US);
         }
@@ -215,7 +219,7 @@ public class TeleportEngine {
     }
 
     public static void releaseBoxToFullStretch() {
-        if (!ApiManager.isSessionVerified() || !isShizukuReady()) return;
+        if (!isServerAuthorized || !AndroidBridge.isNativeServerAuthorized() || !isShizukuReady()) return;
         double scale = Math.max(0.50, Math.min(1.0, pixelDownscalePct / 100.0));
         int s = ((int) Math.round(nativeShortSide * scale) / 2) * 2;
         int l = ((int) Math.round(nativeLongSide * scale) / 2) * 2;
@@ -228,7 +232,7 @@ public class TeleportEngine {
     }
 
     public static void setPixelDownscaleFactor(int pct) {
-        if (!ApiManager.isSessionVerified()) return;
+        if (!isServerAuthorized || !AndroidBridge.isNativeServerAuthorized()) return;
         pixelDownscalePct = Math.max(50, Math.min(100, pct));
         if (!isShizukuReady()) return;
 
@@ -244,7 +248,7 @@ public class TeleportEngine {
     }
 
     public static void healTouchAndRestart() {
-        if (!ApiManager.isSessionVerified() || !isShizukuReady()) return;
+        if (!isServerAuthorized || !AndroidBridge.isNativeServerAuthorized() || !isShizukuReady()) return;
         execShizukuCommand(
                 "settings put secure long_press_timeout 250; " +
                 "settings put secure multi_press_timeout 200; " +
@@ -254,7 +258,7 @@ public class TeleportEngine {
     }
 
     public static void setRawInputNoSmoothing(boolean enabled) {
-        if (!ApiManager.isSessionVerified() || !isShizukuReady()) return;
+        if (!isServerAuthorized || !AndroidBridge.isNativeServerAuthorized() || !isShizukuReady()) return;
         execShizukuCommand(
                 "settings put global window_animation_scale " + (enabled ? "0.0" : "0.5") + "; " +
                 "settings put global transition_animation_scale " + (enabled ? "0.0" : "0.5") + "; " +
@@ -263,7 +267,7 @@ public class TeleportEngine {
     }
 
     public static void setVulkanGpuTurbo(boolean enabled) {
-        if (!ApiManager.isSessionVerified() || !isShizukuReady()) return;
+        if (!isServerAuthorized || !AndroidBridge.isNativeServerAuthorized() || !isShizukuReady()) return;
         execShizukuCommand(
                 "setprop debug.hwui.renderer " + (enabled ? "skiavk" : "opengl") + "; " +
                 "setprop debug.egl.hw 1; " +
@@ -272,7 +276,7 @@ public class TeleportEngine {
     }
 
     public static void setNetPingStabilizer(boolean enabled) {
-        if (!ApiManager.isSessionVerified() || !isShizukuReady()) return;
+        if (!isServerAuthorized || !AndroidBridge.isNativeServerAuthorized() || !isShizukuReady()) return;
         execShizukuCommand(
                 "settings put global wifi_scan_always_enabled " + (enabled ? "0" : "1") + "; " +
                 "settings put global ble_scan_always_enabled " + (enabled ? "0" : "1") + ";"
@@ -280,7 +284,7 @@ public class TeleportEngine {
     }
 
     public static void setTouchSamplingBoost(boolean enabled, int hz) {
-        if (!ApiManager.isSessionVerified() || !isShizukuReady()) return;
+        if (!isServerAuthorized || !AndroidBridge.isNativeServerAuthorized() || !isShizukuReady()) return;
         execShizukuCommand(
                 "setprop debug.sf.early_phase_offset_ns " + (enabled ? "500000" : "1000000") + "; " +
                 "settings put system peak_refresh_rate " + hz + ".0; " +
@@ -289,7 +293,7 @@ public class TeleportEngine {
     }
 
     public static void setHzThermalGuard(boolean enabled) {
-        if (!ApiManager.isSessionVerified() || !isShizukuReady()) return;
+        if (!isServerAuthorized || !AndroidBridge.isNativeServerAuthorized() || !isShizukuReady()) return;
         execShizukuCommand(
                 "settings put system peak_refresh_rate " + (enabled ? "120.0" : "60.0") + "; " +
                 "settings put secure refresh_rate_mode " + (enabled ? "2" : "0") + ";"
@@ -297,13 +301,13 @@ public class TeleportEngine {
     }
 
     public static void setEnhancedRecoilFix(boolean enabled, int power) {
-        if (!ApiManager.isSessionVerified() || !isShizukuReady()) return;
+        if (!isServerAuthorized || !AndroidBridge.isNativeServerAuthorized() || !isShizukuReady()) return;
         int speed = enabled ? Math.min(7, 2 + (power / 20)) : 0;
         execShizukuCommand("settings put system pointer_speed " + speed + ";");
     }
 
     public static void enableWideHitboxQuantization(boolean enabled) {
-        if (!ApiManager.isSessionVerified() || !isShizukuReady()) return;
+        if (!isServerAuthorized || !AndroidBridge.isNativeServerAuthorized() || !isShizukuReady()) return;
         execShizukuCommand("setprop debug.sf.disable_backpressure " + (enabled ? "1" : "0") + ";");
     }
 
@@ -311,7 +315,7 @@ public class TeleportEngine {
             int fpsLock, int gpuBoost, int frameTime,
             int edgeSens, int multiTouch, int netBuffer, int thermalLim
     ) {
-        if (!ApiManager.isSessionVerified() || !isShizukuReady()) return;
+        if (!isServerAuthorized || !AndroidBridge.isNativeServerAuthorized() || !isShizukuReady()) return;
         execShizukuCommand(
                 "settings put system peak_refresh_rate " + fpsLock + ".0; " +
                 "settings put system min_refresh_rate " + fpsLock + ".0; " +
@@ -321,7 +325,7 @@ public class TeleportEngine {
     }
 
     public static String performRamBoost(Context context) {
-        if (!ApiManager.isSessionVerified()) return "NEED_AUTH";
+        if (!isServerAuthorized || !AndroidBridge.isNativeServerAuthorized()) return "NEED_AUTH";
         try {
             if (isShizukuReady()) {
                 execShizukuCommand("am kill-all; cmd activity kill-all;");
