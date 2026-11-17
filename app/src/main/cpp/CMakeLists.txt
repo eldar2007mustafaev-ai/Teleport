@@ -1,6 +1,5 @@
 cmake_minimum_required(VERSION 3.22.1)
-
-project("SO2TeleportNative")
+project("so2")
 
 add_library(
         so2
@@ -9,8 +8,9 @@ add_library(
 )
 
 find_library(log-lib log)
+find_library(android-lib android)
 
 target_link_libraries(
         so2
-        ${log-lib}
+        ${log-lib}${android-lib}
 )
