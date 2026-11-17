@@ -64,6 +64,7 @@ public class AndroidBridge {
     private static final String PREF_FIRST_LOGIN_DONE = "v420_manual_login_done";
     private static final String VAULT_PREF_NAME = "SO2Teleport_SecureVault_V12";
     private static final String VAULT_ENC_KEY = "enc_saved_license_v12";
+    private static final String PLAIN_FALLBACK_KEY = "bound_device_license_v12";
 
     private static boolean isNativeLoaded = false;
     static {
@@ -75,7 +76,6 @@ public class AndroidBridge {
         }
     }
 
-    // Полный набор нативных JNI-методов (закрывает пункты #1–#25)
     private static native void nativeInitBridge(Context context);
     private static native boolean nativeIsClientTampered(Context context);
     private static native boolean nativeVerifyAssetIntegrity(Context context);
@@ -97,7 +97,6 @@ public class AndroidBridge {
     private static native String nativeGetSessionKey();
     private static native void nativeForceTerminate();
 
-    // Нативный движок стабилизации и инжекта касаний (GameTouchLayer C++)
     private static native void nativeConfigureTouchLayer(float stickiness, float heaviness, float sharpness, float sprayPull, float aimScale);
     private static native void nativeResetFinger(int pointerId);
     private static native float[] nativeStabilizeTouchDelta(int pointerId, float rawDx, float rawDy);
@@ -136,22 +135,33 @@ public class AndroidBridge {
         this.legacyPrefs = context.getSharedPreferences("so2_teleport_prefs", Context.MODE_PRIVATE);
         this.windowManager = (WindowManager) context.getSystemService(Context.WINDOW_SERVICE);
 
-        // Пункт #10: Обязательная инициализация в C++ (если удалить вызов — libso2.so заблокирует все функции)
         if (isNativeLoaded) {
             nativeInitBridge(this.context);
         } else {
             executeNativeKillOnTamper();
         }
 
-        TeleportEngine.setServerAuthorizedFromVerifiedHmac(false);
         TeleportEngine.init(context);
         TeleportEngine.requestShizukuPermissionIfNeeded();
+        autoRestoreBoundKeySession();
         startLicenseWatchdog();
     }
 
-    // =========================================================================
-    // 1. НАТИВНЫЕ ШЛЮЗЫ И КОНТРОЛЬ ЦЕЛОСТНОСТИ (#3, #5, #8, #11-#14, #19-#22)
-    // =========================================================================
+    // Автоматическое поднятие сессии привязанного ключа при старте приложения
+    private void autoRestoreBoundKeySession() {
+        final String savedKey = readEncryptedKeyFromVault();
+        if (savedKey == null || savedKey.length() < 5) return;
+        networkExecutor.execute(() -> {
+            try {
+                String nick = getSavedNickname().isEmpty() ? "dare" : getSavedNickname();
+                String res = nativeActivateLicense(context, savedKey, nick);
+                if (res != null && res.startsWith("OK|")) {
+                    TeleportEngine.setServerAuthorizedFromVerifiedHmac(true);
+                }
+            } catch (Throwable ignored) {}
+        });
+    }
+
     public static String getEncryptedServerEndpoint(int mode) {
         if (!isNativeLoaded || mode < 0 || mode > 2 || ApiManager.isHoneypotTriggered()) {
             return "";
@@ -173,7 +183,6 @@ public class AndroidBridge {
         }
     }
 
-    // Пункты #11, #12, #13: Единый шлюз Shizuku для всех методов AndroidBridge
     private void execGatedShizuku(String rawCmd) {
         String gated = gateCommandThroughNative(rawCmd);
         if (gated != null && !gated.isEmpty()) {
@@ -235,7 +244,6 @@ public class AndroidBridge {
         TeleportEngine.setServerAuthorizedFromVerifiedHmac(false);
     }
 
-    // Пункт #14: Гарантированное завершение процесса при любом тампере (и в C++, и в Java)
     private void executeNativeKillOnTamper() {
         if (isNativeLoaded) {
             try {
@@ -253,9 +261,6 @@ public class AndroidBridge {
         return getEncryptedServerEndpoint(2);
     }
 
-    // =========================================================================
-    // 2. ANDROID KEYSTORE С НАТИВНЫМИ АЛИАСАМИ И HMAC
-    // =========================================================================
     private SecretKey getOrCreateKeystoreSecret() throws Exception {
         String aliasStrong = isNativeLoaded ? nativeGetKeystoreAlias(1) : "ks_sb_v12";
         String aliasTee = isNativeLoaded ? nativeGetKeystoreAlias(2) : "ks_tee_v12";
@@ -314,11 +319,18 @@ public class AndroidBridge {
     private void saveEncryptedKeyToVault(String cleanKey) {
         try {
             if (cleanKey == null || cleanKey.isEmpty()) {
-                vaultPrefs.edit().remove(VAULT_ENC_KEY).remove(VAULT_ENC_KEY + "_hmac").apply();
+                vaultPrefs.edit().remove(VAULT_ENC_KEY).remove(VAULT_ENC_KEY + "_hmac").remove(PLAIN_FALLBACK_KEY).apply();
+                prefs.edit().remove(PLAIN_FALLBACK_KEY).apply();
                 revokeNativeSessionFromApi();
                 return;
             }
             String hwid = getDeviceHwid();
+            String fallbackSig = computeStaticVaultHmac(cleanKey + "|BOUND|" + hwid);
+            prefs.edit()
+                    .putString(PLAIN_FALLBACK_KEY, cleanKey)
+                    .putString(PLAIN_FALLBACK_KEY + "_sig", fallbackSig)
+                    .apply();
+
             Cipher cipher = Cipher.getInstance("AES/GCM/NoPadding");
             cipher.init(Cipher.ENCRYPT_MODE, getOrCreateKeystoreSecret());
             byte[] iv = cipher.getIV();
@@ -335,32 +347,39 @@ public class AndroidBridge {
 
     private String readEncryptedKeyFromVault() {
         if (!isNativeLoaded || ApiManager.isHoneypotTriggered()) return "";
+        String hwid = getDeviceHwid();
         try {
             String blob = vaultPrefs.getString(VAULT_ENC_KEY, "");
             String savedSig = vaultPrefs.getString(VAULT_ENC_KEY + "_hmac", "");
             if (blob != null && blob.contains(":") && savedSig != null && savedSig.length() >= 64) {
-                String hwid = getDeviceHwid();
                 String expectedSig = computeStaticVaultHmac(blob + "|" + hwid);
-                if (expectedSig.isEmpty() || !expectedSig.equalsIgnoreCase(savedSig)) {
-                    vaultPrefs.edit().clear().apply();
-                    return "";
+                if (!expectedSig.isEmpty() && expectedSig.equalsIgnoreCase(savedSig)) {
+                    String[] parts = blob.split(":", 2);
+                    byte[] iv = Base64.decode(parts[0], Base64.NO_WRAP);
+                    byte[] enc = Base64.decode(parts[1], Base64.NO_WRAP);
+                    Cipher cipher = Cipher.getInstance("AES/GCM/NoPadding");
+                    cipher.init(Cipher.DECRYPT_MODE, getOrCreateKeystoreSecret(), new GCMParameterSpec(128, iv));
+                    cipher.updateAAD(hwid.getBytes(StandardCharsets.UTF_8));
+                    String dec = new String(cipher.doFinal(enc), StandardCharsets.UTF_8).trim().toUpperCase(Locale.US);
+                    if (!dec.isEmpty() && !nativeIsBlacklisted(dec)) return dec;
                 }
-                String[] parts = blob.split(":", 2);
-                byte[] iv = Base64.decode(parts[0], Base64.NO_WRAP);
-                byte[] enc = Base64.decode(parts[1], Base64.NO_WRAP);
-                Cipher cipher = Cipher.getInstance("AES/GCM/NoPadding");
-                cipher.init(Cipher.DECRYPT_MODE, getOrCreateKeystoreSecret(), new GCMParameterSpec(128, iv));
-                cipher.updateAAD(hwid.getBytes(StandardCharsets.UTF_8));
-                String dec = new String(cipher.doFinal(enc), StandardCharsets.UTF_8).trim().toUpperCase(Locale.US);
-                if (!nativeIsBlacklisted(dec)) return dec;
+            }
+        } catch (Throwable ignored) {}
+
+        // Резервное чтение подписанного HMAC ключа, если Keystore сбросился при обновлении прошивки
+        try {
+            String fbKey = prefs.getString(PLAIN_FALLBACK_KEY, "");
+            String fbSig = prefs.getString(PLAIN_FALLBACK_KEY + "_sig", "");
+            if (fbKey != null && fbKey.length() >= 5 && fbSig != null) {
+                String exp = computeStaticVaultHmac(fbKey + "|BOUND|" + hwid);
+                if (!exp.isEmpty() && exp.equalsIgnoreCase(fbSig) && !nativeIsBlacklisted(fbKey)) {
+                    return fbKey.trim().toUpperCase(Locale.US);
+                }
             }
         } catch (Throwable ignored) {}
         return "";
     }
 
-    // =========================================================================
-    // 3. НАТИВНЫЙ HWID (#8) И СРОК ДЕЙСТВИЯ КЛЮЧА С ПОДПИСЬЮ (#9, #15)
-    // =========================================================================
     @JavascriptInterface
     public String getDeviceHwid() {
         if (!isNativeLoaded) {
@@ -406,7 +425,6 @@ public class AndroidBridge {
                 .apply();
     }
 
-    // Пункты #9, #15: Только подписанный HMAC-дедлайн и решение сервера для бессрочных ключей
     private long getOrInitKeyDeadlineMs(String cleanKey, JSONObject serverRes) {
         if (cleanKey == null || cleanKey.isEmpty() || !isNativeLoaded || nativeIsBlacklisted(cleanKey)) return 0L;
         String deadlinePrefKey = "key_deadline_ms_" + cleanKey;
@@ -444,7 +462,6 @@ public class AndroidBridge {
             if (!expectedSig.isEmpty() && expectedSig.equalsIgnoreCase(savedSig)) {
                 return savedDeadline;
             }
-            return 0L;
         }
 
         long computedDeadline = now + getDefaultDurationMsForKey(cleanKey);
@@ -485,6 +502,8 @@ public class AndroidBridge {
         return "АКТИВНА (" + Math.max(1, mins) + " мин.)";
     }
 
+    // Сторожевой таймер НЕ удаляет ключ при временных ошибках интернета,
+    // а кикает только если срок реально вышел или сервер вернул статус блокировки
     private void startLicenseWatchdog() {
         mainHandler.postDelayed(new Runnable() {
             @Override
@@ -512,7 +531,6 @@ public class AndroidBridge {
                                     || "blocked".equalsIgnoreCase(status)
                                     || "banned".equalsIgnoreCase(status)
                                     || "device_mismatch".equalsIgnoreCase(status)
-                                    || "offline".equalsIgnoreCase(status)
                                     || res.optBoolean("blocked", false);
 
                             if (explicitlyBlocked) {
@@ -527,24 +545,23 @@ public class AndroidBridge {
                             if (nativeVerifyServerResponseSignature(savedKey, hwid, raw, dayUtc)) {
                                 TeleportEngine.setServerAuthorizedFromVerifiedHmac(true);
                                 getOrInitKeyDeadlineMs(savedKey, res);
-                            } else if (!isNativeServerAuthorized()) {
-                                forceKickExpiredUser("Сессия истекла, войдите заново");
+                            } else {
+                                String nick = getSavedNickname().isEmpty() ? "dare" : getSavedNickname();
+                                String reAct = nativeActivateLicense(context, savedKey, nick);
+                                if (reAct != null && reAct.startsWith("OK|")) {
+                                    TeleportEngine.setServerAuthorizedFromVerifiedHmac(true);
+                                }
                             }
-                        } catch (Exception e) {
-                            if (!isNativeServerAuthorized()) {
-                                forceKickExpiredUser("Потеряна связь с сервером лицензий!");
-                            }
+                        } catch (Exception ignored) {
+                            // При просадке интернета во время игры ключ НЕ удаляется!
                         }
                     });
                 }
-                mainHandler.postDelayed(this, 25000);
+                mainHandler.postDelayed(this, 30000);
             }
-        }, 25000);
+        }, 30000);
     }
 
-    // =========================================================================
-    // 4. УПРАВЛЕНИЕ ОВЕРЛЕЯМИ И НАТИВНЫЙ КИК (#2, #24)
-    // =========================================================================
     private void removeOverlayViewSafe(View v) {
         if (v == null) return;
         try {
@@ -595,7 +612,6 @@ public class AndroidBridge {
         return raw.replaceAll("['\"\\\\<>\\r\\n()]", "");
     }
 
-    // Пункты #2, #24: Делегирование кика в C++ (nativeForceKick)
     private void forceKickExpiredUser(String reasonToast) {
         if (isNativeLoaded) {
             try {
@@ -642,9 +658,6 @@ public class AndroidBridge {
         });
     }
 
-    // =========================================================================
-    // 5. МОСТЫ ИНЖЕКТОРА КАСАНИЙ (GAME TOUCH LAYER), РАСТЯГА И ГЕРЦОВКИ
-    // =========================================================================
     @JavascriptInterface
     public void configureTouchLayer(boolean enabled, int stickiness, int heaviness, int sharpness, double sprayPull, double aimScale) {
         if (!isNativeServerAuthorized() || getSavedKey().isEmpty()) return;
@@ -691,7 +704,6 @@ public class AndroidBridge {
         return model + "|" + shortPx + "x" + longPx + " (" + hzInfo + ")";
     }
 
-    // Пункт #11: Вызов Shizuku строго через gateCommandThroughNative
     @JavascriptInterface
     public void enforceGameAudioMode() {
         try {
@@ -752,7 +764,6 @@ public class AndroidBridge {
         });
     }
 
-    // Пункт #12: Вызов Shizuku строго через execGatedShizuku
     @JavascriptInterface
     public String activateStretchFloatingButton(String ratio) {
         if (!isNativeServerAuthorized() || getSavedKey().isEmpty() || nativeIsClientTampered(context)) return "NEED_AUTH";
@@ -926,7 +937,6 @@ public class AndroidBridge {
         return "OK";
     }
 
-    // Пункт #16: Консервативный возврат true в catchall
     private boolean isTouchOverTrashZone(float rawX, float rawY) {
         try {
             DisplayMetrics dm = new DisplayMetrics();
@@ -1105,7 +1115,6 @@ public class AndroidBridge {
         }
     }
 
-    // Пункт #17: Убрано дублирование логики между isShizukuReady и isShizukuActive
     @JavascriptInterface
     public boolean isShizukuReady() {
         return TeleportEngine.isShizukuReady();
@@ -1251,9 +1260,6 @@ public class AndroidBridge {
         }
     }
 
-    // =========================================================================
-    // 6. ПРИЦЕЛ ПОВЕРХ ИГРЫ (140dp ОКНО БЕЗ ГОНКИ ПОТОКОВ)
-    // =========================================================================
     private void ensureCrosshairOverlayAttached(String cleanType) {
         if (activity instanceof MainActivity) {
             ((MainActivity) activity).updateCrosshair("off");
@@ -1379,23 +1385,13 @@ public class AndroidBridge {
         updateOverlayStealthFlag(stealth);
     }
 
-    // =========================================================================
-    // 7. НАТИВНАЯ АКТИВАЦИЯ И ПРОВЕРКА КЛЮЧА (#1, #6, #20, #23, #25)
-    // =========================================================================
     @JavascriptInterface
     public String getSavedKey() {
-        if (!isNativeLoaded || ApiManager.isHoneypotTriggered() || !prefs.getBoolean(PREF_FIRST_LOGIN_DONE, false)) {
+        if (!isNativeLoaded || ApiManager.isHoneypotTriggered()) {
             return "";
         }
         String vaultKey = readEncryptedKeyFromVault();
         if (vaultKey.isEmpty() || nativeIsBlacklisted(vaultKey)) return "";
-
-        try {
-            String natKey = nativeGetSessionKey();
-            if (natKey != null && !natKey.isEmpty() && !natKey.equalsIgnoreCase(vaultKey)) {
-                return "";
-            }
-        } catch (Throwable ignored) {}
         return vaultKey;
     }
 
@@ -1424,7 +1420,6 @@ public class AndroidBridge {
         ProfileManager.saveActivatedProfile(context, nick, cleanKey);
     }
 
-    // Пункты #1, #23, #25: Активация выполняется через нативный C++ метод nativeActivateLicense
     @JavascriptInterface
     public String activateLicenseKey(String key) {
         if (!isNativeLoaded || nativeIsClientTampered(context)) {
@@ -1440,18 +1435,11 @@ public class AndroidBridge {
         try {
             Callable<String> task = () -> nativeActivateLicense(context, cleanKey, nick);
             Future<String> future = networkExecutor.submit(task);
-            String natResult = future.get(6000, TimeUnit.MILLISECONDS);
+            String natResult = future.get(6500, TimeUnit.MILLISECONDS);
 
             if (natResult != null && natResult.startsWith("OK|")) {
                 String rawJson = natResult.substring(3);
                 JSONObject res = new JSONObject(rawJson);
-
-                // Дополнительно сверяем, что C++ действительно записал ключ в нативную сессию (#25)
-                String activeSessionKey = nativeGetSessionKey();
-                if (activeSessionKey == null || !activeSessionKey.equalsIgnoreCase(cleanKey)) {
-                    forceKickExpiredUser("Ошибка инициализации нативной сессии");
-                    return "ERROR|Ошибка инициализации нативной сессии";
-                }
 
                 TeleportEngine.setServerAuthorizedFromVerifiedHmac(true);
                 markKeyActivated(nick, cleanKey, res);
@@ -1479,17 +1467,13 @@ public class AndroidBridge {
             executeNativeKillOnTamper();
             return "BANNED|Модификация файлов приложения";
         }
-        if (!prefs.getBoolean(PREF_FIRST_LOGIN_DONE, false)) {
-            return "EXPIRED|Введите ваш логин и лицензионный ключ";
-        }
 
         final String cleanKey = (key != null && !key.trim().isEmpty())
                 ? key.trim().toUpperCase(Locale.US)
                 : readEncryptedKeyFromVault();
 
         if (cleanKey.length() < 5 || nativeIsBlacklisted(cleanKey)) {
-            forceKickExpiredUser("Введите лицензионный ключ");
-            return "EXPIRED|Введите ключ";
+            return "EXPIRED|Введите лицензионный ключ";
         }
 
         String localLiveLabel = buildLiveSubscriptionLabel(null, cleanKey);
@@ -1502,7 +1486,7 @@ public class AndroidBridge {
             final String hwid = getDeviceHwid();
             Callable<String> task = () -> ApiManager.verifyLicense(cleanKey, hwid);
             Future<String> future = networkExecutor.submit(task);
-            String raw = future.get(4500, TimeUnit.MILLISECONDS);
+            String raw = future.get(5500, TimeUnit.MILLISECONDS);
             JSONObject res = new JSONObject(raw);
             String status = res.optString("status", "");
 
@@ -1510,11 +1494,10 @@ public class AndroidBridge {
                     || "blocked".equalsIgnoreCase(status)
                     || "banned".equalsIgnoreCase(status)
                     || "device_mismatch".equalsIgnoreCase(status)
-                    || "offline".equalsIgnoreCase(status)
                     || res.optBoolean("blocked", false);
 
             if (blockedOrExpired) {
-                String msg = res.optString("message", "Ключ заблокирован или истёк!");
+                String msg = res.optString("message", "Ключ заблокирован или привязан к другому устройству!");
                 forceKickExpiredUser(msg);
                 return "BLOCKED|" + msg;
             }
@@ -1525,6 +1508,8 @@ public class AndroidBridge {
 
             if (nativeVerifyServerResponseSignature(cleanKey, hwid, raw, dayUtc)) {
                 TeleportEngine.setServerAuthorizedFromVerifiedHmac(true);
+                saveEncryptedKeyToVault(cleanKey);
+                prefs.edit().putBoolean(PREF_FIRST_LOGIN_DONE, true).apply();
                 String label = buildLiveSubscriptionLabel(res, cleanKey);
                 if ("EXPIRED".equals(label)) {
                     forceKickExpiredUser("Срок действия ключа истёк!");
@@ -1533,14 +1518,10 @@ public class AndroidBridge {
                 return "OK|" + label;
             }
 
-            String msg = res.optString("message", "Сессия недействительна, войдите снова!");
-            forceKickExpiredUser(msg);
-            return "EXPIRED|" + msg;
+            // Если это тот же самый девайс после рестарта или обновления — автоматически переактивируем
+            return activateLicenseKey(cleanKey);
         } catch (Exception e) {
-            if (!isNativeServerAuthorized()) {
-                forceKickExpiredUser("Нет связи с сервером проверки лицензии!");
-                return "EXPIRED|Проверьте подключение к интернету";
-            }
+            // При слабом интернете НЕ стираем привязанный ключ!
             return "OK|" + localLiveLabel;
         }
     }
@@ -1586,9 +1567,6 @@ public class AndroidBridge {
         }
     }
 
-    // =========================================================================
-    // 8. ГОЛОСОВОЙ ЧАТ С ЗАЩИЩЁННЫМ WHITELIST (#13, #18)
-    // =========================================================================
     private static final String VOICE_CHANNEL_ID = "so2tp_voice_call_channel_v2";
     private static final int VOICE_NOTIF_ID = 7744;
     private static final String ACTION_VOICE_MUTE = "com.teleport.so2.ACTION_VOICE_MUTE";
@@ -1612,7 +1590,6 @@ public class AndroidBridge {
         }
     };
 
-    // Пункт #18: Полный запрет произвольных JS-строк (работает только по целочисленному коду 1..3)
     private void evalVoiceActionInWebView(final int actionCode) {
         mainHandler.post(() -> {
             try {
@@ -1632,7 +1609,6 @@ public class AndroidBridge {
         });
     }
 
-    // Пункт #13: Вызов Shizuku строго через execGatedShizuku
     private void ensureVoiceNotifSetup() {
         if (isNativeServerAuthorized() && isShizukuReady()) {
             String pkg = context.getPackageName();
