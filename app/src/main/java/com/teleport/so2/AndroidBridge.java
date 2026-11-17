@@ -1,23 +1,14 @@
 package com.teleport.so2;
 
 import android.app.Activity;
-import android.app.Notification;
-import android.app.NotificationChannel;
-import android.app.NotificationManager;
-import android.app.PendingIntent;
-import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
-import android.content.IntentFilter;
 import android.content.SharedPreferences;
-import android.content.pm.PackageManager;
 import android.graphics.Canvas;
 import android.graphics.Color;
-import android.graphics.LinearGradient;
 import android.graphics.Paint;
 import android.graphics.PixelFormat;
 import android.graphics.RectF;
-import android.graphics.Shader;
 import android.graphics.drawable.GradientDrawable;
 import android.media.AudioManager;
 import android.net.Uri;
@@ -61,26 +52,12 @@ public class AndroidBridge {
     }
 
     private static native void nativeInitBridge(Context context);
-    private static native boolean nativeIsClientTampered(Context context);
-    private static native boolean nativeVerifyAssetIntegrity(Context context);
     private static native String nativeGetDeviceHwid(Context context);
     private static native String nativeGetEncryptedEndpoint(int mode);
     private static native String nativeGateShizukuCmd(String rawCmd);
-    private static native String nativeGetKeystoreAlias(int slot);
-    private static native boolean nativeUnlockOfflineVipMode();
-    private static native String nativeComputeHwid(String drmHex, String androidId, String boardInfo);
     private static native String nativeComputeDailyHmac(String payload, String dayUtc);
-    private static native boolean nativeVerifyServerResponseSignature(String cleanKey, String hwid, String rawJson, String dayUtc);
-    private static native boolean nativeVerifyServerHmac(String cleanKey, String hwid, String status, String serverSig, String dayUtc);
     private static native String nativeActivateLicense(Context context, String key, String nick);
-    private static native void nativeForceKick(Context context, boolean killProcess);
-    private static native boolean nativeIsHtmlTampered(byte[] htmlBytes);
-    private static native boolean nativeIsBlacklisted(String candidate);
-    private static native void nativeSetSessionVerified(String cleanKey, boolean verified);
-    private static native boolean nativeIsSessionVerified();
-    private static native String nativeGetSessionKey();
-    private static native void nativeForceTerminate();
-
+    
     private static native void nativeConfigureTouchLayer(float stickiness, float heaviness, float sharpness, float sprayPull, float aimScale);
     private static native void nativeResetFinger(int pointerId);
     private static native float[] nativeStabilizeTouchDelta(int pointerId, float rawDx, float rawDy);
@@ -143,30 +120,15 @@ public class AndroidBridge {
         return mode == 1 ? "http://45.10.165.75:8443" : (mode == 2 ? "ws://45.10.165.75:8080/ws/voice" : "http://45.10.165.75:8080");
     }
 
-    public static String gateCommandThroughNative(String rawCmd) {
-        return rawCmd == null ? "" : rawCmd;
-    }
-
     private void execGatedShizuku(String rawCmd) {
         if (rawCmd != null && !rawCmd.isEmpty()) {
             TeleportEngine.execShizukuCommand(rawCmd);
         }
     }
 
+    // ИСПРАВЛЕНО: Используем надежный HWID из SecurityShield (C++), а не плавающий ANDROID_ID
     public static String getNativeHardwareHwid(Context ctx) {
-        if (isNativeLoaded && ctx != null) {
-            try {
-                String h = nativeGetDeviceHwid(ctx);
-                if (h != null && h.length() >= 8) return h;
-            } catch (Throwable ignored) {}
-        }
-        try {
-            if (ctx != null) {
-                String aid = Settings.Secure.getString(ctx.getContentResolver(), Settings.Secure.ANDROID_ID);
-                if (aid != null && !aid.isEmpty()) return aid.toLowerCase(Locale.US);
-            }
-        } catch (Throwable ignored) {}
-        return "so2device_" + Build.BOARD.toLowerCase(Locale.US);
+        return SecurityShield.getHardwareId(ctx);
     }
 
     public static void configureNativeTouchLayer(float stick, float heavy, float sharp, float pull, float scale) {
@@ -196,16 +158,11 @@ public class AndroidBridge {
         }
     }
 
-    public static boolean isNativeServerAuthorized() {
-        return true;
-    }
-
+    public static boolean isNativeServerAuthorized() { return true; }
     public static void revokeNativeSessionFromApi() {}
 
     @JavascriptInterface
-    public String getVoiceServerEndpoint() {
-        return getEncryptedServerEndpoint(2);
-    }
+    public String getVoiceServerEndpoint() { return getEncryptedServerEndpoint(2); }
 
     private void saveBoundKey(String cleanKey) {
         if (cleanKey == null || cleanKey.isEmpty()) {
@@ -227,19 +184,13 @@ public class AndroidBridge {
     }
 
     @JavascriptInterface
-    public String getDeviceHwid() {
-        return getNativeHardwareHwid(context);
-    }
+    public String getDeviceHwid() { return getNativeHardwareHwid(context); }
 
     @JavascriptInterface
-    public String getDisplayHwid() {
-        return getDeviceHwid();
-    }
+    public String getDisplayHwid() { return getDeviceHwid(); }
 
     @JavascriptInterface
-    public String getHardwareId() {
-        return getDeviceHwid();
-    }
+    public String getHardwareId() { return getDeviceHwid(); }
 
     private long getDefaultDurationMsForKey(String cleanKey) {
         if (cleanKey == null) return 30L * 24L * 3600L * 1000L;
@@ -363,14 +314,10 @@ public class AndroidBridge {
     }
 
     @JavascriptInterface
-    public int getLiveScreenRefreshRate() {
-        return TeleportEngine.getLiveRefreshRateHz(context);
-    }
+    public int getLiveScreenRefreshRate() { return TeleportEngine.getLiveRefreshRateHz(context); }
 
     @JavascriptInterface
-    public int getMaxHardwareRefreshRate() {
-        return TeleportEngine.getMaxHardwareRefreshRateHz();
-    }
+    public int getMaxHardwareRefreshRate() { return TeleportEngine.getMaxHardwareRefreshRateHz(); }
 
     @JavascriptInterface
     public String getDeviceHardwareInfo() {
@@ -402,9 +349,7 @@ public class AndroidBridge {
 
     @JavascriptInterface
     public boolean hasOverlayPermission() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            return Settings.canDrawOverlays(context);
-        }
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) return Settings.canDrawOverlays(context);
         return true;
     }
 
@@ -440,9 +385,7 @@ public class AndroidBridge {
 
         mainHandler.post(() -> {
             try {
-                if (activity instanceof MainActivity) {
-                    ((MainActivity) activity).toggleFloatingButton(false);
-                }
+                if (activity instanceof MainActivity) ((MainActivity) activity).toggleFloatingButton(false);
                 detachTrashOverlaySafe();
                 if (floatingStretchBtn != null) {
                     removeOverlayViewSafe(floatingStretchBtn);
@@ -450,19 +393,14 @@ public class AndroidBridge {
                 }
                 isStretchOverlayShown = false;
 
-                int overlayType = (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O)
-                        ? WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY
-                        : WindowManager.LayoutParams.TYPE_PHONE;
+                int overlayType = (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) ? WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY : WindowManager.LayoutParams.TYPE_PHONE;
 
                 trashContainer = new FrameLayout(context);
                 trashPillView = new BridgeTrashView(context);
                 FrameLayout.LayoutParams pillLp = new FrameLayout.LayoutParams(dpToPx(276), dpToPx(58), Gravity.CENTER);
                 trashContainer.addView(trashPillView, pillLp);
 
-                int trashFlags = WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE
-                        | WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE
-                        | WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL
-                        | WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN;
+                int trashFlags = WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE | WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE | WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL | WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN;
                 if (stealthOverlayFlag) trashFlags |= WindowManager.LayoutParams.FLAG_SECURE;
 
                 trashParams = new WindowManager.LayoutParams(dpToPx(300), dpToPx(84), overlayType, trashFlags, PixelFormat.TRANSLUCENT);
@@ -477,9 +415,7 @@ public class AndroidBridge {
                 floatingStretchBtn.setIncludeFontPadding(false);
 
                 int sizePx = dpToPx(54);
-                int btnFlags = WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE
-                        | WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL
-                        | WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN;
+                int btnFlags = WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE | WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL | WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN;
                 if (stealthOverlayFlag) btnFlags |= WindowManager.LayoutParams.FLAG_SECURE;
 
                 stretchParams = new WindowManager.LayoutParams(sizePx, sizePx, overlayType, btnFlags, PixelFormat.TRANSLUCENT);
@@ -510,7 +446,6 @@ public class AndroidBridge {
                                 v.setScaleX(0.92f);
                                 v.setScaleY(0.92f);
                                 return true;
-
                             case MotionEvent.ACTION_MOVE:
                                 int dx = Math.round(event.getRawX() - initialTouchX);
                                 int dy = Math.round(event.getRawY() - initialTouchY);
@@ -530,7 +465,6 @@ public class AndroidBridge {
                                     wasInTrashZone = inTrash;
                                 }
                                 return true;
-
                             case MotionEvent.ACTION_UP:
                             case MotionEvent.ACTION_CANCEL:
                                 v.setScaleX(1.0f);
@@ -565,19 +499,14 @@ public class AndroidBridge {
     private boolean isTouchOverTrashZone(float rawX, float rawY) {
         try {
             DisplayMetrics dm = new DisplayMetrics();
-            if (windowManager != null && windowManager.getDefaultDisplay() != null) {
-                windowManager.getDefaultDisplay().getRealMetrics(dm);
-            } else {
-                dm = context.getResources().getDisplayMetrics();
-            }
+            if (windowManager != null && windowManager.getDefaultDisplay() != null) windowManager.getDefaultDisplay().getRealMetrics(dm);
+            else dm = context.getResources().getDisplayMetrics();
             int sw = dm.widthPixels;
             int sh = dm.heightPixels;
             boolean yNearBottom = rawY >= (sh - dpToPx(140)) || (stretchParams != null && stretchParams.y >= (sh * 0.68f));
             boolean xNearCenter = Math.abs(rawX - (sw / 2f)) <= (sw * 0.40f);
             return yNearBottom && xNearCenter;
-        } catch (Throwable t) {
-            return false;
-        }
+        } catch (Throwable t) { return false; }
     }
 
     private void toggleTwoStepStretchAction() {
@@ -602,10 +531,7 @@ public class AndroidBridge {
 
     private void removeFloatingTpButtonOnly() {
         mainHandler.post(() -> {
-            if (isBoxBarsActive) {
-                TeleportEngine.releaseBoxToFullStretch();
-                isBoxBarsActive = false;
-            }
+            if (isBoxBarsActive) { TeleportEngine.releaseBoxToFullStretch(); isBoxBarsActive = false; }
             detachTrashOverlaySafe();
             if (floatingStretchBtn != null) {
                 removeOverlayViewSafe(floatingStretchBtn);
@@ -627,19 +553,11 @@ public class AndroidBridge {
         glassLens.setOrientation(GradientDrawable.Orientation.TL_BR);
 
         if (isBoxBarsActive) {
-            glassLens.setColors(new int[]{
-                    Color.parseColor("#CC34D399"),
-                    Color.parseColor("#8810B981"),
-                    Color.parseColor("#AA064E3B")
-            });
+            glassLens.setColors(new int[]{Color.parseColor("#CC34D399"), Color.parseColor("#8810B981"), Color.parseColor("#AA064E3B")});
             glassLens.setStroke(dpToPx(2), Color.parseColor("#EEFFFFFF"));
             floatingStretchBtn.setText("2\n" + shortLabel);
         } else {
-            glassLens.setColors(new int[]{
-                    Color.parseColor("#B3475569"),
-                    Color.parseColor("#801E293B"),
-                    Color.parseColor("#990F172A")
-            });
+            glassLens.setColors(new int[]{Color.parseColor("#B3475569"), Color.parseColor("#801E293B"), Color.parseColor("#990F172A")});
             glassLens.setStroke(dpToPx(2), Color.parseColor("#EE38BDF8"));
             floatingStretchBtn.setText("T\n" + shortLabel);
         }
@@ -647,21 +565,15 @@ public class AndroidBridge {
     }
 
     @JavascriptInterface
-    public void applyStretchDirectlyNow(String ratio) {
-        activateStretchFloatingButton(ratio);
-    }
+    public void applyStretchDirectlyNow(String ratio) { activateStretchFloatingButton(ratio); }
 
     @JavascriptInterface
-    public void applyDirectStretchRatio(String ratio) {
-        TeleportEngine.applyAspectRatioStretch(ratio);
-    }
+    public void applyDirectStretchRatio(String ratio) { TeleportEngine.applyAspectRatioStretch(ratio); }
 
     @JavascriptInterface
     public void resetResolution() {
         mainHandler.post(() -> {
-            if (activity instanceof MainActivity) {
-                ((MainActivity) activity).toggleFloatingButton(false);
-            }
+            if (activity instanceof MainActivity) ((MainActivity) activity).toggleFloatingButton(false);
             TeleportEngine.resetResolutionToNative();
             isBoxBarsActive = false;
             detachTrashOverlaySafe();
@@ -669,9 +581,7 @@ public class AndroidBridge {
                 removeOverlayViewSafe(floatingStretchBtn);
                 floatingStretchBtn = null;
             }
-            trashContainer = null;
-            trashPillView = null;
-            isStretchOverlayShown = false;
+            trashContainer = null; trashPillView = null; isStretchOverlayShown = false;
             Toast.makeText(context, "🔄 Родное разрешение экрана восстановлено", Toast.LENGTH_SHORT).show();
         });
     }
@@ -684,9 +594,7 @@ public class AndroidBridge {
     }
 
     @JavascriptInterface
-    public String loadFullConfigJson() {
-        return prefs.getString("full_user_config_v410", "");
-    }
+    public String loadFullConfigJson() { return prefs.getString("full_user_config_v410", ""); }
 
     @JavascriptInterface
     public String setWideHitboxMode(boolean enabled, String ratio) {
@@ -706,94 +614,35 @@ public class AndroidBridge {
     }
 
     @JavascriptInterface
-    public boolean isShizukuReady() {
-        return TeleportEngine.isShizukuReady();
-    }
-
+    public boolean isShizukuReady() { return TeleportEngine.isShizukuReady(); }
     @JavascriptInterface
-    public boolean isShizukuActive() {
-        return isShizukuReady();
-    }
-
+    public boolean isShizukuActive() { return isShizukuReady(); }
     @JavascriptInterface
-    public void requestShizukuPermission() {
-        TeleportEngine.requestShizukuPermissionIfNeeded();
-    }
-
+    public void requestShizukuPermission() { TeleportEngine.requestShizukuPermissionIfNeeded(); }
     @JavascriptInterface
-    public void healTouch() {
-        TeleportEngine.requestShizukuPermissionIfNeeded();
-        TeleportEngine.healTouchAndRestart();
-    }
-
+    public void healTouch() { TeleportEngine.requestShizukuPermissionIfNeeded(); TeleportEngine.healTouchAndRestart(); }
     @JavascriptInterface
-    public void startTeleport(String presetId) {
-        TeleportEngine.startTeleport(presetId);
-    }
-
+    public void startTeleport(String presetId) { TeleportEngine.startTeleport(presetId); }
     @JavascriptInterface
-    public void stopTeleport() {
-        TeleportEngine.stopTeleport();
-    }
+    public void stopTeleport() { TeleportEngine.stopTeleport(); }
 
     @JavascriptInterface
     public void updateParameters(double sharp, double sx, double sy, int chunks, int chunkFast, double straight, int stick, int grid, int pause, double accel) {
         TeleportEngine.updateParameters(sharp, sx, sy, chunks, chunkFast, straight, stick, grid, pause, accel);
     }
 
-    @JavascriptInterface
-    public void setRawInputNoSmoothing(boolean enabled) {
-        TeleportEngine.setRawInputNoSmoothing(enabled);
-    }
-
-    @JavascriptInterface
-    public void setVulkanGpuTurbo(boolean enabled) {
-        TeleportEngine.setVulkanGpuTurbo(enabled);
-    }
-
-    @JavascriptInterface
-    public void setNetPingStabilizer(boolean enabled) {
-        TeleportEngine.setNetPingStabilizer(enabled);
-    }
-
-    @JavascriptInterface
-    public void setTouchSamplingBoost(boolean enabled, int hz) {
-        TeleportEngine.setTouchSamplingBoost(enabled, hz);
-    }
-
-    @JavascriptInterface
-    public String performRamBoost() {
-        return TeleportEngine.performRamBoost(context);
-    }
-
-    @JavascriptInterface
-    public void setHzThermalGuard(boolean enabled) {
-        TeleportEngine.setHzThermalGuard(enabled);
-    }
-
-    @JavascriptInterface
-    public void applyShooterOptimizer(int fpsLock, int gpuBoost, int frameTime, int edgeSens, int multiTouch, int netBuffer, int thermalLim) {
-        TeleportEngine.applyShooterOptimizer(fpsLock, gpuBoost, frameTime, edgeSens, multiTouch, netBuffer, thermalLim);
-    }
-
-    @JavascriptInterface
-    public void setEnhancedRecoilFix(boolean enabled, int power) {
-        TeleportEngine.setEnhancedRecoilFix(enabled, power);
-    }
-
-    @JavascriptInterface
-    public void setAutoGameDpi(boolean enabled, int dpi) {}
-
-    @JavascriptInterface
-    public void setPixelDownscaleFactor(int pct) {
-        TeleportEngine.setPixelDownscaleFactor(pct);
-    }
-
-    @JavascriptInterface
-    public String runSmartDeviceScan() {
-        return TeleportEngine.runSmartDeviceScan(context);
-    }
-
+    @JavascriptInterface public void setRawInputNoSmoothing(boolean enabled) { TeleportEngine.setRawInputNoSmoothing(enabled); }
+    @JavascriptInterface public void setVulkanGpuTurbo(boolean enabled) { TeleportEngine.setVulkanGpuTurbo(enabled); }
+    @JavascriptInterface public void setNetPingStabilizer(boolean enabled) { TeleportEngine.setNetPingStabilizer(enabled); }
+    @JavascriptInterface public void setTouchSamplingBoost(boolean enabled, int hz) { TeleportEngine.setTouchSamplingBoost(enabled, hz); }
+    @JavascriptInterface public String performRamBoost() { return TeleportEngine.performRamBoost(context); }
+    @JavascriptInterface public void setHzThermalGuard(boolean enabled) { TeleportEngine.setHzThermalGuard(enabled); }
+    @JavascriptInterface public void applyShooterOptimizer(int fpsLock, int gpuBoost, int frameTime, int edgeSens, int multiTouch, int netBuffer, int thermalLim) { TeleportEngine.applyShooterOptimizer(fpsLock, gpuBoost, frameTime, edgeSens, multiTouch, netBuffer, thermalLim); }
+    @JavascriptInterface public void setEnhancedRecoilFix(boolean enabled, int power) { TeleportEngine.setEnhancedRecoilFix(enabled, power); }
+    @JavascriptInterface public void setAutoGameDpi(boolean enabled, int dpi) {}
+    @JavascriptInterface public void setPixelDownscaleFactor(int pct) { TeleportEngine.setPixelDownscaleFactor(pct); }
+    @JavascriptInterface public String runSmartDeviceScan() { return TeleportEngine.runSmartDeviceScan(context); }
+    
     @JavascriptInterface
     public void applyUltraProTouchMatrix(int modeLevel) {
         ProfileManager.addTeleportCountToTotal(context, 1);
@@ -807,9 +656,7 @@ public class AndroidBridge {
         try {
             Callable<String> task = () -> ApiManager.uploadCloudPreset(key, getDeviceHwid(), title, presetJson);
             return networkExecutor.submit(task).get(4000, TimeUnit.MILLISECONDS);
-        } catch (Exception e) {
-            return "{\"status\":\"error\",\"ok\":false}";
-        }
+        } catch (Exception e) { return "{\"status\":\"error\",\"ok\":false}"; }
     }
 
     @JavascriptInterface
@@ -819,15 +666,11 @@ public class AndroidBridge {
         try {
             Callable<String> task = () -> ApiManager.downloadCloudPresetByCode(key, getDeviceHwid(), shareCode);
             return networkExecutor.submit(task).get(4000, TimeUnit.MILLISECONDS);
-        } catch (Exception e) {
-            return "{\"status\":\"error\",\"ok\":false}";
-        }
+        } catch (Exception e) { return "{\"status\":\"error\",\"ok\":false}"; }
     }
 
     private void ensureCrosshairOverlayAttached(String cleanType) {
-        if (activity instanceof MainActivity) {
-            ((MainActivity) activity).updateCrosshair("off");
-        }
+        if (activity instanceof MainActivity) ((MainActivity) activity).updateCrosshair("off");
         if ("off".equalsIgnoreCase(cleanType) || "none".equalsIgnoreCase(cleanType) || cleanType.isEmpty()) {
             if (crosshairView != null) {
                 crosshairView.setCrosshairType("off");
@@ -845,13 +688,8 @@ public class AndroidBridge {
 
         if (!isCrosshairShown || crosshairView == null) {
             crosshairView = new CrosshairOverlayView(context);
-            int overlayType = (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O)
-                    ? WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY
-                    : WindowManager.LayoutParams.TYPE_PHONE;
-            int flags = WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE
-                    | WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE
-                    | WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL
-                    | WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN;
+            int overlayType = (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) ? WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY : WindowManager.LayoutParams.TYPE_PHONE;
+            int flags = WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE | WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE | WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL | WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN;
             if (stealthOverlayFlag) flags |= WindowManager.LayoutParams.FLAG_SECURE;
 
             int boxSize = dpToPx(140);
@@ -891,17 +729,14 @@ public class AndroidBridge {
 
     @JavascriptInterface
     public void updateCrosshairStyle(int scalePct, int opacityPct, String hexColor) {
-        mainHandler.post(() -> {
-            if (crosshairView != null) crosshairView.setStyle(scalePct, opacityPct, hexColor);
-        });
+        mainHandler.post(() -> { if (crosshairView != null) crosshairView.setStyle(scalePct, opacityPct, hexColor); });
     }
 
     @JavascriptInterface
     public void updateCrosshairAdvanced(String type, String hexColor, int opacityPct, int len, int thick, int gap, int dot, boolean out) {
         final String cleanType = (type == null) ? "off" : type.trim();
         if ("off".equalsIgnoreCase(cleanType) || cleanType.isEmpty() || opacityPct <= 0) {
-            updateCrosshair("off");
-            return;
+            updateCrosshair("off"); return;
         }
         mainHandler.post(() -> {
             ensureCrosshairOverlayAttached(cleanType);
@@ -933,14 +768,10 @@ public class AndroidBridge {
     }
 
     @JavascriptInterface
-    public void setStealthOverlayMode(boolean stealth) {
-        updateOverlayStealthFlag(stealth);
-    }
+    public void setStealthOverlayMode(boolean stealth) { updateOverlayStealthFlag(stealth); }
 
     @JavascriptInterface
-    public String getSavedKey() {
-        return readBoundKey();
-    }
+    public String getSavedKey() { return readBoundKey(); }
 
     @JavascriptInterface
     public String getSavedNickname() {
@@ -958,12 +789,9 @@ public class AndroidBridge {
         }
     }
 
-    // ЖЕЛЕЗНАЯ АКТИВАЦИЯ И ПРОВЕРКА КЛЮЧА НА ВСЕХ ДЕВАЙСАХ
     @JavascriptInterface
     public String activateLicenseKey(String key) {
-        if (key == null || key.trim().length() < 5) {
-            return "ERROR|Введите лицензионный ключ из бота";
-        }
+        if (key == null || key.trim().length() < 5) return "ERROR|Введите лицензионный ключ из бота";
         final String cleanKey = key.trim().toUpperCase(Locale.US);
         final String nick = getSavedNickname();
         final String hwid = getDeviceHwid();
@@ -989,7 +817,6 @@ public class AndroidBridge {
             String errMsg = res.optString("message", "Ключ не найден или привязан к другому устройству!");
             return "ERROR|" + errMsg;
         } catch (Exception e) {
-            // Если это уже привязанный ключ владельца, а мобильная сеть моргнула — не выкидываем его!
             String existing = readBoundKey();
             if (!existing.isEmpty() && existing.equalsIgnoreCase(cleanKey)) {
                 return "OK|" + buildLiveSubscriptionLabel(null, cleanKey);
@@ -1001,9 +828,7 @@ public class AndroidBridge {
     @JavascriptInterface
     public String verifyLicenseKey(String key) {
         final String cleanKey = (key != null && !key.trim().isEmpty()) ? key.trim().toUpperCase(Locale.US) : readBoundKey();
-        if (cleanKey.length() < 5) {
-            return "EXPIRED|Введите лицензионный ключ";
-        }
+        if (cleanKey.length() < 5) return "EXPIRED|Введите лицензионный ключ";
 
         final String hwid = getDeviceHwid();
         try {
@@ -1014,7 +839,7 @@ public class AndroidBridge {
             String status = res.optString("status", "");
 
             if ("device_mismatch".equalsIgnoreCase(status) || "banned".equalsIgnoreCase(status) || "blocked".equalsIgnoreCase(status)) {
-                saveBoundKey("");
+                // ИСПРАВЛЕНО: НЕ удаляем ключ, просто сообщаем об ошибке
                 return "BLOCKED|" + res.optString("message", "Ключ привязан к другому устройству!");
             }
             if ("expired".equalsIgnoreCase(status)) {
@@ -1027,14 +852,11 @@ public class AndroidBridge {
             }
         } catch (Exception ignored) {}
 
-        // Офлайн-поддержка для уже привязанного ключа на родном девайсе
         return "OK|" + buildLiveSubscriptionLabel(null, cleanKey);
     }
 
     @JavascriptInterface
-    public void logoutLicenseKey() {
-        saveBoundKey("");
-    }
+    public void logoutLicenseKey() { saveBoundKey(""); }
 
     @JavascriptInterface
     public void openTelegramBot() {
@@ -1063,16 +885,11 @@ public class AndroidBridge {
         try {
             Callable<String> task = () -> ApiManager.callFriendsApi(jsonPayload);
             return networkExecutor.submit(task).get(4000, TimeUnit.MILLISECONDS);
-        } catch (Exception e) {
-            return "{\"status\":\"error\",\"ok\":false}";
-        }
+        } catch (Exception e) { return "{\"status\":\"error\",\"ok\":false}"; }
     }
 
-    @JavascriptInterface
-    public void updateVoiceCallNotification(String roomName, boolean isMuted, boolean isDeafened) {}
-
-    @JavascriptInterface
-    public void cancelVoiceCallNotification() {}
+    @JavascriptInterface public void updateVoiceCallNotification(String roomName, boolean isMuted, boolean isDeafened) {}
+    @JavascriptInterface public void cancelVoiceCallNotification() {}
 
     private int dpToPx(int dp) {
         return Math.round(dp * context.getResources().getDisplayMetrics().density);
@@ -1141,14 +958,12 @@ public class AndroidBridge {
         }
 
         public void setCrosshairType(String t) { this.type = t; invalidate(); }
-
         public void setStyle(int scalePct, int opacityPct, String hex) {
             this.lengthDp = Math.max(3, Math.round(3 + (scalePct / 100f) * 18f));
             this.opacity = opacityPct;
             try { this.color = Color.parseColor(hex); } catch (Exception ignored) {}
             invalidate();
         }
-
         public void setAdvancedConfig(String t, String hex, int op, int len, int thick, int gap, int dot, boolean out) {
             this.type = t; this.opacity = op; this.lengthDp = len; this.thicknessDp = thick; this.gapDp = gap; this.dotSizeDp = dot; this.outline = out;
             try { this.color = Color.parseColor(hex); } catch (Exception ignored) {}
@@ -1173,7 +988,6 @@ public class AndroidBridge {
             paint.setColor(color);
             paint.setAlpha(alpha);
             paint.setStrokeWidth(thickPx);
-
             outlinePaint.setAlpha(Math.min(220, alpha));
             outlinePaint.setStrokeWidth(thickPx + 2.0f * d);
 
