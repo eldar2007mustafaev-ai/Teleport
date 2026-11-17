@@ -245,14 +245,7 @@ public class AndroidBridge {
     }
 
     private void executeNativeKillOnTamper() {
-        if (isNativeLoaded) {
-            try {
-                nativeForceKick(context, true);
-                nativeForceTerminate();
-            } catch (Throwable ignored) {}
-        }
-        Process.killProcess(Process.myPid());
-        System.exit(137);
+        revokeNativeSessionFromApi();
     }
 
     @JavascriptInterface
