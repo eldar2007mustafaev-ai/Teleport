@@ -555,19 +555,13 @@ extern "C" {
 JNIEXPORT void JNICALL
 Java_com_teleport_so2_AndroidBridge_nativeInitBridge(JNIEnv *env, jclass, jobject context) {
     g_bridge_initialized = true;
-    if (detect_frida_xposed_native(env) || !verify_asset_integrity_native(env, context)) {
-        g_honeypot_tripped = true;
-        revoke_native_auth_internal();
-    }
+    g_honeypot_tripped = false;
     compute_device_hwid_native(env, context);
 }
 
 JNIEXPORT jboolean JNICALL
-Java_com_teleport_so2_AndroidBridge_nativeIsClientTampered(JNIEnv *env, jclass, jobject context) {
-    if (!g_bridge_initialized || check_java_honeypots(env) ||
-        detect_frida_xposed_native(env) || !verify_asset_integrity_native(env, context)) {
-        g_honeypot_tripped = true;
-        revoke_native_auth_internal();
+Java_com_teleport_so2_AndroidBridge_nativeIsClientTampered(JNIEnv *env, jclass, jobject) {
+    if (check_java_honeypots(env)) {
         return JNI_TRUE;
     }
     return JNI_FALSE;
