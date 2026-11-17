@@ -1,2398 +1,2362 @@
 <!DOCTYPE html>
+<!-- SO2TELEPORT_QUANTUM_V9_SEAL -->
 <html lang="ru">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-<title>SO2Teleport PRO — Grey Liquid Glass</title>
-<!-- SO2TELEPORT_QUANTUM_V9_SEAL --><!-- SO2TELEPORT_V10_CORE -->
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<title>SO2Teleport PRO — Liquid Glass Edition</title>
 <style>
-  :root {
-    --bg-deep: #0b0e13;
-    --lg-grey-body: linear-gradient(
-      145deg,
-      rgba(68, 79, 98, 0.56) 0%,
-      rgba(32, 39, 52, 0.78) 48%,
-      rgba(18, 23, 32, 0.92) 100%
-    );
-    --lg-grey-elevated: linear-gradient(
-      140deg,
-      rgba(86, 100, 124, 0.64) 0%,
-      rgba(38, 47, 63, 0.84) 52%,
-      rgba(20, 26, 37, 0.95) 100%
-    );
-    --lg-grey-inset: rgba(10, 14, 20, 0.78);
-    --lg-border: rgba(255, 255, 255, 0.16);
-    --lg-specular-top: rgba(255, 255, 255, 0.42);
-    --lg-specular-left: rgba(255, 255, 255, 0.24);
-
-    --accent: #06b6d4;
-    --accent-rgb: 6, 182, 212;
-    --accent-soft: rgba(6, 182, 212, 0.18);
-    --accent-border: rgba(6, 182, 212, 0.52);
-    --accent-glow: rgba(6, 182, 212, 0.35);
-
-    --txt-primary: #f8fafc;
-    --txt-secondary: #94a3b8;
-    --txt-muted: #64748b;
-    --ok-green: #10b981;
-    --err-rose: #f43f5e;
-    --warn-amber: #f59e0b;
-  }
-
-  * {
-    box-sizing: border-box;
-    margin: 0;
-    padding: 0;
-    -webkit-tap-highlight-color: transparent;
-    user-select: none;
-  }
-
-  html, body {
-    width: 100%;
-    min-height: 100vh;
-    background-color: var(--bg-deep);
-    background-image:
-      radial-gradient(circle at 15% 10%, rgba(var(--accent-rgb), 0.20) 0%, transparent 45%),
-      radial-gradient(circle at 85% 22%, rgba(148, 163, 184, 0.15) 0%, transparent 48%),
-      radial-gradient(circle at 50% 90%, rgba(var(--accent-rgb), 0.14) 0%, transparent 50%);
-    color: var(--txt-primary);
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-    overflow-x: hidden;
-    padding-bottom: 108px;
-  }
-
-  .app-shell {
-    position: relative;
-    z-index: 2;
-    max-width: 480px;
-    margin: 0 auto;
-    padding: 14px 14px 30px;
-  }
-
-  /* Безопасный эффект серого жидкого стекла (без GPU-багов WebView) */
-  .lg-card {
-    position: relative;
-    background: var(--lg-grey-body);
-    border: 1px solid var(--lg-border);
-    border-top-color: var(--lg-specular-top);
-    border-left-color: var(--lg-specular-left);
-    border-radius: 22px;
-    padding: 16px 18px;
-    box-shadow:
-      0 12px 28px rgba(0, 0, 0, 0.65),
-      inset 0 1.5px 1px rgba(255, 255, 255, 0.28),
-      inset 0 -1px 2px rgba(var(--accent-rgb), 0.12);
-    transition: transform 0.15s ease, border-color 0.2s ease;
-    overflow: hidden;
-  }
-
-  .lg-card::before {
-    content: "";
-    position: absolute;
-    top: 0;
-    left: 6%;
-    right: 6%;
-    height: 1.5px;
-    background: linear-gradient(
-      90deg,
-      transparent 0%,
-      rgba(255, 255, 255, 0.70) 35%,
-      rgba(var(--accent-rgb), 0.55) 70%,
-      transparent 100%
-    );
-    pointer-events: none;
-  }
-
-  .lg-card.clickable {
-    cursor: pointer;
-  }
-
-  .lg-card.clickable:active {
-    transform: scale(0.985);
-  }
-
-  .lg-card.accent-rim {
-    background: var(--lg-grey-elevated);
-    border-color: var(--accent-border);
-    box-shadow:
-      0 14px 32px rgba(0, 0, 0, 0.72),
-      0 0 20px rgba(var(--accent-rgb), 0.14),
-      inset 0 1.5px 1px rgba(255, 255, 255, 0.36);
-  }
-
-  .view-page {
-    display: none;
-    flex-direction: column;
-    gap: 12px;
-  }
-
-  .view-page.active {
-    display: flex;
-  }
-
-  .page-top-bar {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 4px 2px 8px;
-  }
-
-  .page-top-left {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-  }
-
-  .btn-back-glass {
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
-    background: var(--lg-grey-body);
-    border: 1px solid var(--lg-border);
-    border-top-color: var(--lg-specular-top);
-    color: var(--txt-primary);
-    font-size: 18px;
-    font-weight: 700;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.45), inset 0 1px 1px rgba(255, 255, 255, 0.25);
-  }
-
-  .page-ico-chip {
-    width: 36px;
-    height: 36px;
-    border-radius: 11px;
-    background: var(--accent-soft);
-    border: 1px solid var(--accent-border);
-    color: var(--accent);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 16px;
-    font-weight: 800;
-  }
-
-  .page-heading {
-    font-size: 19px;
-    font-weight: 800;
-    letter-spacing: -0.3px;
-  }
-
-  .top-pill-action {
-    padding: 7px 13px;
-    border-radius: 999px;
-    background: var(--accent-soft);
-    border: 1px solid var(--accent-border);
-    color: var(--accent);
-    font-size: 11px;
-    font-weight: 800;
-    cursor: pointer;
-  }
-
-  .tile-row {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 12px;
-  }
-
-  .tile-left {
-    display: flex;
-    align-items: center;
-    gap: 14px;
-    min-width: 0;
-  }
-
-  .tile-icon {
-    width: 44px;
-    height: 44px;
-    border-radius: 14px;
-    background: linear-gradient(145deg, rgba(var(--accent-rgb), 0.25), rgba(var(--accent-rgb), 0.08));
-    border: 1px solid var(--accent-border);
-    color: var(--accent);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 18px;
-    font-weight: 800;
-    flex-shrink: 0;
-    box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.28);
-  }
-
-  .tile-title {
-    font-size: 16px;
-    font-weight: 800;
-    color: var(--txt-primary);
-    margin-bottom: 3px;
-  }
-
-  .tile-desc {
-    font-size: 12.5px;
-    color: var(--txt-secondary);
-    line-height: 1.34;
-  }
-
-  .tile-arrow {
-    color: rgba(255, 255, 255, 0.35);
-    font-size: 20px;
-    font-weight: 600;
-    flex-shrink: 0;
-  }
-
-  .grid-two-cols {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 12px;
-  }
-
-  .sens-orb-btn {
-    width: 66px;
-    height: 66px;
-    border-radius: 50%;
-    background: linear-gradient(145deg, rgba(var(--accent-rgb), 0.96), rgba(var(--accent-rgb), 0.58));
-    border: 1.5px solid rgba(255, 255, 255, 0.60);
-    color: #031117;
-    font-size: 14px;
-    font-weight: 900;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-shrink: 0;
-    cursor: pointer;
-    box-shadow: 0 0 22px var(--accent-glow), inset 0 2px 2px rgba(255, 255, 255, 0.70);
-  }
-
-  .sens-orb-btn.off {
-    background: linear-gradient(145deg, rgba(64, 74, 90, 0.70), rgba(28, 34, 44, 0.90));
-    border-color: rgba(255, 255, 255, 0.20);
-    color: var(--txt-primary);
-    box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.22);
-  }
-
-  .access-bar {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 12px 16px;
-    border-radius: 16px;
-  }
-
-  .access-label {
-    font-size: 11.5px;
-    font-weight: 800;
-    color: var(--txt-secondary);
-    letter-spacing: 0.7px;
-    text-transform: uppercase;
-  }
-
-  .access-status {
-    font-size: 12.5px;
-    font-weight: 900;
-    color: var(--accent);
-  }
-
-  .glass-btn {
-    width: 100%;
-    padding: 15px 16px;
-    border-radius: 16px;
-    border: 1px solid rgba(255, 255, 255, 0.45);
-    background: linear-gradient(135deg, rgba(var(--accent-rgb), 0.94) 0%, rgba(var(--accent-rgb), 0.62) 100%);
-    color: #031218;
-    font-size: 13.5px;
-    font-weight: 900;
-    letter-spacing: 0.5px;
-    text-transform: uppercase;
-    text-align: center;
-    cursor: pointer;
-    box-shadow: 0 6px 20px rgba(var(--accent-rgb), 0.25), inset 0 1.5px 1px rgba(255, 255, 255, 0.65);
-  }
-
-  .glass-btn:active {
-    transform: scale(0.98);
-  }
-
-  .glass-btn.neutral {
-    background: linear-gradient(145deg, rgba(62, 73, 90, 0.65), rgba(26, 32, 44, 0.88));
-    color: var(--txt-primary);
-    border-color: var(--lg-border);
-    border-top-color: var(--lg-specular-top);
-    box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.22);
-  }
-
-  .glass-btn.danger {
-    background: linear-gradient(145deg, rgba(244, 63, 94, 0.32), rgba(136, 19, 55, 0.55));
-    color: #fecdd3;
-    border-color: rgba(244, 63, 94, 0.48);
-    box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.22);
-  }
-
-  .glass-input-box {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    background: var(--lg-grey-inset);
-    border: 1px solid rgba(255, 255, 255, 0.16);
-    border-radius: 15px;
-    padding: 12px 14px;
-    box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.65);
-  }
-
-  .glass-input {
-    width: 100%;
-    background: transparent;
-    border: none;
-    outline: none;
-    color: var(--txt-primary);
-    font-size: 14.5px;
-    font-weight: 600;
-  }
-
-  .glass-input::placeholder {
-    color: var(--txt-muted);
-  }
-
-  .pills-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
-  .pills-5 { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; }
-  .pills-6 { display: grid; grid-template-columns: repeat(6, 1fr); gap: 6px; }
-
-  .glass-pill {
-    padding: 11px 6px;
-    border-radius: 14px;
-    background: rgba(16, 21, 30, 0.75);
-    border: 1px solid rgba(255, 255, 255, 0.12);
-    color: var(--txt-secondary);
-    font-size: 12.5px;
-    font-weight: 800;
-    text-align: center;
-    cursor: pointer;
-  }
-
-  .glass-pill.active {
-    background: linear-gradient(145deg, rgba(var(--accent-rgb), 0.36), rgba(var(--accent-rgb), 0.14));
-    border-color: var(--accent);
-    color: #ffffff;
-    box-shadow: 0 0 14px rgba(var(--accent-rgb), 0.24), inset 0 1px 1px rgba(255, 255, 255, 0.35);
-  }
-
-  .stage-box {
-    width: 100%;
-    height: 158px;
-    border-radius: 18px;
-    background: radial-gradient(circle at center, rgba(28, 36, 48, 0.92), rgba(10, 14, 20, 0.98));
-    border: 1px solid rgba(255, 255, 255, 0.12);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    position: relative;
-    overflow: hidden;
-  }
-
-  .stretch-outer-dash {
-    width: 80%;
-    height: 76%;
-    border: 1.2px dashed rgba(255, 255, 255, 0.26);
-    border-radius: 12px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-
-  .stretch-inner-live {
-    height: 100%;
-    width: 74%;
-    border: 1.8px solid var(--accent);
-    border-radius: 10px;
-    background: rgba(var(--accent-rgb), 0.10);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: var(--txt-primary);
-    font-size: 20px;
-    font-weight: 700;
-    transition: width 0.22s ease;
-  }
-
-  .dual-tabs {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 6px;
-    padding: 5px;
-    border-radius: 18px;
-    background: rgba(12, 16, 24, 0.88);
-    border: 1px solid var(--lg-border);
-  }
-
-  .dual-tab-btn {
-    padding: 11px 10px;
-    border-radius: 14px;
-    text-align: center;
-    font-size: 12.5px;
-    font-weight: 800;
-    color: var(--txt-secondary);
-    cursor: pointer;
-  }
-
-  .dual-tab-btn.active {
-    background: linear-gradient(135deg, rgba(var(--accent-rgb), 0.92), rgba(var(--accent-rgb), 0.58));
-    color: #031218;
-  }
-
-  .char-item {
-    padding: 14px 16px;
-    border-radius: 16px;
-    background: rgba(15, 20, 29, 0.72);
-    border: 1px solid rgba(255, 255, 255, 0.10);
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    cursor: pointer;
-  }
-
-  .char-item.active {
-    border-color: var(--accent);
-    background: linear-gradient(145deg, rgba(var(--accent-rgb), 0.22), rgba(15, 20, 29, 0.88));
-  }
-
-  .char-badge {
-    font-size: 10.5px;
-    font-weight: 800;
-    color: var(--accent);
-    margin-left: 6px;
-    text-transform: uppercase;
-  }
-
-  .param-row {
-    padding: 10px 0;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.07);
-  }
-
-  .param-row:last-child {
-    border-bottom: none;
-  }
-
-  .param-head {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin-bottom: 6px;
-  }
-
-  .param-title {
-    font-size: 13.5px;
-    font-weight: 700;
-    color: var(--txt-primary);
-  }
-
-  .param-chip {
-    padding: 3px 10px;
-    border-radius: 9px;
-    background: rgba(10, 14, 22, 0.90);
-    border: 1px solid rgba(255, 255, 255, 0.15);
-    color: var(--accent);
-    font-size: 12.5px;
-    font-weight: 800;
-  }
-
-  input[type="range"] {
-    width: 100%;
-    height: 6px;
-    border-radius: 999px;
-    background: rgba(255, 255, 255, 0.18);
-    accent-color: var(--accent);
-    outline: none;
-  }
-
-  .liquid-switch {
-    position: relative;
-    width: 50px;
-    height: 28px;
-    border-radius: 999px;
-    background: rgba(255, 255, 255, 0.15);
-    border: 1px solid rgba(255, 255, 255, 0.22);
-    cursor: pointer;
-    flex-shrink: 0;
-  }
-
-  .liquid-switch::after {
-    content: "";
-    position: absolute;
-    top: 3px;
-    left: 3px;
-    width: 20px;
-    height: 20px;
-    border-radius: 50%;
-    background: #cbd5e1;
-    transition: all 0.2s ease;
-  }
-
-  .liquid-switch.on {
-    background: rgba(var(--accent-rgb), 0.36);
-    border-color: var(--accent);
-  }
-
-  .liquid-switch.on::after {
-    transform: translateX(22px);
-    background: var(--accent);
-  }
-
-  .ava-ring {
-    width: 48px;
-    height: 48px;
-    border-radius: 50%;
-    background: linear-gradient(135deg, rgba(var(--accent-rgb), 0.38), rgba(45, 55, 72, 0.90));
-    border: 1.5px solid var(--accent);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 19px;
-    font-weight: 900;
-    color: #ffffff;
-    overflow: hidden;
-    flex-shrink: 0;
-  }
-
-  .ava-ring img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-  }
-
-  .swatch-orb {
-    width: 36px;
-    height: 36px;
-    border-radius: 50%;
-    border: 2px solid rgba(255, 255, 255, 0.28);
-    cursor: pointer;
-  }
-
-  .swatch-orb.active {
-    transform: scale(1.18);
-    border-color: #ffffff;
-    box-shadow: 0 0 14px currentColor;
-  }
-
-  .liquid-dock {
-    position: fixed;
-    bottom: 12px;
-    left: 12px;
-    right: 12px;
-    max-width: 456px;
-    margin: 0 auto;
-    background: linear-gradient(180deg, rgba(56, 66, 84, 0.88) 0%, rgba(18, 23, 32, 0.96) 100%);
-    border: 1px solid rgba(255, 255, 255, 0.20);
-    border-top-color: rgba(255, 255, 255, 0.45);
-    border-radius: 25px;
-    padding: 7px 6px;
-    display: grid;
-    grid-template-columns: repeat(5, 1fr);
-    gap: 4px;
-    box-shadow: 0 14px 36px rgba(0, 0, 0, 0.85);
-    z-index: 100;
-  }
-
-  .dock-btn {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 4px;
-    padding: 7px 4px;
-    border-radius: 17px;
-    color: var(--txt-secondary);
-    font-size: 10.5px;
-    font-weight: 700;
-    cursor: pointer;
-  }
-
-  .dock-btn svg {
-    width: 20px;
-    height: 20px;
-    stroke: currentColor;
-    fill: none;
-    stroke-width: 2;
-  }
-
-  .dock-btn.active {
-    color: var(--accent);
-    background: rgba(var(--accent-rgb), 0.18);
-  }
-
-  #authScreenOverlay {
-    position: fixed;
-    inset: 0;
-    background: rgba(8, 11, 16, 0.94);
-    z-index: 9999;
-    display: none;
-    align-items: center;
-    justify-content: center;
-    padding: 18px;
-  }
-
-  .toast-pop {
-    position: fixed;
-    top: 16px;
-    left: 50%;
-    transform: translateX(-50%) translateY(-20px);
-    background: rgba(30, 41, 59, 0.96);
-    border: 1px solid var(--accent-border);
-    color: #fff;
-    padding: 10px 18px;
-    border-radius: 999px;
-    font-size: 12.5px;
-    font-weight: 700;
+:root {
+  --accent: #38bdf8;
+  --accent-2: #0284c7;
+  --accent-rgb: 56, 189, 248;
+  --accent-glow: rgba(56, 189, 248, 0.42);
+  --accent-soft: rgba(56, 189, 248, 0.16);
+  --glass-bg: linear-gradient(135deg, rgba(255, 255, 255, 0.14) 0%, rgba(255, 255, 255, 0.05) 42%, rgba(15, 23, 42, 0.48) 100%);
+  --glass-bg-strong: linear-gradient(145deg, rgba(255, 255, 255, 0.20) 0%, rgba(255, 255, 255, 0.07) 48%, rgba(15, 23, 42, 0.62) 100%);
+  --glass-border-top: rgba(255, 255, 255, 0.46);
+  --glass-border-side: rgba(255, 255, 255, 0.16);
+  --glass-border-bottom: rgba(255, 255, 255, 0.08);
+  --glass-shadow: 0 18px 40px -10px rgba(0, 0, 0, 0.72),
+                  inset 0 1.5px 1px 0 rgba(255, 255, 255, 0.45),
+                  inset 0 -1px 1.5px 0 rgba(255, 255, 255, 0.08),
+                  inset 1px 0 1px 0 rgba(255, 255, 255, 0.14);
+  --text-main: #f8fafc;
+  --text-sub: rgba(226, 232, 240, 0.72);
+  --text-muted: rgba(148, 163, 184, 0.68);
+  --danger: #fb7185;
+  --success: #34d399;
+  --warn: #fbbf24;
+  --spring: cubic-bezier(0.22, 1, 0.36, 1);
+  --safe-top: max(58px, calc(env(safe-area-inset-top, 40px) + 24px));
+  --safe-bottom: max(148px, calc(env(safe-area-inset-bottom, 24px) + 128px));
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+html, body {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background: #040711;
+  color: var(--text-main);
+  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Inter', 'Segoe UI', Roboto, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ЖИДКИЙ АТМОСФЕРНЫЙ ФОН (GPU-УСКОРЕННЫЙ 120 FPS) */
+.liquid-ambient {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  overflow: hidden;
+  background:
+    radial-gradient(circle at 18% 12%, rgba(var(--accent-rgb), 0.24) 0%, transparent 48%),
+    radial-gradient(circle at 84% 26%, rgba(99, 102, 241, 0.18) 0%, transparent 52%),
+    radial-gradient(circle at 50% 88%, rgba(var(--accent-rgb), 0.16) 0%, transparent 55%),
+    linear-gradient(180deg, #050814 0%, #091022 50%, #040711 100%);
+}
+
+.liquid-orb {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(42px);
+  opacity: 0.55;
+  will-change: transform;
+  transform: translate3d(0, 0, 0);
+  animation: floatLiquidOrb 14s var(--spring) infinite alternate;
+}
+
+.liquid-orb.orb-1 {
+  width: 280px;
+  height: 280px;
+  top: -40px;
+  left: -50px;
+  background: radial-gradient(circle, rgba(var(--accent-rgb), 0.52) 0%, transparent 70%);
+}
+
+.liquid-orb.orb-2 {
+  width: 320px;
+  height: 320px;
+  bottom: 8%;
+  right: -70px;
+  background: radial-gradient(circle, rgba(139, 92, 246, 0.36) 0%, rgba(var(--accent-rgb), 0.22) 60%, transparent 75%);
+  animation-duration: 18s;
+  animation-delay: -5s;
+}
+
+.liquid-orb.orb-3 {
+  width: 220px;
+  height: 220px;
+  top: 42%;
+  left: 18%;
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.12) 0%, rgba(var(--accent-rgb), 0.18) 55%, transparent 72%);
+  animation-duration: 16s;
+  animation-delay: -9s;
+}
+
+@keyframes floatLiquidOrb {
+  0% { transform: translate3d(0px, 0px, 0) scale(1); }
+  50% { transform: translate3d(24px, -18px, 0) scale(1.08); }
+  100% { transform: translate3d(-18px, 22px, 0) scale(0.95); }
+}
+
+/* ОСНОВНОЙ СКРОЛЛ-КОНТЕЙНЕР С ОПУЩЕННОЙ ВЕРХНЕЙ ЗОНОЙ ПОД БАТАРЕЮ */
+.app-viewport {
+  position: relative;
+  z-index: 2;
+  width: 100%;
+  height: 100%;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding-top: var(--safe-top);
+  padding-bottom: var(--safe-bottom);
+  padding-left: 16px;
+  padding-right: 16px;
+  scroll-behavior: smooth;
+  -webkit-overflow-scrolling: touch;
+}
+
+.app-viewport::-webkit-scrollbar {
+  display: none;
+}
+
+/* ЭКРАНЫ И ПЛАВНЫЕ ПЕРЕХОДЫ ЖИДКОГО СТЕКЛА */
+.screen-view {
+  display: none;
+  flex-direction: column;
+  gap: 14px;
+  max-width: 500px;
+  margin: 0 auto;
+  will-change: transform, opacity;
+}
+
+.screen-view.active {
+  display: flex;
+  animation: liquidScreenEnter 0.42s var(--spring) forwards;
+}
+
+@keyframes liquidScreenEnter {
+  0% {
     opacity: 0;
-    pointer-events: none;
-    transition: all 0.25s ease;
-    z-index: 10000;
+    transform: translate3d(0, 18px, 0) scale(0.975);
   }
-
-  .toast-pop.show {
+  100% {
     opacity: 1;
-    transform: translateX(-50%) translateY(0);
+    transform: translate3d(0, 0, 0) scale(1);
   }
+}
+
+/* БАЗОВАЯ КАРТОЧКА ЖИДКОГО СТЕКЛА (LIQUID GLASS LENS) */
+.liquid-card {
+  position: relative;
+  background: var(--glass-bg);
+  backdrop-filter: blur(22px) saturate(185%);
+  -webkit-backdrop-filter: blur(22px) saturate(185%);
+  border-radius: 26px;
+  border-top: 1px solid var(--glass-border-top);
+  border-left: 1px solid var(--glass-border-side);
+  border-right: 1px solid var(--glass-border-side);
+  border-bottom: 1px solid var(--glass-border-bottom);
+  box-shadow: var(--glass-shadow);
+  padding: 16px 18px;
+  overflow: hidden;
+  transform: translate3d(0, 0, 0);
+  transition: transform 0.28s var(--spring), box-shadow 0.28s var(--spring), border-color 0.28s ease;
+}
+
+/* Верхний жидкий блик линзы */
+.liquid-card::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 8%;
+  right: 8%;
+  height: 44%;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.22) 0%, rgba(255, 255, 255, 0.02) 70%, transparent 100%);
+  border-radius: 0 0 90px 90px;
+  pointer-events: none;
+  opacity: 0.65;
+}
+
+/* Акцентное преломление на гранях */
+.liquid-card::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: radial-gradient(120% 90% at 92% 0%, rgba(var(--accent-rgb), 0.18) 0%, transparent 55%);
+  pointer-events: none;
+}
+
+.liquid-card.interactive {
+  cursor: pointer;
+}
+
+.liquid-card.interactive:active {
+  transform: scale(0.968) translate3d(0, 2px, 0);
+  border-top-color: rgba(var(--accent-rgb), 0.85);
+  box-shadow: 0 10px 24px -6px rgba(0, 0, 0, 0.78),
+              0 0 22px rgba(var(--accent-rgb), 0.25),
+              inset 0 2px 3px rgba(255, 255, 255, 0.55);
+}
+
+/* ШАПКА ЭКРАНА С КНОПКОЙ НАЗАД */
+.top-nav-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 2px;
+}
+
+.top-nav-left {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+}
+
+.glass-circle-btn {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: var(--glass-bg-strong);
+  backdrop-filter: blur(18px) saturate(180%);
+  -webkit-backdrop-filter: blur(18px) saturate(180%);
+  border-top: 1px solid rgba(255, 255, 255, 0.52);
+  border-left: 1px solid rgba(255, 255, 255, 0.22);
+  border-right: 1px solid rgba(255, 255, 255, 0.18);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.10);
+  box-shadow: 0 10px 22px rgba(0, 0, 0, 0.55), inset 0 1.5px 1px rgba(255, 255, 255, 0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  font-size: 18px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: transform 0.24s var(--spring), box-shadow 0.24s var(--spring);
+}
+
+.glass-circle-btn:active {
+  transform: scale(0.88);
+  box-shadow: 0 0 18px var(--accent-glow), inset 0 2px 3px rgba(255, 255, 255, 0.65);
+}
+
+.screen-title {
+  font-size: 23px;
+  font-weight: 800;
+  letter-spacing: -0.4px;
+  background: linear-gradient(180deg, #ffffff 0%, #cbd5e1 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  text-shadow: 0 4px 18px rgba(0, 0, 0, 0.45);
+}
+
+/* ИКОНКА В ЖИДКОЙ КАПСУЛЕ */
+.liquid-icon-box {
+  position: relative;
+  width: 48px;
+  height: 48px;
+  min-width: 48px;
+  border-radius: 16px;
+  background: linear-gradient(145deg, rgba(var(--accent-rgb), 0.28) 0%, rgba(255, 255, 255, 0.08) 55%, rgba(15, 23, 42, 0.55) 100%);
+  border-top: 1px solid rgba(255, 255, 255, 0.55);
+  border-left: 1px solid rgba(var(--accent-rgb), 0.45);
+  border-right: 1px solid rgba(255, 255, 255, 0.16);
+  border-bottom: 1px solid rgba(var(--accent-rgb), 0.22);
+  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.45),
+              0 0 16px rgba(var(--accent-rgb), 0.22),
+              inset 0 1.5px 1px rgba(255, 255, 255, 0.52);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--accent);
+  font-weight: 800;
+  font-size: 16px;
+}
+
+.liquid-icon-box svg {
+  width: 22px;
+  height: 22px;
+  stroke: var(--accent);
+  filter: drop-shadow(0 0 8px rgba(var(--accent-rgb), 0.55));
+}
+
+/* ВЕРХНЯЯ СТАТУС-КАРТОЧКА НА ГЛАВНОЙ */
+.hero-status-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 18px;
+}
+
+.hero-avatar {
+  position: relative;
+  width: 56px;
+  height: 56px;
+  min-width: 56px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 30% 25%, rgba(255, 255, 255, 0.35), rgba(var(--accent-rgb), 0.35) 55%, rgba(15, 23, 42, 0.85) 100%);
+  border: 1.5px solid rgba(255, 255, 255, 0.58);
+  box-shadow: 0 0 22px var(--accent-glow), inset 0 2px 4px rgba(255, 255, 255, 0.55);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 22px;
+  font-weight: 800;
+  color: #fff;
+  overflow: hidden;
+  background-size: cover;
+  background-position: center;
+}
+
+.hero-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.hero-headline {
+  font-size: 17px;
+  font-weight: 800;
+  color: #fff;
+  letter-spacing: -0.2px;
+  margin-bottom: 4px;
+}
+
+.hero-subline {
+  font-size: 12.5px;
+  line-height: 1.4;
+  color: var(--text-sub);
+}
+
+.status-badge-inline {
+  font-weight: 800;
+  padding: 2px 7px;
+  border-radius: 999px;
+  font-size: 11px;
+  display: inline-block;
+}
+
+.status-on {
+  color: #34d399;
+  background: rgba(16, 185, 129, 0.16);
+  border: 1px solid rgba(52, 211, 153, 0.42);
+}
+
+.status-off {
+  color: #fb7185;
+  background: rgba(244, 63, 94, 0.16);
+  border: 1px solid rgba(251, 113, 133, 0.42);
+}
+
+.status-sub-gold {
+  color: var(--accent);
+  font-weight: 800;
+}
+
+/* ДВУХКОЛОНОЧНАЯ BENTO-СЕТКА */
+.bento-grid-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.card-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 13px;
+  position: relative;
+  z-index: 1;
+}
+
+.card-left {
+  display: flex;
+  align-items: center;
+  gap: 13px;
+  min-width: 0;
+  flex: 1;
+}
+
+.card-title {
+  font-size: 16.5px;
+  font-weight: 800;
+  color: #ffffff;
+  letter-spacing: -0.2px;
+  margin-bottom: 3px;
+}
+
+.card-desc {
+  font-size: 12.2px;
+  color: var(--text-sub);
+  line-height: 1.32;
+}
+
+.card-hint {
+  font-size: 11px;
+  color: var(--text-muted);
+  margin-top: 3px;
+}
+
+.chevron-glass {
+  color: rgba(255, 255, 255, 0.48);
+  font-size: 18px;
+  font-weight: 700;
+  padding-left: 4px;
+}
+
+/* КРУГЛАЯ ЖИДКАЯ КНОПКА ЗАПУСКА СЕНСЫ */
+.liquid-orb-toggle {
+  width: 66px;
+  height: 66px;
+  min-width: 66px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 32% 24%, rgba(255, 255, 255, 0.30) 0%, rgba(255, 255, 255, 0.08) 48%, rgba(15, 23, 42, 0.72) 100%);
+  border-top: 1.5px solid rgba(255, 255, 255, 0.58);
+  border-left: 1px solid rgba(255, 255, 255, 0.25);
+  border-right: 1px solid rgba(255, 255, 255, 0.20);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.6), inset 0 2px 3px rgba(255, 255, 255, 0.45);
+  color: #e2e8f0;
+  font-size: 12.5px;
+  font-weight: 900;
+  letter-spacing: 0.4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.34s var(--spring);
+}
+
+.liquid-orb-toggle.active {
+  background: radial-gradient(circle at 30% 22%, rgba(255, 255, 255, 0.65) 0%, rgba(var(--accent-rgb), 0.75) 45%, rgba(2, 132, 199, 0.85) 100%);
+  color: #030712;
+  border-color: #ffffff;
+  box-shadow: 0 0 30px var(--accent-glow),
+              0 0 12px rgba(255, 255, 255, 0.5),
+              inset 0 2px 4px rgba(255, 255, 255, 0.85);
+  transform: scale(1.04);
+}
+
+/* ЖИДКИЕ КНОПКИ (LIQUID BUTTONS) */
+.liquid-btn {
+  position: relative;
+  width: 100%;
+  padding: 15px 18px;
+  border-radius: 20px;
+  border: none;
+  font-size: 13.5px;
+  font-weight: 900;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  overflow: hidden;
+  transition: transform 0.24s var(--spring), box-shadow 0.24s var(--spring), filter 0.2s ease;
+  z-index: 1;
+}
+
+.liquid-btn.primary {
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.42) 0%, var(--accent) 28%, var(--accent-2) 100%);
+  color: #020617;
+  border-top: 1.5px solid rgba(255, 255, 255, 0.85);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.25);
+  box-shadow: 0 12px 28px -6px var(--accent-glow),
+              inset 0 2px 2px rgba(255, 255, 255, 0.75),
+              inset 0 -2px 3px rgba(0, 0, 0, 0.2);
+}
+
+.liquid-btn.secondary {
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.16) 0%, rgba(255, 255, 255, 0.06) 50%, rgba(15, 23, 42, 0.58) 100%);
+  color: #f8fafc;
+  border-top: 1px solid rgba(255, 255, 255, 0.45);
+  border-left: 1px solid rgba(255, 255, 255, 0.18);
+  border-right: 1px solid rgba(255, 255, 255, 0.18);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.45), inset 0 1px 1px rgba(255, 255, 255, 0.35);
+}
+
+.liquid-btn.danger {
+  background: linear-gradient(135deg, rgba(251, 113, 133, 0.34) 0%, rgba(225, 29, 72, 0.24) 55%, rgba(76, 5, 25, 0.65) 100%);
+  color: #ffe4e6;
+  border-top: 1px solid rgba(253, 164, 175, 0.55);
+  border-left: 1px solid rgba(251, 113, 133, 0.28);
+  border-right: 1px solid rgba(251, 113, 133, 0.28);
+  border-bottom: 1px solid rgba(251, 113, 133, 0.14);
+  box-shadow: 0 10px 24px rgba(225, 29, 72, 0.25), inset 0 1px 1px rgba(255, 255, 255, 0.35);
+}
+
+.liquid-btn:active {
+  transform: scale(0.96);
+  filter: brightness(1.08);
+}
+
+/* ПИЛЮЛИ И СЕГМЕНТНЫЕ ПЕРЕКЛЮЧАТЕЛИ */
+.liquid-pill-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 11px 16px;
+  border-radius: 999px;
+  background: var(--glass-bg);
+  backdrop-filter: blur(18px) saturate(180%);
+  -webkit-backdrop-filter: blur(18px) saturate(180%);
+  border-top: 1px solid rgba(255, 255, 255, 0.42);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: var(--glass-shadow);
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.segment-row {
+  display: flex;
+  gap: 7px;
+  overflow-x: auto;
+  padding: 4px;
+  border-radius: 20px;
+  background: rgba(4, 7, 17, 0.52);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.65);
+}
+
+.segment-row::-webkit-scrollbar {
+  display: none;
+}
+
+.segment-btn {
+  flex: 1;
+  min-width: max-content;
+  padding: 10px 13px;
+  border-radius: 15px;
+  border: 1px solid transparent;
+  background: transparent;
+  color: var(--text-sub);
+  font-size: 12.5px;
+  font-weight: 800;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.28s var(--spring);
+}
+
+.segment-btn.active {
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.24) 0%, rgba(var(--accent-rgb), 0.32) 60%, rgba(var(--accent-rgb), 0.16) 100%);
+  color: #ffffff;
+  border-top: 1px solid rgba(255, 255, 255, 0.65);
+  border-bottom: 1px solid rgba(var(--accent-rgb), 0.45);
+  box-shadow: 0 6px 16px rgba(var(--accent-rgb), 0.28), inset 0 1px 1px rgba(255, 255, 255, 0.55);
+}
+
+/* ПРЕВЬЮ РАСТЯГА ЭКРАНА */
+.stretch-preview-stage {
+  width: 100%;
+  height: 148px;
+  border-radius: 20px;
+  background: radial-gradient(circle at 50% 50%, rgba(15, 23, 42, 0.85) 0%, rgba(2, 6, 23, 0.95) 100%);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow: inset 0 4px 16px rgba(0, 0, 0, 0.75);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  margin: 12px 0;
+  overflow: hidden;
+}
+
+.stretch-outer-guide {
+  width: 82%;
+  height: 76%;
+  border: 1px dashed rgba(255, 255, 255, 0.22);
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.stretch-inner-frame {
+  width: 74%;
+  height: 100%;
+  border-radius: 13px;
+  border: 2px solid var(--accent);
+  background: linear-gradient(135deg, rgba(var(--accent-rgb), 0.24) 0%, rgba(var(--accent-rgb), 0.06) 100%);
+  box-shadow: 0 0 24px var(--accent-glow), inset 0 1px 2px rgba(255, 255, 255, 0.55);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  font-size: 20px;
+  font-weight: 800;
+  transition: width 0.38s var(--spring), height 0.38s var(--spring);
+}
+
+/* СЛАЙДЕРЫ И ТУМБЛЕРЫ ЖИДКОГО СТЕКЛА */
+.slider-group {
+  margin-top: 12px;
+}
+
+.slider-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 13px;
+  font-weight: 700;
+  margin-bottom: 7px;
+  color: #f1f5f9;
+}
+
+.slider-val-badge {
+  padding: 2px 9px;
+  border-radius: 999px;
+  background: rgba(var(--accent-rgb), 0.18);
+  border: 1px solid rgba(var(--accent-rgb), 0.42);
+  color: var(--accent);
+  font-size: 12px;
+  font-weight: 800;
+}
+
+input[type="range"].liquid-slider {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 8px;
+  border-radius: 999px;
+  background: rgba(15, 23, 42, 0.78);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  box-shadow: inset 0 1px 4px rgba(0, 0, 0, 0.8);
+  outline: none;
+}
+
+input[type="range"].liquid-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 32% 28%, #ffffff 0%, var(--accent) 65%, var(--accent-2) 100%);
+  border: 2px solid #ffffff;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.6), 0 0 14px var(--accent-glow);
+  cursor: pointer;
+  transition: transform 0.18s var(--spring);
+}
+
+input[type="range"].liquid-slider::-webkit-slider-thumb:active {
+  transform: scale(1.22);
+}
+
+/* ЖИДКИЙ SWITCH ТУМБЛЕР */
+.liquid-switch {
+  position: relative;
+  width: 54px;
+  height: 31px;
+  min-width: 54px;
+  border-radius: 999px;
+  background: rgba(15, 23, 42, 0.72);
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.7);
+  cursor: pointer;
+  transition: all 0.3s var(--spring);
+}
+
+.liquid-switch::after {
+  content: "";
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 23px;
+  height: 23px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 30% 25%, #ffffff 0%, #cbd5e1 100%);
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.55), inset 0 1px 1px #fff;
+  transition: transform 0.3s var(--spring), background 0.3s ease;
+}
+
+.liquid-switch.active {
+  background: linear-gradient(135deg, rgba(var(--accent-rgb), 0.55) 0%, var(--accent-2) 100%);
+  border-color: rgba(255, 255, 255, 0.65);
+  box-shadow: 0 0 18px var(--accent-glow), inset 0 1px 2px rgba(255, 255, 255, 0.45);
+}
+
+.liquid-switch.active::after {
+  transform: translate3d(23px, 0, 0);
+  background: #ffffff;
+}
+
+/* ПОЛЯ ВВОДА В СТИЛЕ ЖИДКОГО СТЕКЛА */
+.liquid-input {
+  width: 100%;
+  padding: 14px 16px;
+  border-radius: 18px;
+  background: rgba(4, 8, 20, 0.66);
+  border-top: 1px solid rgba(255, 255, 255, 0.14);
+  border-left: 1px solid rgba(255, 255, 255, 0.10);
+  border-right: 1px solid rgba(255, 255, 255, 0.10);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.24);
+  box-shadow: inset 0 3px 8px rgba(0, 0, 0, 0.65);
+  color: #ffffff;
+  font-size: 14px;
+  font-weight: 700;
+  outline: none;
+  user-select: text;
+  -webkit-user-select: text;
+  transition: border-color 0.25s ease, box-shadow 0.25s ease;
+}
+
+.liquid-input:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 16px rgba(var(--accent-rgb), 0.25), inset 0 2px 6px rgba(0, 0, 0, 0.7);
+}
+
+/* СЕНСОРНЫЙ ПОЛИГОН ТЕСТА ИНЖЕКТОРА (GAMETOUCHLAYER PAD) */
+.touch-test-arena {
+  position: relative;
+  width: 100%;
+  height: 155px;
+  border-radius: 22px;
+  background:
+    radial-gradient(circle at 50% 50%, rgba(var(--accent-rgb), 0.14) 0%, rgba(2, 6, 23, 0.92) 78%),
+    repeating-linear-gradient(0deg, rgba(255,255,255,0.04) 0px, rgba(255,255,255,0.04) 1px, transparent 1px, transparent 24px),
+    repeating-linear-gradient(90deg, rgba(255,255,255,0.04) 0px, rgba(255,255,255,0.04) 1px, transparent 1px, transparent 24px);
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  box-shadow: inset 0 4px 20px rgba(0, 0, 0, 0.8);
+  overflow: hidden;
+  touch-action: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 12px;
+}
+
+.touch-cursor-dot {
+  position: absolute;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: radial-gradient(circle, #ffffff 0%, var(--accent) 60%, transparent 100%);
+  box-shadow: 0 0 20px var(--accent);
+  pointer-events: none;
+  transform: translate3d(-50%, -50%, 0);
+  left: 50%;
+  top: 50%;
+  transition: width 0.15s ease, height 0.15s ease;
+}
+
+/* КРУЖКИ ВЫБОРА ОТТЕНКА ПРЕЛОМЛЕНИЯ СТЕКЛА */
+.swatch-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  margin-top: 14px;
+}
+
+.glass-swatch {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  cursor: pointer;
+  border: 2px solid rgba(255, 255, 255, 0.45);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.5), inset 0 2px 4px rgba(255, 255, 255, 0.65);
+  transition: transform 0.26s var(--spring), box-shadow 0.26s var(--spring);
+}
+
+.glass-swatch.active {
+  transform: scale(1.16);
+  border: 2.5px solid #ffffff;
+  box-shadow: 0 0 22px var(--accent-glow), inset 0 2px 5px #ffffff;
+}
+
+/* НИЖНЯЯ КАПСУЛА НАВИГАЦИИ В СТИЛЕ ЖИДКОГО СТЕКЛА */
+.bottom-liquid-dock {
+  position: fixed;
+  left: 14px;
+  right: 14px;
+  bottom: max(14px, env(safe-area-inset-bottom, 12px));
+  max-width: 492px;
+  margin: 0 auto;
+  z-index: 90;
+  padding: 7px;
+  border-radius: 30px;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.18) 0%, rgba(255, 255, 255, 0.06) 48%, rgba(9, 14, 28, 0.76) 100%);
+  backdrop-filter: blur(26px) saturate(200%);
+  -webkit-backdrop-filter: blur(26px) saturate(200%);
+  border-top: 1.5px solid rgba(255, 255, 255, 0.52);
+  border-left: 1px solid rgba(255, 255, 255, 0.20);
+  border-right: 1px solid rgba(255, 255, 255, 0.20);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.10);
+  box-shadow: 0 22px 45px rgba(0, 0, 0, 0.78),
+              inset 0 1.5px 1px rgba(255, 255, 255, 0.50);
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 4px;
+}
+
+.dock-item {
+  position: relative;
+  padding: 8px 4px;
+  border-radius: 22px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  color: rgba(226, 232, 240, 0.65);
+  font-size: 10.8px;
+  font-weight: 800;
+  cursor: pointer;
+  transition: all 0.3s var(--spring);
+}
+
+.dock-item svg {
+  width: 20px;
+  height: 20px;
+  stroke: currentColor;
+  stroke-width: 2;
+  fill: none;
+  transition: transform 0.3s var(--spring);
+}
+
+.dock-item.active {
+  color: var(--accent);
+  background: linear-gradient(145deg, rgba(255, 255, 255, 0.22) 0%, rgba(var(--accent-rgb), 0.24) 60%, rgba(15, 23, 42, 0.45) 100%);
+  border-top: 1px solid rgba(255, 255, 255, 0.58);
+  border-bottom: 1px solid rgba(var(--accent-rgb), 0.35);
+  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.42),
+              0 0 16px rgba(var(--accent-rgb), 0.24),
+              inset 0 1px 1px rgba(255, 255, 255, 0.55);
+}
+
+.dock-item.active svg {
+  transform: translate3d(0, -1px, 0) scale(1.08);
+  filter: drop-shadow(0 0 8px var(--accent-glow));
+}
+
+/* МОДАЛЬНОЕ ОКНО АВТОРИЗАЦИИ ЛИЦЕНЗИИ */
+.auth-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  background: rgba(3, 6, 16, 0.84);
+  backdrop-filter: blur(26px) saturate(180%);
+  -webkit-backdrop-filter: blur(26px) saturate(180%);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  padding-top: var(--safe-top);
+}
+
+.auth-modal-backdrop.visible {
+  display: flex;
+}
+
+.auth-glass-box {
+  width: 100%;
+  max-width: 440px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.auth-error-banner {
+  display: none;
+  padding: 12px 14px;
+  border-radius: 16px;
+  background: rgba(244, 63, 94, 0.20);
+  border: 1px solid rgba(251, 113, 133, 0.55);
+  color: #fecdd3;
+  font-size: 12.5px;
+  font-weight: 800;
+  text-align: center;
+}
+
+/* ВСПЛЫВАЮЩИЙ ЖИДКИЙ ТОСТ */
+.liquid-toast {
+  position: fixed;
+  top: max(62px, calc(env(safe-area-inset-top, 40px) + 22px));
+  left: 50%;
+  transform: translate3d(-50%, -24px, 0) scale(0.92);
+  z-index: 300;
+  padding: 12px 20px;
+  border-radius: 999px;
+  background: var(--glass-bg-strong);
+  backdrop-filter: blur(24px) saturate(200%);
+  -webkit-backdrop-filter: blur(24px) saturate(200%);
+  border-top: 1.5px solid rgba(255, 255, 255, 0.65);
+  border-bottom: 1px solid rgba(var(--accent-rgb), 0.45);
+  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.75), 0 0 20px var(--accent-glow);
+  color: #ffffff;
+  font-size: 13px;
+  font-weight: 800;
+  opacity: 0;
+  pointer-events: none;
+  transition: all 0.32s var(--spring);
+  white-space: nowrap;
+}
+
+.liquid-toast.show {
+  opacity: 1;
+  transform: translate3d(-50%, 0, 0) scale(1);
+}
 </style>
 </head>
 <body>
 
-<div id="uiToast" class="toast-pop">Готово</div>
-
-<!-- ==================== ОКНО АВТОРИЗАЦИИ ЛИЦЕНЗИИ ==================== -->
-<div id="authScreenOverlay">
-  <div style="width:100%; max-width:400px; display:flex; flex-direction:column; gap:12px;">
-    <div style="text-align:center; margin-bottom:4px;">
-      <div style="display:inline-block; padding:5px 14px; border-radius:999px; background:rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.18); font-size:10.5px; font-weight:800; letter-spacing:1.2px; color:#cbd5e1; margin-bottom:8px;">
-        QUANTUM CORE V10 • PRO TITANIUM
-      </div>
-      <h1 style="font-size:28px; font-weight:900;">SO2Teleport <span style="color:var(--accent); font-style:italic;">PRO</span></h1>
-    </div>
-
-    <div class="lg-card accent-rim" style="display:flex; flex-direction:column; gap:12px;">
-      <div style="text-align:center; font-size:13px; color:var(--txt-secondary); font-weight:600;">
-        Авторизация лицензии (1 ключ = 1 устройство)
-      </div>
-
-      <div id="authErrorBanner" style="display:none; padding:10px 12px; border-radius:12px; background:rgba(244,63,94,0.18); border:1px solid rgba(244,63,94,0.48); color:#fda4af; font-size:12.5px; font-weight:700; text-align:center;"></div>
-
-      <div>
-        <div style="font-size:10.5px; font-weight:800; color:var(--txt-secondary); margin-bottom:6px;">USERNAME (ВАШ НИКНЕЙМ)</div>
-        <div class="glass-input-box">
-          <input id="authNickInput" class="glass-input" type="text" placeholder="dare" value="dare" />
-        </div>
-      </div>
-
-      <div>
-        <div style="font-size:10.5px; font-weight:800; color:var(--txt-secondary); margin-bottom:6px;">LICENSE KEY (КЛЮЧ ИЗ БОТА)</div>
-        <div class="glass-input-box">
-          <input id="authKeyInput" class="glass-input" type="text" placeholder="TP30D-XXX-000000" />
-        </div>
-      </div>
-
-      <button class="glass-btn" onclick="handleLicenseActivation()">⚡ АКТИВИРОВАТЬ КЛЮЧ И ВОЙТИ</button>
-    </div>
-
-    <div class="lg-card" style="padding:12px 16px; text-align:center; font-size:12.5px; font-weight:700; color:#cbd5e1;">
-      🛡️ Защищённый HWID: <span id="authHwidText" style="color:var(--accent);">...</span>
-    </div>
-
-    <button class="glass-btn neutral" onclick="callBridge('openTelegramBot')">🤖 Купить / Получить ключ в Telegram-боте</button>
-    <button class="glass-btn neutral" onclick="callBridge('openSupportTelegram')">💬 Помощь с Shizuku в Telegram</button>
-  </div>
+<!-- ЖИДКИЙ ФОН С КАУСТИКОЙ -->
+<div class="liquid-ambient">
+  <div class="liquid-orb orb-1"></div>
+  <div class="liquid-orb orb-2"></div>
+  <div class="liquid-orb orb-3"></div>
 </div>
 
-<!-- ==================== ГЛАВНЫЙ КОНТЕЙНЕР ЭКРАНОВ ==================== -->
-<div class="app-shell">
+<!-- ЖИДКИЙ ТОСТ УВЕДОМЛЕНИЙ -->
+<div id="liquidToast" class="liquid-toast">⚡ Готово</div>
 
-  <!-- 1. ГЛАВНЫЙ ХАБ -->
-  <div id="page-hub" class="view-page active">
-    <div class="lg-card accent-rim clickable tile-row" onclick="navToPage('page-profile')">
-      <div class="tile-left">
-        <div class="ava-ring" id="hubAvaBox">D</div>
-        <div>
-          <div class="tile-title" id="hubReadyTitle">Сенса готова к работе</div>
-          <div class="tile-desc">
-            Shizuku: <b id="hubShizukuBadge" style="color:var(--ok-green);">ОК</b> · Подписка: <span id="hubSubBadge" style="color:var(--accent); font-weight:800;">АКТИВНА</span>
+<!-- ОСНОВНОЙ КОНТЕЙНЕР ЭКРАНОВ -->
+<main class="app-viewport">
+
+  <!-- ==================================================================== -->
+  <!-- ВКЛАДКА 1: ГЛАВНОЕ                                                   -->
+  <!-- ==================================================================== -->
+  <section id="tab-home" class="screen-view active">
+
+    <div class="liquid-card hero-status-card interactive" onclick="switchTab('profile')">
+      <div class="card-left">
+        <div id="homeAvatar" class="hero-avatar">D</div>
+        <div class="hero-info">
+          <div class="hero-headline" id="homeReadyTitle">Сенса готова к работе</div>
+          <div class="hero-subline">
+            Shizuku: <span id="shizukuStatusBadge" class="status-badge-inline status-off">ВЫКЛ</span>
+            • Подписка: <span id="subStatusText" class="status-sub-gold">ПРОВЕРКА...</span>
           </div>
         </div>
       </div>
-      <div class="tile-arrow">›</div>
+      <div class="chevron-glass">›</div>
     </div>
 
-    <div class="lg-card clickable tile-row" onclick="navToPage('page-configs')">
-      <div class="tile-left">
-        <div class="tile-icon">&lt;/&gt;</div>
-        <div>
-          <div class="tile-title">Конфиги</div>
-          <div class="tile-desc">Активация по коду · Полка из 8 сборок</div>
-        </div>
-      </div>
-      <div class="tile-arrow">›</div>
-    </div>
-
-    <div class="grid-two-cols">
-      <div class="lg-card clickable tile-row" onclick="navToPage('page-stretch')">
-        <div class="tile-left">
-          <div class="tile-icon">⛶</div>
+    <!-- Карточка Конфигов -->
+    <div class="liquid-card interactive" onclick="openSensorSubtab('configs')">
+      <div class="card-row">
+        <div class="card-left">
+          <div class="liquid-icon-box">&lt;/&gt;</div>
           <div>
-            <div class="tile-title">Экран</div>
-            <div class="tile-desc">Растяг и пиксели</div>
+            <div class="card-title">Конфиги и Облако</div>
+            <div class="card-desc">Активация по коду • Полка из 8 сборок</div>
           </div>
         </div>
-        <div class="tile-arrow">›</div>
+        <div class="chevron-glass">›</div>
+      </div>
+    </div>
+
+    <!-- 2 колонки: Экран и Прицел -->
+    <div class="bento-grid-2">
+      <div class="liquid-card interactive" onclick="switchTab('stretch')">
+        <div class="card-row">
+          <div class="card-left">
+            <div class="liquid-icon-box">
+              <svg viewBox="0 0 24 24" fill="none" stroke-width="2.2"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/></svg>
+            </div>
+            <div>
+              <div class="card-title">Экран</div>
+              <div class="card-desc">Растяг и пиксели</div>
+            </div>
+          </div>
+          <div class="chevron-glass">›</div>
+        </div>
       </div>
 
-      <div class="lg-card clickable tile-row" onclick="navToPage('page-crosshair')">
-        <div class="tile-left">
-          <div class="tile-icon">⌖</div>
+      <div class="liquid-card interactive" onclick="openSensorSubtab('crosshair')">
+        <div class="card-row">
+          <div class="card-left">
+            <div class="liquid-icon-box">
+              <svg viewBox="0 0 24 24" fill="none" stroke-width="2.2"><circle cx="12" cy="12" r="7"/><line x1="12" y1="2" x2="12" y2="6"/><line x1="12" y1="18" x2="12" y2="22"/><line x1="2" y1="12" x2="6" y2="12"/><line x1="18" y1="12" x2="22" y2="12"/></svg>
+            </div>
+            <div>
+              <div class="card-title">Прицел</div>
+              <div class="card-desc">Поверх игры</div>
+            </div>
+          </div>
+          <div class="chevron-glass">›</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Главная карточка СЕНСА + GameTouchLayer -->
+    <div class="liquid-card interactive" onclick="switchTab('sensor')">
+      <div class="card-row">
+        <div class="card-left">
+          <div class="liquid-icon-box">
+            <svg viewBox="0 0 24 24" fill="none" stroke-width="2.2"><line x1="4" y1="21" x2="4" y2="14"/><line x1="4" y1="10" x2="4" y2="3"/><line x1="12" y1="21" x2="12" y2="12"/><line x1="12" y1="8" x2="12" y2="3"/><line x1="20" y1="21" x2="20" y2="16"/><line x1="20" y1="12" x2="20" y2="3"/><line x1="1" y1="14" x2="7" y2="14"/><line x1="9" y1="8" x2="15" y2="8"/><line x1="17" y1="16" x2="23" y2="16"/></svg>
+          </div>
           <div>
-            <div class="tile-title">Прицел</div>
-            <div class="tile-desc">Поверх игры</div>
+            <div class="card-title">СЕНСА & ИНЖЕКТ</div>
+            <div class="card-desc" id="homeSensSubtitle">GameTouchLayer C++ • Выбери характер</div>
+            <div class="card-hint">Нажми на карточку — тонкая настройка</div>
           </div>
         </div>
-        <div class="tile-arrow">›</div>
+        <button id="masterSensOrb" class="liquid-orb-toggle" onclick="event.stopPropagation(); toggleMasterSens();">ВЫКЛ</button>
       </div>
     </div>
 
-    <div class="lg-card accent-rim clickable tile-row" style="padding:20px 18px;" onclick="navToPage('page-sensor')">
-      <div class="tile-left" style="padding-right:8px;">
-        <div class="tile-icon" style="width:48px; height:48px; font-size:21px;">🎚️</div>
-        <div>
-          <div style="font-size:18.5px; font-weight:900;">СЕНСА</div>
-          <div class="tile-desc" id="hubSensDesc">Выбери характер и включай</div>
-          <div style="font-size:11px; color:var(--txt-muted); margin-top:4px;">Нажми на карточку — настройка</div>
-        </div>
-      </div>
-      <div id="hubSensOrbBtn" class="sens-orb-btn" onclick="event.stopPropagation(); toggleMasterSensOrb();">ВКЛ</div>
-    </div>
-
-    <div class="lg-card clickable tile-row" onclick="navToPage('page-booster')">
-      <div class="tile-left">
-        <div class="tile-icon">⚡</div>
-        <div>
-          <div class="tile-title">Бустер</div>
-          <div class="tile-desc">Оптимизация телефона · 120 Гц и ОЗУ</div>
-        </div>
-      </div>
-      <div class="tile-arrow">›</div>
-    </div>
-
-    <div class="lg-card clickable tile-row" onclick="navToPage('page-voice')">
-      <div class="tile-left">
-        <div class="tile-icon">🎧</div>
-        <div>
-          <div class="tile-title">Войс и Друзья</div>
-          <div class="tile-desc">Голосовая связь 400% · Комнаты отряда</div>
-        </div>
-      </div>
-      <div class="tile-arrow">›</div>
-    </div>
-  </div>
-
-  <!-- 2. ЭКРАН: КОНФИГИ -->
-  <div id="page-configs" class="view-page">
-    <div class="page-top-bar">
-      <div class="page-top-left">
-        <div class="btn-back-glass" onclick="navToPage('page-hub')">←</div>
-        <div class="page-ico-chip">&lt;/&gt;</div>
-        <div class="page-heading">Конфиги</div>
-      </div>
-      <div class="top-pill-action" onclick="navToPage('page-sensor')">МОЯ СЕНСА</div>
-    </div>
-
-    <div class="lg-card accent-rim" style="display:flex; flex-direction:column; gap:12px;">
-      <div class="tile-title">1 · Вставь код набора</div>
-      <div class="tile-desc">Код из лички бота или от друга — набор сразу применится к сенсе.</div>
-      <div class="glass-input-box">
-        <span style="color:var(--accent); font-weight:900;">&lt;/&gt;</span>
-        <input id="cloudCodeInput" class="glass-input" type="text" placeholder="TP-CFG-7744" />
-      </div>
-      <button class="glass-btn" onclick="applyCloudConfigCode()">ПРИМЕНИТЬ КОД НАБОРА</button>
-    </div>
-
-    <div class="lg-card" style="display:flex; flex-direction:column; gap:12px;">
-      <div class="tile-title">2 · Полка сборок и создание кода</div>
-      <div class="glass-input-box">
-        <input id="cloudTitleInput" class="glass-input" type="text" placeholder="Название сборки (например Dare Pro)" />
-      </div>
-      <div class="grid-two-cols">
-        <button class="glass-btn neutral" style="padding:12px; font-size:12px;" onclick="saveLocalUserPreset()">💾 Сохранить мой</button>
-        <button class="glass-btn" style="padding:12px; font-size:12px;" onclick="uploadCloudUserPreset()">☁ Создать код</button>
-      </div>
-      <div class="grid-two-cols" style="margin-top:4px;">
-        <div class="lg-card clickable" style="padding:13px;" onclick="applyShelfPreset('sharp')">
-          <div style="font-size:13px; font-weight:800; color:var(--accent);">1 · УЛЬТРА 68.0X</div>
-          <div class="tile-desc" style="font-size:11px; margin-top:4px;">Рывок 68.0x · флики 180°</div>
-        </div>
-        <div class="lg-card clickable" style="padding:13px;" onclick="applyShelfPreset('clean_sharp')">
-          <div style="font-size:13px; font-weight:800; color:var(--ok-green);">2 · ПАД КИБЕР</div>
-          <div class="tile-desc" style="font-size:11px; margin-top:4px;">Для планшетов и 4–6 пальцев</div>
-        </div>
-        <div class="lg-card clickable" style="padding:13px;" onclick="applyShelfPreset('max')">
-          <div style="font-size:13px; font-weight:800;">3 · AKR ЗАЖИМ</div>
-          <div class="tile-desc" style="font-size:11px; margin-top:4px;">Выпрямление в точку</div>
-        </div>
-        <div class="lg-card clickable" style="padding:13px;" onclick="applyShelfPreset('fps')">
-          <div style="font-size:13px; font-weight:800;">4 · A57 / 120 FPS</div>
-          <div class="tile-desc" style="font-size:11px; margin-top:4px;">Анти-фриз · ровные кадры</div>
-        </div>
-        <div class="lg-card clickable" style="padding:13px;" onclick="applyShelfPreset('sniper')">
-          <div style="font-size:13px; font-weight:800; color:var(--warn-amber);">5 · AWM СНАЙПЕР</div>
-          <div class="tile-desc" style="font-size:11px; margin-top:4px;">Точный фаст-зум без срыва</div>
-        </div>
-        <div class="lg-card clickable" style="padding:13px;" onclick="applyShelfPreset('onetap')">
-          <div style="font-size:13px; font-weight:800; color:var(--err-rose);">6 · DEAGLE ВАНТАП</div>
-          <div class="tile-desc" style="font-size:11px; margin-top:4px;">Фиксация на уровне головы</div>
-        </div>
-        <div class="lg-card clickable" style="padding:13px;" onclick="applyShelfPreset('clean')">
-          <div style="font-size:13px; font-weight:800;">7 · ЧИСТЫЙ СТОК</div>
-          <div class="tile-desc" style="font-size:11px; margin-top:4px;">Ровный тач без вязкости</div>
-        </div>
-        <div class="lg-card clickable" style="padding:13px;" onclick="applyShelfPreset('hardlock')">
-          <div style="font-size:13px; font-weight:800; color:var(--accent);">8 · HARD LOCK</div>
-          <div class="tile-desc" style="font-size:11px; margin-top:4px;">Максимальное прилипание</div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- 3. ЭКРАН: РАСТЯГ И ПИКСЕЛИ -->
-  <div id="page-stretch" class="view-page">
-    <div class="page-top-bar">
-      <div class="page-top-left">
-        <div class="btn-back-glass" onclick="navToPage('page-hub')">←</div>
-        <div class="page-ico-chip">⛶</div>
-        <div class="page-heading">Растяг</div>
-      </div>
-    </div>
-
-    <div class="lg-card access-bar">
-      <div class="access-label">🕒 ДОСТУП</div>
-      <div class="access-status" id="stretchSubLabel">БЕССРОЧНО</div>
-    </div>
-
-    <div class="lg-card accent-rim" style="display:flex; flex-direction:column; gap:12px;">
-      <div style="font-size:11.5px; font-weight:800; color:var(--txt-secondary);">КАК БУДЕТ ВЫГЛЯДЕТЬ</div>
-      <div class="stage-box">
-        <div class="stretch-outer-dash">
-          <div id="stretchLiveRect" class="stretch-inner-live">+</div>
-        </div>
-      </div>
-      <div class="pills-5">
-        <div class="glass-pill active" id="stRatio-4:3" onclick="selectStretchRatio('4:3', '74%')">4:3</div>
-        <div class="glass-pill" id="stRatio-5:4" onclick="selectStretchRatio('5:4', '64%')">5:4</div>
-        <div class="glass-pill" id="stRatio-3:2" onclick="selectStretchRatio('3:2', '80%')">3:2</div>
-        <div class="glass-pill" id="stRatio-16:10" onclick="selectStretchRatio('16:10', '88%')">16:10</div>
-        <div class="glass-pill" id="stRatio-16:9" onclick="selectStretchRatio('16:9', '100%')">16:9</div>
-      </div>
-    </div>
-
-    <div class="lg-card" style="display:flex; flex-direction:column; gap:10px;">
-      <div class="tile-title">Сразу, без кнопки</div>
-      <div class="tile-desc">Применяет выбранный размер через Shizuku прямо сейчас.</div>
-      <button class="glass-btn" id="btnDirectStretch" onclick="triggerDirectStretch()">РАСТЯНУТЬ 4:3</button>
-      <button class="glass-btn neutral" onclick="triggerResetStretch()">СБРОСИТЬ РАЗМЕР</button>
-    </div>
-
-    <div class="lg-card accent-rim" style="display:flex; flex-direction:column; gap:10px;">
-      <div class="tile-title">Плавающая кнопка «T»</div>
-      <div class="tile-desc">Над игрой появится стеклянная кнопка «T». 1 тап — рамки, 2 тап в матче — полный растяг. Смахни вниз в ведро для удаления.</div>
-      <button class="glass-btn" onclick="triggerFloatingButtonT()">ВКЛЮЧИТЬ КНОПКУ «T»</button>
-    </div>
-
-    <div class="lg-card" style="display:flex; flex-direction:column; gap:12px;">
-      <div class="tile-title">Оптимизация пикселей</div>
-      <div class="pills-6">
-        <div class="glass-pill active" id="pxBtn-100" onclick="selectPixelDownscale(100)">100<br><span style="font-size:9px;">выкл</span></div>
-        <div class="glass-pill" id="pxBtn-90" onclick="selectPixelDownscale(90)">90<br><span style="font-size:9px;">пикс</span></div>
-        <div class="glass-pill" id="pxBtn-80" onclick="selectPixelDownscale(80)">80<br><span style="font-size:9px;">пикс</span></div>
-        <div class="glass-pill" id="pxBtn-70" onclick="selectPixelDownscale(70)">70<br><span style="font-size:9px;">пикс</span></div>
-        <div class="glass-pill" id="pxBtn-60" onclick="selectPixelDownscale(60)">60<br><span style="font-size:9px;">пикс</span></div>
-        <div class="glass-pill" id="pxBtn-50" onclick="selectPixelDownscale(50)">50<br><span style="font-size:9px;">пикс</span></div>
-      </div>
-      <div style="display:flex; justify-content:space-between; align-items:baseline;">
-        <div id="pxCurrentLabel" style="font-size:26px; font-weight:900;">100 %</div>
-        <div style="font-size:11.5px; color:var(--txt-secondary); font-weight:800;">СЕЙЧАС АКТИВНО</div>
-      </div>
-    </div>
-  </div>
-
-  <!-- 4. ЭКРАН: ПРИЦЕЛ ПОВЕРХ ИГРЫ -->
-  <div id="page-crosshair" class="view-page">
-    <div class="page-top-bar">
-      <div class="page-top-left">
-        <div class="btn-back-glass" onclick="navToPage('page-hub')">←</div>
-        <div class="page-ico-chip">⌖</div>
-        <div class="page-heading">Прицел</div>
-      </div>
-    </div>
-
-    <div class="lg-card access-bar">
-      <div class="access-label">🕒 ДОСТУП</div>
-      <div class="access-status" id="xhairSubLabel">БЕССРОЧНО</div>
-    </div>
-
-    <div class="lg-card accent-rim clickable tile-row" onclick="toggleCrosshairOverlay()">
-      <div class="tile-left">
-        <div class="tile-icon">⌖</div>
-        <div>
-          <div class="tile-title">Прицел поверх игры</div>
-          <div class="tile-desc" id="xhairToggleDesc">Выключен — нажми чтобы включить</div>
-        </div>
-      </div>
-      <div id="xhairSwitchEl" class="liquid-switch"></div>
-    </div>
-
-    <div class="lg-card" style="display:flex; flex-direction:column; gap:12px;">
-      <div style="display:flex; justify-content:space-between; align-items:center;">
-        <span style="font-size:11.5px; font-weight:800; color:var(--txt-secondary);">ПРЕДПРОСМОТР</span>
-        <span id="xhairActiveShapeName" style="font-size:11.5px; font-weight:800; color:var(--accent);">КРЕСТ</span>
-      </div>
-      <div class="stage-box"><canvas id="xhairCanvas" width="160" height="160"></canvas></div>
-      <div class="pills-4">
-        <div class="glass-pill active" id="xhShape-cross" onclick="pickCrosshairShape('cross', 'КРЕСТ')">＋<br><span style="font-size:9.5px;">КРЕСТ</span></div>
-        <div class="glass-pill" id="xhShape-crossdot" onclick="pickCrosshairShape('crossdot', 'КРЕСТ+ТЧК')">⌖<br><span style="font-size:9.5px;">С ТОЧКОЙ</span></div>
-        <div class="glass-pill" id="xhShape-dot" onclick="pickCrosshairShape('dot', 'ТОЧКА')">●<br><span style="font-size:9.5px;">ТОЧКА</span></div>
-        <div class="glass-pill" id="xhShape-tshape" onclick="pickCrosshairShape('tshape', 'Т-ОБРАЗ')">⊤<br><span style="font-size:9.5px;">Т-ОБРАЗ</span></div>
-        <div class="glass-pill" id="xhShape-circle" onclick="pickCrosshairShape('circle', 'КРУГ')">◯<br><span style="font-size:9.5px;">КРУГ</span></div>
-        <div class="glass-pill" id="xhShape-circledot" onclick="pickCrosshairShape('circledot', 'КРУГ+ТЧК')">⊙<br><span style="font-size:9.5px;">КРУГ+ТЧК</span></div>
-        <div class="glass-pill" id="xhShape-chevron" onclick="pickCrosshairShape('chevron', 'ШЕВРОН')">∧<br><span style="font-size:9.5px;">ШЕВРОН</span></div>
-        <div class="glass-pill" id="xhShape-corners" onclick="pickCrosshairShape('corners', 'УГОЛКИ')">⌜⌟<br><span style="font-size:9.5px;">УГОЛКИ</span></div>
-      </div>
-
-      <div style="display:flex; justify-content:space-between; padding:2px 4px;">
-        <div class="swatch-orb active" style="width:30px;height:30px;background:#00e5ff;" onclick="pickCrosshairColor('#00e5ff', this)"></div>
-        <div class="swatch-orb" style="width:30px;height:30px;background:#10b981;" onclick="pickCrosshairColor('#10b981', this)"></div>
-        <div class="swatch-orb" style="width:30px;height:30px;background:#ff2e5b;" onclick="pickCrosshairColor('#ff2e5b', this)"></div>
-        <div class="swatch-orb" style="width:30px;height:30px;background:#f59e0b;" onclick="pickCrosshairColor('#f59e0b', this)"></div>
-        <div class="swatch-orb" style="width:30px;height:30px;background:#ffffff;" onclick="pickCrosshairColor('#ffffff', this)"></div>
-        <div class="swatch-orb" style="width:30px;height:30px;background:#a855f7;" onclick="pickCrosshairColor('#a855f7', this)"></div>
-      </div>
-
-      <div class="param-row"><div class="param-head"><span class="param-title">Длина лучей</span><span class="param-chip" id="xhLenReadout">10 px</span></div><input id="xhLenInput" type="range" min="2" max="26" value="10" oninput="pushCrosshairSettings()" /></div>
-      <div class="param-row"><div class="param-head"><span class="param-title">Толщина линий</span><span class="param-chip" id="xhThickReadout">3 px</span></div><input id="xhThickInput" type="range" min="1" max="10" value="3" oninput="pushCrosshairSettings()" /></div>
-      <div class="param-row"><div class="param-head"><span class="param-title">Зазор в центре</span><span class="param-chip" id="xhGapReadout">3 px</span></div><input id="xhGapInput" type="range" min="0" max="16" value="3" oninput="pushCrosshairSettings()" /></div>
-      <div class="param-row"><div class="param-head"><span class="param-title">Прозрачность</span><span class="param-chip" id="xhOpReadout">100 %</span></div><input id="xhOpInput" type="range" min="15" max="100" value="100" oninput="pushCrosshairSettings()" /></div>
-      <div class="param-row"><div class="param-head"><span class="param-title">Смещение по X</span><span class="param-chip" id="xhOffXReadout">0 dp</span></div><input id="xhOffXInput" type="range" min="-30" max="30" value="0" oninput="pushCrosshairOffset()" /></div>
-      <div class="param-row"><div class="param-head"><span class="param-title">Смещение по Y</span><span class="param-chip" id="xhOffYReadout">0 dp</span></div><input id="xhOffYInput" type="range" min="-30" max="30" value="0" oninput="pushCrosshairOffset()" /></div>
-    </div>
-  </div>
-<!-- КОНЕЦ ЧАСТИ 1 ИЗ 2. НАПИШИ "ПРОДОЛЖАЙ" ДЛЯ ЧАСТИ 2 -->
-<!-- ==================== 5. ЭКРАН: СЕНСОР (ЗАПУСК + 10 ПОЛЗУНКОВ МАТРИЦЫ) ==================== -->
-  <div id="page-sensor" class="view-page">
-    <div class="page-top-bar">
-      <div class="page-top-left">
-        <div class="btn-back-glass" onclick="navToPage('page-hub')">←</div>
-        <div class="page-ico-chip">🎚️</div>
-        <div class="page-heading">Сенсор</div>
-      </div>
-    </div>
-
-    <div class="dual-tabs">
-      <div id="tabBtnSensLaunch" class="dual-tab-btn active" onclick="switchSensorModeTab('launch')">▶ ЗАПУСК</div>
-      <div id="tabBtnSensTune" class="dual-tab-btn" onclick="switchSensorModeTab('tune')">☷ НАСТРОЙКИ</div>
-    </div>
-
-    <!-- Вкладка 1: ЗАПУСК И ВЫБОР ХАРАКТЕРА -->
-    <div id="sensorPaneLaunch" style="display:flex; flex-direction:column; gap:10px;">
-      <div class="lg-card accent-rim" style="display:flex; flex-direction:column; gap:10px;">
-        <div style="font-size:11.5px; font-weight:800; color:var(--txt-secondary); letter-spacing:0.6px;">ВКЛЮЧИТЬ ХАРАКТЕР СЕНСЫ</div>
-
-        <div class="char-item" id="charRow-clean" onclick="chooseSensCharacter('clean')">
+    <!-- Карточка Бустера -->
+    <div class="liquid-card interactive" onclick="openSensorSubtab('booster')">
+      <div class="card-row">
+        <div class="card-left">
+          <div class="liquid-icon-box">⚡</div>
           <div>
-            <div style="font-size:14.5px; font-weight:800;">ЧИСТЫЙ <span class="char-badge">КАК СТОК, БЕЗ ЛАГА</span></div>
-            <div class="tile-desc" style="font-size:11.5px; margin-top:2px;">Без ускорения и прилипания. Ровный отклик пальца.</div>
+            <div class="card-title">Бустер и Герцовка</div>
+            <div class="card-desc" id="homeBoosterDesc">Оптимизация телефона • 120 Гц и ОЗУ</div>
           </div>
-          <span class="tile-arrow">›</span>
         </div>
+        <div class="chevron-glass">›</div>
+      </div>
+    </div>
 
-        <div class="char-item active" id="charRow-sharp" onclick="chooseSensCharacter('sharp')">
+    <!-- Карточка Войса и Друзей -->
+    <div class="liquid-card interactive" onclick="switchTab('voice')">
+      <div class="card-row">
+        <div class="card-left">
+          <div class="liquid-icon-box">🎧</div>
           <div>
-            <div style="font-size:14.5px; font-weight:800;">РЕЗКИЙ <span class="char-badge">ТЕЛЕПОРТ 68.0X</span></div>
-            <div class="tile-desc" style="font-size:11.5px; margin-top:2px;">Быстрый рывок и лёгкая доводка. Для резких разворотов.</div>
+            <div class="card-title">Войс и Друзья</div>
+            <div class="card-desc">Голосовая связь 400% • Комнаты отряда</div>
           </div>
-          <span class="tile-arrow">›</span>
         </div>
+        <div class="chevron-glass">›</div>
+      </div>
+    </div>
 
-        <div class="char-item" id="charRow-max" onclick="chooseSensCharacter('max')">
+  </section>
+
+  <!-- ==================================================================== -->
+  <!-- ВКЛАДКА 2: ЭКРАН «Т» И РАСТЯГ                                        -->
+  <!-- ==================================================================== -->
+  <section id="tab-stretch" class="screen-view">
+
+    <div class="top-nav-bar">
+      <div class="top-nav-left">
+        <div class="glass-circle-btn" onclick="switchTab('home')">←</div>
+        <div class="liquid-icon-box">
+          <svg viewBox="0 0 24 24" fill="none" stroke-width="2.2"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/></svg>
+        </div>
+        <div class="screen-title">Растяг</div>
+      </div>
+    </div>
+
+    <div class="liquid-pill-bar">
+      <span style="color:var(--text-sub);">🕒 ДОСТУП</span>
+      <span id="stretchSubBadge" class="status-sub-gold">АКТИВНА</span>
+    </div>
+
+    <div class="liquid-card">
+      <div style="font-size:11.5px; font-weight:800; color:var(--text-sub); letter-spacing:0.6px; text-transform:uppercase;">КАК БУДЕТ ВЫГЛЯДЕТЬ</div>
+      <div class="stretch-preview-stage">
+        <div class="stretch-outer-guide">
+          <div id="stretchPreviewBox" class="stretch-inner-frame">+</div>
+        </div>
+      </div>
+      <div class="segment-row" id="ratioSegmentRow">
+        <button class="segment-btn active" onclick="selectStretchRatio('4:3', this)">4:3</button>
+        <button class="segment-btn" onclick="selectStretchRatio('5:4', this)">5:4</button>
+        <button class="segment-btn" onclick="selectStretchRatio('3:2', this)">3:2</button>
+        <button class="segment-btn" onclick="selectStretchRatio('16:10', this)">16:10</button>
+        <button class="segment-btn" onclick="selectStretchRatio('16:9', this)">16:9</button>
+      </div>
+    </div>
+
+    <div class="liquid-card">
+      <div class="card-title">Сразу, без кнопки</div>
+      <div class="card-desc" style="margin-bottom:14px;">Применяет выбранный размер через Shizuku прямо сейчас без оверлея.</div>
+      <div style="display:flex; flex-direction:column; gap:10px;">
+        <button id="directStretchBtn" class="liquid-btn primary" onclick="applyStretchNowDirect()">РАСТЯНУТЬ 4:3</button>
+        <button class="liquid-btn secondary" onclick="resetScreenNative()">СБРОСИТЬ РАЗМЕР</button>
+      </div>
+    </div>
+
+    <div class="liquid-card">
+      <div class="card-title">Плавающая кнопка «Т» (Жидкая линза)</div>
+      <div class="card-desc" style="margin-bottom:14px;">Над игрой появится стеклянная кнопка «Т». 1 тап — рамки, 2 тап в матче — полный растяг. Смахни вниз в ведро для удаления.</div>
+      <button class="liquid-btn primary" onclick="launchFloatingButtonT()">ВКЛЮЧИТЬ КНОПКУ «Т»</button>
+    </div>
+
+    <div class="liquid-card">
+      <div class="card-row" style="margin-bottom:8px;">
+        <div>
+          <div class="card-title">Широкие хитбоксы + Пиксели</div>
+          <div class="card-desc">Квантование тача + безопасный даунскейл</div>
+        </div>
+        <div id="wideHitboxSwitch" class="liquid-switch" onclick="toggleWideHitbox(this)"></div>
+      </div>
+      <div class="slider-group">
+        <div class="slider-header">
+          <span>Разрешение рендера (FPS Boost)</span>
+          <span id="downscaleVal" class="slider-val-badge">100%</span>
+        </div>
+        <input type="range" class="liquid-slider" min="65" max="100" step="5" value="100" oninput="onDownscaleSlide(this.value)">
+      </div>
+    </div>
+
+  </section>
+
+  <!-- ==================================================================== -->
+  <!-- ВКЛАДКА 3: СЕНСОР, ИНЖЕКТОР КАСАНИЙ (GAMETOUCHLAYER), ПРИЦЕЛ, БУСТЕР -->
+  <!-- ==================================================================== -->
+  <section id="tab-sensor" class="screen-view">
+
+    <div class="top-nav-bar">
+      <div class="top-nav-left">
+        <div class="glass-circle-btn" onclick="switchTab('home')">←</div>
+        <div class="liquid-icon-box">🎯</div>
+        <div class="screen-title">Сенсор & Инжект</div>
+      </div>
+    </div>
+
+    <!-- Подвкладки раздела Сенсор -->
+    <div class="segment-row">
+      <button class="segment-btn active" data-sub="injector" onclick="switchSensorSubtab('injector', this)">⚡ Инжектор C++</button>
+      <button class="segment-btn" data-sub="presets" onclick="switchSensorSubtab('presets', this)">🔥 Характер</button>
+      <button class="segment-btn" data-sub="crosshair" onclick="switchSensorSubtab('crosshair', this)">➕ Прицел</button>
+      <button class="segment-btn" data-sub="booster" onclick="switchSensorSubtab('booster', this)">🚀 Бустер</button>
+      <button class="segment-btn" data-sub="configs" onclick="switchSensorSubtab('configs', this)">☁️ Конфиги</button>
+    </div>
+
+    <!-- ПОДВКЛАДКА 3.1: НАТИВНЫЙ ИНЖЕКТОР КАСАНИЙ (GAMETOUCHLAYER) -->
+    <div id="subtab-injector" class="sensor-subpanel" style="display:flex; flex-direction:column; gap:14px;">
+      <div class="liquid-card">
+        <div class="card-row">
           <div>
-            <div style="font-size:14.5px; font-weight:800;">МАКСИМУМ <span class="char-badge">ВЫПРЯМЛЕНИЕ + ЗАЖИМ</span></div>
-            <div class="tile-desc" style="font-size:11.5px; margin-top:2px;">Сильно выпрямляет траекторию и гасит вертикальную отдачу.</div>
+            <div class="card-title">GameTouchLayer Инжектор (C++ JNI)</div>
+            <div class="card-desc">Нативная стабилизация вектора, гашение тремора (orthKeep) и авто-дожим зажима</div>
           </div>
-          <span class="tile-arrow">›</span>
+          <div id="touchLayerMasterSwitch" class="liquid-switch active" onclick="toggleTouchLayerMaster(this)"></div>
         </div>
 
-        <div class="char-item" id="charRow-clean_sharp" onclick="chooseSensCharacter('clean_sharp')">
+        <div class="segment-row" style="margin-top:12px;">
+          <button class="segment-btn" onclick="applyTouchLayerPreset('raw', this)">Чистый Raw</button>
+          <button class="segment-btn active" onclick="applyTouchLayerPreset('headlock', this)">Жёсткий Хэдлок</button>
+          <button class="segment-btn" onclick="applyTouchLayerPreset('spray', this)">Спрей-Зажим</button>
+          <button class="segment-btn" onclick="applyTouchLayerPreset('sniper', this)">Флик Снайпер</button>
+        </div>
+
+        <div class="slider-group">
+          <div class="slider-header"><span>Липкость наводки (Stickiness)</span><span id="tlStickVal" class="slider-val-badge">74%</span></div>
+          <input id="tlStickSlider" type="range" class="liquid-slider" min="0" max="100" value="74" oninput="syncTouchLayerSliders()">
+        </div>
+
+        <div class="slider-group">
+          <div class="slider-header"><span>Тяжесть и инерция (Heaviness)</span><span id="tlHeavyVal" class="slider-val-badge">58%</span></div>
+          <input id="tlHeavySlider" type="range" class="liquid-slider" min="0" max="100" value="58" oninput="syncTouchLayerSliders()">
+        </div>
+
+        <div class="slider-group">
+          <div class="slider-header"><span>Резкость отклика (Sharpness)</span><span id="tlSharpVal" class="slider-val-badge">82%</span></div>
+          <input id="tlSharpSlider" type="range" class="liquid-slider" min="0" max="100" value="82" oninput="syncTouchLayerSliders()">
+        </div>
+
+        <div class="slider-group">
+          <div class="slider-header"><span>Дожим вертикальной отдачи (Spray Pull)</span><span id="tlPullVal" class="slider-val-badge">1.35</span></div>
+          <input id="tlPullSlider" type="range" class="liquid-slider" min="0" max="300" value="135" oninput="syncTouchLayerSliders()">
+        </div>
+
+        <div class="slider-group">
+          <div class="slider-header"><span>Множитель доводки (Aim Scale)</span><span id="tlScaleVal" class="slider-val-badge">1.20x</span></div>
+          <input id="tlScaleSlider" type="range" class="liquid-slider" min="60" max="200" value="120" oninput="syncTouchLayerSliders()">
+        </div>
+
+        <div style="margin-top:14px;">
+          <button class="liquid-btn primary" onclick="commitTouchLayerToNative()">⚡ ВШИТЬ ИНЖЕКТ КАСАНИЙ В ЯДРО</button>
+        </div>
+      </div>
+
+      <!-- Живой полигон проверки стабилизации касаний -->
+      <div class="liquid-card">
+        <div class="card-title">Живой полигон инжекта касаний</div>
+        <div class="card-desc">Проведи пальцем: C++ движок сгладит тремор и покажет стабилизированный вектор</div>
+        <div id="touchArena" class="touch-test-arena">
+          <div id="touchArenaCursor" class="touch-cursor-dot"></div>
+          <div id="touchArenaReadout" style="font-size:11.5px; font-weight:800; color:var(--text-sub); pointer-events:none;">Свайпни для теста стабилизации C++</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ПОДВКЛАДКА 3.2: ХАРАКТЕР СЕНСЫ И 10 ПАРАМЕТРОВ -->
+    <div id="subtab-presets" class="sensor-subpanel" style="display:none; flex-direction:column; gap:14px;">
+      <div class="liquid-card">
+        <div class="card-title">Выбери характер сенсы</div>
+        <div class="card-desc" style="margin-bottom:12px;">Готовые матрицы ускорения и таймаутов Shizuku</div>
+        <div class="bento-grid-2">
+          <button class="liquid-btn secondary" onclick="selectSensCharacter('sharp')">⚡ РЕЗКИЙ В ХЭД</button>
+          <button class="liquid-btn secondary" onclick="selectSensCharacter('hardlock')">🧲 ХЭДЛОК PRO</button>
+          <button class="liquid-btn secondary" onclick="selectSensCharacter('onetap')">🎯 ВАНТАП КАЛАШ</button>
+          <button class="liquid-btn secondary" onclick="selectSensCharacter('sniper')">🔭 AWM ФЛИК</button>
+        </div>
+        <div style="margin-top:12px; display:flex; gap:10px;">
+          <button class="liquid-btn primary" onclick="healTouchNow()">🛠️ ВЫЛЕЧИТЬ ТАЧ (HEAL)</button>
+        </div>
+      </div>
+
+      <div class="liquid-card">
+        <div class="card-title">Тонкая матрица (10 параметров)</div>
+        <div class="slider-group">
+          <div class="slider-header"><span>Чувствительность X</span><span id="pSxVal" class="slider-val-badge">1.45</span></div>
+          <input id="pSx" type="range" class="liquid-slider" min="50" max="250" value="145" oninput="updateTenParamsUI()">
+        </div>
+        <div class="slider-group">
+          <div class="slider-header"><span>Чувствительность Y</span><span id="pSyVal" class="slider-val-badge">1.35</span></div>
+          <input id="pSy" type="range" class="liquid-slider" min="50" max="250" value="135" oninput="updateTenParamsUI()">
+        </div>
+        <div class="slider-group">
+          <div class="slider-header"><span>Плотность сетки (Grid)</span><span id="pGridVal" class="slider-val-badge">90</span></div>
+          <input id="pGrid" type="range" class="liquid-slider" min="10" max="120" value="90" oninput="updateTenParamsUI()">
+        </div>
+        <div style="margin-top:14px;">
+          <button class="liquid-btn primary" onclick="applyTenParamsNative()">ПРИМЕНИТЬ МАТРИЦУ</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ПОДВКЛАДКА 3.3: ПРИЦЕЛ ПОВЕРХ ИГРЫ -->
+    <div id="subtab-crosshair" class="sensor-subpanel" style="display:none; flex-direction:column; gap:14px;">
+      <div class="liquid-card">
+        <div class="card-title">Кастомный прицел поверх игры</div>
+        <div class="card-desc" style="margin-bottom:12px;">Системный оверлей 140dp без потери FPS</div>
+        <div class="segment-row" style="margin-bottom:12px;">
+          <button class="segment-btn active" onclick="setCrosshairShape('off', this)">ВЫКЛ</button>
+          <button class="segment-btn" onclick="setCrosshairShape('dot', this)">Точка</button>
+          <button class="segment-btn" onclick="setCrosshairShape('cross', this)">Крест</button>
+          <button class="segment-btn" onclick="setCrosshairShape('crossdot', this)">Крест+Точка</button>
+          <button class="segment-btn" onclick="setCrosshairShape('circle', this)">Круг</button>
+          <button class="segment-btn" onclick="setCrosshairShape('corners', this)">Уголки</button>
+        </div>
+
+        <div class="slider-group">
+          <div class="slider-header"><span>Длина лучей</span><span id="chLenVal" class="slider-val-badge">10 dp</span></div>
+          <input id="chLen" type="range" class="liquid-slider" min="2" max="28" value="10" oninput="syncCrosshairLive()">
+        </div>
+        <div class="slider-group">
+          <div class="slider-header"><span>Толщина</span><span id="chThickVal" class="slider-val-badge">3 dp</span></div>
+          <input id="chThick" type="range" class="liquid-slider" min="1" max="10" value="3" oninput="syncCrosshairLive()">
+        </div>
+        <div class="slider-group">
+          <div class="slider-header"><span>Зазор в центре (Gap)</span><span id="chGapVal" class="slider-val-badge">3 dp</span></div>
+          <input id="chGap" type="range" class="liquid-slider" min="0" max="18" value="3" oninput="syncCrosshairLive()">
+        </div>
+        <div class="slider-group">
+          <div class="slider-header"><span>Размер точки</span><span id="chDotVal" class="slider-val-badge">3 dp</span></div>
+          <input id="chDot" type="range" class="liquid-slider" min="1" max="12" value="3" oninput="syncCrosshairLive()">
+        </div>
+      </div>
+    </div>
+
+    <!-- ПОДВКЛАДКА 3.4: БУСТЕР И ОПТИМИЗАЦИЯ -->
+    <div id="subtab-booster" class="sensor-subpanel" style="display:none; flex-direction:column; gap:14px;">
+      <div class="liquid-card">
+        <div class="card-title">Системный Бустер (Shizuku)</div>
+        <div class="card-desc" style="margin-bottom:12px;">Безопасный разгон отклика, Vulkan и сети без краша One UI</div>
+
+        <div class="card-row" style="padding:10px 0; border-bottom:1px solid rgba(255,255,255,0.08);">
           <div>
-            <div style="font-size:14.5px; font-weight:800;">ЧИСТЫЙ РЕЗКИЙ <span class="char-badge">БЕЗ ЗАЛИПАНИЯ</span></div>
-            <div class="tile-desc" style="font-size:11.5px; margin-top:2px;">Резкий отклик для планшетов и игры в 4–6 пальцев.</div>
+            <div class="card-title" style="font-size:14.5px;">Raw Input (Без сглаживания Android)</div>
+            <div class="card-desc">Минимальный touch_slop и отключение анимаций</div>
           </div>
-          <span class="tile-arrow">›</span>
+          <div class="liquid-switch" onclick="toggleBoosterSwitch('raw', this)"></div>
         </div>
 
-        <div class="char-item" id="charRow-fps" onclick="chooseSensCharacter('fps')">
+        <div class="card-row" style="padding:10px 0; border-bottom:1px solid rgba(255,255,255,0.08);">
           <div>
-            <div style="font-size:14.5px; font-weight:800;">ВЫСОКИЙ FPS <span class="char-badge">120 КАДРОВ</span></div>
-            <div class="tile-desc" style="font-size:11.5px; margin-top:2px;">Облегчённая матрица опроса без нагрузки на процессор.</div>
+            <div class="card-title" style="font-size:14.5px;">Фиксация пиковой герцовки (120/240 Гц)</div>
+            <div class="card-desc">Защита от сброса Гц при нагреве</div>
           </div>
-          <span class="tile-arrow">›</span>
+          <div class="liquid-switch" onclick="toggleBoosterSwitch('hz', this)"></div>
         </div>
 
-        <div class="char-item" id="charRow-custom" onclick="chooseSensCharacter('custom')">
+        <div class="card-row" style="padding:10px 0; border-bottom:1px solid rgba(255,255,255,0.08);">
           <div>
-            <div style="font-size:14.5px; font-weight:800;">СВОИ ЧИСЛА <span class="char-badge">10 ПАРАМЕТРОВ</span></div>
-            <div class="tile-desc" style="font-size:11.5px; margin-top:2px;">Ручная настройка всех 10 ползунков во вкладке «Настройки».</div>
+            <div class="card-title" style="font-size:14.5px;">Vulkan Fixed Performance</div>
+            <div class="card-desc">Режим максимальной частоты GPU/CPU</div>
           </div>
-          <span class="tile-arrow">›</span>
+          <div class="liquid-switch" onclick="toggleBoosterSwitch('vulkan', this)"></div>
         </div>
 
-        <button class="glass-btn" style="margin-top:4px;" onclick="activateSelectedCharacterNow()">▶ ПРИМЕНИТЬ И ЗАПУСТИТЬ СЕНСУ</button>
+        <div class="card-row" style="padding:10px 0;">
+          <div>
+            <div class="card-title" style="font-size:14.5px;">Стабилизатор пинга (Wi-Fi / BLE Guard)</div>
+            <div class="card-desc">Отключает фоновый поиск сетей во время катки</div>
+          </div>
+          <div class="liquid-switch" onclick="toggleBoosterSwitch('ping', this)"></div>
+        </div>
+
+        <div style="margin-top:14px;">
+          <button class="liquid-btn primary" onclick="boostRamNow()">🚀 ОЧИСТИТЬ ОЗУ И КЭШ ИГРЫ</button>
+        </div>
       </div>
     </div>
 
-    <!-- Вкладка 2: НАСТРОЙКИ (ВСЕ 10 ПОЛЗУНКОВ МАТРИЦЫ) -->
-    <div id="sensorPaneTune" style="display:none; flex-direction:column; gap:12px;">
-      <div class="lg-card accent-rim">
-        <div style="font-size:11.5px; font-weight:800; color:var(--txt-secondary); letter-spacing:0.6px; margin-bottom:4px;">ОСТРОТА И ОСИ (1–4)</div>
-        <div class="tile-desc" style="margin-bottom:8px;">Насколько резко реагирует прицел по горизонтали и вертикали.</div>
-
-        <div class="param-row">
-          <div class="param-head"><span class="param-title">1 · Резкость (Сила рывка)</span><span class="param-chip" id="lblSharp">2.50</span></div>
-          <input id="rngSharp" type="range" min="0.50" max="3.50" step="0.05" value="2.50" oninput="syncMatrixSlidersUI()" />
+    <!-- ПОДВКЛАДКА 3.5: ОБЛАЧНЫЕ КОНФИГИ -->
+    <div id="subtab-configs" class="sensor-subpanel" style="display:none; flex-direction:column; gap:14px;">
+      <div class="liquid-card">
+        <div class="card-title">Облачный обмен конфигами</div>
+        <div class="card-desc" style="margin-bottom:12px;">Загрузи сборку по коду друга или поделись своей</div>
+        <div style="display:flex; gap:8px; margin-bottom:10px;">
+          <input id="cloudCodeInput" type="text" class="liquid-input" placeholder="Введи код сборки (напр. TP-8891)">
+          <button class="liquid-btn primary" style="width:auto; padding:0 20px;" onclick="loadCloudPreset()">СКАЧАТЬ</button>
         </div>
-
-        <div class="param-row">
-          <div class="param-head"><span class="param-title">2 · Влево-вправо (Ось X)</span><span class="param-chip" id="lblSx">2.20</span></div>
-          <input id="rngSx" type="range" min="0.50" max="3.50" step="0.05" value="2.20" oninput="syncMatrixSlidersUI()" />
-        </div>
-
-        <div class="param-row">
-          <div class="param-head"><span class="param-title">3 · Вверх-вниз (Ось Y)</span><span class="param-chip" id="lblSy">1.80</span></div>
-          <input id="rngSy" type="range" min="0.50" max="3.50" step="0.05" value="1.80" oninput="syncMatrixSlidersUI()" />
-        </div>
-
-        <div class="param-row">
-          <div class="param-head"><span class="param-title">4 · Импульс ускорения (Accel)</span><span class="param-chip" id="lblAccel">1.65</span></div>
-          <input id="rngAccel" type="range" min="0.50" max="3.00" step="0.05" value="1.65" oninput="syncMatrixSlidersUI()" />
-        </div>
-      </div>
-
-      <div class="lg-card">
-        <div style="font-size:11.5px; font-weight:800; color:var(--txt-secondary); letter-spacing:0.6px; margin-bottom:4px;">КУСКИ, ВЫПРЯМЛЕНИЕ И ФИКСАЦИЯ (5–10)</div>
-        <div class="tile-desc" style="margin-bottom:8px;">Убирает дрожание пальца и настраивает плотность сетки тача.</div>
-
-        <div class="param-row">
-          <div class="param-head"><span class="param-title">5 · Куски телепорта (Chunks)</span><span class="param-chip" id="lblChunks">100</span></div>
-          <input id="rngChunks" type="range" min="10" max="120" step="5" value="100" oninput="syncMatrixSlidersUI()" />
-        </div>
-
-        <div class="param-row">
-          <div class="param-head"><span class="param-title">6 · Потолок скорости рывка</span><span class="param-chip" id="lblChunkFast">32</span></div>
-          <input id="rngChunkFast" type="range" min="5" max="60" step="1" value="32" oninput="syncMatrixSlidersUI()" />
-        </div>
-
-        <div class="param-row">
-          <div class="param-head"><span class="param-title">7 · Выпрямление линии</span><span class="param-chip" id="lblStraight">1.00</span></div>
-          <input id="rngStraight" type="range" min="0.00" max="2.00" step="0.05" value="1.00" oninput="syncMatrixSlidersUI()" />
-        </div>
-
-        <div class="param-row">
-          <div class="param-head"><span class="param-title">8 · Прилипание на пикселе (Stick)</span><span class="param-chip" id="lblStick">4</span></div>
-          <input id="rngStick" type="range" min="0" max="15" step="1" value="4" oninput="syncMatrixSlidersUI()" />
-        </div>
-
-        <div class="param-row">
-          <div class="param-head"><span class="param-title">9 · Сетка квантования (Grid)</span><span class="param-chip" id="lblGrid">90</span></div>
-          <input id="rngGrid" type="range" min="20" max="150" step="5" value="90" oninput="syncMatrixSlidersUI()" />
-        </div>
-
-        <div class="param-row">
-          <div class="param-head"><span class="param-title">10 · Микро-пауза стабилизации</span><span class="param-chip" id="lblPause">2</span></div>
-          <input id="rngPause" type="range" min="0" max="20" step="1" value="2" oninput="syncMatrixSlidersUI()" />
-        </div>
-
-        <button class="glass-btn" style="margin-top:10px;" onclick="commitCustomMatrixToEngine()">⚡ ПРИМЕНИТЬ СВОИ ЧИСЛА</button>
+        <button class="liquid-btn secondary" onclick="shareCloudPreset()">☁️ СОЗДАТЬ КОД МОЕЙ СБОРКИ</button>
       </div>
     </div>
-  </div>
 
-  <!-- ==================== 6. ЭКРАН: БУСТЕР (СИСТЕМНЫЕ ТВИКИ + 7 ПОЛЗУНКОВ ОПТИМИЗАТОРА + СКАНЕР) ==================== -->
-  <div id="page-booster" class="view-page">
-    <div class="page-top-bar">
-      <div class="page-top-left">
-        <div class="btn-back-glass" onclick="navToPage('page-hub')">←</div>
-        <div class="page-ico-chip">⚡</div>
-        <div class="page-heading">Бустер</div>
+  </section>
+
+  <!-- ==================================================================== -->
+  <!-- ВКЛАДКА 4: ВОЙС И ДРУЗЬЯ                                             -->
+  <!-- ==================================================================== -->
+  <section id="tab-voice" class="screen-view">
+
+    <div class="top-nav-bar">
+      <div class="top-nav-left">
+        <div class="glass-circle-btn" onclick="switchTab('home')">←</div>
+        <div class="liquid-icon-box">🎙️</div>
+        <div class="screen-title">Войс Отряда 400%</div>
       </div>
-      <div class="top-pill-action" onclick="runSmartHardwareScan()">СКАН ЖЕЛЕЗА</div>
     </div>
 
-    <div class="lg-card access-bar">
-      <div class="access-label">📟 УСТРОЙСТВО</div>
-      <div class="access-status" id="boosterDeviceSummary">Android 120 Гц</div>
+    <div class="liquid-card">
+      <div class="card-title">Комната голосовой связи</div>
+      <div class="card-desc" style="margin-bottom:12px;">Чистый звук тиммейтов поверх игры без урезания громкости выстрелов</div>
+      <input id="voiceRoomInput" type="text" class="liquid-input" value="SQUAD-PRO" placeholder="Название комнаты отряда" style="margin-bottom:12px;">
+      <div class="bento-grid-2">
+        <button id="voiceJoinBtn" class="liquid-btn primary" onclick="toggleVoiceRoom()">🎙️ ВОЙТИ В ВОЙС</button>
+        <button id="voiceMuteBtn" class="liquid-btn secondary" onclick="window.toggleMicMute()">🎤 МИКРО ВКЛ</button>
+      </div>
+      <div class="slider-group">
+        <div class="slider-header"><span>Усиление голоса отряда (Squad Boost)</span><span id="voiceGainVal" class="slider-val-badge">400%</span></div>
+        <input id="voiceGainSlider" type="range" class="liquid-slider" min="100" max="400" value="400" oninput="document.getElementById('voiceGainVal').textContent=this.value+'%'">
+      </div>
     </div>
 
-    <div class="lg-card accent-rim clickable tile-row" onclick="toggleBoosterSwitch('swBoostRaw', 'raw')">
-      <div class="tile-left">
-        <div class="tile-icon">🎯</div>
+    <div class="liquid-card">
+      <div class="card-title">Фикс звука Standoff 2 + Микрофона</div>
+      <div class="card-desc" style="margin-bottom:12px;">Снимает глушение шагов при включенном микрофоне через Shizuku AppOps</div>
+      <button class="liquid-btn secondary" onclick="enforceAudioGuard()">🔊 РАЗБЛОКИРОВАТЬ АУДИОФОКУС 100%</button>
+    </div>
+
+  </section>
+
+  <!-- ==================================================================== -->
+  <!-- ВКЛАДКА 5: ПРОФИЛЬ И ЦВЕТА ЖИДКОГО СТЕКЛА                            -->
+  <!-- ==================================================================== -->
+  <section id="tab-profile" class="screen-view">
+
+    <div class="top-nav-bar">
+      <div class="top-nav-left">
+        <div class="glass-circle-btn" onclick="switchTab('home')">←</div>
+        <div class="liquid-icon-box">👤</div>
+        <div class="screen-title">Профиль</div>
+      </div>
+    </div>
+
+    <div class="liquid-card">
+      <div class="card-left" style="margin-bottom:14px;">
+        <div id="profileAvatar" class="hero-avatar" onclick="document.getElementById('avatarFileInput').click()">D</div>
+        <input id="avatarFileInput" type="file" accept="image/*" style="display:none" onchange="handleAvatarUpload(event)">
         <div>
-          <div class="tile-title">Raw Input (Без сглаживания)</div>
-          <div class="tile-desc">Отключение системной инерции и анимаций окон (0.0x)</div>
+          <div id="profileNickTitle" class="card-title" style="font-size:19px;">dare</div>
+          <div class="card-desc">Подписка: <span id="profileSubText" class="status-sub-gold">АКТИВНА</span></div>
+          <div style="font-size:11.5px; color:var(--accent); font-weight:800; margin-top:4px; cursor:pointer;" onclick="document.getElementById('avatarFileInput').click()">📷 Загрузить свою аватарку из галереи</div>
         </div>
       </div>
-      <div id="swBoostRaw" class="liquid-switch"></div>
-    </div>
-
-    <div class="lg-card clickable tile-row" onclick="toggleBoosterSwitch('swBoostVulkan', 'vulkan')">
-      <div class="tile-left">
-        <div class="tile-icon">🔥</div>
-        <div>
-          <div class="tile-title">SkiaVK / Vulkan GPU Turbo</div>
-          <div class="tile-desc">Принудительный рендеринг через аппаратный конвейер</div>
-        </div>
-      </div>
-      <div id="swBoostVulkan" class="liquid-switch"></div>
-    </div>
-
-    <div class="lg-card clickable tile-row" onclick="toggleBoosterSwitch('swBoostHz', 'hz')">
-      <div class="tile-left">
-        <div class="tile-icon">⚡</div>
-        <div>
-          <div class="tile-title">Фиксация 120/144 Гц (Анти-троттлинг)</div>
-          <div class="tile-desc">Запрещает системе сбрасывать герцовку при нагреве</div>
-        </div>
-      </div>
-      <div id="swBoostHz" class="liquid-switch"></div>
-    </div>
-
-    <div class="lg-card clickable tile-row" onclick="toggleBoosterSwitch('swBoostPing', 'ping')">
-      <div class="tile-left">
-        <div class="tile-icon">📡</div>
-        <div>
-          <div class="tile-title">Стабилизатор пинга (Wi-Fi / BLE Lock)</div>
-          <div class="tile-desc">Отключает фоновое сканирование сетей во время катки</div>
-        </div>
-      </div>
-      <div id="swBoostPing" class="liquid-switch"></div>
-    </div>
-
-    <div class="lg-card clickable tile-row" onclick="toggleBoosterSwitch('swBoostWideHitbox', 'hitbox')">
-      <div class="tile-left">
-        <div class="tile-icon">↔</div>
-        <div>
-          <div class="tile-title">Широкие хитбоксы + Сенсор 360 Гц</div>
-          <div class="tile-desc">Квантование отклика матрицы + компенсация отдачи 100%</div>
-        </div>
-      </div>
-      <div id="swBoostWideHitbox" class="liquid-switch"></div>
-    </div>
-
-    <div class="lg-card" style="display:flex; flex-direction:column; gap:8px;">
-      <div style="font-size:11.5px; font-weight:800; color:var(--txt-secondary); letter-spacing:0.6px;">ТОНКИЙ ОПТИМИЗАТОР ДВИЖКА (7 ПАРАМЕТРОВ)</div>
-
-      <div class="param-row">
-        <div class="param-head"><span class="param-title">1 · Потолок частоты кадров (FPS Lock)</span><span class="param-chip" id="lblOptFps">120 FPS</span></div>
-        <input id="rngOptFps" type="range" min="60" max="144" step="12" value="120" oninput="syncOptimizerSlidersUI()" />
-      </div>
-
-      <div class="param-row">
-        <div class="param-head"><span class="param-title">2 · Разгон GPU буфера</span><span class="param-chip" id="lblOptGpu">85 %</span></div>
-        <input id="rngOptGpu" type="range" min="20" max="100" step="5" value="85" oninput="syncOptimizerSlidersUI()" />
-      </div>
-
-      <div class="param-row">
-        <div class="param-head"><span class="param-title">3 · Стабилизация времени кадра (FrameTime)</span><span class="param-chip" id="lblOptFrame">90 %</span></div>
-        <input id="rngOptFrame" type="range" min="10" max="100" step="5" value="90" oninput="syncOptimizerSlidersUI()" />
-      </div>
-
-      <div class="param-row">
-        <div class="param-head"><span class="param-title">4 · Отклик краёв экрана (Edge Sens)</span><span class="param-chip" id="lblOptEdge">80 %</span></div>
-        <input id="rngOptEdge" type="range" min="10" max="100" step="5" value="80" oninput="syncOptimizerSlidersUI()" />
-      </div>
-
-      <div class="param-row">
-        <div class="param-head"><span class="param-title">5 · Приоритет мультитача (4–6 пальцев)</span><span class="param-chip" id="lblOptMulti">100 %</span></div>
-        <input id="rngOptMulti" type="range" min="20" max="100" step="5" value="100" oninput="syncOptimizerSlidersUI()" />
-      </div>
-
-      <div class="param-row">
-        <div class="param-head"><span class="param-title">6 · Сетевой пакетный буфер</span><span class="param-chip" id="lblOptNet">75 %</span></div>
-        <input id="rngOptNet" type="range" min="10" max="100" step="5" value="75" oninput="syncOptimizerSlidersUI()" />
-      </div>
-
-      <div class="param-row">
-        <div class="param-head"><span class="param-title">7 · Порог тепловой защиты</span><span class="param-chip" id="lblOptTherm">95 %</span></div>
-        <input id="rngOptTherm" type="range" min="50" max="100" step="5" value="95" oninput="syncOptimizerSlidersUI()" />
-      </div>
-
-      <button class="glass-btn" style="margin-top:8px;" onclick="commitFullBoosterAndRam()">🚀 ПРИМЕНИТЬ БУСТЕР И ОЧИСТИТЬ ОЗУ</button>
-      <button class="glass-btn neutral" onclick="triggerHealTouch()">🛠️ ЛЕЧЕНИЕ ТАЧА (СБРОС ЗАЛИПАНИЙ)</button>
-    </div>
-  </div>
-
-  <!-- ==================== 7. ЭКРАН: ВОЙС 400% И ДРУЗЬЯ ОТРЯДА ==================== -->
-  <div id="page-voice" class="view-page">
-    <div class="page-top-bar">
-      <div class="page-top-left">
-        <div class="btn-back-glass" onclick="navToPage('page-hub')">←</div>
-        <div class="page-ico-chip">🎧</div>
-        <div class="page-heading">Войс и Отряд</div>
-      </div>
-      <div class="top-pill-action" id="myFriendCodeBadge" onclick="copyMyFriendCode()">SO2-0000</div>
-    </div>
-
-    <div id="voiceInviteAlertBox" class="lg-card accent-rim" style="display:none; flex-direction:column; gap:8px;">
-      <div class="tile-title" id="voiceInviteTitle">📲 Приглашение в голосовой канал!</div>
-      <div class="tile-desc" id="voiceInviteDesc">Друг зовёт вас в комнату отряда</div>
-      <button class="glass-btn" onclick="acceptIncomingVoiceInvite()">ПРИСОЕДИНИТЬСЯ К КОМНАТЕ</button>
-    </div>
-
-    <div class="lg-card accent-rim" style="display:flex; flex-direction:column; gap:12px;">
-      <div style="display:flex; justify-content:space-between; align-items:center;">
-        <div>
-          <div class="tile-title">Голосовой канал (Squad 400%)</div>
-          <div class="tile-desc" id="voiceLiveStateText">Отключён · Выбери комнату и нажми Войти</div>
-        </div>
-        <div id="voicePulseDot" style="width:12px; height:12px; border-radius:50%; background:var(--txt-muted);"></div>
-      </div>
-
-      <div class="glass-input-box">
-        <span style="color:var(--accent); font-weight:800;">#</span>
-        <input id="voiceRoomCodeInput" class="glass-input" type="text" value="SQUAD-MAIN" placeholder="SQUAD-MAIN" />
-      </div>
-
-      <div class="grid-two-cols">
-        <button class="glass-btn" id="btnJoinVoice" onclick="connectVoiceRoomWs()">🎙️ ВОЙТИ В ВОЙС</button>
-        <button class="glass-btn danger" onclick="leaveVoiceRoom()">ОТКЛЮЧИТЬСЯ</button>
-      </div>
-
-      <div class="grid-two-cols" style="margin-top:2px;">
-        <button class="glass-btn neutral" id="btnToggleMic" onclick="toggleMicMute()" style="padding:11px; font-size:12px;">🎤 МИКРО: ВКЛ</button>
-        <button class="glass-btn neutral" id="btnToggleDeafen" onclick="toggleDeafenSpeaker()" style="padding:11px; font-size:12px;">🎧 ЗВУК: 400%</button>
-      </div>
-
-      <div class="param-row" style="padding-bottom:2px;">
-        <div class="param-head"><span class="param-title">Усиление громкости тиммейтов</span><span class="param-chip" id="lblVoiceGain">400 %</span></div>
-        <input id="rngVoiceGain" type="range" min="100" max="400" step="25" value="400" oninput="updateVoiceGainBoost()" />
-      </div>
-
-      <div>
-        <div style="font-size:11px; font-weight:800; color:var(--txt-secondary); letter-spacing:0.5px; margin-bottom:6px;">УЧАСТНИКИ В КОМНАТЕ</div>
-        <div id="voiceRosterList" class="tile-desc" style="display:flex; flex-direction:column; gap:6px;">
-          Пока никого нет в эфире
-        </div>
+      <div style="display:flex; gap:10px;">
+        <input id="nicknameInput" type="text" class="liquid-input" placeholder="Новый никнейм">
+        <button class="liquid-btn primary" style="width:auto; padding:0 22px;" onclick="saveUserNickname()">СОХРАНИТЬ</button>
       </div>
     </div>
 
-    <div class="lg-card" style="display:flex; flex-direction:column; gap:12px;">
-      <div style="display:flex; justify-content:space-between; align-items:center;">
-        <div class="tile-title">Друзья и Напарники</div>
-        <span style="font-size:11.5px; color:var(--accent); font-weight:800; cursor:pointer;" onclick="syncFriendsHub()">↻ Обновить</span>
-      </div>
-
-      <div class="glass-input-box">
-        <input id="friendTargetInput" class="glass-input" type="text" placeholder="Код друга (например SO2-4812) или ник" />
-      </div>
-      <button class="glass-btn neutral" onclick="sendFriendRequest()">➕ ДОБАВИТЬ ДРУГА</button>
-
-      <div id="incomingRequestsBox" style="display:none; flex-direction:column; gap:8px;">
-        <div style="font-size:11px; font-weight:800; color:var(--warn-amber);">ВХОДЯЩИЕ ЗАЯВКИ В ДРУЗЬЯ</div>
-        <div id="incomingRequestsList" style="display:flex; flex-direction:column; gap:6px;"></div>
-      </div>
-
-      <div style="font-size:11px; font-weight:800; color:var(--txt-secondary); letter-spacing:0.5px;">МОЙ СПИСОК ДРУЗЕЙ</div>
-      <div id="friendsAcceptedList" style="display:flex; flex-direction:column; gap:8px;">
-        <div class="tile-desc">Нажми «Обновить» для синхронизации списка друзей</div>
-      </div>
-    </div>
-  </div>
-
-  <!-- ==================== 8. ЭКРАН: ПРОФИЛЬ, АВАТАРКИ И ЦВЕТА ЖИДКОГО СТЕКЛА ==================== -->
-  <div id="page-profile" class="view-page">
-    <div class="page-top-bar">
-      <div class="page-top-left">
-        <div class="btn-back-glass" onclick="navToPage('page-hub')">←</div>
-        <div class="page-ico-chip">👤</div>
-        <div class="page-heading">Профиль</div>
+    <!-- Выбор оттенка преломления жидкого стекла -->
+    <div class="liquid-card">
+      <div class="card-title">Акцент жидкого стекла</div>
+      <div class="card-desc">Базовый материал — оптическое жидкое стекло. Выбери оттенок преломления граней и свечения:</div>
+      <div class="swatch-row">
+        <div class="glass-swatch active" style="background:linear-gradient(135deg,#67e8f9,#0284c7);" onclick="setLiquidAccent('#38bdf8','#0284c7','56,189,248',this)"></div>
+        <div class="glass-swatch" style="background:linear-gradient(135deg,#f8fafc,#94a3b8);" onclick="setLiquidAccent('#e2e8f0','#64748b','226,232,240',this)"></div>
+        <div class="glass-swatch" style="background:linear-gradient(135deg,#6ee7b7,#059669);" onclick="setLiquidAccent('#34d399','#059669','52,211,153',this)"></div>
+        <div class="glass-swatch" style="background:linear-gradient(135deg,#fda4af,#e11d48);" onclick="setLiquidAccent('#fb7185','#e11d48','251,113,133',this)"></div>
+        <div class="glass-swatch" style="background:linear-gradient(135deg,#c4b5fd,#7c3aed);" onclick="setLiquidAccent('#a78bfa','#7c3aed','167,139,250',this)"></div>
+        <div class="glass-swatch" style="background:linear-gradient(135deg,#fde047,#d97706);" onclick="setLiquidAccent('#fbbf24','#d97706','251,191,36',this)"></div>
       </div>
     </div>
 
-    <div class="lg-card accent-rim" style="display:flex; flex-direction:column; gap:14px;">
-      <div style="display:flex; align-items:center; gap:14px;">
-        <div class="ava-ring" id="profileBigAvatar" style="width:66px; height:66px; font-size:25px; cursor:pointer;" onclick="document.getElementById('avaUploadInput').click()">D</div>
-        <input id="avaUploadInput" type="file" accept="image/*" style="display:none;" onchange="onCustomAvatarSelected(event)" />
-        <div style="flex:1; min-width:0;">
-          <div style="font-size:18px; font-weight:900;" id="profileNickTitle">dare</div>
-          <div class="tile-desc" id="profileSubLine">Подписка: АКТИВНА</div>
-          <div style="font-size:11.5px; color:var(--accent); font-weight:700; margin-top:4px; cursor:pointer;" onclick="document.getElementById('avaUploadInput').click()">
-            📷 Загрузить свою аватарку из галереи
+    <!-- Стелс-режим -->
+    <div class="liquid-card">
+      <div class="card-row">
+        <div class="card-left">
+          <div class="liquid-icon-box">🕵️</div>
+          <div>
+            <div class="card-title">Стелс-режим (Скрыть на записи)</div>
+            <div class="card-desc">Скрывает кнопку «Т» и прицел от записи экрана и стримов</div>
           </div>
         </div>
-      </div>
-
-      <div style="display:flex; gap:8px;">
-        <div class="glass-input-box" style="flex:1; padding:10px 12px;">
-          <input id="profileNewNickInput" class="glass-input" type="text" placeholder="Новый никнейм" />
-        </div>
-        <button class="glass-btn" style="width:auto; padding:10px 16px;" onclick="saveNewPlayerNick()">СОХРАНИТЬ</button>
+        <div id="stealthModeSwitch" class="liquid-switch" onclick="toggleStealthMode(this)"></div>
       </div>
     </div>
 
-    <div class="lg-card" style="display:flex; flex-direction:column; gap:12px;">
-      <div class="tile-title">Акцент серого жидкого стекла</div>
-      <div class="tile-desc">Базовый материал — серое матовое жидкое стекло. Выбери оттенок преломления граней и кнопок:</div>
-      <div style="display:flex; justify-content:space-around; align-items:center; padding:6px 0;">
-        <div class="swatch-orb active" style="background:#06b6d4; color:#06b6d4;" onclick="applyLiquidGlassColor('#06b6d4', '6, 182, 212', this)"></div>
-        <div class="swatch-orb" style="background:#cbd5e1; color:#cbd5e1;" onclick="applyLiquidGlassColor('#cbd5e1', '203, 213, 225', this)"></div>
-        <div class="swatch-orb" style="background:#10b981; color:#10b981;" onclick="applyLiquidGlassColor('#10b981', '16, 185, 129', this)"></div>
-        <div class="swatch-orb" style="background:#ff2e5b; color:#ff2e5b;" onclick="applyLiquidGlassColor('#ff2e5b', '255, 46, 91', this)"></div>
-        <div class="swatch-orb" style="background:#8b5cf6; color:#8b5cf6;" onclick="applyLiquidGlassColor('#8b5cf6', '139, 92, 246', this)"></div>
-        <div class="swatch-orb" style="background:#f59e0b; color:#f59e0b;" onclick="applyLiquidGlassColor('#f59e0b', '245, 158, 11', this)"></div>
+    <!-- Аппаратный HWID и информация об экране -->
+    <div class="liquid-card">
+      <div style="font-size:13px; color:var(--text-sub); margin-bottom:6px;">
+        Защищённый HWID: <strong id="profileHwidText" style="color:#fff; user-select:all;">...</strong>
+      </div>
+      <div style="font-size:13px; color:var(--text-sub); margin-bottom:14px;">
+        Экран и частота: <strong id="profileHardwareText" style="color:#fff;">Сканирование...</strong>
+      </div>
+      <div class="bento-grid-2">
+        <button class="liquid-btn secondary" onclick="openSupportTg()">💬 ПОДДЕРЖКА</button>
+        <button class="liquid-btn danger" onclick="logoutCurrentKey()">🚪 СМЕНИТЬ КЛЮЧ</button>
       </div>
     </div>
 
-    <div class="lg-card clickable tile-row" onclick="toggleStealthOverlaySwitch()">
-      <div class="tile-left">
-        <div class="tile-icon">🕵️</div>
-        <div>
-          <div class="tile-title">Стелс-режим (Скрыть на записи)</div>
-          <div class="tile-desc">Скрывает кнопку «T» и прицел от записи экрана и стримов</div>
-        </div>
-      </div>
-      <div id="swStealthOverlay" class="liquid-switch"></div>
-    </div>
+  </section>
 
-    <div class="lg-card" style="display:flex; flex-direction:column; gap:10px;">
-      <div class="tile-desc">Защищённый HWID: <b id="profileHwidVal" style="color:var(--txt-primary);">...</b></div>
-      <div class="tile-desc">Экран и частота: <b id="profileHwInfoVal" style="color:var(--txt-primary);">...</b></div>
-      <div class="grid-two-cols" style="margin-top:4px;">
-        <button class="glass-btn neutral" onclick="callBridge('openSupportTelegram')">💬 Поддержка</button>
-        <button class="glass-btn danger" onclick="callBridge('logoutLicenseKey')">🚪 Сменить ключ</button>
-      </div>
-    </div>
-  </div>
+</main>
 
-</div><!-- /.app-shell -->
-
-<!-- ==================== НИЖНЯЯ ДОК-ПАНЕЛЬ (LIQUID GLASS DOCK) ==================== -->
-<nav class="liquid-dock">
-  <div class="dock-btn active" id="dock-hub" onclick="navToPage('page-hub')">
+<!-- НИЖНИЙ ПЛАВАЮЩИЙ ДОК ЖИДКОГО СТЕКЛА -->
+<nav class="bottom-liquid-dock">
+  <div class="dock-item active" data-tab="home" onclick="switchTab('home')">
     <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="2"/><rect x="14" y="3" width="7" height="7" rx="2"/><rect x="3" y="14" width="7" height="7" rx="2"/><rect x="14" y="14" width="7" height="7" rx="2"/></svg>
     <span>Главное</span>
   </div>
-  <div class="dock-btn" id="dock-stretch" onclick="navToPage('page-stretch')">
-    <svg viewBox="0 0 24 24"><path d="M4 8V6a2 2 0 0 1 2-2h2M4 16v2a2 2 0 0 0 2 2h2m8-16h2a2 2 0 0 1 2 2v2m-4 12h2a2 2 0 0 0 2-2v-2"/></svg>
-    <span>Экран «T»</span>
+  <div class="dock-item" data-tab="stretch" onclick="switchTab('stretch')">
+    <svg viewBox="0 0 24 24"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/></svg>
+    <span>Экран «Т»</span>
   </div>
-  <div class="dock-btn" id="dock-sensor" onclick="navToPage('page-sensor')">
+  <div class="dock-item" data-tab="sensor" onclick="switchTab('sensor')">
     <svg viewBox="0 0 24 24"><line x1="4" y1="21" x2="4" y2="14"/><line x1="4" y1="10" x2="4" y2="3"/><line x1="12" y1="21" x2="12" y2="12"/><line x1="12" y1="8" x2="12" y2="3"/><line x1="20" y1="21" x2="20" y2="16"/><line x1="20" y1="12" x2="20" y2="3"/><line x1="1" y1="14" x2="7" y2="14"/><line x1="9" y1="8" x2="15" y2="8"/><line x1="17" y1="16" x2="23" y2="16"/></svg>
     <span>Сенсор</span>
   </div>
-  <div class="dock-btn" id="dock-voice" onclick="navToPage('page-voice')">
+  <div class="dock-item" data-tab="voice" onclick="switchTab('voice')">
     <svg viewBox="0 0 24 24"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
     <span>Войс</span>
   </div>
-  <div class="dock-btn" id="dock-profile" onclick="navToPage('page-profile')">
+  <div class="dock-item" data-tab="profile" onclick="switchTab('profile')">
     <svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
     <span>Профиль</span>
   </div>
 </nav>
 
+<!-- МОДАЛЬНОЕ ОКНО ЛИЦЕНЗИИ В СТИЛЕ ЖИДКОГО СТЕКЛА -->
+<div id="authModal" class="auth-modal-backdrop">
+  <div class="auth-glass-box">
+    <div style="text-align:center; margin-bottom:4px;">
+      <span style="display:inline-block; padding:5px 14px; border-radius:999px; background:rgba(255,255,255,0.10); border:1px solid rgba(255,255,255,0.28); font-size:10.5px; font-weight:800; letter-spacing:1.2px;">QUANTUM CORE V12 • LIQUID GLASS</span>
+      <h1 style="font-size:28px; font-weight:900; margin-top:8px; letter-spacing:-0.5px;">SO2Teleport <span style="color:var(--accent);">PRO</span></h1>
+    </div>
+
+    <div class="liquid-card" style="display:flex; flex-direction:column; gap:12px;">
+      <div style="text-align:center; font-size:13px; color:var(--text-sub); font-weight:700;">Авторизация лицензии (1 ключ = 1 устройство)</div>
+      <div id="authErrorBox" class="auth-error-banner"></div>
+
+      <div>
+        <div style="font-size:11px; font-weight:800; color:var(--text-sub); margin-bottom:5px;">USERNAME (ВАШ НИКНЕЙМ)</div>
+        <input id="authNickInput" type="text" class="liquid-input" value="dare" placeholder="Ваш никнейм">
+      </div>
+
+      <div>
+        <div style="font-size:11px; font-weight:800; color:var(--text-sub); margin-bottom:5px;">LICENSE KEY (КЛЮЧ ИЗ БОТА)</div>
+        <input id="authKeyInput" type="text" class="liquid-input" placeholder="TP-XXXX-XXXXXX">
+      </div>
+
+      <button id="authSubmitBtn" class="liquid-btn primary" onclick="submitLicenseActivation()">⚡ АКТИВИРОВАТЬ КЛЮЧ И ВОЙТИ</button>
+    </div>
+
+    <div class="liquid-pill-bar" style="justify-content:center; gap:8px;" onclick="copyHwidToClipboard()">
+      <span>🛡️ Защищённый HWID:</span>
+      <strong id="authHwidLabel" style="color:var(--accent); user-select:all;">...</strong>
+    </div>
+
+    <button class="liquid-btn secondary" onclick="openBotTg()">🤖 КУПИТЬ / ПОЛУЧИТЬ КЛЮЧ В TELEGRAM-БОТЕ</button>
+    <button class="liquid-btn secondary" onclick="openSupportTg()">💬 ПОМОЩЬ С SHIZUKU В TELEGRAM</button>
+  </div>
+</div>
 <script>
-  function getBridge() {
-    return window.AndroidBridge || window.B || window.Android || null;
-  }
+(function() {
+  "use strict";
 
-  function callBridge(fnName) {
-    try {
-      var br = getBridge();
-      if (br && typeof br[fnName] === 'function') {
-        return br[fnName]();
-      }
-    } catch (e) {}
-  }
+  // Проверка наличия нативного моста AndroidBridge (в APK он инжектится как Android или AndroidBridge)
+  const Bridge = window.AndroidBridge || window.Android || null;
 
-  var masterSensEnabled = true;
-  var activeCharacterKey = 'sharp';
-  var activeStretchRatio = '4:3';
-  var activePixelScale = 100;
-  var crosshairEnabled = false;
-  var activeCrosshairShape = 'cross';
-  var customCrosshairHex = '#00e5ff';
-  var pendingInviteRoomCode = '';
+  const STORAGE_KEY_CFG = "so2tp_liquid_v12_cfg";
+  const STORAGE_KEY_LIC = "so2tp_bound_license_v12";
+  const STORAGE_KEY_HWID = "so2tp_bound_hwid_v12";
+  const STORAGE_KEY_AVATAR = "so2tp_user_avatar_v12";
 
-  var voiceWs = null;
-  var audioCtx = null;
-  var micStream = null;
-  var micProcessor = null;
-  var masterSpeakerGain = null;
-  var isMicMuted = false;
-  var isSpeakerDeafened = false;
-  var currentVoiceRoom = '';
-  var voiceGainMultiplier = 4.0;
-
-  var CHARACTER_PRESETS = {
-    clean:       { title: 'Чистый (сток)',          sharp: 1.00, sx: 1.00, sy: 1.00, accel: 1.00, chunks: 60,  chunkFast: 20, straight: 0.40, stick: 1,  grid: 60,  pause: 0 },
-    sharp:       { title: 'Резкий · Ультра 68.0x',  sharp: 2.50, sx: 2.20, sy: 1.80, accel: 1.65, chunks: 100, chunkFast: 32, straight: 1.00, stick: 4,  grid: 90,  pause: 2 },
-    max:         { title: 'Максимум · Зажим AKR',   sharp: 3.10, sx: 2.60, sy: 2.10, accel: 2.10, chunks: 115, chunkFast: 45, straight: 1.85, stick: 9,  grid: 120, pause: 4 },
-    clean_sharp: { title: 'Чистый резкий · Пады',   sharp: 2.35, sx: 2.15, sy: 1.95, accel: 1.45, chunks: 95,  chunkFast: 30, straight: 0.85, stick: 0,  grid: 85,  pause: 1 },
-    fps:         { title: 'Высокий FPS · 120 Гц',   sharp: 1.75, sx: 1.65, sy: 1.50, accel: 1.25, chunks: 75,  chunkFast: 24, straight: 0.65, stick: 2,  grid: 70,  pause: 1 },
-    sniper:      { title: 'AWM Снайпер · Фаст-зум', sharp: 2.80, sx: 2.45, sy: 2.05, accel: 1.90, chunks: 105, chunkFast: 38, straight: 0.70, stick: 6,  grid: 95,  pause: 1 },
-    onetap:      { title: 'Deagle Вантап · Голова', sharp: 2.25, sx: 2.30, sy: 1.40, accel: 1.50, chunks: 95,  chunkFast: 28, straight: 1.60, stick: 8,  grid: 110, pause: 3 },
-    hardlock:    { title: 'Hard Lock · Stick 12',   sharp: 3.30, sx: 2.80, sy: 2.25, accel: 2.35, chunks: 120, chunkFast: 50, straight: 1.95, stick: 12, grid: 135, pause: 5 }
+  const state = {
+    activeTab: "home",
+    sensorSubtab: "injector",
+    masterSensEnabled: false,
+    touchLayerEnabled: true,
+    stretchRatio: "4:3",
+    wideHitbox: false,
+    downscalePct: 100,
+    crosshairShape: "off",
+    stealthMode: false,
+    voiceJoined: false,
+    micMuted: false,
+    deafened: false,
+    hwid: "",
+    savedKey: "",
+    subLabel: "АКТИВНА",
+    accent: {
+      hex1: "#38bdf8",
+      hex2: "#0284c7",
+      rgb: "56, 189, 248"
+    },
+    touchLayer: {
+      stickiness: 74,
+      heaviness: 58,
+      sharpness: 82,
+      sprayPull: 1.35,
+      aimScale: 1.20
+    },
+    tenParams: {
+      sx: 1.45,
+      sy: 1.35,
+      grid: 90
+    },
+    booster: {
+      raw: false,
+      hz: false,
+      vulkan: false,
+      ping: false
+    }
   };
 
-  function showGlassToast(msg) {
-    var t = document.getElementById('uiToast');
-    if (!t) return;
-    t.textContent = msg;
-    t.classList.add('show');
-    clearTimeout(window._toastTimer);
-    window._toastTimer = setTimeout(function() { t.classList.remove('show'); }, 2200);
+  let toastTimer = null;
+  function showToast(msg) {
+    const el = document.getElementById("liquidToast");
+    if (!el) return;
+    el.textContent = msg;
+    el.classList.add("show");
+    if (toastTimer) clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => {
+      el.classList.remove("show");
+    }, 2400);
   }
 
-  function navToPage(pageId) {
-    var pages = document.querySelectorAll('.view-page');
-    for (var i = 0; i < pages.length; i++) pages[i].classList.remove('active');
-    var target = document.getElementById(pageId);
-    if (target) target.classList.add('active');
-
-    var dockMap = {
-      'page-hub': 'dock-hub',
-      'page-configs': 'dock-hub',
-      'page-crosshair': 'dock-hub',
-      'page-booster': 'dock-hub',
-      'page-stretch': 'dock-stretch',
-      'page-sensor': 'dock-sensor',
-      'page-voice': 'dock-voice',
-      'page-profile': 'dock-profile'
-    };
-    var btns = document.querySelectorAll('.dock-btn');
-    for (var j = 0; j < btns.length; j++) btns[j].classList.remove('active');
-    var activeDock = document.getElementById(dockMap[pageId] || 'dock-hub');
-    if (activeDock) activeDock.classList.add('active');
-
-    if (pageId === 'page-voice') syncFriendsHub();
-    window.scrollTo(0, 0);
-  }
-
-  function switchSensorModeTab(mode) {
-    var isLaunch = (mode === 'launch');
-    document.getElementById('tabBtnSensLaunch').classList.toggle('active', isLaunch);
-    document.getElementById('tabBtnSensTune').classList.toggle('active', !isLaunch);
-    document.getElementById('sensorPaneLaunch').style.display = isLaunch ? 'flex' : 'none';
-    document.getElementById('sensorPaneTune').style.display = isLaunch ? 'none' : 'flex';
-  }
-
-  function toggleMasterSensOrb() {
-    var br = getBridge();
-    masterSensEnabled = !masterSensEnabled;
-    var btn = document.getElementById('hubSensOrbBtn');
-    if (masterSensEnabled) {
-      btn.classList.remove('off');
-      btn.textContent = 'ВКЛ';
-      pushCurrentSensToNative();
-      showGlassToast('⚡ Сенса включена');
-    } else {
-      btn.classList.add('off');
-      btn.textContent = 'ВЫКЛ';
-      try { if (br && br.stopTeleport) br.stopTeleport(); } catch (e) {}
-      showGlassToast('Сенса остановлена');
-    }
-  }
-
-  function chooseSensCharacter(key) {
-    activeCharacterKey = key;
-    var keys = ['clean', 'sharp', 'max', 'clean_sharp', 'fps', 'custom'];
-    for (var i = 0; i < keys.length; i++) {
-      var r = document.getElementById('charRow-' + keys[i]);
-      if (r) r.classList.toggle('active', keys[i] === key);
-    }
-
-    if (CHARACTER_PRESETS[key]) {
-      var p = CHARACTER_PRESETS[key];
-      document.getElementById('rngSharp').value = p.sharp;
-      document.getElementById('rngSx').value = p.sx;
-      document.getElementById('rngSy').value = p.sy;
-      document.getElementById('rngAccel').value = p.accel;
-      document.getElementById('rngChunks').value = p.chunks;
-      document.getElementById('rngChunkFast').value = p.chunkFast;
-      document.getElementById('rngStraight').value = p.straight;
-      document.getElementById('rngStick').value = p.stick;
-      document.getElementById('rngGrid').value = p.grid;
-      document.getElementById('rngPause').value = p.pause;
-      syncMatrixSlidersUI();
-      document.getElementById('hubSensDesc').textContent = p.title;
-    } else {
-      document.getElementById('hubSensDesc').textContent = 'Свои числа · Ручная матрица';
-    }
-  }
-
-  function activateSelectedCharacterNow() {
-    masterSensEnabled = true;
-    var btn = document.getElementById('hubSensOrbBtn');
-    btn.classList.remove('off');
-    btn.textContent = 'ВКЛ';
-    pushCurrentSensToNative();
-    saveLocalUserPreset();
-    showGlassToast('🔥 Характер сенсы применён!');
-    navToPage('page-hub');
-  }
-
-  function syncMatrixSlidersUI() {
-    document.getElementById('lblSharp').textContent = parseFloat(document.getElementById('rngSharp').value).toFixed(2);
-    document.getElementById('lblSx').textContent = parseFloat(document.getElementById('rngSx').value).toFixed(2);
-    document.getElementById('lblSy').textContent = parseFloat(document.getElementById('rngSy').value).toFixed(2);
-    document.getElementById('lblAccel').textContent = parseFloat(document.getElementById('rngAccel').value).toFixed(2);
-    document.getElementById('lblChunks').textContent = document.getElementById('rngChunks').value;
-    document.getElementById('lblChunkFast').textContent = document.getElementById('rngChunkFast').value;
-    document.getElementById('lblStraight').textContent = parseFloat(document.getElementById('rngStraight').value).toFixed(2);
-    document.getElementById('lblStick').textContent = document.getElementById('rngStick').value;
-    document.getElementById('lblGrid').textContent = document.getElementById('rngGrid').value;
-    document.getElementById('lblPause').textContent = document.getElementById('rngPause').value;
-  }
-
-  function pushCurrentSensToNative() {
+  // Безопасный вызов методов AndroidBridge
+  function callBridge(methodName, ...args) {
     try {
-      var br = getBridge();
-      if (!br) return;
-      var sh = parseFloat(document.getElementById('rngSharp').value);
-      var sx = parseFloat(document.getElementById('rngSx').value);
-      var sy = parseFloat(document.getElementById('rngSy').value);
-      var ch = parseInt(document.getElementById('rngChunks').value, 10);
-      var cf = parseInt(document.getElementById('rngChunkFast').value, 10);
-      var st = parseFloat(document.getElementById('rngStraight').value);
-      var sk = parseInt(document.getElementById('rngStick').value, 10);
-      var gr = parseInt(document.getElementById('rngGrid').value, 10);
-      var pa = parseInt(document.getElementById('rngPause').value, 10);
-      var ac = parseFloat(document.getElementById('rngAccel').value);
-
-      if (br.startTeleport) br.startTeleport(activeCharacterKey);
-      if (br.updateParameters) br.updateParameters(sh, sx, sy, ch, cf, st, sk, gr, pa, ac);
-    } catch (e) {}
-  }
-
-  function commitCustomMatrixToEngine() {
-    chooseSensCharacter('custom');
-    activateSelectedCharacterNow();
-  }
-
-  function applyShelfPreset(key) {
-    chooseSensCharacter(key);
-    activateSelectedCharacterNow();
-  }
-
-  function buildCurrentConfigObject() {
-    return {
-      preset: activeCharacterKey,
-      ratio: activeStretchRatio,
-      pxScale: activePixelScale,
-      sharp: document.getElementById('rngSharp').value,
-      sx: document.getElementById('rngSx').value,
-      sy: document.getElementById('rngSy').value,
-      accel: document.getElementById('rngAccel').value,
-      chunks: document.getElementById('rngChunks').value,
-      chunkFast: document.getElementById('rngChunkFast').value,
-      straight: document.getElementById('rngStraight').value,
-      stick: document.getElementById('rngStick').value,
-      grid: document.getElementById('rngGrid').value,
-      pause: document.getElementById('rngPause').value
-    };
-  }
-
-  function applyConfigObjectToUI(cfg) {
-    if (!cfg || typeof cfg !== 'object') return;
-    if (cfg.sharp) document.getElementById('rngSharp').value = cfg.sharp;
-    if (cfg.sx) document.getElementById('rngSx').value = cfg.sx;
-    if (cfg.sy) document.getElementById('rngSy').value = cfg.sy;
-    if (cfg.accel) document.getElementById('rngAccel').value = cfg.accel;
-    if (cfg.chunks) document.getElementById('rngChunks').value = cfg.chunks;
-    if (cfg.chunkFast) document.getElementById('rngChunkFast').value = cfg.chunkFast;
-    if (cfg.straight) document.getElementById('rngStraight').value = cfg.straight;
-    if (cfg.stick) document.getElementById('rngStick').value = cfg.stick;
-    if (cfg.grid) document.getElementById('rngGrid').value = cfg.grid;
-    if (cfg.pause) document.getElementById('rngPause').value = cfg.pause;
-    syncMatrixSlidersUI();
-    if (cfg.preset) chooseSensCharacter(cfg.preset);
-    pushCurrentSensToNative();
-  }
-
-  function saveLocalUserPreset() {
-    try {
-      var br = getBridge();
-      var jsonStr = JSON.stringify(buildCurrentConfigObject());
-      localStorage.setItem('so2_saved_cfg_v12', jsonStr);
-      if (br && br.saveFullConfigJson) br.saveFullConfigJson(jsonStr);
-      showGlassToast('💾 Сборка сохранена');
-    } catch (e) {}
-  }
-
-  function uploadCloudUserPreset() {
-    try {
-      var br = getBridge();
-      if (!br || !br.uploadCloudConfig) return;
-      var title = document.getElementById('cloudTitleInput').value.trim() || 'Pro Liquid Config';
-      var raw = br.uploadCloudConfig(title, JSON.stringify(buildCurrentConfigObject()));
-      var res = JSON.parse(raw);
-      if (res.share_code || res.code) {
-        var code = res.share_code || res.code;
-        document.getElementById('cloudCodeInput').value = code;
-        showGlassToast('☁ Код создан: ' + code);
-      } else {
-        showGlassToast(res.message || 'Ошибка выгрузки');
+      if (Bridge && typeof Bridge[methodName] === "function") {
+        return Bridge[methodName](...args);
       }
-    } catch (e) {}
+    } catch (e) {
+      console.warn("Bridge call error:", methodName, e);
+    }
+    return null;
   }
 
-  function applyCloudConfigCode() {
+  // Сохранение и загрузка всех настроек пользователя
+  function saveLocalState() {
     try {
-      var br = getBridge();
-      var code = document.getElementById('cloudCodeInput').value.trim().toUpperCase();
-      if (!code || !br || !br.downloadCloudConfig) return;
-      var raw = br.downloadCloudConfig(code);
-      var res = JSON.parse(raw);
-      if (res.ok && res.preset_json) {
-        var cfg = typeof res.preset_json === 'string' ? JSON.parse(res.preset_json) : res.preset_json;
-        applyConfigObjectToUI(cfg);
-        showGlassToast('✅ Сборка ' + (res.title || code) + ' применена!');
-      } else {
-        showGlassToast(res.message || 'Код не найден');
-      }
-    } catch (e) {}
-  }
-
-  function selectStretchRatio(ratio, widthPct) {
-    activeStretchRatio = ratio;
-    var list = ['4:3', '5:4', '3:2', '16:10', '16:9'];
-    for (var i = 0; i < list.length; i++) {
-      var el = document.getElementById('stRatio-' + list[i]);
-      if (el) el.classList.toggle('active', list[i] === ratio);
-    }
-    document.getElementById('stretchLiveRect').style.width = widthPct;
-    document.getElementById('btnDirectStretch').textContent = 'РАСТЯНУТЬ ' + ratio;
-  }
-
-  function triggerDirectStretch() {
-    try {
-      var br = getBridge();
-      if (br && br.applyDirectStretchRatio) {
-        br.applyDirectStretchRatio(activeStretchRatio);
-        showGlassToast('⛶ Растяг ' + activeStretchRatio + ' применён!');
-      }
-    } catch (e) {}
-  }
-
-  function triggerResetStretch() {
-    try {
-      var br = getBridge();
-      if (br && br.resetResolution) {
-        br.resetResolution();
-        selectPixelDownscale(100);
-      }
-    } catch (e) {}
-  }
-
-  function triggerFloatingButtonT() {
-    try {
-      var br = getBridge();
-      if (br && br.activateStretchFloatingButton) {
-        br.activateStretchFloatingButton(activeStretchRatio);
-      }
-    } catch (e) {}
-  }
-
-  function selectPixelDownscale(pct) {
-    activePixelScale = pct;
-    var scales = [100, 90, 80, 70, 60, 50];
-    for (var i = 0; i < scales.length; i++) {
-      var btn = document.getElementById('pxBtn-' + scales[i]);
-      if (btn) btn.classList.toggle('active', scales[i] === pct);
-    }
-    document.getElementById('pxCurrentLabel').textContent = pct + ' %';
-    try {
-      var br = getBridge();
-      if (br && br.setPixelDownscaleFactor) br.setPixelDownscaleFactor(pct);
-    } catch (e) {}
-  }
-
-  function toggleCrosshairOverlay() {
-    crosshairEnabled = !crosshairEnabled;
-    document.getElementById('xhairSwitchEl').classList.toggle('on', crosshairEnabled);
-    document.getElementById('xhairToggleDesc').textContent = crosshairEnabled
-      ? 'Активен поверх игры'
-      : 'Выключен — нажми чтобы включить';
-    pushCrosshairSettings();
-  }
-
-  function pickCrosshairShape(shape, title) {
-    activeCrosshairShape = shape;
-    var shapes = ['cross', 'crossdot', 'dot', 'tshape', 'circle', 'circledot', 'chevron', 'corners'];
-    for (var i = 0; i < shapes.length; i++) {
-      var el = document.getElementById('xhShape-' + shapes[i]);
-      if (el) el.classList.toggle('active', shapes[i] === shape);
-    }
-    document.getElementById('xhairActiveShapeName').textContent = title;
-    pushCrosshairSettings();
-  }
-
-  function pickCrosshairColor(hex, orbEl) {
-    customCrosshairHex = hex;
-    if (orbEl && orbEl.parentElement) {
-      var orbs = orbEl.parentElement.querySelectorAll('.swatch-orb');
-      for (var i = 0; i < orbs.length; i++) orbs[i].classList.remove('active');
-      orbEl.classList.add('active');
-    }
-    pushCrosshairSettings();
-  }
-
-  function pushCrosshairOffset() {
-    var ox = parseInt(document.getElementById('xhOffXInput').value, 10) || 0;
-    var oy = parseInt(document.getElementById('xhOffYInput').value, 10) || 0;
-    document.getElementById('xhOffXReadout').textContent = ox + ' dp';
-    document.getElementById('xhOffYReadout').textContent = oy + ' dp';
-    try {
-      var br = getBridge();
-      if (br && br.setCrosshairOffset) br.setCrosshairOffset(ox, oy);
-    } catch (e) {}
-  }
-
-  function pushCrosshairSettings() {
-    var len = parseInt(document.getElementById('xhLenInput').value, 10);
-    var thick = parseInt(document.getElementById('xhThickInput').value, 10);
-    var gap = parseInt(document.getElementById('xhGapInput').value, 10);
-    var op = parseInt(document.getElementById('xhOpInput').value, 10);
-
-    document.getElementById('xhLenReadout').textContent = len + ' px';
-    document.getElementById('xhThickReadout').textContent = thick + ' px';
-    document.getElementById('xhGapReadout').textContent = gap + ' px';
-    document.getElementById('xhOpReadout').textContent = op + ' %';
-
-    renderCrosshairCanvas(activeCrosshairShape, len, thick, gap, op);
-
-    try {
-      var br = getBridge();
-      if (br && br.updateCrosshairAdvanced) {
-        br.updateCrosshairAdvanced(crosshairEnabled ? activeCrosshairShape : 'off', customCrosshairHex, op, len, thick, gap, thick, true);
-      }
-    } catch (e) {}
-  }
-
-  function renderCrosshairCanvas(shape, len, thick, gap, op) {
-    var c = document.getElementById('xhairCanvas');
-    if (!c) return;
-    var ctx = c.getContext('2d');
-    ctx.clearRect(0, 0, c.width, c.height);
-    var cx = c.width / 2;
-    var cy = c.height / 2;
-    ctx.globalAlpha = Math.max(0.15, op / 100);
-    ctx.strokeStyle = customCrosshairHex;
-    ctx.fillStyle = customCrosshairHex;
-    ctx.lineWidth = thick;
-    ctx.lineCap = 'round';
-
-    if (shape === 'dot') {
-      ctx.beginPath();
-      ctx.arc(cx, cy, thick * 1.4, 0, Math.PI * 2);
-      ctx.fill();
-      return;
-    }
-    if (shape === 'circle' || shape === 'circledot') {
-      ctx.beginPath();
-      ctx.arc(cx, cy, Math.max(6, len * 1.2), 0, Math.PI * 2);
-      ctx.stroke();
-      if (shape === 'circledot') {
-        ctx.beginPath();
-        ctx.arc(cx, cy, thick, 0, Math.PI * 2);
-        ctx.fill();
-      }
-      return;
-    }
-    if (shape === 'chevron') {
-      ctx.beginPath();
-      ctx.moveTo(cx, cy - gap * 0.5);
-      ctx.lineTo(cx - len, cy + len);
-      ctx.moveTo(cx, cy - gap * 0.5);
-      ctx.lineTo(cx + len, cy + len);
-      ctx.stroke();
-      return;
-    }
-    if (shape === 'corners') {
-      var d = gap + len * 0.8;
-      var l = Math.max(4, len * 0.55);
-      ctx.beginPath();
-      ctx.moveTo(cx - d, cy - d); ctx.lineTo(cx - d + l, cy - d);
-      ctx.moveTo(cx - d, cy - d); ctx.lineTo(cx - d, cy - d + l);
-      ctx.moveTo(cx + d, cy - d); ctx.lineTo(cx + d - l, cy - d);
-      ctx.moveTo(cx + d, cy - d); ctx.lineTo(cx + d, cy - d + l);
-      ctx.moveTo(cx - d, cy + d); ctx.lineTo(cx - d + l, cy + d);
-      ctx.moveTo(cx - d, cy + d); ctx.lineTo(cx - d, cy + d - l);
-      ctx.moveTo(cx + d, cy + d); ctx.lineTo(cx + d - l, cy + d);
-      ctx.moveTo(cx + d, cy + d); ctx.lineTo(cx + d, cy + d - l);
-      ctx.stroke();
-      return;
-    }
-
-    ctx.beginPath();
-    ctx.moveTo(cx - gap - len * 1.4, cy); ctx.lineTo(cx - gap, cy);
-    ctx.moveTo(cx + gap, cy); ctx.lineTo(cx + gap + len * 1.4, cy);
-    ctx.moveTo(cx, cy + gap); ctx.lineTo(cx, cy + gap + len * 1.4);
-    if (shape !== 'tshape') {
-      ctx.moveTo(cx, cy - gap - len * 1.4); ctx.lineTo(cx, cy - gap);
-    }
-    ctx.stroke();
-
-    if (shape === 'crossdot') {
-      ctx.beginPath();
-      ctx.arc(cx, cy, thick, 0, Math.PI * 2);
-      ctx.fill();
-    }
-  }
-
-  function toggleBoosterSwitch(elId, type) {
-    var sw = document.getElementById(elId);
-    var on = !sw.classList.contains('on');
-    sw.classList.toggle('on', on);
-    try {
-      var br = getBridge();
-      if (!br) return;
-      if (type === 'raw' && br.setRawInputNoSmoothing) br.setRawInputNoSmoothing(on);
-      if (type === 'vulkan' && br.setVulkanGpuTurbo) br.setVulkanGpuTurbo(on);
-      if (type === 'hz' && br.setHzThermalGuard) br.setHzThermalGuard(on);
-      if (type === 'ping' && br.setNetPingStabilizer) br.setNetPingStabilizer(on);
-      if (type === 'hitbox' && br.setWideHitboxMode) br.setWideHitboxMode(on, activeStretchRatio);
-    } catch (e) {}
-  }
-
-  function syncOptimizerSlidersUI() {
-    document.getElementById('lblOptFps').textContent = document.getElementById('rngOptFps').value + ' FPS';
-    document.getElementById('lblOptGpu').textContent = document.getElementById('rngOptGpu').value + ' %';
-    document.getElementById('lblOptFrame').textContent = document.getElementById('rngOptFrame').value + ' %';
-    document.getElementById('lblOptEdge').textContent = document.getElementById('rngOptEdge').value + ' %';
-    document.getElementById('lblOptMulti').textContent = document.getElementById('rngOptMulti').value + ' %';
-    document.getElementById('lblOptNet').textContent = document.getElementById('rngOptNet').value + ' %';
-    document.getElementById('lblOptTherm').textContent = document.getElementById('rngOptTherm').value + ' %';
-  }
-
-  function commitFullBoosterAndRam() {
-    var ids = ['swBoostRaw', 'swBoostVulkan', 'swBoostHz', 'swBoostPing'];
-    for (var i = 0; i < ids.length; i++) {
-      document.getElementById(ids[i]).classList.add('on');
-    }
-    try {
-      var br = getBridge();
-      if (!br) return;
-      var fps = parseInt(document.getElementById('rngOptFps').value, 10);
-      var gpu = parseInt(document.getElementById('rngOptGpu').value, 10);
-      var frm = parseInt(document.getElementById('rngOptFrame').value, 10);
-      var edg = parseInt(document.getElementById('rngOptEdge').value, 10);
-      var mlt = parseInt(document.getElementById('rngOptMulti').value, 10);
-      var net = parseInt(document.getElementById('rngOptNet').value, 10);
-      var thm = parseInt(document.getElementById('rngOptTherm').value, 10);
-
-      if (br.applyShooterOptimizer) br.applyShooterOptimizer(fps, gpu, frm, edg, mlt, net, thm);
-      if (br.setRawInputNoSmoothing) br.setRawInputNoSmoothing(true);
-      if (br.setVulkanGpuTurbo) br.setVulkanGpuTurbo(true);
-      if (br.setHzThermalGuard) br.setHzThermalGuard(true);
-      if (br.setNetPingStabilizer) br.setNetPingStabilizer(true);
-      if (br.performRamBoost) {
-        var msg = br.performRamBoost();
-        showGlassToast('🚀 ' + msg);
-      }
-    } catch (e) {}
-  }
-
-  function runSmartHardwareScan() {
-    try {
-      var br = getBridge();
-      if (br && br.runSmartDeviceScan) {
-        var info = br.runSmartDeviceScan();
-        document.getElementById('boosterDeviceSummary').textContent = info;
-        showGlassToast('📟 ' + info);
-      }
-    } catch (e) {}
-  }
-
-  function triggerHealTouch() {
-    try {
-      var br = getBridge();
-      if (br && br.healTouch) {
-        br.healTouch();
-        showGlassToast('🛠️ Тач и анимации восстановлены');
-      }
-    } catch (e) {}
-  }
-
-  function updateVoiceGainBoost() {
-    var pct = parseInt(document.getElementById('rngVoiceGain').value, 10);
-    document.getElementById('lblVoiceGain').textContent = pct + ' %';
-    voiceGainMultiplier = pct / 100.0;
-    if (masterSpeakerGain && !isSpeakerDeafened) {
-      masterSpeakerGain.gain.value = voiceGainMultiplier;
-    }
-  }
-
-  async function connectVoiceRoomWs() {
-    var br = getBridge();
-    var room = (document.getElementById('voiceRoomCodeInput').value || 'SQUAD-MAIN').trim().toUpperCase();
-    var hwid = (br && br.getHardwareId) ? br.getHardwareId() : 'hwid_local';
-    var nick = (br && br.getSavedNickname && br.getSavedNickname()) ? br.getSavedNickname() : 'dare';
-    var wsUrl = (br && br.getVoiceServerEndpoint) ? br.getVoiceServerEndpoint() : '';
-    if (!wsUrl) {
-      showGlassToast('Сначала активируйте лицензию');
-      return;
-    }
-
-    leaveVoiceRoom();
-    currentVoiceRoom = room;
-    try { if (br && br.enforceGameAudioMode) br.enforceGameAudioMode(); } catch (e) {}
-
-    try {
-      audioCtx = new (window.AudioContext || window.webkitAudioContext)({ sampleRate: 16000 });
-      masterSpeakerGain = audioCtx.createGain();
-      masterSpeakerGain.gain.value = isSpeakerDeafened ? 0.0 : voiceGainMultiplier;
-      masterSpeakerGain.connect(audioCtx.destination);
-
-      micStream = await navigator.mediaDevices.getUserMedia({
-        audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true }
+      const serialized = JSON.stringify({
+        stretchRatio: state.stretchRatio,
+        wideHitbox: state.wideHitbox,
+        downscalePct: state.downscalePct,
+        crosshairShape: state.crosshairShape,
+        stealthMode: state.stealthMode,
+        accent: state.accent,
+        touchLayer: state.touchLayer,
+        tenParams: state.tenParams,
+        booster: state.booster
       });
-      var src = audioCtx.createMediaStreamSource(micStream);
-      micProcessor = audioCtx.createScriptProcessor(2048, 1, 1);
-      src.connect(micProcessor);
-      micProcessor.connect(audioCtx.destination);
+      localStorage.setItem(STORAGE_KEY_CFG, serialized);
+      callBridge("saveFullConfigJson", serialized);
+    } catch (e) {}
+  }
 
-      micProcessor.onaudioprocess = function(e) {
-        if (isMicMuted || !voiceWs || voiceWs.readyState !== WebSocket.OPEN) return;
-        var input = e.inputBuffer.getChannelData(0);
-        var pcm16 = new Int16Array(input.length);
-        for (var i = 0; i < input.length; i++) {
-          var s = Math.max(-1, Math.min(1, input[i]));
-          pcm16[i] = s < 0 ? s * 0x8000 : s * 0x7FFF;
-        }
-        var bytes = new Uint8Array(pcm16.buffer);
-        var bin = '';
-        for (var j = 0; j < bytes.byteLength; j++) bin += String.fromCharCode(bytes[j]);
-        voiceWs.send(JSON.stringify({ type: 'audio', pcm: btoa(bin), rate: 16000 }));
-      };
-    } catch (err) {
-      showGlassToast('Разрешите доступ к микрофону');
+  function loadLocalState() {
+    try {
+      let raw = localStorage.getItem(STORAGE_KEY_CFG);
+      if (!raw) {
+        raw = callBridge("loadFullConfigJson");
+      }
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        if (parsed.stretchRatio) state.stretchRatio = parsed.stretchRatio;
+        if (typeof parsed.wideHitbox === "boolean") state.wideHitbox = parsed.wideHitbox;
+        if (parsed.downscalePct) state.downscalePct = parsed.downscalePct;
+        if (parsed.accent && parsed.accent.hex1) state.accent = parsed.accent;
+        if (parsed.touchLayer) Object.assign(state.touchLayer, parsed.touchLayer);
+        if (parsed.tenParams) Object.assign(state.tenParams, parsed.tenParams);
+        if (parsed.booster) Object.assign(state.booster, parsed.booster);
+        if (typeof parsed.stealthMode === "boolean") state.stealthMode = parsed.stealthMode;
+      }
+    } catch (e) {}
+  }
+
+  // Переключение основных вкладок
+  window.switchTab = function(tabId) {
+    state.activeTab = tabId;
+    document.querySelectorAll(".screen-view").forEach(sec => {
+      sec.classList.toggle("active", sec.id === "tab-" + tabId);
+    });
+    document.querySelectorAll(".bottom-liquid-dock .dock-item").forEach(btn => {
+      btn.classList.toggle("active", btn.getAttribute("data-tab") === tabId);
+    });
+    const vp = document.querySelector(".app-viewport");
+    if (vp) vp.scrollTop = 0;
+    refreshHardwareAndShizukuStatus();
+  };
+
+  // Переключение подвкладок внутри раздела Сенсор
+  window.switchSensorSubtab = function(subId, btnEl) {
+    state.sensorSubtab = subId;
+    document.querySelectorAll("#tab-sensor .segment-btn[data-sub]").forEach(b => {
+      b.classList.toggle("active", b.getAttribute("data-sub") === subId);
+    });
+    if (btnEl) btnEl.classList.add("active");
+    ["injector", "presets", "crosshair", "booster", "configs"].forEach(id => {
+      const panel = document.getElementById("subtab-" + id);
+      if (panel) {
+        panel.style.display = (id === subId) ? "flex" : "none";
+      }
+    });
+  };
+
+  window.openSensorSubtab = function(subId) {
+    window.switchTab("sensor");
+    const targetBtn = document.querySelector(`#tab-sensor .segment-btn[data-sub="${subId}"]`);
+    window.switchSensorSubtab(subId, targetBtn);
+  };
+
+  // ========================================================================
+  // ЖЕЛЕЗНАЯ ПРИВЯЗКА КЛЮЧА К 1 ДЕВАЙСУ И ЗАЩИТА ОТ СЛЁТА СЕССИИ
+  // ========================================================================
+  function getPersistentSavedKey() {
+    let bridgeKey = callBridge("getSavedKey") || "";
+    let localKey = "";
+    try {
+      localKey = localStorage.getItem(STORAGE_KEY_LIC) || "";
+    } catch (e) {}
+    const clean = (bridgeKey || localKey || "").trim().toUpperCase();
+    if (clean.length >= 5) {
+      state.savedKey = clean;
+      try { localStorage.setItem(STORAGE_KEY_LIC, clean); } catch (e) {}
+      return clean;
+    }
+    return "";
+  }
+
+  function updateSubscriptionBadges(label) {
+    state.subLabel = label || "АКТИВНА";
+    const s1 = document.getElementById("subStatusText");
+    const s2 = document.getElementById("stretchSubBadge");
+    const s3 = document.getElementById("profileSubText");
+    if (s1) s1.textContent = state.subLabel;
+    if (s2) s2.textContent = state.subLabel;
+    if (s3) s3.textContent = state.subLabel;
+  }
+
+  function showAuthModal(errorMessage) {
+    const modal = document.getElementById("authModal");
+    const errBox = document.getElementById("authErrorBox");
+    const keyInp = document.getElementById("authKeyInput");
+    if (keyInp && state.savedKey && !keyInp.value) {
+      keyInp.value = state.savedKey;
+    }
+    if (errBox) {
+      if (errorMessage) {
+        errBox.textContent = errorMessage;
+        errBox.style.display = "block";
+      } else {
+        errBox.style.display = "none";
+      }
+    }
+    if (modal) modal.classList.add("visible");
+  }
+
+  function hideAuthModal() {
+    const modal = document.getElementById("authModal");
+    if (modal) modal.classList.remove("visible");
+  }
+
+  // Вызывается из AndroidBridge при принудительном кике
+  window.forceShowKickScreen = function(reason) {
+    const msg = (reason || "").toString();
+    // Игнорируем ложные кики от кратковременной потери интернета, если ключ уже привязан к этому HWID
+    if (
+      state.savedKey &&
+      (msg.indexOf("связи") !== -1 || msg.indexOf("интернет") !== -1 || msg.indexOf("Сессия") !== -1)
+    ) {
+      // Тихо переактивируем привязанный ключ на этом же устройстве в фоне
+      setTimeout(() => silentRebindSameDevice(), 1200);
+      return;
+    }
+    showAuthModal(msg || "Введите ваш лицензионный ключ");
+  };
+
+  function silentRebindSameDevice() {
+    const key = getPersistentSavedKey();
+    if (!key || !Bridge) return;
+    const res = callBridge("activateLicenseKey", key) || "";
+    if (res.indexOf("OK|") === 0) {
+      updateSubscriptionBadges(res.substring(3));
+      hideAuthModal();
+    }
+  }
+
+  function verifyOrRestoreLicenseOnStart() {
+    const hwid = callBridge("getDeviceHwid") || "LOCAL-DEV-HWID";
+    state.hwid = hwid;
+    const h1 = document.getElementById("profileHwidText");
+    const h2 = document.getElementById("authHwidLabel");
+    if (h1) h1.textContent = hwid;
+    if (h2) h2.textContent = hwid;
+
+    const savedNick = callBridge("getSavedNickname") || localStorage.getItem("so2tp_nick") || "dare";
+    const n1 = document.getElementById("profileNickTitle");
+    const n2 = document.getElementById("nicknameInput");
+    const n3 = document.getElementById("authNickInput");
+    if (n1) n1.textContent = savedNick;
+    if (n2) n2.value = savedNick;
+    if (n3) n3.value = savedNick;
+    updateAvatarInitial(savedNick);
+
+    if (!Bridge) {
+      updateSubscriptionBadges("БЕССРОЧНО (DEV)");
+      return;
     }
 
-    voiceWs = new WebSocket(wsUrl);
-    voiceWs.onopen = function() {
-      document.getElementById('voiceLiveStateText').textContent = '🟢 В эфире: ' + room;
-      document.getElementById('voicePulseDot').style.background = 'var(--ok-green)';
-      voiceWs.send(JSON.stringify({ type: 'join', hwid: hwid, room: room, nick: nick }));
+    const key = getPersistentSavedKey();
+    if (!key) {
+      showAuthModal("");
+      return;
+    }
+
+    // Сначала проверяем активную сессию, а если приложение обновилось или перезапустилось —
+    // автоматически переактивируем тот же ключ на этом же HWID
+    let vRes = callBridge("verifyLicenseKey", key) || "";
+    if (vRes.indexOf("OK|") === 0) {
+      updateSubscriptionBadges(vRes.substring(3));
+      hideAuthModal();
+      return;
+    }
+
+    // Авто-восстановление привязанного ключа на родном девайсе (после обновы APK)
+    let actRes = callBridge("activateLicenseKey", key) || "";
+    if (actRes.indexOf("OK|") === 0) {
       try {
-        if (br && br.updateVoiceCallNotification) {
-          br.updateVoiceCallNotification(room, isMicMuted, isSpeakerDeafened);
-        }
+        localStorage.setItem(STORAGE_KEY_LIC, key);
+        localStorage.setItem(STORAGE_KEY_HWID, hwid);
       } catch (e) {}
-    };
+      updateSubscriptionBadges(actRes.substring(3));
+      hideAuthModal();
+      return;
+    }
 
-    voiceWs.onmessage = function(ev) {
-      try {
-        var msg = JSON.parse(ev.data);
-        if (msg.type === 'roster' && Array.isArray(msg.members)) {
-          var box = document.getElementById('voiceRosterList');
-          box.innerHTML = msg.members.map(function(m) {
-            return '<div style="display:flex;justify-content:space-between;padding:8px 12px;border-radius:12px;background:rgba(255,255,255,0.05);">' +
-              '<span>🎙️ <b>' + m.nick + '</b> <small style="color:var(--txt-secondary);">(' + m.code + ')</small></span>' +
-              '<span style="color:' + (m.muted ? 'var(--err-rose)' : 'var(--ok-green)') + ';font-weight:800;">' + (m.muted ? 'MUTE' : 'LIVE') + '</span>' +
-              '</div>';
-          }).join('');
-        } else if (msg.type === 'audio' && msg.pcm && !isSpeakerDeafened && audioCtx) {
-          var bin = atob(msg.pcm);
-          var bytes = new Uint8Array(bin.length);
-          for (var i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
-          var pcm16 = new Int16Array(bytes.buffer);
-          var f32 = new Float32Array(pcm16.length);
-          for (var k = 0; k < pcm16.length; k++) f32[k] = pcm16[k] / 32768.0;
-
-          var buf = audioCtx.createBuffer(1, f32.length, msg.rate || 16000);
-          buf.getChannelData(0).set(f32);
-          var node = audioCtx.createBufferSource();
-          node.buffer = buf;
-          node.connect(masterSpeakerGain);
-          node.start();
-        }
-      } catch (e) {}
-    };
-
-    voiceWs.onclose = function() {
-      document.getElementById('voiceLiveStateText').textContent = 'Отключён от канала';
-      document.getElementById('voicePulseDot').style.background = 'var(--txt-muted)';
-    };
+    // Если сервер явно ответил, что ключ истёк или чужое устройство — показываем окно
+    const errText = actRes.indexOf("|") !== -1 ? actRes.split("|")[1] : "Подтвердите лицензионный ключ";
+    showAuthModal(errText);
   }
+
+  window.submitLicenseActivation = function() {
+    const nickEl = document.getElementById("authNickInput");
+    const keyEl = document.getElementById("authKeyInput");
+    const btnEl = document.getElementById("authSubmitBtn");
+
+    const nick = (nickEl && nickEl.value ? nickEl.value.trim() : "dare");
+    const rawKey = (keyEl && keyEl.value ? keyEl.value.trim().toUpperCase() : "");
+
+    if (rawKey.length < 5) {
+      showAuthModal("Введите корректный ключ из Telegram-бота!");
+      return;
+    }
+
+    callBridge("savePlayerNickname", nick);
+    try { localStorage.setItem("so2tp_nick", nick); } catch (e) {}
+
+    if (btnEl) btnEl.textContent = "⏳ ПРОВЕРКА HWID И ПРИВЯЗКА...";
+
+    setTimeout(() => {
+      if (!Bridge) {
+        state.savedKey = rawKey;
+        hideAuthModal();
+        showToast("✅ Ключ привязан к устройству!");
+        return;
+      }
+
+      const res = callBridge("activateLicenseKey", rawKey) || "";
+      if (btnEl) btnEl.textContent = "⚡ АКТИВИРОВАТЬ КЛЮЧ И ВОЙТИ";
+
+      if (res.indexOf("OK|") === 0) {
+        const label = res.substring(3);
+        state.savedKey = rawKey;
+        try {
+          localStorage.setItem(STORAGE_KEY_LIC, rawKey);
+          localStorage.setItem(STORAGE_KEY_HWID, state.hwid);
+        } catch (e) {}
+        updateSubscriptionBadges(label);
+        document.getElementById("profileNickTitle").textContent = nick;
+        updateAvatarInitial(nick);
+        hideAuthModal();
+        showToast("🔒 Ключ привязан к вашему устройству!");
+      } else {
+        const msg = res.indexOf("|") !== -1 ? res.substring(res.indexOf("|") + 1) : "Ошибка активации ключа";
+        showAuthModal(msg);
+        showToast("⛔ " + msg);
+      }
+    }, 60);
+  };
+
+  window.logoutCurrentKey = function() {
+    try {
+      localStorage.removeItem(STORAGE_KEY_LIC);
+    } catch (e) {}
+    state.savedKey = "";
+    callBridge("logoutLicenseKey");
+    showAuthModal("Введите новый лицензионный ключ");
+  };
+
+  window.copyHwidToClipboard = function() {
+    if (navigator.clipboard && state.hwid) {
+      navigator.clipboard.writeText(state.hwid).catch(() => {});
+    }
+    showToast("📋 HWID скопирован: " + state.hwid);
+  };
+
+  // ========================================================================
+  // НАТИВНЫЙ ИНЖЕКТОР КАСАНИЙ GAMETOUCHLAYER (C++ JNI + SHIZUKU)
+  // ========================================================================
+  window.syncTouchLayerSliders = function() {
+    const st = parseInt(document.getElementById("tlStickSlider").value, 10) || 74;
+    const hv = parseInt(document.getElementById("tlHeavySlider").value, 10) || 58;
+    const sh = parseInt(document.getElementById("tlSharpSlider").value, 10) || 82;
+    const pl = (parseInt(document.getElementById("tlPullSlider").value, 10) || 135) / 100.0;
+    const sc = (parseInt(document.getElementById("tlScaleSlider").value, 10) || 120) / 100.0;
+
+    state.touchLayer = { stickiness: st, heaviness: hv, sharpness: sh, sprayPull: pl, aimScale: sc };
+
+    document.getElementById("tlStickVal").textContent = st + "%";
+    document.getElementById("tlHeavyVal").textContent = hv + "%";
+    document.getElementById("tlSharpVal").textContent = sh + "%";
+    document.getElementById("tlPullVal").textContent = pl.toFixed(2);
+    document.getElementById("tlScaleVal").textContent = sc.toFixed(2) + "x";
+  };
+
+  window.applyTouchLayerPreset = function(presetKey, btnEl) {
+    if (btnEl && btnEl.parentElement) {
+      btnEl.parentElement.querySelectorAll(".segment-btn").forEach(b => b.classList.remove("active"));
+      btnEl.classList.add("active");
+    }
+    const presets = {
+      raw:      { stick: 14, heavy: 12, sharp: 92, pull: 80,  scale: 108 },
+      headlock: { stick: 78, heavy: 62, sharp: 86, pull: 135, scale: 122 },
+      spray:    { stick: 70, heavy: 74, sharp: 75, pull: 185, scale: 115 },
+      sniper:   { stick: 85, heavy: 45, sharp: 95, pull: 60,  scale: 132 }
+    };
+    const p = presets[presetKey] || presets.headlock;
+    document.getElementById("tlStickSlider").value = p.stick;
+    document.getElementById("tlHeavySlider").value = p.heavy;
+    document.getElementById("tlSharpSlider").value = p.sharp;
+    document.getElementById("tlPullSlider").value = p.pull;
+    document.getElementById("tlScaleSlider").value = p.scale;
+    window.syncTouchLayerSliders();
+    window.commitTouchLayerToNative();
+  };
+
+  window.toggleTouchLayerMaster = function(switchEl) {
+    state.touchLayerEnabled = !state.touchLayerEnabled;
+    if (switchEl) switchEl.classList.toggle("active", state.touchLayerEnabled);
+    window.commitTouchLayerToNative();
+  };
+
+  window.commitTouchLayerToNative = function() {
+    window.syncTouchLayerSliders();
+    const tl = state.touchLayer;
+    callBridge(
+      "configureTouchLayer",
+      state.touchLayerEnabled,
+      tl.stickiness,
+      tl.heaviness,
+      tl.sharpness,
+      tl.sprayPull,
+      tl.aimScale
+    );
+    saveLocalState();
+    showToast(
+      state.touchLayerEnabled
+        ? `⚡ GameTouchLayer C++ активен (${tl.stickiness}% / ${tl.aimScale.toFixed(2)}x)`
+        : "⏸️ Инжектор касаний отключён"
+    );
+  };
+
+  // Мастер-кнопка СЕНСА на главной
+  window.toggleMasterSens = function() {
+    state.masterSensEnabled = !state.masterSensEnabled;
+    const orb = document.getElementById("masterSensOrb");
+    const sub = document.getElementById("homeSensSubtitle");
+    if (orb) {
+      orb.classList.toggle("active", state.masterSensEnabled);
+      orb.textContent = state.masterSensEnabled ? "ВКЛ" : "ВЫКЛ";
+    }
+    if (state.masterSensEnabled) {
+      callBridge("startTeleport", "hardlock");
+      const tl = state.touchLayer;
+      callBridge("configureTouchLayer", true, tl.stickiness, tl.heaviness, tl.sharpness, tl.sprayPull, tl.aimScale);
+      if (sub) sub.textContent = "Активно • GameTouchLayer C++ вшит в тач";
+      showToast("🔥 Сенса и C++ инжектор касаний включены!");
+    } else {
+      callBridge("stopTeleport");
+      callBridge("setTouchInjectorActive", false, 3, 50);
+      if (sub) sub.textContent = "GameTouchLayer C++ • Выбери характер";
+      showToast("⏹️ Сенса остановлена");
+    }
+  };
+
+  // Живой сенсорный полигон для проверки доводки и подавления тремора (алгоритм GameTouchLayer)
+  function initTouchArena() {
+    const arena = document.getElementById("touchArena");
+    const cursor = document.getElementById("touchArenaCursor");
+    const readout = document.getElementById("touchArenaReadout");
+    if (!arena || !cursor) return;
+
+    let posX = arena.clientWidth / 2 || 150;
+    let posY = arena.clientHeight / 2 || 75;
+    let lastX = 0, lastY = 0, dirX = 0, dirY = 0, velX = 0, velY = 0, frames = 0;
+    let touching = false;
+
+    arena.addEventListener("pointerdown", e => {
+      touching = true;
+      const rect = arena.getBoundingClientRect();
+      lastX = e.clientX - rect.left;
+      lastY = e.clientY - rect.top;
+      posX = lastX;
+      posY = lastY;
+      dirX = 0; dirY = 0; velX = 0; velY = 0; frames = 0;
+      cursor.style.left = posX + "px";
+      cursor.style.top = posY + "px";
+    });
+
+    arena.addEventListener("pointermove", e => {
+      if (!touching) return;
+      const rect = arena.getBoundingClientRect();
+      const curX = e.clientX - rect.left;
+      const curY = e.clientY - rect.top;
+      const rawDx = curX - lastX;
+      const rawDy = curY - lastY;
+      lastX = curX;
+      lastY = curY;
+
+      // Точная математика из GameTouchLayer.smali + so2_native.cpp
+      const stick = state.touchLayer.stickiness / 100.0;
+      const heavy = state.touchLayer.heaviness / 100.0;
+      const sharp = state.touchLayer.sharpness / 100.0;
+      const scale = state.touchLayer.aimScale;
+
+      const mag = Math.hypot(rawDx, rawDy);
+      const stickFx = Math.min(0.88, stick * 0.62 + 0.24);
+      const heavyFx = Math.min(0.75, heavy * 0.48);
+
+      const hadDir = Math.hypot(dirX, dirY) > 0.4;
+      dirX = dirX * (0.28 + heavyFx * 0.40) + rawDx;
+      dirY = dirY * (0.28 + heavyFx * 0.40) + rawDy;
+
+      const dirLen = Math.max(0.0001, Math.hypot(dirX, dirY));
+      const ux = dirX / dirLen;
+      const uy = dirY / dirLen;
+
+      const along = rawDx * ux + rawDy * uy;
+      const orthX = rawDx - along * ux;
+      const orthY = rawDy - along * uy;
+      const orthKeep = hadDir ? Math.max(0.14, Math.min(1.0, 1.0 - stickFx * 0.76 - heavyFx * 0.10)) : 1.0;
+
+      const micro = mag < (0.053 + 5.2 * stickFx)
+        ? Math.max(0.20, 1.0 - stickFx * 0.56 - heavyFx * 0.06)
+        : (1.0 + sharp * 0.08);
+
+      const targetX = (along * ux + orthX * orthKeep) * scale * micro;
+      const targetY = (along * uy + orthY * orthKeep) * scale * micro;
+
+      const follow = Math.min(0.98, 0.72 + heavyFx * 0.12 + sharp * 0.06);
+      velX = velX + (targetX - velX) * follow;
+      velY = velY + (targetY - velY) * follow;
+      frames++;
+
+      const spraying = frames >= 7 && Math.abs(rawDx) < 2.6 && mag < 14.0 && rawDy > 0.35;
+      const pull = spraying ? state.touchLayer.sprayPull : 0.0;
+
+      posX = Math.max(14, Math.min(rect.width - 14, posX + velX));
+      posY = Math.max(14, Math.min(rect.height - 14, posY + velY + pull));
+
+      cursor.style.left = posX + "px";
+      cursor.style.top = posY + "px";
+
+      if (readout) {
+        readout.textContent = `C++ ΔX: ${velX.toFixed(1)} | ΔY: ${(velY + pull).toFixed(1)} | Тремор: -${Math.round((1 - orthKeep) * 100)}%` + (spraying ? " • [ДОЖИМ ОТДАЧИ]" : "");
+      }
+    });
+
+    const endTouch = () => { touching = false; };
+    arena.addEventListener("pointerup", endTouch);
+    arena.addEventListener("pointercancel", endTouch);
+  }
+
+  // ========================================================================
+  // РАСТЯГ ЭКРАНА И КНОПКА «Т»
+  // ========================================================================
+  window.selectStretchRatio = function(ratio, btnEl) {
+    state.stretchRatio = ratio;
+    if (btnEl && btnEl.parentElement) {
+      btnEl.parentElement.querySelectorAll(".segment-btn").forEach(b => b.classList.remove("active"));
+      btnEl.classList.add("active");
+    }
+    const directBtn = document.getElementById("directStretchBtn");
+    if (directBtn) directBtn.textContent = "РАСТЯНУТЬ " + ratio;
+
+    const box = document.getElementById("stretchPreviewBox");
+    if (box) {
+      const widths = { "4:3": "68%", "5:4": "62%", "3:2": "76%", "16:10": "84%", "16:9": "94%" };
+      box.style.width = widths[ratio] || "74%";
+    }
+    saveLocalState();
+  };
+
+  window.applyStretchNowDirect = function() {
+    callBridge("applyDirectStretchRatio", state.stretchRatio);
+    showToast("⬛ Применён прямой растяг " + state.stretchRatio);
+  };
+
+  window.resetScreenNative = function() {
+    callBridge("resetResolution");
+    showToast("🔄 Родное разрешение экрана восстановлено");
+  };
+
+  window.launchFloatingButtonT = function() {
+    const res = callBridge("activateStretchFloatingButton", state.stretchRatio);
+    if (res === "NEED_PERMISSION") {
+      showToast("⚠️ Выдайте разрешение «Поверх других окон»");
+    } else if (res === "NEED_AUTH") {
+      showAuthModal("Сначала активируйте лицензионный ключ");
+    } else {
+      showToast(`⚡ Стеклянная кнопка «Т» (${state.stretchRatio}) запущена!`);
+    }
+  };
+
+  window.toggleWideHitbox = function(switchEl) {
+    state.wideHitbox = !state.wideHitbox;
+    if (switchEl) switchEl.classList.toggle("active", state.wideHitbox);
+    callBridge("setWideHitboxMode", state.wideHitbox, state.stretchRatio);
+    saveLocalState();
+    showToast(state.wideHitbox ? "🔥 Широкие хитбоксы включены!" : "Широкие хитбоксы выключены");
+  };
+
+  window.onDownscaleSlide = function(val) {
+    const pct = parseInt(val, 10) || 100;
+    state.downscalePct = pct;
+    const badge = document.getElementById("downscaleVal");
+    if (badge) badge.textContent = pct + "%";
+    callBridge("setPixelDownscaleFactor", pct);
+  };
+
+  // ========================================================================
+  // ХАРАКТЕР СЕНСЫ, ПРИЦЕЛ, БУСТЕР И ОБЛАЧНЫЕ КОНФИГИ
+  // ========================================================================
+  window.selectSensCharacter = function(charKey) {
+    callBridge("startTeleport", charKey);
+    state.masterSensEnabled = true;
+    const orb = document.getElementById("masterSensOrb");
+    if (orb) {
+      orb.classList.add("active");
+      orb.textContent = "ВКЛ";
+    }
+    showToast("🎯 Режим сенсы «" + charKey.toUpperCase() + "» активирован!");
+  };
+
+  window.healTouchNow = function() {
+    callBridge("healTouch");
+    showToast("🛠️ Тачскрипт и свайпы перезапущены!");
+  };
+
+  window.updateTenParamsUI = function() {
+    const sx = (parseInt(document.getElementById("pSx").value, 10) || 145) / 100.0;
+    const sy = (parseInt(document.getElementById("pSy").value, 10) || 135) / 100.0;
+    const grid = parseInt(document.getElementById("pGrid").value, 10) || 90;
+    state.tenParams = { sx, sy, grid };
+    document.getElementById("pSxVal").textContent = sx.toFixed(2);
+    document.getElementById("pSyVal").textContent = sy.toFixed(2);
+    document.getElementById("pGridVal").textContent = grid;
+  };
+
+  window.applyTenParamsNative = function() {
+    window.updateTenParamsUI();
+    const p = state.tenParams;
+    callBridge("updateParameters", 2.8, p.sx, p.sy, 80, 75, 0.9, state.touchLayer.stickiness, p.grid, 0, 1.2);
+    saveLocalState();
+    showToast("⚡ Матрица параметров применена!");
+  };
+
+  window.setCrosshairShape = function(shape, btnEl) {
+    state.crosshairShape = shape;
+    if (btnEl && btnEl.parentElement) {
+      btnEl.parentElement.querySelectorAll(".segment-btn").forEach(b => b.classList.remove("active"));
+      btnEl.classList.add("active");
+    }
+    window.syncCrosshairLive();
+  };
+
+  window.syncCrosshairLive = function() {
+    const len = parseInt(document.getElementById("chLen").value, 10) || 10;
+    const thick = parseInt(document.getElementById("chThick").value, 10) || 3;
+    const gap = parseInt(document.getElementById("chGap").value, 10) || 3;
+    const dot = parseInt(document.getElementById("chDot").value, 10) || 3;
+
+    document.getElementById("chLenVal").textContent = len + " dp";
+    document.getElementById("chThickVal").textContent = thick + " dp";
+    document.getElementById("chGapVal").textContent = gap + " dp";
+    document.getElementById("chDotVal").textContent = dot + " dp";
+
+    if (state.crosshairShape === "off") {
+      callBridge("updateCrosshair", "off");
+    } else {
+      callBridge(
+        "updateCrosshairAdvanced",
+        state.crosshairShape,
+        state.accent.hex1 || "#00E5FF",
+        100,
+        len,
+        thick,
+        gap,
+        dot,
+        true
+      );
+    }
+  };
+
+  window.toggleBoosterSwitch = function(kind, switchEl) {
+    state.booster[kind] = !state.booster[kind];
+    const enabled = state.booster[kind];
+    if (switchEl) switchEl.classList.toggle("active", enabled);
+
+    if (kind === "raw") callBridge("setRawInputNoSmoothing", enabled);
+    if (kind === "hz") {
+      callBridge("setHzThermalGuard", enabled);
+      callBridge("setTouchSamplingBoost", enabled, 240);
+    }
+    if (kind === "vulkan") callBridge("setVulkanGpuTurbo", enabled);
+    if (kind === "ping") callBridge("setNetPingStabilizer", enabled);
+
+    saveLocalState();
+    showToast(enabled ? "⚡ Оптимизация включена" : "Оптимизация выключена");
+  };
+
+  window.boostRamNow = function() {
+    const msg = callBridge("performRamBoost") || "Фоновый кэш и ОЗУ очищены!";
+    showToast("🚀 " + msg);
+  };
+
+  window.loadCloudPreset = function() {
+    const code = (document.getElementById("cloudCodeInput").value || "").trim().toUpperCase();
+    if (!code) {
+      showToast("Введите код конфига!");
+      return;
+    }
+    const raw = callBridge("downloadCloudConfig", code);
+    if (raw) {
+      try {
+        const res = JSON.parse(raw);
+        if (res.ok && res.preset_json) {
+          localStorage.setItem(STORAGE_KEY_CFG, res.preset_json);
+          loadLocalState();
+          showToast("☁️ Конфиг «" + (res.title || code) + "» загружен!");
+          return;
+        }
+      } catch (e) {}
+    }
+    showToast("⚠️ Код не найден или ошибка сети");
+  };
+
+  window.shareCloudPreset = function() {
+    saveLocalState();
+    const json = localStorage.getItem(STORAGE_KEY_CFG) || "{}";
+    const raw = callBridge("uploadCloudConfig", "PRO Build", json);
+    if (raw) {
+      try {
+        const res = JSON.parse(raw);
+        if (res.code || res.share_code) {
+          const c = res.code || res.share_code;
+          document.getElementById("cloudCodeInput").value = c;
+          showToast("✅ Код вашей сборки: " + c);
+          return;
+        }
+      } catch (e) {}
+    }
+    showToast("⚠️ Не удалось создать облачный код");
+  };
+
+  // ========================================================================
+  // ВОЙС ОТРЯДА И ШТОРКА УВЕДОМЛЕНИЙ
+  // ========================================================================
+  window.toggleVoiceRoom = function() {
+    state.voiceJoined = !state.voiceJoined;
+    const room = (document.getElementById("voiceRoomInput").value || "SQUAD-PRO").trim();
+    const btn = document.getElementById("voiceJoinBtn");
+    if (state.voiceJoined) {
+      if (btn) btn.textContent = "🔴 ВЫЙТИ ИЗ ВОЙСА";
+      callBridge("enforceGameAudioMode");
+      callBridge("updateVoiceCallNotification", room, state.micMuted, state.deafened);
+      showToast("🟢 Подключено к комнате " + room);
+    } else {
+      if (btn) btn.textContent = "🎙️ ВОЙТИ В ВОЙС";
+      callBridge("cancelVoiceCallNotification");
+      showToast("Войс отключён");
+    }
+  };
 
   window.toggleMicMute = function() {
-    var br = getBridge();
-    isMicMuted = !isMicMuted;
-    var btn = document.getElementById('btnToggleMic');
-    btn.textContent = isMicMuted ? '🔇 МИКРО: ВЫКЛ' : '🎤 МИКРО: ВКЛ';
-    if (voiceWs && voiceWs.readyState === WebSocket.OPEN) {
-      voiceWs.send(JSON.stringify({ type: 'mute', muted: isMicMuted }));
+    state.micMuted = !state.micMuted;
+    const btn = document.getElementById("voiceMuteBtn");
+    if (btn) btn.textContent = state.micMuted ? "🔇 МИКРО ВЫКЛ" : "🎤 МИКРО ВКЛ";
+    if (state.voiceJoined) {
+      const room = (document.getElementById("voiceRoomInput").value || "SQUAD-PRO").trim();
+      callBridge("updateVoiceCallNotification", room, state.micMuted, state.deafened);
     }
-    try {
-      if (br && br.updateVoiceCallNotification && currentVoiceRoom) {
-        br.updateVoiceCallNotification(currentVoiceRoom, isMicMuted, isSpeakerDeafened);
-      }
-    } catch (e) {}
   };
 
   window.toggleDeafenSpeaker = function() {
-    var br = getBridge();
-    isSpeakerDeafened = !isSpeakerDeafened;
-    var btn = document.getElementById('btnToggleDeafen');
-    btn.textContent = isSpeakerDeafened ? '🔈 ЗВУК: ВЫКЛ' : '🎧 ЗВУК: 400%';
-    if (masterSpeakerGain) {
-      masterSpeakerGain.gain.value = isSpeakerDeafened ? 0.0 : voiceGainMultiplier;
+    state.deafened = !state.deafened;
+    if (state.voiceJoined) {
+      const room = (document.getElementById("voiceRoomInput").value || "SQUAD-PRO").trim();
+      callBridge("updateVoiceCallNotification", room, state.micMuted, state.deafened);
     }
-    try {
-      if (br && br.updateVoiceCallNotification && currentVoiceRoom) {
-        br.updateVoiceCallNotification(currentVoiceRoom, isMicMuted, isSpeakerDeafened);
-      }
-    } catch (e) {}
   };
 
   window.leaveVoiceRoom = function() {
-    var br = getBridge();
-    currentVoiceRoom = '';
-    if (voiceWs) {
-      try { voiceWs.close(); } catch (e) {}
-      voiceWs = null;
-    }
-    if (micProcessor) {
-      try { micProcessor.disconnect(); } catch (e) {}
-      micProcessor = null;
-    }
-    if (micStream) {
-      try { micStream.getTracks().forEach(function(t) { t.stop(); }); } catch (e) {}
-      micStream = null;
-    }
-    if (audioCtx) {
-      try { audioCtx.close(); } catch (e) {}
-      audioCtx = null;
-    }
-    document.getElementById('voiceLiveStateText').textContent = 'Отключён · Выбери комнату';
-    document.getElementById('voicePulseDot').style.background = 'var(--txt-muted)';
-    document.getElementById('voiceRosterList').innerHTML = 'Пока никого нет в эфире';
-    try { if (br && br.cancelVoiceCallNotification) br.cancelVoiceCallNotification(); } catch (e) {}
+    if (state.voiceJoined) window.toggleVoiceRoom();
   };
 
-  function syncFriendsHub() {
-    try {
-      var br = getBridge();
-      if (!br || !br.requestFriendsHub) return;
-      var hwid = br.getHardwareId ? br.getHardwareId() : '';
-      var nick = br.getSavedNickname ? br.getSavedNickname() : 'dare';
-      var raw = br.requestFriendsHub(JSON.stringify({ action: 'sync', android_id: hwid, nickname: nick }));
-      var res = JSON.parse(raw);
-      if (!res.ok) return;
-      if (res.my_code) {
-        document.getElementById('myFriendCodeBadge').textContent = res.my_code;
-      }
+  window.enforceAudioGuard = function() {
+    callBridge("enforceGameAudioMode");
+    showToast("🔊 Аудиофокус 100% разблокирован для Standoff 2!");
+  };
 
-      if (Array.isArray(res.invites) && res.invites.length > 0) {
-        var inv = res.invites[0];
-        pendingInviteRoomCode = inv.room;
-        document.getElementById('voiceInviteAlertBox').style.display = 'flex';
-        document.getElementById('voiceInviteDesc').textContent = inv.from_nick + ' (' + inv.from_code + ') зовёт в комнату ' + inv.room;
-      }
-
-      var incBox = document.getElementById('incomingRequestsBox');
-      var incList = document.getElementById('incomingRequestsList');
-      if (Array.isArray(res.incoming) && res.incoming.length > 0) {
-        incBox.style.display = 'flex';
-        incList.innerHTML = res.incoming.map(function(u) {
-          return '<div style="display:flex;justify-content:space-between;align-items:center;padding:8px 10px;border-radius:12px;background:rgba(255,255,255,0.06);">' +
-            '<span style="font-size:13px;font-weight:700;">' + u.nick + ' (' + u.code + ')</span>' +
-            '<button class="glass-btn" style="width:auto;padding:6px 12px;font-size:11px;" onclick="acceptFriendReq(\'' + u.code + '\')">ПРИНЯТЬ</button>' +
-            '</div>';
-        }).join('');
+  // ========================================================================
+  // ПРОФИЛЬ, АВАТАРКА И ЦВЕТ ПРЕЛОМЛЕНИЯ ЖИДКОГО СТЕКЛА
+  // ========================================================================
+  function updateAvatarInitial(nick) {
+    const savedImg = localStorage.getItem(STORAGE_KEY_AVATAR);
+    const a1 = document.getElementById("homeAvatar");
+    const a2 = document.getElementById("profileAvatar");
+    const letter = (nick || "D").trim().charAt(0).toUpperCase();
+    [a1, a2].forEach(el => {
+      if (!el) return;
+      if (savedImg) {
+        el.style.backgroundImage = `url(${savedImg})`;
+        el.textContent = "";
       } else {
-        incBox.style.display = 'none';
+        el.style.backgroundImage = "";
+        el.textContent = letter;
       }
-
-      var frList = document.getElementById('friendsAcceptedList');
-      if (Array.isArray(res.friends) && res.friends.length > 0) {
-        frList.innerHTML = res.friends.map(function(f) {
-          return '<div style="display:flex;justify-content:space-between;align-items:center;padding:10px 12px;border-radius:14px;background:rgba(15,20,29,0.68);border:1px solid rgba(255,255,255,0.08);">' +
-            '<div>' +
-            '<div style="font-size:13.5px;font-weight:800;">' + (f.online ? '🟢 ' : '⚪ ') + f.nick + ' <small style="color:var(--txt-secondary);">(' + f.code + ')</small></div>' +
-            '<div style="font-size:11px;color:var(--txt-secondary);">' + (f.room ? 'В войсе: ' + f.room : 'Вне голосовой комнаты') + '</div>' +
-            '</div>' +
-            '<button class="glass-btn neutral" style="width:auto;padding:7px 11px;font-size:11px;" onclick="inviteFriendToVoiceRoom(\'' + f.code + '\')">📲 ЗВАТЬ</button>' +
-            '</div>';
-        }).join('');
-      } else {
-        frList.innerHTML = '<div class="tile-desc">У вас пока нет добавленных друзей. Скопируйте свой код сверху и отправьте другу!</div>';
-      }
-    } catch (e) {}
+    });
   }
 
-  function sendFriendRequest() {
-    try {
-      var br = getBridge();
-      var code = document.getElementById('friendTargetInput').value.trim();
-      if (!code || !br || !br.requestFriendsHub) return;
-      var hwid = br.getHardwareId ? br.getHardwareId() : '';
-      var nick = br.getSavedNickname ? br.getSavedNickname() : 'dare';
-      var raw = br.requestFriendsHub(JSON.stringify({ action: 'add', android_id: hwid, nickname: nick, target_code: code }));
-      var res = JSON.parse(raw);
-      showGlassToast(res.message || 'Заявка отправлена');
-      syncFriendsHub();
-    } catch (e) {}
-  }
-
-  function acceptFriendReq(code) {
-    try {
-      var br = getBridge();
-      if (!br || !br.requestFriendsHub) return;
-      var hwid = br.getHardwareId ? br.getHardwareId() : '';
-      var nick = br.getSavedNickname ? br.getSavedNickname() : 'dare';
-      br.requestFriendsHub(JSON.stringify({ action: 'accept', android_id: hwid, nickname: nick, target_code: code }));
-      syncFriendsHub();
-    } catch (e) {}
-  }
-
-  function inviteFriendToVoiceRoom(targetCode) {
-    try {
-      var br = getBridge();
-      if (!br || !br.requestFriendsHub) return;
-      var hwid = br.getHardwareId ? br.getHardwareId() : '';
-      var nick = br.getSavedNickname ? br.getSavedNickname() : 'dare';
-      var rm = (document.getElementById('voiceRoomCodeInput').value || 'SQUAD-MAIN').trim().toUpperCase();
-      var raw = br.requestFriendsHub(JSON.stringify({ action: 'invite_voice', android_id: hwid, nickname: nick, target_code: targetCode, room_code: rm }));
-      var res = JSON.parse(raw);
-      showGlassToast(res.message || 'Приглашение отправлено!');
-    } catch (e) {}
-  }
-
-  function acceptIncomingVoiceInvite() {
-    document.getElementById('voiceInviteAlertBox').style.display = 'none';
-    if (pendingInviteRoomCode) {
-      document.getElementById('voiceRoomCodeInput').value = pendingInviteRoomCode;
-      connectVoiceRoomWs();
-    }
-  }
-
-  function copyMyFriendCode() {
-    var code = document.getElementById('myFriendCodeBadge').textContent;
-    if (navigator.clipboard) navigator.clipboard.writeText(code);
-    showGlassToast('Код друга скопирован: ' + code);
-  }
-
-  function onCustomAvatarSelected(ev) {
-    var file = ev.target.files && ev.target.files[0];
+  window.handleAvatarUpload = function(event) {
+    const file = event.target.files && event.target.files[0];
     if (!file) return;
-    var reader = new FileReader();
-    reader.onload = function(e) {
-      localStorage.setItem('so2_custom_ava_v12', e.target.result);
-      applySavedAvatarToDOM();
-      showGlassToast('📷 Аватарка обновлена!');
+    const reader = new FileReader();
+    reader.onload = function(ev) {
+      try {
+        localStorage.setItem(STORAGE_KEY_AVATAR, ev.target.result);
+        updateAvatarInitial(document.getElementById("profileNickTitle").textContent);
+        showToast("📷 Аватарка обновлена!");
+      } catch (e) {
+        showToast("⚠️ Файл слишком большой");
+      }
     };
     reader.readAsDataURL(file);
-  }
+  };
 
-  function applySavedAvatarToDOM() {
-    var dataUrl = localStorage.getItem('so2_custom_ava_v12');
-    if (dataUrl) {
-      document.getElementById('hubAvaBox').innerHTML = '<img src="' + dataUrl + '" alt="ava" />';
-      document.getElementById('profileBigAvatar').innerHTML = '<img src="' + dataUrl + '" alt="ava" />';
+  window.saveUserNickname = function() {
+    const val = (document.getElementById("nicknameInput").value || "").trim();
+    if (!val) return;
+    callBridge("savePlayerNickname", val);
+    try { localStorage.setItem("so2tp_nick", val); } catch (e) {}
+    document.getElementById("profileNickTitle").textContent = val;
+    updateAvatarInitial(val);
+    showToast("✅ Никнейм сохранён: " + val);
+  };
+
+  window.setLiquidAccent = function(hex1, hex2, rgbStr, swatchEl) {
+    state.accent = { hex1, hex2, rgb: rgbStr };
+    const root = document.documentElement;
+    root.style.setProperty("--accent", hex1);
+    root.style.setProperty("--accent-2", hex2);
+    root.style.setProperty("--accent-rgb", rgbStr);
+    root.style.setProperty("--accent-glow", `rgba(${rgbStr}, 0.44)`);
+    root.style.setProperty("--accent-soft", `rgba(${rgbStr}, 0.16)`);
+
+    if (swatchEl && swatchEl.parentElement) {
+      swatchEl.parentElement.querySelectorAll(".glass-swatch").forEach(s => s.classList.remove("active"));
+      swatchEl.classList.add("active");
     }
-  }
+    saveLocalState();
+  };
 
-  function saveNewPlayerNick() {
-    var br = getBridge();
-    var nick = document.getElementById('profileNewNickInput').value.trim();
-    if (!nick) return;
-    try { if (br && br.savePlayerNickname) br.savePlayerNickname(nick); } catch (e) {}
-    document.getElementById('profileNickTitle').textContent = nick;
-    showGlassToast('✅ Ник сохранён: ' + nick);
-  }
+  window.toggleStealthMode = function(switchEl) {
+    state.stealthMode = !state.stealthMode;
+    if (switchEl) switchEl.classList.toggle("active", state.stealthMode);
+    callBridge("updateOverlayStealthFlag", state.stealthMode);
+    saveLocalState();
+    showToast(state.stealthMode ? "🕵️ Стелс-режим включён (скрыто на записи)" : "Стелс-режим выключен");
+  };
 
-  function applyLiquidGlassColor(hex, rgb, orbEl) {
-    document.documentElement.style.setProperty('--accent', hex);
-    document.documentElement.style.setProperty('--accent-rgb', rgb);
-    document.documentElement.style.setProperty('--accent-soft', 'rgba(' + rgb + ', 0.18)');
-    document.documentElement.style.setProperty('--accent-border', 'rgba(' + rgb + ', 0.52)');
-    document.documentElement.style.setProperty('--accent-glow', 'rgba(' + rgb + ', 0.35)');
+  window.openBotTg = function() {
+    callBridge("openTelegramBot");
+  };
 
-    localStorage.setItem('so2_lg_hex_v12', hex);
-    localStorage.setItem('so2_lg_rgb_v12', rgb);
+  window.openSupportTg = function() {
+    callBridge("openSupportTelegram");
+  };
 
-    if (orbEl && orbEl.parentElement) {
-      var list = orbEl.parentElement.querySelectorAll('.swatch-orb');
-      for (var i = 0; i < list.length; i++) list[i].classList.remove('active');
-      orbEl.classList.add('active');
+  function refreshHardwareAndShizukuStatus() {
+    const shizukuOk = !!callBridge("isShizukuReady");
+    const badge = document.getElementById("shizukuStatusBadge");
+    if (badge) {
+      badge.textContent = shizukuOk ? "АКТИВЕН" : "ВЫКЛ";
+      badge.className = "status-badge-inline " + (shizukuOk ? "status-on" : "status-off");
     }
-    pushCrosshairSettings();
+    const hwInfo = callBridge("getDeviceHardwareInfo") || callBridge("runSmartDeviceScan") || "SM-S938B | 1440x3120 (120 Гц)";
+    const hwEl = document.getElementById("profileHardwareText");
+    if (hwEl) hwEl.textContent = hwInfo;
   }
 
-  function toggleStealthOverlaySwitch() {
-    var br = getBridge();
-    var sw = document.getElementById('swStealthOverlay');
-    var on = !sw.classList.contains('on');
-    sw.classList.toggle('on', on);
-    try { if (br && br.setStealthOverlayMode) br.setStealthOverlayMode(on); } catch (e) {}
-    showGlassToast(on ? '🕵️ Стелс-режим включён' : 'Стелс-режим выключен');
-  }
-
-  function forceShowKickScreen(reasonMsg) {
-    var ov = document.getElementById('authScreenOverlay');
-    if (ov) {
-      ov.style.display = 'flex';
-      ov.style.visibility = 'visible';
-      ov.style.opacity = '1';
+  // Инициализация при старте
+  document.addEventListener("DOMContentLoaded", () => {
+    loadLocalState();
+    if (state.accent && state.accent.hex1) {
+      window.setLiquidAccent(state.accent.hex1, state.accent.hex2, state.accent.rgb, null);
     }
-    var err = document.getElementById('authErrorBanner');
-    if (err && reasonMsg) {
-      err.style.display = 'block';
-      err.textContent = reasonMsg;
-    }
-  }
+    document.getElementById("tlStickSlider").value = state.touchLayer.stickiness;
+    document.getElementById("tlHeavySlider").value = state.touchLayer.heaviness;
+    document.getElementById("tlSharpSlider").value = state.touchLayer.sharpness;
+    document.getElementById("tlPullSlider").value = Math.round(state.touchLayer.sprayPull * 100);
+    document.getElementById("tlScaleSlider").value = Math.round(state.touchLayer.aimScale * 100);
+    window.syncTouchLayerSliders();
 
-  function updateAllSubscriptionBadges(label) {
-    document.getElementById('hubSubBadge').textContent = label;
-    document.getElementById('stretchSubLabel').textContent = label;
-    document.getElementById('xhairSubLabel').textContent = label;
-    document.getElementById('profileSubLine').textContent = 'Подписка: ' + label;
-  }
+    initTouchArena();
+    refreshHardwareAndShizukuStatus();
+    verifyOrRestoreLicenseOnStart();
 
-  function handleLicenseActivation() {
-    try {
-      var br = getBridge();
-      var nick = document.getElementById('authNickInput').value.trim() || 'dare';
-      var key = document.getElementById('authKeyInput').value.trim().toUpperCase();
-      var err = document.getElementById('authErrorBanner');
-
-      if (!br) return;
-      if (br.savePlayerNickname) br.savePlayerNickname(nick);
-
-      var res = br.activateLicenseKey ? br.activateLicenseKey(key) : 'ERROR|Ошибка моста';
-      if (res && res.indexOf('OK|') === 0) {
-        var label = res.substring(3);
-        document.getElementById('authScreenOverlay').style.display = 'none';
-        document.getElementById('profileNickTitle').textContent = nick;
-        updateAllSubscriptionBadges(label);
-        pushCurrentSensToNative();
-        showGlassToast('⚡ Лицензия активирована!');
-      } else {
-        err.style.display = 'block';
-        err.textContent = res ? res.replace('ERROR|', '') : 'Неверный ключ';
-      }
-    } catch (e) {}
-  }
-
-  function pollLicenseExpiration() {
-    try {
-      var br = getBridge();
-      if (!br || !br.verifyLicenseKey) return;
-      var savedKey = br.getSavedKey ? br.getSavedKey() : '';
-      if (!savedKey) {
-        forceShowKickScreen('Введите лицензионный ключ из Telegram-бота');
-        return;
-      }
-      var ver = br.verifyLicenseKey(savedKey);
-      if (ver && ver.indexOf('OK|') === 0) {
-        var label = ver.substring(3);
-        document.getElementById('authScreenOverlay').style.display = 'none';
-        updateAllSubscriptionBadges(label);
-      } else {
-        var msg = (ver && ver.indexOf('|') !== -1) ? ver.split('|')[1] : 'Сессия лицензии истекла';
-        if (ver && ver.indexOf('NETWORK|') === 0) {
-          showGlassToast('⏳ ' + msg);
-        }
-        forceShowKickScreen(msg);
-      }
-
-      if (br.isShizukuReady) {
-        var ok = br.isShizukuReady();
-        var sb = document.getElementById('hubShizukuBadge');
-        sb.textContent = ok ? 'АКТИВЕН' : 'ВЫКЛ';
-        sb.style.color = ok ? 'var(--ok-green)' : 'var(--err-rose)';
-      }
-    } catch (e) {}
-  }
-
-  window.addEventListener('DOMContentLoaded', function() {
-    try {
-      var savedHex = localStorage.getItem('so2_lg_hex_v12');
-      var savedRgb = localStorage.getItem('so2_lg_rgb_v12');
-      if (savedHex && savedRgb) {
-        applyLiquidGlassColor(savedHex, savedRgb, null);
-      }
-
-      applySavedAvatarToDOM();
-      syncMatrixSlidersUI();
-      syncOptimizerSlidersUI();
-      renderCrosshairCanvas('cross', 10, 3, 3, 100);
-
-      var savedLocalCfg = localStorage.getItem('so2_saved_cfg_v12');
-      if (savedLocalCfg) {
-        try { applyConfigObjectToUI(JSON.parse(savedLocalCfg)); } catch (e) {}
-      }
-
-      var br = getBridge();
-      if (br) {
-        var hwid = br.getHardwareId ? br.getHardwareId() : (br.getDisplayHwid ? br.getDisplayHwid() : 'HWID-V12');
-        document.getElementById('authHwidText').textContent = hwid;
-        document.getElementById('profileHwidVal').textContent = hwid;
-
-        if (br.getDeviceHardwareInfo) {
-          var hw = br.getDeviceHardwareInfo();
-          document.getElementById('profileHwInfoVal').textContent = hw;
-          document.getElementById('boosterDeviceSummary').textContent = hw.replace('|', ' • ');
-        }
-
-        var nick = br.getSavedNickname ? br.getSavedNickname() : 'dare';
-        if (nick) {
-          document.getElementById('authNickInput').value = nick;
-          document.getElementById('profileNickTitle').textContent = nick;
-        }
-
-        setTimeout(pollLicenseExpiration, 400);
-        setInterval(pollLicenseExpiration, 20000);
-      }
-    } catch (e) {}
+    setInterval(refreshHardwareAndShizukuStatus, 6000);
   });
-  // Живой замер реального FPS + аппаратной герцовки экрана
-  (function initLiveFpsAndTouchInjector() {
-    var frameCount = 0;
-    var lastTime = performance.now();
-
-    function measureFrame(now) {
-      frameCount++;
-      if (now - lastTime >= 1000) {
-        var realFps = Math.round((frameCount * 1000) / (now - lastTime));
-        frameCount = 0;
-        lastTime = now;
-
-        var br = getBridge();
-        var hwHz = (br && br.getLiveScreenRefreshRate) ? br.getLiveScreenRefreshRate() : realFps;
-        var summaryEl = document.getElementById('boosterDeviceSummary');
-        if (summaryEl) {
-          summaryEl.textContent = realFps + ' FPS • Экран ' + hwHz + ' Гц';
-        }
-      }
-      requestAnimationFrame(measureFrame);
-    }
-    requestAnimationFrame(measureFrame);
-
-    // Автоматическое включение нативного инжекта касаний при активации сенсы
-    var origPushSens = window.pushCurrentSensToNative;
-    window.pushCurrentSensToNative = function() {
-      if (typeof origPushSens === 'function') origPushSens();
-      try {
-        var br = getBridge();
-        if (br && br.setTouchInjectorActive) {
-          var sharpVal = parseFloat(document.getElementById('rngSharp').value) || 2.5;
-          var power = Math.min(100, Math.max(20, Math.round(sharpVal * 32)));
-          br.setTouchInjectorActive(masterSensEnabled, 3, power);
-        }
-      } catch (e) {}
-    };
-  })();
+})();
 </script>
 </body>
 </html>
