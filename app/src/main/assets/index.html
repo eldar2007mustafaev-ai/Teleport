@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- SO2TELEPORT_QUANTUM_V9_SEAL -->
+<!-- SO2TELEPORT_V10_CORE -->
 <html lang="ru">
 <head>
 <meta charset="UTF-8">
@@ -1741,31 +1741,27 @@ input[type="range"].liquid-slider::-webkit-slider-thumb:active {
       return;
     }
 
-    // Сначала проверяем активную сессию, а если приложение обновилось или перезапустилось —
-    // автоматически переактивируем тот же ключ на этом же HWID
-    let vRes = callBridge("verifyLicenseKey", key) || "";
-    if (vRes.indexOf("OK|") === 0) {
-      updateSubscriptionBadges(vRes.substring(3));
-      hideAuthModal();
-      return;
-    }
+let vRes = callBridge("verifyLicenseKey", key) || "";
+if (vRes.indexOf("OK|") === 0) {
+  updateSubscriptionBadges(vRes.substring(3));
+  hideAuthModal();
+  return;
+}
 
-    // Авто-восстановление привязанного ключа на родном девайсе (после обновы APK)
-    let actRes = callBridge("activateLicenseKey", key) || "";
-    if (actRes.indexOf("OK|") === 0) {
-      try {
-        localStorage.setItem(STORAGE_KEY_LIC, key);
-        localStorage.setItem(STORAGE_KEY_HWID, hwid);
-      } catch (e) {}
-      updateSubscriptionBadges(actRes.substring(3));
-      hideAuthModal();
-      return;
-    }
+// Если ключ вернул ошибку, пробуем ПРИНУДИТЕЛЬНО активировать его заново (авто-перепривязка)
+let actRes = callBridge("activateLicenseKey", key) || "";
+if (actRes.indexOf("OK|") === 0) {
+  try {
+    localStorage.setItem(STORAGE_KEY_LIC, key);
+    localStorage.setItem(STORAGE_KEY_HWID, hwid);
+  } catch (e) {}
+  updateSubscriptionBadges(actRes.substring(3));
+  hideAuthModal();
+  return;
+}
 
-    // Если сервер явно ответил, что ключ истёк или чужое устройство — показываем окно
-    const errText = actRes.indexOf("|") !== -1 ? actRes.split("|")[1] : "Подтвердите лицензионный ключ";
-    showAuthModal(errText);
-  }
+const errText = actRes.indexOf("|") !== -1 ? actRes.split("|")[1] : "Подтвердите лицензионный ключ";
+showAuthModal(errText);
 
   window.submitLicenseActivation = function() {
     const nickEl = document.getElementById("authNickInput");
