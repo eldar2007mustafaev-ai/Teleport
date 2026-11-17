@@ -3,18 +3,17 @@ package com.teleport.so2;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.Build;
-
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 
 public class SecurityShield {
-
     private static final String PREF_SHIELD = "so2_security_shield_v12";
     private static boolean sNativeLoaded = false;
 
     static {
         try {
-            System.loadLibrary("so2_native");
+            // ИСПРАВЛЕНО: правильное имя библиотеки
+            System.loadLibrary("so2");
             sNativeLoaded = true;
         } catch (Throwable ignored) {
             sNativeLoaded = false;
@@ -32,9 +31,7 @@ public class SecurityShield {
     public static native boolean isTamperedNative();
     public static native String nativeSignPayload(String payload);
 
-    public static void init(Context context) {
-        // Инициализация щита без блокировки обновлённого интерфейса
-    }
+    public static void init(Context context) {}
 
     public static String getHardwareId(Context context) {
         if (sNativeLoaded) {
@@ -48,22 +45,13 @@ public class SecurityShield {
         return computeFallbackHardwareHwid();
     }
 
-    public static String getHwid(Context context) {
-        return getHardwareId(context);
-    }
-
-    public static String getDeviceHwid(Context context) {
-        return getHardwareId(context);
-    }
+    public static String getHwid(Context context) { return getHardwareId(context); }
+    public static String getDeviceHwid(Context context) { return getHardwareId(context); }
 
     private static String computeFallbackHardwareHwid() {
         try {
-            String sysProps = safe(Build.BOARD) + "|" +
-                    safe(Build.BRAND) + "|" +
-                    safe(Build.DEVICE) + "|" +
-                    safe(Build.HARDWARE) + "|" +
-                    safe(Build.MODEL) + "|" +
-                    safe(Build.PRODUCT);
+            String sysProps = safe(Build.BOARD) + "|" + safe(Build.BRAND) + "|" + safe(Build.DEVICE) + "|" +
+                    safe(Build.HARDWARE) + "|" + safe(Build.MODEL) + "|" + safe(Build.PRODUCT);
             String seed = "SO2_TP_PRO_HWID_V12|" + sysProps;
             MessageDigest md = MessageDigest.getInstance("SHA-256");
             byte[] hash = md.digest(seed.getBytes(StandardCharsets.UTF_8));
@@ -77,41 +65,16 @@ public class SecurityShield {
         }
     }
 
-    private static String safe(String v) {
-        return (v == null || v.isEmpty()) ? "unknown" : v;
-    }
+    private static String safe(String v) { return (v == null || v.isEmpty()) ? "unknown" : v; }
 
-    public static boolean verifyEnvironment(Context context) {
-        return true;
-    }
-
-    public static boolean verifyHtmlIntegrity(Context context) {
-        return true;
-    }
-
-    public static boolean verifyAssetIntegrity(Context context) {
-        return true;
-    }
-
-    public static boolean isHtmlTampered(Context context) {
-        return false;
-    }
-
-    public static boolean isClientCompromised(Context context) {
-        return false;
-    }
-
-    public static boolean isTampered(Context context) {
-        return false;
-    }
-
-    public static boolean checkSignature(Context context) {
-        return true;
-    }
-
-    public static boolean isDebuggerConnected() {
-        return false;
-    }
+    public static boolean verifyEnvironment(Context context) { return true; }
+    public static boolean verifyHtmlIntegrity(Context context) { return true; }
+    public static boolean verifyAssetIntegrity(Context context) { return true; }
+    public static boolean isHtmlTampered(Context context) { return false; }
+    public static boolean isClientCompromised(Context context) { return false; }
+    public static boolean isTampered(Context context) { return false; }
+    public static boolean checkSignature(Context context) { return true; }
+    public static boolean isDebuggerConnected() { return false; }
 
     public static String signPayload(String payload) {
         if (payload == null) payload = "";
@@ -136,32 +99,23 @@ public class SecurityShield {
         if (context == null || cleanKey == null) return;
         try {
             SharedPreferences sp = context.getSharedPreferences(PREF_SHIELD, Context.MODE_PRIVATE);
-            sp.edit()
-                    .putString("verified_key", cleanKey.trim().toUpperCase())
-                    .putLong("verified_ts", System.currentTimeMillis())
-                    .apply();
+            sp.edit().putString("verified_key", cleanKey.trim().toUpperCase()).putLong("verified_ts", System.currentTimeMillis()).apply();
         } catch (Throwable ignored) {}
     }
 
-    public static boolean hasVerifiedSessionToken(Context context) {
-        return true;
-    }
+    public static boolean hasVerifiedSessionToken(Context context) { return true; }
 
     public static String getVerifiedKey(Context context) {
         if (context == null) return "";
         try {
-            SharedPreferences sp = context.getSharedPreferences(PREF_SHIELD, Context.MODE_PRIVATE);
-            return sp.getString("verified_key", "");
-        } catch (Throwable e) {
-            return "";
-        }
+            return context.getSharedPreferences(PREF_SHIELD, Context.MODE_PRIVATE).getString("verified_key", "");
+        } catch (Throwable e) { return ""; }
     }
 
     public static void clearSessionToken(Context context) {
         if (context == null) return;
         try {
-            SharedPreferences sp = context.getSharedPreferences(PREF_SHIELD, Context.MODE_PRIVATE);
-            sp.edit().clear().apply();
+            context.getSharedPreferences(PREF_SHIELD, Context.MODE_PRIVATE).edit().clear().apply();
         } catch (Throwable ignored) {}
     }
 }
