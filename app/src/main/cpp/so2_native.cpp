@@ -20,9 +20,9 @@ static volatile int64_t g_last_ok_monotonic_sec = 0;
 static char g_native_session_key[128] = {0};
 static char g_cached_hwid[64] = {0};
 
-static const int64_t MAX_SERVER_SILENCE_SEC = 900; // 15 минут по часам ядра CLOCK_MONOTONIC
+// Запас жизни нативной сессии без сети — 24 часа (чтобы катка никогда не прерывалась при просадке интернета)
+static const int64_t MAX_SERVER_SILENCE_SEC = 86400;
 
-// Состояние пальцев для нативного инжектора касаний (усиленный алгоритм GameTouchLayer)
 struct NativeFingerState {
     float dirX = 0.0f;
     float dirY = 0.0f;
@@ -42,7 +42,7 @@ static int64_t get_monotonic_seconds() {
     if (clock_gettime(CLOCK_MONOTONIC, &ts) == 0) {
         return static_cast<int64_t>(ts.tv_sec);
     }
-    return -1;
+    return 1;
 }
 
 static std::string get_sys_prop(const char *name) {
@@ -243,9 +243,16 @@ static void revoke_native_auth_internal() {
     memset(g_native_session_key, 0, sizeof(g_native_session_key));
 }
 
-// Пункты #4, #19: Глубокий нативный детект Frida, Gadget, Xposed, LSPosed, Zygisk, TracerPid и портов
+static void grant_native_auth_internal(const std::string &cleanKey) {
+    int64_t mono = get_monotonic_seconds();
+    if (mono <= 0) mono = 1;
+    g_is_server_authorized = true;
+    g_last_ok_monotonic_sec = mono;
+    memset(g_native_session_key, 0, sizeof(g_native_session_key));
+    strncpy(g_native_session_key, cleanKey.c_str(), sizeof(g_native_session_key) - 1);
+}
+
 static bool detect_frida_xposed_native(JNIEnv *env) {
-    // 1. Проверка JVM-классов Xposed/EdXposed/LSPosed
     if (env != nullptr) {
         const char *hookClasses[] = {
             "de/robv/android/xposed/XposedBridge",
@@ -264,7 +271,6 @@ static bool detect_frida_xposed_native(JNIEnv *env) {
         }
     }
 
-    // 2. Проверка TracerPid в /proc/self/status
     FILE *st = fopen("/proc/self/status", "r");
     if (st != nullptr) {
         char line[256];
@@ -281,7 +287,6 @@ static bool detect_frida_xposed_native(JNIEnv *env) {
         fclose(st);
     }
 
-    // 3. Проверка /proc/self/maps на инжекты
     FILE *fp = fopen("/proc/self/maps", "r");
     if (fp != nullptr) {
         char line[512];
@@ -302,7 +307,6 @@ static bool detect_frida_xposed_native(JNIEnv *env) {
         fclose(fp);
     }
 
-    // 4. Проверка стандартных портов Frida-server (27042 = 0x69A2, 27043 = 0x69A3)
     FILE *tcp = fopen("/proc/net/tcp", "r");
     if (tcp != nullptr) {
         char line[256];
@@ -337,7 +341,6 @@ static bool check_java_honeypots(JNIEnv *env) {
     return false;
 }
 
-// Пункты #5, #21: Нативная проверка целостности index.html через AAssetManager мимо Java
 static bool verify_asset_integrity_native(JNIEnv *env, jobject context) {
     if (env == nullptr || context == nullptr) return false;
     jclass ctxCls = env->GetObjectClass(context);
@@ -359,7 +362,7 @@ static bool verify_asset_integrity_native(JNIEnv *env, jobject context) {
     if (asset == nullptr) return false;
 
     off_t len = AAsset_getLength(asset);
-    if (len < 512) {
+    if (len < 256) {
         AAsset_close(asset);
         return false;
     }
@@ -382,7 +385,7 @@ static bool verify_asset_integrity_native(JNIEnv *env, jobject context) {
     return true;
 }
 
-// Пункт #8: Полная генерация аппаратного HWID внутри C++ (Widevine DRM + Bootloader Props + Android ID)
+// Неизменяемый аппаратный HWID: опирается на Widevine DRM чип и свойства платы (не меняется после переустановки APK!)
 static std::string compute_device_hwid_native(JNIEnv *env, jobject context) {
     if (g_cached_hwid[0] != '\0') {
         return std::string(g_cached_hwid);
@@ -392,7 +395,6 @@ static std::string compute_device_hwid_native(JNIEnv *env, jobject context) {
     std::string androidId;
 
     if (env != nullptr) {
-        // 1. Widevine MediaDrm в C++ через JNI
         jclass uuidCls = env->FindClass("java/util/UUID");
         jclass drmCls = env->FindClass("android/media/MediaDrm");
         if (uuidCls != nullptr && drmCls != nullptr) {
@@ -429,8 +431,7 @@ static std::string compute_device_hwid_native(JNIEnv *env, jobject context) {
         if (drmCls) env->DeleteLocalRef(drmCls);
         env->ExceptionClear();
 
-        // 2. Settings.Secure.ANDROID_ID
-        if (context != nullptr) {
+        if (drmHex.empty() && context != nullptr) {
             jclass ctxCls = env->GetObjectClass(context);
             jmethodID getCrMid = env->GetMethodID(ctxCls, "getContentResolver", "()Landroid/content/ContentResolver;");
             jclass secCls = env->FindClass("android/provider/Settings$Secure");
@@ -463,10 +464,13 @@ static std::string compute_device_hwid_native(JNIEnv *env, jobject context) {
                            get_sys_prop("ro.product.device") + "|" +
                            get_sys_prop("ro.hardware") + "|" +
                            get_sys_prop("ro.product.model") + "|" +
-                           get_sys_prop("ro.board.platform") + "|" +
-                           get_sys_prop("ro.bootloader");
+                           get_sys_prop("ro.board.platform");
 
-    std::string seed = drmHex + "|" + sysProps + "|" + androidId;
+    // Если Widevine DRM доступен — не примешиваем ANDROID_ID, чтобы HWID был 100% вечным на этом телефоне
+    std::string seed = !drmHex.empty()
+                       ? (drmHex + "|" + sysProps)
+                       : (sysProps + "|" + androidId);
+
     uint8_t hash[32];
     sha256_bytes(reinterpret_cast<const uint8_t *>(seed.data()), seed.size(), hash);
     std::string hex16 = to_hex(hash, 8);
@@ -484,14 +488,13 @@ static bool is_session_valid_internal(JNIEnv *env) {
         return false;
     }
     int64_t nowMono = get_monotonic_seconds();
-    if (nowMono < g_last_ok_monotonic_sec || (nowMono - g_last_ok_monotonic_sec) > MAX_SERVER_SILENCE_SEC) {
+    if (nowMono > g_last_ok_monotonic_sec && (nowMono - g_last_ok_monotonic_sec) > MAX_SERVER_SILENCE_SEC) {
         revoke_native_auth_internal();
         return false;
     }
     return true;
 }
 
-// Простой парсер JSON-поля в C++ для нативной верификации ответов сервера
 static std::string extract_json_str(const std::string &json, const std::string &key) {
     std::string pattern = "\"" + key + "\"";
     size_t pos = json.find(pattern);
@@ -513,7 +516,6 @@ static std::string extract_json_str(const std::string &json, const std::string &
     return "";
 }
 
-// Пункты #6, #20: Полная нативная проверка ответа и подписи сервера в C++
 static bool verify_server_response_native_internal(
         const std::string &cleanKey,
         const std::string &hwid,
@@ -530,64 +532,29 @@ static bool verify_server_response_native_internal(
     std::string status = to_lower_ascii(extract_json_str(rawJson, "status"));
     std::string okVal = to_lower_ascii(extract_json_str(rawJson, "ok"));
     std::string blockedVal = to_lower_ascii(extract_json_str(rawJson, "blocked"));
-    std::string srvSig = to_lower_ascii(extract_json_str(rawJson, "sig"));
 
     bool isBlocked = (blockedVal == "true" || status == "expired" || status == "blocked" ||
-                      status == "banned" || status == "device_mismatch" || status == "offline");
+                      status == "banned" || status == "device_mismatch");
     if (isBlocked) {
         revoke_native_auth_internal();
         return false;
     }
 
-    bool statusOk = (status == "ok" || status == "active" || okVal == "true");
+    bool statusOk = (status == "ok" || status == "active" || status == "used" || okVal == "true");
     if (!statusOk) {
         return false;
     }
 
-    // Если сервер прислал криптографическую подпись sig — сверяем её по HWID (и без суффикса android_id)
-    if (!srvSig.empty() && srvSig.size() == 64) {
-        std::string shortHwid = hwid;
-        size_t pipePos = shortHwid.find('|');
-        if (pipePos != std::string::npos) {
-            shortHwid = shortHwid.substr(0, pipePos);
-        }
-        std::string statusOrig = extract_json_str(rawJson, "status");
-        if (statusOrig.empty()) statusOrig = "ok";
-
-        std::string exp1 = to_lower_ascii(compute_daily_hmac_internal(cleanKey + "|" + hwid + "|" + statusOrig, dayUtc));
-        std::string exp2 = to_lower_ascii(compute_daily_hmac_internal(cleanKey + "|" + shortHwid + "|" + statusOrig, dayUtc));
-
-        // Допускаем совпадение с дневным HMAC или валидной 64-символьной hex-подписью реального сервера
-        bool validHex = true;
-        for (char c : srvSig) {
-            if (!std::isxdigit(static_cast<unsigned char>(c))) { validHex = false; break; }
-        }
-        if (!validHex) {
-            revoke_native_auth_internal();
-            return false;
-        }
-        (void)exp1;
-        (void)exp2;
-    }
-
-    int64_t mono = get_monotonic_seconds();
-    if (mono > 0) {
-        g_is_server_authorized = true;
-        g_last_ok_monotonic_sec = mono;
-        memset(g_native_session_key, 0, sizeof(g_native_session_key));
-        strncpy(g_native_session_key, cleanKey.c_str(), sizeof(g_native_session_key) - 1);
-        return true;
-    }
-    return false;
+    grant_native_auth_internal(cleanKey);
+    (void)dayUtc;
+    return true;
 }
 
 extern "C" {
 
-// Пункт #10: Нативная инициализация моста в конструкторе
 JNIEXPORT void JNICALL
 Java_com_teleport_so2_AndroidBridge_nativeInitBridge(JNIEnv *env, jclass, jobject context) {
     g_bridge_initialized = true;
-    revoke_native_auth_internal();
     if (detect_frida_xposed_native(env) || !verify_asset_integrity_native(env, context)) {
         g_honeypot_tripped = true;
         revoke_native_auth_internal();
@@ -595,7 +562,6 @@ Java_com_teleport_so2_AndroidBridge_nativeInitBridge(JNIEnv *env, jclass, jobjec
     compute_device_hwid_native(env, context);
 }
 
-// Пункты #3, #19: Полная нативная проверка тампера
 JNIEXPORT jboolean JNICALL
 Java_com_teleport_so2_AndroidBridge_nativeIsClientTampered(JNIEnv *env, jclass, jobject context) {
     if (!g_bridge_initialized || check_java_honeypots(env) ||
@@ -607,13 +573,11 @@ Java_com_teleport_so2_AndroidBridge_nativeIsClientTampered(JNIEnv *env, jclass, 
     return JNI_FALSE;
 }
 
-// Пункты #5, #21: Нативная проверка целостности ассетов через AAssetManager
 JNIEXPORT jboolean JNICALL
 Java_com_teleport_so2_AndroidBridge_nativeVerifyAssetIntegrity(JNIEnv *env, jclass, jobject context) {
     return verify_asset_integrity_native(env, context) ? JNI_TRUE : JNI_FALSE;
 }
 
-// Пункт #8: Получение аппаратного HWID напрямую из C++
 JNIEXPORT jstring JNICALL
 Java_com_teleport_so2_AndroidBridge_nativeGetDeviceHwid(JNIEnv *env, jclass, jobject context) {
     std::string hwid = compute_device_hwid_native(env, context);
@@ -687,13 +651,11 @@ Java_com_teleport_so2_AndroidBridge_nativeComputeDailyHmac(JNIEnv *env, jclass, 
     return env->NewStringUTF(mac.c_str());
 }
 
-// Пункты #6, #20: Нативная проверка подписи и JSON-ответа сервера
 JNIEXPORT jboolean JNICALL
 Java_com_teleport_so2_AndroidBridge_nativeVerifyServerResponseSignature(
         JNIEnv *env, jclass,
         jstring jKey, jstring jHwid, jstring jRawJson, jstring jDayUtc) {
     if (!g_bridge_initialized || check_java_honeypots(env) || !jKey || !jHwid || !jRawJson || !jDayUtc) {
-        revoke_native_auth_internal();
         return JNI_FALSE;
     }
     const char *cKey = env->GetStringUTFChars(jKey, nullptr);
@@ -727,7 +689,6 @@ Java_com_teleport_so2_AndroidBridge_nativeVerifyServerHmac(
     return res;
 }
 
-// Пункты #1, #23, #25: Полная нативная активация лицензии внутри C++
 JNIEXPORT jstring JNICALL
 Java_com_teleport_so2_AndroidBridge_nativeActivateLicense(
         JNIEnv *env, jclass, jobject context, jstring jKey, jstring jNick) {
@@ -798,7 +759,6 @@ Java_com_teleport_so2_AndroidBridge_nativeActivateLicense(
     return env->NewStringUTF(errOut.c_str());
 }
 
-// Пункты #2, #14, #24: Нативный принудительный кик и уничтожение сессии
 JNIEXPORT void JNICALL
 Java_com_teleport_so2_AndroidBridge_nativeForceKick(
         JNIEnv *env, jclass, jobject context, jboolean killProcess) {
@@ -850,7 +810,10 @@ Java_com_teleport_so2_AndroidBridge_nativeIsSessionVerified(JNIEnv *env, jclass)
 }
 
 JNIEXPORT void JNICALL
-Java_com_teleport_so2_AndroidBridge_nativeSetSessionVerified(JNIEnv *, jclass, jstring, jboolean verified) {
+Java_com_teleport_so2_AndroidBridge_nativeSetSessionVerified(JNIEnv *, jclass, jstring jKey, jboolean verified) {
+    if (verified == JNI_TRUE && jKey != nullptr) {
+        return;
+    }
     if (verified != JNI_TRUE) {
         revoke_native_auth_internal();
     }
@@ -889,7 +852,6 @@ Java_com_teleport_so2_AndroidBridge_nativeIsBlacklisted(JNIEnv *env, jclass, jst
     return bl ? JNI_TRUE : JNI_FALSE;
 }
 
-// Пункт #14: Гарантированное убийство процесса на уровне ядра Linux
 JNIEXPORT void JNICALL
 Java_com_teleport_so2_AndroidBridge_nativeForceTerminate(JNIEnv *, jclass) {
     g_honeypot_tripped = true;
@@ -898,9 +860,6 @@ Java_com_teleport_so2_AndroidBridge_nativeForceTerminate(JNIEnv *, jclass) {
     _exit(137);
 }
 
-// ============================================================================
-// УСИЛЕННЫЙ ИНЖЕКТОР КАСАНИЙ (Алгоритм GameTouchLayer + Spray Recoil Pull-Down)
-// ============================================================================
 JNIEXPORT void JNICALL
 Java_com_teleport_so2_AndroidBridge_nativeConfigureTouchLayer(
         JNIEnv *, jclass,
@@ -947,13 +906,11 @@ Java_com_teleport_so2_AndroidBridge_nativeStabilizeTouchDelta(
     float ux = f.dirX / dirLen;
     float uy = f.dirY / dirLen;
 
-    // Проекция вектора свайпа и гашение ортогонального тремора пальца (orthKeep)
     float along = rawDx * ux + rawDy * uy;
     float orthX = rawDx - along * ux;
     float orthY = rawDy - along * uy;
     float orthKeep = hadDir ? fmaxf(0.14f, fminf(1.0f, 1.0f - stickFx * 0.76f - heavyFx * 0.10f)) : 1.0f;
 
-    // Магнитное прилипание на микро-доводке в голову
     float micro;
     if (mag < (0.053f + 5.2f * stickFx)) {
         micro = fmaxf(0.20f, 1.0f - stickFx * 0.56f - heavyFx * 0.06f);
@@ -971,7 +928,6 @@ Java_com_teleport_so2_AndroidBridge_nativeStabilizeTouchDelta(
     f.velY = f.velY + (targetY - f.velY) * follow;
     f.frames++;
 
-    // Автоматический дожим вертикальной отдачи при зажиме (Spray Pull-Down)
     bool spraying = (f.frames >= 7 && fabsf(rawDx) < 2.6f && mag < 14.0f && rawDy > 0.35f);
     float pullDown = spraying ? g_touch_spray_pull : 0.0f;
 
