@@ -12,5 +12,6 @@ find_library(android-lib android)
 
 target_link_libraries(
         so2
-        ${log-lib}${android-lib}
+        ${log-lib}
+        ${android-lib}
 )
