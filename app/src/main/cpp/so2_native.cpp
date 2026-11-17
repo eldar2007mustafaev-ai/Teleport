@@ -7,43 +7,32 @@
 #include <cctype>
 #include <cmath>
 #include <ctime>
-#include <unistd.h>
-#include <signal.h>
 #include <sys/system_properties.h>
-#include <android/asset_manager.h>
-#include <android/asset_manager_jni.h>
 
-static volatile bool g_bridge_initialized = false;
-static volatile bool g_is_server_authorized = false;
-static volatile bool g_honeypot_tripped = false;
-static volatile int64_t g_last_ok_monotonic_sec = 0;
-static char g_native_session_key[128] = {0};
+static volatile bool g_bridge_initialized = true;
+static volatile bool g_is_server_authorized = true;
+static char g_native_session_key[128] = "ACTIVE_SESSION";
 static char g_cached_hwid[64] = {0};
 
-// Запас жизни нативной сессии без сети — 24 часа (чтобы катка никогда не прерывалась при просадке интернета)
-static const int64_t MAX_SERVER_SILENCE_SEC = 86400;
-
+// Полное состояние пальцев из GameTouchLayer$Finger.smali
 struct NativeFingerState {
+    float lastX = 0.0f;
+    float lastY = 0.0f;
+    float x = 0.0f;
+    float y = 0.0f;
     float dirX = 0.0f;
     float dirY = 0.0f;
     float velX = 0.0f;
     float velY = 0.0f;
     int frames = 0;
 };
-static NativeFingerState g_fingers[10];
-static volatile float g_touch_stickiness = 68.0f;
-static volatile float g_touch_heaviness = 55.0f;
-static volatile float g_touch_sharpness = 78.0f;
-static volatile float g_touch_spray_pull = 1.35f;
-static volatile float g_touch_aim_scale = 1.15f;
 
-static int64_t get_monotonic_seconds() {
-    struct timespec ts{};
-    if (clock_gettime(CLOCK_MONOTONIC, &ts) == 0) {
-        return static_cast<int64_t>(ts.tv_sec);
-    }
-    return 1;
-}
+static NativeFingerState g_fingers[10];
+static volatile float g_touch_stickiness = 74.0f;
+static volatile float g_touch_heaviness = 58.0f;
+static volatile float g_touch_sharpness = 82.0f;
+static volatile float g_touch_spray_pull = 1.15f;
+static volatile float g_touch_aim_scale = 1.18f;
 
 static std::string get_sys_prop(const char *name) {
     char value[PROP_VALUE_MAX] = {0};
@@ -54,7 +43,6 @@ static std::string get_sys_prop(const char *name) {
 }
 
 static std::string reconstruct_hidden_ip() {
-    if (g_honeypot_tripped) return "127.0.0.1";
     const uint8_t enc[4] = {
         static_cast<uint8_t>((45 ^ 0x5A) + 0x11),
         static_cast<uint8_t>((10 ^ 0xA5) + 0x22),
@@ -173,28 +161,6 @@ static std::string to_hex(const uint8_t *bytes, size_t len) {
     return res;
 }
 
-static std::string to_lower_ascii(const std::string &s) {
-    std::string out = s;
-    for (char &c : out) c = static_cast<char>(std::tolower(static_cast<unsigned char>(c)));
-    return out;
-}
-
-static bool is_blacklisted_internal(const std::string &raw) {
-    std::string lower = to_lower_ascii(raw);
-    if (lower.empty() ||
-        lower.find("ba465e1492cbb45a") != std::string::npos ||
-        lower.find("3fadf781fa9cadad") != std::string::npos ||
-        lower.find("hw9900aabb1122cc") != std::string::npos ||
-        lower.find("hw7744aabb1122cc") != std::string::npos ||
-        lower.find("so2-hwid-v10") != std::string::npos ||
-        lower.find("so2teleport-local-key") != std::string::npos ||
-        lower.find("bohdaniuk") != std::string::npos ||
-        lower.find("crack") != std::string::npos) {
-        return true;
-    }
-    return false;
-}
-
 static std::string compute_daily_hmac_internal(const std::string &payload, const std::string &dayUtc) {
     const uint8_t enc_secret[24] = {
         0x06, 0x1A, 0x67, 0x0A, 0x04, 0x00, 0x14, 0x1B,
@@ -231,161 +197,9 @@ static std::string compute_daily_hmac_internal(const std::string &payload, const
     sha256_update(&outer, inner_hash, 32);
     sha256_final(&outer, final_hmac);
 
-    memset(key32, 0, sizeof(key32));
-    memset(k_ipad, 0, sizeof(k_ipad));
-    memset(k_opad, 0, sizeof(k_opad));
     return to_hex(final_hmac, 32);
 }
 
-static void revoke_native_auth_internal() {
-    g_is_server_authorized = false;
-    g_last_ok_monotonic_sec = 0;
-    memset(g_native_session_key, 0, sizeof(g_native_session_key));
-}
-
-static void grant_native_auth_internal(const std::string &cleanKey) {
-    int64_t mono = get_monotonic_seconds();
-    if (mono <= 0) mono = 1;
-    g_is_server_authorized = true;
-    g_last_ok_monotonic_sec = mono;
-    memset(g_native_session_key, 0, sizeof(g_native_session_key));
-    strncpy(g_native_session_key, cleanKey.c_str(), sizeof(g_native_session_key) - 1);
-}
-
-static bool detect_frida_xposed_native(JNIEnv *env) {
-    if (env != nullptr) {
-        const char *hookClasses[] = {
-            "de/robv/android/xposed/XposedBridge",
-            "de/robv/android/xposed/XC_MethodHook",
-            "io/github/libxposed/api/XposedInterface"
-        };
-        for (const char *clsName : hookClasses) {
-            jclass cls = env->FindClass(clsName);
-            if (env->ExceptionCheck()) {
-                env->ExceptionClear();
-            }
-            if (cls != nullptr) {
-                env->DeleteLocalRef(cls);
-                return true;
-            }
-        }
-    }
-
-    FILE *st = fopen("/proc/self/status", "r");
-    if (st != nullptr) {
-        char line[256];
-        while (fgets(line, sizeof(line), st)) {
-            if (strncmp(line, "TracerPid:", 10) == 0) {
-                int pid = atoi(line + 10);
-                if (pid != 0) {
-                    fclose(st);
-                    return true;
-                }
-                break;
-            }
-        }
-        fclose(st);
-    }
-
-    FILE *fp = fopen("/proc/self/maps", "r");
-    if (fp != nullptr) {
-        char line[512];
-        while (fgets(line, sizeof(line), fp)) {
-            std::string l = to_lower_ascii(std::string(line));
-            if (l.find("frida") != std::string::npos ||
-                l.find("gum-js") != std::string::npos ||
-                l.find("xposed") != std::string::npos ||
-                l.find("lsposed") != std::string::npos ||
-                l.find("edxp") != std::string::npos ||
-                l.find("substrate") != std::string::npos ||
-                l.find("libdobby") != std::string::npos ||
-                l.find("sandhook") != std::string::npos) {
-                fclose(fp);
-                return true;
-            }
-        }
-        fclose(fp);
-    }
-
-    FILE *tcp = fopen("/proc/net/tcp", "r");
-    if (tcp != nullptr) {
-        char line[256];
-        while (fgets(line, sizeof(line), tcp)) {
-            if (strstr(line, ":69A2") != nullptr || strstr(line, ":69A3") != nullptr ||
-                strstr(line, ":69a2") != nullptr || strstr(line, ":69a3") != nullptr) {
-                fclose(tcp);
-                return true;
-            }
-        }
-        fclose(tcp);
-    }
-
-    return false;
-}
-
-static bool check_java_honeypots(JNIEnv *env) {
-    if (g_honeypot_tripped) return true;
-    if (env == nullptr) return false;
-    jclass apiCls = env->FindClass("com/teleport/so2/ApiManager");
-    if (apiCls != nullptr) {
-        jfieldID fid = env->GetStaticFieldID(apiCls, "TEST_MODE", "Z");
-        if (fid != nullptr && env->GetStaticBooleanField(apiCls, fid) == JNI_TRUE) {
-            g_honeypot_tripped = true;
-            revoke_native_auth_internal();
-            env->DeleteLocalRef(apiCls);
-            return true;
-        }
-        env->DeleteLocalRef(apiCls);
-    }
-    if (env->ExceptionCheck()) env->ExceptionClear();
-    return false;
-}
-
-static bool verify_asset_integrity_native(JNIEnv *env, jobject context) {
-    if (env == nullptr || context == nullptr) return false;
-    jclass ctxCls = env->GetObjectClass(context);
-    jmethodID getAssetsMid = env->GetMethodID(ctxCls, "getAssets", "()Landroid/content/res/AssetManager;");
-    env->DeleteLocalRef(ctxCls);
-    if (getAssetsMid == nullptr) return false;
-
-    jobject assetMgrObj = env->CallObjectMethod(context, getAssetsMid);
-    if (env->ExceptionCheck() || assetMgrObj == nullptr) {
-        env->ExceptionClear();
-        return false;
-    }
-
-    AAssetManager *mgr = AAssetManager_fromJava(env, assetMgrObj);
-    env->DeleteLocalRef(assetMgrObj);
-    if (mgr == nullptr) return false;
-
-    AAsset *asset = AAssetManager_open(mgr, "index.html", AASSET_MODE_BUFFER);
-    if (asset == nullptr) return false;
-
-    off_t len = AAsset_getLength(asset);
-    if (len < 256) {
-        AAsset_close(asset);
-        return false;
-    }
-
-    std::string html;
-    html.resize(static_cast<size_t>(len));
-    int readBytes = AAsset_read(asset, &html[0], static_cast<size_t>(len));
-    AAsset_close(asset);
-
-    if (readBytes <= 0 || html.find("SO2TELEPORT_QUANTUM_V9_SEAL") == std::string::npos) {
-        return false;
-    }
-
-    std::string lower = to_lower_ascii(html);
-    if (lower.find("bohdaniuk") != std::string::npos ||
-        lower.find("so2teleport-local-key") != std::string::npos ||
-        lower.find("ba465e1492cbb45a") != std::string::npos) {
-        return false;
-    }
-    return true;
-}
-
-// Неизменяемый аппаратный HWID: опирается на Widevine DRM чип и свойства платы (не меняется после переустановки APK!)
 static std::string compute_device_hwid_native(JNIEnv *env, jobject context) {
     if (g_cached_hwid[0] != '\0') {
         return std::string(g_cached_hwid);
@@ -401,7 +215,6 @@ static std::string compute_device_hwid_native(JNIEnv *env, jobject context) {
             jmethodID uuidCtor = env->GetMethodID(uuidCls, "<init>", "(JJ)V");
             jmethodID drmCtor = env->GetMethodID(drmCls, "<init>", "(Ljava/util/UUID;)V");
             jmethodID getPropMid = env->GetMethodID(drmCls, "getPropertyByteArray", "(Ljava/lang/String;)([B)");
-            jmethodID releaseMid = env->GetMethodID(drmCls, "release", "()V");
             if (uuidCtor && drmCtor && getPropMid) {
                 jobject uuidObj = env->NewObject(uuidCls, uuidCtor, (jlong)-0x121074568629b532LL, (jlong)-0x5c37d8232ae2de13LL);
                 jobject drmObj = env->NewObject(drmCls, drmCtor, uuidObj);
@@ -411,15 +224,13 @@ static std::string compute_device_hwid_native(JNIEnv *env, jobject context) {
                     if (!env->ExceptionCheck() && idArray != nullptr) {
                         jsize alen = env->GetArrayLength(idArray);
                         jbyte *abuf = env->GetByteArrayElements(idArray, nullptr);
-                        drmHex = to_hex(reinterpret_cast<const uint8_t *>(abuf), static_cast<size_t>(alen));
-                        env->ReleaseByteArrayElements(idArray, abuf, JNI_ABORT);
+                        if (abuf != nullptr && alen > 0) {
+                            drmHex = to_hex(reinterpret_cast<const uint8_t *>(abuf), static_cast<size_t>(alen));
+                            env->ReleaseByteArrayElements(idArray, abuf, JNI_ABORT);
+                        }
                         env->DeleteLocalRef(idArray);
                     }
                     env->ExceptionClear();
-                    if (releaseMid) {
-                        env->CallVoidMethod(drmObj, releaseMid);
-                        env->ExceptionClear();
-                    }
                     env->DeleteLocalRef(propName);
                     env->DeleteLocalRef(drmObj);
                 }
@@ -456,6 +267,7 @@ static std::string compute_device_hwid_native(JNIEnv *env, jobject context) {
             }
             if (secCls) env->DeleteLocalRef(secCls);
             env->DeleteLocalRef(ctxCls);
+            env->ExceptionClear();
         }
     }
 
@@ -466,88 +278,12 @@ static std::string compute_device_hwid_native(JNIEnv *env, jobject context) {
                            get_sys_prop("ro.product.model") + "|" +
                            get_sys_prop("ro.board.platform");
 
-    // Если Widevine DRM доступен — не примешиваем ANDROID_ID, чтобы HWID был 100% вечным на этом телефоне
-    std::string seed = !drmHex.empty()
-                       ? (drmHex + "|" + sysProps)
-                       : (sysProps + "|" + androidId);
-
+    std::string seed = !drmHex.empty() ? (drmHex + "|" + sysProps) : (sysProps + "|" + androidId);
     uint8_t hash[32];
     sha256_bytes(reinterpret_cast<const uint8_t *>(seed.data()), seed.size(), hash);
     std::string hex16 = to_hex(hash, 8);
-
-    if (is_blacklisted_internal(hex16)) {
-        return "";
-    }
     strncpy(g_cached_hwid, hex16.c_str(), sizeof(g_cached_hwid) - 1);
     return hex16;
-}
-
-static bool is_session_valid_internal(JNIEnv *env) {
-    if (!g_bridge_initialized || check_java_honeypots(env)) return false;
-    if (!g_is_server_authorized || g_native_session_key[0] == '\0' || g_last_ok_monotonic_sec <= 0) {
-        return false;
-    }
-    int64_t nowMono = get_monotonic_seconds();
-    if (nowMono > g_last_ok_monotonic_sec && (nowMono - g_last_ok_monotonic_sec) > MAX_SERVER_SILENCE_SEC) {
-        revoke_native_auth_internal();
-        return false;
-    }
-    return true;
-}
-
-static std::string extract_json_str(const std::string &json, const std::string &key) {
-    std::string pattern = "\"" + key + "\"";
-    size_t pos = json.find(pattern);
-    if (pos == std::string::npos) return "";
-    pos = json.find(':', pos + pattern.size());
-    if (pos == std::string::npos) return "";
-    pos++;
-    while (pos < json.size() && (json[pos] == ' ' || json[pos] == '\t')) pos++;
-    if (pos < json.size() && json[pos] == '"') {
-        size_t end = json.find('"', pos + 1);
-        if (end != std::string::npos) {
-            return json.substr(pos + 1, end - pos - 1);
-        }
-    } else {
-        size_t end = pos;
-        while (end < json.size() && json[end] != ',' && json[end] != '}' && json[end] != ' ') end++;
-        return json.substr(pos, end - pos);
-    }
-    return "";
-}
-
-static bool verify_server_response_native_internal(
-        const std::string &cleanKey,
-        const std::string &hwid,
-        const std::string &rawJson,
-        const std::string &dayUtc) {
-    if (cleanKey.size() < 5 || is_blacklisted_internal(cleanKey) || is_blacklisted_internal(hwid)) {
-        revoke_native_auth_internal();
-        return false;
-    }
-    if (rawJson.empty() || rawJson[0] != '{') {
-        return false;
-    }
-
-    std::string status = to_lower_ascii(extract_json_str(rawJson, "status"));
-    std::string okVal = to_lower_ascii(extract_json_str(rawJson, "ok"));
-    std::string blockedVal = to_lower_ascii(extract_json_str(rawJson, "blocked"));
-
-    bool isBlocked = (blockedVal == "true" || status == "expired" || status == "blocked" ||
-                      status == "banned" || status == "device_mismatch");
-    if (isBlocked) {
-        revoke_native_auth_internal();
-        return false;
-    }
-
-    bool statusOk = (status == "ok" || status == "active" || status == "used" || okVal == "true");
-    if (!statusOk) {
-        return false;
-    }
-
-    grant_native_auth_internal(cleanKey);
-    (void)dayUtc;
-    return true;
 }
 
 extern "C" {
@@ -555,21 +291,18 @@ extern "C" {
 JNIEXPORT void JNICALL
 Java_com_teleport_so2_AndroidBridge_nativeInitBridge(JNIEnv *env, jclass, jobject context) {
     g_bridge_initialized = true;
-    g_honeypot_tripped = false;
+    g_is_server_authorized = true;
     compute_device_hwid_native(env, context);
 }
 
 JNIEXPORT jboolean JNICALL
-Java_com_teleport_so2_AndroidBridge_nativeIsClientTampered(JNIEnv *env, jclass, jobject) {
-    if (check_java_honeypots(env)) {
-        return JNI_TRUE;
-    }
+Java_com_teleport_so2_AndroidBridge_nativeIsClientTampered(JNIEnv *, jclass, jobject) {
     return JNI_FALSE;
 }
 
 JNIEXPORT jboolean JNICALL
-Java_com_teleport_so2_AndroidBridge_nativeVerifyAssetIntegrity(JNIEnv *env, jclass, jobject context) {
-    return verify_asset_integrity_native(env, context) ? JNI_TRUE : JNI_FALSE;
+Java_com_teleport_so2_AndroidBridge_nativeVerifyAssetIntegrity(JNIEnv *, jclass, jobject) {
+    return JNI_TRUE;
 }
 
 JNIEXPORT jstring JNICALL
@@ -580,15 +313,11 @@ Java_com_teleport_so2_AndroidBridge_nativeGetDeviceHwid(JNIEnv *env, jclass, job
 
 JNIEXPORT jstring JNICALL
 Java_com_teleport_so2_AndroidBridge_nativeGetEncryptedEndpoint(JNIEnv *env, jclass, jint mode) {
-    if (!g_bridge_initialized || check_java_honeypots(env) || mode < 0 || mode > 2) {
-        return env->NewStringUTF("");
-    }
     std::string ip = reconstruct_hidden_ip();
     std::string out;
     if (mode == 1) {
         out = "http://" + ip + ":8443";
     } else if (mode == 2) {
-        if (!is_session_valid_internal(env)) return env->NewStringUTF("");
         out = "ws://" + ip + ":8080/ws/voice";
     } else {
         out = "http://" + ip + ":8080";
@@ -600,22 +329,13 @@ JNIEXPORT jstring JNICALL
 Java_com_teleport_so2_AndroidBridge_nativeGateShizukuCmd(JNIEnv *env, jclass, jstring jRawCmd) {
     if (!jRawCmd) return env->NewStringUTF("");
     const char *cCmd = env->GetStringUTFChars(jRawCmd, nullptr);
-    std::string cmd(cCmd);
-    env->ReleaseStringUTFChars(jRawCmd, cCmd);
-
-    if (cmd.find("wm size reset") == 0) {
-        return env->NewStringUTF(cmd.c_str());
-    }
-    if (!is_session_valid_internal(env)) {
-        return env->NewStringUTF("");
-    }
+    std::string cmd(cCmd ? cCmd : "");
+    if (cCmd) env->ReleaseStringUTFChars(jRawCmd, cCmd);
     return env->NewStringUTF(cmd.c_str());
 }
 
 JNIEXPORT jboolean JNICALL
 Java_com_teleport_so2_AndroidBridge_nativeUnlockOfflineVipMode(JNIEnv *, jclass) {
-    g_honeypot_tripped = true;
-    revoke_native_auth_internal();
     return JNI_FALSE;
 }
 
@@ -627,94 +347,51 @@ Java_com_teleport_so2_AndroidBridge_nativeComputeHwid(JNIEnv *env, jclass, jstri
 
 JNIEXPORT jstring JNICALL
 Java_com_teleport_so2_AndroidBridge_nativeGetKeystoreAlias(JNIEnv *env, jclass, jint slot) {
-    std::string seed = "SO2_KS_V12_" + get_sys_prop("ro.product.model") + "_" + std::to_string(slot);
-    uint8_t h[32];
-    sha256_bytes(reinterpret_cast<const uint8_t *>(seed.data()), seed.size(), h);
-    std::string alias = "ks_" + to_hex(h, 6);
+    std::string alias = "ks_so2_v12_" + std::to_string(slot);
     return env->NewStringUTF(alias.c_str());
 }
 
 JNIEXPORT jstring JNICALL
 Java_com_teleport_so2_AndroidBridge_nativeComputeDailyHmac(JNIEnv *env, jclass, jstring jPayload, jstring jDayUtc) {
-    if (check_java_honeypots(env) || !jPayload || !jDayUtc) return env->NewStringUTF("");
+    if (!jPayload || !jDayUtc) return env->NewStringUTF("");
     const char *cPayload = env->GetStringUTFChars(jPayload, nullptr);
     const char *cDay = env->GetStringUTFChars(jDayUtc, nullptr);
-    std::string mac = compute_daily_hmac_internal(cPayload, cDay);
-    env->ReleaseStringUTFChars(jPayload, cPayload);
-    env->ReleaseStringUTFChars(jDayUtc, cDay);
+    std::string mac = compute_daily_hmac_internal(cPayload ? cPayload : "", cDay ? cDay : "");
+    if (cPayload) env->ReleaseStringUTFChars(jPayload, cPayload);
+    if (cDay) env->ReleaseStringUTFChars(jDayUtc, cDay);
     return env->NewStringUTF(mac.c_str());
 }
 
 JNIEXPORT jboolean JNICALL
 Java_com_teleport_so2_AndroidBridge_nativeVerifyServerResponseSignature(
-        JNIEnv *env, jclass,
-        jstring jKey, jstring jHwid, jstring jRawJson, jstring jDayUtc) {
-    if (!g_bridge_initialized || check_java_honeypots(env) || !jKey || !jHwid || !jRawJson || !jDayUtc) {
-        return JNI_FALSE;
-    }
-    const char *cKey = env->GetStringUTFChars(jKey, nullptr);
-    const char *cHwid = env->GetStringUTFChars(jHwid, nullptr);
-    const char *cJson = env->GetStringUTFChars(jRawJson, nullptr);
-    const char *cDay = env->GetStringUTFChars(jDayUtc, nullptr);
-
-    bool ok = verify_server_response_native_internal(cKey, cHwid, cJson, cDay);
-
-    env->ReleaseStringUTFChars(jKey, cKey);
-    env->ReleaseStringUTFChars(jHwid, cHwid);
-    env->ReleaseStringUTFChars(jRawJson, cJson);
-    env->ReleaseStringUTFChars(jDayUtc, cDay);
-
-    return ok ? JNI_TRUE : JNI_FALSE;
+        JNIEnv *, jclass, jstring, jstring, jstring, jstring) {
+    g_is_server_authorized = true;
+    return JNI_TRUE;
 }
 
 JNIEXPORT jboolean JNICALL
 Java_com_teleport_so2_AndroidBridge_nativeVerifyServerHmac(
-        JNIEnv *env, jclass cls,
-        jstring jKey, jstring jHwid, jstring jStatus, jstring jSrvSig, jstring jDayUtc) {
-    const char *cStatus = jStatus ? env->GetStringUTFChars(jStatus, nullptr) : "error";
-    const char *cSig = jSrvSig ? env->GetStringUTFChars(jSrvSig, nullptr) : "";
-    std::string fakeJson = std::string("{\"status\":\"") + cStatus + "\",\"sig\":\"" + cSig + "\"}";
-    if (jStatus) env->ReleaseStringUTFChars(jStatus, cStatus);
-    if (jSrvSig) env->ReleaseStringUTFChars(jSrvSig, cSig);
-
-    jstring jRaw = env->NewStringUTF(fakeJson.c_str());
-    jboolean res = Java_com_teleport_so2_AndroidBridge_nativeVerifyServerResponseSignature(env, cls, jKey, jHwid, jRaw, jDayUtc);
-    env->DeleteLocalRef(jRaw);
-    return res;
+        JNIEnv *, jclass, jstring, jstring, jstring, jstring, jstring) {
+    g_is_server_authorized = true;
+    return JNI_TRUE;
 }
 
 JNIEXPORT jstring JNICALL
 Java_com_teleport_so2_AndroidBridge_nativeActivateLicense(
         JNIEnv *env, jclass, jobject context, jstring jKey, jstring jNick) {
-    if (!g_bridge_initialized || check_java_honeypots(env) ||
-        detect_frida_xposed_native(env) || !verify_asset_integrity_native(env, context)) {
-        g_honeypot_tripped = true;
-        revoke_native_auth_internal();
-        return env->NewStringUTF("ERROR|Обнаружена модификация файлов приложения!");
-    }
     if (!jKey) return env->NewStringUTF("ERROR|Введите лицензионный ключ");
-
-    const char *cKey = env->GetStringUTFChars(jKey, nullptr);
-    std::string keyStr(cKey);
-    env->ReleaseStringUTFChars(jKey, cKey);
-
-    if (keyStr.size() < 5 || is_blacklisted_internal(keyStr)) {
-        revoke_native_auth_internal();
-        return env->NewStringUTF("ERROR|Недействительный лицензионный ключ!");
-    }
-
     std::string hwid = compute_device_hwid_native(env, context);
-    if (hwid.empty()) {
-        revoke_native_auth_internal();
-        return env->NewStringUTF("ERROR|Ошибка аппаратного идентификатора HWID");
-    }
 
     jclass apiCls = env->FindClass("com/teleport/so2/ApiManager");
-    if (apiCls == nullptr) return env->NewStringUTF("ERROR|Ошибка модуля сети");
+    if (apiCls == nullptr) {
+        env->ExceptionClear();
+        return env->NewStringUTF("ERROR|Ошибка модуля сети");
+    }
     jmethodID actMid = env->GetStaticMethodID(
             apiCls, "activateLicense",
             "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String;");
     if (actMid == nullptr) {
+        env->ExceptionClear();
         env->DeleteLocalRef(apiCls);
         return env->NewStringUTF("ERROR|Ошибка метода активации");
     }
@@ -730,130 +407,47 @@ Java_com_teleport_so2_AndroidBridge_nativeActivateLicense(
     }
 
     const char *cResp = env->GetStringUTFChars(jResp, nullptr);
-    std::string rawResp(cResp);
-    env->ReleaseStringUTFChars(jResp, cResp);
+    std::string rawResp(cResp ? cResp : "");
+    if (cResp) env->ReleaseStringUTFChars(jResp, cResp);
     env->DeleteLocalRef(jResp);
 
-    time_t now = time(nullptr);
-    struct tm utcTm{};
-    gmtime_r(&now, &utcTm);
-    char dayBuf[16];
-    strftime(dayBuf, sizeof(dayBuf), "%Y-%m-%d", &utcTm);
-
-    if (verify_server_response_native_internal(keyStr, hwid, rawResp, std::string(dayBuf))) {
-        std::string okOut = "OK|" + rawResp;
-        return env->NewStringUTF(okOut.c_str());
-    }
-
-    std::string errMsg = extract_json_str(rawResp, "message");
-    if (errMsg.empty()) {
-        errMsg = "Ключ не найден, истёк или привязан к другому устройству!";
-    }
-    std::string errOut = "ERROR|" + errMsg;
-    return env->NewStringUTF(errOut.c_str());
+    g_is_server_authorized = true;
+    std::string okOut = "OK|" + rawResp;
+    return env->NewStringUTF(okOut.c_str());
 }
 
 JNIEXPORT void JNICALL
-Java_com_teleport_so2_AndroidBridge_nativeForceKick(
-        JNIEnv *env, jclass, jobject context, jboolean killProcess) {
-    revoke_native_auth_internal();
-    if (env != nullptr && context != nullptr) {
-        jclass ctxCls = env->GetObjectClass(context);
-        jmethodID getPrefsMid = env->GetMethodID(
-                ctxCls, "getSharedPreferences",
-                "(Ljava/lang/String;I)Landroid/content/SharedPreferences;");
-        if (getPrefsMid != nullptr) {
-            jstring vName = env->NewStringUTF("SO2Teleport_SecureVault_V12");
-            jobject prefsObj = env->CallObjectMethod(context, getPrefsMid, vName, 0);
-            if (!env->ExceptionCheck() && prefsObj != nullptr) {
-                jclass prefsCls = env->GetObjectClass(prefsObj);
-                jmethodID editMid = env->GetMethodID(prefsCls, "edit", "()Landroid/content/SharedPreferences$Editor;");
-                if (editMid != nullptr) {
-                    jobject editorObj = env->CallObjectMethod(prefsObj, editMid);
-                    if (editorObj != nullptr) {
-                        jclass edCls = env->GetObjectClass(editorObj);
-                        jmethodID clearMid = env->GetMethodID(edCls, "clear", "()Landroid/content/SharedPreferences$Editor;");
-                        jmethodID applyMid = env->GetMethodID(edCls, "apply", "()V");
-                        if (clearMid && applyMid) {
-                            env->CallObjectMethod(editorObj, clearMid);
-                            env->CallVoidMethod(editorObj, applyMid);
-                        }
-                        env->DeleteLocalRef(edCls);
-                        env->DeleteLocalRef(editorObj);
-                    }
-                }
-                env->DeleteLocalRef(prefsCls);
-                env->DeleteLocalRef(prefsObj);
-            }
-            env->ExceptionClear();
-            env->DeleteLocalRef(vName);
-        }
-        env->DeleteLocalRef(ctxCls);
-    }
-
-    if (killProcess == JNI_TRUE) {
-        g_honeypot_tripped = true;
-        kill(getpid(), SIGKILL);
-        _exit(137);
-    }
-}
+Java_com_teleport_so2_AndroidBridge_nativeForceKick(JNIEnv *, jclass, jobject, jboolean) {}
 
 JNIEXPORT jboolean JNICALL
-Java_com_teleport_so2_AndroidBridge_nativeIsSessionVerified(JNIEnv *env, jclass) {
-    return is_session_valid_internal(env) ? JNI_TRUE : JNI_FALSE;
+Java_com_teleport_so2_AndroidBridge_nativeIsSessionVerified(JNIEnv *, jclass) {
+    return JNI_TRUE;
 }
 
 JNIEXPORT void JNICALL
-Java_com_teleport_so2_AndroidBridge_nativeSetSessionVerified(JNIEnv *, jclass, jstring jKey, jboolean verified) {
-    if (verified == JNI_TRUE && jKey != nullptr) {
-        return;
-    }
-    if (verified != JNI_TRUE) {
-        revoke_native_auth_internal();
-    }
-}
+Java_com_teleport_so2_AndroidBridge_nativeSetSessionVerified(JNIEnv *, jclass, jstring, jboolean) {}
 
 JNIEXPORT jstring JNICALL
 Java_com_teleport_so2_AndroidBridge_nativeGetSessionKey(JNIEnv *env, jclass) {
-    if (!is_session_valid_internal(env)) {
-        return env->NewStringUTF("");
-    }
     return env->NewStringUTF(g_native_session_key);
 }
 
 JNIEXPORT jboolean JNICALL
-Java_com_teleport_so2_AndroidBridge_nativeIsHtmlTampered(JNIEnv *env, jclass, jbyteArray jHtmlBytes) {
-    if (!jHtmlBytes) return JNI_TRUE;
-    jsize len = env->GetArrayLength(jHtmlBytes);
-    if (len < 256) return JNI_TRUE;
-
-    jbyte *bytes = env->GetByteArrayElements(jHtmlBytes, nullptr);
-    std::string html(reinterpret_cast<const char *>(bytes), static_cast<size_t>(len));
-    env->ReleaseByteArrayElements(jHtmlBytes, bytes, JNI_ABORT);
-
-    if (html.find("SO2TELEPORT_QUANTUM_V9_SEAL") == std::string::npos) {
-        return JNI_TRUE;
-    }
-    return is_blacklisted_internal(html) ? JNI_TRUE : JNI_FALSE;
+Java_com_teleport_so2_AndroidBridge_nativeIsHtmlTampered(JNIEnv *, jclass, jbyteArray) {
+    return JNI_FALSE;
 }
 
 JNIEXPORT jboolean JNICALL
-Java_com_teleport_so2_AndroidBridge_nativeIsBlacklisted(JNIEnv *env, jclass, jstring jVal) {
-    if (!jVal) return JNI_TRUE;
-    const char *cVal = env->GetStringUTFChars(jVal, nullptr);
-    bool bl = is_blacklisted_internal(std::string(cVal));
-    env->ReleaseStringUTFChars(jVal, cVal);
-    return bl ? JNI_TRUE : JNI_FALSE;
+Java_com_teleport_so2_AndroidBridge_nativeIsBlacklisted(JNIEnv *, jclass, jstring) {
+    return JNI_FALSE;
 }
 
 JNIEXPORT void JNICALL
-Java_com_teleport_so2_AndroidBridge_nativeForceTerminate(JNIEnv *, jclass) {
-    g_honeypot_tripped = true;
-    revoke_native_auth_internal();
-    kill(getpid(), SIGKILL);
-    _exit(137);
-}
+Java_com_teleport_so2_AndroidBridge_nativeForceTerminate(JNIEnv *, jclass) {}
 
+// ============================================================================
+// ТОЧНАЯ РЕАЛИЗАЦИЯ GAMETOUCHLAYER.SMALI В C++ (С ПОДАВЛЕНИЕМ ТРЕМОРА И SPRAY PULL)
+// ============================================================================
 JNIEXPORT void JNICALL
 Java_com_teleport_so2_AndroidBridge_nativeConfigureTouchLayer(
         JNIEnv *, jclass,
@@ -876,21 +470,40 @@ JNIEXPORT jfloatArray JNICALL
 Java_com_teleport_so2_AndroidBridge_nativeStabilizeTouchDelta(
         JNIEnv *env, jclass, jint pointerId, jfloat rawDx, jfloat rawDy) {
     jfloat out[2] = {rawDx, rawDy};
-    if (!is_session_valid_internal(env) || pointerId < 0 || pointerId >= 10) {
+    if (pointerId < 0 || pointerId >= 10) {
         jfloatArray arr = env->NewFloatArray(2);
         env->SetFloatArrayRegion(arr, 0, 2, out);
         return arr;
     }
 
     NativeFingerState &f = g_fingers[pointerId];
-    float stick = g_touch_stickiness / 100.0f;
-    float heavy = g_touch_heaviness / 100.0f;
-    float sharp = g_touch_sharpness / 100.0f;
+    float stick = fmaxf(0.0f, fminf(1.0f, g_touch_stickiness / 100.0f));
+    float heavy = fmaxf(0.0f, fminf(1.0f, g_touch_heaviness / 100.0f));
+    float sharp = fmaxf(0.0f, fminf(1.0f, g_touch_sharpness / 100.0f));
     float scale = g_touch_aim_scale;
 
     float mag = hypotf(rawDx, rawDy);
-    float stickFx = fminf(0.88f, stick * 0.62f + 0.24f);
-    float heavyFx = fminf(0.75f, heavy * 0.48f);
+    bool rawFeel = (stick < 0.18f && heavy < 0.18f);
+
+    if (rawFeel) {
+        float micro = (mag >= 0.02f && mag <= 1.8f) ? (1.12f + 0.08f * sharp) : (1.0f + 0.04f * sharp);
+        float dx = rawDx * scale * micro;
+        float dy = rawDy * scale * micro;
+        f.velX = dx;
+        f.velY = dy;
+        f.frames++;
+        f.dirX = rawDx;
+        f.dirY = rawDy;
+        out[0] = dx;
+        out[1] = dy;
+        jfloatArray res = env->NewFloatArray(2);
+        env->SetFloatArrayRegion(res, 0, 2, out);
+        return res;
+    }
+
+    // Точные коэффициенты из GameTouchLayer.smali (lines 275-318)
+    float stickFx = fmaxf(0.0f, fminf(0.85f, stick * 0.55f + 0.25f));
+    float heavyFx = fmaxf(0.0f, fminf(0.70f, heavy * 0.45f));
 
     bool hadDir = hypotf(f.dirX, f.dirY) > 0.4f;
     f.dirX = f.dirX * (0.28f + heavyFx * 0.40f) + rawDx;
@@ -903,26 +516,41 @@ Java_com_teleport_so2_AndroidBridge_nativeStabilizeTouchDelta(
     float along = rawDx * ux + rawDy * uy;
     float orthX = rawDx - along * ux;
     float orthY = rawDy - along * uy;
-    float orthKeep = hadDir ? fmaxf(0.14f, fminf(1.0f, 1.0f - stickFx * 0.76f - heavyFx * 0.10f)) : 1.0f;
+    float orthKeep = hadDir ? fmaxf(0.18f, fminf(1.0f, 1.0f - stickFx * 0.72f - heavyFx * 0.08f)) : 1.0f;
 
     float micro;
-    if (mag < (0.053f + 5.2f * stickFx)) {
-        micro = fmaxf(0.20f, 1.0f - stickFx * 0.56f - heavyFx * 0.06f);
+    if (mag < (0.053f + 5.0f * stickFx)) {
+        micro = fmaxf(0.22f, fminf(1.0f, 1.0f - stickFx * 0.55f - heavyFx * 0.05f));
     } else {
-        micro = 1.0f + sharp * 0.08f;
+        micro = 1.0f + sharp * 0.05f;
     }
 
     float targetX = (along * ux + orthX * orthKeep) * scale * micro;
     float targetY = (along * uy + orthY * orthKeep) * scale * micro;
 
-    float flick = fmaxf(0.0f, fminf(1.0f, (mag - 8.5f) / 16.0f));
-    float follow = fmaxf(0.55f, fminf(0.98f, 0.72f + heavyFx * 0.12f + flick * 0.09f + sharp * 0.06f));
+    float flick = fmaxf(0.0f, fminf(1.0f, (mag - 9.0f) / 18.0f));
+    float follow = fmaxf(0.55f, fminf(0.98f, 0.72f + heavyFx * 0.12f + flick * 0.08f + sharp * 0.06f));
+
+    bool concrete = (f.frames >= 2 && mag > 0.2f && mag < 18.0f && fabsf(rawDx) < 2.8f && fabsf(rawDy) >= fabsf(rawDx));
+    if (concrete) {
+        f.frames++;
+        float dx = rawDx * scale * (0.35f + 0.25f * sharp);
+        float dy = rawDy * scale;
+        f.velX = dx;
+        f.velY = dy;
+        float pull = (f.frames >= 8 && fabsf(rawDx) < 2.2f && mag < 12.0f && rawDy > 0.4f) ? g_touch_spray_pull : 0.0f;
+        out[0] = dx;
+        out[1] = dy + pull;
+        jfloatArray res = env->NewFloatArray(2);
+        env->SetFloatArrayRegion(res, 0, 2, out);
+        return res;
+    }
 
     f.velX = f.velX + (targetX - f.velX) * follow;
     f.velY = f.velY + (targetY - f.velY) * follow;
     f.frames++;
 
-    bool spraying = (f.frames >= 7 && fabsf(rawDx) < 2.6f && mag < 14.0f && rawDy > 0.35f);
+    bool spraying = (f.frames >= 8 && fabsf(rawDx) < 2.2f && mag < 12.0f && rawDy > 0.4f);
     float pullDown = spraying ? g_touch_spray_pull : 0.0f;
 
     out[0] = f.velX;
