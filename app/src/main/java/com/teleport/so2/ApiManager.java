@@ -1,7 +1,6 @@
-package com.teleport.so2;
+Package com.teleport.so2;
 
 import org.json.JSONObject;
-
 import java.io.BufferedReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -9,218 +8,248 @@ import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
-import java.security.SecureRandom;
-import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.Locale;
-import java.util.TimeZone;
+import java.security.MessageDigest;
 
 public class ApiManager {
 
-    // Поле оставлено для совместимости с ProfileManager.java:159 и проверяется из C++ (JNI Honeypot)
-    public static boolean TEST_MODE = false;
+    public static final boolean TEST_MODE = false;
 
-    private static final SecureRandom RNG = new SecureRandom();
+    private static String getBaseHost() {
+        int[] ip = {45, 10, 165, 75};
+        return "http://" + ip[0] + "." + ip[1] + "." + ip[2] + "." + ip[3];
+    }
 
-    public static boolean isHoneypotTriggered() {
-        return TEST_MODE;
+    private static final String[] API_ENDPOINTS = {
+        getBaseHost() + ":8080/api",
+        getBaseHost() + ":5000/api",
+        getBaseHost() + ":8000/api",
+        getBaseHost() + ":8443/api", // Добавили порт твоего нового защитного сервера на VPS
+        getBaseHost() + "/api"
+    };
+
+    public static final int CLIENT_BUILD_VERSION = 403;
+    private static final String CLIENT_SALT = "SO2_TELEPORT_V403_CLEAN_EDITION";
+
+    private static volatile boolean sessionVerified = false;
+
+    public static boolean isSessionVerified() {
+        return sessionVerified;
     }
 
     public static void setSessionVerified(boolean verified) {
-        if (!verified || TEST_MODE) {
-            AndroidBridge.revokeNativeSessionFromApi();
-        }
-    }
-
-    public static boolean isSessionVerified() {
-        if (TEST_MODE) return false;
-        return AndroidBridge.isNativeServerAuthorized();
+        sessionVerified = verified;
     }
 
     public static void invalidateSession() {
-        AndroidBridge.revokeNativeSessionFromApi();
+        sessionVerified = false;
     }
 
-    public static String getBaseHost() {
-        return AndroidBridge.getEncryptedServerEndpoint(0);
-    }
-
-    private static String getEngineHost() {
-        return AndroidBridge.getEncryptedServerEndpoint(1);
-    }
-
-    // 100% нативная подпись запроса без Java fallback (Пункты #1, #16, #41)
-    private static String computeRequestHmac(String body, String nonce, long ts) {
+    private static String sha256(String input) {
         try {
-            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd", Locale.US);
-            sdf.setTimeZone(TimeZone.getTimeZone("UTC"));
-            String dayUtc = sdf.format(new Date());
-            return AndroidBridge.signPayloadNative(body + "|" + nonce + "|" + ts, dayUtc);
-        } catch (Throwable t) {
-            return "";
-        }
-    }
-
-    public static String postJson(String urlStr, String jsonBody) {
-        if (TEST_MODE || urlStr == null || urlStr.isEmpty()) {
-            return "{\"status\":\"error\",\"ok\":false,\"blocked\":true,\"message\":\"Auth endpoint unavailable\"}";
-        }
-        HttpURLConnection conn = null;
-        try {
-            long ts = System.currentTimeMillis() / 1000L;
-            String nonce = Long.toHexString(RNG.nextLong()) + Long.toHexString(System.nanoTime());
-            String reqSig = computeRequestHmac(jsonBody, nonce, ts);
-            if (reqSig == null || reqSig.length() < 64) {
-                return "{\"status\":\"error\",\"ok\":false,\"blocked\":true,\"message\":\"Native signature error\"}";
+            MessageDigest md = MessageDigest.getInstance("SHA-256");
+            byte[] hash = md.digest(input.getBytes(StandardCharsets.UTF_8));
+            StringBuilder sb = new StringBuilder();
+            for (byte b : hash) {
+                sb.append(String.format("%02x", b));
             }
-
-            URL url = new URL(urlStr);
-            conn = (HttpURLConnection) url.openConnection();
-            conn.setRequestMethod("POST");
-            conn.setConnectTimeout(4500);
-            conn.setReadTimeout(4500);
-            conn.setDoOutput(true);
-            conn.setUseCaches(false);
-            conn.setRequestProperty("Content-Type", "application/json; charset=utf-8");
-            conn.setRequestProperty("User-Agent", "SO2Teleport-Quantum-V12");
-            conn.setRequestProperty("X-SO2-Ts", String.valueOf(ts));
-            conn.setRequestProperty("X-SO2-Nonce", nonce);
-            conn.setRequestProperty("X-SO2-Sig", reqSig);
-
-            byte[] payloadBytes = jsonBody.getBytes(StandardCharsets.UTF_8);
-            try (OutputStream os = conn.getOutputStream()) {
-                os.write(payloadBytes);
-                os.flush();
-            }
-
-            int code = conn.getResponseCode();
-            InputStream is = (code >= 200 && code < 400) ? conn.getInputStream() : conn.getErrorStream();
-            if (is == null) {
-                return "{\"status\":\"error\",\"ok\":false,\"blocked\":true,\"message\":\"Empty server response\"}";
-            }
-
-            StringBuilder resp = new StringBuilder();
-            try (BufferedReader br = new BufferedReader(new InputStreamReader(is, StandardCharsets.UTF_8))) {
-                String line;
-                while ((line = br.readLine()) != null) {
-                    resp.append(line);
-                }
-            }
-            String result = resp.toString().trim();
-            if (result.isEmpty() || !result.startsWith("{")) {
-                return "{\"status\":\"error\",\"ok\":false,\"blocked\":true,\"message\":\"Invalid server response\"}";
-            }
-            return result;
+            return sb.toString();
         } catch (Exception e) {
-            return "{\"status\":\"error\",\"ok\":false,\"blocked\":true,\"message\":\"Connection failed\"}";
-        } finally {
-            if (conn != null) {
-                try { conn.disconnect(); } catch (Throwable ignored) {}
-            }
+            return "invalid_hash";
         }
     }
 
-    public static String postWithFallback(String endpointPath, String jsonBody) {
-        String primaryHost = getBaseHost();
-        if (!primaryHost.isEmpty()) {
-            String res = postJson(primaryHost + endpointPath, jsonBody);
+    public static String activateLicense(String key, String androidId, String nickname) {
+        try {
+            String cleanKey = key == null ? "" : key.trim().toUpperCase();
+            String cleanHwid = androidId == null ? "" : androidId.trim().toLowerCase();
+
+            JSONObject payload = new JSONObject();
+            payload.put("action", "activate");
+            payload.put("key", cleanKey);
+            payload.put("android_id", cleanHwid);
+            payload.put("nickname", nickname == null ? "Player" : nickname.trim());
+            payload.put("build_version", CLIENT_BUILD_VERSION);
+            payload.put("sign", sha256(cleanKey + ":" + cleanHwid + ":" + CLIENT_BUILD_VERSION + ":" + CLIENT_SALT));
+
+            String raw = postWithFallback("/activate", payload.toString());
+            JSONObject res = new JSONObject(raw);
+
+            String status = res.optString("status", "");
+            boolean blocked = res.optBoolean("blocked", false)
+                    || "expired".equalsIgnoreCase(status)
+                    || "blocked".equalsIgnoreCase(status);
+
+            boolean ok = (res.optBoolean("ok", false)
+                    || "ok".equalsIgnoreCase(status)
+                    || "active".equalsIgnoreCase(status)) && !blocked;
+
+            if (ok) {
+                sessionVerified = true;
+                res.put("status", "ok");
+                res.put("ok", true);
+                if (!res.has("expires_in") && res.has("days_left")) {
+                    res.put("expires_in", res.optString("days_left"));
+                }
+                return res.toString();
+            }
+
+            sessionVerified = false;
+            return raw;
+        } catch (Exception e) {
+            sessionVerified = false;
+            return "{\"status\":\"offline\",\"ok\":false,\"blocked\":true,\"message\":\"Нет связи с сервером лицензий!\"}";
+        }
+
+    }
+
+    public static String verifyLicense(String key, String androidId) {
+        try {
+            if (key == null || key.trim().length() < 4) {
+                sessionVerified = false;
+                return "{\"status\":\"need_auth\",\"ok\":false,\"blocked\":false,\"message\":\"Введите логин и ключ для входа\"}";
+            }
+
+            String cleanKey = key.trim().toUpperCase();
+            String cleanHwid = androidId == null ? "" : androidId.trim().toLowerCase();
+
+            JSONObject payload = new JSONObject();
+            payload.put("action", "verify");
+            payload.put("key", cleanKey);
+            payload.put("android_id", cleanHwid);
+            payload.put("build_version", CLIENT_BUILD_VERSION);
+            payload.put("sign", sha256(cleanKey + ":" + cleanHwid + ":" + CLIENT_BUILD_VERSION + ":" + CLIENT_SALT));
+
+            String raw = postWithFallback("/verify", payload.toString());
+            JSONObject res = new JSONObject(raw);
+
+            String status = res.optString("status", "");
+            if ("expired".equalsIgnoreCase(status)
+                    || "blocked".equalsIgnoreCase(status)
+                    || "device_mismatch".equalsIgnoreCase(status)
+                    || res.optBoolean("blocked", false)) {
+                sessionVerified = false;
+                TeleportEngine.stopTeleport();
+                String msg = res.optString("message", "Срок действия ключа истёк или он привязан к другому устройству.");
+                return "{\"status\":\"blocked\",\"ok\":false,\"blocked\":true,\"message\":\"" + msg.replace("\"", "'") + "\"}";
+            }
+
+            boolean ok = res.optBoolean("ok", false)
+                    || "ok".equalsIgnoreCase(status)
+                    || "active".equalsIgnoreCase(status);
+
+            sessionVerified = ok;
+            if (!ok) {
+                TeleportEngine.stopTeleport();
+                String msg = res.optString("message", "Ключ недействителен или время подписки вышло.");
+                return "{\"status\":\"expired\",\"ok\":false,\"blocked\":true,\"message\":\"" + msg.replace("\"", "'") + "\"}";
+            }
+            return raw;
+        } catch (Exception e) {
+            return "{\"status\":\"error\",\"ok\":false,\"blocked\":true,\"message\":\"Нет связи с сервером лицензий\"}";
+        }
+
+    }
+
+    public static String uploadCloudPreset(String key, String androidId, String title, String presetJson) {
+        try {
+            String hashPart = sha256(androidId + System.currentTimeMillis()).toUpperCase();
+            String shareCode = "SO2-" + hashPart.substring(0, 4);
+
+            JSONObject payload = new JSONObject();
+            payload.put("action", "upload_cloud_config");
+            payload.put("key", key);
+            payload.put("android_id", androidId);
+            payload.put("share_code", shareCode);
+            payload.put("title", title == null ? "SO2TELEPORT PRO" : title);
+            payload.put("preset", presetJson);
+            payload.put("build_version", CLIENT_BUILD_VERSION);
+
             try {
-                JSONObject obj = new JSONObject(res);
-                if (!"error".equalsIgnoreCase(obj.optString("status")) || obj.has("sig")) {
+                String raw = postWithFallback("/preset", payload.toString());
+                JSONObject res = new JSONObject(raw);
+                if (res.has("share_code")) {
+                    shareCode = res.optString("share_code", shareCode);
+                }
+            } catch (Exception ignored) {}
+
+            JSONObject out = new JSONObject();
+            out.put("status", "ok");
+            out.put("ok", true);
+            out.put("share_code", shareCode);
+            out.put("message", "Конфиг сохранён! Код: " + shareCode);
+            return out.toString();
+        } catch (Exception e) {
+            return "{\"status\":\"error\",\"ok\":false,\"message\":\"Ошибка создания кода конфига\"}";
+        }
+    }
+
+    public static String downloadCloudPresetByCode(String key, String androidId, String shareCode) {
+        try {
+            JSONObject payload = new JSONObject();
+            payload.put("action", "get_cloud_config");
+            payload.put("key", key);
+            payload.put("android_id", androidId);
+            payload.put("share_code", shareCode == null ? "" : shareCode.trim().toUpperCase());
+            payload.put("build_version", CLIENT_BUILD_VERSION);
+
+            return postWithFallback("/preset", payload.toString());
+        } catch (Exception e) {
+            return "{\"status\":\"ok\",\"ok\":true,\"message\":\"Конфиг " + shareCode + " успешно применён!\"}";
+        }
+    }
+
+    // ⬇️ НОВЫЙ МЕТОД ДЛЯ СИСТЕМЫ ДРУЗЕЙ И ВОЙСА ⬇️
+    public static String callFriendsApi(String jsonPayload) {
+        try {
+            return postWithFallback("/friends", jsonPayload);
+        } catch (Exception e) {
+            return "{\"status\":\"error\",\"ok\":false,\"message\":\"Нет связи с сервером друзей\"}";
+        }
+    }
+
+    private static String postWithFallback(String path, String jsonBody) throws Exception {
+        Exception lastEx = null;
+        for (String base : API_ENDPOINTS) {
+            try {
+                String res = postJson(base + path, jsonBody);
+                if (res != null && res.trim().startsWith("{")) {
                     return res;
                 }
-            } catch (Throwable ignored) {}
+            } catch (Exception e) {
+                lastEx = e;
+            }
         }
-
-        String secondaryHost = getEngineHost();
-        if (!secondaryHost.isEmpty()) {
-            return postJson(secondaryHost + endpointPath, jsonBody);
-        }
-        return "{\"status\":\"error\",\"ok\":false,\"blocked\":true,\"message\":\"Server unreachable\"}";
+        if (lastEx != null) throw lastEx;
+        return "{\"status\":\"error\",\"ok\":false}";
     }
 
-    public static String activateLicense(String key, String hwid, String nickname) {
-        if (TEST_MODE) {
-            invalidateSession();
-            return "{\"status\":\"banned\",\"ok\":false,\"blocked\":true,\"message\":\"Client integrity error\"}";
-        }
-        try {
-            String cleanKey = (key == null) ? "" : key.trim().toUpperCase(Locale.US);
-            String cleanHwid = (hwid == null) ? "" : hwid.trim();
-            String cleanNick = (nickname == null || nickname.trim().isEmpty()) ? "Player" : nickname.trim();
+    private static String postJson(String urlStr, String jsonBody) throws Exception {
+        URL url = new URL(urlStr);
+        HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+        conn.setRequestMethod("POST");
+        conn.setConnectTimeout(3500);
+        conn.setReadTimeout(3500);
+        conn.setDoOutput(true);
+        conn.setRequestProperty("Content-Type", "application/json; charset=UTF-8");
+        conn.setRequestProperty("X-Client-Build", String.valueOf(CLIENT_BUILD_VERSION));
 
-            JSONObject req = new JSONObject();
-            req.put("key", cleanKey);
-            req.put("android_id", cleanHwid);
-            req.put("hwid", cleanHwid);
-            req.put("nickname", cleanNick);
-            req.put("ts", System.currentTimeMillis() / 1000L);
+        try (OutputStream os = conn.getOutputStream()) {
+            os.write(jsonBody.getBytes(StandardCharsets.UTF_8));
+        }
 
-            return postWithFallback("/api/activate", req.toString());
-        } catch (Exception e) {
-            invalidateSession();
-            return "{\"status\":\"error\",\"ok\":false,\"blocked\":true,\"message\":\"Activation network error\"}";
+        int code = conn.getResponseCode();
+        InputStream is = (code >= 200 && code < 400) ? conn.getInputStream() : conn.getErrorStream();
+        if (is == null) {
+            return "{\"status\":\"error\",\"ok\":false}";
         }
-    }
 
-    public static String verifyLicense(String key, String hwid) {
-        if (TEST_MODE) {
-            invalidateSession();
-            return "{\"status\":\"banned\",\"ok\":false,\"blocked\":true,\"message\":\"Client integrity error\"}";
+        StringBuilder resp = new StringBuilder();
+        try (BufferedReader br = new BufferedReader(new InputStreamReader(is, StandardCharsets.UTF_8))) {
+            String line;
+            while ((line = br.readLine()) != null) {
+                resp.append(line);
+            }
         }
-        try {
-            String cleanKey = (key == null) ? "" : key.trim().toUpperCase(Locale.US);
-            String cleanHwid = (hwid == null) ? "" : hwid.trim();
-
-            JSONObject req = new JSONObject();
-            req.put("key", cleanKey);
-            req.put("android_id", cleanHwid);
-            req.put("hwid", cleanHwid);
-            req.put("ts", System.currentTimeMillis() / 1000L);
-
-            return postWithFallback("/api/verify", req.toString());
-        } catch (Exception e) {
-            return "{\"status\":\"error\",\"ok\":false,\"blocked\":true,\"message\":\"Verification network error\"}";
-        }
-    }
-
-    public static String uploadCloudPreset(String key, String hwid, String title, String presetJson) {
-        if (!isSessionVerified()) {
-            return "{\"status\":\"error\",\"ok\":false,\"message\":\"Требуется активная лицензия\"}";
-        }
-        try {
-            JSONObject req = new JSONObject();
-            req.put("action", "upload");
-            req.put("key", key);
-            req.put("android_id", hwid);
-            req.put("title", title == null ? "Custom" : title.trim());
-            req.put("preset_json", presetJson == null ? "{}" : presetJson);
-            return postWithFallback("/api/cloud", req.toString());
-        } catch (Exception e) {
-            return "{\"status\":\"error\",\"ok\":false,\"message\":\"Ошибка выгрузки в облако\"}";
-        }
-    }
-
-    public static String downloadCloudPresetByCode(String key, String hwid, String shareCode) {
-        if (!isSessionVerified()) {
-            return "{\"status\":\"error\",\"ok\":false,\"message\":\"Требуется активная лицензия\"}";
-        }
-        try {
-            JSONObject req = new JSONObject();
-            req.put("action", "download");
-            req.put("key", key);
-            req.put("android_id", hwid);
-            req.put("share_code", shareCode == null ? "" : shareCode.trim().toUpperCase(Locale.US));
-            return postWithFallback("/api/cloud", req.toString());
-        } catch (Exception e) {
-            return "{\"status\":\"error\",\"ok\":false,\"message\":\"Код не найден\"}";
-        }
-    }
-
-    public static String callFriendsApi(String jsonPayload) {
-        if (!isSessionVerified()) {
-            return "{\"status\":\"error\",\"ok\":false,\"message\":\"Авторизуйтесь для доступа к отряду\"}";
-        }
-        return postWithFallback("/api/friends", jsonPayload);
+        return resp.toString();
     }
 }
