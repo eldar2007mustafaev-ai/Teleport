@@ -7,11 +7,12 @@ add_library(
         so2_native.cpp
 )
 
-find_library(log-lib log)
-find_library(android-lib android)
+find_library(
+        log-lib
+        log
+)
 
 target_link_libraries(
         so2
         ${log-lib}
-        ${android-lib}
 )
