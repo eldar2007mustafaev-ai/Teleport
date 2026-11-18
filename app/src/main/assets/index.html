@@ -8,45 +8,29 @@
   <title>SO2Teleport PRO</title>
   <style>
     :root {
-      --system-blue: #0A84FF;
-      --system-green: #30D158;
-      --system-indigo: #5E5CE6;
-      --system-orange: #FF9F0A;
-      --system-pink: #FF375F;
-      --system-purple: #BF5AF2;
-      --system-red: #FF453A;
-      --system-teal: #40C8E0;
-      --system-yellow: #FFD60A;
-      --system-gray: #8E8E93;
-      --system-gray2: #636366;
-      --system-gray3: #48484A;
-      --system-gray4: #3A3A3C;
-      --system-gray5: #2C2C2E;
-      --system-gray6: #1C1C1E;
-      --system-bg: #000000;
-      --secondary-system-bg: #1C1C1E;
-      --tertiary-system-bg: #2C2C2E;
-      --label-primary: #FFFFFF;
-      --label-secondary: rgba(235, 235, 245, 0.68);
-      --label-tertiary: rgba(235, 235, 245, 0.36);
-      --separator: rgba(84, 84, 88, 0.60);
-      --opaque-separator: #38383A;
+      --ice-bg-top: #070D1F;
+      --ice-bg-mid: #0C1838;
+      --ice-bg-bot: #122452;
+      --ice-surface: linear-gradient(155deg, rgba(135, 180, 255, 0.16) 0%, rgba(24, 42, 84, 0.64) 48%, rgba(13, 24, 54, 0.80) 100%);
+      --ice-inner: rgba(16, 29, 62, 0.72);
+      --ice-inner-active: linear-gradient(145deg, rgba(124, 196, 255, 0.24) 0%, rgba(45, 76, 145, 0.68) 100%);
+      --ice-border: rgba(168, 208, 255, 0.24);
+      --ice-border-top: rgba(220, 238, 255, 0.44);
+      --ice-border-strong: rgba(124, 196, 255, 0.68);
+      --ice-btn-grad: linear-gradient(135deg, #8AD0FF 0%, #60A5FA 50%, #818CF8 100%);
+      --ice-btn-text: #061026;
 
-      --accent-main: #0A84FF;
-      --accent-sec: #007AFF;
-      --accent-rgb: 10, 132, 255;
-      --accent-sec-rgb: 0, 122, 255;
-      --btn-text-color: #FFFFFF;
-      --focus-ring: #0A84FF;
-      --bg-deep: var(--system-bg);
-      --bg-card: rgba(28, 28, 30, 0.94);
-      --bg-card-inner: var(--tertiary-system-bg);
-      --border-soft: var(--separator);
-      --border-strong: rgba(var(--accent-rgb), 0.58);
-      --text-main: var(--label-primary);
-      --text-muted: var(--label-secondary);
-      --ok-green: var(--system-green);
-      --danger-red: var(--system-red);
+      --accent-main: #7CC4FF;
+      --accent-sec: #60A5FA;
+      --accent-rgb: 124, 196, 255;
+      --accent-sec-rgb: 96, 165, 250;
+      --btn-text-color: #061026;
+      --focus-ring: #8AD0FF;
+      --text-main: #F4F8FF;
+      --text-muted: rgba(214, 228, 255, 0.72);
+      --text-hint: rgba(190, 210, 250, 0.46);
+      --ok-green: #34D399;
+      --danger-red: #FB7185;
 
       --text-caption: 0.75rem;
       --text-body-sm: 0.8125rem;
@@ -72,14 +56,14 @@
 
     body {
       font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", Roboto, Inter, sans-serif;
-      background-color: var(--bg-deep);
+      background-color: var(--ice-bg-top);
       color: var(--text-main);
       font-size: var(--text-body);
       line-height: 1.5;
       min-height: 100dvh;
       overflow-x: hidden;
-      padding-block-start: calc(env(safe-area-inset-top, 36px) + 14px);
-      padding-block-end: calc(env(safe-area-inset-bottom, 0px) + 104px);
+      padding-block-start: max(calc(env(safe-area-inset-top, 42px) + 12px), 44px);
+      padding-block-end: calc(env(safe-area-inset-bottom, 0px) + 100px);
       position: relative;
     }
 
@@ -111,7 +95,12 @@
       z-index: -3;
       overflow: hidden;
       pointer-events: none;
-      background-color: var(--system-bg);
+      background:
+        radial-gradient(circle at 18% 14%, rgba(124, 196, 255, 0.26) 0%, transparent 46%),
+        radial-gradient(circle at 86% 24%, rgba(129, 140, 248, 0.24) 0%, transparent 48%),
+        radial-gradient(circle at 26% 84%, rgba(56, 189, 248, 0.20) 0%, transparent 46%),
+        radial-gradient(circle at 82% 88%, rgba(167, 139, 250, 0.20) 0%, transparent 44%),
+        linear-gradient(180deg, var(--ice-bg-top) 0%, var(--ice-bg-mid) 52%, var(--ice-bg-bot) 100%);
     }
     #bgCustomVideo, #bgCustomGif {
       position: absolute;
@@ -123,11 +112,7 @@
       display: none;
     }
     #bgParticlesCanvas {
-      position: absolute;
-      inset: 0;
-      width: 100%;
-      height: 100%;
-      display: block;
+      display: none;
     }
     #bgThemeTintLayer {
       position: fixed;
@@ -135,18 +120,10 @@
       z-index: -2;
       pointer-events: none;
       background:
-        radial-gradient(ellipse 90% 24% at 50% 0%, rgba(var(--accent-rgb), 0.14) 0%, transparent 70%),
-        linear-gradient(180deg, rgba(var(--accent-rgb), 0.04) 0%, rgba(0, 0, 0, 0.65) 100%);
-      transition-property: background;
-      transition-duration: 250ms;
-      transition-timing-function: ease-out;
+        radial-gradient(ellipse 92% 28% at 50% 0%, rgba(var(--accent-rgb), 0.18) 0%, transparent 72%);
     }
     #bgVignetteOverlay {
-      position: fixed;
-      inset: 0;
-      z-index: -1;
-      pointer-events: none;
-      background: radial-gradient(circle at 50% 50%, transparent 0%, rgba(0, 0, 0, 0.55) 100%);
+      display: none;
     }
 
     input, textarea, select {
@@ -165,7 +142,7 @@
     }
 
     input::placeholder {
-      color: var(--label-tertiary);
+      color: var(--text-hint);
     }
 
     .app-container {
@@ -178,17 +155,20 @@
     }
 
     .liquid-glass-surface {
-      background: var(--bg-card);
-      backdrop-filter: blur(20px);
-      -webkit-backdrop-filter: blur(20px);
-      border: 1px solid var(--separator);
-      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.45);
+      background: var(--ice-surface);
+      border: 1px solid var(--ice-border);
+      border-block-start-color: var(--ice-border-top);
+      box-shadow:
+        0 10px 26px rgba(4, 10, 28, 0.48),
+        inset 0 1px 0 rgba(235, 246, 255, 0.22);
     }
 
     .liquid-glass-btn {
-      background: var(--accent-main);
-      border: 1px solid rgba(255, 255, 255, 0.18);
-      box-shadow: 0 4px 14px rgba(var(--accent-rgb), 0.25);
+      background: var(--ice-btn-grad);
+      border: 1px solid rgba(255, 255, 255, 0.58);
+      box-shadow:
+        0 6px 18px rgba(var(--accent-rgb), 0.28),
+        inset 0 1px 0 rgba(255, 255, 255, 0.72);
       color: var(--btn-text-color);
       font-weight: 700;
     }
@@ -215,8 +195,8 @@
       width: 44px;
       height: 44px;
       border-radius: 14px;
-      background: var(--tertiary-system-bg);
-      border: 1px solid var(--separator);
+      background: linear-gradient(145deg, rgba(138, 208, 255, 0.28), rgba(45, 76, 145, 0.52));
+      border: 1px solid var(--ice-border-top);
       display: flex;
       align-items: center;
       justify-content: center;
@@ -229,19 +209,19 @@
       height: 100%;
       object-fit: cover;
       display: none;
-      outline: 1px solid rgba(255, 255, 255, 0.1);
+      outline: 1px solid rgba(255, 255, 255, 0.14);
       outline-offset: -1px;
     }
     .header-avatar-fallback {
       font-size: 1.125rem;
       font-weight: 700;
-      color: var(--text-main);
+      color: #FFFFFF;
     }
     .brand-title-main {
       font-size: var(--text-heading);
       font-weight: 700;
       letter-spacing: -0.01em;
-      color: var(--text-main);
+      color: #FFFFFF;
       line-height: 1.2;
     }
     .brand-title-main span {
@@ -264,8 +244,8 @@
       padding-inline: 12px;
       padding-block: 6px;
       border-radius: 999px;
-      background: var(--tertiary-system-bg);
-      border: 1px solid var(--separator);
+      background: var(--ice-inner);
+      border: 1px solid var(--ice-border);
       font-size: var(--text-caption);
       font-weight: 600;
       cursor: pointer;
@@ -287,7 +267,7 @@
       gap: 8px;
       margin-block-start: 10px;
       padding-block-start: 10px;
-      border-block-start: 1px solid var(--separator);
+      border-block-start: 1px solid var(--ice-border);
       font-size: var(--text-caption);
       color: var(--text-muted);
       font-weight: 600;
@@ -298,34 +278,24 @@
       align-items: center;
     }
     .theme-dot {
-      width: 24px;
-      height: 24px;
+      width: 22px;
+      height: 22px;
       border-radius: 50%;
       cursor: pointer;
-      border: 2px solid rgba(255, 255, 255, 0.28);
-      transition-property: transform, border-color;
-      transition-duration: 150ms;
-      transition-timing-function: ease-out;
+      border: 2px solid rgba(255, 255, 255, 0.34);
     }
     .theme-dot.active {
       border-color: #FFFFFF;
-    }
-    @media (prefers-reduced-motion: no-preference) {
-      .theme-dot.active {
-        transform: scale(1.14);
-      }
+      box-shadow: 0 0 10px rgba(255, 255, 255, 0.55);
     }
 
     .acc-block {
       border-radius: 20px;
       margin-block-end: 10px;
       overflow: hidden;
-      transition-property: border-color;
-      transition-duration: 150ms;
-      transition-timing-function: ease-out;
     }
     .acc-block.open {
-      border-color: var(--border-strong);
+      border-color: var(--ice-border-strong);
     }
     .acc-header {
       padding: 14px 16px;
@@ -346,20 +316,20 @@
       width: 38px;
       height: 38px;
       border-radius: 12px;
-      background: var(--tertiary-system-bg);
-      border: 1px solid var(--separator);
+      background: linear-gradient(145deg, rgba(138, 208, 255, 0.24), rgba(30, 52, 102, 0.65));
+      border: 1px solid var(--ice-border);
       display: flex;
       align-items: center;
       justify-content: center;
       font-size: 1rem;
-      color: var(--text-main);
+      color: #FFFFFF;
       flex-shrink: 0;
     }
     .acc-title-wrap { min-width: 0; flex: 1; }
     .acc-title {
       font-size: 0.9375rem;
       font-weight: 600;
-      color: var(--text-main);
+      color: #FFFFFF;
       line-height: 1.3;
       display: flex;
       align-items: center;
@@ -380,47 +350,28 @@
       width: 28px;
       height: 28px;
       border-radius: 50%;
-      background: var(--tertiary-system-bg);
+      background: rgba(138, 208, 255, 0.14);
+      border: 1px solid var(--ice-border);
       display: flex;
       align-items: center;
       justify-content: center;
-      color: var(--text-muted);
+      color: var(--accent-main);
       font-size: 0.8125rem;
       font-weight: 700;
       flex-shrink: 0;
-      transition-property: transform, color;
-      transition-duration: 200ms;
-      transition-timing-function: ease-out;
     }
     .acc-block.open .acc-chevron {
-      color: var(--accent-main);
-    }
-    @media (prefers-reduced-motion: no-preference) {
-      .acc-block.open .acc-chevron {
-        transform: rotate(180deg);
-      }
+      transform: rotate(180deg);
     }
     .acc-body-wrap {
-      display: grid;
-      grid-template-rows: 0fr;
-      transition-property: grid-template-rows;
-      transition-duration: 220ms;
-      transition-timing-function: ease-out;
+      display: none;
     }
-    .acc-block.open .acc-body-wrap { grid-template-rows: 1fr; }
+    .acc-block.open .acc-body-wrap {
+      display: block;
+    }
     .acc-body-inner {
-      overflow: hidden;
-      padding-inline: 16px;
-      padding-block: 0;
-      opacity: 0;
-      transition-property: opacity, padding;
-      transition-duration: 180ms;
-      transition-timing-function: ease-out;
-    }
-    .acc-block.open .acc-body-inner {
-      padding-block: 6px 16px;
-      opacity: 1;
-      border-block-start: 1px solid var(--separator);
+      padding: 6px 16px 16px;
+      border-block-start: 1px solid var(--ice-border);
     }
 
     .cyber-hub-card {
@@ -446,7 +397,7 @@
     .hub-card-title {
       font-size: 0.9375rem;
       font-weight: 700;
-      color: var(--text-main);
+      color: #FFFFFF;
       line-height: 1.3;
       display: flex;
       align-items: center;
@@ -455,12 +406,9 @@
     }
     .hub-state-word {
       color: var(--ok-green);
-      transition-property: color;
-      transition-duration: 150ms;
-      transition-timing-function: ease-out;
     }
     .hub-state-word.off {
-      color: var(--system-gray);
+      color: var(--text-muted);
     }
     .hub-card-sub {
       font-size: var(--text-caption);
@@ -485,28 +433,30 @@
     .cyber-slider-lg {
       position: absolute;
       inset: 0;
-      background: var(--system-gray4);
+      background: rgba(15, 26, 56, 0.85);
+      border: 1px solid var(--ice-border);
       border-radius: 999px;
       transition-property: background-color;
-      transition-duration: 180ms;
+      transition-duration: 150ms;
       transition-timing-function: ease-out;
     }
     .cyber-slider-lg::before {
       content: "";
       position: absolute;
-      width: 28px;
-      height: 28px;
+      width: 26px;
+      height: 26px;
       inset-inline-start: 2px;
       inset-block-start: 2px;
       border-radius: 50%;
       background: #FFFFFF;
-      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.35);
+      box-shadow: 0 2px 6px rgba(4, 10, 28, 0.45);
       transition-property: transform;
-      transition-duration: 180ms;
+      transition-duration: 150ms;
       transition-timing-function: ease-out;
     }
     .cyber-switch-lg input:checked + .cyber-slider-lg {
-      background: var(--ok-green);
+      background: linear-gradient(135deg, #60A5FA, #38BDF8);
+      border-color: rgba(255, 255, 255, 0.6);
     }
     .cyber-switch-lg input:checked + .cyber-slider-lg::before {
       transform: translateX(20px);
@@ -520,17 +470,14 @@
     .hub-action-pill {
       min-height: 42px;
       padding: 10px 12px;
-      border-radius: 12px;
+      border-radius: 999px;
       font-size: var(--text-caption);
-      font-weight: 600;
+      font-weight: 700;
       text-align: center;
       cursor: pointer;
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
-      transition-property: scale, opacity;
-      transition-duration: 150ms;
-      transition-timing-function: ease-out;
     }
 
     .save-all-bar-btn {
@@ -538,7 +485,7 @@
       min-height: 46px;
       margin-block-end: 12px;
       padding: 12px 16px;
-      border-radius: 14px;
+      border-radius: 999px;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -546,15 +493,12 @@
       font-size: var(--text-body-sm);
       font-weight: 700;
       cursor: pointer;
-      transition-property: scale, opacity;
-      transition-duration: 150ms;
-      transition-timing-function: ease-out;
     }
 
     .character-card {
-      background: var(--bg-card-inner);
-      border: 1px solid var(--separator);
-      border-radius: 14px;
+      background: var(--ice-inner);
+      border: 1px solid var(--ice-border);
+      border-radius: 16px;
       padding: 12px 14px;
       margin-block-start: 8px;
       display: flex;
@@ -562,18 +506,16 @@
       justify-content: space-between;
       gap: 10px;
       cursor: pointer;
-      transition-property: border-color, background-color;
-      transition-duration: 150ms;
-      transition-timing-function: ease-out;
     }
     .character-card.active {
-      background: rgba(var(--accent-rgb), 0.14);
-      border-color: var(--accent-main);
+      background: var(--ice-inner-active);
+      border-color: var(--ice-border-strong);
+      box-shadow: inset 0 1px 0 rgba(235, 246, 255, 0.34);
     }
     .char-title {
       font-size: 0.875rem;
       font-weight: 600;
-      color: var(--text-main);
+      color: #FFFFFF;
       line-height: 1.3;
       display: flex;
       align-items: center;
@@ -585,18 +527,21 @@
       font-weight: 600;
       letter-spacing: 0.04em;
       padding: 2px 8px;
-      border-radius: 6px;
-      background: rgba(var(--accent-rgb), 0.18);
-      color: var(--text-main);
+      border-radius: 999px;
+      background: rgba(138, 208, 255, 0.18);
+      border: 1px solid rgba(168, 208, 255, 0.32);
+      color: #E0F2FE;
       text-transform: uppercase;
       font-variant-numeric: tabular-nums;
     }
     .char-tag.pad-badge {
-      background: rgba(191, 90, 242, 0.22);
-      color: #F3E8FF;
+      background: rgba(167, 139, 250, 0.22);
+      border-color: rgba(196, 181, 253, 0.38);
+      color: #EDE9FE;
     }
     .char-tag.budget-badge {
-      background: rgba(48, 209, 88, 0.20);
+      background: rgba(52, 211, 153, 0.20);
+      border-color: rgba(110, 231, 183, 0.36);
       color: #D1FAE5;
     }
     .char-desc {
@@ -608,9 +553,17 @@
       text-wrap: pretty;
     }
     .char-arrow {
-      font-size: 1.125rem;
-      font-weight: 600;
-      color: var(--system-gray);
+      width: 26px;
+      height: 26px;
+      border-radius: 50%;
+      background: rgba(138, 208, 255, 0.14);
+      border: 1px solid var(--ice-border);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.875rem;
+      font-weight: 700;
+      color: var(--accent-main);
       flex-shrink: 0;
     }
 
@@ -618,16 +571,16 @@
       font-size: 0.6875rem;
       font-weight: 600;
       letter-spacing: 0.05em;
-      color: var(--text-muted);
+      color: var(--accent-main);
       text-transform: uppercase;
       margin-block: 14px 6px;
     }
     .pro-slider-row {
       padding: 12px 14px;
       margin-block-start: 8px;
-      background: var(--bg-card-inner);
-      border: 1px solid var(--separator);
-      border-radius: 14px;
+      background: var(--ice-inner);
+      border: 1px solid var(--ice-border);
+      border-radius: 16px;
     }
     .pro-slider-head {
       display: flex;
@@ -639,15 +592,16 @@
     .pro-slider-name {
       font-size: var(--text-body-sm);
       font-weight: 500;
-      color: var(--text-main);
+      color: #FFFFFF;
       line-height: 1.3;
     }
     .pro-slider-pill {
       font-size: var(--text-caption);
       font-weight: 600;
       font-variant-numeric: tabular-nums;
-      color: var(--text-main);
-      background: rgba(255, 255, 255, 0.08);
+      color: #E0F2FE;
+      background: rgba(138, 208, 255, 0.16);
+      border: 1px solid var(--ice-border);
       padding: 2px 10px;
       border-radius: 999px;
       min-width: 44px;
@@ -665,20 +619,21 @@
       -webkit-appearance: none;
       appearance: none;
       width: 100%;
-      height: 6px;
+      height: 5px;
       border-radius: 999px;
-      background: var(--system-gray3);
+      background: rgba(148, 195, 255, 0.28);
       outline: none;
       cursor: pointer;
     }
     input[type="range"]::-webkit-slider-thumb {
       -webkit-appearance: none;
       appearance: none;
-      width: 24px;
-      height: 24px;
+      width: 22px;
+      height: 22px;
       border-radius: 50%;
-      background: #FFFFFF;
-      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.45);
+      background: radial-gradient(circle at 35% 35%, #FFFFFF 0%, #BAE6FD 70%, #60A5FA 100%);
+      border: 1.5px solid #FFFFFF;
+      box-shadow: 0 2px 8px rgba(4, 10, 28, 0.55);
       cursor: pointer;
     }
 
@@ -687,9 +642,9 @@
       align-items: center;
       justify-content: space-between;
       gap: 10px;
-      background: var(--bg-card-inner);
-      border: 1px solid var(--separator);
-      border-radius: 14px;
+      background: var(--ice-inner);
+      border: 1px solid var(--ice-border);
+      border-radius: 16px;
       padding: 12px 14px;
       margin-block-start: 8px;
     }
@@ -697,31 +652,28 @@
       min-width: 38px;
       min-height: 38px;
       border-radius: 50%;
-      border: 1px solid var(--separator);
-      background: var(--secondary-system-bg);
-      color: var(--text-main);
+      border: 1px solid var(--ice-border);
+      background: rgba(138, 208, 255, 0.16);
+      color: #FFFFFF;
       display: inline-flex;
       align-items: center;
       justify-content: center;
       font-size: 0.875rem;
       cursor: pointer;
       flex-shrink: 0;
-      transition-property: scale, background-color;
-      transition-duration: 150ms;
-      transition-timing-function: ease-out;
     }
     .code-input-bar {
       display: flex;
       align-items: center;
       gap: 10px;
-      background: var(--bg-card-inner);
-      border: 1px solid var(--separator);
-      border-radius: 14px;
+      background: var(--ice-inner);
+      border: 1px solid var(--ice-border);
+      border-radius: 16px;
       padding: 8px 12px;
       margin-block-start: 8px;
     }
     .code-input-bar:focus-within {
-      border-color: var(--accent-main);
+      border-color: var(--ice-border-strong);
     }
     .shelf-cards-grid {
       display: grid;
@@ -730,26 +682,23 @@
       margin-block-start: 10px;
     }
     .shelf-preset-card {
-      background: var(--bg-card-inner);
-      border: 1px solid var(--separator);
-      border-radius: 14px;
+      background: var(--ice-inner);
+      border: 1px solid var(--ice-border);
+      border-radius: 16px;
       padding: 12px;
       cursor: pointer;
       display: flex;
       flex-direction: column;
       justify-content: space-between;
       min-height: 84px;
-      transition-property: scale, border-color, background-color;
-      transition-duration: 150ms;
-      transition-timing-function: ease-out;
     }
 
     .preview-stage-box {
       width: 100%;
       min-height: 148px;
-      background: var(--system-bg);
-      border: 1px solid var(--separator);
-      border-radius: 14px;
+      background: rgba(8, 16, 38, 0.85);
+      border: 1px solid var(--ice-border);
+      border-radius: 16px;
       position: relative;
       display: flex;
       align-items: center;
@@ -760,7 +709,7 @@
     .stretch-dashed-outer {
       width: 220px;
       height: 114px;
-      border: 1px dashed var(--system-gray2);
+      border: 1px dashed rgba(168, 208, 255, 0.36);
       border-radius: 8px;
       display: flex;
       align-items: center;
@@ -770,16 +719,16 @@
       width: 168px;
       height: 114px;
       border: 1.5px solid var(--accent-main);
-      background: rgba(var(--accent-rgb), 0.12);
+      background: rgba(124, 196, 255, 0.16);
       border-radius: 6px;
       display: flex;
       align-items: center;
       justify-content: center;
-      color: var(--text-main);
+      color: #FFFFFF;
       font-weight: 700;
       font-size: 1.25rem;
       transition-property: width;
-      transition-duration: 200ms;
+      transition-duration: 180ms;
       transition-timing-function: ease-out;
     }
 
@@ -789,25 +738,22 @@
       gap: 8px;
     }
     .preset-pill {
-      background: var(--bg-card-inner);
-      border: 1px solid var(--separator);
-      border-radius: 12px;
+      background: var(--ice-inner);
+      border: 1px solid var(--ice-border);
+      border-radius: 14px;
       padding: 10px 4px;
       text-align: center;
       cursor: pointer;
-      transition-property: scale, border-color, background-color;
-      transition-duration: 150ms;
-      transition-timing-function: ease-out;
     }
     .preset-pill.active {
-      background: rgba(var(--accent-rgb), 0.18);
-      border-color: var(--accent-main);
+      background: var(--ice-inner-active);
+      border-color: var(--ice-border-strong);
     }
     .preset-pill-name {
       font-size: var(--text-caption);
       font-weight: 600;
       font-variant-numeric: tabular-nums;
-      color: var(--text-main);
+      color: #FFFFFF;
     }
     .preset-pill-sub {
       font-size: 0.625rem;
@@ -822,23 +768,23 @@
       margin-block: 10px 12px;
     }
     .pixel-tile {
-      background: var(--bg-card-inner);
-      border: 1px solid var(--separator);
-      border-radius: 12px;
+      background: var(--ice-inner);
+      border: 1px solid var(--ice-border);
+      border-radius: 14px;
       padding: 10px 2px;
       text-align: center;
       cursor: pointer;
     }
     .pixel-tile.active {
-      background: rgba(var(--accent-rgb), 0.18);
-      border-color: var(--accent-main);
+      background: var(--ice-inner-active);
+      border-color: var(--ice-border-strong);
     }
     .pixel-tile b {
       display: block;
       font-size: var(--text-body-sm);
       font-weight: 600;
       font-variant-numeric: tabular-nums;
-      color: var(--text-main);
+      color: #FFFFFF;
     }
     .pixel-tile span { font-size: 0.625rem; color: var(--text-muted); }
     .pixel-big-readout {
@@ -851,21 +797,21 @@
       font-size: var(--text-title);
       font-weight: 700;
       font-variant-numeric: tabular-nums;
-      color: var(--text-main);
+      color: #FFFFFF;
     }
     .pixel-progress-bar {
       width: 100%;
       height: 6px;
-      background: var(--system-gray4);
+      background: rgba(148, 195, 255, 0.24);
       border-radius: 999px;
       overflow: hidden;
     }
     .pixel-progress-fill {
       height: 100%;
       width: 100%;
-      background: var(--accent-main);
+      background: var(--ice-btn-grad);
       transition-property: width;
-      transition-duration: 200ms;
+      transition-duration: 180ms;
       transition-timing-function: ease-out;
     }
 
@@ -876,19 +822,19 @@
       margin-block-end: 10px;
     }
     .ch-shape-tile {
-      background: var(--bg-card-inner);
-      border: 1px solid var(--separator);
-      border-radius: 12px;
+      background: var(--ice-inner);
+      border: 1px solid var(--ice-border);
+      border-radius: 14px;
       padding: 11px 6px;
       text-align: center;
       cursor: pointer;
     }
     .ch-shape-tile.active {
-      background: rgba(var(--accent-rgb), 0.18);
-      border-color: var(--accent-main);
+      background: var(--ice-inner-active);
+      border-color: var(--ice-border-strong);
     }
     .ch-shape-icon { font-size: 1.25rem; color: var(--ok-green); margin-block-end: 4px; line-height: 1; }
-    .ch-shape-lbl { font-size: 0.6875rem; font-weight: 600; color: var(--text-main); }
+    .ch-shape-lbl { font-size: 0.6875rem; font-weight: 600; color: #FFFFFF; }
 
     .ch-subtoggle-grid-2 {
       display: grid;
@@ -897,9 +843,9 @@
       margin-block-end: 10px;
     }
     .ch-subtoggle-box {
-      background: var(--bg-card-inner);
-      border: 1px solid var(--separator);
-      border-radius: 12px;
+      background: var(--ice-inner);
+      border: 1px solid var(--ice-border);
+      border-radius: 14px;
       padding: 10px;
       display: flex;
       flex-direction: column;
@@ -908,14 +854,14 @@
       cursor: pointer;
     }
     .ch-subtoggle-box.active {
-      border-color: var(--accent-main);
-      background: rgba(var(--accent-rgb), 0.16);
+      border-color: var(--ice-border-strong);
+      background: var(--ice-inner-active);
     }
 
     .ch-color-palette-bar {
-      background: var(--bg-card-inner);
-      border: 1px solid var(--separator);
-      border-radius: 14px;
+      background: var(--ice-inner);
+      border: 1px solid var(--ice-border);
+      border-radius: 16px;
       padding: 12px 14px;
       margin-block-end: 10px;
     }
@@ -932,26 +878,19 @@
       height: 28px;
       border-radius: 50%;
       cursor: pointer;
-      border: 2px solid rgba(255, 255, 255, 0.25);
-      transition-property: transform, border-color;
-      transition-duration: 150ms;
-      transition-timing-function: ease-out;
+      border: 2px solid rgba(255, 255, 255, 0.30);
       flex-shrink: 0;
     }
     .ch-color-swatch.active {
       border-color: #FFFFFF;
-    }
-    @media (prefers-reduced-motion: no-preference) {
-      .ch-color-swatch.active {
-        transform: scale(1.14);
-      }
+      box-shadow: 0 0 10px rgba(255, 255, 255, 0.6);
     }
     .ch-custom-color-btn {
       width: 30px;
       height: 28px;
       border-radius: 8px;
-      border: 1px dashed var(--system-gray);
-      background: var(--secondary-system-bg);
+      border: 1px dashed var(--ice-border-strong);
+      background: rgba(138, 208, 255, 0.14);
       display: flex;
       align-items: center;
       justify-content: center;
@@ -964,42 +903,44 @@
       display: flex;
       align-items: center;
       justify-content: space-between;
-      background: var(--bg-card-inner);
-      border: 1px solid var(--separator);
-      border-radius: 14px;
+      background: var(--ice-inner);
+      border: 1px solid var(--ice-border);
+      border-radius: 16px;
       padding: 12px 14px;
       margin-block-start: 8px;
       gap: 12px;
     }
-    .toggle-info-title { font-size: var(--text-body-sm); font-weight: 600; color: var(--text-main); line-height: 1.3; }
+    .toggle-info-title { font-size: var(--text-body-sm); font-weight: 600; color: #FFFFFF; line-height: 1.3; }
     .toggle-info-sub { font-size: var(--text-caption); color: var(--text-muted); margin-block-start: 2px; line-height: 1.4; }
     .cyber-switch { position: relative; width: 48px; height: 28px; flex-shrink: 0; display: inline-block; cursor: pointer; }
     .cyber-switch input { opacity: 0; width: 0; height: 0; }
     .cyber-slider {
       position: absolute;
       inset: 0;
-      background: var(--system-gray4);
+      background: rgba(12, 22, 48, 0.85);
+      border: 1px solid var(--ice-border);
       border-radius: 999px;
       transition-property: background-color;
-      transition-duration: 180ms;
+      transition-duration: 150ms;
       transition-timing-function: ease-out;
     }
     .cyber-slider::before {
       content: "";
       position: absolute;
-      width: 24px;
-      height: 24px;
+      width: 22px;
+      height: 22px;
       inset-inline-start: 2px;
       inset-block-start: 2px;
       border-radius: 50%;
       background: #FFFFFF;
-      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.35);
+      box-shadow: 0 2px 4px rgba(4, 10, 28, 0.45);
       transition-property: transform;
-      transition-duration: 180ms;
+      transition-duration: 150ms;
       transition-timing-function: ease-out;
     }
     .cyber-switch input:checked + .cyber-slider {
-      background: var(--ok-green);
+      background: linear-gradient(135deg, #60A5FA, #38BDF8);
+      border-color: rgba(255, 255, 255, 0.6);
     }
     .cyber-switch input:checked + .cyber-slider::before {
       transform: translateX(20px);
@@ -1009,46 +950,40 @@
       width: 100%;
       min-height: 46px;
       padding: 12px 16px;
-      border-radius: 14px;
+      border-radius: 999px;
       font-size: var(--text-body-sm);
-      font-weight: 600;
+      font-weight: 700;
       cursor: pointer;
-      background: var(--accent-main);
-      border: 1px solid transparent;
+      background: var(--ice-btn-grad);
+      border: 1px solid rgba(255, 255, 255, 0.58);
+      box-shadow:
+        0 6px 18px rgba(var(--accent-rgb), 0.26),
+        inset 0 1px 0 rgba(255, 255, 255, 0.72);
       color: var(--btn-text-color);
-      transition-property: scale, opacity;
-      transition-duration: 150ms;
-      transition-timing-function: ease-out;
     }
     .btn-dark {
       width: 100%;
       min-height: 44px;
-      border: 1px solid var(--separator);
-      background: var(--bg-card-inner);
-      color: var(--text-main);
+      border: 1px solid var(--ice-border);
+      background: var(--ice-inner);
+      color: #FFFFFF;
       padding: 11px 14px;
-      border-radius: 14px;
+      border-radius: 999px;
       font-size: var(--text-caption);
       font-weight: 600;
       cursor: pointer;
-      transition-property: scale, opacity, background-color;
-      transition-duration: 150ms;
-      transition-timing-function: ease-out;
     }
     .btn-danger {
       width: 100%;
       min-height: 44px;
-      border: 1px solid rgba(255, 69, 58, 0.55);
-      background: rgba(255, 69, 58, 0.16);
-      color: #FF6961;
+      border: 1px solid rgba(251, 113, 133, 0.55);
+      background: rgba(244, 63, 94, 0.20);
+      color: #FECDD3;
       padding: 11px 14px;
-      border-radius: 14px;
+      border-radius: 999px;
       font-size: var(--text-caption);
       font-weight: 600;
       cursor: pointer;
-      transition-property: scale, opacity;
-      transition-duration: 150ms;
-      transition-timing-function: ease-out;
     }
 
     @media (prefers-reduced-motion: no-preference) {
@@ -1068,10 +1003,11 @@
       font-size: 0.6875rem;
       font-weight: 600;
       font-variant-numeric: tabular-nums;
-      padding: 3px 9px;
+      padding: 3px 10px;
       border-radius: 999px;
-      background: rgba(var(--accent-rgb), 0.16);
-      color: var(--accent-main);
+      background: rgba(138, 208, 255, 0.18);
+      border: 1px solid rgba(168, 208, 255, 0.30);
+      color: #E0F2FE;
       white-space: nowrap;
     }
 
@@ -1085,10 +1021,10 @@
       font-size: 0.6875rem;
       font-weight: 500;
       padding: 4px 10px;
-      border-radius: 8px;
-      background: var(--bg-card-inner);
-      border: 1px solid var(--separator);
-      color: var(--text-main);
+      border-radius: 999px;
+      background: var(--ice-inner);
+      border: 1px solid var(--ice-border);
+      color: #E0F2FE;
     }
 
     .voice-member-card, .friend-item {
@@ -1096,9 +1032,9 @@
       align-items: center;
       justify-content: space-between;
       gap: 10px;
-      background: var(--bg-card-inner);
-      border: 1px solid var(--separator);
-      border-radius: 14px;
+      background: var(--ice-inner);
+      border: 1px solid var(--ice-border);
+      border-radius: 16px;
       padding: 12px 14px;
       margin-block-start: 8px;
     }
@@ -1126,9 +1062,7 @@
     .shizuku-alert-backdrop {
       position: fixed;
       inset: 0;
-      background: rgba(0, 0, 0, 0.78);
-      backdrop-filter: blur(12px);
-      -webkit-backdrop-filter: blur(12px);
+      background: rgba(5, 10, 26, 0.88);
       z-index: 99999;
       display: none;
       align-items: center;
@@ -1139,7 +1073,7 @@
     .shizuku-alert-box {
       width: 100%;
       max-width: 365px;
-      border-radius: 22px;
+      border-radius: 24px;
       padding: 20px 18px;
       text-align: center;
     }
@@ -1147,7 +1081,7 @@
     #screenCalibOverlay, #touchTestOverlay {
       position: fixed;
       inset: 0;
-      background: rgba(0, 0, 0, 0.94);
+      background: rgba(5, 10, 26, 0.96);
       z-index: 98000;
       display: none;
       flex-direction: column;
@@ -1160,9 +1094,10 @@
     #authScreenOverlay {
       position: fixed;
       inset: 0;
-      background: rgba(0, 0, 0, 0.88);
-      backdrop-filter: blur(22px);
-      -webkit-backdrop-filter: blur(22px);
+      background:
+        radial-gradient(circle at 22% 16%, rgba(124, 196, 255, 0.24) 0%, transparent 48%),
+        radial-gradient(circle at 82% 84%, rgba(129, 140, 248, 0.24) 0%, transparent 48%),
+        linear-gradient(180deg, #070D1F 0%, #0C1838 55%, #122452 100%);
       z-index: 95000;
       display: flex;
       flex-direction: column;
@@ -1185,23 +1120,20 @@
       font-size: 0.6875rem;
       font-weight: 600;
       letter-spacing: 0.05em;
-      color: var(--text-main);
-      background: var(--secondary-system-bg);
-      border: 1px solid var(--separator);
+      color: #E0F2FE;
+      background: rgba(138, 208, 255, 0.16);
+      border: 1px solid var(--ice-border);
       margin-block-end: 10px;
     }
     .auth-input-wrap {
-      background: var(--tertiary-system-bg);
-      border: 1px solid var(--separator);
-      border-radius: 14px;
+      background: var(--ice-inner);
+      border: 1px solid var(--ice-border);
+      border-radius: 16px;
       padding: 10px 14px;
       margin-block-end: 12px;
-      transition-property: border-color;
-      transition-duration: 150ms;
-      transition-timing-function: ease-out;
     }
     .auth-input-wrap:focus-within {
-      border-color: var(--accent-main);
+      border-color: var(--ice-border-strong);
     }
     .auth-input-label {
       display: block;
@@ -1219,7 +1151,7 @@
       box-shadow: none !important;
       border-radius: 0 !important;
       padding: 0 !important;
-      color: var(--text-main) !important;
+      color: #FFFFFF !important;
       font-size: 1rem;
       font-weight: 600;
     }
@@ -1233,8 +1165,8 @@
     .avatar-preset-item {
       min-height: 54px;
       border-radius: 14px;
-      background: var(--tertiary-system-bg);
-      border: 1px solid var(--separator);
+      background: var(--ice-inner);
+      border: 1px solid var(--ice-border);
       display: flex;
       align-items: center;
       justify-content: center;
@@ -1244,15 +1176,6 @@
 
     .tab-section { display: none; }
     .tab-section.active { display: block; }
-    @media (prefers-reduced-motion: no-preference) {
-      .tab-section.active {
-        animation: tabFadeIn 150ms ease-out;
-      }
-    }
-    @keyframes tabFadeIn {
-      from { opacity: 0; }
-      to { opacity: 1; }
-    }
 
     .bottom-nav-bar {
       position: fixed;
@@ -1262,17 +1185,16 @@
       max-width: 480px;
       margin-inline: auto;
       height: 64px;
-      background: rgba(28, 28, 30, 0.94);
-      backdrop-filter: blur(24px);
-      -webkit-backdrop-filter: blur(24px);
-      border: 1px solid var(--separator);
-      border-radius: 22px;
+      background: linear-gradient(180deg, rgba(30, 50, 96, 0.94) 0%, rgba(15, 27, 58, 0.97) 100%);
+      border: 1px solid var(--ice-border);
+      border-block-start-color: var(--ice-border-top);
+      border-radius: 999px;
       display: grid;
       grid-template-columns: repeat(5, minmax(0, 1fr));
       align-items: center;
-      padding-inline: 4px;
+      padding-inline: 6px;
       z-index: 9000;
-      box-shadow: 0 10px 28px rgba(0, 0, 0, 0.65);
+      box-shadow: 0 12px 28px rgba(4, 10, 28, 0.65);
     }
     .nav-item {
       position: relative;
@@ -1282,13 +1204,10 @@
       align-items: center;
       justify-content: center;
       gap: 3px;
-      color: var(--system-gray);
+      color: var(--text-muted);
       font-size: 0.6875rem;
       font-weight: 600;
       cursor: pointer;
-      transition-property: color;
-      transition-duration: 150ms;
-      transition-timing-function: ease-out;
     }
     .nav-item svg {
       width: 20px;
@@ -1304,21 +1223,21 @@
 
     #cyberToast {
       position: fixed;
-      top: calc(env(safe-area-inset-top, 36px) + 12px);
+      top: max(calc(env(safe-area-inset-top, 42px) + 10px), 42px);
       left: 50%;
       transform: translateX(-50%) translateY(-130px);
-      background: var(--secondary-system-bg);
-      border: 1px solid var(--separator);
-      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6);
-      color: var(--text-main);
-      padding: 10px 16px;
+      background: linear-gradient(145deg, rgba(36, 62, 118, 0.96), rgba(16, 29, 64, 0.98));
+      border: 1px solid var(--ice-border-top);
+      box-shadow: 0 8px 24px rgba(4, 10, 28, 0.6);
+      color: #FFFFFF;
+      padding: 10px 18px;
       border-radius: 999px;
       font-size: var(--text-caption);
       font-weight: 600;
       z-index: 100000;
       opacity: 0;
       transition-property: opacity, transform;
-      transition-duration: 180ms;
+      transition-duration: 160ms;
       transition-timing-function: ease-out;
       pointer-events: none;
       white-space: nowrap;
@@ -1344,7 +1263,7 @@
 
   <input id="avatarFileInput" type="file" accept="image/*" style="display:none" onchange="onAvatarFileSelected(event)" />
   <input id="bgMediaFileInput" type="file" accept="video/*,image/gif,image/webp,image/*" style="display:none" onchange="onCustomBgFileSelected(event)" />
-  <input id="chCustomColorPicker" type="color" value="#30D158" style="display:none" onchange="onCustomCrosshairColorPicked(this.value)" />
+  <input id="chCustomColorPicker" type="color" value="#34D399" style="display:none" onchange="onCustomCrosshairColorPicked(this.value)" />
   <div id="cyberToast" role="status" aria-live="polite">SO2Teleport PRO</div>
 
   <div id="avatarPickerModal" class="shizuku-alert-backdrop" role="dialog" aria-modal="true" aria-labelledby="avatarModalTitle">
@@ -1390,7 +1309,7 @@
     <div id="touchTestCoords" style="font-size:0.75rem; color:var(--accent-main); font-weight:600; font-variant-numeric:tabular-nums; margin-bottom:10px;">
       Проведите пальцем по области ниже…
     </div>
-    <canvas id="touchTestCanvas" width="320" height="320" style="background:#000000; border:1px solid var(--separator); border-radius:16px; touch-action:none;"></canvas>
+    <canvas id="touchTestCanvas" width="320" height="320" style="background:#060E24; border:1px solid var(--ice-border); border-radius:16px; touch-action:none;"></canvas>
     <button type="button" class="btn-main" style="max-width:320px; margin-top:12px;" onclick="closeTouchTestModal()">
       Закрыть тестер
     </button>
@@ -1412,7 +1331,7 @@
 
   <div id="authScreenOverlay" role="dialog" aria-modal="true" aria-labelledby="authTitleText">
     <div style="text-align:center; margin-bottom:14px;">
-      <div class="auth-badge">QUANTUM CORE V10 • PRO TITANIUM</div>
+      <div class="auth-badge">QUANTUM CORE V10 • CRYSTAL GLASS</div>
       <h1 id="authTitleText" style="font-size:1.75rem; font-weight:800; letter-spacing:-0.02em; color:#fff;">
         SO2Teleport <span style="color:var(--accent-main);">PRO</span>
       </h1>
@@ -1423,7 +1342,7 @@
         Авторизация лицензии (1 ключ = 1 устройство)
       </p>
 
-      <div id="authErrorBanner" role="alert" style="display:none; background:rgba(255,69,58,0.16); border:1px solid rgba(255,69,58,0.55); color:#FF6961; border-radius:12px; padding:10px 12px; font-size:0.75rem; font-weight:600; text-align:center; margin-bottom:12px;">
+      <div id="authErrorBanner" role="alert" style="display:none; background:rgba(244,63,94,0.20); border:1px solid rgba(251,113,133,0.55); color:#FECDD3; border-radius:12px; padding:10px 12px; font-size:0.75rem; font-weight:600; text-align:center; margin-bottom:12px;">
         Введите лицензионный ключ из Telegram-бота
       </div>
 
@@ -1481,12 +1400,12 @@
       <div class="top-header-bottom-bar">
         <span>ЯДРО: <b id="headerLiveCoreBadge" style="color:var(--accent-main); font-variant-numeric:tabular-nums;">68.0X EXTREME CORE</b></span>
         <div class="theme-dots" role="group" aria-label="Цветовая тема">
-          <button type="button" class="theme-dot active" data-theme-idx="0" aria-label="Синяя тема" style="background:#0A84FF;" onclick="setNeonTheme('#0A84FF', '10, 132, 255', '#007AFF', '0, 122, 255', this, 0, false, '#FFFFFF')"></button>
-          <button type="button" class="theme-dot" data-theme-idx="1" aria-label="Зелёная тема" style="background:#30D158;" onclick="setNeonTheme('#30D158', '48, 209, 88', '#34C759', '52, 199, 89', this, 1, false, '#000000')"></button>
-          <button type="button" class="theme-dot" data-theme-idx="2" aria-label="Индиго тема" style="background:#5E5CE6;" onclick="setNeonTheme('#5E5CE6', '94, 92, 230', '#5856D6', '88, 86, 214', this, 2, false, '#FFFFFF')"></button>
-          <button type="button" class="theme-dot" data-theme-idx="3" aria-label="Пурпурная тема" style="background:#BF5AF2;" onclick="setNeonTheme('#BF5AF2', '191, 90, 242', '#AF52DE', '175, 82, 222', this, 3, false, '#FFFFFF')"></button>
-          <button type="button" class="theme-dot" data-theme-idx="4" aria-label="Оранжевая тема" style="background:#FF9F0A;" onclick="setNeonTheme('#FF9F0A', '255, 159, 10', '#FF9500', '255, 149, 0', this, 4, false, '#000000')"></button>
-          <button type="button" class="theme-dot" data-theme-idx="5" aria-label="Титановая тема" style="background:#8E8E93;" onclick="setNeonTheme('#E5E5EA', '229, 229, 234', '#8E8E93', '142, 142, 147', this, 5, false, '#000000')"></button>
+          <button type="button" class="theme-dot active" data-theme-idx="0" aria-label="Ледяной сапфир" style="background:linear-gradient(135deg,#8AD0FF,#818CF8);" onclick="setNeonTheme('#7CC4FF', '124, 196, 255', '#60A5FA', '96, 165, 250', this, 0, false, '#061026')"></button>
+          <button type="button" class="theme-dot" data-theme-idx="1" aria-label="Изумрудный лёд" style="background:#34D399;" onclick="setNeonTheme('#34D399', '52, 211, 153', '#10B981', '16, 185, 129', this, 1, false, '#061026')"></button>
+          <button type="button" class="theme-dot" data-theme-idx="2" aria-label="Лавандовый кристалл" style="background:#A78BFA;" onclick="setNeonTheme('#A78BFA', '167, 139, 250', '#818CF8', '129, 140, 248', this, 2, false, '#061026')"></button>
+          <button type="button" class="theme-dot" data-theme-idx="3" aria-label="Неоновый циан" style="background:#38BDF8;" onclick="setNeonTheme('#38BDF8', '56, 189, 248', '#0284C7', '2, 132, 199', this, 3, false, '#061026')"></button>
+          <button type="button" class="theme-dot" data-theme-idx="4" aria-label="Янтарный" style="background:#FBBF24;" onclick="setNeonTheme('#FBBF24', '251, 191, 36', '#F59E0B', '245, 158, 11', this, 4, false, '#061026')"></button>
+          <button type="button" class="theme-dot" data-theme-idx="5" aria-label="Белый кристалл" style="background:#E0F2FE;" onclick="setNeonTheme('#E0F2FE', '224, 242, 254', '#BAE6FD', '186, 230, 253', this, 5, false, '#061026')"></button>
         </div>
       </div>
     </header>
@@ -1809,7 +1728,7 @@
               <div style="position:absolute; top:9px; left:10px;"><span id="chModeRightLabel" class="badge-chip">КРЕСТ</span></div>
               <div style="position:absolute; top:9px; right:10px;"><button type="button" class="icon-circle-action" style="min-width:32px; min-height:32px;" aria-label="Переключить фон предпросмотра" onclick="togglePreviewDayNight()">🌙</button></div>
               <div style="position:absolute; bottom:9px; left:12px; display:flex; align-items:center; gap:6px; font-size:0.6875rem; color:var(--text-muted); font-variant-numeric:tabular-nums;">
-                <span id="chColorLiveDot" style="width:9px; height:9px; border-radius:50%; background:#30D158; display:inline-block;"></span>
+                <span id="chColorLiveDot" style="width:9px; height:9px; border-radius:50%; background:#34D399; display:inline-block;"></span>
                 <span id="chSizeReadout">+ 8 × 3 px</span>
               </div>
               <div style="position:absolute; bottom:8px; right:10px; display:flex; gap:5px;">
@@ -1822,17 +1741,17 @@
             <div class="ch-color-palette-bar">
               <div style="display:flex; align-items:center; justify-content:space-between;">
                 <span style="font-size:0.8125rem; font-weight:600; color:#fff;">Цвет прицела</span>
-                <span id="chColorHexBadge" class="badge-chip" style="font-family:monospace;">#30D158</span>
+                <span id="chColorHexBadge" class="badge-chip" style="font-family:monospace;">#34D399</span>
               </div>
               <div class="ch-color-dots-row" role="group" aria-label="Палитра цвета прицела">
-                <button type="button" class="ch-color-swatch active" data-ch-color="#30d158" style="background:#30D158;" onclick="setCrosshairColor('#30D158', this)" aria-label="Зелёный"></button>
-                <button type="button" class="ch-color-swatch" data-ch-color="#0a84ff" style="background:#0A84FF;" onclick="setCrosshairColor('#0A84FF', this)" aria-label="Синий"></button>
-                <button type="button" class="ch-color-swatch" data-ch-color="#ff453a" style="background:#FF453A;" onclick="setCrosshairColor('#FF453A', this)" aria-label="Красный"></button>
-                <button type="button" class="ch-color-swatch" data-ch-color="#ffd60a" style="background:#FFD60A;" onclick="setCrosshairColor('#FFD60A', this)" aria-label="Жёлтый"></button>
-                <button type="button" class="ch-color-swatch" data-ch-color="#bf5af2" style="background:#BF5AF2;" onclick="setCrosshairColor('#BF5AF2', this)" aria-label="Пурпурный"></button>
+                <button type="button" class="ch-color-swatch active" data-ch-color="#34d399" style="background:#34D399;" onclick="setCrosshairColor('#34D399', this)" aria-label="Зелёный"></button>
+                <button type="button" class="ch-color-swatch" data-ch-color="#7cc4ff" style="background:#7CC4FF;" onclick="setCrosshairColor('#7CC4FF', this)" aria-label="Синий"></button>
+                <button type="button" class="ch-color-swatch" data-ch-color="#fb7185" style="background:#FB7185;" onclick="setCrosshairColor('#FB7185', this)" aria-label="Красный"></button>
+                <button type="button" class="ch-color-swatch" data-ch-color="#fbbf24" style="background:#FBBF24;" onclick="setCrosshairColor('#FBBF24', this)" aria-label="Жёлтый"></button>
+                <button type="button" class="ch-color-swatch" data-ch-color="#a78bfa" style="background:#A78BFA;" onclick="setCrosshairColor('#A78BFA', this)" aria-label="Пурпурный"></button>
                 <button type="button" class="ch-color-swatch" data-ch-color="#ff9f0a" style="background:#FF9F0A;" onclick="setCrosshairColor('#FF9F0A', this)" aria-label="Оранжевый"></button>
                 <button type="button" class="ch-color-swatch" data-ch-color="#ffffff" style="background:#FFFFFF;" onclick="setCrosshairColor('#FFFFFF', this)" aria-label="Белый"></button>
-                <button type="button" class="ch-color-swatch" data-ch-color="#40c8e0" style="background:#40C8E0;" onclick="setCrosshairColor('#40C8E0', this)" aria-label="Бирюзовый"></button>
+                <button type="button" class="ch-color-swatch" data-ch-color="#38bdf8" style="background:#38BDF8;" onclick="setCrosshairColor('#38BDF8', this)" aria-label="Бирюзовый"></button>
                 <button type="button" class="ch-custom-color-btn" onclick="document.getElementById('chCustomColorPicker').click()" aria-label="Выбрать свой цвет">🌈</button>
               </div>
             </div>
@@ -2176,7 +2095,7 @@
 
     <div id="tabProfile" class="tab-section">
       <div class="acc-block liquid-glass-surface open" style="padding:16px;">
-        <div style="display:flex; align-items:center; gap:14px; margin-bottom:14px; padding-bottom:14px; border-bottom:1px solid var(--separator);">
+        <div style="display:flex; align-items:center; gap:14px; margin-bottom:14px; padding-bottom:14px; border-bottom:1px solid var(--ice-border);">
           <div class="header-avatar-holder" style="width:64px; height:64px; border-radius:18px;" onclick="triggerAvatarUpload()" role="button" tabindex="0" aria-label="Сменить аватарку">
             <img id="profAvatarImg" src="" alt="" />
             <span id="profAvatarFallback" style="font-size:1.5rem; font-weight:700; color:#fff;">P</span>
@@ -2199,15 +2118,15 @@
         </div>
 
         <div style="font-size:0.8125rem; color:var(--text-main); display:flex; flex-direction:column; gap:10px; margin-bottom:16px;">
-          <div style="display:flex; justify-content:space-between; padding-bottom:8px; border-bottom:1px solid var(--separator);">
+          <div style="display:flex; justify-content:space-between; padding-bottom:8px; border-bottom:1px solid var(--ice-border);">
             <span style="color:var(--text-muted);">Лицензионный ключ</span>
             <b id="profKeyMasked" style="color:var(--accent-main); font-variant-numeric:tabular-nums;">TP-***-******</b>
           </div>
-          <div style="display:flex; justify-content:space-between; padding-bottom:8px; border-bottom:1px solid var(--separator);">
+          <div style="display:flex; justify-content:space-between; padding-bottom:8px; border-bottom:1px solid var(--ice-border);">
             <span style="color:var(--text-muted);">Аппаратный HWID</span>
             <b id="profHwidText" style="font-family:monospace; font-variant-numeric:tabular-nums; user-select:text;">…</b>
           </div>
-          <div style="display:flex; justify-content:space-between; padding-bottom:8px; border-bottom:1px solid var(--separator);">
+          <div style="display:flex; justify-content:space-between; padding-bottom:8px; border-bottom:1px solid var(--ice-border);">
             <span style="color:var(--text-muted);">Защита хранилища</span>
             <b id="profModelText" style="color:var(--ok-green);">AES-GCM + TEE</b>
           </div>
@@ -2264,7 +2183,7 @@
 
     let isCrosshairEnabled = false;
     let currentCrosshairType = "cross";
-    let currentCrosshairColor = "#30D158";
+    let currentCrosshairColor = "#34D399";
     let previewDayMode = false;
     let previewZoomFactor = 1;
 
@@ -2277,26 +2196,43 @@
       return typeof window.AndroidBridge !== "undefined" && window.AndroidBridge !== null;
     }
 
-    function suppressTransitionsTemporarily() {
-      const style = document.createElement("style");
-      style.appendChild(document.createTextNode("*,*::before,*::after{transition:none !important}"));
-      document.head.appendChild(style);
-      void document.body.offsetHeight;
-      requestAnimationFrame(() => {
-        requestAnimationFrame(() => {
-          if (style.parentNode) style.parentNode.removeChild(style);
-        });
-      });
+    function callBridgeAsync(fn) {
+      if (!hasBridge()) return;
+      setTimeout(() => {
+        try {
+          fn(window.AndroidBridge);
+        } catch (e) {}
+      }, 0);
+    }
+
+    function transliterateLookalikes(str) {
+      const map = {
+        "А": "A", "В": "B", "Е": "E", "Ё": "E", "І": "I", "Ї": "I",
+        "К": "K", "М": "M", "Н": "H", "О": "O", "Р": "P", "С": "C",
+        "Т": "T", "У": "Y", "Х": "X"
+      };
+      let out = "";
+      for (let i = 0; i < str.length; i++) {
+        const ch = str.charAt(i);
+        out += map[ch] || ch;
+      }
+      return out;
     }
 
     function sanitizeLicenseKeyInput(raw) {
       if (!raw) return "";
-      let s = String(raw).toUpperCase().replace(/[\u2010-\u2015\u2212\uFE58\uFE63\uFF0D]/g, "-").trim();
+      let s = transliterateLookalikes(String(raw).toUpperCase().trim())
+        .replace(/[\u2010-\u2015\u2212\uFE58\uFE63\uFF0D]/g, "-")
+        .replace(/\s+/g, "");
       const match = s.match(/((?:TP|TRIAL|UNLIM)[A-Z0-9]*-[A-Z0-9]+(?:-[A-Z0-9]+)?(?:_[A-Z0-9]+)?)/);
       if (match && match[1]) {
         return match[1];
       }
-      return s.replace(/\s+/g, "");
+      const noDash = s.match(/^(TP(?:1D|7D|21D|30D|50D|90D|999D|LIFE)?|TRIAL|UNLIM)([A-Z]{3})([0-9]{6})$/);
+      if (noDash) {
+        return noDash[1] + "-" + noDash[2] + "-" + noDash[3];
+      }
+      return s;
     }
 
     function showToast(msg) {
@@ -2307,7 +2243,7 @@
       clearTimeout(window.__toastTimer);
       window.__toastTimer = setTimeout(() => {
         t.classList.remove("show");
-      }, 2400);
+      }, 2200);
     }
 
     function switchTab(tabId) {
@@ -2346,18 +2282,17 @@
       if (!el) return;
       el.classList.toggle("open");
       if (id === "accCrosshair" && el.classList.contains("open")) {
-        setTimeout(drawCrosshairPreview, 60);
+        drawCrosshairPreview();
       }
     }
 
     function setNeonTheme(accentHex, accentRgb, secHex, secRgb, dotEl, themeIdx, silent, btnTextColor) {
-      suppressTransitionsTemporarily();
       const root = document.documentElement;
       root.style.setProperty("--accent-main", accentHex);
       root.style.setProperty("--accent-rgb", accentRgb);
       root.style.setProperty("--accent-sec", secHex);
       root.style.setProperty("--accent-sec-rgb", secRgb);
-      root.style.setProperty("--btn-text-color", btnTextColor || "#FFFFFF");
+      root.style.setProperty("--btn-text-color", btnTextColor || "#061026");
       root.style.setProperty("--focus-ring", accentHex);
 
       document.querySelectorAll(".theme-dot").forEach(d => d.classList.remove("active"));
@@ -2385,12 +2320,12 @@
         idx = 0;
       }
       const themes = [
-        ["#0A84FF", "10, 132, 255", "#007AFF", "0, 122, 255", 0, "#FFFFFF"],
-        ["#30D158", "48, 209, 88", "#34C759", "52, 199, 89", 1, "#000000"],
-        ["#5E5CE6", "94, 92, 230", "#5856D6", "88, 86, 214", 2, "#FFFFFF"],
-        ["#BF5AF2", "191, 90, 242", "#AF52DE", "175, 82, 222", 3, "#FFFFFF"],
-        ["#FF9F0A", "255, 159, 10", "#FF9500", "255, 149, 0", 4, "#000000"],
-        ["#E5E5EA", "229, 229, 234", "#8E8E93", "142, 142, 147", 5, "#000000"]
+        ["#7CC4FF", "124, 196, 255", "#60A5FA", "96, 165, 250", 0, "#061026"],
+        ["#34D399", "52, 211, 153", "#10B981", "16, 185, 129", 1, "#061026"],
+        ["#A78BFA", "167, 139, 250", "#818CF8", "129, 140, 248", 2, "#061026"],
+        ["#38BDF8", "56, 189, 248", "#0284C7", "2, 132, 199", 3, "#061026"],
+        ["#FBBF24", "251, 191, 36", "#F59E0B", "245, 158, 11", 4, "#061026"],
+        ["#E0F2FE", "224, 242, 254", "#BAE6FD", "186, 230, 253", 5, "#061026"]
       ];
       const t = themes[idx] || themes[0];
       setNeonTheme(t[0], t[1], t[2], t[3], null, t[4], true, t[5]);
@@ -2399,14 +2334,6 @@
     function injectExtraDevicePresetsIntoDom() {
       const presetsContainer = document.querySelector("#accSensPresets .acc-body-inner");
       if (presetsContainer && !document.getElementById("preset_ios_pro")) {
-        const exCard = document.getElementById("preset_extreme");
-        if (exCard) {
-          const desc = exCard.querySelector(".char-desc");
-          if (desc) {
-            desc.textContent = "Мгновенный переброс прицела за 1 кадр без сглаживания и без вязкости осей (Острота 2.50, Куски 100, Разгон 2.50, Выпрямление 0, Мёртвая зона 0).";
-          }
-        }
-
         const iosCard = document.createElement("div");
         iosCard.id = "preset_ios_pro";
         iosCard.className = "character-card";
@@ -2414,7 +2341,7 @@
         iosCard.innerHTML =
           '<div style="min-width:0;">' +
             '<div class="char-title">5 · КОНФИГ iOS <span class="char-tag">IPHONE / IPAD PRO • 240HZ</span></div>' +
-            '<div class="char-desc">Эталонная линейная сенса iOS: нулевая задержка старта, отсутствие инерции Android и плавная кривая CoreAnimation для точного зажима в голову.</div>' +
+            '<div class="char-desc">Эталонная линейная сенса iOS: нулевая задержка старта, отсутствие инерции Android и точная кривая для контроля зажима в голову.</div>' +
           '</div>' +
           '<span class="char-arrow" aria-hidden="true">›</span>';
         presetsContainer.appendChild(iosCard);
@@ -2426,7 +2353,7 @@
         rogCard.innerHTML =
           '<div style="min-width:0;">' +
             '<div class="char-title">6 · КОНФИГ ROG PHONE <span class="char-tag pad-badge">ASUS ROG • 720HZ X-MODE</span></div>' +
-            '<div class="char-desc">Экстремальный киберспортивный отклик матрицы ROG Phone: сверхбыстрый срыв флика, максимальная чувствительность краёв и 480–720 Гц тач.</div>' +
+            '<div class="char-desc">Киберспортивный отклик матрицы ROG Phone: сверхбыстрый срыв флика, максимальная чувствительность краёв и 480–720 Гц тач.</div>' +
           '</div>' +
           '<span class="char-arrow" aria-hidden="true">›</span>';
         presetsContainer.appendChild(rogCard);
@@ -2474,11 +2401,11 @@
       if (dot && txt) {
         if (ready) {
           dot.classList.add("on");
-          txt.style.color = "#30D158";
+          txt.style.color = "#34D399";
           txt.textContent = "Shizuku ВКЛ";
         } else {
           dot.classList.remove("on");
-          txt.style.color = "#FF453A";
+          txt.style.color = "#FB7185";
           txt.textContent = "Shizuku ВЫКЛ";
         }
       }
@@ -2486,11 +2413,7 @@
     }
 
     function requestAndRecheckShizuku() {
-      if (hasBridge()) {
-        try {
-          AndroidBridge.requestShizukuPermission();
-        } catch (e) {}
-      }
+      callBridgeAsync(b => b.requestShizukuPermission());
       setTimeout(() => {
         const ok = refreshShizukuIndicator();
         if (ok) {
@@ -2563,13 +2486,6 @@
         localStorage.setItem("so2_saved_nick_v11", cleanNick);
       } catch (e) {}
 
-      if (hasBridge()) {
-        try {
-          AndroidBridge.savePlayerNickname(cleanNick);
-          AndroidBridge.startTeleport("AUTH_KEY:" + cleanKey);
-        } catch (e) {}
-      }
-
       const authOverlay = document.getElementById("authScreenOverlay");
       if (authOverlay) {
         authOverlay.style.display = "none";
@@ -2577,13 +2493,16 @@
 
       updateProfileAndHeaderInfo(cleanNick, cleanKey, subLabel || "АКТИВНА");
       loadSavedConfigLocal(true);
-      if (isMainTeleportOn && hasBridge()) {
-        try {
-          AndroidBridge.setRawInputNoSmoothing(true);
-          AndroidBridge.startTeleport(mapPresetToEngineId(currentPresetId));
+
+      callBridgeAsync(b => {
+        b.savePlayerNickname(cleanNick);
+        b.startTeleport("AUTH_KEY:" + cleanKey);
+        if (isMainTeleportOn) {
+          b.setRawInputNoSmoothing(true);
+          b.startTeleport(mapPresetToEngineId(currentPresetId));
           pushCurrentSlidersToBridge();
-        } catch (e) {}
-      }
+        }
+      });
     }
 
     function forceShowKickScreen(reasonMsg) {
@@ -2669,7 +2588,7 @@
             btn.textContent = "Активировать ключ и войти";
           }
         }
-      }, 30);
+      }, 20);
     }
 
     function handleLogoutClick() {
@@ -2677,11 +2596,7 @@
       try {
         localStorage.removeItem("so2_saved_lic_key_v11");
       } catch (e) {}
-      if (hasBridge() && typeof AndroidBridge.logoutLicenseKey === "function") {
-        try {
-          AndroidBridge.logoutLicenseKey();
-        } catch (e) {}
-      }
+      callBridgeAsync(b => b.logoutLicenseKey());
       forceShowKickScreen("Введите новый лицензионный ключ для входа");
     }
 
@@ -2736,17 +2651,16 @@
         pill.textContent = isMainTeleportOn ? "Teleport активен" : "Включить Teleport";
       }
 
-      if (hasBridge()) {
-        try {
-          if (isMainTeleportOn) {
-            AndroidBridge.setRawInputNoSmoothing(true);
-            AndroidBridge.startTeleport(mapPresetToEngineId(currentPresetId));
-            pushCurrentSlidersToBridge();
-          } else {
-            AndroidBridge.stopTeleport();
-          }
-        } catch (e) {}
-      }
+      callBridgeAsync(b => {
+        if (isMainTeleportOn) {
+          b.setRawInputNoSmoothing(true);
+          b.startTeleport(mapPresetToEngineId(currentPresetId));
+          pushCurrentSlidersToBridge();
+        } else {
+          b.stopTeleport();
+        }
+      });
+
       if (!silent) {
         showToast(isMainTeleportOn ? "Teleport Engine включён" : "Teleport Engine приостановлен");
       }
@@ -2925,17 +2839,16 @@
       }
 
       refreshSensSliderPills();
-      if (hasBridge()) {
-        try {
-          AndroidBridge.setRawInputNoSmoothing(true);
-          AndroidBridge.setTouchSamplingBoost(true, currentPresetId === "ios_pro" ? 360 : 480);
-          AndroidBridge.startTeleport(isPadModeEnabled ? "PAD_MODE_ON" : "PAD_MODE_OFF");
-          if (isMainTeleportOn) {
-            AndroidBridge.startTeleport(mapPresetToEngineId(currentPresetId));
-            pushCurrentSlidersToBridge();
-          }
-        } catch (e) {}
-      }
+      callBridgeAsync(b => {
+        b.setRawInputNoSmoothing(true);
+        b.setTouchSamplingBoost(true, currentPresetId === "ios_pro" ? 360 : 480);
+        b.startTeleport(isPadModeEnabled ? "PAD_MODE_ON" : "PAD_MODE_OFF");
+        if (isMainTeleportOn) {
+          b.startTeleport(mapPresetToEngineId(currentPresetId));
+          pushCurrentSlidersToBridge();
+        }
+      });
+
       if (!silent) {
         showToast("Профиль «" + (profMode ? profMode.textContent : currentPresetId) + "» применён");
       }
@@ -2944,11 +2857,11 @@
     function activateMaxH9ijeTeleport() {
       setMainEnginePower(true, true);
       selectTeleportPreset("extreme", true);
-      if (hasBridge() && typeof AndroidBridge.applyUltraProTouchMatrix === "function") {
-        try {
-          AndroidBridge.applyUltraProTouchMatrix(3);
-        } catch (e) {}
-      }
+      callBridgeAsync(b => {
+        if (typeof b.applyUltraProTouchMatrix === "function") {
+          b.applyUltraProTouchMatrix(3);
+        }
+      });
       showToast("Молниеносный Телепорт H9IJE MAX (68.0x) включён");
     }
 
@@ -3027,7 +2940,7 @@
       clearTimeout(sliderDebounceTimer);
       sliderDebounceTimer = setTimeout(() => {
         pushCurrentSlidersToBridge();
-      }, 90);
+      }, 120);
     }
 
     function onRecoilSliderChange() {
@@ -3048,12 +2961,10 @@
         selectTeleportPreset("ios_pro", false);
       } else if (shelfId === "rog_touch") {
         selectTeleportPreset("rog_pro", false);
-        if (hasBridge()) {
-          try {
-            AndroidBridge.setTouchSamplingBoost(true, 480);
-            AndroidBridge.applyShooterOptimizer(144, 100, 1, 100, 160, 60, 1);
-          } catch (e) {}
-        }
+        callBridgeAsync(b => {
+          b.setTouchSamplingBoost(true, 480);
+          b.applyShooterOptimizer(144, 100, 1, 100, 160, 60, 1);
+        });
       }
     }
 
@@ -3087,15 +2998,9 @@
     function normalizeLegacySlidersObject(cfg) {
       if (!cfg || typeof cfg !== "object" || !cfg.sliders) return cfg;
       const s = cfg.sliders;
-      if (typeof s.sl_sharp === "number" && s.sl_sharp <= 10) {
-        s.sl_sharp = 25;
-      }
-      if (typeof s.sl_sx === "number" && s.sl_sx <= 10) {
-        s.sl_sx = 25;
-      }
-      if (typeof s.sl_sy === "number" && s.sl_sy <= 10) {
-        s.sl_sy = 25;
-      }
+      if (typeof s.sl_sharp === "number" && s.sl_sharp <= 10) s.sl_sharp = 25;
+      if (typeof s.sl_sx === "number" && s.sl_sx <= 10) s.sl_sx = 25;
+      if (typeof s.sl_sy === "number" && s.sl_sy <= 10) s.sl_sy = 25;
       if (cfg.schemaVer !== 12 && (!cfg.preset || cfg.preset === "extreme" || cfg.preset === "tablet_pro")) {
         s.sl_sharp = 25;
         s.sl_sx = 25;
@@ -3158,7 +3063,7 @@
         syncCrosshairConfig(true);
       }
 
-      pushCurrentSlidersToBridge();
+      callBridgeAsync(() => pushCurrentSlidersToBridge());
       if (!silent) {
         showToast("Сохранённые настройки применены");
       }
@@ -3170,12 +3075,12 @@
       try {
         localStorage.setItem("so2_master_cfg_v12", jsonStr);
       } catch (e) {}
-      if (hasBridge() && typeof AndroidBridge.saveFullConfigJson === "function") {
-        try {
-          AndroidBridge.saveFullConfigJson(jsonStr);
-        } catch (e) {}
-      }
-      pushCurrentSlidersToBridge();
+      callBridgeAsync(b => {
+        if (typeof b.saveFullConfigJson === "function") {
+          b.saveFullConfigJson(jsonStr);
+        }
+        pushCurrentSlidersToBridge();
+      });
       syncCrosshairConfig(true);
       showToast("Настройки сохранены");
     }
@@ -3263,7 +3168,7 @@
       previewDayMode = !previewDayMode;
       const stage = document.getElementById("chPreviewStage");
       if (stage) {
-        stage.style.background = previewDayMode ? "#E5E5EA" : "#000000";
+        stage.style.background = previewDayMode ? "#E0F2FE" : "rgba(8, 16, 38, 0.85)";
       }
       drawCrosshairPreview();
     }
@@ -3274,7 +3179,7 @@
     }
 
     function setCrosshairColor(hexColor, swatchEl, silent) {
-      currentCrosshairColor = hexColor || "#30D158";
+      currentCrosshairColor = hexColor || "#34D399";
       document.querySelectorAll(".ch-color-swatch").forEach(s => s.classList.remove("active"));
       if (swatchEl) swatchEl.classList.add("active");
 
@@ -3341,27 +3246,27 @@
 
       drawCrosshairPreview();
 
-      if (hasBridge()) {
-        try {
-          if (!isCrosshairEnabled) {
-            AndroidBridge.updateCrosshair("off");
-          } else {
-            AndroidBridge.updateCrosshairAdvanced(
-              currentCrosshairType,
-              currentCrosshairColor,
-              op,
-              len,
-              thick,
-              gap,
-              dot,
-              outline
-            );
-          }
-        } catch (e) {}
-      }
+      callBridgeAsync(b => {
+        if (!isCrosshairEnabled) {
+          b.updateCrosshair("off");
+        } else {
+          b.updateCrosshairAdvanced(
+            currentCrosshairType,
+            currentCrosshairColor,
+            op,
+            len,
+            thick,
+            gap,
+            dot,
+            outline
+          );
+        }
+      });
     }
 
     function drawCrosshairPreview() {
+      const acc = document.getElementById("accCrosshair");
+      if (acc && !acc.classList.contains("open")) return;
       const canvas = document.getElementById("crosshairPreviewCanvas");
       if (!canvas) return;
       const ctx = canvas.getContext("2d");
@@ -3469,11 +3374,7 @@
         inner.style.width = widths[currentStretchRatio] || "168px";
       }
 
-      if (hasBridge()) {
-        try {
-          AndroidBridge.startTeleport("SET_RATIO:" + currentStretchRatio);
-        } catch (e) {}
-      }
+      callBridgeAsync(b => b.startTeleport("SET_RATIO:" + currentStretchRatio));
       if (!silent) {
         showToast("Выбран формат экрана " + currentStretchRatio);
       }
@@ -3499,38 +3400,22 @@
         requestAndRecheckShizuku();
         return;
       }
-      if (hasBridge()) {
-        try {
-          AndroidBridge.applyDirectStretchRatio(currentStretchRatio);
-        } catch (e) {}
-      }
+      callBridgeAsync(b => b.applyDirectStretchRatio(currentStretchRatio));
       showToast("Шаг 1 (" + currentStretchRatio + ") выполнен. Зайдите в игру и нажмите Шаг 2.");
     }
 
     function releaseStretchFullNow() {
-      if (hasBridge()) {
-        try {
-          AndroidBridge.startTeleport("STRETCH_FULL_RELEASE");
-        } catch (e) {}
-      }
+      callBridgeAsync(b => b.startTeleport("STRETCH_FULL_RELEASE"));
       showToast("Шаг 2 выполнен: экран растянут");
     }
 
     function resetNativeScreen() {
-      if (hasBridge()) {
-        try {
-          AndroidBridge.resetResolution();
-        } catch (e) {}
-      }
+      callBridgeAsync(b => b.resetResolution());
       showToast("Родное разрешение экрана восстановлено");
     }
 
     function toggleWideHitboxMode(enabled) {
-      if (hasBridge()) {
-        try {
-          AndroidBridge.setWideHitboxMode(!!enabled, currentStretchRatio);
-        } catch (e) {}
-      }
+      callBridgeAsync(b => b.setWideHitboxMode(!!enabled, currentStretchRatio));
       showToast(enabled ? "Синхронизация кусков под растяг включена" : "Синхронизация растяга отключена");
     }
 
@@ -3546,20 +3431,12 @@
       if (big) big.textContent = currentPixelScale + " %";
       if (fill) fill.style.width = currentPixelScale + "%";
 
-      if (hasBridge()) {
-        try {
-          AndroidBridge.setPixelDownscaleFactor(currentPixelScale);
-        } catch (e) {}
-      }
+      callBridgeAsync(b => b.setPixelDownscaleFactor(currentPixelScale));
       showToast("Масштаб пикселей: " + currentPixelScale + "%");
     }
 
     function runOneClickUltimateTweaks() {
-      if (hasBridge()) {
-        try {
-          AndroidBridge.startTeleport("ULTIMATE_TWEAKS_1CLICK");
-        } catch (e) {}
-      }
+      callBridgeAsync(b => b.startTeleport("ULTIMATE_TWEAKS_1CLICK"));
       const badge = document.getElementById("oneClickTweakStatusBadge");
       if (badge) badge.textContent = "АКТИВЕН • 120 FPS";
       showToast("Системные твики SkiaGL и фикс FPS применены");
@@ -3594,14 +3471,13 @@
     }
 
     function toggleBoostFeature(kind, enabled) {
-      if (!hasBridge()) return;
-      try {
-        if (kind === "raw") AndroidBridge.setRawInputNoSmoothing(!!enabled);
-        else if (kind === "vulkan") AndroidBridge.setVulkanGpuTurbo(!!enabled);
-        else if (kind === "ping") AndroidBridge.setNetPingStabilizer(!!enabled);
-        else if (kind === "thermal") AndroidBridge.setHzThermalGuard(!!enabled);
-        else if (kind === "stealth") AndroidBridge.setStealthOverlayMode(!!enabled);
-      } catch (e) {}
+      callBridgeAsync(b => {
+        if (kind === "raw") b.setRawInputNoSmoothing(!!enabled);
+        else if (kind === "vulkan") b.setVulkanGpuTurbo(!!enabled);
+        else if (kind === "ping") b.setNetPingStabilizer(!!enabled);
+        else if (kind === "thermal") b.setHzThermalGuard(!!enabled);
+        else if (kind === "stealth") b.setStealthOverlayMode(!!enabled);
+      });
       showToast(enabled ? "Модуль включён" : "Модуль отключён");
     }
 
@@ -3632,12 +3508,10 @@
       const mt = Math.round(getSliderNum("sl_opt_mt", 160));
       const ts = Math.round(getSliderNum("sl_opt_ts", 480));
 
-      if (hasBridge()) {
-        try {
-          AndroidBridge.setTouchSamplingBoost(true, ts);
-          AndroidBridge.applyShooterOptimizer(fps, gpu, 1, edge, mt, 60, 1);
-        } catch (e) {}
-      }
+      callBridgeAsync(b => {
+        b.setTouchSamplingBoost(true, ts);
+        b.applyShooterOptimizer(fps, gpu, 1, edge, mt, 60, 1);
+      });
       showToast("Разгон " + fps + " Гц и сенсор " + ts + " Гц применены");
     }
 
@@ -3649,11 +3523,7 @@
     function finishScreenCalibTap() {
       const el = document.getElementById("screenCalibOverlay");
       if (el) el.style.display = "none";
-      if (hasBridge()) {
-        try {
-          AndroidBridge.healTouch();
-        } catch (e) {}
-      }
+      callBridgeAsync(b => b.healTouch());
       showToast("Матрица откалибрована под 480 Гц");
     }
 
@@ -3674,9 +3544,9 @@
         const y = Math.round(touch.clientY - rect.top);
         if (coords) coords.textContent = "Координаты отклика: X=" + x + " px • Y=" + y + " px (0.1 ms)";
         if (ctx) {
-          ctx.fillStyle = "rgba(0, 0, 0, 0.25)";
+          ctx.fillStyle = "rgba(6, 14, 36, 0.28)";
           ctx.fillRect(0, 0, canvas.width, canvas.height);
-          ctx.fillStyle = "#0A84FF";
+          ctx.fillStyle = "#7CC4FF";
           ctx.beginPath();
           ctx.arc(x, y, 7, 0, Math.PI * 2);
           ctx.fill();
@@ -3720,33 +3590,33 @@
           '<div style="display:flex;align-items:center;gap:10px;min-width:0;">' +
           '<div class="acc-icon" style="width:34px;height:34px;font-size:0.8125rem;" aria-hidden="true">🎙</div>' +
           '<div style="min-width:0;"><div style="font-size:0.8125rem;font-weight:600;color:#fff;">' + activePlayerNick + ' (Вы)</div>' +
-          '<div style="font-size:0.6875rem;color:#30D158;">Чистый канал • 400% Squad Isolator</div></div></div>' +
+          '<div style="font-size:0.6875rem;color:#34D399;">Чистый канал • 400% Squad Isolator</div></div></div>' +
           (isMicMuted ? '<span class="badge-chip">MUTE</span>' : '<div class="voice-eq-bars" aria-label="Говорит"><span></span><span></span><span></span></div>') +
           '</div>';
       }
 
-      if (hasBridge() && typeof AndroidBridge.updateVoiceCallNotification === "function") {
-        try {
-          AndroidBridge.updateVoiceCallNotification(room, isMicMuted, isSpeakerDeafened);
-        } catch (e) {}
-      }
+      callBridgeAsync(b => {
+        if (typeof b.updateVoiceCallNotification === "function") {
+          b.updateVoiceCallNotification(room, isMicMuted, isSpeakerDeafened);
+        }
+      });
     }
 
     function toggleVoiceConnection() {
       isVoiceConnected = !isVoiceConnected;
       if (isVoiceConnected) {
-        if (hasBridge() && typeof AndroidBridge.enforceGameAudioMode === "function") {
-          try {
-            AndroidBridge.enforceGameAudioMode();
-          } catch (e) {}
-        }
+        callBridgeAsync(b => {
+          if (typeof b.enforceGameAudioMode === "function") {
+            b.enforceGameAudioMode();
+          }
+        });
         showToast("Подключено к рации отряда");
       } else {
-        if (hasBridge() && typeof AndroidBridge.cancelVoiceCallNotification === "function") {
-          try {
-            AndroidBridge.cancelVoiceCallNotification();
-          } catch (e) {}
-        }
+        callBridgeAsync(b => {
+          if (typeof b.cancelVoiceCallNotification === "function") {
+            b.cancelVoiceCallNotification();
+          }
+        });
         showToast("Голосовой канал отключён");
       }
       updateVoiceUiState();
@@ -3789,7 +3659,7 @@
       box.innerHTML = list.map((code, idx) => (
         '<div class="friend-item">' +
         '<div style="min-width:0;"><div style="font-size:0.8125rem;font-weight:600;color:#fff;">Тиммейт <bdi>' + code + '</bdi></div>' +
-        '<div style="font-size:0.6875rem;color:#30D158;">Онлайн • SO2Teleport PRO</div></div>' +
+        '<div style="font-size:0.6875rem;color:#34D399;">Онлайн • SO2Teleport PRO</div></div>' +
         '<button type="button" class="icon-circle-action" aria-label="Удалить тиммейта ' + code + '" onclick="removeFriendAtIndex(' + idx + ')">✕</button>' +
         '</div>'
       )).join("");
@@ -3937,19 +3807,19 @@
     }
 
     function openBotShopLink() {
-      if (hasBridge() && typeof AndroidBridge.openTelegramBot === "function") {
-        try {
-          AndroidBridge.openTelegramBot();
-        } catch (e) {}
-      }
+      callBridgeAsync(b => {
+        if (typeof b.openTelegramBot === "function") {
+          b.openTelegramBot();
+        }
+      });
     }
 
     function openSupportLink() {
-      if (hasBridge() && typeof AndroidBridge.openSupportTelegram === "function") {
-        try {
-          AndroidBridge.openSupportTelegram();
-        } catch (e) {}
-      }
+      callBridgeAsync(b => {
+        if (typeof b.openSupportTelegram === "function") {
+          b.openSupportTelegram();
+        }
+      });
     }
 
     function initAppOnBoot() {
@@ -3957,7 +3827,6 @@
       restoreSavedTheme();
       selectTeleportPreset("extreme", true);
       updateOptLabels();
-      drawCrosshairPreview();
       renderFriendsList();
       refreshShizukuIndicator();
 
