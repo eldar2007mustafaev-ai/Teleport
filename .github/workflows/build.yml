@@ -1,4 +1,4 @@
-name: Build Teleport APK
+Name: Build Teleport APK
 
 on:
   push:
@@ -48,33 +48,20 @@ jobs:
           loader = (
               "<!DOCTYPE html><html><head><meta charset=\"UTF-8\">"
               "<meta name=\"viewport\" content=\"width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no,viewport-fit=cover\">"
-              "<!-- SO2TELEPORT_QUANTUM_V9_SEAL --><!-- pollLicenseExpiration --><!-- SO2TELEPORT_V10_CORE --></head>"
+              "<!-- SO2TELEPORT_QUANTUM_V9_SEAL --><!-- pollLicenseExpiration --></head>"
               "<body style=\"background:#060b0e;margin:0;\" oncontextmenu=\"return false\">"
               "<script>(function(){"
+              "if(window.outerWidth-window.innerWidth>160||window.outerHeight-window.innerHeight>160){document.body.innerHTML=\"\";return;}"
               "var d=atob(\"" + b64 + "\"),n=d.length,u=new Uint8Array(n),s=1513922161;"
               "for(var i=0;i<n;i++){s=(Math.imul(1103515245,s)+12345)&2147483647;var k=((s>>>16)^Math.imul(i,73)^167)&255;u[i]=d.charCodeAt(i)^k;}"
               "var h=new TextDecoder(\"utf-8\").decode(u);"
-              "if(h.indexOf(\"SO2TELEPORT_V10_CORE\")===-1){"
-              "document.body.textContent=\"Ошибка проверки целостности интерфейса. Переустановите приложение.\";"
-              "document.body.style.color=\"#fda4af\";document.body.style.padding=\"48px 24px\";"
-              "document.body.style.font=\"600 15px sans-serif\";return;}"
+              "if(h.indexOf(\"SO2TELEPORT_V10_CORE\")===-1){document.body.innerHTML=\"\";return;}"
               "document.open();document.write(h);document.close();"
               "})();</script></body></html>"
           )
           p.write_text(loader, encoding="utf-8")
           '
           rm -rf .gradle build app/build gradlew gradlew.bat
-
-      - name: Ensure Android NDK for native anti-tamper library
-        run: |
-          NDK_VER="25.2.9519653"
-          SDK_DIR="${ANDROID_SDK_ROOT:-$ANDROID_HOME}"
-          if [ ! -d "$SDK_DIR/ndk/$NDK_VER" ]; then
-            SM="$SDK_DIR/cmdline-tools/latest/bin/sdkmanager"
-            if [ -x "$SM" ]; then
-              yes | "$SM" "ndk;$NDK_VER" || true
-            fi
-          fi
 
       - name: Build Debug APK
         run: |
