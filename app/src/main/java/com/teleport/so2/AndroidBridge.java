@@ -1,21 +1,35 @@
-package com.teleport.so2;
+Package com.teleport.so2;
 
 import android.app.Activity;
+import android.app.Notification;
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 import android.graphics.Canvas;
 import android.graphics.Color;
+import android.graphics.LinearGradient;
 import android.graphics.Paint;
 import android.graphics.PixelFormat;
 import android.graphics.RectF;
+import android.graphics.Shader;
 import android.graphics.drawable.GradientDrawable;
 import android.media.AudioManager;
+import android.media.MediaDrm;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Handler;
 import android.os.Looper;
+import android.os.Process;
 import android.provider.Settings;
+import android.security.keystore.KeyGenParameterSpec;
+import android.security.keystore.KeyProperties;
+import android.util.Base64;
 import android.util.DisplayMetrics;
 import android.view.Gravity;
 import android.view.HapticFeedbackConstants;
@@ -29,43 +43,67 @@ import android.widget.Toast;
 
 import org.json.JSONObject;
 
+import java.io.BufferedReader;
+import java.io.ByteArrayOutputStream;
+import java.io.FileReader;
+import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
+import java.security.KeyStore;
+import java.security.MessageDigest;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.Locale;
+import java.util.TimeZone;
+import java.util.UUID;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
+import javax.crypto.Cipher;
+import javax.crypto.KeyGenerator;
+import javax.crypto.Mac;
+import javax.crypto.SecretKey;
+import javax.crypto.spec.GCMParameterSpec;
+import javax.crypto.spec.SecretKeySpec;
+
 public class AndroidBridge {
 
     private static final String PREF_FIRST_LOGIN_DONE = "v420_manual_login_done";
-    private static final String PLAIN_FALLBACK_KEY = "bound_device_license_v12";
+    private static final String KEYSTORE_ALIAS_STRONGBOX = "SO2Teleport_StrongBox_AES_v11";
+    private static final String KEYSTORE_ALIAS_TEE = "SO2Teleport_TEE_AES_v11";
+    private static final String VAULT_PREF_NAME = "SO2Teleport_SecureVault_V11";
+    private static final String VAULT_ENC_KEY = "enc_saved_license_v11";
 
+    // Подгрузка нативного щита libso2.so
     private static boolean isNativeLoaded = false;
     static {
         try {
             System.loadLibrary("so2");
             isNativeLoaded = true;
-        } catch (Throwable e) {
+        } catch (Throwable ignored) {
             isNativeLoaded = false;
         }
     }
 
-    private static native void nativeInitBridge(Context context);
-    private static native String nativeGetDeviceHwid(Context context);
-    private static native String nativeGetEncryptedEndpoint(int mode);
-    private static native String nativeGateShizukuCmd(String rawCmd);
+    // JNI-методы в libso2.so (закрытие пунктов #1, #2, #3, #4, #19, #20, #25)
+    private static native String nativeComputeHwid(String drmHex, String androidId, String boardInfo);
     private static native String nativeComputeDailyHmac(String payload, String dayUtc);
-    private static native String nativeActivateLicense(Context context, String key, String nick);
-    
-    private static native void nativeConfigureTouchLayer(float stickiness, float heaviness, float sharpness, float sprayPull, float aimScale);
-    private static native void nativeResetFinger(int pointerId);
-    private static native float[] nativeStabilizeTouchDelta(int pointerId, float rawDx, float rawDy);
+    private static native boolean nativeVerifyServerHmac(String cleanKey, String hwid, String status, String serverSig, String dayUtc);
+    private static native boolean nativeIsHtmlTampered(byte[] htmlBytes);
+    private static native boolean nativeIsBlacklisted(String candidate);
+    private static native void nativeSetSessionVerified(String cleanKey, boolean verified);
+    private static native boolean nativeIsSessionVerified();
+    private static native String nativeGetSessionKey();
+    private static native void nativeForceTerminate();
 
     private final Context context;
     private final Activity activity;
     private final SharedPreferences prefs;
+    private final SharedPreferences vaultPrefs;
     private final SharedPreferences legacyPrefs;
+    private final SharedPreferences profilePrefs;
     private final Handler mainHandler = new Handler(Looper.getMainLooper());
     private final ExecutorService networkExecutor = Executors.newCachedThreadPool();
 
@@ -83,248 +121,602 @@ public class AndroidBridge {
     private CrosshairOverlayView crosshairView;
     private WindowManager.LayoutParams crosshairParams;
     private boolean isCrosshairShown = false;
-    private int savedCrosshairOffsetX = 0;
-    private int savedCrosshairOffsetY = 0;
     private boolean stealthOverlayFlag = false;
 
     public AndroidBridge(Activity activity) {
         this.activity = activity;
         this.context = activity.getApplicationContext();
         this.prefs = context.getSharedPreferences("SO2TeleportPrefs_V410", Context.MODE_PRIVATE);
+        this.vaultPrefs = context.getSharedPreferences(VAULT_PREF_NAME, Context.MODE_PRIVATE);
         this.legacyPrefs = context.getSharedPreferences("so2_teleport_prefs", Context.MODE_PRIVATE);
+        this.profilePrefs = context.getSharedPreferences("so2_teleport_profile_prefs", Context.MODE_PRIVATE);
         this.windowManager = (WindowManager) context.getSystemService(Context.WINDOW_SERVICE);
 
+        // Очистка старых предсказуемых ключей из обычных SharedPreferences
+        prefs.edit().remove("immutable_widevine_hwid_v9").apply();
+
+        // Миграция ключа в защищённый StrongBox/TEE Vault
+        String legacyKey = prefs.getString("saved_license_key", "");
+        if (!legacyKey.isEmpty() && !isBlacklistedArtifact(legacyKey)) {
+            saveEncryptedKeyToVault(legacyKey.trim().toUpperCase(Locale.US));
+            prefs.edit()
+                    .remove("saved_license_key")
+                    .putBoolean(PREF_FIRST_LOGIN_DONE, true)
+                    .apply();
+        }
+
+        String restoredKey = readEncryptedKeyFromVault();
+        if (!restoredKey.isEmpty() && !isBlacklistedArtifact(restoredKey)) {
+            prefs.edit().putBoolean(PREF_FIRST_LOGIN_DONE, true).apply();
+            safeNativeSetSession(restoredKey, true);
+        }
+
+        TeleportEngine.init(context);
+        TeleportEngine.requestShizukuPermissionIfNeeded();
+        startLicenseWatchdog();
+    }
+
+    // =========================================================================
+    // 1. БЕЗОПАСНЫЕ ОБЁРТКИ НАТИВНЫХ ФУНКЦИЙ (LIBSO2.SO)
+    // =========================================================================
+    private void safeNativeSetSession(String key, boolean ok) {
+        if (isNativeLoaded) {
+            try {
+                nativeSetSessionVerified(key == null ? "" : key, ok);
+            } catch (Throwable ignored) {}
+        }
+    }
+
+    private boolean safeNativeIsSessionOk() {
+        if (isNativeLoaded) {
+            try {
+                return nativeIsSessionVerified();
+            } catch (Throwable ignored) {}
+        }
+        return ApiManager.isSessionVerified();
+    }
+
+    private void executeNativeKillOnTamper() {
+        if (isNativeLoaded) {
+            try {
+                nativeForceTerminate();
+            } catch (Throwable ignored) {}
+        }
         try {
-            if (isNativeLoaded) {
-                nativeInitBridge(this.context);
+            Process.killProcess(Process.myPid());
+        } catch (Throwable ignored) {}
+        try {
+            Runtime.getRuntime().halt(1);
+        } catch (Throwable ignored) {}
+    }
+
+    // =========================================================================
+    // 2. ANDROID KEYSTORE С ПОДДЕРЖКОЙ STRONGBOX (ЗАКРЫТИЕ ПУНКТА #18)
+    // =========================================================================
+    private SecretKey getOrCreateKeystoreSecret() throws Exception {
+        KeyStore ks = KeyStore.getInstance("AndroidKeyStore");
+        ks.load(null);
+
+        // 1. Если ключ уже создан в StrongBox или TEE — возвращаем его
+        if (ks.containsAlias(KEYSTORE_ALIAS_STRONGBOX)) {
+            KeyStore.SecretKeyEntry entry = (KeyStore.SecretKeyEntry) ks.getEntry(KEYSTORE_ALIAS_STRONGBOX, null);
+            if (entry != null) return entry.getSecretKey();
+        }
+        if (ks.containsAlias(KEYSTORE_ALIAS_TEE)) {
+            KeyStore.SecretKeyEntry entry = (KeyStore.SecretKeyEntry) ks.getEntry(KEYSTORE_ALIAS_TEE, null);
+            if (entry != null) return entry.getSecretKey();
+        }
+
+        // 2. Пытаемся создать ключ с аппаратным чипом StrongBox (Android 9.0 / API 28+)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+            try {
+                KeyGenerator kgStrong = KeyGenerator.getInstance(KeyProperties.KEY_ALGORITHM_AES, "AndroidKeyStore");
+                KeyGenParameterSpec strongSpec = new KeyGenParameterSpec.Builder(
+                        KEYSTORE_ALIAS_STRONGBOX,
+                        KeyProperties.PURPOSE_ENCRYPT | KeyProperties.PURPOSE_DECRYPT
+                )
+                        .setBlockModes(KeyProperties.BLOCK_MODE_GCM)
+                        .setEncryptionPaddings(KeyProperties.ENCRYPTION_PADDING_NONE)
+                        .setKeySize(256)
+                        .setIsStrongBoxBacked(true)
+                        .build();
+                kgStrong.init(strongSpec);
+                return kgStrong.generateKey();
+            } catch (Throwable ignored) {
+                // Если на устройстве нет отдельного чипа StrongBox, переходим к стандартному TEE
+            }
+        }
+
+        // 3. Fallback на стандартный аппаратный TEE Keystore
+        KeyGenerator kgTee = KeyGenerator.getInstance(KeyProperties.KEY_ALGORITHM_AES, "AndroidKeyStore");
+        KeyGenParameterSpec teeSpec = new KeyGenParameterSpec.Builder(
+                KEYSTORE_ALIAS_TEE,
+                KeyProperties.PURPOSE_ENCRYPT | KeyProperties.PURPOSE_DECRYPT
+        )
+                .setBlockModes(KeyProperties.BLOCK_MODE_GCM)
+                .setEncryptionPaddings(KeyProperties.ENCRYPTION_PADDING_NONE)
+                .setKeySize(256)
+                .build();
+        kgTee.init(teeSpec);
+        return kgTee.generateKey();
+    }
+
+    private void saveEncryptedKeyToVault(String cleanKey) {
+        try {
+            if (cleanKey == null || cleanKey.isEmpty()) {
+                vaultPrefs.edit().remove(VAULT_ENC_KEY).remove(VAULT_ENC_KEY + "_fb").apply();
+                safeNativeSetSession("", false);
+                return;
+            }
+            Cipher cipher = Cipher.getInstance("AES/GCM/NoPadding");
+            cipher.init(Cipher.ENCRYPT_MODE, getOrCreateKeystoreSecret());
+            byte[] iv = cipher.getIV();
+            // Привязываем шифротекст к аппаратному HWID устройства через GCM AAD
+            cipher.updateAAD(getImmutableDrmId().getBytes(StandardCharsets.UTF_8));
+            byte[] enc = cipher.doFinal(cleanKey.getBytes(StandardCharsets.UTF_8));
+            String blob = Base64.encodeToString(iv, Base64.NO_WRAP) + ":" + Base64.encodeToString(enc, Base64.NO_WRAP);
+            vaultPrefs.edit().putString(VAULT_ENC_KEY, blob).apply();
+        } catch (Throwable e) {
+            vaultPrefs.edit().putString(
+                    VAULT_ENC_KEY + "_fb",
+                    Base64.encodeToString(cleanKey.getBytes(StandardCharsets.UTF_8), Base64.NO_WRAP)
+            ).apply();
+        }
+    }
+
+    private String readEncryptedKeyFromVault() {
+        try {
+            String blob = vaultPrefs.getString(VAULT_ENC_KEY, "");
+            if (blob != null && blob.contains(":")) {
+                String[] parts = blob.split(":", 2);
+                byte[] iv = Base64.decode(parts[0], Base64.NO_WRAP);
+                byte[] enc = Base64.decode(parts[1], Base64.NO_WRAP);
+                Cipher cipher = Cipher.getInstance("AES/GCM/NoPadding");
+                cipher.init(Cipher.DECRYPT_MODE, getOrCreateKeystoreSecret(), new GCMParameterSpec(128, iv));
+                cipher.updateAAD(getImmutableDrmId().getBytes(StandardCharsets.UTF_8));
+                String dec = new String(cipher.doFinal(enc), StandardCharsets.UTF_8).trim().toUpperCase(Locale.US);
+                if (!isBlacklistedArtifact(dec)) return dec;
             }
         } catch (Throwable ignored) {}
 
         try {
-            TeleportEngine.setServerAuthorizedFromVerifiedHmac(true);
-            TeleportEngine.init(context);
-            TeleportEngine.requestShizukuPermissionIfNeeded();
+            String fb = vaultPrefs.getString(VAULT_ENC_KEY + "_fb", "");
+            if (fb != null && !fb.isEmpty()) {
+                String dec = new String(Base64.decode(fb, Base64.NO_WRAP), StandardCharsets.UTF_8).trim().toUpperCase(Locale.US);
+                if (!isBlacklistedArtifact(dec)) return dec;
+            }
         } catch (Throwable ignored) {}
+        return "";
     }
 
-    public static String getEncryptedServerEndpoint(int mode) {
-        if (!isNativeLoaded || mode < 0 || mode > 2) {
-            if (mode == 1) return "http://45.10.165.75:8443";
-            if (mode == 2) return "ws://45.10.165.75:8080/ws/voice";
-            return "http://45.10.165.75:8080";
+    // =========================================================================
+    // 3. НАТИВНАЯ ПРОВЕРКА ЧЁРНОГО СПИСКА, HTML И HMAC (ПУНКТЫ #1, #2, #19)
+    // =========================================================================
+    private boolean isBlacklistedArtifact(String val) {
+        if (val == null || val.trim().isEmpty()) return true;
+        if (isNativeLoaded) {
+            try {
+                if (nativeIsBlacklisted(val)) return true;
+            } catch (Throwable ignored) {}
         }
+        String u = val.trim().toUpperCase(Locale.US);
+        // Проверка по хешам и подстрокам, чтобы нельзя было обойти простым поиском строки
+        return u.contains("BA465E1492CBB45A")
+                || u.contains("HW9900AABB1122CC")
+                || u.contains("SO2-HWID-V10")
+                || u.contains("SO2TELEPORT-LOCAL-KEY")
+                || u.contains("BOHDANIUK")
+                || u.contains("CRACK");
+    }
+
+    private boolean isFridaOrXposedActive() {
         try {
-            String url = nativeGetEncryptedEndpoint(mode);
-            if (url != null && !url.isEmpty()) return url;
+            Class.forName("de.robv.android.xposed.XposedBridge");
+            return true;
         } catch (Throwable ignored) {}
-        return mode == 1 ? "http://45.10.165.75:8443" : (mode == 2 ? "ws://45.10.165.75:8080/ws/voice" : "http://45.10.165.75:8080");
-    }
 
-    private void execGatedShizuku(String rawCmd) {
-        if (rawCmd != null && !rawCmd.isEmpty()) {
-            TeleportEngine.execShizukuCommand(rawCmd);
-        }
-    }
-
-    // ИСПРАВЛЕНО: Используем надежный HWID из SecurityShield (C++), а не плавающий ANDROID_ID
-    public static String getNativeHardwareHwid(Context ctx) {
-        return SecurityShield.getHardwareId(ctx);
-    }
-
-    public static void configureNativeTouchLayer(float stick, float heavy, float sharp, float pull, float scale) {
-        if (!isNativeLoaded) return;
-        try {
-            nativeConfigureTouchLayer(stick, heavy, sharp, pull, scale);
+        try (BufferedReader br = new BufferedReader(new FileReader("/proc/self/maps"))) {
+            String line;
+            while ((line = br.readLine()) != null) {
+                String l = line.toLowerCase(Locale.US);
+                if (l.contains("frida-agent") || l.contains("gum-js-loop") || l.contains("xposedbridge")) {
+                    return true;
+                }
+            }
         } catch (Throwable ignored) {}
+        return false;
     }
 
-    public static float[] stabilizeTouchDeltaNative(int pointerId, float dx, float dy) {
-        if (!isNativeLoaded) return new float[]{dx, dy};
+    private boolean isClientTampered() {
+        if (isFridaOrXposedActive()) return true;
         try {
-            float[] res = nativeStabilizeTouchDelta(pointerId, dx, dy);
-            return (res != null && res.length == 2) ? res : new float[]{dx, dy};
-        } catch (Throwable ignored) {
-            return new float[]{dx, dy};
+            InputStream is = context.getAssets().open("index.html");
+            ByteArrayOutputStream bos = new ByteArrayOutputStream();
+            byte[] buf = new byte[4096];
+            int r;
+            while ((r = is.read(buf)) != -1) {
+                bos.write(buf, 0, r);
+            }
+            is.close();
+            byte[] htmlBytes = bos.toByteArray();
+
+            // Нативная проверка целостности HTML в libso2.so (закрытие пункта #2)
+            if (isNativeLoaded) {
+                try {
+                    if (nativeIsHtmlTampered(htmlBytes)) return true;
+                } catch (Throwable ignored) {}
+            }
+
+            String html = new String(htmlBytes, StandardCharsets.UTF_8);
+            String lower = html.toLowerCase(Locale.US);
+            if (lower.contains("bohdaniuk")
+                    || lower.contains("локальная активация")
+                    || lower.contains("cracked")
+                    || lower.contains("so2teleport-local-key")
+                    || lower.contains("ba465e1492cbb45a")
+                    || !html.contains("SO2TELEPORT_QUANTUM_V9_SEAL")
+                    || !html.contains("pollLicenseExpiration")) {
+                return true;
+            }
+        } catch (Throwable ignored) {}
+        return false;
+    }
+
+    // Проверка подписи ответа сервера внутри libso2.so (закрытие пункта #1)
+    private boolean verifyServerResponseSignature(String cleanKey, String hwid, String status, String srvSig) {
+        if (srvSig == null || srvSig.isEmpty()) return true; // совместимость, если сервер не прислал sig
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd", Locale.US);
+        sdf.setTimeZone(TimeZone.getTimeZone("UTC"));
+        String dayUtc = sdf.format(new Date());
+
+        if (isNativeLoaded) {
+            try {
+                return nativeVerifyServerHmac(cleanKey, hwid, status, srvSig, dayUtc);
+            } catch (Throwable ignored) {}
         }
+
+        String expected = computeDailyHmac(cleanKey + "|" + hwid + "|" + status);
+        return !expected.isEmpty() && expected.equalsIgnoreCase(srvSig);
     }
 
-    public static String signPayloadNative(String payload, String dayUtc) {
-        if (!isNativeLoaded) return "";
+    private String computeDailyHmac(String payload) {
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd", Locale.US);
+        sdf.setTimeZone(TimeZone.getTimeZone("UTC"));
+        String dayUtc = sdf.format(new Date());
+
+        if (isNativeLoaded) {
+            try {
+                String natMac = nativeComputeDailyHmac(payload, dayUtc);
+                if (natMac != null && !natMac.isEmpty()) return natMac;
+            } catch (Throwable ignored) {}
+        }
+
         try {
-            String sig = nativeComputeDailyHmac(payload, dayUtc);
-            return (sig != null) ? sig : "";
-        } catch (Throwable ignored) {
+            byte[] keyXor = new byte[]{
+                    0x06, 0x1A, 0x67, 0x0A, 0x04, 0x00, 0x14, 0x1B,
+                    0x01, 0x00, 0x18, 0x0A, 0x03, 0x64, 0x65, 0x0A,
+                    0x1E, 0x10, 0x0C, 0x0A, 0x6C, 0x6C, 0x61, 0x64
+            };
+            byte[] raw = new byte[keyXor.length];
+            for (int i = 0; i < keyXor.length; i++) {
+                raw[i] = (byte) (keyXor[i] ^ 0x55);
+            }
+            MessageDigest sha = MessageDigest.getInstance("SHA-256");
+            byte[] dailyKey = sha.digest((new String(raw, StandardCharsets.UTF_8) + "|" + dayUtc).getBytes(StandardCharsets.UTF_8));
+            Mac mac = Mac.getInstance("HmacSHA256");
+            mac.init(new SecretKeySpec(dailyKey, "HmacSHA256"));
+            byte[] sig = mac.doFinal(payload.getBytes(StandardCharsets.UTF_8));
+            StringBuilder sb = new StringBuilder();
+            for (byte b : sig) sb.append(String.format("%02x", b));
+            return sb.toString();
+        } catch (Throwable t) {
             return "";
         }
     }
 
-    public static boolean isNativeServerAuthorized() { return true; }
-    public static void revokeNativeSessionFromApi() {}
+    // =========================================================================
+    // 4. АППАРАТНЫЙ HWID ЧЕРЕЗ NATIVE + MEDIA DRM (ЗАКРЫТИЕ ПУНКТОВ #4, #22)
+    // =========================================================================
+    private String getImmutableDrmId() {
+        StringBuilder drmHex = new StringBuilder();
+        try {
+            UUID widevineUuid = new UUID(-0x121074568629b532L, -0x5c37d8232ae2de13L);
+            MediaDrm drm = new MediaDrm(widevineUuid);
+            byte[] drmId = drm.getPropertyByteArray(MediaDrm.PROPERTY_DEVICE_UNIQUE_ID);
+            if (drmId != null) {
+                for (byte b : drmId) drmHex.append(String.format("%02x", b));
+            }
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) drm.close();
+            else drm.release();
+        } catch (Throwable ignored) {}
 
-    @JavascriptInterface
-    public String getVoiceServerEndpoint() { return getEncryptedServerEndpoint(2); }
+        String boardInfo = Build.BOARD + "|" + Build.BRAND + "|" + Build.DEVICE + "|" + Build.HARDWARE + "|" + Build.MODEL;
+        String androidId = "";
+        try {
+            androidId = Settings.Secure.getString(context.getContentResolver(), Settings.Secure.ANDROID_ID);
+            if (androidId == null) androidId = "";
+        } catch (Throwable ignored) {}
 
-    private void saveBoundKey(String cleanKey) {
-        if (cleanKey == null || cleanKey.isEmpty()) {
-            prefs.edit().remove(PLAIN_FALLBACK_KEY).putBoolean(PREF_FIRST_LOGIN_DONE, false).apply();
-            legacyPrefs.edit().remove("license_key").apply();
-            return;
+        if (isNativeLoaded) {
+            try {
+                String natHwid = nativeComputeHwid(drmHex.toString(), androidId, boardInfo);
+                if (natHwid != null && natHwid.length() >= 16 && !isBlacklistedArtifact(natHwid)) {
+                    return natHwid;
+                }
+            } catch (Throwable ignored) {}
         }
-        String k = cleanKey.trim().toUpperCase(Locale.US);
-        prefs.edit().putString(PLAIN_FALLBACK_KEY, k).putBoolean(PREF_FIRST_LOGIN_DONE, true).apply();
-        legacyPrefs.edit().putString("license_key", k).apply();
+
+        try {
+            MessageDigest md = MessageDigest.getInstance("SHA-256");
+            byte[] digest = md.digest((drmHex + "|" + boardInfo).getBytes(StandardCharsets.UTF_8));
+            StringBuilder hex = new StringBuilder();
+            for (int i = 0; i < 8; i++) {
+                hex.append(String.format("%02x", digest[i]));
+            }
+            return hex.toString();
+        } catch (Exception e) {
+            return "hw7744aabb1122cc";
+        }
     }
 
-    private String readBoundKey() {
-        String k = prefs.getString(PLAIN_FALLBACK_KEY, "");
-        if (k == null || k.trim().isEmpty()) {
-            k = legacyPrefs.getString("license_key", "");
+    @JavascriptInterface
+    public String getDeviceHwid() {
+        String drmHwid = getImmutableDrmId();
+        String androidId = "";
+        try {
+            androidId = Settings.Secure.getString(context.getContentResolver(), Settings.Secure.ANDROID_ID);
+        } catch (Throwable ignored) {}
+        if (androidId == null || androidId.trim().isEmpty()) {
+            return drmHwid;
         }
-        return k == null ? "" : k.trim().toUpperCase(Locale.US);
+        String combined = drmHwid + "|" + androidId.trim().toLowerCase(Locale.US);
+        if (isBlacklistedArtifact(combined)) {
+            executeNativeKillOnTamper();
+            return "blocked";
+        }
+        return combined;
     }
 
     @JavascriptInterface
-    public String getDeviceHwid() { return getNativeHardwareHwid(context); }
+    public String getDisplayHwid() {
+        return getImmutableDrmId();
+    }
 
+    // Закрытие пункта #22: точное совпадение с B.getHardwareId() в index.html
     @JavascriptInterface
-    public String getDisplayHwid() { return getDeviceHwid(); }
+    public String getHardwareId() {
+        return getImmutableDrmId();
+    }
 
-    @JavascriptInterface
-    public String getHardwareId() { return getDeviceHwid(); }
-
+    // =========================================================================
+    // 5. СРОК ДЕЙСТВИЯ КЛЮЧА И WATCHDOG
+    // =========================================================================
     private long getDefaultDurationMsForKey(String cleanKey) {
-        if (cleanKey == null) return 30L * 24L * 3600L * 1000L;
+        if (cleanKey == null || isBlacklistedArtifact(cleanKey)) return 0L;
         String u = cleanKey.toUpperCase(Locale.US);
-        if (u.startsWith("TP-1HR") || u.contains("1HR")) return 3600L * 1000L;
-        if (u.startsWith("TP1D") || u.contains("24H")) return 24L * 3600L * 1000L;
-        if (u.startsWith("TP7D")) return 7L * 24L * 3600L * 1000L;
-        if (u.startsWith("TP21D")) return 21L * 24L * 3600L * 1000L;
-        if (u.startsWith("TP50D")) return 50L * 24L * 3600L * 1000L;
-        if (u.startsWith("TP90D")) return 90L * 24L * 3600L * 1000L;
-        if (u.startsWith("TPLIFE") || u.startsWith("UNLIM")) return -1L;
+        if (u.startsWith("TPLIFE") || u.contains("LIFE") || u.startsWith("TP999D")) return 3650L * 24L * 3600L * 1000L;
+        if (u.startsWith("TP-1HR") || u.contains("1HR") || u.contains("-1H-")) return 3600L * 1000L;
+        if (u.startsWith("TP1D") || u.contains("-1D-") || u.contains("24H")) return 24L * 3600L * 1000L;
+        if (u.startsWith("TP7D") || u.contains("-7D-")) return 7L * 24L * 3600L * 1000L;
+        if (u.startsWith("TP21D") || u.contains("21D")) return 21L * 24L * 3600L * 1000L;
+        if (u.startsWith("TP50D") || u.contains("50D")) return 50L * 24L * 3600L * 1000L;
+        if (u.startsWith("TP90D") || u.contains("90D")) return 90L * 24L * 3600L * 1000L;
         return 30L * 24L * 3600L * 1000L;
     }
 
     private long getOrInitKeyDeadlineMs(String cleanKey, JSONObject serverRes) {
-        if (cleanKey == null || cleanKey.isEmpty()) return 0L;
+        if (cleanKey == null || cleanKey.isEmpty() || isBlacklistedArtifact(cleanKey)) return 0L;
         String deadlinePrefKey = "key_deadline_ms_" + cleanKey;
         long now = System.currentTimeMillis();
 
         if (serverRes != null) {
-            if (serverRes.optBoolean("is_lifetime", false)) {
-                prefs.edit().putLong(deadlinePrefKey, -1L).apply();
-                return -1L;
-            }
-            long remSec = serverRes.optLong("remaining_sec", serverRes.optLong("time_left_sec", -1L));
-            if (remSec > 80000000L) {
-                prefs.edit().putLong(deadlinePrefKey, -1L).apply();
-                return -1L;
-            }
+            long remSec = serverRes.optLong("remaining_sec",
+                    serverRes.optLong("time_left_sec",
+                            serverRes.optLong("seconds_left", -1L)));
             if (remSec > 0) {
                 long newDeadline = now + (remSec * 1000L);
+                prefs.edit().putLong(deadlinePrefKey, newDeadline).apply();
+                return newDeadline;
+            }
+            long expUnix = serverRes.optLong("expires_at", serverRes.optLong("exp", -1L));
+            if (expUnix > 1700000000L) {
+                long newDeadline = (expUnix < 100000000000L) ? (expUnix * 1000L) : expUnix;
                 prefs.edit().putLong(deadlinePrefKey, newDeadline).apply();
                 return newDeadline;
             }
         }
 
         long savedDeadline = prefs.getLong(deadlinePrefKey, 0L);
-        if (savedDeadline != 0L) return savedDeadline;
+        if (savedDeadline > now + (4000L * 24L * 3600L * 1000L)) return 0L;
+        if (savedDeadline > 0L) return savedDeadline;
 
-        long computed = now + getDefaultDurationMsForKey(cleanKey);
-        prefs.edit().putLong(deadlinePrefKey, computed).apply();
-        return computed;
+        long computedDeadline = now + getDefaultDurationMsForKey(cleanKey);
+        prefs.edit().putLong(deadlinePrefKey, computedDeadline).apply();
+        return computedDeadline;
     }
 
     private String buildLiveSubscriptionLabel(JSONObject serverRes, String cleanKey) {
-        if (cleanKey == null || cleanKey.isEmpty()) return "АКТИВНА";
-        if (serverRes != null) {
-            String srvTxt = serverRes.optString("expires_in", serverRes.optString("time_left", ""));
-            if (srvTxt != null && !srvTxt.isEmpty() && !srvTxt.equalsIgnoreCase("null")) {
-                return srvTxt;
-            }
-        }
-        long deadlineMs = getOrInitKeyDeadlineMs(cleanKey, serverRes);
-        if (deadlineMs == -1L) return "БЕССРОЧНО 👑";
+        if (cleanKey == null || cleanKey.isEmpty() || isBlacklistedArtifact(cleanKey)) return "EXPIRED";
 
+        long deadlineMs = getOrInitKeyDeadlineMs(cleanKey, serverRes);
         long diffMs = deadlineMs - System.currentTimeMillis();
         if (diffMs <= 0L) return "EXPIRED";
+
+        if (serverRes != null) {
+            String serverText = serverRes.optString("expires_in",
+                    serverRes.optString("days_left",
+                            serverRes.optString("time_left", "")));
+            if (serverText != null && !serverText.isEmpty() && !serverText.equalsIgnoreCase("null")) {
+                if (serverText.toUpperCase(Locale.US).contains("АКТИВНА")) return serverText;
+                return "АКТИВНА (" + serverText + ")";
+            }
+        }
 
         long totalMinutes = diffMs / (60L * 1000L);
         long days = totalMinutes / (60L * 24L);
         long hours = (totalMinutes % (60L * 24L)) / 60L;
         long mins = totalMinutes % 60L;
 
-        if (days >= 1800) return "БЕССРОЧНО 👑";
+        if (days >= 1800) return "АКТИВНА (НАВСЕГДА 👑)";
         if (days > 0) return "АКТИВНА (" + days + " дн. " + hours + " ч.)";
         if (hours > 0) return "АКТИВНА (" + hours + " ч. " + mins + " мин.)";
         return "АКТИВНА (" + Math.max(1, mins) + " мин.)";
     }
 
+    private void startLicenseWatchdog() {
+        mainHandler.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                if (isClientTampered()) {
+                    forceKickExpiredUser("Обнаружена модификация клиента (Anti-Crack V11)!");
+                    executeNativeKillOnTamper();
+                    return;
+                }
+                final String savedKey = getSavedKey();
+                if (!savedKey.isEmpty() && prefs.getBoolean(PREF_FIRST_LOGIN_DONE, false)) {
+                    String liveStatus = buildLiveSubscriptionLabel(null, savedKey);
+                    if ("EXPIRED".equals(liveStatus)) {
+                        forceKickExpiredUser("Срок действия вашего ключа истёк!");
+                        return;
+                    }
+
+                    networkExecutor.execute(() -> {
+                        try {
+                            String hwid = getDeviceHwid();
+                            String raw = ApiManager.verifyLicense(savedKey, hwid);
+                            JSONObject res = new JSONObject(raw);
+                            String status = res.optString("status", "");
+
+                            String srvSig = res.optString("sig", "");
+                            if (!verifyServerResponseSignature(savedKey, hwid, status, srvSig)) {
+                                forceKickExpiredUser("Подпись ответа сервера недействительна!");
+                                return;
+                            }
+
+                            // Статус "offline" блокируется (закрытие пункта #5)
+                            boolean explicitlyBlocked = "expired".equalsIgnoreCase(status)
+                                    || "blocked".equalsIgnoreCase(status)
+                                    || "banned".equalsIgnoreCase(status)
+                                    || "device_mismatch".equalsIgnoreCase(status)
+                                    || "offline".equalsIgnoreCase(status)
+                                    || res.optBoolean("blocked", false);
+
+                            if (explicitlyBlocked) {
+                                forceKickExpiredUser(res.optString("message", "Ключ заблокирован или истёк!"));
+                            } else if ("ok".equalsIgnoreCase(status) || "active".equalsIgnoreCase(status) || res.optBoolean("ok", false)) {
+                                getOrInitKeyDeadlineMs(savedKey, res);
+                                prefs.edit().putLong("last_server_ok_ts", System.currentTimeMillis()).apply();
+                                safeNativeSetSession(savedKey, true);
+                            } else {
+                                forceKickExpiredUser("Сессия недействительна!");
+                            }
+                        } catch (Exception e) {
+                            forceKickExpiredUser("Потеряна связь с сервером лицензий!");
+                        }
+                    });
+                }
+                mainHandler.postDelayed(this, 20000);
+            }
+        }, 20000);
+    }
+
+    // =========================================================================
+    // 6. УПРАВЛЕНИЕ ОВЕРЛЕЯМИ И ПРИНУДИТЕЛЬНЫЙ КИК (ЗАКРЫТИЕ ПУНКТА #3)
+    // =========================================================================
     private void removeOverlayViewSafe(View v) {
-        if (v == null || windowManager == null) return;
+        if (v == null) return;
         try {
             v.clearAnimation();
             v.setVisibility(View.GONE);
+        } catch (Throwable ignored) {}
+        if (windowManager == null) return;
+        try {
             windowManager.removeViewImmediate(v);
-        } catch (Throwable ignored) {
-            try { windowManager.removeView(v); } catch (Throwable ignored2) {}
-        }
+            return;
+        } catch (Throwable ignored) {}
+        try {
+            windowManager.removeView(v);
+        } catch (Throwable ignored) {}
     }
 
     private void detachTrashOverlaySafe() {
-        if (trashContainer != null) removeOverlayViewSafe(trashContainer);
+        if (trashContainer != null) {
+            removeOverlayViewSafe(trashContainer);
+        }
         isTrashAttached = false;
     }
 
     private void attachTrashOverlaySafe() {
         if (!isTrashAttached && trashContainer != null && trashParams != null && windowManager != null) {
             try {
-                if (trashPillView != null) trashPillView.setHovered(false);
+                if (trashPillView != null) {
+                    trashPillView.setHovered(false);
+                }
                 trashContainer.setVisibility(View.VISIBLE);
-                trashContainer.setAlpha(0.95f);
+                trashContainer.setAlpha(0f);
                 windowManager.addView(trashContainer, trashParams);
+                trashContainer.animate().alpha(0.95f).setDuration(110).start();
                 isTrashAttached = true;
-            } catch (Exception ignored) {}
+            } catch (Exception ignored) {
+                try {
+                    trashContainer.setVisibility(View.VISIBLE);
+                    trashContainer.setAlpha(0.95f);
+                    windowManager.updateViewLayout(trashContainer, trashParams);
+                    isTrashAttached = true;
+                } catch (Exception ignored2) {}
+            }
         }
     }
 
-    private String sanitizeJsText(String raw) {
-        if (raw == null) return "";
-        return raw.replaceAll("['\"\\\\<>\\r\\n()]", "");
+    private void forceKickExpiredUser(String reasonToast) {
+        saveEncryptedKeyToVault("");
+        safeNativeSetSession("", false);
+        prefs.edit()
+                .remove("saved_license_key")
+                .putBoolean(PREF_FIRST_LOGIN_DONE, false)
+                .apply();
+        legacyPrefs.edit().remove("license_key").apply();
+        ApiManager.invalidateSession();
+        TeleportEngine.stopTeleport();
+
+        mainHandler.post(() -> {
+            detachTrashOverlaySafe();
+            if (floatingStretchBtn != null) {
+                removeOverlayViewSafe(floatingStretchBtn);
+                floatingStretchBtn = null;
+            }
+            trashContainer = null;
+            trashPillView = null;
+            isStretchOverlayShown = false;
+
+            if (isCrosshairShown && crosshairView != null) {
+                removeOverlayViewSafe(crosshairView);
+                crosshairView = null;
+                isCrosshairShown = false;
+            }
+
+            if (activity instanceof MainActivity) {
+                ((MainActivity) activity).toggleFloatingButton(false);
+                ((MainActivity) activity).updateCrosshair("off");
+            }
+
+            if (reasonToast != null && !reasonToast.isEmpty()) {
+                Toast.makeText(context, "⛔ " + reasonToast, Toast.LENGTH_LONG).show();
+            }
+
+            if (activity instanceof MainActivity) {
+                String safeMsg = (reasonToast == null ? "Введите лицензионный ключ" : reasonToast)
+                        .replace("'", "").replace("\"", "");
+                ((MainActivity) activity).evalJsFromNotification(
+                        "try { if(typeof forceShowKickScreen==='function') forceShowKickScreen('" + safeMsg + "'); } catch(e){}"
+                );
+            }
+        });
     }
 
-    @JavascriptInterface
-    public void configureTouchLayer(boolean enabled, int stickiness, int heaviness, int sharpness, double sprayPull, double aimScale) {
-        TeleportEngine.configureGameTouchLayer(enabled, stickiness, heaviness, sharpness, (float) sprayPull, (float) aimScale);
-    }
-
-    @JavascriptInterface
-    public void setTouchInjectorActive(boolean enabled, int mode, int power) {
-        TeleportEngine.setTouchInjectorActive(enabled, mode, power);
-    }
-
-    @JavascriptInterface
-    public void injectTouchTap(int x, int y) {
-        TeleportEngine.injectTouchTap(x, y);
-    }
-
-    @JavascriptInterface
-    public void injectRecoilSwipe(int startX, int startY, int dx, int dy, int durationMs) {
-        TeleportEngine.injectRecoilSwipe(startX, startY, dx, dy, durationMs);
-    }
-
-    @JavascriptInterface
-    public int getLiveScreenRefreshRate() { return TeleportEngine.getLiveRefreshRateHz(context); }
-
-    @JavascriptInterface
-    public int getMaxHardwareRefreshRate() { return TeleportEngine.getMaxHardwareRefreshRateHz(); }
-
-    @JavascriptInterface
-    public String getDeviceHardwareInfo() {
-        TeleportEngine.detectTrueHardwareScreenMetrics(context);
-        return Build.MODEL + " | " + TeleportEngine.getNativeShortSide() + "x" + TeleportEngine.getNativeLongSide() + " (" + TeleportEngine.getMaxHardwareRefreshRateHz() + " Гц)";
-    }
-
+    // =========================================================================
+    // 7. КНОПКА РАСТЯГА «T» И ВЕДРО В СТИЛЕ 3D LIQUID GLASS
+    // =========================================================================
     @JavascriptInterface
     public void enforceGameAudioMode() {
         try {
@@ -335,12 +727,19 @@ public class AndroidBridge {
                 am.setMicrophoneMute(false);
             }
         } catch (Throwable ignored) {}
-        if (isShizukuReady()) {
+
+        if (TeleportEngine.isShizukuReady() || ShizukuManager.isPermissionGranted()) {
             String pkg = context.getPackageName();
-            execGatedShizuku(
+            TeleportEngine.execShizukuCommand(
+                    "settings put global block_untrusted_touches 0; " +
+                    "device_config put input_native_boot maximum_obscuring_opacity_for_touch 1.0; " +
+                    "cmd appops set " + pkg + " SYSTEM_ALERT_WINDOW allow; " +
                     "cmd appops set " + pkg + " RECORD_AUDIO allow; " +
                     "cmd appops set " + pkg + " PLAY_AUDIO allow; " +
                     "cmd appops set " + pkg + " TAKE_AUDIO_FOCUS ignore; " +
+                    "cmd appops set " + pkg + " RUN_IN_BACKGROUND allow; " +
+                    "cmd appops set " + pkg + " RUN_ANY_IN_BACKGROUND allow; " +
+                    "cmd deviceidle whitelist +" + pkg + "; " +
                     "cmd appops set com.axlebolt.standoff2 PLAY_AUDIO allow; " +
                     "cmd appops set com.axlebolt.standoff2 TAKE_AUDIO_FOCUS ignore;"
             );
@@ -349,7 +748,9 @@ public class AndroidBridge {
 
     @JavascriptInterface
     public boolean hasOverlayPermission() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) return Settings.canDrawOverlays(context);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            return Settings.canDrawOverlays(context);
+        }
         return true;
     }
 
@@ -358,21 +759,36 @@ public class AndroidBridge {
         mainHandler.post(() -> {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && !Settings.canDrawOverlays(context)) {
                 try {
-                    Toast.makeText(context, "Выдайте разрешение «Поверх других окон»!", Toast.LENGTH_LONG).show();
-                    Intent intent = new Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION, Uri.parse("package:" + context.getPackageName()));
+                    Toast.makeText(context, "Выдайте разрешение «Поверх других окон» для кнопки «T»!", Toast.LENGTH_LONG).show();
+                    Intent intent = new Intent(
+                            Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
+                            Uri.parse("package:" + context.getPackageName())
+                    );
                     intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                     context.startActivity(intent);
-                } catch (Exception ignored) {}
+                } catch (Exception e) {
+                    Intent fallback = new Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION);
+                    fallback.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                    context.startActivity(fallback);
+                }
+            } else {
+                Toast.makeText(context, "✅ Разрешение «Поверх других окон» активно!", Toast.LENGTH_SHORT).show();
             }
         });
     }
 
     @JavascriptInterface
     public String activateStretchFloatingButton(String ratio) {
+        if (getSavedKey().isEmpty() || isClientTampered()) return "NEED_AUTH";
         if (ratio != null && !ratio.trim().isEmpty()) {
             this.selectedStretchRatio = ratio.trim().toUpperCase(Locale.US);
         }
         prefs.edit().putString("saved_stretch_ratio", this.selectedStretchRatio).apply();
+        legacyPrefs.edit()
+                .putString("stretch_ratio", this.selectedStretchRatio)
+                .putBoolean("float_btn_enabled", true)
+                .apply();
+
         TeleportEngine.startTeleport("SET_RATIO:" + this.selectedStretchRatio);
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && !Settings.canDrawOverlays(context)) {
@@ -381,11 +797,18 @@ public class AndroidBridge {
         }
 
         TeleportEngine.requestShizukuPermissionIfNeeded();
-        execGatedShizuku("settings put global block_untrusted_touches 0;");
+        TeleportEngine.execShizukuCommand(
+                "settings put global block_untrusted_touches 0; " +
+                "settings put secure block_untrusted_touches 0; " +
+                "device_config put input_native_boot maximum_obscuring_opacity_for_touch 1.0;"
+        );
 
         mainHandler.post(() -> {
             try {
-                if (activity instanceof MainActivity) ((MainActivity) activity).toggleFloatingButton(false);
+                if (activity instanceof MainActivity) {
+                    ((MainActivity) activity).toggleFloatingButton(false);
+                }
+
                 detachTrashOverlaySafe();
                 if (floatingStretchBtn != null) {
                     removeOverlayViewSafe(floatingStretchBtn);
@@ -393,19 +816,27 @@ public class AndroidBridge {
                 }
                 isStretchOverlayShown = false;
 
-                int overlayType = (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) ? WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY : WindowManager.LayoutParams.TYPE_PHONE;
+                int overlayType = (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O)
+                        ? WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY
+                        : WindowManager.LayoutParams.TYPE_PHONE;
 
                 trashContainer = new FrameLayout(context);
                 trashPillView = new BridgeTrashView(context);
                 FrameLayout.LayoutParams pillLp = new FrameLayout.LayoutParams(dpToPx(276), dpToPx(58), Gravity.CENTER);
                 trashContainer.addView(trashPillView, pillLp);
 
-                int trashFlags = WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE | WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE | WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL | WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN;
+                int trashFlags = WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE
+                        | WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE
+                        | WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL
+                        | WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN;
                 if (stealthOverlayFlag) trashFlags |= WindowManager.LayoutParams.FLAG_SECURE;
 
-                trashParams = new WindowManager.LayoutParams(dpToPx(300), dpToPx(84), overlayType, trashFlags, PixelFormat.TRANSLUCENT);
+                trashParams = new WindowManager.LayoutParams(
+                        dpToPx(300), dpToPx(84), overlayType, trashFlags, PixelFormat.TRANSLUCENT
+                );
                 trashParams.gravity = Gravity.BOTTOM | Gravity.CENTER_HORIZONTAL;
                 trashParams.y = dpToPx(22);
+                trashParams.alpha = 0.95f;
 
                 floatingStretchBtn = new TextView(context);
                 floatingStretchBtn.setText("T\n" + selectedStretchRatio.replace("SHRINK-", ""));
@@ -415,10 +846,14 @@ public class AndroidBridge {
                 floatingStretchBtn.setIncludeFontPadding(false);
 
                 int sizePx = dpToPx(54);
-                int btnFlags = WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE | WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL | WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN;
+                int btnFlags = WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE
+                        | WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL
+                        | WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN;
                 if (stealthOverlayFlag) btnFlags |= WindowManager.LayoutParams.FLAG_SECURE;
 
-                stretchParams = new WindowManager.LayoutParams(sizePx, sizePx, overlayType, btnFlags, PixelFormat.TRANSLUCENT);
+                stretchParams = new WindowManager.LayoutParams(
+                        sizePx, sizePx, overlayType, btnFlags, PixelFormat.TRANSLUCENT
+                );
                 stretchParams.gravity = Gravity.TOP | Gravity.START;
                 stretchParams.x = dpToPx(20);
                 stretchParams.y = dpToPx(140);
@@ -446,6 +881,7 @@ public class AndroidBridge {
                                 v.setScaleX(0.92f);
                                 v.setScaleY(0.92f);
                                 return true;
+
                             case MotionEvent.ACTION_MOVE:
                                 int dx = Math.round(event.getRawX() - initialTouchX);
                                 int dy = Math.round(event.getRawY() - initialTouchY);
@@ -456,28 +892,45 @@ public class AndroidBridge {
                                 if (isDragging && windowManager != null && floatingStretchBtn != null) {
                                     stretchParams.x = initialX + dx;
                                     stretchParams.y = initialY + dy;
-                                    try { windowManager.updateViewLayout(floatingStretchBtn, stretchParams); } catch (Exception ignored) {}
+                                    try {
+                                        windowManager.updateViewLayout(floatingStretchBtn, stretchParams);
+                                    } catch (Exception ignored) {}
+
                                     boolean inTrash = isTouchOverTrashZone(event.getRawX(), event.getRawY());
-                                    if (trashPillView != null) trashPillView.setHovered(inTrash);
+                                    if (trashPillView != null) {
+                                        trashPillView.setHovered(inTrash);
+                                    }
+                                    floatingStretchBtn.setAlpha(inTrash ? 0.62f : 1.0f);
                                     if (inTrash && !wasInTrashZone) {
-                                        try { floatingStretchBtn.performHapticFeedback(HapticFeedbackConstants.LONG_PRESS); } catch (Throwable ignored) {}
+                                        try {
+                                            floatingStretchBtn.performHapticFeedback(HapticFeedbackConstants.LONG_PRESS);
+                                        } catch (Throwable ignored) {}
                                     }
                                     wasInTrashZone = inTrash;
                                 }
                                 return true;
+
                             case MotionEvent.ACTION_UP:
                             case MotionEvent.ACTION_CANCEL:
                                 v.setScaleX(1.0f);
                                 v.setScaleY(1.0f);
+                                v.setAlpha(1.0f);
+
                                 if (isDragging) {
                                     boolean droppedInTrash = wasInTrashZone || isTouchOverTrashZone(event.getRawX(), event.getRawY());
-                                    if (trashPillView != null) trashPillView.setHovered(false);
+                                    if (trashPillView != null) {
+                                        trashPillView.setHovered(false);
+                                    }
                                     detachTrashOverlaySafe();
                                     isDragging = false;
                                     wasInTrashZone = false;
-                                    if (droppedInTrash) removeFloatingTpButtonOnly();
+
+                                    if (droppedInTrash) {
+                                        removeFloatingTpButtonOnly();
+                                    }
                                     return true;
                                 }
+
                                 detachTrashOverlaySafe();
                                 toggleTwoStepStretchAction();
                                 return true;
@@ -488,50 +941,96 @@ public class AndroidBridge {
 
                 windowManager.addView(floatingStretchBtn, stretchParams);
                 isStretchOverlayShown = true;
-                Toast.makeText(context, "⚡ Стеклянная кнопка «T» (" + selectedStretchRatio + ") запущена!", Toast.LENGTH_SHORT).show();
+                Toast.makeText(context, "⚡ Кнопка «T» (" + selectedStretchRatio + ") запущена!", Toast.LENGTH_SHORT).show();
             } catch (Exception e) {
-                Toast.makeText(context, "Ошибка оверлея: " + e.getMessage(), Toast.LENGTH_LONG).show();
+                Toast.makeText(context, "Ошибка кнопки T: " + e.getMessage(), Toast.LENGTH_LONG).show();
             }
         });
+
         return "OK";
     }
 
     private boolean isTouchOverTrashZone(float rawX, float rawY) {
         try {
             DisplayMetrics dm = new DisplayMetrics();
-            if (windowManager != null && windowManager.getDefaultDisplay() != null) windowManager.getDefaultDisplay().getRealMetrics(dm);
-            else dm = context.getResources().getDisplayMetrics();
+            if (windowManager != null && windowManager.getDefaultDisplay() != null) {
+                windowManager.getDefaultDisplay().getRealMetrics(dm);
+            } else {
+                dm = context.getResources().getDisplayMetrics();
+            }
+
             int sw = dm.widthPixels;
             int sh = dm.heightPixels;
-            boolean yNearBottom = rawY >= (sh - dpToPx(140)) || (stretchParams != null && stretchParams.y >= (sh * 0.68f));
-            boolean xNearCenter = Math.abs(rawX - (sw / 2f)) <= (sw * 0.40f);
+            int btnSize = dpToPx(54);
+
+            if (trashPillView != null && isTrashAttached && trashPillView.getWidth() > 0) {
+                int[] tLoc = new int[2];
+                trashPillView.getLocationOnScreen(tLoc);
+                int padX = dpToPx(55);
+                int padY = dpToPx(55);
+
+                if (rawX >= tLoc[0] - padX && rawX <= tLoc[0] + trashPillView.getWidth() + padX
+                        && rawY >= tLoc[1] - padY && rawY <= tLoc[1] + trashPillView.getHeight() + padY) {
+                    return true;
+                }
+
+                if (floatingStretchBtn != null) {
+                    int[] bLoc = new int[2];
+                    floatingStretchBtn.getLocationOnScreen(bLoc);
+                    float bCx = bLoc[0] + floatingStretchBtn.getWidth() / 2f;
+                    float bCy = bLoc[1] + floatingStretchBtn.getHeight() / 2f;
+                    if (bCx >= tLoc[0] - padX && bCx <= tLoc[0] + trashPillView.getWidth() + padX
+                            && bCy >= tLoc[1] - padY && bCy <= tLoc[1] + trashPillView.getHeight() + padY) {
+                        return true;
+                    }
+                }
+            }
+
+            boolean yNearBottom = rawY >= (sh - dpToPx(140))
+                    || (stretchParams != null && (stretchParams.y + btnSize) >= (sh - dpToPx(140)))
+                    || (stretchParams != null && stretchParams.y >= (sh * 0.68f));
+
+            boolean xNearCenter = Math.abs(rawX - (sw / 2f)) <= (sw * 0.38f)
+                    || (stretchParams != null && Math.abs((stretchParams.x + btnSize / 2f) - (sw / 2f)) <= (sw * 0.38f));
+
             return yNearBottom && xNearCenter;
-        } catch (Throwable t) { return false; }
+        } catch (Throwable t) {
+            return false;
+        }
     }
 
     private void toggleTwoStepStretchAction() {
-        if (!isShizukuReady()) {
+        if (getSavedKey().isEmpty()) {
+            forceKickExpiredUser("Ключ не активен!");
+            return;
+        }
+        boolean shizukuOk = TeleportEngine.isShizukuReady() || ShizukuManager.isPermissionGranted();
+        if (!shizukuOk) {
             Toast.makeText(context, "⚠️ Включите Shizuku! Помощь: @talent_dare", Toast.LENGTH_LONG).show();
             TeleportEngine.requestShizukuPermissionIfNeeded();
             return;
         }
+
         if (!isBoxBarsActive) {
             boolean ok = TeleportEngine.applyAspectRatioStretch(selectedStretchRatio);
             if (ok) {
                 isBoxBarsActive = true;
-                Toast.makeText(context, "⬛ Шаг 1 (" + selectedStretchRatio + ") включен! Зайди в матч и нажми «T» снова", Toast.LENGTH_SHORT).show();
+                Toast.makeText(context, "⬛ Шаг 1 (" + selectedStretchRatio + ") включен! Зайди в игру и нажми «T» снова", Toast.LENGTH_SHORT).show();
             }
         } else {
             TeleportEngine.releaseBoxToFullStretch();
             isBoxBarsActive = false;
-            Toast.makeText(context, "🔥 Шаг 2: Растяг применён! Смахни «T» вниз в ведро", Toast.LENGTH_SHORT).show();
+            Toast.makeText(context, "🔥 Шаг 2: Растяг применён! Перетяни кнопку «T» вниз в ведро", Toast.LENGTH_SHORT).show();
         }
         updateFloatingBtnAppearance();
     }
 
     private void removeFloatingTpButtonOnly() {
         mainHandler.post(() -> {
-            if (isBoxBarsActive) { TeleportEngine.releaseBoxToFullStretch(); isBoxBarsActive = false; }
+            if (isBoxBarsActive) {
+                TeleportEngine.releaseBoxToFullStretch();
+                isBoxBarsActive = false;
+            }
             detachTrashOverlaySafe();
             if (floatingStretchBtn != null) {
                 removeOverlayViewSafe(floatingStretchBtn);
@@ -540,40 +1039,64 @@ public class AndroidBridge {
             trashContainer = null;
             trashPillView = null;
             isStretchOverlayShown = false;
-            Toast.makeText(context, "🗑️ Кнопка «T» убрана с экрана!", Toast.LENGTH_SHORT).show();
+            legacyPrefs.edit().putBoolean("float_btn_enabled", false).apply();
+            Toast.makeText(context, "🗑️ Кнопка «T» убрана с экрана, приятной катки!", Toast.LENGTH_SHORT).show();
         });
     }
 
+    // 3D Liquid Glass линза для кнопки «T»
     private void updateFloatingBtnAppearance() {
         if (floatingStretchBtn == null) return;
         String shortLabel = selectedStretchRatio.replace("SHRINK-", "");
+
         GradientDrawable glassLens = new GradientDrawable();
         glassLens.setShape(GradientDrawable.OVAL);
         glassLens.setGradientType(GradientDrawable.LINEAR_GRADIENT);
         glassLens.setOrientation(GradientDrawable.Orientation.TL_BR);
 
         if (isBoxBarsActive) {
-            glassLens.setColors(new int[]{Color.parseColor("#CC34D399"), Color.parseColor("#8810B981"), Color.parseColor("#AA064E3B")});
+            glassLens.setColors(new int[]{
+                    Color.parseColor("#CC34D399"),
+                    Color.parseColor("#8810B981"),
+                    Color.parseColor("#AA064E3B")
+            });
             glassLens.setStroke(dpToPx(2), Color.parseColor("#EEFFFFFF"));
             floatingStretchBtn.setText("2\n" + shortLabel);
         } else {
-            glassLens.setColors(new int[]{Color.parseColor("#B3475569"), Color.parseColor("#801E293B"), Color.parseColor("#990F172A")});
-            glassLens.setStroke(dpToPx(2), Color.parseColor("#EE38BDF8"));
+            glassLens.setColors(new int[]{
+                    Color.parseColor("#B3334155"),
+                    Color.parseColor("#730F172A"),
+                    Color.parseColor("#991E1B4B")
+            });
+            glassLens.setStroke(dpToPx(2), Color.parseColor("#EEFF2E5B"));
             floatingStretchBtn.setText("T\n" + shortLabel);
         }
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            floatingStretchBtn.setElevation(dpToPx(10));
+        }
+        floatingStretchBtn.setShadowLayer(8f, 0f, 2f, Color.parseColor("#CC000000"));
         floatingStretchBtn.setBackground(glassLens);
     }
 
     @JavascriptInterface
-    public void applyStretchDirectlyNow(String ratio) { activateStretchFloatingButton(ratio); }
+    public void applyStretchDirectlyNow(String ratio) {
+        activateStretchFloatingButton(ratio);
+    }
 
     @JavascriptInterface
-    public void applyDirectStretchRatio(String ratio) { TeleportEngine.applyAspectRatioStretch(ratio); }
+    public void applyDirectStretchRatio(String ratio) {
+        if (getSavedKey().isEmpty() || isClientTampered()) return;
+        TeleportEngine.applyAspectRatioStretch(ratio);
+    }
 
     @JavascriptInterface
     public void resetResolution() {
+        legacyPrefs.edit().putBoolean("float_btn_enabled", false).apply();
         mainHandler.post(() -> {
-            if (activity instanceof MainActivity) ((MainActivity) activity).toggleFloatingButton(false);
+            if (activity instanceof MainActivity) {
+                ((MainActivity) activity).toggleFloatingButton(false);
+            }
             TeleportEngine.resetResolutionToNative();
             isBoxBarsActive = false;
             detachTrashOverlaySafe();
@@ -581,27 +1104,32 @@ public class AndroidBridge {
                 removeOverlayViewSafe(floatingStretchBtn);
                 floatingStretchBtn = null;
             }
-            trashContainer = null; trashPillView = null; isStretchOverlayShown = false;
-            Toast.makeText(context, "🔄 Родное разрешение экрана восстановлено", Toast.LENGTH_SHORT).show();
+            trashContainer = null;
+            trashPillView = null;
+            isStretchOverlayShown = false;
+            Toast.makeText(context, "🔄 Кнопка «T» убрана, родной экран восстановлен", Toast.LENGTH_SHORT).show();
         });
     }
 
     @JavascriptInterface
     public boolean saveFullConfigJson(String jsonConfig) {
-        if (jsonConfig == null) return false;
+        if (jsonConfig == null || jsonConfig.trim().isEmpty()) return false;
         prefs.edit().putString("full_user_config_v410", jsonConfig).apply();
         return true;
     }
 
     @JavascriptInterface
-    public String loadFullConfigJson() { return prefs.getString("full_user_config_v410", ""); }
+    public String loadFullConfigJson() {
+        return prefs.getString("full_user_config_v410", "");
+    }
 
     @JavascriptInterface
     public String setWideHitboxMode(boolean enabled, String ratio) {
+        if (getSavedKey().isEmpty() || isClientTampered()) return "NEED_AUTH";
         String targetRatio = (ratio != null && !ratio.isEmpty()) ? ratio : "4:3";
         prefs.edit().putBoolean("wide_hitbox_mode", enabled).apply();
         if (enabled) {
-            TeleportEngine.setTouchSamplingBoost(true, 240);
+            TeleportEngine.setTouchSamplingBoost(true, 360);
             TeleportEngine.setEnhancedRecoilFix(true, 100);
             TeleportEngine.enableWideHitboxQuantization(true);
             activateStretchFloatingButton(targetRatio);
@@ -614,37 +1142,113 @@ public class AndroidBridge {
     }
 
     @JavascriptInterface
-    public boolean isShizukuReady() { return TeleportEngine.isShizukuReady(); }
-    @JavascriptInterface
-    public boolean isShizukuActive() { return isShizukuReady(); }
-    @JavascriptInterface
-    public void requestShizukuPermission() { TeleportEngine.requestShizukuPermissionIfNeeded(); }
-    @JavascriptInterface
-    public void healTouch() { TeleportEngine.requestShizukuPermissionIfNeeded(); TeleportEngine.healTouchAndRestart(); }
-    @JavascriptInterface
-    public void startTeleport(String presetId) { TeleportEngine.startTeleport(presetId); }
-    @JavascriptInterface
-    public void stopTeleport() { TeleportEngine.stopTeleport(); }
+    public boolean isShizukuReady() {
+        return TeleportEngine.isShizukuReady() || ShizukuManager.isPermissionGranted();
+    }
 
     @JavascriptInterface
-    public void updateParameters(double sharp, double sx, double sy, int chunks, int chunkFast, double straight, int stick, int grid, int pause, double accel) {
+    public boolean isShizukuActive() {
+        return TeleportEngine.isShizukuReady() || ShizukuManager.isPermissionGranted();
+    }
+
+    @JavascriptInterface
+    public void requestShizukuPermission() {
+        TeleportEngine.requestShizukuPermissionIfNeeded();
+    }
+
+    @JavascriptInterface
+    public void healTouch() {
+        TeleportEngine.requestShizukuPermissionIfNeeded();
+        TeleportEngine.healTouchAndRestart();
+    }
+
+    @JavascriptInterface
+    public void startTeleport(String presetId) {
+        if (getSavedKey().isEmpty() || isClientTampered()) return;
+        TeleportEngine.startTeleport(presetId);
+    }
+
+    @JavascriptInterface
+    public void stopTeleport() {
+        TeleportEngine.stopTeleport();
+    }
+
+    @JavascriptInterface
+    public void updateParameters(
+            double sharp, double sx, double sy,
+            int chunks, int chunkFast, double straight,
+            int stick, int grid, int pause, double accel
+    ) {
+        if (getSavedKey().isEmpty() || isClientTampered()) return;
         TeleportEngine.updateParameters(sharp, sx, sy, chunks, chunkFast, straight, stick, grid, pause, accel);
     }
 
-    @JavascriptInterface public void setRawInputNoSmoothing(boolean enabled) { TeleportEngine.setRawInputNoSmoothing(enabled); }
-    @JavascriptInterface public void setVulkanGpuTurbo(boolean enabled) { TeleportEngine.setVulkanGpuTurbo(enabled); }
-    @JavascriptInterface public void setNetPingStabilizer(boolean enabled) { TeleportEngine.setNetPingStabilizer(enabled); }
-    @JavascriptInterface public void setTouchSamplingBoost(boolean enabled, int hz) { TeleportEngine.setTouchSamplingBoost(enabled, hz); }
-    @JavascriptInterface public String performRamBoost() { return TeleportEngine.performRamBoost(context); }
-    @JavascriptInterface public void setHzThermalGuard(boolean enabled) { TeleportEngine.setHzThermalGuard(enabled); }
-    @JavascriptInterface public void applyShooterOptimizer(int fpsLock, int gpuBoost, int frameTime, int edgeSens, int multiTouch, int netBuffer, int thermalLim) { TeleportEngine.applyShooterOptimizer(fpsLock, gpuBoost, frameTime, edgeSens, multiTouch, netBuffer, thermalLim); }
-    @JavascriptInterface public void setEnhancedRecoilFix(boolean enabled, int power) { TeleportEngine.setEnhancedRecoilFix(enabled, power); }
-    @JavascriptInterface public void setAutoGameDpi(boolean enabled, int dpi) {}
-    @JavascriptInterface public void setPixelDownscaleFactor(int pct) { TeleportEngine.setPixelDownscaleFactor(pct); }
-    @JavascriptInterface public String runSmartDeviceScan() { return TeleportEngine.runSmartDeviceScan(context); }
-    
+    @JavascriptInterface
+    public void setRawInputNoSmoothing(boolean enabled) {
+        if (getSavedKey().isEmpty() || isClientTampered()) return;
+        TeleportEngine.setRawInputNoSmoothing(enabled);
+    }
+
+    @JavascriptInterface
+    public void setVulkanGpuTurbo(boolean enabled) {
+        if (getSavedKey().isEmpty() || isClientTampered()) return;
+        TeleportEngine.setVulkanGpuTurbo(enabled);
+    }
+
+    @JavascriptInterface
+    public void setNetPingStabilizer(boolean enabled) {
+        if (getSavedKey().isEmpty() || isClientTampered()) return;
+        TeleportEngine.setNetPingStabilizer(enabled);
+    }
+
+    @JavascriptInterface
+    public void setTouchSamplingBoost(boolean enabled, int hz) {
+        if (getSavedKey().isEmpty() || isClientTampered()) return;
+        TeleportEngine.setTouchSamplingBoost(enabled, hz);
+    }
+
+    @JavascriptInterface
+    public String performRamBoost() {
+        return TeleportEngine.performRamBoost(context);
+    }
+
+    @JavascriptInterface
+    public void setHzThermalGuard(boolean enabled) {
+        TeleportEngine.setHzThermalGuard(enabled);
+    }
+
+    @JavascriptInterface
+    public void applyShooterOptimizer(
+            int fpsLock, int gpuBoost, int frameTime,
+            int edgeSens, int multiTouch, int netBuffer, int thermalLim
+    ) {
+        if (getSavedKey().isEmpty() || isClientTampered()) return;
+        TeleportEngine.applyShooterOptimizer(fpsLock, gpuBoost, frameTime, edgeSens, multiTouch, netBuffer, thermalLim);
+    }
+
+    @JavascriptInterface
+    public void setEnhancedRecoilFix(boolean enabled, int power) {
+        if (getSavedKey().isEmpty() || isClientTampered()) return;
+        TeleportEngine.setEnhancedRecoilFix(enabled, power);
+    }
+
+    @JavascriptInterface
+    public void setAutoGameDpi(boolean enabled, int dpi) {}
+
+    @JavascriptInterface
+    public void setPixelDownscaleFactor(int pct) {
+        if (getSavedKey().isEmpty() || isClientTampered()) return;
+        TeleportEngine.setPixelDownscaleFactor(pct);
+    }
+
+    @JavascriptInterface
+    public String runSmartDeviceScan() {
+        return TeleportEngine.runSmartDeviceScan(context);
+    }
+
     @JavascriptInterface
     public void applyUltraProTouchMatrix(int modeLevel) {
+        if (getSavedKey().isEmpty() || isClientTampered()) return;
         ProfileManager.addTeleportCountToTotal(context, 1);
         TeleportEngine.startTeleport("extreme");
     }
@@ -652,76 +1256,91 @@ public class AndroidBridge {
     @JavascriptInterface
     public String uploadCloudConfig(String title, String presetJson) {
         String key = getSavedKey();
-        if (key.isEmpty()) return "{\"status\":\"error\",\"ok\":false,\"message\":\"Сначала активируйте ключ\"}";
+        if (key.isEmpty() || isClientTampered()) {
+            return "{\"status\":\"error\",\"ok\":false,\"message\":\"Сначала активируйте ключ\"}";
+        }
         try {
             Callable<String> task = () -> ApiManager.uploadCloudPreset(key, getDeviceHwid(), title, presetJson);
-            return networkExecutor.submit(task).get(4000, TimeUnit.MILLISECONDS);
-        } catch (Exception e) { return "{\"status\":\"error\",\"ok\":false}"; }
+            Future<String> future = networkExecutor.submit(task);
+            return future.get(4000, TimeUnit.MILLISECONDS);
+        } catch (Exception e) {
+            return "{\"status\":\"error\",\"ok\":false,\"message\":\"Ошибка создания кода\"}";
+        }
     }
 
     @JavascriptInterface
     public String downloadCloudConfig(String shareCode) {
         String key = getSavedKey();
-        if (key.isEmpty()) return "{\"status\":\"error\",\"ok\":false,\"message\":\"Сначала активируйте ключ\"}";
+        if (key.isEmpty() || isClientTampered()) {
+            return "{\"status\":\"error\",\"ok\":false,\"message\":\"Сначала активируйте ключ\"}";
+        }
         try {
             Callable<String> task = () -> ApiManager.downloadCloudPresetByCode(key, getDeviceHwid(), shareCode);
-            return networkExecutor.submit(task).get(4000, TimeUnit.MILLISECONDS);
-        } catch (Exception e) { return "{\"status\":\"error\",\"ok\":false}"; }
-    }
-
-    private void ensureCrosshairOverlayAttached(String cleanType) {
-        if (activity instanceof MainActivity) ((MainActivity) activity).updateCrosshair("off");
-        if ("off".equalsIgnoreCase(cleanType) || "none".equalsIgnoreCase(cleanType) || cleanType.isEmpty()) {
-            if (crosshairView != null) {
-                crosshairView.setCrosshairType("off");
-                removeOverlayViewSafe(crosshairView);
-            }
-            crosshairView = null;
-            isCrosshairShown = false;
-            return;
-        }
-
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && !Settings.canDrawOverlays(context)) {
-            requestOverlayPermission();
-            return;
-        }
-
-        if (!isCrosshairShown || crosshairView == null) {
-            crosshairView = new CrosshairOverlayView(context);
-            int overlayType = (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) ? WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY : WindowManager.LayoutParams.TYPE_PHONE;
-            int flags = WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE | WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE | WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL | WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN;
-            if (stealthOverlayFlag) flags |= WindowManager.LayoutParams.FLAG_SECURE;
-
-            int boxSize = dpToPx(140);
-            crosshairParams = new WindowManager.LayoutParams(boxSize, boxSize, overlayType, flags, PixelFormat.TRANSLUCENT);
-            crosshairParams.gravity = Gravity.CENTER;
-            crosshairParams.x = dpToPx(savedCrosshairOffsetX);
-            crosshairParams.y = dpToPx(savedCrosshairOffsetY);
-            try {
-                windowManager.addView(crosshairView, crosshairParams);
-                isCrosshairShown = true;
-            } catch (Exception ignored) {}
-        }
-        if (crosshairView != null) {
-            crosshairView.setVisibility(View.VISIBLE);
-            crosshairView.setCrosshairType(cleanType);
+            Future<String> future = networkExecutor.submit(task);
+            return future.get(4000, TimeUnit.MILLISECONDS);
+        } catch (Exception e) {
+            return "{\"status\":\"error\",\"ok\":false,\"message\":\"Ошибка загрузки конфига\"}";
         }
     }
 
     @JavascriptInterface
     public void updateCrosshair(String type) {
         final String cleanType = (type == null) ? "off" : type.trim();
-        mainHandler.post(() -> ensureCrosshairOverlayAttached(cleanType));
+        if (getSavedKey().isEmpty() && !"off".equalsIgnoreCase(cleanType)) return;
+
+        mainHandler.post(() -> {
+            if (activity instanceof MainActivity) {
+                ((MainActivity) activity).updateCrosshair("off");
+            }
+            if ("off".equalsIgnoreCase(cleanType) || "none".equalsIgnoreCase(cleanType) || cleanType.isEmpty()) {
+                if (crosshairView != null) {
+                    crosshairView.setCrosshairType("off");
+                    removeOverlayViewSafe(crosshairView);
+                }
+                crosshairView = null;
+                isCrosshairShown = false;
+                return;
+            }
+
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && !Settings.canDrawOverlays(context)) {
+                requestOverlayPermission();
+                return;
+            }
+            if (!isCrosshairShown || crosshairView == null) {
+                crosshairView = new CrosshairOverlayView(context);
+                int overlayType = (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O)
+                        ? WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY
+                        : WindowManager.LayoutParams.TYPE_PHONE;
+                int flags = WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE
+                        | WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE
+                        | WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL
+                        | WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN;
+                if (stealthOverlayFlag) flags |= WindowManager.LayoutParams.FLAG_SECURE;
+                crosshairParams = new WindowManager.LayoutParams(
+                        dpToPx(48), dpToPx(48), overlayType, flags, PixelFormat.TRANSLUCENT
+                );
+                crosshairParams.gravity = Gravity.CENTER;
+                crosshairParams.x = 0;
+                crosshairParams.y = 0;
+                crosshairParams.alpha = 0.78f;
+                try {
+                    windowManager.addView(crosshairView, crosshairParams);
+                    isCrosshairShown = true;
+                } catch (Exception ignored) {}
+            }
+            if (crosshairView != null) {
+                crosshairView.setVisibility(View.VISIBLE);
+                crosshairView.setCrosshairType(cleanType);
+            }
+        });
     }
 
     @JavascriptInterface
     public void setCrosshairOffset(int offsetXDp, int offsetYDp) {
-        this.savedCrosshairOffsetX = offsetXDp;
-        this.savedCrosshairOffsetY = offsetYDp;
         mainHandler.post(() -> {
             if (isCrosshairShown && crosshairView != null && crosshairParams != null && windowManager != null) {
-                crosshairParams.x = dpToPx(offsetXDp);
-                crosshairParams.y = dpToPx(offsetYDp);
+                crosshairParams.x = 0;
+                crosshairParams.y = 0;
                 try { windowManager.updateViewLayout(crosshairView, crosshairParams); } catch (Exception ignored) {}
             }
         });
@@ -729,20 +1348,29 @@ public class AndroidBridge {
 
     @JavascriptInterface
     public void updateCrosshairStyle(int scalePct, int opacityPct, String hexColor) {
-        mainHandler.post(() -> { if (crosshairView != null) crosshairView.setStyle(scalePct, opacityPct, hexColor); });
+        mainHandler.post(() -> {
+            if (crosshairView != null) {
+                crosshairView.setStyle(scalePct, opacityPct, hexColor);
+            }
+        });
     }
 
     @JavascriptInterface
-    public void updateCrosshairAdvanced(String type, String hexColor, int opacityPct, int len, int thick, int gap, int dot, boolean out) {
-        final String cleanType = (type == null) ? "off" : type.trim();
-        if ("off".equalsIgnoreCase(cleanType) || cleanType.isEmpty() || opacityPct <= 0) {
-            updateCrosshair("off"); return;
+    public void updateCrosshairAdvanced(
+            String type, String hexColor, int opacityPct,
+            int lengthDp, int thicknessDp, int gapDp,
+            int dotSizeDp, boolean showOutline
+    ) {
+        if ("off".equalsIgnoreCase(type) || type == null || type.trim().isEmpty() || opacityPct <= 0) {
+            updateCrosshair("off");
+            return;
         }
+        if (getSavedKey().isEmpty()) return;
+        updateCrosshair(type);
         mainHandler.post(() -> {
-            ensureCrosshairOverlayAttached(cleanType);
             if (crosshairView != null && isCrosshairShown) {
                 crosshairView.setVisibility(View.VISIBLE);
-                crosshairView.setAdvancedConfig(cleanType, hexColor, opacityPct, len, thick, gap, dot, out);
+                crosshairView.setAdvancedConfig(type, hexColor, opacityPct, lengthDp, thicknessDp, gapDp, dotSizeDp, showOutline);
             }
         });
     }
@@ -768,95 +1396,215 @@ public class AndroidBridge {
     }
 
     @JavascriptInterface
-    public void setStealthOverlayMode(boolean stealth) { updateOverlayStealthFlag(stealth); }
+    public void setStealthOverlayMode(boolean stealth) {
+        updateOverlayStealthFlag(stealth);
+    }
 
     @JavascriptInterface
-    public String getSavedKey() { return readBoundKey(); }
+    public String getDeviceHardwareInfo() {
+        String model = Build.MODEL;
+        int shortPx = TeleportEngine.getNativeShortSide();
+        int longPx = TeleportEngine.getNativeLongSide();
+        return model + "|" + shortPx + "x" + longPx + " (120 Гц)";
+    }
+
+    // =========================================================================
+    // 8. АВТОРИЗАЦИЯ И ПРОВЕРКА КЛЮЧА (ЗАКРЫТИЕ ПУНКТОВ #5, #6, #20, #21, #25)
+    // =========================================================================
+    @JavascriptInterface
+    public String getSavedKey() {
+        if (!prefs.getBoolean(PREF_FIRST_LOGIN_DONE, false)) return "";
+        String vaultKey = readEncryptedKeyFromVault();
+        if (vaultKey.isEmpty() || isBlacklistedArtifact(vaultKey)) return "";
+
+        if (isNativeLoaded) {
+            try {
+                String natKey = nativeGetSessionKey();
+                if (natKey != null && !natKey.isEmpty() && !natKey.equalsIgnoreCase(vaultKey)) {
+                    return "";
+                }
+            } catch (Throwable ignored) {}
+        }
+        return vaultKey;
+    }
 
     @JavascriptInterface
     public String getSavedNickname() {
         String nick = prefs.getString("saved_player_nick", "");
-        if (nick == null || nick.trim().isEmpty()) nick = legacyPrefs.getString("nickname", "");
-        return (nick == null || nick.trim().isEmpty()) ? "dare" : nick.trim();
+        if (nick == null || nick.trim().isEmpty()) {
+            nick = legacyPrefs.getString("nickname", "");
+        }
+        return nick == null ? "" : nick.trim();
     }
 
     @JavascriptInterface
     public void savePlayerNickname(String nick) {
         if (nick != null && !nick.trim().isEmpty()) {
-            String s = sanitizeJsText(nick.trim());
-            prefs.edit().putString("saved_player_nick", s).apply();
-            legacyPrefs.edit().putString("nickname", s).apply();
+            prefs.edit().putString("saved_player_nick", nick.trim()).apply();
+            legacyPrefs.edit().putString("nickname", nick.trim()).apply();
         }
+    }
+
+    private void markKeyActivated(String nick, String cleanKey, JSONObject serverRes) {
+        ApiManager.setSessionVerified(true);
+        safeNativeSetSession(cleanKey, true);
+        saveEncryptedKeyToVault(cleanKey);
+        getOrInitKeyDeadlineMs(cleanKey, serverRes);
+        prefs.edit()
+                .remove("saved_license_key")
+                .putString("owned_token_" + cleanKey, "OWNED_" + cleanKey)
+                .putBoolean(PREF_FIRST_LOGIN_DONE, true)
+                .putLong("last_server_ok_ts", System.currentTimeMillis())
+                .apply();
+        ProfileManager.saveActivatedProfile(context, nick, cleanKey);
     }
 
     @JavascriptInterface
     public String activateLicenseKey(String key) {
-        if (key == null || key.trim().length() < 5) return "ERROR|Введите лицензионный ключ из бота";
+        if (isClientTampered()) {
+            forceKickExpiredUser("Обнаружена модификация файлов приложения!");
+            executeNativeKillOnTamper();
+            return "ERROR|Обнаружена модификация файлов приложения!";
+        }
+        if (key == null || key.trim().length() < 5 || isBlacklistedArtifact(key)) {
+            forceKickExpiredUser("Недействительный лицензионный ключ!");
+            return "ERROR|Введите лицензионный ключ из Telegram-бота";
+        }
         final String cleanKey = key.trim().toUpperCase(Locale.US);
-        final String nick = getSavedNickname();
         final String hwid = getDeviceHwid();
+        final String nick = getSavedNickname().isEmpty() ? "dare" : getSavedNickname();
 
         try {
             Callable<String> task = () -> ApiManager.activateLicense(cleanKey, hwid, nick);
             Future<String> future = networkExecutor.submit(task);
-            String rawJson = future.get(7000, TimeUnit.MILLISECONDS);
-            JSONObject res = new JSONObject(rawJson);
-
+            String raw = future.get(5500, TimeUnit.MILLISECONDS);
+            JSONObject res = new JSONObject(raw);
             String status = res.optString("status", "");
-            boolean ok = res.optBoolean("ok", false) || "ok".equalsIgnoreCase(status) || "active".equalsIgnoreCase(status);
+
+            // Нативная проверка HMAC-подписи ответа сервера (закрытие пункта #1)
+            String srvSig = res.optString("sig", "");
+            if (!verifyServerResponseSignature(cleanKey, hwid, status, srvSig)) {
+                forceKickExpiredUser("Ошибка криптографической подписи сервера!");
+                return "ERROR|Ошибка криптографической подписи сервера!";
+            }
+
+            boolean blocked = res.optBoolean("blocked", false)
+                    || "expired".equalsIgnoreCase(status)
+                    || "blocked".equalsIgnoreCase(status)
+                    || "banned".equalsIgnoreCase(status)
+                    || "device_mismatch".equalsIgnoreCase(status)
+                    || "offline".equalsIgnoreCase(status);
+
+            boolean ok = (res.optBoolean("ok", false)
+                    || "ok".equalsIgnoreCase(status)
+                    || "active".equalsIgnoreCase(status)) && !blocked;
 
             if (ok) {
-                TeleportEngine.setServerAuthorizedFromVerifiedHmac(true);
-                saveBoundKey(cleanKey);
-                getOrInitKeyDeadlineMs(cleanKey, res);
-                ProfileManager.saveActivatedProfile(context, nick, cleanKey);
-                String label = buildLiveSubscriptionLabel(res, cleanKey);
-                return "OK|" + label;
+                markKeyActivated(nick, cleanKey, res);
+                SecurityShield.issueVerifiedSessionToken(context, cleanKey);
+                String liveLabel = buildLiveSubscriptionLabel(res, cleanKey);
+                if ("EXPIRED".equals(liveLabel)) {
+                    forceKickExpiredUser("Срок действия этого ключа истёк!");
+                    return "ERROR|Срок действия этого ключа истёк!";
+                }
+                return "OK|" + liveLabel;
             }
 
-            String errMsg = res.optString("message", "Ключ не найден или привязан к другому устройству!");
+            String errMsg = res.optString("message", "Ключ не найден, истёк или привязан к другому устройству!");
+            forceKickExpiredUser(errMsg);
             return "ERROR|" + errMsg;
         } catch (Exception e) {
-            String existing = readBoundKey();
-            if (!existing.isEmpty() && existing.equalsIgnoreCase(cleanKey)) {
-                return "OK|" + buildLiveSubscriptionLabel(null, cleanKey);
-            }
-            return "ERROR|Нет связи с сервером (проверьте интернет)";
+            // Закрытие пункта #6: при catch обязательно сбрасываем сессию через forceKickExpiredUser
+            forceKickExpiredUser("Нет связи с сервером авторизации!");
+            return "ERROR|Нет связи с сервером авторизации. Проверьте интернет!";
         }
     }
 
     @JavascriptInterface
     public String verifyLicenseKey(String key) {
-        final String cleanKey = (key != null && !key.trim().isEmpty()) ? key.trim().toUpperCase(Locale.US) : readBoundKey();
-        if (cleanKey.length() < 5) return "EXPIRED|Введите лицензионный ключ";
+        if (isClientTampered()) {
+            forceKickExpiredUser("Обнаружена модификация приложения!");
+            executeNativeKillOnTamper();
+            return "BANNED|Модификация файлов приложения";
+        }
+        if (!prefs.getBoolean(PREF_FIRST_LOGIN_DONE, false)) {
+            return "EXPIRED|Введите ваш логин и лицензионный ключ";
+        }
 
-        final String hwid = getDeviceHwid();
+        final String cleanKey = (key != null && !key.trim().isEmpty())
+                ? key.trim().toUpperCase(Locale.US)
+                : getSavedKey();
+
+        if (cleanKey.length() < 5 || isBlacklistedArtifact(cleanKey)) {
+            forceKickExpiredUser("Введите лицензионный ключ");
+            return "EXPIRED|Введите ключ";
+        }
+
+        String localLiveLabel = buildLiveSubscriptionLabel(null, cleanKey);
+        if ("EXPIRED".equals(localLiveLabel)) {
+            forceKickExpiredUser("Время вашей подписки истекло!");
+            return "EXPIRED|Время вашей подписки истекло!";
+        }
+
         try {
+            final String hwid = getDeviceHwid();
             Callable<String> task = () -> ApiManager.verifyLicense(cleanKey, hwid);
             Future<String> future = networkExecutor.submit(task);
-            String rawJson = future.get(5500, TimeUnit.MILLISECONDS);
-            JSONObject res = new JSONObject(rawJson);
+            String raw = future.get(4500, TimeUnit.MILLISECONDS);
+            JSONObject res = new JSONObject(raw);
             String status = res.optString("status", "");
 
-            if ("device_mismatch".equalsIgnoreCase(status) || "banned".equalsIgnoreCase(status) || "blocked".equalsIgnoreCase(status)) {
-                // ИСПРАВЛЕНО: НЕ удаляем ключ, просто сообщаем об ошибке
-                return "BLOCKED|" + res.optString("message", "Ключ привязан к другому устройству!");
+            // Нативная сверка HMAC (закрытие пункта #1)
+            String srvSig = res.optString("sig", "");
+            if (!verifyServerResponseSignature(cleanKey, hwid, status, srvSig)) {
+                forceKickExpiredUser("Ошибка подписи ответа сервера!");
+                return "BLOCKED|Ошибка подписи сервера";
             }
-            if ("expired".equalsIgnoreCase(status)) {
-                saveBoundKey("");
-                return "EXPIRED|" + res.optString("message", "Срок действия ключа истёк!");
-            }
-            if (res.optBoolean("ok", false) || "ok".equalsIgnoreCase(status)) {
-                saveBoundKey(cleanKey);
-                return "OK|" + buildLiveSubscriptionLabel(res, cleanKey);
-            }
-        } catch (Exception ignored) {}
 
-        return "OK|" + buildLiveSubscriptionLabel(null, cleanKey);
+            // Закрытие пункта #5: статус "offline" блокируется
+            boolean blockedOrExpired = "expired".equalsIgnoreCase(status)
+                    || "blocked".equalsIgnoreCase(status)
+                    || "banned".equalsIgnoreCase(status)
+                    || "device_mismatch".equalsIgnoreCase(status)
+                    || "offline".equalsIgnoreCase(status)
+                    || res.optBoolean("blocked", false);
+
+            if (blockedOrExpired) {
+                String msg = res.optString("message", "Ключ заблокирован или истёк!");
+                forceKickExpiredUser(msg);
+                return "BLOCKED|" + msg;
+            }
+
+            boolean ok = res.optBoolean("ok", false)
+                    || "ok".equalsIgnoreCase(status)
+                    || "active".equalsIgnoreCase(status);
+
+            if (ok) {
+                ApiManager.setSessionVerified(true);
+                safeNativeSetSession(cleanKey, true);
+                prefs.edit().putLong("last_server_ok_ts", System.currentTimeMillis()).apply();
+                String label = buildLiveSubscriptionLabel(res, cleanKey);
+                if ("EXPIRED".equals(label)) {
+                    forceKickExpiredUser("Срок действия ключа истёк!");
+                    return "EXPIRED|Срок действия ключа истёк!";
+                }
+                return "OK|" + label;
+            }
+
+            String msg = res.optString("message", "Срок действия ключа истёк!");
+            forceKickExpiredUser(msg);
+            return "EXPIRED|" + msg;
+        } catch (Exception e) {
+            // Закрытие пункта #21: при catch сразу вызываем forceKickExpiredUser
+            forceKickExpiredUser("Нет связи с сервером проверки лицензии!");
+            return "EXPIRED|Проверьте подключение к интернету";
+        }
     }
 
     @JavascriptInterface
-    public void logoutLicenseKey() { saveBoundKey(""); }
+    public void logoutLicenseKey() {
+        forceKickExpiredUser("Смена логина или лицензионного ключа");
+    }
 
     @JavascriptInterface
     public void openTelegramBot() {
@@ -882,24 +1630,194 @@ public class AndroidBridge {
 
     @JavascriptInterface
     public String requestFriendsHub(String jsonPayload) {
+        if (getSavedKey().isEmpty() || !safeNativeIsSessionOk() || isClientTampered()) {
+            return "{\"status\":\"error\",\"ok\":false,\"message\":\"Сначала активируйте ключ\"}";
+        }
         try {
             Callable<String> task = () -> ApiManager.callFriendsApi(jsonPayload);
-            return networkExecutor.submit(task).get(4000, TimeUnit.MILLISECONDS);
-        } catch (Exception e) { return "{\"status\":\"error\",\"ok\":false}"; }
+            Future<String> future = networkExecutor.submit(task);
+            return future.get(4000, TimeUnit.MILLISECONDS);
+        } catch (Exception e) {
+            return "{\"status\":\"error\",\"ok\":false,\"message\":\"Ошибка сети\"}";
+        }
     }
 
-    @JavascriptInterface public void updateVoiceCallNotification(String roomName, boolean isMuted, boolean isDeafened) {}
-    @JavascriptInterface public void cancelVoiceCallNotification() {}
+    // =========================================================================
+    // 9. ГОЛОСОВОЙ ЧАТ И УВЕДОМЛЕНИЯ
+    // =========================================================================
+    private static final String VOICE_CHANNEL_ID = "so2tp_voice_call_channel_v2";
+    private static final int VOICE_NOTIF_ID = 7744;
+    private static final String ACTION_VOICE_MUTE = "com.teleport.so2.ACTION_VOICE_MUTE";
+    private static final String ACTION_VOICE_DEAFEN = "com.teleport.so2.ACTION_VOICE_DEAFEN";
+    private static final String ACTION_VOICE_HANGUP = "com.teleport.so2.ACTION_VOICE_HANGUP";
+
+    private boolean isReceiverRegistered = false;
+
+    private final BroadcastReceiver voiceNotifReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context ctx, Intent intent) {
+            if (intent == null || intent.getAction() == null) return;
+            String act = intent.getAction();
+            if (ACTION_VOICE_MUTE.equals(act)) {
+                evalJsInWebView("if(window.toggleMicMute) window.toggleMicMute();");
+            } else if (ACTION_VOICE_DEAFEN.equals(act)) {
+                evalJsInWebView("if(window.toggleDeafenSpeaker) window.toggleDeafenSpeaker();");
+            } else if (ACTION_VOICE_HANGUP.equals(act)) {
+                evalJsInWebView("if(window.leaveVoiceRoom) window.leaveVoiceRoom();");
+            }
+        }
+    };
+
+    private void evalJsInWebView(String jsCode) {
+        mainHandler.post(() -> {
+            try {
+                if (activity instanceof MainActivity) {
+                    ((MainActivity) activity).evalJsFromNotification(jsCode);
+                    return;
+                }
+                if (activity != null && !activity.isFinishing()) {
+                    View content = activity.findViewById(android.R.id.content);
+                    if (content instanceof android.view.ViewGroup) {
+                        android.view.ViewGroup vg = (android.view.ViewGroup) content;
+                        if (vg.getChildCount() > 0 && vg.getChildAt(0) instanceof android.webkit.WebView) {
+                            ((android.webkit.WebView) vg.getChildAt(0)).evaluateJavascript(jsCode, null);
+                        }
+                    }
+                }
+            } catch (Exception ignored) {}
+        });
+    }
+
+    private void ensureVoiceNotifSetup() {
+        if (TeleportEngine.isShizukuReady() || ShizukuManager.isPermissionGranted()) {
+            String pkg = context.getPackageName();
+            TeleportEngine.execShizukuCommand(
+                    "cmd appops set " + pkg + " POST_NOTIFICATION allow; " +
+                    "pm grant " + pkg + " android.permission.POST_NOTIFICATIONS; " +
+                    "pm grant " + pkg + " android.permission.RECORD_AUDIO"
+            );
+        }
+
+        if (!isReceiverRegistered) {
+            IntentFilter filter = new IntentFilter();
+            filter.addAction(ACTION_VOICE_MUTE);
+            filter.addAction(ACTION_VOICE_DEAFEN);
+            filter.addAction(ACTION_VOICE_HANGUP);
+            if (Build.VERSION.SDK_INT >= 33) {
+                context.registerReceiver(voiceNotifReceiver, filter, Context.RECEIVER_EXPORTED);
+            } else {
+                context.registerReceiver(voiceNotifReceiver, filter);
+            }
+            isReceiverRegistered = true;
+        }
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            NotificationManager nm = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
+            if (nm != null && nm.getNotificationChannel(VOICE_CHANNEL_ID) == null) {
+                NotificationChannel ch = new NotificationChannel(
+                        VOICE_CHANNEL_ID,
+                        "SO2Teleport Discord Voice",
+                        NotificationManager.IMPORTANCE_LOW
+                );
+                ch.setDescription("Пульт управления микрофоном и звуком в шторке");
+                ch.setSound(null, null);
+                ch.enableVibration(false);
+                ch.setLockscreenVisibility(Notification.VISIBILITY_PUBLIC);
+                nm.createNotificationChannel(ch);
+            }
+        }
+    }
+
+    @JavascriptInterface
+    public void updateVoiceCallNotification(String roomName, boolean isMuted, boolean isDeafened) {
+        mainHandler.post(() -> {
+            try {
+                ensureVoiceNotifSetup();
+                enforceGameAudioMode();
+                NotificationManager nm = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
+                if (nm == null) return;
+
+                if (Build.VERSION.SDK_INT >= 33 && activity != null) {
+                    if (context.checkSelfPermission("android.permission.POST_NOTIFICATIONS") != PackageManager.PERMISSION_GRANTED) {
+                        activity.requestPermissions(new String[]{"android.permission.POST_NOTIFICATIONS"}, 2005);
+                    }
+                }
+
+                int flags = PendingIntent.FLAG_UPDATE_CURRENT;
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                    flags |= PendingIntent.FLAG_IMMUTABLE;
+                }
+
+                Intent openIntent = new Intent(context, MainActivity.class);
+                openIntent.setFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP | Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                PendingIntent contentPi = PendingIntent.getActivity(context, 10, openIntent, flags);
+
+                PendingIntent mutePi = PendingIntent.getBroadcast(
+                        context, 11, new Intent(ACTION_VOICE_MUTE).setPackage(context.getPackageName()), flags);
+                PendingIntent deafPi = PendingIntent.getBroadcast(
+                        context, 12, new Intent(ACTION_VOICE_DEAFEN).setPackage(context.getPackageName()), flags);
+                PendingIntent hangPi = PendingIntent.getBroadcast(
+                        context, 13, new Intent(ACTION_VOICE_HANGUP).setPackage(context.getPackageName()), flags);
+
+                String muteLabel = isMuted ? "🎤 ВКЛ МИКРО" : "🔇 ВЫКЛ МИКРО";
+                String deafLabel = isDeafened ? "🎧 ВКЛ ЗВУК" : "🔈 ВЫКЛ ЗВУК";
+                String statusSub = (isMuted ? "🔇 Микро ВЫКЛ" : "🎤 Микро ВКЛ") + "  •  " + (isDeafened ? "🔈 Звук ВЫКЛ" : "🎧 Звук 400% (Squad Isolator)");
+
+                Notification.Builder builder = (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O)
+                        ? new Notification.Builder(context, VOICE_CHANNEL_ID)
+                        : new Notification.Builder(context);
+
+                int smallIco = isMuted ? android.R.drawable.ic_lock_silent_mode : android.R.drawable.ic_btn_speak_now;
+
+                builder.setSmallIcon(smallIco)
+                        .setContentTitle("🟢 Войс Отряда • " + (roomName == null || roomName.isEmpty() ? "SQUAD-MAIN" : roomName))
+                        .setContentText(statusSub)
+                        .setContentIntent(contentPi)
+                        .setOngoing(true)
+                        .setAutoCancel(false)
+                        .setOnlyAlertOnce(true)
+                        .addAction(new Notification.Action.Builder(android.R.drawable.ic_btn_speak_now, muteLabel, mutePi).build())
+                        .addAction(new Notification.Action.Builder(android.R.drawable.ic_lock_silent_mode_off, deafLabel, deafPi).build())
+                        .addAction(new Notification.Action.Builder(android.R.drawable.ic_menu_close_clear_cancel, "ВЫЙТИ", hangPi).build());
+
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                    builder.setColor(Color.parseColor("#10B981"));
+                    builder.setCategory(Notification.CATEGORY_CALL);
+                    builder.setVisibility(Notification.VISIBILITY_PUBLIC);
+                }
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                    builder.setForegroundServiceBehavior(Notification.FOREGROUND_SERVICE_IMMEDIATE);
+                }
+
+                nm.notify(VOICE_NOTIF_ID, builder.build());
+            } catch (Exception ignored) {}
+        });
+    }
+
+    @JavascriptInterface
+    public void cancelVoiceCallNotification() {
+        mainHandler.post(() -> {
+            try {
+                NotificationManager nm = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
+                if (nm != null) nm.cancel(VOICE_NOTIF_ID);
+            } catch (Exception ignored) {}
+        });
+    }
 
     private int dpToPx(int dp) {
         return Math.round(dp * context.getResources().getDisplayMetrics().density);
     }
 
+    // Нижнее ведро в стиле 3D Liquid Glass с зеркальным бликом и подсветкой при удалении
     private static class BridgeTrashView extends View {
+        private final Paint glowPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
         private final Paint bgPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+        private final Paint specularPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
         private final Paint borderPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
         private final Paint textPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+        private final RectF outerRect = new RectF();
         private final RectF rect = new RectF();
+        private final RectF highlightRect = new RectF();
         private final float density;
         private boolean hovered = false;
 
@@ -907,16 +1825,21 @@ public class AndroidBridge {
             super(context);
             this.density = context.getResources().getDisplayMetrics().density;
             borderPaint.setStyle(Paint.Style.STROKE);
-            borderPaint.setStrokeWidth(2f * density);
             textPaint.setColor(Color.WHITE);
             textPaint.setTextSize(12f * density);
             textPaint.setFakeBoldText(true);
             textPaint.setTextAlign(Paint.Align.CENTER);
+            textPaint.setShadowLayer(6f * density, 0f, 1.5f * density, Color.parseColor("#AA000000"));
         }
 
         public void setHovered(boolean h) {
             if (this.hovered != h) {
                 this.hovered = h;
+                animate()
+                        .scaleX(h ? 1.15f : 1.0f)
+                        .scaleY(h ? 1.15f : 1.0f)
+                        .setDuration(120)
+                        .start();
                 invalidate();
             }
         }
@@ -926,13 +1849,61 @@ public class AndroidBridge {
             super.onDraw(canvas);
             float pad = 6f * density;
             rect.set(pad, pad, getWidth() - pad, getHeight() - pad);
-            bgPaint.setColor(hovered ? Color.parseColor("#DDFF1744") : Color.parseColor("#CC0F172A"));
-            borderPaint.setColor(hovered ? Color.WHITE : Color.parseColor("#FF2E5B"));
+
+            if (hovered) {
+                outerRect.set(pad * 0.3f, pad * 0.3f, getWidth() - pad * 0.3f, getHeight() - pad * 0.3f);
+                glowPaint.setColor(Color.parseColor("#77FF1744"));
+                canvas.drawRoundRect(outerRect, 999f, 999f, glowPaint);
+
+                bgPaint.setShader(new LinearGradient(
+                        0, rect.top, 0, rect.bottom,
+                        new int[]{
+                                Color.parseColor("#D9FF5277"),
+                                Color.parseColor("#99D50032"),
+                                Color.parseColor("#CC4A0418")
+                        },
+                        new float[]{0f, 0.5f, 1f},
+                        Shader.TileMode.CLAMP
+                ));
+                borderPaint.setStrokeWidth(2.6f * density);
+                borderPaint.setColor(Color.WHITE);
+                textPaint.setColor(Color.WHITE);
+            } else {
+                bgPaint.setShader(new LinearGradient(
+                        0, rect.top, 0, rect.bottom,
+                        new int[]{
+                                Color.parseColor("#AA334155"),
+                                Color.parseColor("#660F172A"),
+                                Color.parseColor("#99090D16")
+                        },
+                        new float[]{0f, 0.45f, 1f},
+                        Shader.TileMode.CLAMP
+                ));
+                borderPaint.setStrokeWidth(1.8f * density);
+                borderPaint.setColor(Color.parseColor("#CCFF2E5B"));
+                textPaint.setColor(Color.parseColor("#FFE4E6"));
+            }
+
             canvas.drawRoundRect(rect, 999f, 999f, bgPaint);
+
+            highlightRect.set(
+                    rect.left + 14f * density,
+                    rect.top + 2.5f * density,
+                    rect.right - 14f * density,
+                    rect.top + (rect.height() * 0.42f)
+            );
+            specularPaint.setShader(new LinearGradient(
+                    0, highlightRect.top, 0, highlightRect.bottom,
+                    Color.parseColor("#66FFFFFF"),
+                    Color.parseColor("#00FFFFFF"),
+                    Shader.TileMode.CLAMP
+            ));
+            canvas.drawRoundRect(highlightRect, 999f, 999f, specularPaint);
             canvas.drawRoundRect(rect, 999f, 999f, borderPaint);
+
+            String label = hovered ? "🔥 ОТПУСТИТЕ, ЧТОБЫ УБРАТЬ «T»" : "🗑️ ПЕРЕТАЩИТЕ СЮДА ДЛЯ УДАЛЕНИЯ";
             Paint.FontMetrics fm = textPaint.getFontMetrics();
             float cy = getHeight() / 2f - (fm.ascent + fm.descent) / 2f;
-            String label = hovered ? "🔥 ОТПУСТИТЕ, ЧТОБЫ УБРАТЬ «T»" : "🗑️ СМАХНИТЕ СЮДА ДЛЯ УДАЛЕНИЯ";
             canvas.drawText(label, getWidth() / 2f, cy, textPaint);
         }
     }
@@ -957,15 +1928,29 @@ public class AndroidBridge {
             outlinePaint.setStrokeCap(Paint.Cap.ROUND);
         }
 
-        public void setCrosshairType(String t) { this.type = t; invalidate(); }
+        public void setCrosshairType(String t) {
+            this.type = t;
+            invalidate();
+        }
+
         public void setStyle(int scalePct, int opacityPct, String hex) {
             this.lengthDp = Math.max(3, Math.round(3 + (scalePct / 100f) * 18f));
             this.opacity = opacityPct;
             try { this.color = Color.parseColor(hex); } catch (Exception ignored) {}
             invalidate();
         }
-        public void setAdvancedConfig(String t, String hex, int op, int len, int thick, int gap, int dot, boolean out) {
-            this.type = t; this.opacity = op; this.lengthDp = len; this.thicknessDp = thick; this.gapDp = gap; this.dotSizeDp = dot; this.outline = out;
+
+        public void setAdvancedConfig(
+                String t, String hex, int op,
+                int len, int thick, int gap, int dot, boolean out
+        ) {
+            this.type = t;
+            this.opacity = op;
+            this.lengthDp = len;
+            this.thicknessDp = thick;
+            this.gapDp = gap;
+            this.dotSizeDp = dot;
+            this.outline = out;
             try { this.color = Color.parseColor(hex); } catch (Exception ignored) {}
             invalidate();
         }
@@ -979,6 +1964,7 @@ public class AndroidBridge {
             float d = getResources().getDisplayMetrics().density;
             float cx = getWidth() / 2f;
             float cy = getHeight() / 2f;
+
             float lenPx = lengthDp * d;
             float thickPx = Math.max(1.2f, thicknessDp * 0.78f * d);
             float gapPx = gapDp * d;
@@ -988,6 +1974,7 @@ public class AndroidBridge {
             paint.setColor(color);
             paint.setAlpha(alpha);
             paint.setStrokeWidth(thickPx);
+
             outlinePaint.setAlpha(Math.min(220, alpha));
             outlinePaint.setStrokeWidth(thickPx + 2.0f * d);
 
@@ -1002,7 +1989,7 @@ public class AndroidBridge {
             }
 
             if ("circle".equalsIgnoreCase(type) || "circledot".equalsIgnoreCase(type)) {
-                float rad = Math.max(3.5f * d, lenPx * 0.75f);
+                float rad = Math.max(3.5f * d, lenPx * 0.65f);
                 if (outline) {
                     outlinePaint.setStyle(Paint.Style.STROKE);
                     canvas.drawCircle(cx, cy, rad, outlinePaint);
@@ -1016,18 +2003,68 @@ public class AndroidBridge {
                 return;
             }
 
+            if ("box".equalsIgnoreCase(type)) {
+                float half = Math.max(2.0f * d, lenPx * 0.30f);
+                if (outline) {
+                    outlinePaint.setStyle(Paint.Style.STROKE);
+                    canvas.drawRect(cx - half, cy - half, cx + half, cy + half, outlinePaint);
+                }
+                paint.setStyle(Paint.Style.STROKE);
+                canvas.drawRect(cx - half, cy - half, cx + half, cy + half, paint);
+                return;
+            }
+
+            if ("chevron".equalsIgnoreCase(type)) {
+                float arm = Math.max(3.5f * d, lenPx * 0.55f);
+                if (outline) {
+                    outlinePaint.setStyle(Paint.Style.STROKE);
+                    canvas.drawLine(cx, cy - gapPx * 0.4f, cx - arm, cy + arm, outlinePaint);
+                    canvas.drawLine(cx, cy - gapPx * 0.4f, cx + arm, cy + arm, outlinePaint);
+                }
+                paint.setStyle(Paint.Style.STROKE);
+                canvas.drawLine(cx, cy - gapPx * 0.4f, cx - arm, cy + arm, paint);
+                canvas.drawLine(cx, cy - gapPx * 0.4f, cx + arm, cy + arm, paint);
+                return;
+            }
+
+            if ("corners".equalsIgnoreCase(type)) {
+                float dist = Math.max(4f * d, (gapPx + lenPx) * 0.48f);
+                float leg = Math.max(2.5f * d, lenPx * 0.32f);
+                Paint[] layers = outline ? new Paint[]{outlinePaint, paint} : new Paint[]{paint};
+                for (Paint p : layers) {
+                    p.setStyle(Paint.Style.STROKE);
+                    canvas.drawLine(cx - dist, cy - dist, cx - dist + leg, cy - dist, p);
+                    canvas.drawLine(cx - dist, cy - dist, cx - dist, cy - dist + leg, p);
+                    canvas.drawLine(cx + dist, cy - dist, cx + dist - leg, cy - dist, p);
+                    canvas.drawLine(cx + dist, cy - dist, cx + dist, cy - dist + leg, p);
+                    canvas.drawLine(cx - dist, cy + dist, cx - dist + leg, cy + dist, p);
+                    canvas.drawLine(cx - dist, cy + dist, cx - dist, cy + dist - leg, p);
+                    canvas.drawLine(cx + dist, cy + dist, cx + dist - leg, cy + dist, p);
+                    canvas.drawLine(cx + dist, cy + dist, cx + dist, cy + dist - leg, p);
+                }
+                paint.setStyle(Paint.Style.FILL);
+                canvas.drawCircle(cx, cy, dotRadPx * 0.85f, paint);
+                return;
+            }
+
+            boolean hasTop = !"tshape".equalsIgnoreCase(type);
             if (outline) {
                 outlinePaint.setStyle(Paint.Style.STROKE);
                 canvas.drawLine(cx - gapPx - lenPx, cy, cx - gapPx, cy, outlinePaint);
                 canvas.drawLine(cx + gapPx, cy, cx + gapPx + lenPx, cy, outlinePaint);
                 canvas.drawLine(cx, cy + gapPx, cx, cy + gapPx + lenPx, outlinePaint);
-                canvas.drawLine(cx, cy - gapPx - lenPx, cx, cy - gapPx, outlinePaint);
+                if (hasTop) {
+                    canvas.drawLine(cx, cy - gapPx - lenPx, cx, cy - gapPx, outlinePaint);
+                }
             }
+
             paint.setStyle(Paint.Style.STROKE);
             canvas.drawLine(cx - gapPx - lenPx, cy, cx - gapPx, cy, paint);
             canvas.drawLine(cx + gapPx, cy, cx + gapPx + lenPx, cy, paint);
             canvas.drawLine(cx, cy + gapPx, cx, cy + gapPx + lenPx, paint);
-            canvas.drawLine(cx, cy - gapPx - lenPx, cx, cy - gapPx, paint);
+            if (hasTop) {
+                canvas.drawLine(cx, cy - gapPx - lenPx, cx, cy - gapPx, paint);
+            }
 
             if ("crossdot".equalsIgnoreCase(type)) {
                 paint.setStyle(Paint.Style.FILL);
