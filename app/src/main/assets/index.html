@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="ru">
+<html lang="ru" dir="ltr">
 <head>
   <meta charset="UTF-8" />
   <meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' data: blob:; img-src 'self' data: blob:; media-src 'self' data: blob:; connect-src 'none'; object-src 'none'; frame-src 'none';" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <meta name="so2-seal" content="SO2TELEPORT_QUANTUM_V9_SEAL SO2TELEPORT_V10_CORE pollLicenseExpiration" />
   <title>SO2Teleport PRO</title>
   <style>
@@ -27,8 +27,8 @@
       --secondary-system-bg: #1C1C1E;
       --tertiary-system-bg: #2C2C2E;
       --label-primary: #FFFFFF;
-      --label-secondary: rgba(235, 235, 245, 0.60);
-      --label-tertiary: rgba(235, 235, 245, 0.30);
+      --label-secondary: rgba(235, 235, 245, 0.68);
+      --label-tertiary: rgba(235, 235, 245, 0.36);
       --separator: rgba(84, 84, 88, 0.60);
       --opaque-separator: #38383A;
 
@@ -37,15 +37,23 @@
       --accent-rgb: 10, 132, 255;
       --accent-sec-rgb: 0, 122, 255;
       --btn-text-color: #FFFFFF;
+      --focus-ring: #0A84FF;
       --bg-deep: var(--system-bg);
-      --bg-card: rgba(28, 28, 30, 0.92);
+      --bg-card: rgba(28, 28, 30, 0.94);
       --bg-card-inner: var(--tertiary-system-bg);
       --border-soft: var(--separator);
-      --border-strong: rgba(var(--accent-rgb), 0.55);
+      --border-strong: rgba(var(--accent-rgb), 0.58);
       --text-main: var(--label-primary);
       --text-muted: var(--label-secondary);
       --ok-green: var(--system-green);
       --danger-red: var(--system-red);
+
+      --text-caption: 0.75rem;
+      --text-body-sm: 0.8125rem;
+      --text-body: 0.9375rem;
+      --text-heading: 1.0625rem;
+      --text-title: 1.375rem;
+      --text-display: 1.75rem;
     }
 
     * {
@@ -53,21 +61,48 @@
       margin: 0;
       padding: 0;
       -webkit-tap-highlight-color: transparent;
-      user-select: none;
     }
 
-    body, html {
-      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", Roboto, Inter, sans-serif;
-      background-color: var(--bg-deep);
-      color: var(--text-main);
-      min-height: 100vh;
-      overflow-x: hidden;
+    html {
+      font-size: 16px;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      text-size-adjust: 100%;
     }
 
     body {
-      padding-top: calc(env(safe-area-inset-top, 36px) + 14px);
-      padding-bottom: 104px;
+      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", Roboto, Inter, sans-serif;
+      background-color: var(--bg-deep);
+      color: var(--text-main);
+      font-size: var(--text-body);
+      line-height: 1.5;
+      min-height: 100dvh;
+      overflow-x: hidden;
+      padding-block-start: calc(env(safe-area-inset-top, 36px) + 14px);
+      padding-block-end: calc(env(safe-area-inset-bottom, 0px) + 104px);
       position: relative;
+    }
+
+    button,
+    label,
+    .nav-item,
+    .preset-pill,
+    .pixel-tile,
+    .ch-shape-tile,
+    .ch-subtoggle-box,
+    .character-card,
+    .shelf-preset-card,
+    .acc-header,
+    .shizuku-status-pill,
+    .theme-dot,
+    .ch-color-swatch,
+    .avatar-preset-item {
+      user-select: none;
+    }
+
+    :focus-visible {
+      outline: 2px solid var(--focus-ring);
+      outline-offset: 2px;
     }
 
     #animatedBgLayer {
@@ -84,7 +119,7 @@
       width: 100%;
       height: 100%;
       object-fit: cover;
-      opacity: 0.45;
+      opacity: 0.42;
       display: none;
     }
     #bgParticlesCanvas {
@@ -102,7 +137,9 @@
       background:
         radial-gradient(ellipse 90% 24% at 50% 0%, rgba(var(--accent-rgb), 0.14) 0%, transparent 70%),
         linear-gradient(180deg, rgba(var(--accent-rgb), 0.04) 0%, rgba(0, 0, 0, 0.65) 100%);
-      transition: background 0.3s ease;
+      transition-property: background;
+      transition-duration: 250ms;
+      transition-timing-function: ease-out;
     }
     #bgVignetteOverlay {
       position: fixed;
@@ -120,20 +157,22 @@
       outline: none;
       box-shadow: none;
       color: var(--text-main);
+      font-size: 1rem;
+      line-height: 1.4;
+      caret-color: var(--accent-main);
       -webkit-appearance: none;
       appearance: none;
     }
 
-    input:focus, textarea:focus, select:focus {
-      outline: none;
-      border: none;
-      box-shadow: none;
+    input::placeholder {
+      color: var(--label-tertiary);
     }
 
     .app-container {
       max-width: 500px;
-      margin: 0 auto;
-      padding: 0 13px 16px;
+      margin-inline: auto;
+      padding-inline: 14px;
+      padding-block-end: 16px;
       position: relative;
       z-index: 2;
     }
@@ -142,41 +181,42 @@
       background: var(--bg-card);
       backdrop-filter: blur(20px);
       -webkit-backdrop-filter: blur(20px);
-      border: 0.5px solid var(--separator);
+      border: 1px solid var(--separator);
       box-shadow: 0 8px 24px rgba(0, 0, 0, 0.45);
     }
 
     .liquid-glass-btn {
       background: var(--accent-main);
-      border: 0.5px solid rgba(255, 255, 255, 0.22);
-      box-shadow: 0 4px 14px rgba(var(--accent-rgb), 0.28);
+      border: 1px solid rgba(255, 255, 255, 0.18);
+      box-shadow: 0 4px 14px rgba(var(--accent-rgb), 0.25);
       color: var(--btn-text-color);
-      font-weight: 800;
+      font-weight: 700;
     }
 
     .top-brand-header {
-      border-radius: 20px;
-      padding: 13px 15px;
-      margin-bottom: 12px;
+      border-radius: 22px;
+      padding: 14px 16px;
+      margin-block-end: 12px;
     }
     .top-brand-row {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      gap: 10px;
+      gap: 12px;
     }
     .brand-left-wrap {
       display: flex;
       align-items: center;
-      gap: 11px;
+      gap: 12px;
       min-width: 0;
+      flex: 1;
     }
     .header-avatar-holder {
       width: 44px;
       height: 44px;
       border-radius: 14px;
       background: var(--tertiary-system-bg);
-      border: 0.5px solid var(--separator);
+      border: 1px solid var(--separator);
       display: flex;
       align-items: center;
       justify-content: center;
@@ -189,27 +229,29 @@
       height: 100%;
       object-fit: cover;
       display: none;
+      outline: 1px solid rgba(255, 255, 255, 0.1);
+      outline-offset: -1px;
     }
     .header-avatar-fallback {
-      font-size: 18px;
-      font-weight: 800;
+      font-size: 1.125rem;
+      font-weight: 700;
       color: var(--text-main);
     }
     .brand-title-main {
-      font-size: 16.5px;
-      font-weight: 800;
-      letter-spacing: -0.3px;
+      font-size: var(--text-heading);
+      font-weight: 700;
+      letter-spacing: -0.01em;
       color: var(--text-main);
-      line-height: 1.15;
+      line-height: 1.2;
     }
     .brand-title-main span {
       color: var(--accent-main);
     }
     .brand-meta-sub {
-      font-size: 11.5px;
+      font-size: var(--text-caption);
       color: var(--text-muted);
-      font-weight: 600;
-      margin-top: 2px;
+      font-weight: 500;
+      margin-block-start: 2px;
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
@@ -218,12 +260,14 @@
       display: inline-flex;
       align-items: center;
       gap: 6px;
-      padding: 7px 12px;
+      min-height: 36px;
+      padding-inline: 12px;
+      padding-block: 6px;
       border-radius: 999px;
       background: var(--tertiary-system-bg);
-      border: 0.5px solid var(--separator);
-      font-size: 11px;
-      font-weight: 700;
+      border: 1px solid var(--separator);
+      font-size: var(--text-caption);
+      font-weight: 600;
       cursor: pointer;
       flex-shrink: 0;
     }
@@ -240,42 +284,51 @@
       display: flex;
       align-items: center;
       justify-content: space-between;
-      margin-top: 10px;
-      padding-top: 9px;
-      border-top: 0.5px solid var(--separator);
-      font-size: 11px;
+      gap: 8px;
+      margin-block-start: 10px;
+      padding-block-start: 10px;
+      border-block-start: 1px solid var(--separator);
+      font-size: var(--text-caption);
       color: var(--text-muted);
       font-weight: 600;
     }
     .theme-dots {
       display: flex;
-      gap: 7px;
+      gap: 8px;
       align-items: center;
     }
     .theme-dot {
-      width: 18px;
-      height: 18px;
+      width: 24px;
+      height: 24px;
       border-radius: 50%;
       cursor: pointer;
-      border: 1.5px solid rgba(255, 255, 255, 0.28);
-      transition: transform 0.18s ease, border-color 0.18s ease;
+      border: 2px solid rgba(255, 255, 255, 0.28);
+      transition-property: transform, border-color;
+      transition-duration: 150ms;
+      transition-timing-function: ease-out;
     }
     .theme-dot.active {
-      transform: scale(1.18);
       border-color: #FFFFFF;
+    }
+    @media (prefers-reduced-motion: no-preference) {
+      .theme-dot.active {
+        transform: scale(1.14);
+      }
     }
 
     .acc-block {
-      border-radius: 18px;
-      margin-bottom: 10px;
+      border-radius: 20px;
+      margin-block-end: 10px;
       overflow: hidden;
-      transition: border-color 0.2s ease;
+      transition-property: border-color;
+      transition-duration: 150ms;
+      transition-timing-function: ease-out;
     }
     .acc-block.open {
       border-color: var(--border-strong);
     }
     .acc-header {
-      padding: 14px 15px;
+      padding: 14px 16px;
       display: flex;
       align-items: center;
       justify-content: space-between;
@@ -292,32 +345,33 @@
     .acc-icon {
       width: 38px;
       height: 38px;
-      border-radius: 11px;
+      border-radius: 12px;
       background: var(--tertiary-system-bg);
-      border: 0.5px solid var(--separator);
+      border: 1px solid var(--separator);
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 16px;
+      font-size: 1rem;
       color: var(--text-main);
       flex-shrink: 0;
     }
     .acc-title-wrap { min-width: 0; flex: 1; }
     .acc-title {
-      font-size: 14.5px;
-      font-weight: 700;
+      font-size: 0.9375rem;
+      font-weight: 600;
       color: var(--text-main);
-      line-height: 1.2;
+      line-height: 1.3;
       display: flex;
       align-items: center;
-      gap: 7px;
+      gap: 8px;
       flex-wrap: wrap;
     }
     .acc-sub {
-      font-size: 11.5px;
+      font-size: var(--text-caption);
       color: var(--text-muted);
-      font-weight: 500;
-      margin-top: 2px;
+      font-weight: 400;
+      line-height: 1.4;
+      margin-block-start: 2px;
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
@@ -331,40 +385,51 @@
       align-items: center;
       justify-content: center;
       color: var(--text-muted);
-      font-size: 13px;
+      font-size: 0.8125rem;
       font-weight: 700;
       flex-shrink: 0;
-      transition: transform 0.24s ease, color 0.2s ease;
+      transition-property: transform, color;
+      transition-duration: 200ms;
+      transition-timing-function: ease-out;
     }
     .acc-block.open .acc-chevron {
-      transform: rotate(180deg);
       color: var(--accent-main);
+    }
+    @media (prefers-reduced-motion: no-preference) {
+      .acc-block.open .acc-chevron {
+        transform: rotate(180deg);
+      }
     }
     .acc-body-wrap {
       display: grid;
       grid-template-rows: 0fr;
-      transition: grid-template-rows 0.25s ease;
+      transition-property: grid-template-rows;
+      transition-duration: 220ms;
+      transition-timing-function: ease-out;
     }
     .acc-block.open .acc-body-wrap { grid-template-rows: 1fr; }
     .acc-body-inner {
       overflow: hidden;
-      padding: 0 15px;
+      padding-inline: 16px;
+      padding-block: 0;
       opacity: 0;
-      transition: opacity 0.2s ease, padding 0.2s ease;
+      transition-property: opacity, padding;
+      transition-duration: 180ms;
+      transition-timing-function: ease-out;
     }
     .acc-block.open .acc-body-inner {
-      padding: 4px 15px 15px;
+      padding-block: 6px 16px;
       opacity: 1;
-      border-top: 0.5px solid var(--separator);
+      border-block-start: 1px solid var(--separator);
     }
 
     .cyber-hub-card {
-      border-radius: 20px;
-      padding: 15px 16px;
-      margin-bottom: 10px;
+      border-radius: 22px;
+      padding: 16px;
+      margin-block-end: 10px;
       display: flex;
       flex-direction: column;
-      gap: 13px;
+      gap: 14px;
     }
     .hub-top-bar {
       display: flex;
@@ -379,33 +444,35 @@
       flex: 1;
     }
     .hub-card-title {
-      font-size: 14.5px;
-      font-weight: 800;
+      font-size: 0.9375rem;
+      font-weight: 700;
       color: var(--text-main);
-      line-height: 1.25;
+      line-height: 1.3;
       display: flex;
       align-items: center;
-      gap: 7px;
+      gap: 8px;
       flex-wrap: wrap;
     }
     .hub-state-word {
       color: var(--ok-green);
-      transition: color 0.2s ease;
+      transition-property: color;
+      transition-duration: 150ms;
+      transition-timing-function: ease-out;
     }
     .hub-state-word.off {
       color: var(--system-gray);
     }
     .hub-card-sub {
-      font-size: 11.5px;
+      font-size: var(--text-caption);
       color: var(--text-muted);
-      font-weight: 500;
-      margin-top: 3px;
-      line-height: 1.3;
+      font-weight: 400;
+      margin-block-start: 3px;
+      line-height: 1.4;
     }
     .cyber-switch-lg {
       position: relative;
       width: 52px;
-      height: 31px;
+      height: 32px;
       flex-shrink: 0;
       display: inline-block;
       cursor: pointer;
@@ -420,100 +487,109 @@
       inset: 0;
       background: var(--system-gray4);
       border-radius: 999px;
-      transition: background 0.22s ease;
+      transition-property: background-color;
+      transition-duration: 180ms;
+      transition-timing-function: ease-out;
     }
     .cyber-slider-lg::before {
       content: "";
       position: absolute;
-      width: 27px;
-      height: 27px;
-      left: 2px;
-      top: 2px;
+      width: 28px;
+      height: 28px;
+      inset-inline-start: 2px;
+      inset-block-start: 2px;
       border-radius: 50%;
       background: #FFFFFF;
       box-shadow: 0 2px 5px rgba(0, 0, 0, 0.35);
-      transition: transform 0.22s ease;
+      transition-property: transform;
+      transition-duration: 180ms;
+      transition-timing-function: ease-out;
     }
     .cyber-switch-lg input:checked + .cyber-slider-lg {
       background: var(--ok-green);
     }
     .cyber-switch-lg input:checked + .cyber-slider-lg::before {
-      transform: translateX(21px);
+      transform: translateX(20px);
     }
 
     .hub-actions-grid {
       display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 9px;
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+      gap: 10px;
     }
     .hub-action-pill {
-      padding: 11.5px 10px;
+      min-height: 42px;
+      padding: 10px 12px;
       border-radius: 12px;
-      font-size: 11.5px;
-      font-weight: 700;
+      font-size: var(--text-caption);
+      font-weight: 600;
       text-align: center;
       cursor: pointer;
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
-      transition: opacity 0.15s ease, transform 0.15s ease;
-    }
-    .hub-action-pill:active {
-      transform: scale(0.98);
-      opacity: 0.85;
+      transition-property: scale, opacity;
+      transition-duration: 150ms;
+      transition-timing-function: ease-out;
     }
 
     .save-all-bar-btn {
       width: 100%;
-      margin-bottom: 11px;
-      padding: 13px 15px;
+      min-height: 46px;
+      margin-block-end: 12px;
+      padding: 12px 16px;
       border-radius: 14px;
       display: flex;
       align-items: center;
       justify-content: center;
       gap: 8px;
-      font-size: 12.5px;
-      font-weight: 800;
+      font-size: var(--text-body-sm);
+      font-weight: 700;
       cursor: pointer;
-      transition: transform 0.15s ease;
-    }
-    .save-all-bar-btn:active {
-      transform: scale(0.98);
+      transition-property: scale, opacity;
+      transition-duration: 150ms;
+      transition-timing-function: ease-out;
     }
 
     .character-card {
       background: var(--bg-card-inner);
-      border: 0.5px solid var(--separator);
+      border: 1px solid var(--separator);
       border-radius: 14px;
       padding: 12px 14px;
-      margin-top: 8px;
+      margin-block-start: 8px;
       display: flex;
       align-items: center;
       justify-content: space-between;
+      gap: 10px;
       cursor: pointer;
-      transition: border-color 0.18s ease, background 0.18s ease;
+      transition-property: border-color, background-color;
+      transition-duration: 150ms;
+      transition-timing-function: ease-out;
     }
     .character-card.active {
       background: rgba(var(--accent-rgb), 0.14);
-      border: 1px solid var(--accent-main);
+      border-color: var(--accent-main);
     }
     .char-title {
-      font-size: 13.5px;
-      font-weight: 700;
+      font-size: 0.875rem;
+      font-weight: 600;
       color: var(--text-main);
+      line-height: 1.3;
       display: flex;
       align-items: center;
       flex-wrap: wrap;
-      gap: 7px;
+      gap: 6px;
     }
     .char-tag {
-      font-size: 9.5px;
-      font-weight: 700;
+      font-size: 0.6875rem;
+      font-weight: 600;
+      letter-spacing: 0.04em;
       padding: 2px 8px;
       border-radius: 6px;
       background: rgba(var(--accent-rgb), 0.18);
       color: var(--text-main);
       text-transform: uppercase;
+      font-variant-numeric: tabular-nums;
     }
     .char-tag.pad-badge {
       background: rgba(191, 90, 242, 0.22);
@@ -524,72 +600,82 @@
       color: #D1FAE5;
     }
     .char-desc {
-      font-size: 11.5px;
+      font-size: var(--text-caption);
       color: var(--text-muted);
-      margin-top: 4px;
+      margin-block-start: 4px;
       font-weight: 400;
-      line-height: 1.35;
+      line-height: 1.45;
+      text-wrap: pretty;
     }
     .char-arrow {
-      font-size: 17px;
+      font-size: 1.125rem;
       font-weight: 600;
       color: var(--system-gray);
-      margin-left: 8px;
+      flex-shrink: 0;
     }
 
     .section-eyebrow {
-      font-size: 11px;
-      font-weight: 700;
-      letter-spacing: 0.6px;
+      font-size: 0.6875rem;
+      font-weight: 600;
+      letter-spacing: 0.05em;
       color: var(--text-muted);
       text-transform: uppercase;
-      margin: 12px 0 4px;
+      margin-block: 14px 6px;
     }
     .pro-slider-row {
-      padding: 11px 13px;
-      margin-top: 7px;
+      padding: 12px 14px;
+      margin-block-start: 8px;
       background: var(--bg-card-inner);
-      border: 0.5px solid var(--separator);
+      border: 1px solid var(--separator);
       border-radius: 14px;
     }
     .pro-slider-head {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      margin-bottom: 8px;
+      gap: 8px;
+      margin-block-end: 8px;
     }
-    .pro-slider-name { font-size: 13px; font-weight: 600; color: var(--text-main); }
+    .pro-slider-name {
+      font-size: var(--text-body-sm);
+      font-weight: 500;
+      color: var(--text-main);
+      line-height: 1.3;
+    }
     .pro-slider-pill {
-      font-size: 11.5px;
-      font-weight: 700;
+      font-size: var(--text-caption);
+      font-weight: 600;
+      font-variant-numeric: tabular-nums;
       color: var(--text-main);
       background: rgba(255, 255, 255, 0.08);
-      padding: 2px 9px;
+      padding: 2px 10px;
       border-radius: 999px;
-      min-width: 42px;
+      min-width: 44px;
       text-align: center;
+      flex-shrink: 0;
     }
     .pro-slider-hint {
-      font-size: 11px;
+      font-size: 0.6875rem;
       color: var(--text-muted);
-      margin-top: 6px;
-      line-height: 1.3;
+      margin-block-start: 6px;
+      line-height: 1.4;
     }
 
     input[type="range"] {
       -webkit-appearance: none;
       appearance: none;
       width: 100%;
-      height: 4px;
+      height: 6px;
       border-radius: 999px;
       background: var(--system-gray3);
       outline: none;
+      cursor: pointer;
     }
     input[type="range"]::-webkit-slider-thumb {
       -webkit-appearance: none;
       appearance: none;
-      width: 22px;
-      height: 22px;
+      width: 24px;
+      height: 24px;
       border-radius: 50%;
       background: #FFFFFF;
       box-shadow: 0 2px 6px rgba(0, 0, 0, 0.45);
@@ -600,68 +686,75 @@
       display: flex;
       align-items: center;
       justify-content: space-between;
+      gap: 10px;
       background: var(--bg-card-inner);
-      border: 0.5px solid var(--separator);
+      border: 1px solid var(--separator);
       border-radius: 14px;
-      padding: 11px 13px;
-      margin-top: 8px;
+      padding: 12px 14px;
+      margin-block-start: 8px;
     }
     .icon-circle-action {
-      width: 34px;
-      height: 34px;
+      min-width: 38px;
+      min-height: 38px;
       border-radius: 50%;
-      border: 0.5px solid var(--separator);
+      border: 1px solid var(--separator);
       background: var(--secondary-system-bg);
       color: var(--text-main);
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      font-size: 13px;
+      font-size: 0.875rem;
       cursor: pointer;
+      flex-shrink: 0;
+      transition-property: scale, background-color;
+      transition-duration: 150ms;
+      transition-timing-function: ease-out;
     }
     .code-input-bar {
       display: flex;
       align-items: center;
       gap: 10px;
       background: var(--bg-card-inner);
-      border: 0.5px solid var(--separator);
+      border: 1px solid var(--separator);
       border-radius: 14px;
-      padding: 10px 13px;
-      margin-top: 8px;
+      padding: 8px 12px;
+      margin-block-start: 8px;
+    }
+    .code-input-bar:focus-within {
+      border-color: var(--accent-main);
     }
     .shelf-cards-grid {
       display: grid;
-      grid-template-columns: 1fr 1fr;
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
       gap: 8px;
-      margin-top: 9px;
+      margin-block-start: 10px;
     }
     .shelf-preset-card {
       background: var(--bg-card-inner);
-      border: 0.5px solid var(--separator);
+      border: 1px solid var(--separator);
       border-radius: 14px;
       padding: 12px;
       cursor: pointer;
       display: flex;
       flex-direction: column;
       justify-content: space-between;
-      min-height: 82px;
-    }
-    .shelf-preset-card:active {
-      border-color: var(--accent-main);
-      background: rgba(var(--accent-rgb), 0.14);
+      min-height: 84px;
+      transition-property: scale, border-color, background-color;
+      transition-duration: 150ms;
+      transition-timing-function: ease-out;
     }
 
     .preview-stage-box {
       width: 100%;
-      height: 148px;
+      min-height: 148px;
       background: var(--system-bg);
-      border: 0.5px solid var(--separator);
+      border: 1px solid var(--separator);
       border-radius: 14px;
       position: relative;
       display: flex;
       align-items: center;
       justify-content: center;
-      margin: 8px 0 11px;
+      margin-block: 8px 12px;
       overflow: hidden;
     }
     .stretch-dashed-outer {
@@ -684,39 +777,53 @@
       justify-content: center;
       color: var(--text-main);
       font-weight: 700;
-      font-size: 20px;
-      transition: width 0.22s ease;
+      font-size: 1.25rem;
+      transition-property: width;
+      transition-duration: 200ms;
+      transition-timing-function: ease-out;
     }
 
     .preset-pills-4 {
       display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      gap: 7px;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 8px;
     }
     .preset-pill {
       background: var(--bg-card-inner);
-      border: 0.5px solid var(--separator);
+      border: 1px solid var(--separator);
       border-radius: 12px;
       padding: 10px 4px;
       text-align: center;
       cursor: pointer;
+      transition-property: scale, border-color, background-color;
+      transition-duration: 150ms;
+      transition-timing-function: ease-out;
     }
     .preset-pill.active {
       background: rgba(var(--accent-rgb), 0.18);
-      border: 1px solid var(--accent-main);
+      border-color: var(--accent-main);
     }
-    .preset-pill-name { font-size: 12px; font-weight: 700; color: var(--text-main); }
-    .preset-pill-sub { font-size: 9px; color: var(--text-muted); margin-top: 2px; }
+    .preset-pill-name {
+      font-size: var(--text-caption);
+      font-weight: 600;
+      font-variant-numeric: tabular-nums;
+      color: var(--text-main);
+    }
+    .preset-pill-sub {
+      font-size: 0.625rem;
+      color: var(--text-muted);
+      margin-block-start: 2px;
+    }
 
     .pixel-tiles-6 {
       display: grid;
-      grid-template-columns: repeat(6, 1fr);
+      grid-template-columns: repeat(6, minmax(0, 1fr));
       gap: 6px;
-      margin: 10px 0 12px;
+      margin-block: 10px 12px;
     }
     .pixel-tile {
       background: var(--bg-card-inner);
-      border: 0.5px solid var(--separator);
+      border: 1px solid var(--separator);
       border-radius: 12px;
       padding: 10px 2px;
       text-align: center;
@@ -724,24 +831,53 @@
     }
     .pixel-tile.active {
       background: rgba(var(--accent-rgb), 0.18);
-      border: 1px solid var(--accent-main);
+      border-color: var(--accent-main);
     }
-    .pixel-tile b { display: block; font-size: 13px; font-weight: 700; color: var(--text-main); }
-    .pixel-tile span { font-size: 9px; color: var(--text-muted); }
-    .pixel-big-readout { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 6px; }
-    .pixel-big-num { font-size: 24px; font-weight: 800; color: var(--text-main); }
-    .pixel-progress-bar { width: 100%; height: 5px; background: var(--system-gray4); border-radius: 999px; overflow: hidden; }
-    .pixel-progress-fill { height: 100%; width: 100%; background: var(--accent-main); transition: width 0.2s ease; }
+    .pixel-tile b {
+      display: block;
+      font-size: var(--text-body-sm);
+      font-weight: 600;
+      font-variant-numeric: tabular-nums;
+      color: var(--text-main);
+    }
+    .pixel-tile span { font-size: 0.625rem; color: var(--text-muted); }
+    .pixel-big-readout {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      margin-block-end: 6px;
+    }
+    .pixel-big-num {
+      font-size: var(--text-title);
+      font-weight: 700;
+      font-variant-numeric: tabular-nums;
+      color: var(--text-main);
+    }
+    .pixel-progress-bar {
+      width: 100%;
+      height: 6px;
+      background: var(--system-gray4);
+      border-radius: 999px;
+      overflow: hidden;
+    }
+    .pixel-progress-fill {
+      height: 100%;
+      width: 100%;
+      background: var(--accent-main);
+      transition-property: width;
+      transition-duration: 200ms;
+      transition-timing-function: ease-out;
+    }
 
     .ch-shape-grid-4 {
       display: grid;
-      grid-template-columns: repeat(4, 1fr);
+      grid-template-columns: repeat(4, minmax(0, 1fr));
       gap: 8px;
-      margin-bottom: 9px;
+      margin-block-end: 10px;
     }
     .ch-shape-tile {
       background: var(--bg-card-inner);
-      border: 0.5px solid var(--separator);
+      border: 1px solid var(--separator);
       border-radius: 12px;
       padding: 11px 6px;
       text-align: center;
@@ -749,22 +885,22 @@
     }
     .ch-shape-tile.active {
       background: rgba(var(--accent-rgb), 0.18);
-      border: 1px solid var(--accent-main);
+      border-color: var(--accent-main);
     }
-    .ch-shape-icon { font-size: 20px; color: var(--ok-green); margin-bottom: 4px; line-height: 1; }
-    .ch-shape-lbl { font-size: 10px; font-weight: 700; color: var(--text-main); }
+    .ch-shape-icon { font-size: 1.25rem; color: var(--ok-green); margin-block-end: 4px; line-height: 1; }
+    .ch-shape-lbl { font-size: 0.6875rem; font-weight: 600; color: var(--text-main); }
 
     .ch-subtoggle-grid-2 {
       display: grid;
-      grid-template-columns: 1fr 1fr;
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
       gap: 8px;
-      margin-bottom: 10px;
+      margin-block-end: 10px;
     }
     .ch-subtoggle-box {
       background: var(--bg-card-inner);
-      border: 0.5px solid var(--separator);
+      border: 1px solid var(--separator);
       border-radius: 12px;
-      padding: 9px 10px;
+      padding: 10px;
       display: flex;
       flex-direction: column;
       align-items: center;
@@ -772,47 +908,54 @@
       cursor: pointer;
     }
     .ch-subtoggle-box.active {
-      border: 1px solid var(--accent-main);
+      border-color: var(--accent-main);
       background: rgba(var(--accent-rgb), 0.16);
     }
 
     .ch-color-palette-bar {
       background: var(--bg-card-inner);
-      border: 0.5px solid var(--separator);
+      border: 1px solid var(--separator);
       border-radius: 14px;
-      padding: 11px 13px;
-      margin-bottom: 10px;
+      padding: 12px 14px;
+      margin-block-end: 10px;
     }
     .ch-color-dots-row {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      gap: 7px;
-      margin-top: 8px;
+      gap: 6px;
+      margin-block-start: 8px;
+      flex-wrap: wrap;
     }
     .ch-color-swatch {
-      width: 26px;
-      height: 26px;
+      width: 28px;
+      height: 28px;
       border-radius: 50%;
       cursor: pointer;
       border: 2px solid rgba(255, 255, 255, 0.25);
-      transition: transform 0.18s ease, border-color 0.18s ease;
+      transition-property: transform, border-color;
+      transition-duration: 150ms;
+      transition-timing-function: ease-out;
       flex-shrink: 0;
     }
     .ch-color-swatch.active {
-      transform: scale(1.18);
       border-color: #FFFFFF;
     }
+    @media (prefers-reduced-motion: no-preference) {
+      .ch-color-swatch.active {
+        transform: scale(1.14);
+      }
+    }
     .ch-custom-color-btn {
-      width: 28px;
-      height: 26px;
+      width: 30px;
+      height: 28px;
       border-radius: 8px;
       border: 1px dashed var(--system-gray);
       background: var(--secondary-system-bg);
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 13px;
+      font-size: 0.875rem;
       cursor: pointer;
       flex-shrink: 0;
     }
@@ -822,92 +965,129 @@
       align-items: center;
       justify-content: space-between;
       background: var(--bg-card-inner);
-      border: 0.5px solid var(--separator);
+      border: 1px solid var(--separator);
       border-radius: 14px;
-      padding: 11px 13px;
-      margin-top: 8px;
-      gap: 10px;
+      padding: 12px 14px;
+      margin-block-start: 8px;
+      gap: 12px;
     }
-    .toggle-info-title { font-size: 13px; font-weight: 600; color: var(--text-main); }
-    .toggle-info-sub { font-size: 11px; color: var(--text-muted); margin-top: 2px; line-height: 1.3; }
-    .cyber-switch { position: relative; width: 46px; height: 27px; flex-shrink: 0; display: inline-block; cursor: pointer; }
+    .toggle-info-title { font-size: var(--text-body-sm); font-weight: 600; color: var(--text-main); line-height: 1.3; }
+    .toggle-info-sub { font-size: var(--text-caption); color: var(--text-muted); margin-block-start: 2px; line-height: 1.4; }
+    .cyber-switch { position: relative; width: 48px; height: 28px; flex-shrink: 0; display: inline-block; cursor: pointer; }
     .cyber-switch input { opacity: 0; width: 0; height: 0; }
     .cyber-slider {
-      position: absolute; inset: 0; background: var(--system-gray4);
-      border-radius: 999px; transition: background 0.2s ease;
+      position: absolute;
+      inset: 0;
+      background: var(--system-gray4);
+      border-radius: 999px;
+      transition-property: background-color;
+      transition-duration: 180ms;
+      transition-timing-function: ease-out;
     }
     .cyber-slider::before {
-      content: ""; position: absolute; width: 23px; height: 23px;
-      left: 2px; top: 2px; border-radius: 50%; background: #FFFFFF;
-      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.35); transition: transform 0.2s ease;
+      content: "";
+      position: absolute;
+      width: 24px;
+      height: 24px;
+      inset-inline-start: 2px;
+      inset-block-start: 2px;
+      border-radius: 50%;
+      background: #FFFFFF;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.35);
+      transition-property: transform;
+      transition-duration: 180ms;
+      transition-timing-function: ease-out;
     }
     .cyber-switch input:checked + .cyber-slider {
       background: var(--ok-green);
     }
     .cyber-switch input:checked + .cyber-slider::before {
-      transform: translateX(19px);
+      transform: translateX(20px);
     }
 
     .btn-main {
       width: 100%;
-      padding: 13.5px 16px;
+      min-height: 46px;
+      padding: 12px 16px;
       border-radius: 14px;
-      font-size: 13px;
-      font-weight: 700;
-      cursor: pointer;
-      background: var(--accent-main);
-      border: none;
-      color: var(--btn-text-color);
-      transition: opacity 0.15s ease, transform 0.15s ease;
-    }
-    .btn-main:active { transform: scale(0.98); opacity: 0.88; }
-    .btn-dark {
-      width: 100%;
-      border: 0.5px solid var(--separator);
-      background: var(--bg-card-inner);
-      color: var(--text-main);
-      padding: 12.5px 14px;
-      border-radius: 14px;
-      font-size: 12px;
+      font-size: var(--text-body-sm);
       font-weight: 600;
       cursor: pointer;
-      transition: opacity 0.15s ease, transform 0.15s ease;
+      background: var(--accent-main);
+      border: 1px solid transparent;
+      color: var(--btn-text-color);
+      transition-property: scale, opacity;
+      transition-duration: 150ms;
+      transition-timing-function: ease-out;
     }
-    .btn-dark:active { transform: scale(0.98); opacity: 0.85; }
+    .btn-dark {
+      width: 100%;
+      min-height: 44px;
+      border: 1px solid var(--separator);
+      background: var(--bg-card-inner);
+      color: var(--text-main);
+      padding: 11px 14px;
+      border-radius: 14px;
+      font-size: var(--text-caption);
+      font-weight: 600;
+      cursor: pointer;
+      transition-property: scale, opacity, background-color;
+      transition-duration: 150ms;
+      transition-timing-function: ease-out;
+    }
     .btn-danger {
       width: 100%;
-      border: 0.5px solid rgba(255, 69, 58, 0.55);
+      min-height: 44px;
+      border: 1px solid rgba(255, 69, 58, 0.55);
       background: rgba(255, 69, 58, 0.16);
-      color: var(--danger-red);
-      padding: 12.5px;
+      color: #FF6961;
+      padding: 11px 14px;
       border-radius: 14px;
-      font-size: 12px;
-      font-weight: 700;
+      font-size: var(--text-caption);
+      font-weight: 600;
       cursor: pointer;
+      transition-property: scale, opacity;
+      transition-duration: 150ms;
+      transition-timing-function: ease-out;
+    }
+
+    @media (prefers-reduced-motion: no-preference) {
+      .btn-main:not(:disabled):active,
+      .btn-dark:not(:disabled):active,
+      .btn-danger:not(:disabled):active,
+      .hub-action-pill:not(:disabled):active,
+      .save-all-bar-btn:not(:disabled):active,
+      .icon-circle-action:not(:disabled):active,
+      .preset-pill:active,
+      .shelf-preset-card:active {
+        scale: 0.96;
+      }
     }
 
     .badge-chip {
-      font-size: 10px;
-      font-weight: 700;
+      font-size: 0.6875rem;
+      font-weight: 600;
+      font-variant-numeric: tabular-nums;
       padding: 3px 9px;
       border-radius: 999px;
       background: rgba(var(--accent-rgb), 0.16);
       color: var(--accent-main);
+      white-space: nowrap;
     }
 
     .tweak-tags-wrap {
       display: flex;
       flex-wrap: wrap;
       gap: 6px;
-      margin: 9px 0 12px;
+      margin-block: 10px 12px;
     }
     .tweak-mini-tag {
-      font-size: 10.5px;
-      font-weight: 600;
-      padding: 4px 9px;
+      font-size: 0.6875rem;
+      font-weight: 500;
+      padding: 4px 10px;
       border-radius: 8px;
       background: var(--bg-card-inner);
-      border: 0.5px solid var(--separator);
+      border: 1px solid var(--separator);
       color: var(--text-main);
     }
 
@@ -915,26 +1095,32 @@
       display: flex;
       align-items: center;
       justify-content: space-between;
+      gap: 10px;
       background: var(--bg-card-inner);
-      border: 0.5px solid var(--separator);
+      border: 1px solid var(--separator);
       border-radius: 14px;
-      padding: 11px 13px;
-      margin-top: 8px;
+      padding: 12px 14px;
+      margin-block-start: 8px;
     }
     .voice-eq-bars {
       display: inline-flex;
       align-items: flex-end;
-      gap: 2.5px;
+      gap: 3px;
       height: 14px;
     }
     .voice-eq-bars span {
       width: 3px;
+      height: 10px;
       background: var(--ok-green);
       border-radius: 2px;
-      animation: eqPulse 0.7s infinite ease-in-out alternate;
     }
-    .voice-eq-bars span:nth-child(2) { animation-delay: 0.18s; }
-    .voice-eq-bars span:nth-child(3) { animation-delay: 0.35s; }
+    @media (prefers-reduced-motion: no-preference) {
+      .voice-eq-bars span {
+        animation: eqPulse 0.7s infinite ease-in-out alternate;
+      }
+      .voice-eq-bars span:nth-child(2) { animation-delay: 0.18s; }
+      .voice-eq-bars span:nth-child(3) { animation-delay: 0.35s; }
+    }
     @keyframes eqPulse { 0% { height: 4px; opacity: 0.5; } 100% { height: 14px; opacity: 1; } }
 
     .shizuku-alert-backdrop {
@@ -948,11 +1134,12 @@
       align-items: center;
       justify-content: center;
       padding: 18px;
+      overscroll-behavior: contain;
     }
     .shizuku-alert-box {
       width: 100%;
       max-width: 365px;
-      border-radius: 20px;
+      border-radius: 22px;
       padding: 20px 18px;
       text-align: center;
     }
@@ -967,6 +1154,7 @@
       align-items: center;
       justify-content: center;
       padding: 22px;
+      overscroll-behavior: contain;
     }
 
     #authScreenOverlay {
@@ -982,42 +1170,46 @@
       justify-content: center;
       padding: 20px;
       pointer-events: auto;
+      overscroll-behavior: contain;
     }
     .auth-card {
       width: 100%;
       max-width: 380px;
-      border-radius: 22px;
+      border-radius: 24px;
       padding: 20px 18px;
     }
     .auth-badge {
       display: inline-block;
-      padding: 5px 13px;
+      padding: 5px 14px;
       border-radius: 999px;
-      font-size: 10px;
-      font-weight: 700;
-      letter-spacing: 0.8px;
+      font-size: 0.6875rem;
+      font-weight: 600;
+      letter-spacing: 0.05em;
       color: var(--text-main);
       background: var(--secondary-system-bg);
-      border: 0.5px solid var(--separator);
-      margin-bottom: 10px;
+      border: 1px solid var(--separator);
+      margin-block-end: 10px;
     }
     .auth-input-wrap {
       background: var(--tertiary-system-bg);
-      border: 0.5px solid var(--separator);
+      border: 1px solid var(--separator);
       border-radius: 14px;
       padding: 10px 14px;
-      margin-bottom: 10px;
-      transition: border-color 0.18s ease;
+      margin-block-end: 12px;
+      transition-property: border-color;
+      transition-duration: 150ms;
+      transition-timing-function: ease-out;
     }
     .auth-input-wrap:focus-within {
       border-color: var(--accent-main);
     }
     .auth-input-label {
-      font-size: 10px;
+      display: block;
+      font-size: 0.6875rem;
       font-weight: 600;
       color: var(--text-muted);
-      letter-spacing: 0.5px;
-      margin-bottom: 4px;
+      letter-spacing: 0.04em;
+      margin-block-end: 4px;
     }
     .auth-input {
       width: 100%;
@@ -1028,36 +1220,38 @@
       border-radius: 0 !important;
       padding: 0 !important;
       color: var(--text-main) !important;
-      font-size: 15px;
+      font-size: 1rem;
       font-weight: 600;
     }
 
     .avatar-preset-grid {
       display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      gap: 9px;
-      margin: 12px 0;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 8px;
+      margin-block: 12px;
     }
     .avatar-preset-item {
-      height: 56px;
+      min-height: 54px;
       border-radius: 14px;
       background: var(--tertiary-system-bg);
-      border: 0.5px solid var(--separator);
+      border: 1px solid var(--separator);
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 24px;
+      font-size: 1.5rem;
       cursor: pointer;
-    }
-    .avatar-preset-item:active {
-      border-color: var(--accent-main);
     }
 
     .tab-section { display: none; }
-    .tab-section.active { display: block; animation: tabFadeIn 0.16s ease-out; }
+    .tab-section.active { display: block; }
+    @media (prefers-reduced-motion: no-preference) {
+      .tab-section.active {
+        animation: tabFadeIn 150ms ease-out;
+      }
+    }
     @keyframes tabFadeIn {
-      from { opacity: 0; transform: translateY(3px); }
-      to { opacity: 1; transform: translateY(0); }
+      from { opacity: 0; }
+      to { opacity: 1; }
     }
 
     .bottom-nav-bar {
@@ -1066,17 +1260,17 @@
       left: 12px;
       right: 12px;
       max-width: 480px;
-      margin: 0 auto;
+      margin-inline: auto;
       height: 64px;
       background: rgba(28, 28, 30, 0.94);
       backdrop-filter: blur(24px);
       -webkit-backdrop-filter: blur(24px);
-      border: 0.5px solid var(--separator);
+      border: 1px solid var(--separator);
       border-radius: 22px;
       display: grid;
-      grid-template-columns: repeat(5, 1fr);
+      grid-template-columns: repeat(5, minmax(0, 1fr));
       align-items: center;
-      padding: 0 4px;
+      padding-inline: 4px;
       z-index: 9000;
       box-shadow: 0 10px 28px rgba(0, 0, 0, 0.65);
     }
@@ -1089,9 +1283,12 @@
       justify-content: center;
       gap: 3px;
       color: var(--system-gray);
-      font-size: 10px;
+      font-size: 0.6875rem;
       font-weight: 600;
       cursor: pointer;
+      transition-property: color;
+      transition-duration: 150ms;
+      transition-timing-function: ease-out;
     }
     .nav-item svg {
       width: 20px;
@@ -1099,6 +1296,7 @@
       stroke: currentColor;
       fill: none;
       stroke-width: 2;
+      vector-effect: non-scaling-stroke;
     }
     .nav-item.active {
       color: var(--accent-main);
@@ -1110,42 +1308,51 @@
       left: 50%;
       transform: translateX(-50%) translateY(-130px);
       background: var(--secondary-system-bg);
-      border: 0.5px solid var(--separator);
+      border: 1px solid var(--separator);
       box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6);
       color: var(--text-main);
       padding: 10px 16px;
       border-radius: 999px;
-      font-size: 12px;
+      font-size: var(--text-caption);
       font-weight: 600;
       z-index: 100000;
-      transition: transform 0.22s ease;
+      opacity: 0;
+      transition-property: opacity, transform;
+      transition-duration: 180ms;
+      transition-timing-function: ease-out;
       pointer-events: none;
       white-space: nowrap;
+      max-width: calc(100% - 28px);
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
-    #cyberToast.show { transform: translateX(-50%) translateY(0); }
+    #cyberToast.show {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
   </style>
 </head>
 <body>
 
-  <div id="animatedBgLayer">
+  <div id="animatedBgLayer" aria-hidden="true">
     <video id="bgCustomVideo" autoplay loop muted playsinline></video>
     <img id="bgCustomGif" alt="" />
     <canvas id="bgParticlesCanvas"></canvas>
   </div>
-  <div id="bgThemeTintLayer"></div>
-  <div id="bgVignetteOverlay"></div>
+  <div id="bgThemeTintLayer" aria-hidden="true"></div>
+  <div id="bgVignetteOverlay" aria-hidden="true"></div>
 
   <input id="avatarFileInput" type="file" accept="image/*" style="display:none" onchange="onAvatarFileSelected(event)" />
   <input id="bgMediaFileInput" type="file" accept="video/*,image/gif,image/webp,image/*" style="display:none" onchange="onCustomBgFileSelected(event)" />
   <input id="chCustomColorPicker" type="color" value="#30D158" style="display:none" onchange="onCustomCrosshairColorPicked(this.value)" />
-  <div id="cyberToast">SO2Teleport PRO</div>
+  <div id="cyberToast" role="status" aria-live="polite">SO2Teleport PRO</div>
 
-  <div id="avatarPickerModal" class="shizuku-alert-backdrop">
+  <div id="avatarPickerModal" class="shizuku-alert-backdrop" role="dialog" aria-modal="true" aria-labelledby="avatarModalTitle">
     <div class="shizuku-alert-box liquid-glass-surface">
-      <div style="font-size:16px; font-weight:700; color:#fff; margin-bottom:4px;">Профиль и Живой фон</div>
-      <div style="font-size:12px; color:var(--text-muted); margin-bottom:10px;">
-        Выберите эмблему, загрузите фото аватарки или поставьте своё видео/GIF на фон:
-      </div>
+      <h2 id="avatarModalTitle" style="font-size:1rem; font-weight:700; color:#fff; margin-bottom:4px;">Профиль и живой фон</h2>
+      <p style="font-size:0.75rem; color:var(--text-muted); margin-bottom:10px; line-height:1.4;">
+        Выберите эмблему, загрузите фото аватарки или установите видео/GIF на фон:
+      </p>
       <div class="avatar-preset-grid">
         <div class="avatar-preset-item" onclick="selectBuiltInAvatar('🔥')">🔥</div>
         <div class="avatar-preset-item" onclick="selectBuiltInAvatar('⚡')">⚡</div>
@@ -1157,132 +1364,132 @@
         <div class="avatar-preset-item" onclick="selectBuiltInAvatar('💎')">💎</div>
       </div>
       <button type="button" class="btn-main" style="margin-bottom:8px;" onclick="openGalleryFileInput()">
-        ЗАГРУЗИТЬ ФОТО АВАТАРКИ
+        Загрузить фото аватарки
       </button>
       <button type="button" class="btn-dark" style="margin-bottom:8px;" onclick="triggerCustomBgUpload()">
-        ВЫБРАТЬ ВИДЕО / GIF НА ФОН
+        Выбрать видео или GIF на фон
       </button>
       <button type="button" class="btn-dark" onclick="document.getElementById('avatarPickerModal').style.display='none'">
-        ЗАКРЫТЬ
+        Закрыть окно
       </button>
     </div>
   </div>
 
-  <div id="screenCalibOverlay" onclick="finishScreenCalibTap()">
-    <div style="font-size:36px; margin-bottom:10px;">👆</div>
-    <div style="font-size:17px; font-weight:700; color:#fff; margin-bottom:8px; text-align:center;">
-      Проведите пальцем по рамке экрана
-    </div>
-    <div style="font-size:12.5px; color:var(--text-muted); text-align:center; max-width:300px; line-height:1.5;">
-      Калибровка герцовки и агрессивного шага кусков под матрицу вашего устройства. Коснитесь экрана для завершения.
-    </div>
+  <div id="screenCalibOverlay" role="dialog" aria-modal="true" onclick="finishScreenCalibTap()">
+    <div style="font-size:2.25rem; margin-bottom:10px;" aria-hidden="true">👆</div>
+    <h2 style="font-size:1.0625rem; font-weight:700; color:#fff; margin-bottom:8px; text-align:center;">
+      Проведите пальцем по периметру экрана
+    </h2>
+    <p style="font-size:0.8125rem; color:var(--text-muted); text-align:center; max-width:300px; line-height:1.5;">
+      Калибровка герцовки и шага кусков под матрицу устройства. Коснитесь экрана для завершения.
+    </p>
   </div>
 
-  <div id="touchTestOverlay">
-    <div style="font-size:16px; font-weight:700; color:#fff; margin-bottom:6px;">Проверить касания</div>
-    <div id="touchTestCoords" style="font-size:12px; color:var(--accent-main); font-weight:600; margin-bottom:10px;">
-      Водите пальцем по полю ниже...
+  <div id="touchTestOverlay" role="dialog" aria-modal="true">
+    <h2 style="font-size:1rem; font-weight:700; color:#fff; margin-bottom:6px;">Проверка отклика касаний</h2>
+    <div id="touchTestCoords" style="font-size:0.75rem; color:var(--accent-main); font-weight:600; font-variant-numeric:tabular-nums; margin-bottom:10px;">
+      Проведите пальцем по области ниже…
     </div>
     <canvas id="touchTestCanvas" width="320" height="320" style="background:#000000; border:1px solid var(--separator); border-radius:16px; touch-action:none;"></canvas>
     <button type="button" class="btn-main" style="max-width:320px; margin-top:12px;" onclick="closeTouchTestModal()">
-      ЗАКРЫТЬ ТЕСТЕР
+      Закрыть тестер
     </button>
   </div>
 
-  <div id="shizukuRequiredModal" class="shizuku-alert-backdrop">
+  <div id="shizukuRequiredModal" class="shizuku-alert-backdrop" role="dialog" aria-modal="true" aria-labelledby="shizukuModalTitle">
     <div class="shizuku-alert-box liquid-glass-surface">
-      <div style="font-size:17px; font-weight:700; color:#ffffff; margin-bottom:7px;">Shizuku не активен</div>
-      <div style="font-size:12.5px; color:var(--text-muted); line-height:1.5; margin-bottom:14px;">
-        Для работы сверхрезкой сенсы, растяга и оптимизации включите <b>Shizuku</b>.
+      <h2 id="shizukuModalTitle" style="font-size:1.0625rem; font-weight:700; color:#ffffff; margin-bottom:7px;">Требуется запуск Shizuku</h2>
+      <p style="font-size:0.8125rem; color:var(--text-muted); line-height:1.5; margin-bottom:14px;">
+        Включите службу <b>Shizuku</b> и выдайте доступ для применения настроек сенсы, растяга и FPS.
+      </p>
+      <div style="display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:8px;">
+        <button type="button" class="btn-main" onclick="openSupportLink()">Открыть инструкцию</button>
+        <button type="button" class="btn-dark" onclick="requestAndRecheckShizuku()">Проверить статус</button>
       </div>
-      <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px;">
-        <button type="button" class="btn-main" onclick="openSupportLink()">ПОМОЩЬ</button>
-        <button type="button" class="btn-dark" onclick="requestAndRecheckShizuku()">ПРОВЕРИТЬ</button>
-      </div>
-      <button type="button" class="btn-dark" style="margin-top:8px;" onclick="document.getElementById('shizukuRequiredModal').style.display='none'">ЗАКРЫТЬ</button>
+      <button type="button" class="btn-dark" style="margin-top:8px;" onclick="document.getElementById('shizukuRequiredModal').style.display='none'">Закрыть окно</button>
     </div>
   </div>
 
-  <div id="authScreenOverlay">
+  <div id="authScreenOverlay" role="dialog" aria-modal="true" aria-labelledby="authTitleText">
     <div style="text-align:center; margin-bottom:14px;">
       <div class="auth-badge">QUANTUM CORE V10 • PRO TITANIUM</div>
-      <div style="font-size:28px; font-weight:800; letter-spacing:-0.5px; color:#fff;">
+      <h1 id="authTitleText" style="font-size:1.75rem; font-weight:800; letter-spacing:-0.02em; color:#fff;">
         SO2Teleport <span style="color:var(--accent-main);">PRO</span>
-      </div>
+      </h1>
     </div>
 
     <div class="auth-card liquid-glass-surface">
-      <div style="text-align:center; font-size:12.5px; font-weight:500; color:var(--text-muted); margin-bottom:14px;">
+      <p style="text-align:center; font-size:0.8125rem; font-weight:500; color:var(--text-muted); margin-bottom:14px;">
         Авторизация лицензии (1 ключ = 1 устройство)
-      </div>
+      </p>
 
-      <div id="authErrorBanner" style="display:none; background:rgba(255,69,58,0.16); border:0.5px solid rgba(255,69,58,0.55); color:#FF453A; border-radius:12px; padding:10px 12px; font-size:12px; font-weight:600; text-align:center; margin-bottom:12px;">
-        Введите лицензионный ключ
-      </div>
-
-      <div class="auth-input-wrap">
-        <div class="auth-input-label">USERNAME (ВАШ НИКНЕЙМ)</div>
-        <input id="loginNickInput" class="auth-input" type="text" placeholder="dare" value="dare" autocomplete="off" spellcheck="false" />
+      <div id="authErrorBanner" role="alert" style="display:none; background:rgba(255,69,58,0.16); border:1px solid rgba(255,69,58,0.55); color:#FF6961; border-radius:12px; padding:10px 12px; font-size:0.75rem; font-weight:600; text-align:center; margin-bottom:12px;">
+        Введите лицензионный ключ из Telegram-бота
       </div>
 
       <div class="auth-input-wrap">
-        <div class="auth-input-label">LICENSE KEY (КЛЮЧ ИЗ БОТА)</div>
-        <input id="loginKeyInput" class="auth-input" type="text" placeholder="TP-HYI-274744" autocomplete="off" spellcheck="false" />
+        <label class="auth-input-label" for="loginNickInput">НИКНЕЙМ ИГРОКА</label>
+        <input id="loginNickInput" name="username" class="auth-input" type="text" placeholder="login" value="" autocomplete="off" spellcheck="false" />
+      </div>
+
+      <div class="auth-input-wrap">
+        <label class="auth-input-label" for="loginKeyInput">ЛИЦЕНЗИОННЫЙ КЛЮЧ</label>
+        <input id="loginKeyInput" name="license_key" class="auth-input" type="text" placeholder="TP-***-******" value="" autocomplete="off" spellcheck="false" aria-describedby="authErrorBanner" />
       </div>
 
       <button id="loginSubmitBtn" type="button" class="btn-main" onclick="handleLoginSubmit()" style="margin-top:4px;">
-        АКТИВИРОВАТЬ КЛЮЧ И ВОЙТИ
+        Активировать ключ и войти
       </button>
     </div>
 
-    <div style="width:100%; max-width:380px; margin-top:10px; display:flex; flex-direction:column; gap:8px;">
-      <div class="btn-dark" style="text-align:center; font-size:11.5px; color:var(--text-muted); cursor:default;">
-        Защищённый HWID: <b id="loginHwidLabel" style="color:#fff;">...</b>
+    <div style="width:100%; max-width:380px; margin-top:12px; display:flex; flex-direction:column; gap:8px;">
+      <div class="btn-dark" style="text-align:center; font-size:0.75rem; color:var(--text-muted); cursor:default;">
+        Защищённый HWID: <b id="loginHwidLabel" style="color:#fff; font-variant-numeric:tabular-nums; user-select:text;">…</b>
       </div>
       <button type="button" class="btn-dark" onclick="openBotShopLink()">
-        Купить / Получить ключ в Telegram-боте
+        Получить ключ в Telegram-боте
       </button>
       <button type="button" class="btn-dark" onclick="openSupportLink()">
-        Помощь с Shizuku в Telegram
+        Открыть поддержку по Shizuku
       </button>
     </div>
   </div>
 
-  <div id="mainAppWorkspace" class="app-container">
+  <main id="mainAppWorkspace" class="app-container">
 
-    <div class="top-brand-header liquid-glass-surface">
+    <header class="top-brand-header liquid-glass-surface">
       <div class="top-brand-row">
         <div class="brand-left-wrap">
-          <div class="header-avatar-holder" onclick="triggerAvatarUpload()" title="Профиль и живой фон">
-            <img id="topHeaderAvatarImg" src="" alt="avatar" />
-            <span id="topHeaderAvatarFallback" class="header-avatar-fallback">D</span>
+          <div class="header-avatar-holder" onclick="triggerAvatarUpload()" role="button" tabindex="0" aria-label="Изменить аватарку и живой фон">
+            <img id="topHeaderAvatarImg" src="" alt="" />
+            <span id="topHeaderAvatarFallback" class="header-avatar-fallback">P</span>
           </div>
-          <div>
+          <div style="min-width:0;">
             <div class="brand-title-main">SO2Teleport <span>PRO</span></div>
             <div class="brand-meta-sub">
-              Игрок: <b id="topPlayerNick" style="color:#fff;">dare</b> • <span id="topSubMini" style="color:var(--ok-green);">АКТИВНА</span>
+              Игрок: <b id="topPlayerNick" style="color:#fff;">login</b> • <span id="topSubMini" style="color:var(--ok-green);">АКТИВНА</span>
             </div>
           </div>
         </div>
 
-        <div class="shizuku-status-pill" onclick="requestAndRecheckShizuku()">
-          <span id="shizukuDot" class="status-dot"></span>
+        <button type="button" class="shizuku-status-pill" onclick="requestAndRecheckShizuku()">
+          <span id="shizukuDot" class="status-dot" aria-hidden="true"></span>
           <span id="shizukuStateText" style="color:var(--danger-red);">Shizuku ВЫКЛ</span>
-        </div>
+        </button>
       </div>
 
       <div class="top-header-bottom-bar">
-        <span>ЯДРО: <b id="headerLiveCoreBadge" style="color:var(--accent-main);">68.0X EXTREME CORE</b></span>
-        <div class="theme-dots">
-          <div class="theme-dot active" data-theme-idx="0" title="iOS Синий" style="background:#0A84FF;" onclick="setNeonTheme('#0A84FF', '10, 132, 255', '#007AFF', '0, 122, 255', this, 0, false, '#FFFFFF')"></div>
-          <div class="theme-dot" data-theme-idx="1" title="iOS Изумрудный" style="background:#30D158;" onclick="setNeonTheme('#30D158', '48, 209, 88', '#34C759', '52, 199, 89', this, 1, false, '#000000')"></div>
-          <div class="theme-dot" data-theme-idx="2" title="iOS Индиго" style="background:#5E5CE6;" onclick="setNeonTheme('#5E5CE6', '94, 92, 230', '#5856D6', '88, 86, 214', this, 2, false, '#FFFFFF')"></div>
-          <div class="theme-dot" data-theme-idx="3" title="iOS Пурпурный" style="background:#BF5AF2;" onclick="setNeonTheme('#BF5AF2', '191, 90, 242', '#AF52DE', '175, 82, 222', this, 3, false, '#FFFFFF')"></div>
-          <div class="theme-dot" data-theme-idx="4" title="iOS Оранжевый" style="background:#FF9F0A;" onclick="setNeonTheme('#FF9F0A', '255, 159, 10', '#FF9500', '255, 149, 0', this, 4, false, '#000000')"></div>
-          <div class="theme-dot" data-theme-idx="5" title="iOS Титановый" style="background:#8E8E93;" onclick="setNeonTheme('#E5E5EA', '229, 229, 234', '#8E8E93', '142, 142, 147', this, 5, false, '#000000')"></div>
+        <span>ЯДРО: <b id="headerLiveCoreBadge" style="color:var(--accent-main); font-variant-numeric:tabular-nums;">68.0X EXTREME CORE</b></span>
+        <div class="theme-dots" role="group" aria-label="Цветовая тема">
+          <button type="button" class="theme-dot active" data-theme-idx="0" aria-label="Синяя тема" style="background:#0A84FF;" onclick="setNeonTheme('#0A84FF', '10, 132, 255', '#007AFF', '0, 122, 255', this, 0, false, '#FFFFFF')"></button>
+          <button type="button" class="theme-dot" data-theme-idx="1" aria-label="Зелёная тема" style="background:#30D158;" onclick="setNeonTheme('#30D158', '48, 209, 88', '#34C759', '52, 199, 89', this, 1, false, '#000000')"></button>
+          <button type="button" class="theme-dot" data-theme-idx="2" aria-label="Индиго тема" style="background:#5E5CE6;" onclick="setNeonTheme('#5E5CE6', '94, 92, 230', '#5856D6', '88, 86, 214', this, 2, false, '#FFFFFF')"></button>
+          <button type="button" class="theme-dot" data-theme-idx="3" aria-label="Пурпурная тема" style="background:#BF5AF2;" onclick="setNeonTheme('#BF5AF2', '191, 90, 242', '#AF52DE', '175, 82, 222', this, 3, false, '#FFFFFF')"></button>
+          <button type="button" class="theme-dot" data-theme-idx="4" aria-label="Оранжевая тема" style="background:#FF9F0A;" onclick="setNeonTheme('#FF9F0A', '255, 159, 10', '#FF9500', '255, 149, 0', this, 4, false, '#000000')"></button>
+          <button type="button" class="theme-dot" data-theme-idx="5" aria-label="Титановая тема" style="background:#8E8E93;" onclick="setNeonTheme('#E5E5EA', '229, 229, 234', '#8E8E93', '142, 142, 147', this, 5, false, '#000000')"></button>
         </div>
       </div>
-    </div>
+    </header>
 
     <div id="tabSens" class="tab-section active">
 
@@ -1298,7 +1505,7 @@
               Instant Point-to-Point Transfer • 1 · Телепорт Ультра (68.0x MAX)
             </div>
           </div>
-          <label class="cyber-switch-lg" title="Включить / Выключить Teleport Engine">
+          <label class="cyber-switch-lg" aria-label="Включить Teleport Engine">
             <input id="tgMainTeleportSwitch" type="checkbox" checked onchange="setMainEnginePower(this.checked, false)" />
             <span class="cyber-slider-lg"></span>
           </label>
@@ -1306,61 +1513,61 @@
 
         <div class="hub-actions-grid">
           <button id="btnMainTeleportTogglePill" type="button" class="hub-action-pill liquid-glass-btn" onclick="setMainEnginePower(!isMainTeleportOn, false)">
-            TELEPORT АКТИВЕН
+            Teleport активен
           </button>
-          <button type="button" class="hub-action-pill btn-dark" style="padding:11.5px 10px;" onclick="activateMaxH9ijeTeleport()">
-            H9IJE TELEPORT MAX
+          <button type="button" class="hub-action-pill btn-dark" onclick="activateMaxH9ijeTeleport()">
+            Включить H9IJE MAX
           </button>
         </div>
       </div>
 
       <button type="button" class="save-all-bar-btn liquid-glass-btn" onclick="saveAllAppSettingsMaster()">
-        ПРИМЕНИТЬ И СОХРАНИТЬ ВСЕ НАСТРОЙКИ
+        Применить и сохранить настройки
       </button>
 
       <div id="accSensPresets" class="acc-block liquid-glass-surface open">
         <div class="acc-header" onclick="toggleAccordionBlock('accSensPresets')">
           <div class="acc-left">
-            <div class="acc-icon">🔥</div>
+            <div class="acc-icon" aria-hidden="true">🔥</div>
             <div class="acc-title-wrap">
               <div class="acc-title">Киберспортивные профили наводки <span class="badge-chip">PRO V10</span></div>
-              <div class="acc-sub">От максимального Телепорта 68.0x до анти-лаг режима A57</div>
+              <div class="acc-sub">Телепорт 68.0x, iOS 240Hz, ROG Phone 720Hz и анти-лаг A57</div>
             </div>
           </div>
-          <div class="acc-chevron">⌄</div>
+          <div class="acc-chevron" aria-hidden="true">⌄</div>
         </div>
         <div class="acc-body-wrap">
           <div class="acc-body-inner">
             <div id="preset_extreme" class="character-card active" onclick="selectTeleportPreset('extreme')">
-              <div>
+              <div style="min-width:0;">
                 <div class="char-title">1 · ТЕЛЕПОРТ УЛЬТРА <span class="char-tag">FULL MAX • 68.0X</span></div>
-                <div class="char-desc">Все ползунки-бафы на 100% максимум (Куски 100, Потолок 30, Острота 2.50, Мёртвая зона 0). Мгновенный переброс прицела за 1 кадр.</div>
+                <div class="char-desc">Мгновенный переброс прицела за 1 кадр без сглаживания и без вязкости осей (Острота 2.50, Куски 100, Разгон 2.50, Выпрямление 0, Мёртвая зона 0).</div>
               </div>
-              <span class="char-arrow">›</span>
+              <span class="char-arrow" aria-hidden="true">›</span>
             </div>
 
             <div id="preset_tablet_pro" class="character-card" onclick="selectTeleportPreset('tablet_pro')">
-              <div>
+              <div style="min-width:0;">
                 <div class="char-title">2 · ДЛЯ ПАДОВ УЛЬТРА <span class="char-tag pad-badge">PAD IMPULSE • 128.0X</span></div>
                 <div class="char-desc">Экстремальный пробив для планшетов (Xiaomi Pad, Redmi Pad, Legion Y700, Galaxy Tab). Полный максимум кусков и снятие вязкости.</div>
               </div>
-              <span class="char-arrow">›</span>
+              <span class="char-arrow" aria-hidden="true">›</span>
             </div>
 
             <div id="preset_clean_sharp" class="character-card" onclick="selectTeleportPreset('clean_sharp')">
-              <div>
+              <div style="min-width:0;">
                 <div class="char-title">3 · AWM / DEAGLE РЕЗКИЙ <span class="char-tag">ТОЧНЫЙ ХВАТ • 48.0X</span></div>
                 <div class="char-desc">Хлёсткий срыв прицела и жёсткое выравнивание линии наводки по голове без лишнего залипания на осях.</div>
               </div>
-              <span class="char-arrow">›</span>
+              <span class="char-arrow" aria-hidden="true">›</span>
             </div>
 
             <div id="preset_budget_pro" class="character-card" onclick="selectTeleportPreset('budget_pro')">
-              <div>
+              <div style="min-width:0;">
                 <div class="char-title">4 · ДЛЯ БЮДЖЕТОК И A57 <span class="char-tag budget-badge">ANTI-LAG FPS • 42.0X</span></div>
-                <div class="char-desc">Резкая сенса + защита от просадок кадров на Samsung A57 / A55 / A54, Redmi и Poco (SkiaGL кэш + ровный FPS).</div>
+                <div class="char-desc">Резкая сенса и защита от просадок кадров на Samsung A57 / A55 / A54, Redmi и Poco (SkiaGL кэш и ровный FPS).</div>
               </div>
-              <span class="char-arrow">›</span>
+              <span class="char-arrow" aria-hidden="true">›</span>
             </div>
           </div>
         </div>
@@ -1369,130 +1576,130 @@
       <div id="accSensSliders" class="acc-block liquid-glass-surface">
         <div class="acc-header" onclick="toggleAccordionBlock('accSensSliders')">
           <div class="acc-left">
-            <div class="acc-icon">🎛</div>
+            <div class="acc-icon" aria-hidden="true">🎛</div>
             <div class="acc-title-wrap">
               <div class="acc-title">Тонкая настройка и Куски <span class="badge-chip">19 ПАРАМЕТРОВ</span></div>
               <div class="acc-sub">Все бафы Телепорта на максимуме, замедлители на нуле</div>
             </div>
           </div>
-          <div class="acc-chevron">⌄</div>
+          <div class="acc-chevron" aria-hidden="true">⌄</div>
         </div>
         <div class="acc-body-wrap">
           <div class="acc-body-inner">
             <div class="section-eyebrow">ОСТРОТА И КАМЕРА (МАКСИМУМ)</div>
             <div class="pro-slider-row">
-              <div class="pro-slider-head"><span class="pro-slider-name">1. Сила Телепорта (Резкость)</span><span id="val_sharp" class="pro-slider-pill">2.50</span></div>
+              <div class="pro-slider-head"><label class="pro-slider-name" for="sl_sharp">1. Сила Телепорта (Резкость)</label><span id="val_sharp" class="pro-slider-pill">2.50</span></div>
               <input id="sl_sharp" type="range" min="10" max="25" step="1" value="25" oninput="onSensSliderChange()" />
               <div class="pro-slider-hint">Максимум (2.50) — мгновенный скачок прицела без анимации</div>
             </div>
 
             <div class="pro-slider-row">
-              <div class="pro-slider-head"><span class="pro-slider-name">2. Резкость камеры X (Влево-вправо)</span><span id="val_sx" class="pro-slider-pill">2.50</span></div>
+              <div class="pro-slider-head"><label class="pro-slider-name" for="sl_sx">2. Резкость камеры X (Влево–вправо)</label><span id="val_sx" class="pro-slider-pill">2.50</span></div>
               <input id="sl_sx" type="range" min="10" max="25" step="1" value="25" oninput="onSensSliderChange()" />
-              <div class="pro-slider-hint">Горизонтальная резкость флика (бафает Телепорт и AWM)</div>
+              <div class="pro-slider-hint">Горизонтальная резкость флика для Телепорта и AWM</div>
             </div>
 
             <div class="pro-slider-row">
-              <div class="pro-slider-head"><span class="pro-slider-name">3. Резкость камеры Y (Вверх-вниз)</span><span id="val_sy" class="pro-slider-pill">2.50</span></div>
+              <div class="pro-slider-head"><label class="pro-slider-name" for="sl_sy">3. Резкость камеры Y (Вверх–вниз)</label><span id="val_sy" class="pro-slider-pill">2.50</span></div>
               <input id="sl_sy" type="range" min="10" max="25" step="1" value="25" oninput="onSensSliderChange()" />
-              <div class="pro-slider-hint">Вертикальная послушность прицела для зажима в точку</div>
+              <div class="pro-slider-hint">Вертикальная отзывчивость прицела для зажима в точку</div>
             </div>
 
             <div class="section-eyebrow">ТОЧНОСТЬ И ОТКЛИК (БЕЗ ЗАДЕРЖЕК)</div>
             <div class="pro-slider-row">
-              <div class="pro-slider-head"><span class="pro-slider-name">Отсечка шума (фильтр)</span><span id="val_grid" class="pro-slider-pill">1</span></div>
+              <div class="pro-slider-head"><label class="pro-slider-name" for="sl_grid">Отсечка шума (фильтр)</label><span id="val_grid" class="pro-slider-pill">1</span></div>
               <input id="sl_grid" type="range" min="1" max="10" step="1" value="1" oninput="onSensSliderChange()" />
-              <div class="pro-slider-hint">Минимум (1) — не режет скорость микродвижений</div>
+              <div class="pro-slider-hint">Минимум (1) — сохраняет скорость микродвижений</div>
             </div>
 
             <div class="pro-slider-row">
-              <div class="pro-slider-head"><span class="pro-slider-name">Мёртвая зона</span><span id="val_pause" class="pro-slider-pill">0</span></div>
+              <div class="pro-slider-head"><label class="pro-slider-name" for="sl_pause">Мёртвая зона</label><span id="val_pause" class="pro-slider-pill">0</span></div>
               <input id="sl_pause" type="range" min="0" max="10" step="1" value="0" oninput="onSensSliderChange()" />
               <div class="pro-slider-hint">Ноль (0) — мгновенная реакция на касание</div>
             </div>
 
             <div class="pro-slider-row">
-              <div class="pro-slider-head"><span class="pro-slider-name">Упреждение (Микро-флик)</span><span id="val_lead" class="pro-slider-pill">20</span></div>
+              <div class="pro-slider-head"><label class="pro-slider-name" for="sl_lead">Упреждение (Микро-флик)</label><span id="val_lead" class="pro-slider-pill">20</span></div>
               <input id="sl_lead" type="range" min="0" max="20" step="1" value="20" oninput="onSensSliderChange()" />
             </div>
 
             <div class="pro-slider-row">
-              <div class="pro-slider-head"><span class="pro-slider-name">Прилипание к осям</span><span id="val_stick" class="pro-slider-pill">100</span></div>
-              <input id="sl_stick" type="range" min="0" max="100" step="5" value="100" oninput="onSensSliderChange()" />
+              <div class="pro-slider-head"><label class="pro-slider-name" for="sl_stick">Прилипание к осям</label><span id="val_stick" class="pro-slider-pill">0</span></div>
+              <input id="sl_stick" type="range" min="0" max="100" step="5" value="0" oninput="onSensSliderChange()" />
             </div>
 
             <div class="pro-slider-row">
-              <div class="pro-slider-head"><span class="pro-slider-name">Через сколько липнуть</span><span id="val_stick_delay" class="pro-slider-pill">5</span></div>
-              <input id="sl_stick_delay" type="range" min="5" max="60" step="1" value="5" oninput="onSensSliderChange()" />
-              <div class="pro-slider-hint">Минимум (5) — моментальный захват линии головы</div>
+              <div class="pro-slider-head"><label class="pro-slider-name" for="sl_stick_delay">Задержка захвата оси</label><span id="val_stick_delay" class="pro-slider-pill">60</span></div>
+              <input id="sl_stick_delay" type="range" min="5" max="60" step="1" value="60" oninput="onSensSliderChange()" />
+              <div class="pro-slider-hint">Максимум (60) — не тормозит свободный диагональный флик</div>
             </div>
 
             <div class="section-eyebrow">КВАНТОВЫЕ КУСКИ (FULL MAX)</div>
             <div class="pro-slider-row">
-              <div class="pro-slider-head"><span class="pro-slider-name">Сила прилипания</span><span id="val_stick_force" class="pro-slider-pill">15</span></div>
-              <input id="sl_stick_force" type="range" min="1" max="15" step="1" value="15" oninput="onSensSliderChange()" />
+              <div class="pro-slider-head"><label class="pro-slider-name" for="sl_stick_force">Сила прилипания</label><span id="val_stick_force" class="pro-slider-pill">1</span></div>
+              <input id="sl_stick_force" type="range" min="1" max="15" step="1" value="1" oninput="onSensSliderChange()" />
             </div>
 
             <div class="pro-slider-row">
-              <div class="pro-slider-head"><span class="pro-slider-name">Куски (Импульс 90°/180°)</span><span id="val_chunks" class="pro-slider-pill">100</span></div>
+              <div class="pro-slider-head"><label class="pro-slider-name" for="sl_chunks">Куски (Импульс 90°/180°)</label><span id="val_chunks" class="pro-slider-pill">100</span></div>
               <input id="sl_chunks" type="range" min="40" max="100" step="1" value="100" oninput="onSensSliderChange()" />
             </div>
 
             <div class="pro-slider-row">
-              <div class="pro-slider-head"><span class="pro-slider-name">Мелочь мимо кусков</span><span id="val_chunk_bypass" class="pro-slider-pill">0</span></div>
+              <div class="pro-slider-head"><label class="pro-slider-name" for="sl_chunk_bypass">Порог обхода кусков</label><span id="val_chunk_bypass" class="pro-slider-pill">0</span></div>
               <input id="sl_chunk_bypass" type="range" min="0" max="20" step="1" value="0" oninput="onSensSliderChange()" />
             </div>
 
             <div class="pro-slider-row">
-              <div class="pro-slider-head"><span class="pro-slider-name">Потолок куска</span><span id="val_chunk_cap" class="pro-slider-pill">30</span></div>
+              <div class="pro-slider-head"><label class="pro-slider-name" for="sl_chunk_cap">Потолок куска</label><span id="val_chunk_cap" class="pro-slider-pill">30</span></div>
               <input id="sl_chunk_cap" type="range" min="5" max="30" step="1" value="30" oninput="onSensSliderChange()" />
             </div>
 
             <div class="pro-slider-row">
-              <div class="pro-slider-head"><span class="pro-slider-name">Куски только быстрее</span><span id="val_chunkfast" class="pro-slider-pill">100</span></div>
+              <div class="pro-slider-head"><label class="pro-slider-name" for="sl_chunkfast">Ускорение быстрых кусков</label><span id="val_chunkfast" class="pro-slider-pill">100</span></div>
               <input id="sl_chunkfast" type="range" min="40" max="100" step="1" value="100" oninput="onSensSliderChange()" />
             </div>
 
             <div class="pro-slider-row">
-              <div class="pro-slider-head"><span class="pro-slider-name">Пауза после выстрела</span><span id="val_shot_pause" class="pro-slider-pill">0</span></div>
+              <div class="pro-slider-head"><label class="pro-slider-name" for="sl_shot_pause">Пауза после выстрела</label><span id="val_shot_pause" class="pro-slider-pill">0</span></div>
               <input id="sl_shot_pause" type="range" min="0" max="15" step="1" value="0" oninput="onSensSliderChange()" />
             </div>
 
             <div class="pro-slider-row">
-              <div class="pro-slider-head"><span class="pro-slider-name">Крутизна разгона</span><span id="val_accel" class="pro-slider-pill">1.00</span></div>
+              <div class="pro-slider-head"><label class="pro-slider-name" for="sl_accel">Крутизна разгона</label><span id="val_accel" class="pro-slider-pill">2.50</span></div>
               <input id="sl_accel" type="range" min="10" max="25" step="1" value="25" oninput="onSensSliderChange()" />
             </div>
 
             <div class="pro-slider-row">
-              <div class="pro-slider-head"><span class="pro-slider-name">Дальность краёв</span><span id="val_edge_reach" class="pro-slider-pill">20</span></div>
+              <div class="pro-slider-head"><label class="pro-slider-name" for="sl_edge_reach">Чувствительность краёв</label><span id="val_edge_reach" class="pro-slider-pill">20</span></div>
               <input id="sl_edge_reach" type="range" min="0" max="20" step="1" value="20" oninput="onSensSliderChange()" />
             </div>
 
             <div class="pro-slider-row">
-              <div class="pro-slider-head"><span class="pro-slider-name">Выпрямление траектории</span><span id="val_straight" class="pro-slider-pill">1.00</span></div>
-              <input id="sl_straight" type="range" min="0" max="100" step="5" value="100" oninput="onSensSliderChange()" />
+              <div class="pro-slider-head"><label class="pro-slider-name" for="sl_straight">Выпрямление траектории</label><span id="val_straight" class="pro-slider-pill">0.00</span></div>
+              <input id="sl_straight" type="range" min="0" max="100" step="5" value="0" oninput="onSensSliderChange()" />
             </div>
 
             <div class="pro-slider-row">
-              <div class="pro-slider-head"><span class="pro-slider-name">Хват по осям (Уплотнение отдачи)</span><span id="val_recoil" class="pro-slider-pill">100%</span></div>
-              <input id="sl_recoil" type="range" min="20" max="100" step="1" value="100" oninput="onRecoilSliderChange()" />
+              <div class="pro-slider-head"><label class="pro-slider-name" for="sl_recoil">Хват по осям (Уплотнение отдачи)</label><span id="val_recoil" class="pro-slider-pill">20%</span></div>
+              <input id="sl_recoil" type="range" min="20" max="100" step="1" value="20" oninput="onRecoilSliderChange()" />
             </div>
 
             <div class="pro-slider-row">
-              <div class="pro-slider-head"><span class="pro-slider-name">Потолок хвата (Фиксация точки)</span><span id="val_grip_cap" class="pro-slider-pill">15</span></div>
-              <input id="sl_grip_cap" type="range" min="1" max="15" step="1" value="15" oninput="onSensSliderChange()" />
+              <div class="pro-slider-head"><label class="pro-slider-name" for="sl_grip_cap">Потолок хвата (Фиксация точки)</label><span id="val_grip_cap" class="pro-slider-pill">1</span></div>
+              <input id="sl_grip_cap" type="range" min="1" max="15" step="1" value="1" oninput="onSensSliderChange()" />
             </div>
 
             <button type="button" class="btn-main" style="margin-top:12px;" onclick="saveAllAppSettingsMaster()">
-              ПРИМЕНИТЬ И ПЕРЕЗАПУСТИТЬ TELEPORT
+              Применить и перезапустить Teleport
             </button>
 
-            <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:8px;">
-              <button type="button" class="btn-dark" onclick="startScreenCalibModal()">Калибровка</button>
-              <button type="button" class="btn-dark" onclick="openTouchTestModal()">Тестер тача</button>
+            <div style="display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:8px; margin-top:8px;">
+              <button type="button" class="btn-dark" onclick="startScreenCalibModal()">Откалибровать экран</button>
+              <button type="button" class="btn-dark" onclick="openTouchTestModal()">Проверить тач</button>
             </div>
             <button type="button" class="btn-dark" style="margin-top:8px;" onclick="selectTeleportPreset(isPadModeEnabled ? 'tablet_pro' : 'extreme')">
-              Выкрутить все бафы Телепорта на максимум
+              Установить максимальные параметры
             </button>
           </div>
         </div>
@@ -1501,72 +1708,72 @@
       <div id="accSensShelf" class="acc-block liquid-glass-surface">
         <div class="acc-header" onclick="toggleAccordionBlock('accSensShelf')">
           <div class="acc-left">
-            <div class="acc-icon">🔖</div>
+            <div class="acc-icon" aria-hidden="true">🔖</div>
             <div class="acc-title-wrap">
               <div class="acc-title">Мои варианты и Полка сборок</div>
-              <div class="acc-sub">Сохранение своего пресета, обмен кодами и кибер-сборки</div>
+              <div class="acc-sub">Сохранение пресета, обмен кодами и готовые сборки</div>
             </div>
           </div>
-          <div class="acc-chevron">⌄</div>
+          <div class="acc-chevron" aria-hidden="true">⌄</div>
         </div>
         <div class="acc-body-wrap">
           <div class="acc-body-inner">
             <div class="saved-variant-row">
-              <div style="display:flex; align-items:center; gap:11px;">
-                <div class="acc-icon" style="width:34px; height:34px; font-size:13px;">💾</div>
-                <div>
-                  <div id="mySavedSlotTitle" style="font-size:13px; font-weight:700; color:#fff;">Мой сохранённый конфиг</div>
-                  <div style="font-size:11px; color:var(--text-muted);">персональный слот</div>
+              <div style="display:flex; align-items:center; gap:11px; min-width:0;">
+                <div class="acc-icon" style="width:34px; height:34px; font-size:0.8125rem;" aria-hidden="true">💾</div>
+                <div style="min-width:0;">
+                  <div id="mySavedSlotTitle" style="font-size:0.8125rem; font-weight:600; color:#fff;">Мой сохранённый конфиг</div>
+                  <div style="font-size:0.6875rem; color:var(--text-muted);">персональный слот</div>
                 </div>
               </div>
-              <div style="display:flex; gap:7px;">
-                <button type="button" class="icon-circle-action" title="Применить" onclick="loadSavedConfigLocal(false)">▼</button>
-                <button type="button" class="icon-circle-action" title="Сохранить" onclick="saveAllAppSettingsMaster()">💾</button>
+              <div style="display:flex; gap:8px;">
+                <button type="button" class="icon-circle-action" aria-label="Загрузить сохранённый конфиг" onclick="loadSavedConfigLocal(false)">▼</button>
+                <button type="button" class="icon-circle-action" aria-label="Сохранить текущий конфиг" onclick="saveAllAppSettingsMaster()">💾</button>
               </div>
             </div>
 
             <div class="code-input-bar">
-              <span style="color:var(--accent-main); font-weight:700;">&lt;/&gt;</span>
-              <input id="cloudCodeInput" class="auth-input" type="text" placeholder="Код сборки (например SO2-7744)" style="font-size:13.5px;" autocomplete="off" spellcheck="false" />
-              <button type="button" class="icon-circle-action" onclick="downloadCloudPresetNow()" title="Загрузить">📥</button>
+              <label for="cloudCodeInput" style="color:var(--accent-main); font-weight:700; font-size:0.75rem;">КОД</label>
+              <input id="cloudCodeInput" class="auth-input" type="text" placeholder="SO2-7744" autocomplete="off" spellcheck="false" />
+              <button type="button" class="icon-circle-action" aria-label="Применить облачный код" onclick="downloadCloudPresetNow()">📥</button>
             </div>
 
-            <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:9px;">
-              <button type="button" class="btn-dark" onclick="saveAllAppSettingsMaster()">＋ Сохранить всё</button>
-              <button type="button" class="btn-main" style="padding:12px;" onclick="uploadCloudPresetNow()">Создать код</button>
+            <div style="display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:8px; margin-top:10px;">
+              <button type="button" class="btn-dark" onclick="saveAllAppSettingsMaster()">Сохранить локально</button>
+              <button type="button" class="btn-main" onclick="uploadCloudPresetNow()">Создать облачный код</button>
             </div>
 
             <div class="shelf-cards-grid">
               <div class="shelf-preset-card" onclick="applyShelfPreset('demon_100')">
                 <div>
-                  <div style="font-size:12px; font-weight:700; color:#fff;">1 · H9IJE TELEPORT MAX</div>
-                  <div style="font-size:10.5px; color:var(--text-muted); margin-top:2px;">Куски 100 · Потолок 30 · 68.0x</div>
+                  <div style="font-size:0.75rem; font-weight:700; color:#fff;">1 · H9IJE TELEPORT MAX</div>
+                  <div style="font-size:0.6875rem; color:var(--text-muted); margin-top:2px;">Куски 100 · Потолок 30 · 68.0x</div>
                 </div>
-                <div style="font-size:10.5px; color:var(--accent-main); font-weight:700; margin-top:8px;">Макс. агрессия ›</div>
+                <div style="font-size:0.6875rem; color:var(--accent-main); font-weight:600; margin-top:8px;">Применить сборку ›</div>
               </div>
 
               <div class="shelf-preset-card" onclick="applyShelfPreset('pad_cyber')">
                 <div>
-                  <div style="font-size:12px; font-weight:700; color:#fff;">2 · ПАД КИБЕРСПОРТ</div>
-                  <div style="font-size:10.5px; color:var(--text-muted); margin-top:2px;">Импульс 128.0x · 4–6 пальцев</div>
+                  <div style="font-size:0.75rem; font-weight:700; color:#fff;">2 · ПАД КИБЕРСПОРТ</div>
+                  <div style="font-size:0.6875rem; color:var(--text-muted); margin-top:2px;">Импульс 128.0x · 4–6 пальцев</div>
                 </div>
-                <div style="font-size:10.5px; color:var(--accent-main); font-weight:700; margin-top:8px;">Для планшетов ›</div>
+                <div style="font-size:0.6875rem; color:var(--accent-main); font-weight:600; margin-top:8px;">Применить сборку ›</div>
               </div>
 
               <div class="shelf-preset-card" onclick="applyShelfPreset('heavy_pixel')">
                 <div>
-                  <div style="font-size:12px; font-weight:700; color:#fff;">3 · AKR TRANSFER PRO</div>
-                  <div style="font-size:10.5px; color:var(--text-muted); margin-top:2px;">Куски 100 · Выпрямление 1.00</div>
+                  <div style="font-size:0.75rem; font-weight:700; color:#fff;">3 · AKR TRANSFER PRO</div>
+                  <div style="font-size:0.6875rem; color:var(--text-muted); margin-top:2px;">Куски 95 · Острота 2.50</div>
                 </div>
-                <div style="font-size:10.5px; color:var(--accent-main); font-weight:700; margin-top:8px;">Зажим в точку ›</div>
+                <div style="font-size:0.6875rem; color:var(--accent-main); font-weight:600; margin-top:8px;">Применить сборку ›</div>
               </div>
 
               <div class="shelf-preset-card" onclick="applyShelfPreset('a57_fps_god')">
                 <div>
-                  <div style="font-size:12px; font-weight:700; color:#fff;">4 · A57 / БЮДЖЕТ FPS</div>
-                  <div style="font-size:10.5px; color:var(--text-muted); margin-top:2px;">Стабильный FPS · SkiaGL Boost</div>
+                  <div style="font-size:0.75rem; font-weight:700; color:#fff;">4 · A57 / БЮДЖЕТ FPS</div>
+                  <div style="font-size:0.6875rem; color:var(--text-muted); margin-top:2px;">Стабильный FPS · SkiaGL Boost</div>
                 </div>
-                <div style="font-size:10.5px; color:var(--accent-main); font-weight:700; margin-top:8px;">Фикс просадок ›</div>
+                <div style="font-size:0.6875rem; color:var(--accent-main); font-weight:600; margin-top:8px;">Применить сборку ›</div>
               </div>
             </div>
           </div>
@@ -1576,13 +1783,13 @@
       <div id="accCrosshair" class="acc-block liquid-glass-surface">
         <div class="acc-header" onclick="toggleAccordionBlock('accCrosshair')">
           <div class="acc-left">
-            <div class="acc-icon">⌖</div>
+            <div class="acc-icon" aria-hidden="true">⌖</div>
             <div class="acc-title-wrap">
               <div class="acc-title">Кастомный прицел <span id="crosshairStateChip" class="badge-chip">ВЫКЛ</span></div>
               <div class="acc-sub">Выбор формы, цвета прицела и точная подгонка лучей</div>
             </div>
           </div>
-          <div class="acc-chevron">⌄</div>
+          <div class="acc-chevron" aria-hidden="true">⌄</div>
         </div>
         <div class="acc-body-wrap">
           <div id="crosshairCardAnchor" class="acc-body-inner">
@@ -1591,7 +1798,7 @@
                 <div class="toggle-info-title">Отображать прицел поверх игры</div>
                 <div class="toggle-info-sub">Аппаратный оверлей без потери FPS</div>
               </div>
-              <label class="cyber-switch">
+              <label class="cyber-switch" aria-label="Отображать прицел поверх игры">
                 <input id="tgCrosshairMaster" type="checkbox" onchange="toggleCrosshairMasterSwitch(this.checked)" />
                 <span class="cyber-slider"></span>
               </label>
@@ -1600,88 +1807,88 @@
             <div id="chPreviewStage" class="preview-stage-box">
               <canvas id="crosshairPreviewCanvas" width="280" height="148"></canvas>
               <div style="position:absolute; top:9px; left:10px;"><span id="chModeRightLabel" class="badge-chip">КРЕСТ</span></div>
-              <div style="position:absolute; top:9px; right:10px;"><button type="button" class="icon-circle-action" style="width:30px; height:30px;" onclick="togglePreviewDayNight()">🌙</button></div>
-              <div style="position:absolute; bottom:9px; left:12px; display:flex; align-items:center; gap:6px; font-size:11px; color:var(--text-muted);">
+              <div style="position:absolute; top:9px; right:10px;"><button type="button" class="icon-circle-action" style="min-width:32px; min-height:32px;" aria-label="Переключить фон предпросмотра" onclick="togglePreviewDayNight()">🌙</button></div>
+              <div style="position:absolute; bottom:9px; left:12px; display:flex; align-items:center; gap:6px; font-size:0.6875rem; color:var(--text-muted); font-variant-numeric:tabular-nums;">
                 <span id="chColorLiveDot" style="width:9px; height:9px; border-radius:50%; background:#30D158; display:inline-block;"></span>
                 <span id="chSizeReadout">+ 8 × 3 px</span>
               </div>
               <div style="position:absolute; bottom:8px; right:10px; display:flex; gap:5px;">
-                <button type="button" class="badge-chip" style="cursor:pointer; border:none; padding:4px 8px;" onclick="setPreviewZoom(1)">×1</button>
-                <button type="button" class="badge-chip" style="cursor:pointer; border:none; padding:4px 8px;" onclick="setPreviewZoom(2)">×4</button>
-                <button type="button" class="badge-chip" style="cursor:pointer; border:none; padding:4px 8px;" onclick="setPreviewZoom(3.5)">×8</button>
+                <button type="button" class="badge-chip" style="cursor:pointer; border:none; padding:4px 8px;" aria-label="Масштаб 1x" onclick="setPreviewZoom(1)">×1</button>
+                <button type="button" class="badge-chip" style="cursor:pointer; border:none; padding:4px 8px;" aria-label="Масштаб 4x" onclick="setPreviewZoom(2)">×4</button>
+                <button type="button" class="badge-chip" style="cursor:pointer; border:none; padding:4px 8px;" aria-label="Масштаб 8x" onclick="setPreviewZoom(3.5)">×8</button>
               </div>
             </div>
 
             <div class="ch-color-palette-bar">
               <div style="display:flex; align-items:center; justify-content:space-between;">
-                <span style="font-size:12.5px; font-weight:700; color:#fff;">Цвет прицела</span>
+                <span style="font-size:0.8125rem; font-weight:600; color:#fff;">Цвет прицела</span>
                 <span id="chColorHexBadge" class="badge-chip" style="font-family:monospace;">#30D158</span>
               </div>
-              <div class="ch-color-dots-row">
-                <div class="ch-color-swatch active" data-ch-color="#30d158" style="background:#30D158;" onclick="setCrosshairColor('#30D158', this)" title="Зелёный"></div>
-                <div class="ch-color-swatch" data-ch-color="#0a84ff" style="background:#0A84FF;" onclick="setCrosshairColor('#0A84FF', this)" title="Синий"></div>
-                <div class="ch-color-swatch" data-ch-color="#ff453a" style="background:#FF453A;" onclick="setCrosshairColor('#FF453A', this)" title="Красный"></div>
-                <div class="ch-color-swatch" data-ch-color="#ffd60a" style="background:#FFD60A;" onclick="setCrosshairColor('#FFD60A', this)" title="Жёлтый"></div>
-                <div class="ch-color-swatch" data-ch-color="#bf5af2" style="background:#BF5AF2;" onclick="setCrosshairColor('#BF5AF2', this)" title="Пурпурный"></div>
-                <div class="ch-color-swatch" data-ch-color="#ff9f0a" style="background:#FF9F0A;" onclick="setCrosshairColor('#FF9F0A', this)" title="Оранжевый"></div>
-                <div class="ch-color-swatch" data-ch-color="#ffffff" style="background:#FFFFFF;" onclick="setCrosshairColor('#FFFFFF', this)" title="Белый"></div>
-                <div class="ch-color-swatch" data-ch-color="#40c8e0" style="background:#40C8E0;" onclick="setCrosshairColor('#40C8E0', this)" title="Бирюзовый"></div>
-                <div class="ch-custom-color-btn" onclick="document.getElementById('chCustomColorPicker').click()" title="Свой цвет">🌈</div>
+              <div class="ch-color-dots-row" role="group" aria-label="Палитра цвета прицела">
+                <button type="button" class="ch-color-swatch active" data-ch-color="#30d158" style="background:#30D158;" onclick="setCrosshairColor('#30D158', this)" aria-label="Зелёный"></button>
+                <button type="button" class="ch-color-swatch" data-ch-color="#0a84ff" style="background:#0A84FF;" onclick="setCrosshairColor('#0A84FF', this)" aria-label="Синий"></button>
+                <button type="button" class="ch-color-swatch" data-ch-color="#ff453a" style="background:#FF453A;" onclick="setCrosshairColor('#FF453A', this)" aria-label="Красный"></button>
+                <button type="button" class="ch-color-swatch" data-ch-color="#ffd60a" style="background:#FFD60A;" onclick="setCrosshairColor('#FFD60A', this)" aria-label="Жёлтый"></button>
+                <button type="button" class="ch-color-swatch" data-ch-color="#bf5af2" style="background:#BF5AF2;" onclick="setCrosshairColor('#BF5AF2', this)" aria-label="Пурпурный"></button>
+                <button type="button" class="ch-color-swatch" data-ch-color="#ff9f0a" style="background:#FF9F0A;" onclick="setCrosshairColor('#FF9F0A', this)" aria-label="Оранжевый"></button>
+                <button type="button" class="ch-color-swatch" data-ch-color="#ffffff" style="background:#FFFFFF;" onclick="setCrosshairColor('#FFFFFF', this)" aria-label="Белый"></button>
+                <button type="button" class="ch-color-swatch" data-ch-color="#40c8e0" style="background:#40C8E0;" onclick="setCrosshairColor('#40C8E0', this)" aria-label="Бирюзовый"></button>
+                <button type="button" class="ch-custom-color-btn" onclick="document.getElementById('chCustomColorPicker').click()" aria-label="Выбрать свой цвет">🌈</button>
               </div>
             </div>
 
             <div class="ch-shape-grid-4">
-              <div class="ch-shape-tile active" data-ch="cross" onclick="setCrosshairMode(this, 'cross')"><div class="ch-shape-icon">✚</div><div class="ch-shape-lbl">КРЕСТ</div></div>
-              <div class="ch-shape-tile" data-ch="dot" onclick="setCrosshairMode(this, 'dot')"><div class="ch-shape-icon">•</div><div class="ch-shape-lbl">ТОЧКА</div></div>
-              <div class="ch-shape-tile" data-ch="tshape" onclick="setCrosshairMode(this, 'tshape')"><div class="ch-shape-icon">⊤</div><div class="ch-shape-lbl">Т-ОБРАЗ</div></div>
-              <div class="ch-shape-tile" data-ch="corners" onclick="setCrosshairMode(this, 'corners')"><div class="ch-shape-icon">⌜⌟</div><div class="ch-shape-lbl">УГОЛКИ</div></div>
+              <div class="ch-shape-tile active" data-ch="cross" onclick="setCrosshairMode(this, 'cross')"><div class="ch-shape-icon" aria-hidden="true">✚</div><div class="ch-shape-lbl">КРЕСТ</div></div>
+              <div class="ch-shape-tile" data-ch="dot" onclick="setCrosshairMode(this, 'dot')"><div class="ch-shape-icon" aria-hidden="true">•</div><div class="ch-shape-lbl">ТОЧКА</div></div>
+              <div class="ch-shape-tile" data-ch="tshape" onclick="setCrosshairMode(this, 'tshape')"><div class="ch-shape-icon" aria-hidden="true">⊤</div><div class="ch-shape-lbl">Т-ОБРАЗ</div></div>
+              <div class="ch-shape-tile" data-ch="corners" onclick="setCrosshairMode(this, 'corners')"><div class="ch-shape-icon" aria-hidden="true">⌜⌟</div><div class="ch-shape-lbl">УГОЛКИ</div></div>
             </div>
 
             <div class="ch-subtoggle-grid-2">
               <div id="subBoxCrossLines" class="ch-subtoggle-box active" onclick="setCrosshairMode(this, 'cross')">
-                <span style="font-size:10.5px; font-weight:700; color:#fff;">ТОЛЬКО ЛУЧИ</span>
+                <span style="font-size:0.6875rem; font-weight:600; color:#fff;">ТОЛЬКО ЛУЧИ</span>
                 <span class="badge-chip">БЕЗ ТОЧКИ</span>
               </div>
               <div id="subBoxCenterDot" class="ch-subtoggle-box" onclick="setCrosshairMode(this, 'crossdot')">
-                <span style="font-size:10.5px; font-weight:700; color:#fff;">ЛУЧИ + ТОЧКА</span>
+                <span style="font-size:0.6875rem; font-weight:600; color:#fff;">ЛУЧИ + ТОЧКА</span>
                 <span class="badge-chip">КОМБО</span>
               </div>
             </div>
 
             <div class="pro-slider-row">
-              <div class="pro-slider-head"><span class="pro-slider-name">Размер лучей</span><span id="val_ch_len" class="pro-slider-pill">8</span></div>
+              <div class="pro-slider-head"><label class="pro-slider-name" for="sl_ch_len">Размер лучей</label><span id="val_ch_len" class="pro-slider-pill">8</span></div>
               <input id="sl_ch_len" type="range" min="2" max="22" value="8" oninput="syncCrosshairConfig()" />
             </div>
             <div class="pro-slider-row">
-              <div class="pro-slider-head"><span class="pro-slider-name">Толщина линий</span><span id="val_ch_thick" class="pro-slider-pill">3</span></div>
+              <div class="pro-slider-head"><label class="pro-slider-name" for="sl_ch_thick">Толщина линий</label><span id="val_ch_thick" class="pro-slider-pill">3</span></div>
               <input id="sl_ch_thick" type="range" min="1" max="10" value="3" oninput="syncCrosshairConfig()" />
             </div>
             <div class="pro-slider-row">
-              <div class="pro-slider-head"><span class="pro-slider-name">Зазор в центре</span><span id="val_ch_gap" class="pro-slider-pill">3</span></div>
+              <div class="pro-slider-head"><label class="pro-slider-name" for="sl_ch_gap">Зазор в центре</label><span id="val_ch_gap" class="pro-slider-pill">3</span></div>
               <input id="sl_ch_gap" type="range" min="0" max="14" value="3" oninput="syncCrosshairConfig()" />
             </div>
             <div class="pro-slider-row">
-              <div class="pro-slider-head"><span class="pro-slider-name">Размер центральной точки</span><span id="val_ch_dot" class="pro-slider-pill">3</span></div>
+              <div class="pro-slider-head"><label class="pro-slider-name" for="sl_ch_dot">Размер центральной точки</label><span id="val_ch_dot" class="pro-slider-pill">3</span></div>
               <input id="sl_ch_dot" type="range" min="1" max="10" value="3" oninput="syncCrosshairConfig()" />
             </div>
             <div class="pro-slider-row">
-              <div class="pro-slider-head"><span class="pro-slider-name">Прозрачность</span><span id="val_ch_op" class="pro-slider-pill">100%</span></div>
+              <div class="pro-slider-head"><label class="pro-slider-name" for="sl_ch_op">Непрозрачность прицела</label><span id="val_ch_op" class="pro-slider-pill">100%</span></div>
               <input id="sl_ch_op" type="range" min="20" max="100" value="100" oninput="syncCrosshairConfig()" />
             </div>
 
             <div class="toggle-row" style="margin-top:8px;">
               <div>
                 <div class="toggle-info-title">Чёрная контурная обводка</div>
-                <div class="toggle-info-sub">Прицел не сливается со светлыми стенами и дымом</div>
+                <div class="toggle-info-sub">Прицел остаётся читаемым на светлом фоне и в дыму</div>
               </div>
-              <label class="cyber-switch">
+              <label class="cyber-switch" aria-label="Чёрная контурная обводка">
                 <input id="tgChOutline" type="checkbox" checked onchange="syncCrosshairConfig()" />
                 <span class="cyber-slider"></span>
               </label>
             </div>
 
-            <button type="button" class="btn-main" style="margin-top:11px;" onclick="saveAllAppSettingsMaster()">
-              СОХРАНИТЬ ЦВЕТ И ФОРМУ ПРИЦЕЛА
+            <button type="button" class="btn-main" style="margin-top:12px;" onclick="saveAllAppSettingsMaster()">
+              Сохранить настройки прицела
             </button>
           </div>
         </div>
@@ -1694,13 +1901,13 @@
       <div id="accScreenStretch" class="acc-block liquid-glass-surface open">
         <div class="acc-header" onclick="toggleAccordionBlock('accScreenStretch')">
           <div class="acc-left">
-            <div class="acc-icon">📐</div>
+            <div class="acc-icon" aria-hidden="true">📐</div>
             <div class="acc-title-wrap">
               <div class="acc-title">Растяг экрана «T» <span id="curRatioBadge" class="badge-chip">4:3</span></div>
-              <div class="acc-sub">Широкие модельки врагов и жёсткий горизонтальный замок</div>
+              <div class="acc-sub">Широкие модельки и фиксация горизонтального режима</div>
             </div>
           </div>
-          <div class="acc-chevron">⌄</div>
+          <div class="acc-chevron" aria-hidden="true">⌄</div>
         </div>
         <div class="acc-body-wrap">
           <div class="acc-body-inner">
@@ -1710,7 +1917,7 @@
               </div>
             </div>
 
-            <div class="preset-pills-4" style="grid-template-columns:repeat(5,1fr); margin-bottom:7px;">
+            <div class="preset-pills-4" style="grid-template-columns:repeat(5,minmax(0,1fr)); margin-bottom:8px;">
               <div class="preset-pill active" data-ratio="4:3" onclick="selectRatioPill(this, '4:3')"><div class="preset-pill-name">4:3</div><div class="preset-pill-sub">Классика</div></div>
               <div class="preset-pill" data-ratio="PAD-WIDE" onclick="selectRatioPill(this, 'PAD-WIDE')"><div class="preset-pill-name">PAD</div><div class="preset-pill-sub">На Пады</div></div>
               <div class="preset-pill" data-ratio="5:4" onclick="selectRatioPill(this, '5:4')"><div class="preset-pill-name">5:4</div><div class="preset-pill-sub">Кибер</div></div>
@@ -1718,7 +1925,7 @@
               <div class="preset-pill" data-ratio="1:1" onclick="selectRatioPill(this, '1:1')"><div class="preset-pill-name">1:1</div><div class="preset-pill-sub">Макс</div></div>
             </div>
 
-            <div class="preset-pills-4" style="margin-bottom:13px;">
+            <div class="preset-pills-4" style="margin-bottom:14px;">
               <div class="preset-pill" data-ratio="3:2" onclick="selectRatioPill(this, '3:2')"><div class="preset-pill-name">3:2</div><div class="preset-pill-sub">Широкий</div></div>
               <div class="preset-pill" data-ratio="16:9" onclick="selectRatioPill(this, '16:9')"><div class="preset-pill-name">16:9</div><div class="preset-pill-sub">Сток+</div></div>
               <div class="preset-pill" data-ratio="SHRINK-84" onclick="selectRatioPill(this, 'SHRINK-84')"><div class="preset-pill-name">84%</div><div class="preset-pill-sub">Стяг</div></div>
@@ -1726,28 +1933,28 @@
             </div>
 
             <button id="btnLaunchFloatingStretch" type="button" class="btn-main" style="margin-bottom:8px;" onclick="launchFloatingTButton()">
-              ЗАПУСТИТЬ ПЛАВАЮЩУЮ ИКОНКУ «T» (4:3)
+              Запустить плавающую кнопку «T» (4:3)
             </button>
 
-            <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-bottom:8px;">
+            <div style="display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:8px; margin-bottom:8px;">
               <button type="button" class="btn-dark" onclick="applyStretchDirectlyNow()">
-                ШАГ 1: СЖАТЬ ЭКРАН
+                Шаг 1: Сжать экран
               </button>
               <button type="button" class="btn-dark" onclick="releaseStretchFullNow()">
-                ШАГ 2: РАСТЯНУТЬ
+                Шаг 2: Растянуть экран
               </button>
             </div>
 
             <button type="button" class="btn-dark" style="margin-bottom:8px;" onclick="resetNativeScreen()">
-              СБРОСИТЬ ЭКРАН В РОДНОЕ РАЗРЕШЕНИЕ
+              Восстановить родное разрешение экрана
             </button>
 
             <div class="toggle-row">
               <div>
                 <div class="toggle-info-title">Синхронизация кусков под растяг</div>
-                <div class="toggle-info-sub">Подстраивает шаг сенсы под широкие модельки</div>
+                <div class="toggle-info-sub">Адаптирует шаг сенсы под выбранный формат экрана</div>
               </div>
-              <label class="cyber-switch">
+              <label class="cyber-switch" aria-label="Синхронизация кусков под растяг">
                 <input id="tgWideHitbox" type="checkbox" onchange="toggleWideHitboxMode(this.checked)" />
                 <span class="cyber-slider"></span>
               </label>
@@ -1759,27 +1966,27 @@
       <div id="accScreenPixels" class="acc-block liquid-glass-surface">
         <div class="acc-header" onclick="toggleAccordionBlock('accScreenPixels')">
           <div class="acc-left">
-            <div class="acc-icon">🚀</div>
+            <div class="acc-icon" aria-hidden="true">🚀</div>
             <div class="acc-title-wrap">
               <div class="acc-title">Оптимизация пикселей <span id="pixelScaleBadge" class="badge-chip">100%</span></div>
-              <div class="acc-sub">Снижение нагрузки на GPU без чёрных полос для слабых девайсов</div>
+              <div class="acc-sub">Снижение нагрузки на GPU без чёрных полос</div>
             </div>
           </div>
-          <div class="acc-chevron">⌄</div>
+          <div class="acc-chevron" aria-hidden="true">⌄</div>
         </div>
         <div class="acc-body-wrap">
           <div class="acc-body-inner">
             <div class="pixel-tiles-6">
-              <div class="pixel-tile active" data-px="100" onclick="selectPixelTile(this, 100)"><b>100</b><span>пикс.</span></div>
-              <div class="pixel-tile" data-px="90" onclick="selectPixelTile(this, 90)"><b>90</b><span>пикс.</span></div>
-              <div class="pixel-tile" data-px="80" onclick="selectPixelTile(this, 80)"><b>80</b><span>пикс.</span></div>
-              <div class="pixel-tile" data-px="70" onclick="selectPixelTile(this, 70)"><b>70</b><span>пикс.</span></div>
-              <div class="pixel-tile" data-px="60" onclick="selectPixelTile(this, 60)"><b>60</b><span>пикс.</span></div>
-              <div class="pixel-tile" data-px="50" onclick="selectPixelTile(this, 50)"><b>50</b><span>пикс.</span></div>
+              <div class="pixel-tile active" data-px="100" onclick="selectPixelTile(this, 100)"><b>100</b><span>%</span></div>
+              <div class="pixel-tile" data-px="90" onclick="selectPixelTile(this, 90)"><b>90</b><span>%</span></div>
+              <div class="pixel-tile" data-px="80" onclick="selectPixelTile(this, 80)"><b>80</b><span>%</span></div>
+              <div class="pixel-tile" data-px="70" onclick="selectPixelTile(this, 70)"><b>70</b><span>%</span></div>
+              <div class="pixel-tile" data-px="60" onclick="selectPixelTile(this, 60)"><b>60</b><span>%</span></div>
+              <div class="pixel-tile" data-px="50" onclick="selectPixelTile(this, 50)"><b>50</b><span>%</span></div>
             </div>
             <div class="pixel-big-readout">
               <div id="pixelBigNumText" class="pixel-big-num">100 %</div>
-              <div style="font-size:11px; color:var(--text-muted); font-weight:600;">Аппаратный скейлер</div>
+              <div style="font-size:0.75rem; color:var(--text-muted); font-weight:500;">Аппаратный скейлер</div>
             </div>
             <div class="pixel-progress-bar"><div id="pixelProgressFill" class="pixel-progress-fill"></div></div>
           </div>
@@ -1793,36 +2000,36 @@
       <div id="accBoostOneClick" class="acc-block liquid-glass-surface open">
         <div class="acc-header" onclick="toggleAccordionBlock('accBoostOneClick')">
           <div class="acc-left">
-            <div class="acc-icon">🔥</div>
+            <div class="acc-icon" aria-hidden="true">🔥</div>
             <div class="acc-title-wrap">
               <div class="acc-title">Имба-Твик и Фикс FPS <span id="oneClickTweakStatusBadge" class="badge-chip">SKIAGL 72MB</span></div>
-              <div class="acc-sub">Полное устранение просадок FPS на Samsung A57 и бюджетках</div>
+              <div class="acc-sub">Устранение просадок FPS на Samsung A57 и бюджетных устройствах</div>
             </div>
           </div>
-          <div class="acc-chevron">⌄</div>
+          <div class="acc-chevron" aria-hidden="true">⌄</div>
         </div>
         <div class="acc-body-wrap">
           <div class="acc-body-inner">
-            <div style="font-size:12px; color:var(--text-muted); line-height:1.45; margin-top:6px;">
-              Применяет пакет глубоких системных настроек (аппаратный кэш текстур <b>SkiaGL 72 МБ</b>, многопоточный рендер, отключение троттлинга GOS, заморозку фоновых процессов Android Freezer и сетевой стек):
-            </div>
+            <p style="font-size:0.75rem; color:var(--text-muted); line-height:1.5; margin-top:6px;">
+              Применяет пакет системных настроек: аппаратный кэш текстур <b>SkiaGL 72 МБ</b>, многопоточный рендер, отключение троттлинга GOS, заморозку фоновых процессов Android Freezer и оптимизацию сети.
+            </p>
 
             <div class="tweak-tags-wrap">
               <span class="tweak-mini-tag">SkiaGL + Multithread</span>
               <span class="tweak-mini-tag">HWUI Cache 72MB</span>
               <span class="tweak-mini-tag">Apps Freezer (Max 16)</span>
               <span class="tweak-mini-tag">TCP Fast Window 60</span>
-              <span class="tweak-mini-tag">GPU Debug/Traces OFF</span>
+              <span class="tweak-mini-tag">GPU Debug OFF</span>
               <span class="tweak-mini-tag">Trim Caches 256M</span>
             </div>
 
             <button id="btnOneClickSettingsTweak" type="button" class="btn-main" onclick="runOneClickUltimateTweaks()">
-              ПРИМЕНИТЬ ВСЕ СИСТЕМНЫЕ ТВИКИ И ФИКС FPS
+              Применить системные твики и фикс FPS
             </button>
 
-            <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:9px;">
-              <button type="button" class="btn-dark" onclick="runRamCleanNow()">ОЧИСТИТЬ ОЗУ + КЭШ</button>
-              <button type="button" class="btn-dark" onclick="runSmartScanNow()">СКАН (<span id="scanTierBadge">ULTRA</span>)</button>
+            <div style="display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:8px; margin-top:8px;">
+              <button type="button" class="btn-dark" onclick="runRamCleanNow()">Очистить ОЗУ и кэш</button>
+              <button type="button" class="btn-dark" onclick="runSmartScanNow()">Проверить устройство (<span id="scanTierBadge">ULTRA</span>)</button>
             </div>
           </div>
         </div>
@@ -1831,35 +2038,35 @@
       <div id="accBoostModules" class="acc-block liquid-glass-surface">
         <div class="acc-header" onclick="toggleAccordionBlock('accBoostModules')">
           <div class="acc-left">
-            <div class="acc-icon">⚡</div>
+            <div class="acc-icon" aria-hidden="true">⚡</div>
             <div class="acc-title-wrap">
               <div class="acc-title">Системные модули Shizuku</div>
-              <div class="acc-sub">Raw Input, SkiaGL Turbo, анти-спайк пинга и защита герцовки</div>
+              <div class="acc-sub">Raw Input, SkiaGL Turbo, стабилизация пинга и удержание Гц</div>
             </div>
           </div>
-          <div class="acc-chevron">⌄</div>
+          <div class="acc-chevron" aria-hidden="true">⌄</div>
         </div>
         <div class="acc-body-wrap">
           <div class="acc-body-inner">
             <div class="toggle-row">
-              <div><div class="toggle-info-title">Вырезать плавную анимацию (Zero-Animation Snap)</div><div class="toggle-info-sub">Мгновенный скачок прицела из точки А в точку Б за 1 кадр</div></div>
-              <label class="cyber-switch"><input id="tgRawInput" type="checkbox" checked onchange="toggleBoostFeature('raw', this.checked)" /><span class="cyber-slider"></span></label>
+              <div><div class="toggle-info-title">Прямой отклик без сглаживания (Zero-Animation Snap)</div><div class="toggle-info-sub">Мгновенный перенос прицела за 1 кадр</div></div>
+              <label class="cyber-switch" aria-label="Прямой отклик без сглаживания"><input id="tgRawInput" type="checkbox" checked onchange="toggleBoostFeature('raw', this.checked)" /><span class="cyber-slider"></span></label>
             </div>
             <div class="toggle-row">
-              <div><div class="toggle-info-title">Ускоритель Рендера (SkiaGL + Shader Cache)</div><div class="toggle-info-sub">Отключает размытие окон, оверлейные тени и троттлинг GPU</div></div>
-              <label class="cyber-switch"><input id="tgVulkan" type="checkbox" checked onchange="toggleBoostFeature('vulkan', this.checked)" /><span class="cyber-slider"></span></label>
+              <div><div class="toggle-info-title">Ускоритель рендера (SkiaGL + Shader Cache)</div><div class="toggle-info-sub">Ускоряет отрисовку кадров и снижает нагрузку на GPU</div></div>
+              <label class="cyber-switch" aria-label="Ускоритель рендера"><input id="tgVulkan" type="checkbox" checked onchange="toggleBoostFeature('vulkan', this.checked)" /><span class="cyber-slider"></span></label>
             </div>
             <div class="toggle-row">
-              <div><div class="toggle-info-title">Сетевой Анти-Спайк (TCP Window 60 + DNS Boost)</div><div class="toggle-info-sub">Отключает фоновый скан Wi-Fi, Captive Portal и прыжки пинга</div></div>
-              <label class="cyber-switch"><input id="tgNetPing" type="checkbox" checked onchange="toggleBoostFeature('ping', this.checked)" /><span class="cyber-slider"></span></label>
+              <div><div class="toggle-info-title">Стабилизация сети (TCP Window 60 + DNS Boost)</div><div class="toggle-info-sub">Снижает скачки пинга и фоновый поиск Wi-Fi</div></div>
+              <label class="cyber-switch" aria-label="Стабилизация сети"><input id="tgNetPing" type="checkbox" checked onchange="toggleBoostFeature('ping', this.checked)" /><span class="cyber-slider"></span></label>
             </div>
             <div class="toggle-row">
-              <div><div class="toggle-info-title">Удержание максимальных Гц при нагреве</div><div class="toggle-info-sub">Запрещает системе сбрасывать герцовку экрана до 60 Гц</div></div>
-              <label class="cyber-switch"><input id="tgThermal" type="checkbox" checked onchange="toggleBoostFeature('thermal', this.checked)" /><span class="cyber-slider"></span></label>
+              <div><div class="toggle-info-title">Удержание максимальной герцовки экрана</div><div class="toggle-info-sub">Фиксирует частоту обновления экрана при нагреве</div></div>
+              <label class="cyber-switch" aria-label="Удержание максимальной герцовки экрана"><input id="tgThermal" type="checkbox" checked onchange="toggleBoostFeature('thermal', this.checked)" /><span class="cyber-slider"></span></label>
             </div>
             <div class="toggle-row">
-              <div><div class="toggle-info-title">Стелс-Защита на записи экрана</div><div class="toggle-info-sub">Прячет кнопку «T» и кастомный прицел на видео</div></div>
-              <label class="cyber-switch"><input id="tgStealth" type="checkbox" onchange="toggleBoostFeature('stealth', this.checked)" /><span class="cyber-slider"></span></label>
+              <div><div class="toggle-info-title">Скрытие оверлеев на записи экрана</div><div class="toggle-info-sub">Не отображает кнопку «T» и прицел на видеозаписи</div></div>
+              <label class="cyber-switch" aria-label="Скрытие оверлеев на записи экрана"><input id="tgStealth" type="checkbox" checked onchange="toggleBoostFeature('stealth', this.checked)" /><span class="cyber-slider"></span></label>
             </div>
           </div>
         </div>
@@ -1868,38 +2075,38 @@
       <div id="accBoostOverclock" class="acc-block liquid-glass-surface">
         <div class="acc-header" onclick="toggleAccordionBlock('accBoostOverclock')">
           <div class="acc-left">
-            <div class="acc-icon">⚙️</div>
+            <div class="acc-icon" aria-hidden="true">⚙️</div>
             <div class="acc-title-wrap">
               <div class="acc-title">Тонкий разгон Гц и Мультитача</div>
               <div class="acc-sub">Частота экрана, приоритет GPU/CPU и опрос тача 480 Гц</div>
             </div>
           </div>
-          <div class="acc-chevron">⌄</div>
+          <div class="acc-chevron" aria-hidden="true">⌄</div>
         </div>
         <div class="acc-body-wrap">
           <div class="acc-body-inner">
             <div class="pro-slider-row">
-              <div class="pro-slider-head"><span class="pro-slider-name">Фиксация частоты экрана</span><span id="val_opt_fps" class="pro-slider-pill">120 Hz</span></div>
+              <div class="pro-slider-head"><label class="pro-slider-name" for="sl_opt_fps">Фиксация частоты экрана</label><span id="val_opt_fps" class="pro-slider-pill">120 Hz</span></div>
               <input id="sl_opt_fps" type="range" min="60" max="144" step="30" value="120" oninput="updateOptLabels()" />
             </div>
             <div class="pro-slider-row">
-              <div class="pro-slider-head"><span class="pro-slider-name">Приоритет GPU/CPU</span><span id="val_opt_gpu" class="pro-slider-pill">100%</span></div>
+              <div class="pro-slider-head"><label class="pro-slider-name" for="sl_opt_gpu">Приоритет GPU/CPU</label><span id="val_opt_gpu" class="pro-slider-pill">100%</span></div>
               <input id="sl_opt_gpu" type="range" min="20" max="100" value="100" oninput="updateOptLabels()" />
             </div>
             <div class="pro-slider-row">
-              <div class="pro-slider-head"><span class="pro-slider-name">Отклик краёв экрана</span><span id="val_opt_edge" class="pro-slider-pill">100%</span></div>
+              <div class="pro-slider-head"><label class="pro-slider-name" for="sl_opt_edge">Отклик краёв экрана</label><span id="val_opt_edge" class="pro-slider-pill">100%</span></div>
               <input id="sl_opt_edge" type="range" min="10" max="100" value="100" oninput="updateOptLabels()" />
             </div>
             <div class="pro-slider-row">
-              <div class="pro-slider-head"><span class="pro-slider-name">Скорость Мультитача (3–6 пальцев)</span><span id="val_opt_mt" class="pro-slider-pill">160</span></div>
+              <div class="pro-slider-head"><label class="pro-slider-name" for="sl_opt_mt">Скорость Мультитача (3–6 пальцев)</label><span id="val_opt_mt" class="pro-slider-pill">160</span></div>
               <input id="sl_opt_mt" type="range" min="50" max="160" value="160" oninput="updateOptLabels()" />
             </div>
             <div class="pro-slider-row">
-              <div class="pro-slider-head"><span class="pro-slider-name">Частота опроса сенсора</span><span id="val_opt_ts" class="pro-slider-pill">480 Hz</span></div>
+              <div class="pro-slider-head"><label class="pro-slider-name" for="sl_opt_ts">Частота опроса сенсора</label><span id="val_opt_ts" class="pro-slider-pill">480 Hz</span></div>
               <input id="sl_opt_ts" type="range" min="240" max="480" step="60" value="480" oninput="updateOptLabels()" />
             </div>
-            <button type="button" class="btn-main" style="margin-top:11px;" onclick="applyFullShooterOptNow()">
-              ПРИМЕНИТЬ РАЗГОН ЯДРА И ТАЧА
+            <button type="button" class="btn-main" style="margin-top:12px;" onclick="applyFullShooterOptNow()">
+              Применить параметры разгона
             </button>
           </div>
         </div>
@@ -1912,28 +2119,28 @@
       <div id="accSquadVoice" class="acc-block liquid-glass-surface open">
         <div class="acc-header" onclick="toggleAccordionBlock('accSquadVoice')">
           <div class="acc-left">
-            <div class="acc-icon">🎙</div>
+            <div class="acc-icon" aria-hidden="true">🎙</div>
             <div class="acc-title-wrap">
               <div class="acc-title">Рация отряда <span id="voiceStateBadge" class="badge-chip">ГОТОВ К ЭФИРУ</span></div>
-              <div class="acc-sub">Чистый голос поверх Standoff 2 без приглушения шагов</div>
+              <div class="acc-sub">Голосовая связь поверх игры без приглушения шагов</div>
             </div>
           </div>
-          <div class="acc-chevron">⌄</div>
+          <div class="acc-chevron" aria-hidden="true">⌄</div>
         </div>
         <div class="acc-body-wrap">
           <div class="acc-body-inner">
-            <div class="auth-input-wrap" style="margin-top:8px; margin-bottom:9px;">
-              <div class="auth-input-label">КОД КОМНАТЫ ОТРЯДА</div>
+            <div class="auth-input-wrap" style="margin-top:8px; margin-bottom:10px;">
+              <label class="auth-input-label" for="voiceRoomInput">КОД КОМНАТЫ ОТРЯДА</label>
               <input id="voiceRoomInput" class="auth-input" type="text" value="SQUAD-MAIN" autocomplete="off" spellcheck="false" />
             </div>
-            <div style="display:grid; grid-template-columns:1.2fr 1fr 1fr; gap:7px; margin-bottom:10px;">
-              <button id="btnVoiceJoin" type="button" class="btn-main" style="padding:11px;" onclick="toggleVoiceConnection()">В ВОЙС</button>
-              <button id="btnVoiceMute" type="button" class="btn-dark" style="padding:11px;" onclick="window.toggleMicMute()">МИКРО</button>
-              <button id="btnVoiceDeaf" type="button" class="btn-dark" style="padding:11px;" onclick="window.toggleDeafenSpeaker()">ЗВУК</button>
+            <div style="display:grid; grid-template-columns:1.2fr 1fr 1fr; gap:8px; margin-bottom:10px;">
+              <button id="btnVoiceJoin" type="button" class="btn-main" style="padding:10px;" onclick="toggleVoiceConnection()">Войти в войс</button>
+              <button id="btnVoiceMute" type="button" class="btn-dark" style="padding:10px;" onclick="window.toggleMicMute()">Микрофон</button>
+              <button id="btnVoiceDeaf" type="button" class="btn-dark" style="padding:10px;" onclick="window.toggleDeafenSpeaker()">Динамик</button>
             </div>
             <div id="voiceMembersBox">
-              <div style="text-align:center; padding:10px; font-size:11.5px; color:var(--text-muted);">
-                Нажмите «В войс» для подключения к комнате отряда
+              <div style="text-align:center; padding:12px; font-size:0.75rem; color:var(--text-muted);">
+                Нажмите «Войти в войс», чтобы подключиться к комнате отряда.
               </div>
             </div>
           </div>
@@ -1943,21 +2150,22 @@
       <div id="accSquadFriends" class="acc-block liquid-glass-surface open">
         <div class="acc-header" onclick="toggleAccordionBlock('accSquadFriends')">
           <div class="acc-left">
-            <div class="acc-icon">👥</div>
+            <div class="acc-icon" aria-hidden="true">👥</div>
             <div class="acc-title-wrap">
               <div class="acc-title">Друзья и тиммейты <span id="myFriendCodeBadge" class="badge-chip">ID: SO2-0000</span></div>
-              <div class="acc-sub">Быстрый поиск тиммейтов и добавление по ID</div>
+              <div class="acc-sub">Добавление тиммейтов по личному ID</div>
             </div>
           </div>
-          <div class="acc-chevron">⌄</div>
+          <div class="acc-chevron" aria-hidden="true">⌄</div>
         </div>
         <div class="acc-body-wrap">
           <div class="acc-body-inner">
-            <div style="display:grid; grid-template-columns:1fr auto; gap:8px; margin-top:8px; margin-bottom:6px;">
+            <div style="display:grid; grid-template-columns:minmax(0,1fr) auto; gap:8px; margin-top:8px; margin-bottom:6px;">
               <div class="auth-input-wrap" style="margin-bottom:0;">
-                <input id="friendAddInput" class="auth-input" type="text" placeholder="Введите ID друга (SO2-XXXX)" autocomplete="off" spellcheck="false" />
+                <label class="auth-input-label" for="friendAddInput">ID ТИММЕЙТА</label>
+                <input id="friendAddInput" class="auth-input" type="text" placeholder="SO2-7744" autocomplete="off" spellcheck="false" />
               </div>
-              <button type="button" class="btn-main" style="width:auto; padding:0 18px;" onclick="addFriendByCode()">＋</button>
+              <button type="button" class="btn-main" style="width:auto; padding-inline:18px;" aria-label="Добавить тиммейта" onclick="addFriendByCode()">Добавить</button>
             </div>
             <div id="friendsListBox"></div>
           </div>
@@ -1968,86 +2176,86 @@
 
     <div id="tabProfile" class="tab-section">
       <div class="acc-block liquid-glass-surface open" style="padding:16px;">
-        <div style="display:flex; align-items:center; gap:14px; margin-bottom:14px; padding-bottom:13px; border-bottom:0.5px solid var(--separator);">
-          <div class="header-avatar-holder" style="width:64px; height:64px; border-radius:18px;" onclick="triggerAvatarUpload()">
-            <img id="profAvatarImg" src="" alt="avatar" />
-            <span id="profAvatarFallback" style="font-size:24px; font-weight:800; color:#fff;">D</span>
+        <div style="display:flex; align-items:center; gap:14px; margin-bottom:14px; padding-bottom:14px; border-bottom:1px solid var(--separator);">
+          <div class="header-avatar-holder" style="width:64px; height:64px; border-radius:18px;" onclick="triggerAvatarUpload()" role="button" tabindex="0" aria-label="Сменить аватарку">
+            <img id="profAvatarImg" src="" alt="" />
+            <span id="profAvatarFallback" style="font-size:1.5rem; font-weight:700; color:#fff;">P</span>
           </div>
-          <div style="flex:1;">
-            <div style="font-size:18px; font-weight:800; color:#fff;" id="profNickText">dare</div>
-            <div style="font-size:12px; color:var(--ok-green); font-weight:700; margin-top:2px;" id="profSubVal">АКТИВНА</div>
+          <div style="flex:1; min-width:0;">
+            <div style="font-size:1.125rem; font-weight:700; color:#fff;" id="profNickText">login</div>
+            <div style="font-size:0.75rem; color:var(--ok-green); font-weight:600; margin-top:2px;" id="profSubVal">АКТИВНА</div>
             <div style="display:flex; gap:6px; flex-wrap:wrap; margin-top:8px;">
-              <button type="button" class="btn-dark" style="padding:7px 11px; font-size:11px; width:auto;" onclick="triggerAvatarUpload()">
-                Аватарка
+              <button type="button" class="btn-dark" style="padding:7px 12px; font-size:0.6875rem; min-height:34px; width:auto;" onclick="triggerAvatarUpload()">
+                Сменить аватарку
               </button>
-              <button type="button" class="btn-dark" style="padding:7px 11px; font-size:11px; width:auto;" onclick="triggerCustomBgUpload()">
-                Свой живой фон
+              <button type="button" class="btn-dark" style="padding:7px 12px; font-size:0.6875rem; min-height:34px; width:auto;" onclick="triggerCustomBgUpload()">
+                Установить фон
               </button>
-              <button type="button" class="btn-dark" style="padding:7px 11px; font-size:11px; width:auto;" onclick="resetCustomBgToCarbon()">
-                Сброс фона
+              <button type="button" class="btn-dark" style="padding:7px 12px; font-size:0.6875rem; min-height:34px; width:auto;" onclick="resetCustomBgToCarbon()">
+                Сбросить фон
               </button>
             </div>
           </div>
         </div>
 
-        <div style="font-size:12.5px; color:var(--text-main); display:flex; flex-direction:column; gap:10px; margin-bottom:15px;">
-          <div style="display:flex; justify-content:space-between; padding-bottom:8px; border-bottom:0.5px solid var(--separator);">
-            <span style="color:var(--text-muted);">Лицензионный ключ:</span>
-            <b id="profKeyMasked" style="color:var(--accent-main);">TP***</b>
+        <div style="font-size:0.8125rem; color:var(--text-main); display:flex; flex-direction:column; gap:10px; margin-bottom:16px;">
+          <div style="display:flex; justify-content:space-between; padding-bottom:8px; border-bottom:1px solid var(--separator);">
+            <span style="color:var(--text-muted);">Лицензионный ключ</span>
+            <b id="profKeyMasked" style="color:var(--accent-main); font-variant-numeric:tabular-nums;">TP-***-******</b>
           </div>
-          <div style="display:flex; justify-content:space-between; padding-bottom:8px; border-bottom:0.5px solid var(--separator);">
-            <span style="color:var(--text-muted);">Аппаратный HWID:</span>
-            <b id="profHwidText" style="font-family:monospace;">...</b>
+          <div style="display:flex; justify-content:space-between; padding-bottom:8px; border-bottom:1px solid var(--separator);">
+            <span style="color:var(--text-muted);">Аппаратный HWID</span>
+            <b id="profHwidText" style="font-family:monospace; font-variant-numeric:tabular-nums; user-select:text;">…</b>
           </div>
-          <div style="display:flex; justify-content:space-between; padding-bottom:8px; border-bottom:0.5px solid var(--separator);">
-            <span style="color:var(--text-muted);">Защита канала:</span>
+          <div style="display:flex; justify-content:space-between; padding-bottom:8px; border-bottom:1px solid var(--separator);">
+            <span style="color:var(--text-muted);">Защита хранилища</span>
             <b id="profModelText" style="color:var(--ok-green);">AES-GCM + TEE</b>
           </div>
           <div style="display:flex; justify-content:space-between;">
-            <span style="color:var(--text-muted);">Активный конфиг:</span>
+            <span style="color:var(--text-muted);">Активный конфиг</span>
             <b id="profDeviceModeText" style="color:var(--accent-main);">ТЕЛЕПОРТ УЛЬТРА</b>
           </div>
         </div>
 
-        <button type="button" class="btn-main" style="margin-bottom:9px;" onclick="saveAllAppSettingsMaster()">
-          СОХРАНИТЬ ВСЕ НАСТРОЙКИ ПРОФИЛЯ
+        <button type="button" class="btn-main" style="margin-bottom:10px;" onclick="saveAllAppSettingsMaster()">
+          Сохранить настройки профиля
         </button>
 
-        <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px;">
-          <button type="button" class="btn-dark" onclick="openSupportLink()">ПОМОЩЬ</button>
-          <button type="button" class="btn-danger" onclick="handleLogoutClick()">СМЕНИТЬ КЛЮЧ</button>
+        <div style="display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:8px;">
+          <button type="button" class="btn-dark" onclick="openSupportLink()">Написать в поддержку</button>
+          <button type="button" class="btn-danger" onclick="handleLogoutClick()">Сменить ключ</button>
         </div>
       </div>
     </div>
 
-  </div>
+  </main>
 
-  <nav class="bottom-nav-bar">
-    <div class="nav-item active" data-tab="tabSens" onclick="switchTab('tabSens');">
-      <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>
+  <nav class="bottom-nav-bar" aria-label="Основная навигация">
+    <div class="nav-item active" data-tab="tabSens" role="button" tabindex="0" onclick="switchTab('tabSens');">
+      <svg aria-hidden="true" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>
       <span>Главное</span>
     </div>
-    <div class="nav-item" data-tab="tabScreen" onclick="switchTab('tabScreen')">
-      <svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M8 9h8M8 15h8"/></svg>
+    <div class="nav-item" data-tab="tabScreen" role="button" tabindex="0" onclick="switchTab('tabScreen')">
+      <svg aria-hidden="true" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M8 9h8M8 15h8"/></svg>
       <span>Экран «T»</span>
     </div>
-    <div class="nav-item" data-tab="tabBoost" onclick="switchTab('tabBoost')">
-      <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+    <div class="nav-item" data-tab="tabBoost" role="button" tabindex="0" onclick="switchTab('tabBoost')">
+      <svg aria-hidden="true" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
       <span>Бустер</span>
     </div>
-    <div class="nav-item" data-tab="tabSquad" onclick="switchTab('tabSquad'); syncFriendsHub();">
-      <svg viewBox="0 0 24 24"><path d="M3 18v-6a9 9 0 0 1 18 0v6"/><path d="M21 19a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3zM3 19a2 2 0 0 0 2 2h1a2 2 0 0 0 2-2v-3a2 2 0 0 0-2-2H3z"/></svg>
+    <div class="nav-item" data-tab="tabSquad" role="button" tabindex="0" onclick="switchTab('tabSquad'); syncFriendsHub();">
+      <svg aria-hidden="true" viewBox="0 0 24 24"><path d="M3 18v-6a9 9 0 0 1 18 0v6"/><path d="M21 19a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3zM3 19a2 2 0 0 0 2 2h1a2 2 0 0 0 2-2v-3a2 2 0 0 0-2-2H3z"/></svg>
       <span>Войс</span>
     </div>
-    <div class="nav-item" data-tab="tabProfile" onclick="switchTab('tabProfile')">
-      <svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 4-6 8-6s8 2 8 6"/></svg>
+    <div class="nav-item" data-tab="tabProfile" role="button" tabindex="0" onclick="switchTab('tabProfile')">
+      <svg aria-hidden="true" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 4-6 8-6s8 2 8 6"/></svg>
       <span>Профиль</span>
     </div>
   </nav>
   <script>
     const SO2_QUANTUM_SIGNATURE = "SO2TELEPORT_QUANTUM_V9_SEAL";
     let activeSessionKey = "";
-    let activePlayerNick = "dare";
+    let activePlayerNick = "login";
     let isMainTeleportOn = true;
     let currentPresetId = "extreme";
     let isPadModeEnabled = false;
@@ -2069,10 +2277,22 @@
       return typeof window.AndroidBridge !== "undefined" && window.AndroidBridge !== null;
     }
 
+    function suppressTransitionsTemporarily() {
+      const style = document.createElement("style");
+      style.appendChild(document.createTextNode("*,*::before,*::after{transition:none !important}"));
+      document.head.appendChild(style);
+      void document.body.offsetHeight;
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          if (style.parentNode) style.parentNode.removeChild(style);
+        });
+      });
+    }
+
     function sanitizeLicenseKeyInput(raw) {
       if (!raw) return "";
       let s = String(raw).toUpperCase().replace(/[\u2010-\u2015\u2212\uFE58\uFE63\uFF0D]/g, "-").trim();
-      const match = s.match(/((?:TP|TRIAL)[A-Z0-9]*-[A-Z0-9]+(?:-[A-Z0-9]+)?(?:_[A-Z0-9]+)?)/);
+      const match = s.match(/((?:TP|TRIAL|UNLIM)[A-Z0-9]*-[A-Z0-9]+(?:-[A-Z0-9]+)?(?:_[A-Z0-9]+)?)/);
       if (match && match[1]) {
         return match[1];
       }
@@ -2087,7 +2307,7 @@
       clearTimeout(window.__toastTimer);
       window.__toastTimer = setTimeout(() => {
         t.classList.remove("show");
-      }, 2200);
+      }, 2400);
     }
 
     function switchTab(tabId) {
@@ -2095,7 +2315,9 @@
         sec.classList.toggle("active", sec.id === tabId);
       });
       document.querySelectorAll(".bottom-nav-bar .nav-item").forEach(item => {
-        item.classList.toggle("active", item.getAttribute("data-tab") === tabId);
+        const isCurrent = item.getAttribute("data-tab") === tabId;
+        item.classList.toggle("active", isCurrent);
+        item.setAttribute("aria-current", isCurrent ? "page" : "false");
       });
       if (tabId === "tabSens") {
         drawCrosshairPreview();
@@ -2129,12 +2351,14 @@
     }
 
     function setNeonTheme(accentHex, accentRgb, secHex, secRgb, dotEl, themeIdx, silent, btnTextColor) {
+      suppressTransitionsTemporarily();
       const root = document.documentElement;
       root.style.setProperty("--accent-main", accentHex);
       root.style.setProperty("--accent-rgb", accentRgb);
       root.style.setProperty("--accent-sec", secHex);
       root.style.setProperty("--accent-sec-rgb", secRgb);
       root.style.setProperty("--btn-text-color", btnTextColor || "#FFFFFF");
+      root.style.setProperty("--focus-ring", accentHex);
 
       document.querySelectorAll(".theme-dot").forEach(d => d.classList.remove("active"));
       if (dotEl) {
@@ -2149,7 +2373,7 @@
       } catch (e) {}
 
       if (!silent) {
-        showToast("Тема оформления обновлена");
+        showToast("Тема оформления изменена");
       }
     }
 
@@ -2170,6 +2394,70 @@
       ];
       const t = themes[idx] || themes[0];
       setNeonTheme(t[0], t[1], t[2], t[3], null, t[4], true, t[5]);
+    }
+
+    function injectExtraDevicePresetsIntoDom() {
+      const presetsContainer = document.querySelector("#accSensPresets .acc-body-inner");
+      if (presetsContainer && !document.getElementById("preset_ios_pro")) {
+        const exCard = document.getElementById("preset_extreme");
+        if (exCard) {
+          const desc = exCard.querySelector(".char-desc");
+          if (desc) {
+            desc.textContent = "Мгновенный переброс прицела за 1 кадр без сглаживания и без вязкости осей (Острота 2.50, Куски 100, Разгон 2.50, Выпрямление 0, Мёртвая зона 0).";
+          }
+        }
+
+        const iosCard = document.createElement("div");
+        iosCard.id = "preset_ios_pro";
+        iosCard.className = "character-card";
+        iosCard.setAttribute("onclick", "selectTeleportPreset('ios_pro')");
+        iosCard.innerHTML =
+          '<div style="min-width:0;">' +
+            '<div class="char-title">5 · КОНФИГ iOS <span class="char-tag">IPHONE / IPAD PRO • 240HZ</span></div>' +
+            '<div class="char-desc">Эталонная линейная сенса iOS: нулевая задержка старта, отсутствие инерции Android и плавная кривая CoreAnimation для точного зажима в голову.</div>' +
+          '</div>' +
+          '<span class="char-arrow" aria-hidden="true">›</span>';
+        presetsContainer.appendChild(iosCard);
+
+        const rogCard = document.createElement("div");
+        rogCard.id = "preset_rog_pro";
+        rogCard.className = "character-card";
+        rogCard.setAttribute("onclick", "selectTeleportPreset('rog_pro')");
+        rogCard.innerHTML =
+          '<div style="min-width:0;">' +
+            '<div class="char-title">6 · КОНФИГ ROG PHONE <span class="char-tag pad-badge">ASUS ROG • 720HZ X-MODE</span></div>' +
+            '<div class="char-desc">Экстремальный киберспортивный отклик матрицы ROG Phone: сверхбыстрый срыв флика, максимальная чувствительность краёв и 480–720 Гц тач.</div>' +
+          '</div>' +
+          '<span class="char-arrow" aria-hidden="true">›</span>';
+        presetsContainer.appendChild(rogCard);
+      }
+
+      const shelfGrid = document.querySelector("#accSensShelf .shelf-cards-grid");
+      if (shelfGrid && !document.getElementById("shelf_ios_card")) {
+        const iosShelf = document.createElement("div");
+        iosShelf.id = "shelf_ios_card";
+        iosShelf.className = "shelf-preset-card";
+        iosShelf.setAttribute("onclick", "applyShelfPreset('ios_touch')");
+        iosShelf.innerHTML =
+          '<div>' +
+            '<div style="font-size:0.75rem; font-weight:700; color:#fff;">5 · iOS PRO TOUCH</div>' +
+            '<div style="font-size:0.6875rem; color:var(--text-muted); margin-top:2px;">Сенса iPhone 16 Pro / iPad</div>' +
+          '</div>' +
+          '<div style="font-size:0.6875rem; color:var(--accent-main); font-weight:600; margin-top:8px;">Применить сборку ›</div>';
+        shelfGrid.appendChild(iosShelf);
+
+        const rogShelf = document.createElement("div");
+        rogShelf.id = "shelf_rog_card";
+        rogShelf.className = "shelf-preset-card";
+        rogShelf.setAttribute("onclick", "applyShelfPreset('rog_touch')");
+        rogShelf.innerHTML =
+          '<div>' +
+            '<div style="font-size:0.75rem; font-weight:700; color:#fff;">6 · ROG PHONE 720HZ</div>' +
+            '<div style="font-size:0.6875rem; color:var(--text-muted); margin-top:2px;">Сенса ASUS ROG X-Mode</div>' +
+          '</div>' +
+          '<div style="font-size:0.6875rem; color:var(--accent-main); font-weight:600; margin-top:8px;">Применить сборку ›</div>';
+        shelfGrid.appendChild(rogShelf);
+      }
     }
 
     function refreshShizukuIndicator() {
@@ -2207,7 +2495,7 @@
         const ok = refreshShizukuIndicator();
         if (ok) {
           document.getElementById("shizukuRequiredModal").style.display = "none";
-          showToast("Shizuku активен и готов");
+          showToast("Служба Shizuku активна");
         } else {
           document.getElementById("shizukuRequiredModal").style.display = "flex";
         }
@@ -2215,12 +2503,12 @@
     }
 
     function maskKeyString(k) {
-      if (!k || k.length < 6) return "TP***";
-      return k.substring(0, 5) + "•••" + k.substring(k.length - 4);
+      if (!k || k.length < 6) return "TP-***-******";
+      return "TP-***-" + k.substring(k.length - 4);
     }
 
     function updateProfileAndHeaderInfo(nick, keyStr, subLabel) {
-      activePlayerNick = (nick && nick.trim()) ? nick.trim() : "dare";
+      activePlayerNick = (nick && nick.trim()) ? nick.trim() : "login";
       if (keyStr && keyStr.trim()) {
         activeSessionKey = sanitizeLicenseKeyInput(keyStr);
       }
@@ -2261,9 +2549,14 @@
 
     function unlockWorkspaceWithKey(nick, keyStr, subLabel) {
       const cleanKey = sanitizeLicenseKeyInput(keyStr);
-      const cleanNick = (nick || "dare").trim();
+      const cleanNick = (nick && nick.trim()) ? nick.trim() : "login";
       activeSessionKey = cleanKey;
       activePlayerNick = cleanNick;
+
+      const nickInput = document.getElementById("loginNickInput");
+      const keyInput = document.getElementById("loginKeyInput");
+      if (nickInput) nickInput.value = "";
+      if (keyInput) keyInput.value = "";
 
       try {
         localStorage.setItem("so2_saved_lic_key_v11", cleanKey);
@@ -2286,7 +2579,8 @@
       loadSavedConfigLocal(true);
       if (isMainTeleportOn && hasBridge()) {
         try {
-          AndroidBridge.startTeleport(currentPresetId);
+          AndroidBridge.setRawInputNoSmoothing(true);
+          AndroidBridge.startTeleport(mapPresetToEngineId(currentPresetId));
           pushCurrentSlidersToBridge();
         } catch (e) {}
       }
@@ -2295,6 +2589,10 @@
     function forceShowKickScreen(reasonMsg) {
       const authOverlay = document.getElementById("authScreenOverlay");
       const errBanner = document.getElementById("authErrorBanner");
+      const nickInput = document.getElementById("loginNickInput");
+      const keyInput = document.getElementById("loginKeyInput");
+      if (nickInput) nickInput.value = "";
+      if (keyInput) keyInput.value = "";
       if (authOverlay) {
         authOverlay.style.display = "flex";
       }
@@ -2310,24 +2608,26 @@
       const btn = document.getElementById("loginSubmitBtn");
       const errBanner = document.getElementById("authErrorBanner");
 
-      const nick = (nickInput && nickInput.value.trim()) ? nickInput.value.trim() : "dare";
+      const nick = (nickInput && nickInput.value.trim()) ? nickInput.value.trim() : "login";
       const rawKey = keyInput ? sanitizeLicenseKeyInput(keyInput.value) : "";
-      if (keyInput && rawKey) {
-        keyInput.value = rawKey;
-      }
 
       if (rawKey.length < 5) {
         if (errBanner) {
           errBanner.style.display = "block";
-          errBanner.textContent = "Введите корректный ключ из Telegram-бота";
+          errBanner.textContent = "Введите ключ в формате TP-***-******";
+        }
+        if (keyInput) {
+          keyInput.setAttribute("aria-invalid", "true");
+          keyInput.focus();
         }
         return;
       }
 
+      if (keyInput) keyInput.removeAttribute("aria-invalid");
       if (errBanner) errBanner.style.display = "none";
       if (btn) {
-        btn.disabled = true;
-        btn.textContent = "ПРОВЕРКА КЛЮЧА...";
+        btn.setAttribute("aria-disabled", "true");
+        btn.textContent = "Проверка ключа…";
       }
 
       setTimeout(() => {
@@ -2337,6 +2637,8 @@
             const res = AndroidBridge.activateLicenseKey(rawKey);
             if (res && res.indexOf("OK|") === 0) {
               const subText = res.substring(3) || "АКТИВНА";
+              if (nickInput) nickInput.value = "";
+              if (keyInput) keyInput.value = "";
               unlockWorkspaceWithKey(nick, rawKey, subText);
               showToast("Лицензия активирована");
             } else {
@@ -2345,28 +2647,32 @@
                 errBanner.style.display = "block";
                 errBanner.textContent = msg;
               }
+              if (keyInput) keyInput.focus();
             }
           } else {
+            if (nickInput) nickInput.value = "";
+            if (keyInput) keyInput.value = "";
             unlockWorkspaceWithKey(nick, rawKey, "АКТИВНА");
           }
         } catch (e) {
           if (rawKey.indexOf("TP") === 0 && rawKey.indexOf("-") !== -1) {
+            if (nickInput) nickInput.value = "";
+            if (keyInput) keyInput.value = "";
             unlockWorkspaceWithKey(nick, rawKey, "АКТИВНА");
           } else if (errBanner) {
             errBanner.style.display = "block";
-            errBanner.textContent = "Проверьте введённый ключ и повторите попытку";
+            errBanner.textContent = "Не удалось проверить ключ. Проверьте соединение и повторите попытку.";
           }
         } finally {
           if (btn) {
-            btn.disabled = false;
-            btn.textContent = "АКТИВИРОВАТЬ КЛЮЧ И ВОЙТИ";
+            btn.removeAttribute("aria-disabled");
+            btn.textContent = "Активировать ключ и войти";
           }
         }
       }, 30);
     }
 
     function handleLogoutClick() {
-      const prevKey = activeSessionKey;
       activeSessionKey = "";
       try {
         localStorage.removeItem("so2_saved_lic_key_v11");
@@ -2376,11 +2682,7 @@
           AndroidBridge.logoutLicenseKey();
         } catch (e) {}
       }
-      const keyInput = document.getElementById("loginKeyInput");
-      if (keyInput && prevKey) {
-        keyInput.value = prevKey;
-      }
-      forceShowKickScreen("Введите новый ключ или нажмите Войти");
+      forceShowKickScreen("Введите новый лицензионный ключ для входа");
     }
 
     function pollLicenseExpiration() {
@@ -2402,7 +2704,7 @@
           const label = res.substring(3);
           updateProfileAndHeaderInfo(activePlayerNick, keyToVerify, label);
         } else if (res.indexOf("BANNED|") === 0) {
-          const reason = res.split("|")[1] || "Ключ заблокирован";
+          const reason = res.split("|")[1] || "Лицензионный ключ заблокирован";
           activeSessionKey = "";
           try {
             localStorage.removeItem("so2_saved_lic_key_v11");
@@ -2410,6 +2712,13 @@
           forceShowKickScreen(reason);
         }
       } catch (e) {}
+    }
+
+    function mapPresetToEngineId(presetId) {
+      if (presetId === "tablet_pro") return "tablet_pro";
+      if (presetId === "clean_sharp" || presetId === "ios_pro") return "clean_sharp";
+      if (presetId === "budget_pro") return "budget_pro";
+      return "extreme";
     }
 
     function setMainEnginePower(turnOn, silent) {
@@ -2424,13 +2733,14 @@
         word.classList.toggle("off", !isMainTeleportOn);
       }
       if (pill) {
-        pill.textContent = isMainTeleportOn ? "TELEPORT АКТИВЕН" : "ВКЛЮЧИТЬ TELEPORT";
+        pill.textContent = isMainTeleportOn ? "Teleport активен" : "Включить Teleport";
       }
 
       if (hasBridge()) {
         try {
           if (isMainTeleportOn) {
-            AndroidBridge.startTeleport(currentPresetId);
+            AndroidBridge.setRawInputNoSmoothing(true);
+            AndroidBridge.startTeleport(mapPresetToEngineId(currentPresetId));
             pushCurrentSlidersToBridge();
           } else {
             AndroidBridge.stopTeleport();
@@ -2438,7 +2748,7 @@
         } catch (e) {}
       }
       if (!silent) {
-        showToast(isMainTeleportOn ? "Teleport Engine ВКЛЮЧЕН" : "Teleport Engine приостановлен");
+        showToast(isMainTeleportOn ? "Teleport Engine включён" : "Teleport Engine приостановлен");
       }
     }
 
@@ -2458,7 +2768,7 @@
       currentPresetId = presetId || "extreme";
       isPadModeEnabled = (currentPresetId === "tablet_pro");
 
-      ["extreme", "tablet_pro", "clean_sharp", "budget_pro"].forEach(id => {
+      ["extreme", "tablet_pro", "clean_sharp", "budget_pro", "ios_pro", "rog_pro"].forEach(id => {
         const card = document.getElementById("preset_" + id);
         if (card) card.classList.toggle("active", id === currentPresetId);
       });
@@ -2475,9 +2785,9 @@
         setSliderVal("sl_grid", 1);
         setSliderVal("sl_pause", 0);
         setSliderVal("sl_lead", 20);
-        setSliderVal("sl_stick", 100);
-        setSliderVal("sl_stick_delay", 5);
-        setSliderVal("sl_stick_force", 15);
+        setSliderVal("sl_stick", 0);
+        setSliderVal("sl_stick_delay", 60);
+        setSliderVal("sl_stick_force", 1);
         setSliderVal("sl_chunks", 100);
         setSliderVal("sl_chunk_bypass", 0);
         setSliderVal("sl_chunk_cap", 30);
@@ -2485,61 +2795,109 @@
         setSliderVal("sl_shot_pause", 0);
         setSliderVal("sl_accel", 25);
         setSliderVal("sl_edge_reach", 20);
-        setSliderVal("sl_straight", 100);
-        setSliderVal("sl_recoil", 100);
-        setSliderVal("sl_grip_cap", 15);
+        setSliderVal("sl_straight", 0);
+        setSliderVal("sl_recoil", 20);
+        setSliderVal("sl_grip_cap", 1);
         if (scaleChip) scaleChip.textContent = "128.0x";
         if (headerBadge) headerBadge.textContent = "128.0X PAD ULTRA";
         if (subTitle) subTitle.textContent = "Pad Impulse Transfer • 2 · Для Падов Ультра (128.0x)";
         if (profMode) profMode.textContent = "ДЛЯ ПАДОВ УЛЬТРА";
       } else if (currentPresetId === "clean_sharp") {
-        setSliderVal("sl_sharp", 23);
-        setSliderVal("sl_sx", 24);
-        setSliderVal("sl_sy", 22);
+        setSliderVal("sl_sharp", 25);
+        setSliderVal("sl_sx", 25);
+        setSliderVal("sl_sy", 23);
         setSliderVal("sl_grid", 1);
         setSliderVal("sl_pause", 0);
-        setSliderVal("sl_lead", 18);
-        setSliderVal("sl_stick", 90);
-        setSliderVal("sl_stick_delay", 6);
-        setSliderVal("sl_stick_force", 14);
-        setSliderVal("sl_chunks", 92);
+        setSliderVal("sl_lead", 20);
+        setSliderVal("sl_stick", 15);
+        setSliderVal("sl_stick_delay", 35);
+        setSliderVal("sl_stick_force", 3);
+        setSliderVal("sl_chunks", 95);
         setSliderVal("sl_chunk_bypass", 0);
         setSliderVal("sl_chunk_cap", 28);
-        setSliderVal("sl_chunkfast", 95);
+        setSliderVal("sl_chunkfast", 96);
         setSliderVal("sl_shot_pause", 0);
-        setSliderVal("sl_accel", 22);
+        setSliderVal("sl_accel", 23);
         setSliderVal("sl_edge_reach", 20);
-        setSliderVal("sl_straight", 100);
-        setSliderVal("sl_recoil", 95);
-        setSliderVal("sl_grip_cap", 15);
+        setSliderVal("sl_straight", 10);
+        setSliderVal("sl_recoil", 35);
+        setSliderVal("sl_grip_cap", 3);
         if (scaleChip) scaleChip.textContent = "48.0x";
         if (headerBadge) headerBadge.textContent = "48.0X AWM SHARP";
         if (subTitle) subTitle.textContent = "Precision Flick • 3 · AWM / Deagle Резкий (48.0x)";
         if (profMode) profMode.textContent = "AWM / DEAGLE РЕЗКИЙ";
       } else if (currentPresetId === "budget_pro") {
-        setSliderVal("sl_sharp", 22);
-        setSliderVal("sl_sx", 23);
-        setSliderVal("sl_sy", 23);
+        setSliderVal("sl_sharp", 24);
+        setSliderVal("sl_sx", 24);
+        setSliderVal("sl_sy", 24);
         setSliderVal("sl_grid", 1);
         setSliderVal("sl_pause", 0);
-        setSliderVal("sl_lead", 18);
-        setSliderVal("sl_stick", 95);
-        setSliderVal("sl_stick_delay", 5);
-        setSliderVal("sl_stick_force", 14);
-        setSliderVal("sl_chunks", 90);
+        setSliderVal("sl_lead", 19);
+        setSliderVal("sl_stick", 10);
+        setSliderVal("sl_stick_delay", 40);
+        setSliderVal("sl_stick_force", 2);
+        setSliderVal("sl_chunks", 94);
         setSliderVal("sl_chunk_bypass", 0);
-        setSliderVal("sl_chunk_cap", 26);
-        setSliderVal("sl_chunkfast", 92);
+        setSliderVal("sl_chunk_cap", 28);
+        setSliderVal("sl_chunkfast", 95);
         setSliderVal("sl_shot_pause", 0);
-        setSliderVal("sl_accel", 22);
+        setSliderVal("sl_accel", 23);
         setSliderVal("sl_edge_reach", 20);
-        setSliderVal("sl_straight", 95);
-        setSliderVal("sl_recoil", 100);
-        setSliderVal("sl_grip_cap", 14);
+        setSliderVal("sl_straight", 5);
+        setSliderVal("sl_recoil", 30);
+        setSliderVal("sl_grip_cap", 2);
         if (scaleChip) scaleChip.textContent = "42.0x";
         if (headerBadge) headerBadge.textContent = "42.0X ANTI-LAG FPS";
         if (subTitle) subTitle.textContent = "Frame Guard • 4 · Для Бюджеток и A57 (42.0x)";
         if (profMode) profMode.textContent = "ДЛЯ БЮДЖЕТОК И A57";
+      } else if (currentPresetId === "ios_pro") {
+        setSliderVal("sl_sharp", 22);
+        setSliderVal("sl_sx", 22);
+        setSliderVal("sl_sy", 22);
+        setSliderVal("sl_grid", 1);
+        setSliderVal("sl_pause", 0);
+        setSliderVal("sl_lead", 16);
+        setSliderVal("sl_stick", 10);
+        setSliderVal("sl_stick_delay", 30);
+        setSliderVal("sl_stick_force", 3);
+        setSliderVal("sl_chunks", 78);
+        setSliderVal("sl_chunk_bypass", 0);
+        setSliderVal("sl_chunk_cap", 24);
+        setSliderVal("sl_chunkfast", 85);
+        setSliderVal("sl_shot_pause", 0);
+        setSliderVal("sl_accel", 16);
+        setSliderVal("sl_edge_reach", 18);
+        setSliderVal("sl_straight", 15);
+        setSliderVal("sl_recoil", 35);
+        setSliderVal("sl_grip_cap", 4);
+        if (scaleChip) scaleChip.textContent = "iOS 240Hz";
+        if (headerBadge) headerBadge.textContent = "iOS 240HZ PROMOTION";
+        if (subTitle) subTitle.textContent = "Apple CoreAnimation Curve • 5 · Конфиг iOS (iPhone / iPad Pro)";
+        if (profMode) profMode.textContent = "КОНФИГ iOS PRO";
+      } else if (currentPresetId === "rog_pro") {
+        setSliderVal("sl_sharp", 25);
+        setSliderVal("sl_sx", 25);
+        setSliderVal("sl_sy", 24);
+        setSliderVal("sl_grid", 1);
+        setSliderVal("sl_pause", 0);
+        setSliderVal("sl_lead", 20);
+        setSliderVal("sl_stick", 5);
+        setSliderVal("sl_stick_delay", 50);
+        setSliderVal("sl_stick_force", 2);
+        setSliderVal("sl_chunks", 96);
+        setSliderVal("sl_chunk_bypass", 0);
+        setSliderVal("sl_chunk_cap", 30);
+        setSliderVal("sl_chunkfast", 98);
+        setSliderVal("sl_shot_pause", 0);
+        setSliderVal("sl_accel", 24);
+        setSliderVal("sl_edge_reach", 20);
+        setSliderVal("sl_straight", 5);
+        setSliderVal("sl_recoil", 25);
+        setSliderVal("sl_grip_cap", 2);
+        if (scaleChip) scaleChip.textContent = "ROG 720Hz";
+        if (headerBadge) headerBadge.textContent = "ROG 720HZ X-MODE";
+        if (subTitle) subTitle.textContent = "ASUS ROG Touch Matrix • 6 · Конфиг ROG Phone (720Hz)";
+        if (profMode) profMode.textContent = "КОНФИГ ROG PHONE";
       } else {
         setSliderVal("sl_sharp", 25);
         setSliderVal("sl_sx", 25);
@@ -2547,9 +2905,9 @@
         setSliderVal("sl_grid", 1);
         setSliderVal("sl_pause", 0);
         setSliderVal("sl_lead", 20);
-        setSliderVal("sl_stick", 100);
-        setSliderVal("sl_stick_delay", 5);
-        setSliderVal("sl_stick_force", 15);
+        setSliderVal("sl_stick", 0);
+        setSliderVal("sl_stick_delay", 60);
+        setSliderVal("sl_stick_force", 1);
         setSliderVal("sl_chunks", 100);
         setSliderVal("sl_chunk_bypass", 0);
         setSliderVal("sl_chunk_cap", 30);
@@ -2557,9 +2915,9 @@
         setSliderVal("sl_shot_pause", 0);
         setSliderVal("sl_accel", 25);
         setSliderVal("sl_edge_reach", 20);
-        setSliderVal("sl_straight", 100);
-        setSliderVal("sl_recoil", 100);
-        setSliderVal("sl_grip_cap", 15);
+        setSliderVal("sl_straight", 0);
+        setSliderVal("sl_recoil", 20);
+        setSliderVal("sl_grip_cap", 1);
         if (scaleChip) scaleChip.textContent = "68.0x";
         if (headerBadge) headerBadge.textContent = "68.0X EXTREME CORE";
         if (subTitle) subTitle.textContent = "Instant Point-to-Point Transfer • 1 · Телепорт Ультра (68.0x MAX)";
@@ -2569,22 +2927,29 @@
       refreshSensSliderPills();
       if (hasBridge()) {
         try {
+          AndroidBridge.setRawInputNoSmoothing(true);
+          AndroidBridge.setTouchSamplingBoost(true, currentPresetId === "ios_pro" ? 360 : 480);
           AndroidBridge.startTeleport(isPadModeEnabled ? "PAD_MODE_ON" : "PAD_MODE_OFF");
           if (isMainTeleportOn) {
-            AndroidBridge.startTeleport(currentPresetId);
+            AndroidBridge.startTeleport(mapPresetToEngineId(currentPresetId));
             pushCurrentSlidersToBridge();
           }
         } catch (e) {}
       }
       if (!silent) {
-        showToast("Профиль «" + (profMode ? profMode.textContent : currentPresetId) + "» активирован");
+        showToast("Профиль «" + (profMode ? profMode.textContent : currentPresetId) + "» применён");
       }
     }
 
     function activateMaxH9ijeTeleport() {
       setMainEnginePower(true, true);
       selectTeleportPreset("extreme", true);
-      showToast("H9IJE TELEPORT MAX (68.0x) ВКЛЮЧЕН");
+      if (hasBridge() && typeof AndroidBridge.applyUltraProTouchMatrix === "function") {
+        try {
+          AndroidBridge.applyUltraProTouchMatrix(3);
+        } catch (e) {}
+      }
+      showToast("Молниеносный Телепорт H9IJE MAX (68.0x) включён");
     }
 
     function refreshSensSliderPills() {
@@ -2594,19 +2959,19 @@
       const grid = getSliderNum("sl_grid", 1);
       const pause = getSliderNum("sl_pause", 0);
       const lead = getSliderNum("sl_lead", 20);
-      const stick = getSliderNum("sl_stick", 100);
-      const stickDelay = getSliderNum("sl_stick_delay", 5);
-      const stickForce = getSliderNum("sl_stick_force", 15);
+      const stick = getSliderNum("sl_stick", 0);
+      const stickDelay = getSliderNum("sl_stick_delay", 60);
+      const stickForce = getSliderNum("sl_stick_force", 1);
       const chunks = getSliderNum("sl_chunks", 100);
       const chunkBypass = getSliderNum("sl_chunk_bypass", 0);
       const chunkCap = getSliderNum("sl_chunk_cap", 30);
       const chunkFast = getSliderNum("sl_chunkfast", 100);
       const shotPause = getSliderNum("sl_shot_pause", 0);
-      const accel = (getSliderNum("sl_accel", 25) / 25).toFixed(2);
+      const accel = (getSliderNum("sl_accel", 25) / 10).toFixed(2);
       const edgeReach = getSliderNum("sl_edge_reach", 20);
-      const straight = (getSliderNum("sl_straight", 100) / 100).toFixed(2);
-      const recoil = getSliderNum("sl_recoil", 100);
-      const gripCap = getSliderNum("sl_grip_cap", 15);
+      const straight = (getSliderNum("sl_straight", 0) / 100).toFixed(2);
+      const recoil = getSliderNum("sl_recoil", 20);
+      const gripCap = getSliderNum("sl_grip_cap", 1);
 
       const map = {
         val_sharp: sharp,
@@ -2643,15 +3008,16 @@
       const sy = getSliderNum("sl_sy", 25) / 10.0;
       const chunks = Math.round(getSliderNum("sl_chunks", 100));
       const chunkFast = Math.round(getSliderNum("sl_chunkfast", 100));
-      const straight = getSliderNum("sl_straight", 100) / 100.0;
-      const stick = Math.round(getSliderNum("sl_stick", 100));
+      const straight = getSliderNum("sl_straight", 0) / 100.0;
+      const stick = Math.round(getSliderNum("sl_stick", 0));
       const grid = Math.round(getSliderNum("sl_grid", 1));
       const pause = Math.round(getSliderNum("sl_pause", 0));
-      const accel = getSliderNum("sl_accel", 25) / 25.0;
-      const recoil = Math.round(getSliderNum("sl_recoil", 100));
+      const accel = getSliderNum("sl_accel", 25) / 10.0;
+      const recoil = Math.round(getSliderNum("sl_recoil", 20));
 
       try {
-        AndroidBridge.setEnhancedRecoilFix(true, recoil);
+        AndroidBridge.setRawInputNoSmoothing(true);
+        AndroidBridge.setEnhancedRecoilFix(recoil > 25, recoil);
         AndroidBridge.updateParameters(sharp, sx, sy, chunks, chunkFast, straight, stick, grid, pause, accel);
       } catch (e) {}
     }
@@ -2661,7 +3027,7 @@
       clearTimeout(sliderDebounceTimer);
       sliderDebounceTimer = setTimeout(() => {
         pushCurrentSlidersToBridge();
-      }, 120);
+      }, 90);
     }
 
     function onRecoilSliderChange() {
@@ -2678,6 +3044,16 @@
       } else if (shelfId === "a57_fps_god") {
         selectTeleportPreset("budget_pro", false);
         runOneClickUltimateTweaks();
+      } else if (shelfId === "ios_touch") {
+        selectTeleportPreset("ios_pro", false);
+      } else if (shelfId === "rog_touch") {
+        selectTeleportPreset("rog_pro", false);
+        if (hasBridge()) {
+          try {
+            AndroidBridge.setTouchSamplingBoost(true, 480);
+            AndroidBridge.applyShooterOptimizer(144, 100, 1, 100, 160, 60, 1);
+          } catch (e) {}
+        }
       }
     }
 
@@ -2695,6 +3071,7 @@
         sliders[id] = getSliderNum(id, 0);
       });
       return {
+        schemaVer: 12,
         preset: currentPresetId,
         mainOn: isMainTeleportOn,
         ratio: currentStretchRatio,
@@ -2707,8 +3084,45 @@
       };
     }
 
+    function normalizeLegacySlidersObject(cfg) {
+      if (!cfg || typeof cfg !== "object" || !cfg.sliders) return cfg;
+      const s = cfg.sliders;
+      if (typeof s.sl_sharp === "number" && s.sl_sharp <= 10) {
+        s.sl_sharp = 25;
+      }
+      if (typeof s.sl_sx === "number" && s.sl_sx <= 10) {
+        s.sl_sx = 25;
+      }
+      if (typeof s.sl_sy === "number" && s.sl_sy <= 10) {
+        s.sl_sy = 25;
+      }
+      if (cfg.schemaVer !== 12 && (!cfg.preset || cfg.preset === "extreme" || cfg.preset === "tablet_pro")) {
+        s.sl_sharp = 25;
+        s.sl_sx = 25;
+        s.sl_sy = 25;
+        s.sl_grid = 1;
+        s.sl_pause = 0;
+        s.sl_lead = 20;
+        s.sl_stick = 0;
+        s.sl_stick_delay = 60;
+        s.sl_stick_force = 1;
+        s.sl_chunks = 100;
+        s.sl_chunk_bypass = 0;
+        s.sl_chunk_cap = 30;
+        s.sl_chunkfast = 100;
+        s.sl_shot_pause = 0;
+        s.sl_accel = 25;
+        s.sl_edge_reach = 20;
+        s.sl_straight = 0;
+        s.sl_recoil = 20;
+        s.sl_grip_cap = 1;
+      }
+      return cfg;
+    }
+
     function applyConfigObjectToUi(cfg, silent) {
       if (!cfg || typeof cfg !== "object") return;
+      cfg = normalizeLegacySlidersObject(cfg);
       if (cfg.preset) {
         selectTeleportPreset(cfg.preset, true);
       }
@@ -2754,7 +3168,7 @@
       const cfg = collectFullConfigObject();
       const jsonStr = JSON.stringify(cfg);
       try {
-        localStorage.setItem("so2_master_cfg_v11", jsonStr);
+        localStorage.setItem("so2_master_cfg_v12", jsonStr);
       } catch (e) {}
       if (hasBridge() && typeof AndroidBridge.saveFullConfigJson === "function") {
         try {
@@ -2763,33 +3177,36 @@
       }
       pushCurrentSlidersToBridge();
       syncCrosshairConfig(true);
-      showToast("Все настройки сохранены и применены");
+      showToast("Настройки сохранены");
     }
 
     function loadSavedConfigLocal(silent) {
       let raw = "";
-      if (hasBridge() && typeof AndroidBridge.loadFullConfigJson === "function") {
+      try {
+        raw = localStorage.getItem("so2_master_cfg_v12") || "";
+      } catch (e) {}
+      if (!raw && hasBridge() && typeof AndroidBridge.loadFullConfigJson === "function") {
         try {
           raw = AndroidBridge.loadFullConfigJson() || "";
         } catch (e) {}
       }
       if (!raw) {
-        try {
-          raw = localStorage.getItem("so2_master_cfg_v11") || "";
-        } catch (e) {}
+        selectTeleportPreset("extreme", true);
+        return;
       }
-      if (!raw) return;
       try {
         const cfg = JSON.parse(raw);
         applyConfigObjectToUi(cfg, silent);
-      } catch (e) {}
+      } catch (e) {
+        selectTeleportPreset("extreme", true);
+      }
     }
 
     function uploadCloudPresetNow() {
       const cfg = collectFullConfigObject();
       const jsonStr = JSON.stringify(cfg);
       if (!hasBridge()) {
-        showToast("Код сборки: SO2-7744");
+        showToast("Код сборки создан: SO2-7744");
         return;
       }
       try {
@@ -2798,12 +3215,12 @@
         if (res && res.share_code) {
           const inp = document.getElementById("cloudCodeInput");
           if (inp) inp.value = res.share_code;
-          showToast("Код создан: " + res.share_code);
+          showToast("Код сборки создан: " + res.share_code);
         } else {
-          showToast(res.message || "Ошибка создания кода");
+          showToast(res.message || "Не удалось создать код. Проверьте соединение.");
         }
       } catch (e) {
-        showToast("Ошибка создания облачного кода");
+        showToast("Не удалось создать облачный код");
       }
     }
 
@@ -2811,7 +3228,8 @@
       const inp = document.getElementById("cloudCodeInput");
       const code = (inp && inp.value.trim()) ? inp.value.trim().toUpperCase() : "";
       if (!code) {
-        showToast("Введите код сборки (например SO2-7744)");
+        showToast("Введите код сборки, например SO2-7744");
+        if (inp) inp.focus();
         return;
       }
       if (!hasBridge()) {
@@ -3035,7 +3453,7 @@
       const inner = document.getElementById("stretchPreviewInner");
 
       if (badge) badge.textContent = currentStretchRatio;
-      if (btn) btn.textContent = "ЗАПУСТИТЬ ПЛАВАЮЩУЮ ИКОНКУ «T» (" + currentStretchRatio + ")";
+      if (btn) btn.textContent = "Запустить плавающую кнопку «T» (" + currentStretchRatio + ")";
       if (inner) {
         const widths = {
           "1:1": "122px",
@@ -3057,7 +3475,7 @@
         } catch (e) {}
       }
       if (!silent) {
-        showToast("Выбран формат " + currentStretchRatio);
+        showToast("Выбран формат экрана " + currentStretchRatio);
       }
     }
 
@@ -3086,7 +3504,7 @@
           AndroidBridge.applyDirectStretchRatio(currentStretchRatio);
         } catch (e) {}
       }
-      showToast("Шаг 1 (" + currentStretchRatio + "): Экран сжат, зайди в игру");
+      showToast("Шаг 1 (" + currentStretchRatio + ") выполнен. Зайдите в игру и нажмите Шаг 2.");
     }
 
     function releaseStretchFullNow() {
@@ -3095,7 +3513,7 @@
           AndroidBridge.startTeleport("STRETCH_FULL_RELEASE");
         } catch (e) {}
       }
-      showToast("Шаг 2: Игра растянута на весь экран");
+      showToast("Шаг 2 выполнен: экран растянут");
     }
 
     function resetNativeScreen() {
@@ -3113,7 +3531,7 @@
           AndroidBridge.setWideHitboxMode(!!enabled, currentStretchRatio);
         } catch (e) {}
       }
-      showToast(enabled ? "Синхронизация кусков под растяг ВКЛ" : "Синхронизация растяга ВЫКЛ");
+      showToast(enabled ? "Синхронизация кусков под растяг включена" : "Синхронизация растяга отключена");
     }
 
     function selectPixelTile(el, pct) {
@@ -3144,7 +3562,7 @@
       }
       const badge = document.getElementById("oneClickTweakStatusBadge");
       if (badge) badge.textContent = "АКТИВЕН • 120 FPS";
-      showToast("Имба-Твик SkiaGL + Фикс FPS применён");
+      showToast("Системные твики SkiaGL и фикс FPS применены");
     }
 
     function runRamCleanNow() {
@@ -3168,11 +3586,11 @@
           const parts = (res || "").split("|");
           const badge = document.getElementById("scanTierBadge");
           if (badge && parts[1]) badge.textContent = parts[1];
-          showToast("Скан завершён: профиль " + (parts[1] || "ULTRA"));
+          showToast("Проверка завершена: профиль " + (parts[1] || "ULTRA"));
           return;
         } catch (e) {}
       }
-      showToast("Устройство протестировано: профиль ULTRA");
+      showToast("Проверка завершена: профиль ULTRA");
     }
 
     function toggleBoostFeature(kind, enabled) {
@@ -3184,7 +3602,7 @@
         else if (kind === "thermal") AndroidBridge.setHzThermalGuard(!!enabled);
         else if (kind === "stealth") AndroidBridge.setStealthOverlayMode(!!enabled);
       } catch (e) {}
-      showToast(enabled ? "Модуль активирован" : "Модуль отключён");
+      showToast(enabled ? "Модуль включён" : "Модуль отключён");
     }
 
     function updateOptLabels() {
@@ -3284,26 +3702,26 @@
 
       if (!isVoiceConnected) {
         if (badge) badge.textContent = "ГОТОВ К ЭФИРУ";
-        if (btnJoin) btnJoin.textContent = "В ВОЙС";
+        if (btnJoin) btnJoin.textContent = "Войти в войс";
         if (box) {
-          box.innerHTML = '<div style="text-align:center; padding:10px; font-size:11.5px; color:var(--text-muted);">Нажмите «В войс» для подключения к комнате отряда</div>';
+          box.innerHTML = '<div style="text-align:center; padding:12px; font-size:0.75rem; color:var(--text-muted);">Нажмите «Войти в войс», чтобы подключиться к комнате отряда.</div>';
         }
         return;
       }
 
       if (badge) badge.textContent = "В ЭФИРЕ • " + room;
-      if (btnJoin) btnJoin.textContent = "ВЫЙТИ";
-      if (btnMute) btnMute.textContent = isMicMuted ? "МИКРО ВЫКЛ" : "МИКРО ВКЛ";
-      if (btnDeaf) btnDeaf.textContent = isSpeakerDeafened ? "ТИХО" : "ЗВУК 400%";
+      if (btnJoin) btnJoin.textContent = "Выйти";
+      if (btnMute) btnMute.textContent = isMicMuted ? "Вкл. микро" : "Выкл. микро";
+      if (btnDeaf) btnDeaf.textContent = isSpeakerDeafened ? "Вкл. звук" : "Выкл. звук";
 
       if (box) {
         box.innerHTML =
           '<div class="voice-member-card">' +
-          '<div style="display:flex;align-items:center;gap:9px;">' +
-          '<div class="acc-icon" style="width:32px;height:32px;font-size:13px;">🎙</div>' +
-          '<div><div style="font-size:13px;font-weight:700;color:#fff;">' + activePlayerNick + ' (Вы)</div>' +
-          '<div style="font-size:10.5px;color:#30D158;">Чистый канал • 400% Squad Isolator</div></div></div>' +
-          (isMicMuted ? '<span class="badge-chip">MUTE</span>' : '<div class="voice-eq-bars"><span></span><span></span><span></span></div>') +
+          '<div style="display:flex;align-items:center;gap:10px;min-width:0;">' +
+          '<div class="acc-icon" style="width:34px;height:34px;font-size:0.8125rem;" aria-hidden="true">🎙</div>' +
+          '<div style="min-width:0;"><div style="font-size:0.8125rem;font-weight:600;color:#fff;">' + activePlayerNick + ' (Вы)</div>' +
+          '<div style="font-size:0.6875rem;color:#30D158;">Чистый канал • 400% Squad Isolator</div></div></div>' +
+          (isMicMuted ? '<span class="badge-chip">MUTE</span>' : '<div class="voice-eq-bars" aria-label="Говорит"><span></span><span></span><span></span></div>') +
           '</div>';
       }
 
@@ -3329,7 +3747,7 @@
             AndroidBridge.cancelVoiceCallNotification();
           } catch (e) {}
         }
-        showToast("Вы вышли из голосового канала");
+        showToast("Голосовой канал отключён");
       }
       updateVoiceUiState();
     }
@@ -3337,13 +3755,13 @@
     window.toggleMicMute = function() {
       isMicMuted = !isMicMuted;
       updateVoiceUiState();
-      showToast(isMicMuted ? "Микрофон выключен" : "Микрофон включен");
+      showToast(isMicMuted ? "Микрофон выключен" : "Микрофон включён");
     };
 
     window.toggleDeafenSpeaker = function() {
       isSpeakerDeafened = !isSpeakerDeafened;
       updateVoiceUiState();
-      showToast(isSpeakerDeafened ? "Звук рации приглушён" : "Звук рации 400% включен");
+      showToast(isSpeakerDeafened ? "Звук рации приглушён" : "Звук рации включён");
     };
 
     window.leaveVoiceRoom = function() {
@@ -3365,14 +3783,14 @@
       if (!box) return;
       const list = getSavedFriendsList();
       if (!list.length) {
-        box.innerHTML = '<div style="text-align:center; padding:10px; font-size:11.5px; color:var(--text-muted);">Список тиммейтов пуст. Добавьте друга по его ID</div>';
+        box.innerHTML = '<div style="text-align:center; padding:12px; font-size:0.75rem; color:var(--text-muted);">Список тиммейтов пуст. Введите ID игрока выше, чтобы добавить его.</div>';
         return;
       }
       box.innerHTML = list.map((code, idx) => (
         '<div class="friend-item">' +
-        '<div><div style="font-size:13px;font-weight:700;color:#fff;">Тиммейт ' + code + '</div>' +
-        '<div style="font-size:10.5px;color:#30D158;">Онлайн • SO2Teleport PRO</div></div>' +
-        '<button type="button" class="icon-circle-action" onclick="removeFriendAtIndex(' + idx + ')">✕</button>' +
+        '<div style="min-width:0;"><div style="font-size:0.8125rem;font-weight:600;color:#fff;">Тиммейт <bdi>' + code + '</bdi></div>' +
+        '<div style="font-size:0.6875rem;color:#30D158;">Онлайн • SO2Teleport PRO</div></div>' +
+        '<button type="button" class="icon-circle-action" aria-label="Удалить тиммейта ' + code + '" onclick="removeFriendAtIndex(' + idx + ')">✕</button>' +
         '</div>'
       )).join("");
     }
@@ -3381,7 +3799,8 @@
       const inp = document.getElementById("friendAddInput");
       const code = (inp && inp.value.trim()) ? inp.value.trim().toUpperCase() : "";
       if (!code) {
-        showToast("Введите ID тиммейта");
+        showToast("Введите ID тиммейта в формате SO2-7744");
+        if (inp) inp.focus();
         return;
       }
       const list = getSavedFriendsList();
@@ -3403,6 +3822,7 @@
         localStorage.setItem("so2_friends_list_v11", JSON.stringify(list));
       } catch (e) {}
       renderFriendsList();
+      showToast("Тиммейт удалён из списка");
     }
 
     function syncFriendsHub() {
@@ -3426,7 +3846,7 @@
         if (profImg) { profImg.src = imgDataUrl; profImg.style.display = "block"; }
         if (profFb) profFb.style.display = "none";
       } else {
-        const ch = fallbackText || "D";
+        const ch = fallbackText || "P";
         if (topImg) topImg.style.display = "none";
         if (topFb) { topFb.style.display = "inline"; topFb.textContent = ch; }
         if (profImg) profImg.style.display = "none";
@@ -3442,7 +3862,7 @@
       applyAvatarToDom("", emoji);
       const modal = document.getElementById("avatarPickerModal");
       if (modal) modal.style.display = "none";
-      showToast("Аватарка обновлена");
+      showToast("Аватарка профиля обновлена");
     }
 
     function openGalleryFileInput() {
@@ -3459,10 +3879,10 @@
         try {
           localStorage.setItem("so2_avatar_img_v11", dataUrl);
         } catch (err) {}
-        applyAvatarToDom(dataUrl, "D");
+        applyAvatarToDom(dataUrl, "P");
         const modal = document.getElementById("avatarPickerModal");
         if (modal) modal.style.display = "none";
-        showToast("Фото аватарки установлено");
+        showToast("Фото аватарки сохранено");
       };
       reader.readAsDataURL(file);
     }
@@ -3533,18 +3953,25 @@
     }
 
     function initAppOnBoot() {
+      injectExtraDevicePresetsIntoDom();
       restoreSavedTheme();
-      refreshSensSliderPills();
+      selectTeleportPreset("extreme", true);
       updateOptLabels();
       drawCrosshairPreview();
       renderFriendsList();
       refreshShizukuIndicator();
 
-      let savedNick = "dare";
+      document.addEventListener("keydown", function(e) {
+        if (e.key === "Escape") {
+          window.handleSystemBack();
+        }
+      });
+
+      let savedNick = "login";
       let savedKey = "";
 
       try {
-        savedNick = localStorage.getItem("so2_saved_nick_v11") || "dare";
+        savedNick = localStorage.getItem("so2_saved_nick_v11") || "login";
         savedKey = sanitizeLicenseKeyInput(localStorage.getItem("so2_saved_lic_key_v11") || "");
       } catch (e) {}
 
@@ -3559,8 +3986,8 @@
 
       const nickInput = document.getElementById("loginNickInput");
       const keyInput = document.getElementById("loginKeyInput");
-      if (nickInput) nickInput.value = savedNick;
-      if (keyInput && savedKey) keyInput.value = savedKey;
+      if (nickInput) nickInput.value = "";
+      if (keyInput) keyInput.value = "";
 
       updateProfileAndHeaderInfo(savedNick, savedKey, "АКТИВНА");
 
