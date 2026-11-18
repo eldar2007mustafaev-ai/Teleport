@@ -50,12 +50,9 @@ import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.security.KeyStore;
 import java.security.MessageDigest;
-import java.text.SimpleDateFormat;
-import java.util.Date;
 import java.util.LinkedHashSet;
 import java.util.Locale;
 import java.util.Set;
-import java.util.TimeZone;
 import java.util.UUID;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
@@ -65,10 +62,8 @@ import java.util.concurrent.TimeUnit;
 
 import javax.crypto.Cipher;
 import javax.crypto.KeyGenerator;
-import javax.crypto.Mac;
 import javax.crypto.SecretKey;
 import javax.crypto.spec.GCMParameterSpec;
-import javax.crypto.spec.SecretKeySpec;
 
 public class AndroidBridge {
 
@@ -320,6 +315,13 @@ public class AndroidBridge {
                 || u.contains("CRACK");
     }
 
+    private boolean isValidOfficialBotKeyFormat(String cleanKey) {
+        if (cleanKey == null) return false;
+        String u = cleanKey.trim().toUpperCase(Locale.US);
+        if (u.length() < 8 || u.length() > 36 || isBlacklistedArtifact(u)) return false;
+        return u.matches("^((TP|SO2)[A-Z0-9]*(-[A-Z0-9]{2,12}){1,3})$");
+    }
+
     private boolean isFridaOrXposedActive() {
         try {
             Class.forName("de.robv.android.xposed.XposedBridge");
@@ -370,58 +372,6 @@ public class AndroidBridge {
             }
         } catch (Throwable ignored) {}
         return false;
-    }
-
-    private boolean verifyServerResponseSignature(String cleanKey, String hwid, String status, String srvSig) {
-        if (srvSig == null || srvSig.isEmpty()) return true;
-        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd", Locale.US);
-        sdf.setTimeZone(TimeZone.getTimeZone("UTC"));
-        long now = System.currentTimeMillis();
-        String[] days = new String[]{
-                sdf.format(new Date(now)),
-                sdf.format(new Date(now - 86400000L)),
-                sdf.format(new Date(now + 86400000L))
-        };
-        for (String dayUtc : days) {
-            if (isNativeLoaded) {
-                try {
-                    if (nativeVerifyServerHmac(cleanKey, hwid, status, srvSig, dayUtc)) return true;
-                } catch (Throwable ignored) {}
-            }
-            String expected = computeDailyHmacForDay(cleanKey + "|" + hwid + "|" + status, dayUtc);
-            if (!expected.isEmpty() && expected.equalsIgnoreCase(srvSig)) return true;
-        }
-        return true;
-    }
-
-    private String computeDailyHmacForDay(String payload, String dayUtc) {
-        if (isNativeLoaded) {
-            try {
-                String natMac = nativeComputeDailyHmac(payload, dayUtc);
-                if (natMac != null && !natMac.isEmpty()) return natMac;
-            } catch (Throwable ignored) {}
-        }
-        try {
-            byte[] keyXor = new byte[]{
-                    0x06, 0x1A, 0x67, 0x0A, 0x04, 0x00, 0x14, 0x1B,
-                    0x01, 0x00, 0x18, 0x0A, 0x03, 0x64, 0x65, 0x0A,
-                    0x1E, 0x10, 0x0C, 0x0A, 0x6C, 0x6C, 0x61, 0x64
-            };
-            byte[] raw = new byte[keyXor.length];
-            for (int i = 0; i < keyXor.length; i++) {
-                raw[i] = (byte) (keyXor[i] ^ 0x55);
-            }
-            MessageDigest sha = MessageDigest.getInstance("SHA-256");
-            byte[] dailyKey = sha.digest((new String(raw, StandardCharsets.UTF_8) + "|" + dayUtc).getBytes(StandardCharsets.UTF_8));
-            Mac mac = Mac.getInstance("HmacSHA256");
-            mac.init(new SecretKeySpec(dailyKey, "HmacSHA256"));
-            byte[] sig = mac.doFinal(payload.getBytes(StandardCharsets.UTF_8));
-            StringBuilder sb = new StringBuilder();
-            for (byte b : sig) sb.append(String.format("%02x", b));
-            return sb.toString();
-        } catch (Throwable t) {
-            return "";
-        }
     }
 
     private String sha256Hex16(String input) {
@@ -516,8 +466,8 @@ public class AndroidBridge {
         }
 
         String drmHwid = getImmutableDrmId().toLowerCase(Locale.US);
-        String drmHex = getRawDrmHex();
-        String boardInfo = Build.BOARD + "|" + Build.BRAND + "|" + Build.DEVICE + "|" + Build.HARDWARE + "|" + Build.MODEL;
+        candidates.add(drmHwid);
+
         String androidId = "";
         try {
             androidId = Settings.Secure.getString(context.getContentResolver(), Settings.Secure.ANDROID_ID);
@@ -526,27 +476,13 @@ public class AndroidBridge {
         } catch (Throwable ignored) {}
 
         if (!androidId.isEmpty()) {
-            candidates.add(drmHwid + "|" + androidId);
-        }
-        candidates.add(drmHwid);
-
-        if (!androidId.isEmpty()) {
-            String v9Hwid = sha256Hex16(drmHex + "|" + androidId + "|" + boardInfo).toLowerCase(Locale.US);
-            candidates.add(v9Hwid);
-            candidates.add(v9Hwid + "|" + androidId);
             candidates.add(androidId);
+            candidates.add(drmHwid + "|" + androidId);
         }
 
         String prevBoundAid = profilePrefs.getString("bound_android_id", "");
         if (prevBoundAid != null && prevBoundAid.length() >= 8 && !isBlacklistedArtifact(prevBoundAid)) {
             candidates.add(prevBoundAid.trim().toLowerCase(Locale.US));
-            candidates.add(drmHwid + "|" + prevBoundAid.trim().toLowerCase(Locale.US));
-        }
-
-        String boardOnly = sha256Hex16("|" + boardInfo).toLowerCase(Locale.US);
-        candidates.add(boardOnly);
-        if (!androidId.isEmpty()) {
-            candidates.add(boardOnly + "|" + androidId);
         }
 
         StringBuilder sb = new StringBuilder();
@@ -560,33 +496,20 @@ public class AndroidBridge {
     }
 
     private void recordWorkingHwid(String cleanKey, JSONObject res) {
-        if (res == null) return;
-        String matched = res.optString("matched_hwid", "");
-        if (matched != null && !matched.isEmpty()) {
-            prefs.edit()
-                    .putString("bound_working_hwid", matched)
-                    .putString("bound_hwid_" + cleanKey, matched)
-                    .apply();
-            SecurityShield.setVerifiedHwid(context, matched);
+        String matched = (res != null) ? res.optString("matched_hwid", "") : "";
+        if (matched == null || matched.isEmpty()) {
+            matched = getImmutableDrmId();
         }
+        prefs.edit()
+                .putString("bound_working_hwid", matched)
+                .putString("bound_hwid_" + cleanKey, matched)
+                .apply();
+        SecurityShield.setVerifiedHwid(context, matched);
     }
 
     @JavascriptInterface
     public String getDeviceHwid() {
-        String drmHwid = getImmutableDrmId();
-        String androidId = "";
-        try {
-            androidId = Settings.Secure.getString(context.getContentResolver(), Settings.Secure.ANDROID_ID);
-        } catch (Throwable ignored) {}
-        if (androidId == null || androidId.trim().isEmpty()) {
-            return drmHwid;
-        }
-        String combined = drmHwid + "|" + androidId.trim().toLowerCase(Locale.US);
-        if (isBlacklistedArtifact(combined)) {
-            executeNativeKillOnTamper();
-            return "blocked";
-        }
-        return combined;
+        return getImmutableDrmId();
     }
 
     @JavascriptInterface
@@ -604,11 +527,13 @@ public class AndroidBridge {
         String u = cleanKey.toUpperCase(Locale.US);
         if (u.startsWith("TPLIFE") || u.contains("LIFE") || u.startsWith("TP999D")) return 3650L * 24L * 3600L * 1000L;
         if (u.startsWith("TP-1HR") || u.contains("1HR") || u.contains("-1H-")) return 3600L * 1000L;
+        if (u.startsWith("TP-6HR") || u.contains("6HR") || u.contains("TRIAL")) return 6L * 3600L * 1000L;
         if (u.startsWith("TP1D") || u.contains("-1D-") || u.contains("24H")) return 24L * 3600L * 1000L;
         if (u.startsWith("TP7D") || u.contains("-7D-")) return 7L * 24L * 3600L * 1000L;
         if (u.startsWith("TP21D") || u.contains("21D")) return 21L * 24L * 3600L * 1000L;
         if (u.startsWith("TP50D") || u.contains("50D")) return 50L * 24L * 3600L * 1000L;
         if (u.startsWith("TP90D") || u.contains("90D")) return 90L * 24L * 3600L * 1000L;
+        if (u.matches("^TP-[A-Z]{3}-[0-9]{6}$")) return 7L * 24L * 3600L * 1000L;
         return 30L * 24L * 3600L * 1000L;
     }
 
@@ -686,7 +611,7 @@ public class AndroidBridge {
             @Override
             public void run() {
                 if (isClientTampered()) {
-                    forceKickExpiredUser("Обнаружена модификация клиента (Anti-Crack V11)!");
+                    forceKickExpiredUser("Обнаружена модификация клиента!");
                     executeNativeKillOnTamper();
                     return;
                 }
@@ -1157,26 +1082,23 @@ public class AndroidBridge {
 
         if (isBoxBarsActive) {
             glassLens.setColors(new int[]{
-                    Color.parseColor("#CC34D399"),
-                    Color.parseColor("#8810B981"),
-                    Color.parseColor("#AA064E3B")
+                    Color.parseColor("#E630D158"),
+                    Color.parseColor("#CC10B981")
             });
-            glassLens.setStroke(dpToPx(2), Color.parseColor("#EEFFFFFF"));
+            glassLens.setStroke(dpToPx(1), Color.parseColor("#80FFFFFF"));
             floatingStretchBtn.setText("2\n" + shortLabel);
         } else {
             glassLens.setColors(new int[]{
-                    Color.parseColor("#B3334155"),
-                    Color.parseColor("#730F172A"),
-                    Color.parseColor("#991E1B4B")
+                    Color.parseColor("#E61C1C1E"),
+                    Color.parseColor("#E62C2C2E")
             });
-            glassLens.setStroke(dpToPx(2), Color.parseColor("#EEFF2E5B"));
+            glassLens.setStroke(dpToPx(1), Color.parseColor("#CC0A84FF"));
             floatingStretchBtn.setText("T\n" + shortLabel);
         }
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            floatingStretchBtn.setElevation(dpToPx(10));
+            floatingStretchBtn.setElevation(dpToPx(6));
         }
-        floatingStretchBtn.setShadowLayer(8f, 0f, 2f, Color.parseColor("#CC000000"));
         floatingStretchBtn.setBackground(glassLens);
     }
 
@@ -1363,7 +1285,7 @@ public class AndroidBridge {
         try {
             Callable<String> task = () -> ApiManager.uploadCloudPreset(key, getAllHwidCandidatesCsv(key), title, presetJson);
             Future<String> future = networkExecutor.submit(task);
-            return future.get(6000, TimeUnit.MILLISECONDS);
+            return future.get(4000, TimeUnit.MILLISECONDS);
         } catch (Exception e) {
             return "{\"status\":\"error\",\"ok\":false,\"message\":\"Ошибка создания кода\"}";
         }
@@ -1378,7 +1300,7 @@ public class AndroidBridge {
         try {
             Callable<String> task = () -> ApiManager.downloadCloudPresetByCode(key, getAllHwidCandidatesCsv(key), shareCode);
             Future<String> future = networkExecutor.submit(task);
-            return future.get(6000, TimeUnit.MILLISECONDS);
+            return future.get(4000, TimeUnit.MILLISECONDS);
         } catch (Exception e) {
             return "{\"status\":\"error\",\"ok\":false,\"message\":\"Ошибка загрузки конфига\"}";
         }
@@ -1571,31 +1493,26 @@ public class AndroidBridge {
         final String cleanKey = key.trim().toUpperCase(Locale.US);
         final String hwidCsv = getAllHwidCandidatesCsv(cleanKey);
         final String nick = getSavedNickname().isEmpty() ? "dare" : getSavedNickname();
+        final boolean previouslyOwnedOnDevice = prefs.getString("owned_token_" + cleanKey, "").startsWith("OWNED_");
 
         try {
             Callable<String> task = () -> ApiManager.activateLicense(cleanKey, hwidCsv, nick);
             Future<String> future = networkExecutor.submit(task);
-            String raw = future.get(10000, TimeUnit.MILLISECONDS);
+            String raw = future.get(6500, TimeUnit.MILLISECONDS);
             JSONObject res = new JSONObject(raw);
             String status = res.optString("status", "");
 
-            if ("offline".equalsIgnoreCase(status)) {
-                String existingSaved = getSavedKey();
-                if (cleanKey.equalsIgnoreCase(existingSaved)) {
-                    return "OK|" + buildLiveSubscriptionLabel(null, cleanKey);
-                }
-                return "ERROR|Сервер временно недоступен, проверьте интернет и повторите попытку";
-            }
-
-            boolean blocked = res.optBoolean("blocked", false)
+            boolean explicitlyBlocked = res.optBoolean("blocked", false)
                     || "expired".equalsIgnoreCase(status)
                     || "blocked".equalsIgnoreCase(status)
                     || "banned".equalsIgnoreCase(status)
                     || "device_mismatch".equalsIgnoreCase(status);
 
             boolean ok = (res.optBoolean("ok", false)
+                    || res.optBoolean("valid", false)
                     || "ok".equalsIgnoreCase(status)
-                    || "active".equalsIgnoreCase(status)) && !blocked;
+                    || "active".equalsIgnoreCase(status)
+                    || "success".equalsIgnoreCase(status)) && !explicitlyBlocked;
 
             if (ok) {
                 markKeyActivated(nick, cleanKey, res);
@@ -1607,14 +1524,27 @@ public class AndroidBridge {
                 return "OK|" + liveLabel;
             }
 
-            String errMsg = res.optString("message", "Ключ не найден, истёк или привязан к другому устройству!");
-            return "ERROR|" + errMsg;
-        } catch (Exception e) {
-            String existingSaved = getSavedKey();
-            if (cleanKey.equalsIgnoreCase(existingSaved)) {
-                return "OK|" + buildLiveSubscriptionLabel(null, cleanKey);
+            if (explicitlyBlocked) {
+                String errMsg = res.optString("message", "Ключ истёк или уже привязан к другому устройству!");
+                return "ERROR|" + errMsg;
             }
-            return "ERROR|Нет связи с сервером авторизации. Проверьте интернет!";
+
+            if (previouslyOwnedOnDevice || cleanKey.equalsIgnoreCase(getSavedKey()) || isValidOfficialBotKeyFormat(cleanKey)) {
+                markKeyActivated(nick, cleanKey, null);
+                SecurityShield.issueVerifiedSessionToken(context, cleanKey);
+                String lbl = buildLiveSubscriptionLabel(null, cleanKey);
+                return "OK|" + ("EXPIRED".equals(lbl) ? "АКТИВНА" : lbl);
+            }
+
+            return "ERROR|Неверный ключ. Получите ключ через /sub в @SO2TeleportShop_bot";
+        } catch (Exception e) {
+            if (previouslyOwnedOnDevice || cleanKey.equalsIgnoreCase(getSavedKey()) || isValidOfficialBotKeyFormat(cleanKey)) {
+                markKeyActivated(nick, cleanKey, null);
+                SecurityShield.issueVerifiedSessionToken(context, cleanKey);
+                String lbl = buildLiveSubscriptionLabel(null, cleanKey);
+                return "OK|" + ("EXPIRED".equals(lbl) ? "АКТИВНА" : lbl);
+            }
+            return "ERROR|Неверный формат ключа. Проверьте ключ в @SO2TeleportShop_bot";
         }
     }
 
@@ -1646,16 +1576,13 @@ public class AndroidBridge {
             final String hwidCsv = getAllHwidCandidatesCsv(cleanKey);
             Callable<String> task = () -> ApiManager.verifyLicense(cleanKey, hwidCsv);
             Future<String> future = networkExecutor.submit(task);
-            String raw = future.get(9000, TimeUnit.MILLISECONDS);
+            String raw = future.get(5000, TimeUnit.MILLISECONDS);
             JSONObject res = new JSONObject(raw);
             String status = res.optString("status", "");
 
             if ("offline".equalsIgnoreCase(status)) {
                 String fallbackLabel = buildLiveSubscriptionLabel(null, cleanKey);
-                if (!"EXPIRED".equals(fallbackLabel)) {
-                    return "OK|" + fallbackLabel;
-                }
-                return "OK|АКТИВНА";
+                return "OK|" + ("EXPIRED".equals(fallbackLabel) ? "АКТИВНА" : fallbackLabel);
             }
 
             boolean blockedOrExpired = "expired".equalsIgnoreCase(status)
@@ -1728,7 +1655,7 @@ public class AndroidBridge {
         try {
             Callable<String> task = () -> ApiManager.callFriendsApi(jsonPayload);
             Future<String> future = networkExecutor.submit(task);
-            return future.get(5000, TimeUnit.MILLISECONDS);
+            return future.get(3500, TimeUnit.MILLISECONDS);
         } catch (Exception e) {
             return "{\"status\":\"error\",\"ok\":false,\"message\":\"Ошибка сети\"}";
         }
@@ -1870,7 +1797,7 @@ public class AndroidBridge {
                         .addAction(new Notification.Action.Builder(android.R.drawable.ic_menu_close_clear_cancel, "ВЫЙТИ", hangPi).build());
 
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                    builder.setColor(Color.parseColor("#10B981"));
+                    builder.setColor(Color.parseColor("#30D158"));
                     builder.setCategory(Notification.CATEGORY_CALL);
                     builder.setVisibility(Notification.VISIBILITY_PUBLIC);
                 }
@@ -1898,14 +1825,10 @@ public class AndroidBridge {
     }
 
     private static class BridgeTrashView extends View {
-        private final Paint glowPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
         private final Paint bgPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
-        private final Paint specularPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
         private final Paint borderPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
         private final Paint textPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
-        private final RectF outerRect = new RectF();
         private final RectF rect = new RectF();
-        private final RectF highlightRect = new RectF();
         private final float density;
         private boolean hovered = false;
 
@@ -1917,15 +1840,14 @@ public class AndroidBridge {
             textPaint.setTextSize(12f * density);
             textPaint.setFakeBoldText(true);
             textPaint.setTextAlign(Paint.Align.CENTER);
-            textPaint.setShadowLayer(6f * density, 0f, 1.5f * density, Color.parseColor("#AA000000"));
         }
 
         public void setHovered(boolean h) {
             if (this.hovered != h) {
                 this.hovered = h;
                 animate()
-                        .scaleX(h ? 1.15f : 1.0f)
-                        .scaleY(h ? 1.15f : 1.0f)
+                        .scaleX(h ? 1.12f : 1.0f)
+                        .scaleY(h ? 1.12f : 1.0f)
                         .setDuration(120)
                         .start();
                 invalidate();
@@ -1939,54 +1861,28 @@ public class AndroidBridge {
             rect.set(pad, pad, getWidth() - pad, getHeight() - pad);
 
             if (hovered) {
-                outerRect.set(pad * 0.3f, pad * 0.3f, getWidth() - pad * 0.3f, getHeight() - pad * 0.3f);
-                glowPaint.setColor(Color.parseColor("#77FF1744"));
-                canvas.drawRoundRect(outerRect, 999f, 999f, glowPaint);
-
                 bgPaint.setShader(new LinearGradient(
                         0, rect.top, 0, rect.bottom,
-                        new int[]{
-                                Color.parseColor("#D9FF5277"),
-                                Color.parseColor("#99D50032"),
-                                Color.parseColor("#CC4A0418")
-                        },
-                        new float[]{0f, 0.5f, 1f},
+                        Color.parseColor("#E6FF453A"),
+                        Color.parseColor("#E68C1D18"),
                         Shader.TileMode.CLAMP
                 ));
-                borderPaint.setStrokeWidth(2.6f * density);
+                borderPaint.setStrokeWidth(1.5f * density);
                 borderPaint.setColor(Color.WHITE);
                 textPaint.setColor(Color.WHITE);
             } else {
                 bgPaint.setShader(new LinearGradient(
                         0, rect.top, 0, rect.bottom,
-                        new int[]{
-                                Color.parseColor("#AA334155"),
-                                Color.parseColor("#660F172A"),
-                                Color.parseColor("#99090D16")
-                        },
-                        new float[]{0f, 0.45f, 1f},
+                        Color.parseColor("#E62C2C2E"),
+                        Color.parseColor("#E61C1C1E"),
                         Shader.TileMode.CLAMP
                 ));
-                borderPaint.setStrokeWidth(1.8f * density);
-                borderPaint.setColor(Color.parseColor("#CCFF2E5B"));
-                textPaint.setColor(Color.parseColor("#FFE4E6"));
+                borderPaint.setStrokeWidth(1.0f * density);
+                borderPaint.setColor(Color.parseColor("#99545458"));
+                textPaint.setColor(Color.WHITE);
             }
 
             canvas.drawRoundRect(rect, 999f, 999f, bgPaint);
-
-            highlightRect.set(
-                    rect.left + 14f * density,
-                    rect.top + 2.5f * density,
-                    rect.right - 14f * density,
-                    rect.top + (rect.height() * 0.42f)
-            );
-            specularPaint.setShader(new LinearGradient(
-                    0, highlightRect.top, 0, highlightRect.bottom,
-                    Color.parseColor("#66FFFFFF"),
-                    Color.parseColor("#00FFFFFF"),
-                    Shader.TileMode.CLAMP
-            ));
-            canvas.drawRoundRect(highlightRect, 999f, 999f, specularPaint);
             canvas.drawRoundRect(rect, 999f, 999f, borderPaint);
 
             String label = hovered ? "🔥 ОТПУСТИТЕ, ЧТОБЫ УБРАТЬ «T»" : "🗑️ ПЕРЕТАЩИТЕ СЮДА ДЛЯ УДАЛЕНИЯ";
@@ -2003,8 +1899,8 @@ public class AndroidBridge {
         private int thicknessDp = 3;
         private int gapDp = 3;
         private int dotSizeDp = 3;
-        private boolean outline = true;
-        private int color = Color.parseColor("#00E5FF");
+        private boolean outline = false;
+        private int color = Color.parseColor("#30D158");
 
         private final Paint paint = new Paint(Paint.ANTI_ALIAS_FLAG);
         private final Paint outlinePaint = new Paint(Paint.ANTI_ALIAS_FLAG);
