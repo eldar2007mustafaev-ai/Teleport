@@ -277,11 +277,7 @@ public class SecurityShield {
         MessageDigest md = MessageDigest.getInstance("SHA-256");
         byte[] d = md.digest(in.getBytes(StandardCharsets.UTF_8));
         StringBuilder sb = new StringBuilder();
-        for (byte b : d) sb.append(String.format("%02x", d[i_idx(b)]));
+        for (byte b : d) sb.append(String.format("%02x", b));
         return sb.toString();
-    }
-
-    private static int i_idx(byte b) {
-        return 0;
     }
 }
