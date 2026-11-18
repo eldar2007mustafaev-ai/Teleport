@@ -48,6 +48,7 @@ public class ApiManager {
     public static final int CLIENT_BUILD_VERSION = 403;
     private static final String CLIENT_SALT = "SO2_TELEPORT_V403_CLEAN_EDITION";
     private static final Pattern KEY_EXTRACT_PATTERN = Pattern.compile("((?:TP|TRIAL|UNLIM)[A-Z0-9]*-[A-Z0-9]+(?:-[A-Z0-9]+)?(?:_[A-Z0-9]+)?)");
+    private static final Pattern KEY_NO_DASH_PATTERN = Pattern.compile("^(TP(?:1D|7D|21D|30D|50D|90D|999D|LIFE)?|TRIAL|UNLIM)([A-Z]{3})([0-9]{6})$");
 
     private static volatile boolean sessionVerified = false;
     private static volatile String lastWorkingBase = null;
@@ -65,9 +66,35 @@ public class ApiManager {
         sessionVerified = false;
     }
 
+    private static String transliterateLookalikes(String s) {
+        StringBuilder sb = new StringBuilder(s.length());
+        for (int i = 0; i < s.length(); i++) {
+            char c = s.charAt(i);
+            switch (c) {
+                case 'А': sb.append('A'); break;
+                case 'В': sb.append('B'); break;
+                case 'Е':
+                case 'Ё': sb.append('E'); break;
+                case 'І':
+                case 'Ї': sb.append('I'); break;
+                case 'К': sb.append('K'); break;
+                case 'М': sb.append('M'); break;
+                case 'Н': sb.append('H'); break;
+                case 'О': sb.append('O'); break;
+                case 'Р': sb.append('P'); break;
+                case 'С': sb.append('C'); break;
+                case 'Т': sb.append('T'); break;
+                case 'У': sb.append('Y'); break;
+                case 'Х': sb.append('X'); break;
+                default: sb.append(c); break;
+            }
+        }
+        return sb.toString();
+    }
+
     public static String normalizeKeyInput(String rawKey) {
         if (rawKey == null) return "";
-        String s = rawKey.toUpperCase(Locale.US).trim()
+        String s = transliterateLookalikes(rawKey.toUpperCase(Locale.US).trim())
                 .replace('\u2010', '-')
                 .replace('\u2011', '-')
                 .replace('\u2012', '-')
@@ -77,12 +104,17 @@ public class ApiManager {
                 .replace('\u2212', '-')
                 .replace('\uFE58', '-')
                 .replace('\uFE63', '-')
-                .replace('\uFF0D', '-');
+                .replace('\uFF0D', '-')
+                .replaceAll("\\s+", "");
         Matcher m = KEY_EXTRACT_PATTERN.matcher(s);
         if (m.find()) {
             return m.group(1);
         }
-        return s.replaceAll("\\s+", "");
+        Matcher noDash = KEY_NO_DASH_PATTERN.matcher(s);
+        if (noDash.matches()) {
+            return noDash.group(1) + "-" + noDash.group(2) + "-" + noDash.group(3);
+        }
+        return s;
     }
 
     private static String sha256(String input) {
@@ -413,7 +445,7 @@ public class ApiManager {
             futures.add(ecs.submit(new Callable<String[]>() {
                 @Override
                 public String[] call() throws Exception {
-                    String resp = postJson(base + path, jsonBody, 3500);
+                    String resp = postJson(base + path, jsonBody, 4500);
                     if (resp != null && resp.trim().startsWith("{")) {
                         return new String[]{base, resp.trim()};
                     }
@@ -422,7 +454,7 @@ public class ApiManager {
             }));
         }
 
-        long deadline = System.currentTimeMillis() + 4200L;
+        long deadline = System.currentTimeMillis() + 5500L;
         try {
             for (int i = 0; i < futures.size(); i++) {
                 long rem = deadline - System.currentTimeMillis();
