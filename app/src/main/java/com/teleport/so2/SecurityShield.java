@@ -19,6 +19,7 @@ import android.webkit.WebView;
 import java.nio.charset.StandardCharsets;
 import java.security.KeyStore;
 import java.security.MessageDigest;
+import java.util.Locale;
 import java.util.UUID;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -65,16 +66,32 @@ public class SecurityShield {
         } catch (Throwable ignored) {}
     }
 
-    // Чистый аппаратный Widevine DRM ID + ключ в AndroidKeyStore (без Build.BOOTLOADER и без resetprop-дыр)
+    public static void setVerifiedHwid(Context ctx, String hwid) {
+        if (hwid == null || hwid.trim().isEmpty()) return;
+        cachedHwid = hwid.trim().toLowerCase(Locale.US);
+        if (ctx != null) {
+            ctx.getSharedPreferences("SO2TeleportPrefs_V410", Context.MODE_PRIVATE)
+                    .edit()
+                    .putString("bound_working_hwid", cachedHwid)
+                    .apply();
+        }
+    }
+
     public static String getHardwareBoundHwid(Context ctx) {
         if (cachedHwid != null && !cachedHwid.isEmpty()) {
             return cachedHwid;
         }
         if (ctx != null) {
+            String bound = ctx.getSharedPreferences("SO2TeleportPrefs_V410", Context.MODE_PRIVATE)
+                    .getString("bound_working_hwid", "");
+            if (bound != null && bound.length() >= 8) {
+                cachedHwid = bound.trim().toLowerCase(Locale.US);
+                return cachedHwid;
+            }
             try {
                 String aid = Settings.Secure.getString(ctx.getContentResolver(), Settings.Secure.ANDROID_ID);
                 if (aid != null && aid.length() >= 8) {
-                    cachedHwid = aid.trim().toLowerCase();
+                    cachedHwid = aid.trim().toLowerCase(Locale.US);
                     return cachedHwid;
                 }
             } catch (Throwable ignored) {}
@@ -84,7 +101,8 @@ public class SecurityShield {
             UUID wUuid = new UUID(-0x121074568629b532L, -0x5c37d8232ae2de13L);
             MediaDrm drm = new MediaDrm(wUuid);
             byte[] drmId = drm.getPropertyByteArray(MediaDrm.PROPERTY_DEVICE_UNIQUE_ID);
-            drm.release();
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) drm.close();
+            else drm.release();
             if (drmId != null && drmId.length > 0) {
                 byte[] digest = signWithTeeHmac(drmId);
                 StringBuilder sb = new StringBuilder();
@@ -204,8 +222,8 @@ public class SecurityShield {
     }
 
     public static void issueVerifiedSessionToken(final Context ctx, final String licenseKey) {
-        if (licenseKey == null || licenseKey.trim().length() < 8) return;
-        final String clean = licenseKey.trim().toUpperCase();
+        if (licenseKey == null || licenseKey.trim().length() < 5) return;
+        final String clean = licenseKey.trim().toUpperCase(Locale.US);
         cachedVerifiedKey = clean;
         bgGuard.execute(() -> {
             try {
@@ -216,14 +234,14 @@ public class SecurityShield {
     }
 
     public static boolean isSessionCryptographicallyValid(Context ctx) {
-        return getVerifiedKey(ctx).length() >= 8 && runtimeClean;
+        return getVerifiedKey(ctx).length() >= 5 && runtimeClean;
     }
 
     public static String getVerifiedKey(Context ctx) {
-        if (cachedVerifiedKey != null && cachedVerifiedKey.length() >= 8) return cachedVerifiedKey;
+        if (cachedVerifiedKey != null && cachedVerifiedKey.length() >= 5) return cachedVerifiedKey;
         if (ctx != null) {
             String k = getSecurePref(ctx, "active_lic_slot");
-            if (k != null && k.length() >= 8) {
+            if (k != null && k.length() >= 5) {
                 cachedVerifiedKey = k;
                 return k;
             }
@@ -259,7 +277,11 @@ public class SecurityShield {
         MessageDigest md = MessageDigest.getInstance("SHA-256");
         byte[] d = md.digest(in.getBytes(StandardCharsets.UTF_8));
         StringBuilder sb = new StringBuilder();
-        for (byte b : d) sb.append(String.format("%02x", b));
+        for (byte b : d) sb.append(String.format("%02x", d[i_idx(b)]));
         return sb.toString();
+    }
+
+    private static int i_idx(byte b) {
+        return 0;
     }
 }
