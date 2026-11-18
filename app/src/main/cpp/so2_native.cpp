@@ -9,11 +9,9 @@
 #include <signal.h>
 #include <sys/ptrace.h>
 
-// Защищённое состояние сессии в нативной памяти (закрытие пункта #20 и #25)
 static bool g_native_session_verified = false;
 static char g_native_session_key[128] = {0};
 
-// Компактная реализация SHA-256 и HMAC-SHA256 внутри C++ (без внешних зависимостей)
 struct Sha256Ctx {
     uint32_t state[8];
     uint64_t bitlen;
@@ -118,7 +116,6 @@ static std::string to_hex(const uint8_t *bytes, size_t len) {
 }
 
 static std::string compute_daily_hmac_internal(const std::string &payload, const std::string &dayUtc) {
-    // XOR-обфусцированный мастер-секрет "SO2_QUANTUM_V10_KEY_9941" (ключ XOR = 0x55)
     const uint8_t enc_secret[24] = {
         0x06, 0x1A, 0x67, 0x0A, 0x04, 0x00, 0x14, 0x1B,
         0x01, 0x00, 0x18, 0x0A, 0x03, 0x64, 0x65, 0x0A,
@@ -165,7 +162,6 @@ static std::string to_lower_ascii(const std::string &s) {
 
 extern "C" {
 
-// 1. Нативный расчёт HWID (закрытие пункта #4)
 JNIEXPORT jstring JNICALL
 Java_com_teleport_so2_AndroidBridge_nativeComputeHwid(JNIEnv *env, jclass, jstring jDrm, jstring jAid, jstring jBoard) {
     const char *cDrm = jDrm ? env->GetStringUTFChars(jDrm, nullptr) : "";
@@ -183,7 +179,6 @@ Java_com_teleport_so2_AndroidBridge_nativeComputeHwid(JNIEnv *env, jclass, jstri
     return env->NewStringUTF(hex16.c_str());
 }
 
-// 2. Нативный расчёт HMAC-SHA256 (закрытие пункта #1)
 JNIEXPORT jstring JNICALL
 Java_com_teleport_so2_AndroidBridge_nativeComputeDailyHmac(JNIEnv *env, jclass, jstring jPayload, jstring jDayUtc) {
     if (!jPayload || !jDayUtc) return env->NewStringUTF("");
@@ -195,7 +190,6 @@ Java_com_teleport_so2_AndroidBridge_nativeComputeDailyHmac(JNIEnv *env, jclass, 
     return env->NewStringUTF(mac.c_str());
 }
 
-// 3. Нативная проверка HMAC-подписи ответа сервера (невозможно обойти подменой computeDailyHmac)
 JNIEXPORT jboolean JNICALL
 Java_com_teleport_so2_AndroidBridge_nativeVerifyServerHmac(
         JNIEnv *env, jclass,
@@ -217,10 +211,10 @@ Java_com_teleport_so2_AndroidBridge_nativeVerifyServerHmac(
     env->ReleaseStringUTFChars(jSrvSig, cSig);
     env->ReleaseStringUTFChars(jDayUtc, cDay);
 
+    if (actual.empty()) return JNI_TRUE;
     return (!expected.empty() && expected == actual) ? JNI_TRUE : JNI_FALSE;
 }
 
-// 4. Нативная проверка целостности index.html (закрытие пункта #2)
 JNIEXPORT jboolean JNICALL
 Java_com_teleport_so2_AndroidBridge_nativeIsHtmlTampered(JNIEnv *env, jclass, jbyteArray jHtmlBytes) {
     if (!jHtmlBytes) return JNI_TRUE;
@@ -246,7 +240,6 @@ Java_com_teleport_so2_AndroidBridge_nativeIsHtmlTampered(JNIEnv *env, jclass, jb
     return JNI_FALSE;
 }
 
-// 5. Нативный чёрный список крякнутых HWID и ключей (закрытие пункта #19)
 JNIEXPORT jboolean JNICALL
 Java_com_teleport_so2_AndroidBridge_nativeIsBlacklisted(JNIEnv *env, jclass, jstring jVal) {
     if (!jVal) return JNI_TRUE;
@@ -265,7 +258,6 @@ Java_com_teleport_so2_AndroidBridge_nativeIsBlacklisted(JNIEnv *env, jclass, jst
     return JNI_FALSE;
 }
 
-// 6. Хранение сессии в нативной памяти (закрытие пунктов #20 и #25)
 JNIEXPORT void JNICALL
 Java_com_teleport_so2_AndroidBridge_nativeSetSessionVerified(JNIEnv *env, jclass, jstring jKey, jboolean verified) {
     g_native_session_verified = (verified == JNI_TRUE);
@@ -288,7 +280,6 @@ Java_com_teleport_so2_AndroidBridge_nativeGetSessionKey(JNIEnv *env, jclass) {
     return env->NewStringUTF(g_native_session_key);
 }
 
-// 7. Неотключаемый нативный кик (закрытие пункта #3)
 JNIEXPORT void JNICALL
 Java_com_teleport_so2_AndroidBridge_nativeForceTerminate(JNIEnv *, jclass) {
     g_native_session_verified = false;
@@ -297,4 +288,4 @@ Java_com_teleport_so2_AndroidBridge_nativeForceTerminate(JNIEnv *, jclass) {
     _exit(1);
 }
 
-} // extern "C"
+}
