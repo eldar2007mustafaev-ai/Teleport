@@ -156,8 +156,8 @@ public class AndroidBridge {
                 SecurityShield.getVerifiedKey(context)
         };
         for (String cand : candidates) {
-            if (cand != null && cand.trim().length() >= 5 && !isBlacklistedArtifact(cand)) {
-                String clean = cand.trim().toUpperCase(Locale.US);
+            String clean = ApiManager.normalizeKeyInput(cand);
+            if (clean.length() >= 5 && !isBlacklistedArtifact(clean)) {
                 saveEncryptedKeyToVault(clean);
                 prefs.edit()
                         .remove("saved_license_key")
@@ -244,12 +244,12 @@ public class AndroidBridge {
     }
 
     private void saveEncryptedKeyToVault(String cleanKey) {
-        if (cleanKey == null || cleanKey.trim().isEmpty()) {
+        String norm = ApiManager.normalizeKeyInput(cleanKey);
+        if (norm.isEmpty()) {
             vaultPrefs.edit().remove(VAULT_ENC_KEY).remove(VAULT_ENC_KEY + "_fb").apply();
             safeNativeSetSession("", false);
             return;
         }
-        String norm = cleanKey.trim().toUpperCase(Locale.US);
         String fbB64 = Base64.encodeToString(norm.getBytes(StandardCharsets.UTF_8), Base64.NO_WRAP);
         vaultPrefs.edit().putString(VAULT_ENC_KEY + "_fb", fbB64).apply();
         try {
@@ -274,13 +274,13 @@ public class AndroidBridge {
                     Cipher cipher = Cipher.getInstance("AES/GCM/NoPadding");
                     cipher.init(Cipher.DECRYPT_MODE, getOrCreateKeystoreSecret(), new GCMParameterSpec(128, iv));
                     cipher.updateAAD(VAULT_FIXED_AAD.getBytes(StandardCharsets.UTF_8));
-                    String dec = new String(cipher.doFinal(enc), StandardCharsets.UTF_8).trim().toUpperCase(Locale.US);
+                    String dec = ApiManager.normalizeKeyInput(new String(cipher.doFinal(enc), StandardCharsets.UTF_8));
                     if (!isBlacklistedArtifact(dec)) return dec;
                 } catch (Throwable ignored) {
                     Cipher cipherLegacy = Cipher.getInstance("AES/GCM/NoPadding");
                     cipherLegacy.init(Cipher.DECRYPT_MODE, getOrCreateKeystoreSecret(), new GCMParameterSpec(128, iv));
                     cipherLegacy.updateAAD(getImmutableDrmId().getBytes(StandardCharsets.UTF_8));
-                    String decLegacy = new String(cipherLegacy.doFinal(enc), StandardCharsets.UTF_8).trim().toUpperCase(Locale.US);
+                    String decLegacy = ApiManager.normalizeKeyInput(new String(cipherLegacy.doFinal(enc), StandardCharsets.UTF_8));
                     if (!isBlacklistedArtifact(decLegacy)) {
                         saveEncryptedKeyToVault(decLegacy);
                         return decLegacy;
@@ -292,7 +292,7 @@ public class AndroidBridge {
         try {
             String fb = vaultPrefs.getString(VAULT_ENC_KEY + "_fb", "");
             if (fb != null && !fb.isEmpty()) {
-                String dec = new String(Base64.decode(fb, Base64.NO_WRAP), StandardCharsets.UTF_8).trim().toUpperCase(Locale.US);
+                String dec = ApiManager.normalizeKeyInput(new String(Base64.decode(fb, Base64.NO_WRAP), StandardCharsets.UTF_8));
                 if (!isBlacklistedArtifact(dec)) return dec;
             }
         } catch (Throwable ignored) {}
@@ -312,14 +312,28 @@ public class AndroidBridge {
                 || u.contains("SO2-HWID-V10")
                 || u.contains("SO2TELEPORT-LOCAL-KEY")
                 || u.contains("BOHDANIUK")
-                || u.contains("CRACK");
+                || u.contains("CRACK")
+                || u.contains("FREE_KEY")
+                || u.contains("I6RUSOKAI")
+                || u.contains("6RUSOK")
+                || u.contains("TP99999")
+                || u.contains("00000002029292992");
     }
 
-    private boolean isValidOfficialBotKeyFormat(String cleanKey) {
-        if (cleanKey == null) return false;
-        String u = cleanKey.trim().toUpperCase(Locale.US);
-        if (u.length() < 8 || u.length() > 36 || isBlacklistedArtifact(u)) return false;
-        return u.matches("^((TP|SO2)[A-Z0-9]*(-[A-Z0-9]{2,12}){1,3})$");
+    private boolean isValidOfficialBotKeyFormat(String rawKey) {
+        String u = ApiManager.normalizeKeyInput(rawKey);
+        if (u.length() < 8 || u.length() > 42 || isBlacklistedArtifact(u)) return false;
+        String baseKey = u.split("_")[0];
+        String[] parts = baseKey.split("-");
+        if (parts.length < 2 || parts.length > 3) return false;
+        String prefix = parts[0];
+        boolean validPrefix = prefix.startsWith("TP") || "TRIAL".equals(prefix) || "UNLIM".equals(prefix);
+        if (!validPrefix) return false;
+        if (parts.length == 3) {
+            if (parts[1].length() < 2 || parts[1].length() > 10) return false;
+            if (parts[2].length() < 4) return false;
+        }
+        return true;
     }
 
     private boolean isFridaOrXposedActive() {
@@ -527,13 +541,13 @@ public class AndroidBridge {
         String u = cleanKey.toUpperCase(Locale.US);
         if (u.startsWith("TPLIFE") || u.contains("LIFE") || u.startsWith("TP999D")) return 3650L * 24L * 3600L * 1000L;
         if (u.startsWith("TP-1HR") || u.contains("1HR") || u.contains("-1H-")) return 3600L * 1000L;
-        if (u.startsWith("TP-6HR") || u.contains("6HR") || u.contains("TRIAL")) return 6L * 3600L * 1000L;
+        if (u.startsWith("UNLIM")) return 3L * 3600L * 1000L;
+        if (u.startsWith("TP-6HR") || u.contains("6HR") || u.startsWith("TRIAL") || u.startsWith("TP-")) return 6L * 3600L * 1000L;
         if (u.startsWith("TP1D") || u.contains("-1D-") || u.contains("24H")) return 24L * 3600L * 1000L;
         if (u.startsWith("TP7D") || u.contains("-7D-")) return 7L * 24L * 3600L * 1000L;
         if (u.startsWith("TP21D") || u.contains("21D")) return 21L * 24L * 3600L * 1000L;
         if (u.startsWith("TP50D") || u.contains("50D")) return 50L * 24L * 3600L * 1000L;
         if (u.startsWith("TP90D") || u.contains("90D")) return 90L * 24L * 3600L * 1000L;
-        if (u.matches("^TP-[A-Z]{3}-[0-9]{6}$")) return 7L * 24L * 3600L * 1000L;
         return 30L * 24L * 3600L * 1000L;
     }
 
@@ -600,7 +614,7 @@ public class AndroidBridge {
         long hours = (totalMinutes % (60L * 24L)) / 60L;
         long mins = totalMinutes % 60L;
 
-        if (days >= 1800) return "АКТИВНА (НАВСЕГДА 👑)";
+        if (days >= 1800) return "АКТИВНА (НАВСЕГДА)";
         if (days > 0) return "АКТИВНА (" + days + " дн. " + hours + " ч.)";
         if (hours > 0) return "АКТИВНА (" + hours + " ч. " + mins + " мин.)";
         return "АКТИВНА (" + Math.max(1, mins) + " мин.)";
@@ -628,14 +642,9 @@ public class AndroidBridge {
                                 return;
                             }
 
-                            boolean explicitlyBlocked = "expired".equalsIgnoreCase(status)
-                                    || "blocked".equalsIgnoreCase(status)
-                                    || "banned".equalsIgnoreCase(status)
-                                    || "device_mismatch".equalsIgnoreCase(status)
-                                    || res.optBoolean("blocked", false);
-
-                            if (explicitlyBlocked) {
-                                forceKickExpiredUser(res.optString("message", "Ключ заблокирован или истёк!"));
+                            boolean explicitlyBanned = "banned".equalsIgnoreCase(status);
+                            if (explicitlyBanned) {
+                                forceKickExpiredUser(res.optString("message", "Ключ заблокирован!"));
                             } else if ("ok".equalsIgnoreCase(status) || "active".equalsIgnoreCase(status) || res.optBoolean("ok", false)) {
                                 recordWorkingHwid(savedKey, res);
                                 getOrInitKeyDeadlineMs(savedKey, res);
@@ -646,9 +655,9 @@ public class AndroidBridge {
                         } catch (Exception ignored) {}
                     });
                 }
-                mainHandler.postDelayed(this, 25000);
+                mainHandler.postDelayed(this, 30000);
             }
-        }, 25000);
+        }, 30000);
     }
 
     private void removeOverlayViewSafe(View v) {
@@ -731,7 +740,7 @@ public class AndroidBridge {
             }
 
             if (reasonToast != null && !reasonToast.isEmpty()) {
-                Toast.makeText(context, "⛔ " + reasonToast, Toast.LENGTH_LONG).show();
+                Toast.makeText(context, reasonToast, Toast.LENGTH_LONG).show();
             }
 
             if (activity instanceof MainActivity) {
@@ -799,7 +808,7 @@ public class AndroidBridge {
                     context.startActivity(fallback);
                 }
             } else {
-                Toast.makeText(context, "✅ Разрешение «Поверх других окон» активно!", Toast.LENGTH_SHORT).show();
+                Toast.makeText(context, "Разрешение «Поверх других окон» активно!", Toast.LENGTH_SHORT).show();
             }
         });
     }
@@ -968,7 +977,7 @@ public class AndroidBridge {
 
                 windowManager.addView(floatingStretchBtn, stretchParams);
                 isStretchOverlayShown = true;
-                Toast.makeText(context, "⚡ Кнопка «T» (" + selectedStretchRatio + ") запущена!", Toast.LENGTH_SHORT).show();
+                Toast.makeText(context, "Кнопка «T» (" + selectedStretchRatio + ") запущена!", Toast.LENGTH_SHORT).show();
             } catch (Exception e) {
                 Toast.makeText(context, "Ошибка кнопки T: " + e.getMessage(), Toast.LENGTH_LONG).show();
             }
@@ -1033,7 +1042,7 @@ public class AndroidBridge {
         }
         boolean shizukuOk = TeleportEngine.isShizukuReady() || ShizukuManager.isPermissionGranted();
         if (!shizukuOk) {
-            Toast.makeText(context, "⚠️ Включите Shizuku! Помощь: @talent_dare", Toast.LENGTH_LONG).show();
+            Toast.makeText(context, "Включите Shizuku! Помощь: @talent_dare", Toast.LENGTH_LONG).show();
             TeleportEngine.requestShizukuPermissionIfNeeded();
             return;
         }
@@ -1042,12 +1051,12 @@ public class AndroidBridge {
             boolean ok = TeleportEngine.applyAspectRatioStretch(selectedStretchRatio);
             if (ok) {
                 isBoxBarsActive = true;
-                Toast.makeText(context, "⬛ Шаг 1 (" + selectedStretchRatio + ") включен! Зайди в игру и нажми «T» снова", Toast.LENGTH_SHORT).show();
+                Toast.makeText(context, "Шаг 1 (" + selectedStretchRatio + ") включен! Зайди в игру и нажми «T» снова", Toast.LENGTH_SHORT).show();
             }
         } else {
             TeleportEngine.releaseBoxToFullStretch();
             isBoxBarsActive = false;
-            Toast.makeText(context, "🔥 Шаг 2: Растяг применён! Перетяни кнопку «T» вниз в ведро", Toast.LENGTH_SHORT).show();
+            Toast.makeText(context, "Шаг 2: Растяг применён! Перетяни кнопку «T» вниз в ведро", Toast.LENGTH_SHORT).show();
         }
         updateFloatingBtnAppearance();
     }
@@ -1067,7 +1076,7 @@ public class AndroidBridge {
             trashPillView = null;
             isStretchOverlayShown = false;
             legacyPrefs.edit().putBoolean("float_btn_enabled", false).apply();
-            Toast.makeText(context, "🗑️ Кнопка «T» убрана с экрана, приятной катки!", Toast.LENGTH_SHORT).show();
+            Toast.makeText(context, "Кнопка «T» убрана с экрана, приятной катки!", Toast.LENGTH_SHORT).show();
         });
     }
 
@@ -1082,23 +1091,26 @@ public class AndroidBridge {
 
         if (isBoxBarsActive) {
             glassLens.setColors(new int[]{
-                    Color.parseColor("#E630D158"),
-                    Color.parseColor("#CC10B981")
+                    Color.parseColor("#CC30D158"),
+                    Color.parseColor("#99248A3D"),
+                    Color.parseColor("#CC1C1C1E")
             });
-            glassLens.setStroke(dpToPx(1), Color.parseColor("#80FFFFFF"));
+            glassLens.setStroke(dpToPx(2), Color.parseColor("#EEFFFFFF"));
             floatingStretchBtn.setText("2\n" + shortLabel);
         } else {
             glassLens.setColors(new int[]{
-                    Color.parseColor("#E61C1C1E"),
-                    Color.parseColor("#E62C2C2E")
+                    Color.parseColor("#CC2C2C2E"),
+                    Color.parseColor("#CC1C1C1E"),
+                    Color.parseColor("#EE000000")
             });
-            glassLens.setStroke(dpToPx(1), Color.parseColor("#CC0A84FF"));
+            glassLens.setStroke(dpToPx(2), Color.parseColor("#EE0A84FF"));
             floatingStretchBtn.setText("T\n" + shortLabel);
         }
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            floatingStretchBtn.setElevation(dpToPx(6));
+            floatingStretchBtn.setElevation(dpToPx(10));
         }
+        floatingStretchBtn.setShadowLayer(8f, 0f, 2f, Color.parseColor("#CC000000"));
         floatingStretchBtn.setBackground(glassLens);
     }
 
@@ -1130,7 +1142,7 @@ public class AndroidBridge {
             trashContainer = null;
             trashPillView = null;
             isStretchOverlayShown = false;
-            Toast.makeText(context, "🔄 Кнопка «T» убрана, родной экран восстановлен", Toast.LENGTH_SHORT).show();
+            Toast.makeText(context, "Кнопка «T» убрана, родной экран восстановлен", Toast.LENGTH_SHORT).show();
         });
     }
 
@@ -1285,7 +1297,7 @@ public class AndroidBridge {
         try {
             Callable<String> task = () -> ApiManager.uploadCloudPreset(key, getAllHwidCandidatesCsv(key), title, presetJson);
             Future<String> future = networkExecutor.submit(task);
-            return future.get(4000, TimeUnit.MILLISECONDS);
+            return future.get(5500, TimeUnit.MILLISECONDS);
         } catch (Exception e) {
             return "{\"status\":\"error\",\"ok\":false,\"message\":\"Ошибка создания кода\"}";
         }
@@ -1300,7 +1312,7 @@ public class AndroidBridge {
         try {
             Callable<String> task = () -> ApiManager.downloadCloudPresetByCode(key, getAllHwidCandidatesCsv(key), shareCode);
             Future<String> future = networkExecutor.submit(task);
-            return future.get(4000, TimeUnit.MILLISECONDS);
+            return future.get(5500, TimeUnit.MILLISECONDS);
         } catch (Exception e) {
             return "{\"status\":\"error\",\"ok\":false,\"message\":\"Ошибка загрузки конфига\"}";
         }
@@ -1487,32 +1499,40 @@ public class AndroidBridge {
             executeNativeKillOnTamper();
             return "ERROR|Обнаружена модификация файлов приложения!";
         }
-        if (key == null || key.trim().length() < 5 || isBlacklistedArtifact(key)) {
+        final String cleanKey = ApiManager.normalizeKeyInput(key);
+        if (cleanKey.length() < 5 || isBlacklistedArtifact(cleanKey)) {
             return "ERROR|Введите лицензионный ключ из Telegram-бота";
         }
-        final String cleanKey = key.trim().toUpperCase(Locale.US);
         final String hwidCsv = getAllHwidCandidatesCsv(cleanKey);
         final String nick = getSavedNickname().isEmpty() ? "dare" : getSavedNickname();
-        final boolean previouslyOwnedOnDevice = prefs.getString("owned_token_" + cleanKey, "").startsWith("OWNED_");
 
         try {
             Callable<String> task = () -> ApiManager.activateLicense(cleanKey, hwidCsv, nick);
             Future<String> future = networkExecutor.submit(task);
-            String raw = future.get(6500, TimeUnit.MILLISECONDS);
+            String raw = future.get(8500, TimeUnit.MILLISECONDS);
             JSONObject res = new JSONObject(raw);
             String status = res.optString("status", "");
 
-            boolean explicitlyBlocked = res.optBoolean("blocked", false)
-                    || "expired".equalsIgnoreCase(status)
+            if ("offline".equalsIgnoreCase(status)) {
+                if (cleanKey.equalsIgnoreCase(getSavedKey()) || isValidOfficialBotKeyFormat(cleanKey)) {
+                    markKeyActivated(nick, cleanKey, null);
+                    SecurityShield.issueVerifiedSessionToken(context, cleanKey);
+                    String lbl = buildLiveSubscriptionLabel(null, cleanKey);
+                    return "OK|" + ("EXPIRED".equals(lbl) ? "АКТИВНА" : lbl);
+                }
+                return "ERROR|Сервер временно недоступен, проверьте интернет";
+            }
+
+            boolean explicitlyBanned = "banned".equalsIgnoreCase(status)
                     || "blocked".equalsIgnoreCase(status)
-                    || "banned".equalsIgnoreCase(status)
-                    || "device_mismatch".equalsIgnoreCase(status);
+                    || "expired".equalsIgnoreCase(status)
+                    || "device_mismatch".equalsIgnoreCase(status)
+                    || res.optBoolean("blocked", false);
 
             boolean ok = (res.optBoolean("ok", false)
-                    || res.optBoolean("valid", false)
                     || "ok".equalsIgnoreCase(status)
                     || "active".equalsIgnoreCase(status)
-                    || "success".equalsIgnoreCase(status)) && !explicitlyBlocked;
+                    || "success".equalsIgnoreCase(status)) && !explicitlyBanned;
 
             if (ok) {
                 markKeyActivated(nick, cleanKey, res);
@@ -1524,27 +1544,16 @@ public class AndroidBridge {
                 return "OK|" + liveLabel;
             }
 
-            if (explicitlyBlocked) {
-                String errMsg = res.optString("message", "Ключ истёк или уже привязан к другому устройству!");
-                return "ERROR|" + errMsg;
-            }
-
-            if (previouslyOwnedOnDevice || cleanKey.equalsIgnoreCase(getSavedKey()) || isValidOfficialBotKeyFormat(cleanKey)) {
-                markKeyActivated(nick, cleanKey, null);
-                SecurityShield.issueVerifiedSessionToken(context, cleanKey);
-                String lbl = buildLiveSubscriptionLabel(null, cleanKey);
-                return "OK|" + ("EXPIRED".equals(lbl) ? "АКТИВНА" : lbl);
-            }
-
-            return "ERROR|Неверный ключ. Получите ключ через /sub в @SO2TeleportShop_bot";
+            String errMsg = res.optString("message", "Ключ не найден или истёк!");
+            return "ERROR|" + errMsg;
         } catch (Exception e) {
-            if (previouslyOwnedOnDevice || cleanKey.equalsIgnoreCase(getSavedKey()) || isValidOfficialBotKeyFormat(cleanKey)) {
+            if (cleanKey.equalsIgnoreCase(getSavedKey()) || isValidOfficialBotKeyFormat(cleanKey)) {
                 markKeyActivated(nick, cleanKey, null);
                 SecurityShield.issueVerifiedSessionToken(context, cleanKey);
                 String lbl = buildLiveSubscriptionLabel(null, cleanKey);
                 return "OK|" + ("EXPIRED".equals(lbl) ? "АКТИВНА" : lbl);
             }
-            return "ERROR|Неверный формат ключа. Проверьте ключ в @SO2TeleportShop_bot";
+            return "ERROR|Неверный формат ключа. Получите ключ в боте @SO2TeleportShop_bot";
         }
     }
 
@@ -1557,7 +1566,7 @@ public class AndroidBridge {
         }
 
         final String cleanKey = (key != null && !key.trim().isEmpty())
-                ? key.trim().toUpperCase(Locale.US)
+                ? ApiManager.normalizeKeyInput(key)
                 : getSavedKey();
 
         if (cleanKey.length() < 5 || isBlacklistedArtifact(cleanKey)) {
@@ -1565,7 +1574,7 @@ public class AndroidBridge {
         }
 
         long lastOkTs = prefs.getLong("last_server_ok_ts", 0L);
-        if (System.currentTimeMillis() - lastOkTs < 22000L && cleanKey.equalsIgnoreCase(getSavedKey())) {
+        if (System.currentTimeMillis() - lastOkTs < 25000L && cleanKey.equalsIgnoreCase(getSavedKey())) {
             String cachedLabel = buildLiveSubscriptionLabel(null, cleanKey);
             if (!"EXPIRED".equals(cachedLabel)) {
                 return "OK|" + cachedLabel;
@@ -1576,7 +1585,7 @@ public class AndroidBridge {
             final String hwidCsv = getAllHwidCandidatesCsv(cleanKey);
             Callable<String> task = () -> ApiManager.verifyLicense(cleanKey, hwidCsv);
             Future<String> future = networkExecutor.submit(task);
-            String raw = future.get(5000, TimeUnit.MILLISECONDS);
+            String raw = future.get(6500, TimeUnit.MILLISECONDS);
             JSONObject res = new JSONObject(raw);
             String status = res.optString("status", "");
 
@@ -1585,16 +1594,10 @@ public class AndroidBridge {
                 return "OK|" + ("EXPIRED".equals(fallbackLabel) ? "АКТИВНА" : fallbackLabel);
             }
 
-            boolean blockedOrExpired = "expired".equalsIgnoreCase(status)
-                    || "blocked".equalsIgnoreCase(status)
-                    || "banned".equalsIgnoreCase(status)
-                    || "device_mismatch".equalsIgnoreCase(status)
-                    || res.optBoolean("blocked", false);
-
-            if (blockedOrExpired) {
-                String msg = res.optString("message", "Ключ заблокирован или истёк!");
+            if ("banned".equalsIgnoreCase(status) || "blocked".equalsIgnoreCase(status)) {
+                String msg = res.optString("message", "Ключ заблокирован!");
                 forceKickExpiredUser(msg);
-                return "BLOCKED|" + msg;
+                return "BANNED|" + msg;
             }
 
             boolean ok = res.optBoolean("ok", false)
@@ -1655,7 +1658,7 @@ public class AndroidBridge {
         try {
             Callable<String> task = () -> ApiManager.callFriendsApi(jsonPayload);
             Future<String> future = networkExecutor.submit(task);
-            return future.get(3500, TimeUnit.MILLISECONDS);
+            return future.get(4500, TimeUnit.MILLISECONDS);
         } catch (Exception e) {
             return "{\"status\":\"error\",\"ok\":false,\"message\":\"Ошибка сети\"}";
         }
@@ -1775,9 +1778,9 @@ public class AndroidBridge {
                 PendingIntent hangPi = PendingIntent.getBroadcast(
                         context, 13, new Intent(ACTION_VOICE_HANGUP).setPackage(context.getPackageName()), flags);
 
-                String muteLabel = isMuted ? "🎤 ВКЛ МИКРО" : "🔇 ВЫКЛ МИКРО";
-                String deafLabel = isDeafened ? "🎧 ВКЛ ЗВУК" : "🔈 ВЫКЛ ЗВУК";
-                String statusSub = (isMuted ? "🔇 Микро ВЫКЛ" : "🎤 Микро ВКЛ") + "  •  " + (isDeafened ? "🔈 Звук ВЫКЛ" : "🎧 Звук 400% (Squad Isolator)");
+                String muteLabel = isMuted ? "ВКЛ МИКРО" : "ВЫКЛ МИКРО";
+                String deafLabel = isDeafened ? "ВКЛ ЗВУК" : "ВЫКЛ ЗВУК";
+                String statusSub = (isMuted ? "Микро ВЫКЛ" : "Микро ВКЛ") + "  •  " + (isDeafened ? "Звук ВЫКЛ" : "Звук 400% (Squad Isolator)");
 
                 Notification.Builder builder = (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O)
                         ? new Notification.Builder(context, VOICE_CHANNEL_ID)
@@ -1786,7 +1789,7 @@ public class AndroidBridge {
                 int smallIco = isMuted ? android.R.drawable.ic_lock_silent_mode : android.R.drawable.ic_btn_speak_now;
 
                 builder.setSmallIcon(smallIco)
-                        .setContentTitle("🟢 Войс Отряда • " + (roomName == null || roomName.isEmpty() ? "SQUAD-MAIN" : roomName))
+                        .setContentTitle("Войс Отряда • " + (roomName == null || roomName.isEmpty() ? "SQUAD-MAIN" : roomName))
                         .setContentText(statusSub)
                         .setContentIntent(contentPi)
                         .setOngoing(true)
@@ -1825,9 +1828,11 @@ public class AndroidBridge {
     }
 
     private static class BridgeTrashView extends View {
+        private final Paint glowPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
         private final Paint bgPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
         private final Paint borderPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
         private final Paint textPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+        private final RectF outerRect = new RectF();
         private final RectF rect = new RectF();
         private final float density;
         private boolean hovered = false;
@@ -1861,10 +1866,14 @@ public class AndroidBridge {
             rect.set(pad, pad, getWidth() - pad, getHeight() - pad);
 
             if (hovered) {
+                outerRect.set(pad * 0.3f, pad * 0.3f, getWidth() - pad * 0.3f, getHeight() - pad * 0.3f);
+                glowPaint.setColor(Color.parseColor("#55FF453A"));
+                canvas.drawRoundRect(outerRect, 999f, 999f, glowPaint);
+
                 bgPaint.setShader(new LinearGradient(
                         0, rect.top, 0, rect.bottom,
-                        Color.parseColor("#E6FF453A"),
-                        Color.parseColor("#E68C1D18"),
+                        Color.parseColor("#EEFF453A"),
+                        Color.parseColor("#CCFF3B30"),
                         Shader.TileMode.CLAMP
                 ));
                 borderPaint.setStrokeWidth(1.5f * density);
@@ -1873,11 +1882,11 @@ public class AndroidBridge {
             } else {
                 bgPaint.setShader(new LinearGradient(
                         0, rect.top, 0, rect.bottom,
-                        Color.parseColor("#E62C2C2E"),
-                        Color.parseColor("#E61C1C1E"),
+                        Color.parseColor("#EE2C2C2E"),
+                        Color.parseColor("#EE1C1C1E"),
                         Shader.TileMode.CLAMP
                 ));
-                borderPaint.setStrokeWidth(1.0f * density);
+                borderPaint.setStrokeWidth(1f * density);
                 borderPaint.setColor(Color.parseColor("#99545458"));
                 textPaint.setColor(Color.WHITE);
             }
@@ -1885,7 +1894,7 @@ public class AndroidBridge {
             canvas.drawRoundRect(rect, 999f, 999f, bgPaint);
             canvas.drawRoundRect(rect, 999f, 999f, borderPaint);
 
-            String label = hovered ? "🔥 ОТПУСТИТЕ, ЧТОБЫ УБРАТЬ «T»" : "🗑️ ПЕРЕТАЩИТЕ СЮДА ДЛЯ УДАЛЕНИЯ";
+            String label = hovered ? "ОТПУСТИТЕ, ЧТОБЫ УБРАТЬ «T»" : "ПЕРЕТАЩИТЕ СЮДА ДЛЯ УДАЛЕНИЯ";
             Paint.FontMetrics fm = textPaint.getFontMetrics();
             float cy = getHeight() / 2f - (fm.ascent + fm.descent) / 2f;
             canvas.drawText(label, getWidth() / 2f, cy, textPaint);
@@ -1899,7 +1908,7 @@ public class AndroidBridge {
         private int thicknessDp = 3;
         private int gapDp = 3;
         private int dotSizeDp = 3;
-        private boolean outline = false;
+        private boolean outline = true;
         private int color = Color.parseColor("#30D158");
 
         private final Paint paint = new Paint(Paint.ANTI_ALIAS_FLAG);
