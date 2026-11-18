@@ -8,33 +8,36 @@
   <title>SO2Teleport PRO</title>
   <style>
     :root {
-      --crystal-bg-1: #233658;
-      --crystal-bg-2: #34507E;
-      --crystal-bg-3: #45669A;
-      --crystal-bg-4: #1E2F4F;
+      --m3-bg-1: #0B0E17;
+      --m3-bg-2: #121726;
+      --m3-bg-3: #182036;
+      --m3-surface: #141824;
+      --m3-surface-low: #10141F;
+      --m3-surface-high: #1C2233;
 
-      --glass-panel-bg: linear-gradient(135deg, rgba(220, 238, 255, 0.28) 0%, rgba(150, 188, 240, 0.18) 50%, rgba(110, 152, 215, 0.24) 100%);
-      --glass-card-bg: linear-gradient(145deg, rgba(230, 244, 255, 0.22) 0%, rgba(145, 184, 235, 0.14) 55%, rgba(108, 148, 210, 0.20) 100%);
-      --glass-card-active: linear-gradient(145deg, rgba(185, 232, 255, 0.38) 0%, rgba(162, 168, 255, 0.28) 52%, rgba(125, 212, 255, 0.36) 100%);
-      --glass-pill-btn: linear-gradient(90deg, rgba(167, 139, 250, 0.88) 0%, rgba(122, 192, 255, 0.90) 52%, rgba(115, 232, 250, 0.94) 100%);
-      --glass-sec-btn: linear-gradient(145deg, rgba(225, 242, 255, 0.24) 0%, rgba(135, 175, 228, 0.18) 100%);
+      --accent-main: #7CC4FF;
+      --accent-sec: #5E5CE6;
+      --accent-rgb: 124, 196, 255;
+      --accent-sec-rgb: 94, 92, 230;
+      --btn-text-color: #071120;
+      --focus-ring: var(--accent-main);
 
-      --glass-border: rgba(215, 238, 255, 0.46);
-      --glass-border-top: rgba(255, 255, 255, 0.88);
-      --glass-border-left: rgba(240, 249, 255, 0.74);
-      --glass-border-strong: rgba(255, 255, 255, 0.94);
+      --glass-panel-bg: linear-gradient(155deg, rgba(var(--accent-rgb), 0.14) 0%, rgba(22, 26, 38, 0.94) 42%, rgba(14, 17, 26, 0.97) 100%);
+      --glass-card-bg: linear-gradient(145deg, rgba(var(--accent-rgb), 0.09) 0%, rgba(28, 32, 46, 0.92) 55%, rgba(19, 22, 33, 0.96) 100%);
+      --glass-card-active: linear-gradient(145deg, rgba(var(--accent-rgb), 0.26) 0%, rgba(var(--accent-sec-rgb), 0.18) 55%, rgba(24, 28, 42, 0.96) 100%);
+      --glass-pill-btn: linear-gradient(135deg, var(--accent-main) 0%, var(--accent-sec) 100%);
+      --glass-sec-btn: linear-gradient(145deg, rgba(var(--accent-rgb), 0.12) 0%, rgba(28, 32, 46, 0.94) 100%);
 
-      --accent-main: #8AD8FF;
-      --accent-sec: #A78BFA;
-      --accent-rgb: 138, 216, 255;
-      --accent-sec-rgb: 167, 139, 250;
-      --btn-text-color: #FFFFFF;
-      --focus-ring: #FFFFFF;
-      --text-main: #FFFFFF;
-      --text-muted: rgba(230, 242, 255, 0.78);
-      --text-hint: rgba(210, 228, 255, 0.56);
-      --ok-green: #7EE8FA;
-      --danger-red: #FDA4AF;
+      --glass-border: rgba(var(--accent-rgb), 0.34);
+      --glass-border-top: rgba(var(--accent-rgb), 0.68);
+      --glass-border-left: rgba(var(--accent-rgb), 0.46);
+      --glass-border-strong: rgba(var(--accent-rgb), 0.95);
+
+      --text-main: #F2F5FA;
+      --text-muted: rgba(215, 224, 242, 0.72);
+      --text-hint: rgba(180, 194, 220, 0.45);
+      --ok-green: #30D158;
+      --danger-red: #FF453A;
 
       --text-caption: 0.75rem;
       --text-body-sm: 0.8125rem;
@@ -60,7 +63,7 @@
 
     body {
       font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", Roboto, Inter, sans-serif;
-      background-color: var(--crystal-bg-1);
+      background-color: var(--m3-bg-1);
       color: var(--text-main);
       font-size: var(--text-body);
       line-height: 1.5;
@@ -100,11 +103,10 @@
       overflow: hidden;
       pointer-events: none;
       background:
-        radial-gradient(circle at 14% 12%, rgba(175, 232, 255, 0.46) 0%, rgba(120, 190, 255, 0.18) 28%, transparent 54%),
-        radial-gradient(circle at 88% 24%, rgba(196, 165, 255, 0.42) 0%, rgba(135, 205, 255, 0.20) 32%, transparent 58%),
-        radial-gradient(circle at 18% 86%, rgba(135, 222, 255, 0.36) 0%, transparent 50%),
-        radial-gradient(circle at 84% 88%, rgba(180, 155, 255, 0.34) 0%, transparent 48%),
-        linear-gradient(145deg, var(--crystal-bg-1) 0%, var(--crystal-bg-2) 36%, var(--crystal-bg-3) 68%, var(--crystal-bg-4) 100%);
+        radial-gradient(circle at 15% 12%, rgba(var(--accent-rgb), 0.22) 0%, transparent 48%),
+        radial-gradient(circle at 86% 22%, rgba(var(--accent-sec-rgb), 0.20) 0%, transparent 52%),
+        radial-gradient(circle at 20% 88%, rgba(var(--accent-rgb), 0.16) 0%, transparent 48%),
+        linear-gradient(160deg, var(--m3-bg-1) 0%, var(--m3-bg-2) 52%, var(--m3-bg-3) 100%);
     }
     #bgCustomVideo, #bgCustomGif {
       position: absolute;
@@ -112,7 +114,7 @@
       width: 100%;
       height: 100%;
       object-fit: cover;
-      opacity: 0.45;
+      opacity: 0.38;
       display: none;
     }
     #bgParticlesCanvas {
@@ -124,7 +126,7 @@
       z-index: -2;
       pointer-events: none;
       background:
-        radial-gradient(ellipse 90% 35% at 50% 0%, rgba(var(--accent-rgb), 0.22) 0%, transparent 70%);
+        radial-gradient(ellipse 92% 30% at 50% 0%, rgba(var(--accent-rgb), 0.18) 0%, transparent 70%);
     }
     #bgVignetteOverlay {
       display: none;
@@ -140,7 +142,7 @@
       color: var(--text-main);
       font-size: 1rem;
       line-height: 1.4;
-      caret-color: #FFFFFF;
+      caret-color: var(--accent-main);
       -webkit-appearance: none;
       appearance: none;
     }
@@ -164,20 +166,18 @@
       border-block-start-color: var(--glass-border-top);
       border-inline-start-color: var(--glass-border-left);
       box-shadow:
-        0 12px 30px rgba(15, 28, 58, 0.34),
-        inset 0 1.5px 1px rgba(255, 255, 255, 0.78),
-        inset 0 -1px 1px rgba(145, 205, 255, 0.26);
+        0 10px 28px rgba(0, 0, 0, 0.58),
+        inset 0 1px 0 rgba(255, 255, 255, 0.18);
     }
 
     .liquid-glass-btn {
       background: var(--glass-pill-btn);
       border: 1.5px solid var(--glass-border-strong);
       box-shadow:
-        0 6px 20px rgba(120, 200, 255, 0.42),
-        inset 0 1.5px 1px rgba(255, 255, 255, 0.90);
-      color: #FFFFFF;
-      text-shadow: 0 1px 2px rgba(22, 45, 92, 0.42);
-      font-weight: 700;
+        0 6px 18px rgba(var(--accent-rgb), 0.32),
+        inset 0 1px 0 rgba(255, 255, 255, 0.45);
+      color: var(--btn-text-color);
+      font-weight: 800;
     }
 
     .top-brand-header {
@@ -201,10 +201,10 @@
     .header-avatar-holder {
       width: 44px;
       height: 44px;
-      border-radius: 15px;
-      background: linear-gradient(145deg, rgba(255, 255, 255, 0.35), rgba(140, 195, 255, 0.24));
+      border-radius: 14px;
+      background: linear-gradient(145deg, rgba(var(--accent-rgb), 0.25), rgba(20, 24, 36, 0.90));
       border: 1.5px solid var(--glass-border-top);
-      box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.85), 0 4px 12px rgba(18, 36, 74, 0.25);
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.25);
       display: flex;
       align-items: center;
       justify-content: center;
@@ -221,19 +221,17 @@
     .header-avatar-fallback {
       font-size: 1.125rem;
       font-weight: 800;
-      color: #FFFFFF;
-      text-shadow: 0 1px 3px rgba(20, 42, 85, 0.45);
+      color: var(--accent-main);
     }
     .brand-title-main {
       font-size: var(--text-heading);
-      font-weight: 700;
+      font-weight: 800;
       letter-spacing: -0.01em;
       color: #FFFFFF;
       line-height: 1.2;
-      text-shadow: 0 1px 3px rgba(18, 38, 78, 0.35);
     }
     .brand-title-main span {
-      color: #E0F2FE;
+      color: var(--accent-main);
     }
     .brand-meta-sub {
       font-size: var(--text-caption);
@@ -247,30 +245,28 @@
     .shizuku-status-pill {
       display: inline-flex;
       align-items: center;
-      gap: 6px;
+      gap: 7px;
       min-height: 36px;
       padding-inline: 13px;
       padding-block: 6px;
       border-radius: 999px;
-      background: var(--glass-sec-btn);
-      border: 1px solid rgba(235, 248, 255, 0.65);
-      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.75), 0 4px 10px rgba(15, 30, 62, 0.20);
+      background: rgba(18, 21, 32, 0.92);
+      border: 1.5px solid var(--glass-border);
       font-size: var(--text-caption);
-      font-weight: 600;
-      color: #FFFFFF;
+      font-weight: 700;
       cursor: pointer;
       flex-shrink: 0;
     }
     .status-dot {
-      width: 8px;
-      height: 8px;
+      width: 9px;
+      height: 9px;
       border-radius: 50%;
-      background: var(--danger-red);
-      box-shadow: 0 0 8px var(--danger-red);
+      background: #FF453A;
+      box-shadow: 0 0 8px #FF453A;
     }
     .status-dot.on {
-      background: #7EE8FA;
-      box-shadow: 0 0 8px #7EE8FA;
+      background: #30D158;
+      box-shadow: 0 0 8px #30D158;
     }
     .top-header-bottom-bar {
       display: flex;
@@ -279,7 +275,7 @@
       gap: 8px;
       margin-block-start: 10px;
       padding-block-start: 10px;
-      border-block-start: 1px solid rgba(220, 240, 255, 0.32);
+      border-block-start: 1px solid var(--glass-border);
       font-size: var(--text-caption);
       color: var(--text-muted);
       font-weight: 600;
@@ -294,21 +290,22 @@
       height: 22px;
       border-radius: 50%;
       cursor: pointer;
-      border: 2px solid rgba(255, 255, 255, 0.55);
-      box-shadow: 0 2px 6px rgba(15, 30, 62, 0.30);
+      border: 2px solid rgba(255, 255, 255, 0.35);
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.5);
     }
     .theme-dot.active {
       border-color: #FFFFFF;
-      box-shadow: 0 0 12px rgba(255, 255, 255, 0.85);
+      box-shadow: 0 0 10px var(--accent-main);
+      transform: scale(1.12);
     }
 
     .acc-block {
-      border-radius: 24px;
+      border-radius: 22px;
       margin-block-end: 12px;
       overflow: hidden;
     }
     .acc-block.open {
-      border-color: rgba(240, 250, 255, 0.82);
+      border-color: var(--glass-border-strong);
     }
     .acc-header {
       padding: 15px 16px;
@@ -329,14 +326,13 @@
       width: 40px;
       height: 40px;
       border-radius: 13px;
-      background: linear-gradient(145deg, rgba(255, 255, 255, 0.30), rgba(145, 195, 255, 0.20));
-      border: 1px solid rgba(240, 250, 255, 0.72);
-      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.80);
+      background: linear-gradient(145deg, rgba(var(--accent-rgb), 0.22), rgba(22, 26, 38, 0.92));
+      border: 1.5px solid var(--glass-border-top);
       display: flex;
       align-items: center;
       justify-content: center;
       font-size: 1.05rem;
-      color: #FFFFFF;
+      color: var(--accent-main);
       flex-shrink: 0;
     }
     .acc-title-wrap { min-width: 0; flex: 1; }
@@ -349,7 +345,6 @@
       align-items: center;
       gap: 8px;
       flex-wrap: wrap;
-      text-shadow: 0 1px 2px rgba(18, 38, 78, 0.30);
     }
     .acc-sub {
       font-size: var(--text-caption);
@@ -365,19 +360,20 @@
       width: 28px;
       height: 28px;
       border-radius: 50%;
-      background: rgba(255, 255, 255, 0.20);
-      border: 1px solid rgba(235, 248, 255, 0.62);
+      background: rgba(var(--accent-rgb), 0.14);
+      border: 1px solid var(--glass-border);
       display: flex;
       align-items: center;
       justify-content: center;
-      color: #FFFFFF;
+      color: var(--accent-main);
       font-size: 0.8125rem;
       font-weight: 700;
       flex-shrink: 0;
     }
     .acc-block.open .acc-chevron {
       transform: rotate(180deg);
-      background: rgba(165, 225, 255, 0.34);
+      background: rgba(var(--accent-rgb), 0.28);
+      border-color: var(--glass-border-strong);
     }
     .acc-body-wrap {
       display: none;
@@ -387,7 +383,7 @@
     }
     .acc-body-inner {
       padding: 8px 16px 16px;
-      border-block-start: 1px solid rgba(220, 240, 255, 0.32);
+      border-block-start: 1px solid var(--glass-border);
     }
 
     .cyber-hub-card {
@@ -412,22 +408,19 @@
     }
     .hub-card-title {
       font-size: 0.9375rem;
-      font-weight: 700;
+      font-weight: 800;
       color: #FFFFFF;
       line-height: 1.3;
       display: flex;
       align-items: center;
       gap: 8px;
       flex-wrap: wrap;
-      text-shadow: 0 1px 2px rgba(18, 38, 78, 0.30);
     }
     .hub-state-word {
-      color: #E0F2FE;
-      text-shadow: 0 0 10px rgba(138, 216, 255, 0.75);
+      color: #30D158;
     }
     .hub-state-word.off {
-      color: var(--text-muted);
-      text-shadow: none;
+      color: #FF453A;
     }
     .hub-card-sub {
       font-size: var(--text-caption);
@@ -452,9 +445,8 @@
     .cyber-slider-lg {
       position: absolute;
       inset: 0;
-      background: rgba(135, 175, 228, 0.28);
-      border: 1.5px solid rgba(230, 245, 255, 0.65);
-      box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.45);
+      background: rgba(16, 19, 28, 0.95);
+      border: 1.5px solid var(--glass-border);
       border-radius: 999px;
     }
     .cyber-slider-lg::before {
@@ -465,19 +457,20 @@
       inset-inline-start: 3px;
       inset-block-start: 2.5px;
       border-radius: 50%;
-      background: #FFFFFF;
-      box-shadow: 0 0 10px rgba(255, 255, 255, 0.9), 0 2px 5px rgba(15, 30, 62, 0.35);
-      transition-property: transform;
+      background: #8E95A8;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.55);
+      transition-property: transform, background-color;
       transition-duration: 140ms;
       transition-timing-function: ease-out;
     }
     .cyber-switch-lg input:checked + .cyber-slider-lg {
-      background: linear-gradient(90deg, rgba(167, 139, 250, 0.85), rgba(115, 225, 255, 0.92));
-      border-color: #FFFFFF;
-      box-shadow: 0 0 14px rgba(135, 215, 255, 0.55), inset 0 1px 1px rgba(255, 255, 255, 0.8);
+      background: rgba(var(--accent-rgb), 0.32);
+      border-color: var(--glass-border-strong);
+      box-shadow: 0 0 12px rgba(var(--accent-rgb), 0.35);
     }
     .cyber-switch-lg input:checked + .cyber-slider-lg::before {
       transform: translateX(21px);
+      background: var(--accent-main);
     }
 
     .hub-actions-grid {
@@ -509,16 +502,15 @@
       justify-content: center;
       gap: 8px;
       font-size: var(--text-body-sm);
-      font-weight: 700;
+      font-weight: 800;
       cursor: pointer;
     }
 
     .character-card {
       background: var(--glass-card-bg);
-      border: 1px solid var(--glass-border);
+      border: 1.5px solid var(--glass-border);
       border-block-start-color: var(--glass-border-top);
-      border-inline-start-color: var(--glass-border-left);
-      box-shadow: 0 6px 16px rgba(15, 30, 62, 0.20), inset 0 1px 0 rgba(255, 255, 255, 0.65);
+      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.10);
       border-radius: 18px;
       padding: 13px 14px;
       margin-block-start: 9px;
@@ -530,10 +522,10 @@
     }
     .character-card.active {
       background: var(--glass-card-active);
-      border: 1.5px solid #FFFFFF;
+      border: 1.5px solid var(--glass-border-strong);
       box-shadow:
-        0 8px 22px rgba(120, 200, 255, 0.36),
-        inset 0 1.5px 1px rgba(255, 255, 255, 0.92);
+        0 6px 18px rgba(var(--accent-rgb), 0.25),
+        inset 0 1px 0 rgba(255, 255, 255, 0.28);
     }
     .char-title {
       font-size: 0.875rem;
@@ -547,25 +539,25 @@
     }
     .char-tag {
       font-size: 0.6875rem;
-      font-weight: 600;
+      font-weight: 700;
       letter-spacing: 0.04em;
       padding: 2px 9px;
       border-radius: 999px;
-      background: rgba(255, 255, 255, 0.22);
-      border: 1px solid rgba(255, 255, 255, 0.58);
-      color: #FFFFFF;
+      background: rgba(var(--accent-rgb), 0.18);
+      border: 1px solid var(--glass-border-top);
+      color: var(--accent-main);
       text-transform: uppercase;
       font-variant-numeric: tabular-nums;
     }
     .char-tag.pad-badge {
-      background: rgba(167, 139, 250, 0.35);
-      border-color: rgba(233, 213, 255, 0.75);
+      background: rgba(var(--accent-sec-rgb), 0.24);
+      border-color: var(--glass-border-top);
       color: #FFFFFF;
     }
     .char-tag.budget-badge {
-      background: rgba(110, 231, 249, 0.30);
-      border-color: rgba(207, 250, 254, 0.75);
-      color: #FFFFFF;
+      background: rgba(48, 209, 88, 0.18);
+      border-color: rgba(48, 209, 88, 0.55);
+      color: #86EFAC;
     }
     .char-desc {
       font-size: var(--text-caption);
@@ -579,15 +571,14 @@
       width: 28px;
       height: 28px;
       border-radius: 50%;
-      background: rgba(255, 255, 255, 0.22);
-      border: 1px solid rgba(255, 255, 255, 0.62);
-      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.75);
+      background: rgba(var(--accent-rgb), 0.16);
+      border: 1px solid var(--glass-border-top);
       display: inline-flex;
       align-items: center;
       justify-content: center;
       font-size: 0.95rem;
       font-weight: 700;
-      color: #FFFFFF;
+      color: var(--accent-main);
       flex-shrink: 0;
     }
 
@@ -595,7 +586,7 @@
       font-size: 0.6875rem;
       font-weight: 700;
       letter-spacing: 0.05em;
-      color: #E0F2FE;
+      color: var(--accent-main);
       text-transform: uppercase;
       margin-block: 14px 6px;
     }
@@ -603,9 +594,8 @@
       padding: 12px 14px;
       margin-block-start: 8px;
       background: var(--glass-card-bg);
-      border: 1px solid var(--glass-border);
+      border: 1.5px solid var(--glass-border);
       border-block-start-color: var(--glass-border-top);
-      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.60);
       border-radius: 18px;
     }
     .pro-slider-head {
@@ -625,9 +615,9 @@
       font-size: var(--text-caption);
       font-weight: 700;
       font-variant-numeric: tabular-nums;
-      color: #FFFFFF;
-      background: rgba(255, 255, 255, 0.22);
-      border: 1px solid rgba(255, 255, 255, 0.58);
+      color: var(--accent-main);
+      background: rgba(var(--accent-rgb), 0.16);
+      border: 1px solid var(--glass-border-top);
       padding: 2px 10px;
       border-radius: 999px;
       min-width: 44px;
@@ -647,7 +637,7 @@
       width: 100%;
       height: 5px;
       border-radius: 999px;
-      background: linear-gradient(90deg, rgba(167, 139, 250, 0.85) 0%, rgba(125, 211, 252, 0.92) 60%, rgba(255, 255, 255, 0.35) 100%);
+      background: linear-gradient(90deg, var(--accent-sec) 0%, var(--accent-main) 65%, rgba(255, 255, 255, 0.18) 100%);
       outline: none;
       cursor: pointer;
     }
@@ -658,8 +648,8 @@
       height: 20px;
       border-radius: 50%;
       background: #FFFFFF;
-      border: 2px solid #E0F2FE;
-      box-shadow: 0 0 12px rgba(138, 220, 255, 0.95), 0 2px 5px rgba(15, 30, 62, 0.38);
+      border: 2px solid var(--accent-main);
+      box-shadow: 0 0 10px rgba(var(--accent-rgb), 0.8), 0 2px 5px rgba(0, 0, 0, 0.6);
       cursor: pointer;
     }
 
@@ -669,9 +659,8 @@
       justify-content: space-between;
       gap: 10px;
       background: var(--glass-card-bg);
-      border: 1px solid var(--glass-border);
+      border: 1.5px solid var(--glass-border);
       border-block-start-color: var(--glass-border-top);
-      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.65);
       border-radius: 18px;
       padding: 12px 14px;
       margin-block-start: 8px;
@@ -680,9 +669,8 @@
       min-width: 38px;
       min-height: 38px;
       border-radius: 50%;
-      border: 1px solid rgba(255, 255, 255, 0.65);
-      background: rgba(255, 255, 255, 0.22);
-      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.75);
+      border: 1.5px solid var(--glass-border-top);
+      background: rgba(var(--accent-rgb), 0.16);
       color: #FFFFFF;
       display: inline-flex;
       align-items: center;
@@ -695,15 +683,15 @@
       display: flex;
       align-items: center;
       gap: 10px;
-      background: rgba(225, 242, 255, 0.20);
-      border: 1.5px solid rgba(235, 248, 255, 0.62);
-      box-shadow: inset 0 1px 2px rgba(255, 255, 255, 0.55);
+      background: rgba(16, 19, 28, 0.92);
+      border: 1.5px solid var(--glass-border);
+      border-block-start-color: var(--glass-border-top);
       border-radius: 999px;
       padding: 8px 14px;
       margin-block-start: 8px;
     }
     .code-input-bar:focus-within {
-      border-color: #FFFFFF;
+      border-color: var(--glass-border-strong);
     }
     .shelf-cards-grid {
       display: grid;
@@ -713,10 +701,9 @@
     }
     .shelf-preset-card {
       background: var(--glass-card-bg);
-      border: 1px solid var(--glass-border);
+      border: 1.5px solid var(--glass-border);
       border-block-start-color: var(--glass-border-top);
-      border-inline-start-color: var(--glass-border-left);
-      box-shadow: 0 6px 16px rgba(15, 30, 62, 0.18), inset 0 1px 0 rgba(255, 255, 255, 0.65);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.35);
       border-radius: 18px;
       padding: 13px;
       cursor: pointer;
@@ -725,13 +712,17 @@
       justify-content: space-between;
       min-height: 86px;
     }
+    .shelf-preset-card.active {
+      background: var(--glass-card-active);
+      border-color: var(--glass-border-strong);
+    }
 
     .preview-stage-box {
       width: 100%;
       min-height: 148px;
-      background: linear-gradient(145deg, rgba(25, 44, 82, 0.68) 0%, rgba(42, 68, 118, 0.55) 100%);
-      border: 1.5px solid rgba(225, 242, 255, 0.55);
-      box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.65);
+      background: rgba(12, 15, 22, 0.94);
+      border: 1.5px solid var(--glass-border);
+      border-block-start-color: var(--glass-border-top);
       border-radius: 18px;
       position: relative;
       display: flex;
@@ -743,7 +734,7 @@
     .stretch-dashed-outer {
       width: 220px;
       height: 114px;
-      border: 1px dashed rgba(230, 245, 255, 0.58);
+      border: 1.5px dashed var(--glass-border-top);
       border-radius: 10px;
       display: flex;
       align-items: center;
@@ -752,9 +743,9 @@
     .stretch-solid-inner {
       width: 168px;
       height: 114px;
-      border: 1.5px solid #FFFFFF;
-      background: linear-gradient(135deg, rgba(167, 139, 250, 0.35), rgba(125, 211, 252, 0.38));
-      box-shadow: 0 0 16px rgba(138, 216, 255, 0.40), inset 0 1px 0 rgba(255, 255, 255, 0.80);
+      border: 1.5px solid var(--glass-border-strong);
+      background: rgba(var(--accent-rgb), 0.22);
+      box-shadow: 0 0 14px rgba(var(--accent-rgb), 0.28);
       border-radius: 8px;
       display: flex;
       align-items: center;
@@ -771,9 +762,8 @@
     }
     .preset-pill {
       background: var(--glass-card-bg);
-      border: 1px solid var(--glass-border);
+      border: 1.5px solid var(--glass-border);
       border-block-start-color: var(--glass-border-top);
-      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.60);
       border-radius: 15px;
       padding: 10px 4px;
       text-align: center;
@@ -781,8 +771,8 @@
     }
     .preset-pill.active {
       background: var(--glass-card-active);
-      border: 1.5px solid #FFFFFF;
-      box-shadow: 0 0 14px rgba(138, 216, 255, 0.42), inset 0 1px 0 rgba(255, 255, 255, 0.90);
+      border: 1.5px solid var(--glass-border-strong);
+      box-shadow: 0 0 12px rgba(var(--accent-rgb), 0.30);
     }
     .preset-pill-name {
       font-size: var(--text-caption);
@@ -804,7 +794,7 @@
     }
     .pixel-tile {
       background: var(--glass-card-bg);
-      border: 1px solid var(--glass-border);
+      border: 1.5px solid var(--glass-border);
       border-block-start-color: var(--glass-border-top);
       border-radius: 14px;
       padding: 10px 2px;
@@ -813,8 +803,7 @@
     }
     .pixel-tile.active {
       background: var(--glass-card-active);
-      border: 1.5px solid #FFFFFF;
-      box-shadow: 0 0 14px rgba(138, 216, 255, 0.42);
+      border: 1.5px solid var(--glass-border-strong);
     }
     .pixel-tile b {
       display: block;
@@ -834,12 +823,12 @@
       font-size: var(--text-title);
       font-weight: 700;
       font-variant-numeric: tabular-nums;
-      color: #FFFFFF;
+      color: var(--accent-main);
     }
     .pixel-progress-bar {
       width: 100%;
       height: 6px;
-      background: rgba(255, 255, 255, 0.25);
+      background: rgba(255, 255, 255, 0.14);
       border-radius: 999px;
       overflow: hidden;
     }
@@ -857,7 +846,7 @@
     }
     .ch-shape-tile {
       background: var(--glass-card-bg);
-      border: 1px solid var(--glass-border);
+      border: 1.5px solid var(--glass-border);
       border-block-start-color: var(--glass-border-top);
       border-radius: 15px;
       padding: 11px 6px;
@@ -866,9 +855,9 @@
     }
     .ch-shape-tile.active {
       background: var(--glass-card-active);
-      border: 1.5px solid #FFFFFF;
+      border: 1.5px solid var(--glass-border-strong);
     }
-    .ch-shape-icon { font-size: 1.25rem; color: #7EE8FA; margin-block-end: 4px; line-height: 1; }
+    .ch-shape-icon { font-size: 1.25rem; color: var(--accent-main); margin-block-end: 4px; line-height: 1; }
     .ch-shape-lbl { font-size: 0.6875rem; font-weight: 700; color: #FFFFFF; }
 
     .ch-subtoggle-grid-2 {
@@ -879,7 +868,7 @@
     }
     .ch-subtoggle-box {
       background: var(--glass-card-bg);
-      border: 1px solid var(--glass-border);
+      border: 1.5px solid var(--glass-border);
       border-block-start-color: var(--glass-border-top);
       border-radius: 15px;
       padding: 10px;
@@ -890,13 +879,13 @@
       cursor: pointer;
     }
     .ch-subtoggle-box.active {
-      border: 1.5px solid #FFFFFF;
+      border: 1.5px solid var(--glass-border-strong);
       background: var(--glass-card-active);
     }
 
     .ch-color-palette-bar {
       background: var(--glass-card-bg);
-      border: 1px solid var(--glass-border);
+      border: 1.5px solid var(--glass-border);
       border-block-start-color: var(--glass-border-top);
       border-radius: 18px;
       padding: 12px 14px;
@@ -915,19 +904,19 @@
       height: 28px;
       border-radius: 50%;
       cursor: pointer;
-      border: 2px solid rgba(255, 255, 255, 0.55);
+      border: 2px solid rgba(255, 255, 255, 0.35);
       flex-shrink: 0;
     }
     .ch-color-swatch.active {
       border-color: #FFFFFF;
-      box-shadow: 0 0 12px rgba(255, 255, 255, 0.90);
+      box-shadow: 0 0 10px #FFFFFF;
     }
     .ch-custom-color-btn {
       width: 30px;
       height: 28px;
       border-radius: 8px;
-      border: 1px dashed #FFFFFF;
-      background: rgba(255, 255, 255, 0.22);
+      border: 1.5px dashed var(--glass-border-strong);
+      background: rgba(var(--accent-rgb), 0.16);
       display: flex;
       align-items: center;
       justify-content: center;
@@ -941,9 +930,8 @@
       align-items: center;
       justify-content: space-between;
       background: var(--glass-card-bg);
-      border: 1px solid var(--glass-border);
+      border: 1.5px solid var(--glass-border);
       border-block-start-color: var(--glass-border-top);
-      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.60);
       border-radius: 18px;
       padding: 12px 14px;
       margin-block-start: 8px;
@@ -956,8 +944,8 @@
     .cyber-slider {
       position: absolute;
       inset: 0;
-      background: rgba(135, 175, 228, 0.28);
-      border: 1.5px solid rgba(230, 245, 255, 0.65);
+      background: rgba(14, 17, 26, 0.95);
+      border: 1.5px solid var(--glass-border);
       border-radius: 999px;
     }
     .cyber-slider::before {
@@ -968,19 +956,19 @@
       inset-inline-start: 3px;
       inset-block-start: 2px;
       border-radius: 50%;
-      background: #FFFFFF;
-      box-shadow: 0 0 8px rgba(255, 255, 255, 0.9), 0 2px 4px rgba(15, 30, 62, 0.35);
-      transition-property: transform;
+      background: #8E95A8;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+      transition-property: transform, background-color;
       transition-duration: 140ms;
       transition-timing-function: ease-out;
     }
     .cyber-switch input:checked + .cyber-slider {
-      background: linear-gradient(90deg, rgba(167, 139, 250, 0.85), rgba(115, 225, 255, 0.92));
-      border-color: #FFFFFF;
-      box-shadow: 0 0 12px rgba(135, 215, 255, 0.50);
+      background: rgba(var(--accent-rgb), 0.30);
+      border-color: var(--glass-border-strong);
     }
     .cyber-switch input:checked + .cyber-slider::before {
       transform: translateX(21px);
+      background: var(--accent-main);
     }
 
     .btn-main {
@@ -989,23 +977,21 @@
       padding: 12px 16px;
       border-radius: 999px;
       font-size: var(--text-body-sm);
-      font-weight: 700;
+      font-weight: 800;
       cursor: pointer;
       background: var(--glass-pill-btn);
       border: 1.5px solid var(--glass-border-strong);
       box-shadow:
-        0 6px 20px rgba(120, 200, 255, 0.40),
-        inset 0 1.5px 1px rgba(255, 255, 255, 0.90);
-      color: #FFFFFF;
-      text-shadow: 0 1px 2px rgba(22, 45, 92, 0.42);
+        0 6px 18px rgba(var(--accent-rgb), 0.30),
+        inset 0 1px 0 rgba(255, 255, 255, 0.45);
+      color: var(--btn-text-color);
     }
     .btn-dark {
       width: 100%;
       min-height: 44px;
-      border: 1px solid rgba(235, 248, 255, 0.65);
-      border-block-start-color: rgba(255, 255, 255, 0.85);
+      border: 1.5px solid var(--glass-border);
+      border-block-start-color: var(--glass-border-top);
       background: var(--glass-sec-btn);
-      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.72), 0 4px 12px rgba(15, 30, 62, 0.18);
       color: #FFFFFF;
       padding: 11px 14px;
       border-radius: 999px;
@@ -1016,14 +1002,13 @@
     .btn-danger {
       width: 100%;
       min-height: 44px;
-      border: 1px solid rgba(253, 164, 175, 0.75);
-      background: linear-gradient(135deg, rgba(244, 63, 94, 0.38), rgba(190, 24, 93, 0.32));
-      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.65);
-      color: #FFFFFF;
+      border: 1.5px solid rgba(255, 69, 58, 0.65);
+      background: linear-gradient(135deg, rgba(255, 69, 58, 0.25), rgba(153, 27, 27, 0.35));
+      color: #FCA5A5;
       padding: 11px 14px;
       border-radius: 999px;
       font-size: var(--text-caption);
-      font-weight: 600;
+      font-weight: 700;
       cursor: pointer;
     }
 
@@ -1033,9 +1018,9 @@
       font-variant-numeric: tabular-nums;
       padding: 3px 10px;
       border-radius: 999px;
-      background: rgba(255, 255, 255, 0.22);
-      border: 1px solid rgba(255, 255, 255, 0.62);
-      color: #FFFFFF;
+      background: rgba(var(--accent-rgb), 0.16);
+      border: 1px solid var(--glass-border-top);
+      color: var(--accent-main);
       white-space: nowrap;
     }
 
@@ -1050,8 +1035,8 @@
       font-weight: 600;
       padding: 4px 10px;
       border-radius: 999px;
-      background: rgba(255, 255, 255, 0.18);
-      border: 1px solid rgba(235, 248, 255, 0.55);
+      background: rgba(var(--accent-rgb), 0.12);
+      border: 1px solid var(--glass-border);
       color: #FFFFFF;
     }
 
@@ -1061,7 +1046,7 @@
       justify-content: space-between;
       gap: 10px;
       background: var(--glass-card-bg);
-      border: 1px solid var(--glass-border);
+      border: 1.5px solid var(--glass-border);
       border-block-start-color: var(--glass-border-top);
       border-radius: 18px;
       padding: 12px 14px;
@@ -1076,14 +1061,14 @@
     .voice-eq-bars span {
       width: 3px;
       height: 10px;
-      background: #7EE8FA;
+      background: #30D158;
       border-radius: 2px;
     }
 
     .shizuku-alert-backdrop {
       position: fixed;
       inset: 0;
-      background: rgba(24, 38, 70, 0.86);
+      background: rgba(6, 8, 14, 0.88);
       z-index: 99999;
       display: none;
       align-items: center;
@@ -1102,7 +1087,7 @@
     #screenCalibOverlay, #touchTestOverlay {
       position: fixed;
       inset: 0;
-      background: linear-gradient(145deg, #233658 0%, #34507E 55%, #1E2F4F 100%);
+      background: linear-gradient(160deg, var(--m3-bg-1) 0%, var(--m3-bg-2) 60%, var(--m3-bg-3) 100%);
       z-index: 98000;
       display: none;
       flex-direction: column;
@@ -1116,9 +1101,9 @@
       position: fixed;
       inset: 0;
       background:
-        radial-gradient(circle at 16% 14%, rgba(175, 232, 255, 0.45) 0%, transparent 50%),
-        radial-gradient(circle at 86% 82%, rgba(196, 165, 255, 0.42) 0%, transparent 52%),
-        linear-gradient(145deg, #233658 0%, #34507E 48%, #45669A 78%, #1E2F4F 100%);
+        radial-gradient(circle at 18% 14%, rgba(var(--accent-rgb), 0.22) 0%, transparent 50%),
+        radial-gradient(circle at 84% 84%, rgba(var(--accent-sec-rgb), 0.22) 0%, transparent 52%),
+        linear-gradient(160deg, var(--m3-bg-1) 0%, var(--m3-bg-2) 52%, var(--m3-bg-3) 100%);
       z-index: 95000;
       display: flex;
       flex-direction: column;
@@ -1141,29 +1126,28 @@
       font-size: 0.6875rem;
       font-weight: 700;
       letter-spacing: 0.05em;
-      color: #FFFFFF;
-      background: rgba(255, 255, 255, 0.22);
-      border: 1px solid rgba(255, 255, 255, 0.65);
-      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.80);
+      color: var(--accent-main);
+      background: rgba(var(--accent-rgb), 0.14);
+      border: 1.5px solid var(--glass-border-top);
       margin-block-end: 10px;
     }
     .auth-input-wrap {
-      background: rgba(225, 242, 255, 0.20);
-      border: 1.5px solid rgba(235, 248, 255, 0.62);
-      box-shadow: inset 0 1px 2px rgba(255, 255, 255, 0.50);
+      background: rgba(14, 17, 26, 0.90);
+      border: 1.5px solid var(--glass-border);
+      border-block-start-color: var(--glass-border-top);
       border-radius: 18px;
       padding: 10px 14px;
       margin-block-end: 12px;
     }
     .auth-input-wrap:focus-within {
-      border-color: #FFFFFF;
-      background: rgba(235, 248, 255, 0.28);
+      border-color: var(--glass-border-strong);
+      box-shadow: 0 0 12px rgba(var(--accent-rgb), 0.25);
     }
     .auth-input-label {
       display: block;
       font-size: 0.6875rem;
       font-weight: 700;
-      color: var(--text-muted);
+      color: var(--accent-main);
       letter-spacing: 0.04em;
       margin-block-end: 4px;
     }
@@ -1190,7 +1174,7 @@
       min-height: 54px;
       border-radius: 15px;
       background: var(--glass-card-bg);
-      border: 1px solid var(--glass-border-top);
+      border: 1.5px solid var(--glass-border-top);
       display: flex;
       align-items: center;
       justify-content: center;
@@ -1209,18 +1193,16 @@
       max-width: 480px;
       margin-inline: auto;
       height: 66px;
-      background: linear-gradient(135deg, rgba(165, 205, 250, 0.42) 0%, rgba(95, 138, 202, 0.54) 100%);
-      border: 1.5px solid rgba(235, 248, 255, 0.78);
-      border-block-start-color: #FFFFFF;
+      background: linear-gradient(155deg, rgba(var(--accent-rgb), 0.16) 0%, rgba(18, 22, 33, 0.96) 50%, rgba(12, 15, 23, 0.98) 100%);
+      border: 1.5px solid var(--glass-border);
+      border-block-start-color: var(--glass-border-top);
       border-radius: 999px;
       display: grid;
       grid-template-columns: repeat(5, minmax(0, 1fr));
       align-items: center;
       padding-inline: 6px;
       z-index: 9000;
-      box-shadow:
-        0 12px 30px rgba(15, 28, 58, 0.45),
-        inset 0 1.5px 1px rgba(255, 255, 255, 0.85);
+      box-shadow: 0 12px 30px rgba(0, 0, 0, 0.72);
     }
     .nav-item {
       position: relative;
@@ -1231,7 +1213,7 @@
       align-items: center;
       justify-content: center;
       gap: 3px;
-      color: rgba(235, 245, 255, 0.78);
+      color: var(--text-muted);
       font-size: 0.6875rem;
       font-weight: 600;
       cursor: pointer;
@@ -1245,10 +1227,9 @@
       vector-effect: non-scaling-stroke;
     }
     .nav-item.active {
-      color: #FFFFFF;
-      background: radial-gradient(circle, rgba(185, 232, 255, 0.48) 0%, rgba(167, 139, 250, 0.24) 70%, transparent 100%);
-      box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.80);
-      text-shadow: 0 0 10px rgba(255, 255, 255, 0.9);
+      color: var(--accent-main);
+      background: rgba(var(--accent-rgb), 0.18);
+      border: 1px solid var(--glass-border-top);
     }
 
     #cyberToast {
@@ -1256,9 +1237,9 @@
       top: max(calc(env(safe-area-inset-top, 42px) + 10px), 42px);
       left: 50%;
       transform: translateX(-50%) translateY(-130px);
-      background: linear-gradient(135deg, rgba(167, 139, 250, 0.94) 0%, rgba(110, 195, 255, 0.96) 100%);
-      border: 1.5px solid #FFFFFF;
-      box-shadow: 0 8px 24px rgba(15, 30, 62, 0.45), inset 0 1px 1px rgba(255, 255, 255, 0.90);
+      background: linear-gradient(145deg, rgba(var(--accent-rgb), 0.24) 0%, rgba(18, 22, 34, 0.97) 100%);
+      border: 1.5px solid var(--glass-border-strong);
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.68);
       color: #FFFFFF;
       padding: 10px 18px;
       border-radius: 999px;
@@ -1293,7 +1274,7 @@
 
   <input id="avatarFileInput" type="file" accept="image/*" style="display:none" onchange="onAvatarFileSelected(event)" />
   <input id="bgMediaFileInput" type="file" accept="video/*,image/gif,image/webp,image/*" style="display:none" onchange="onCustomBgFileSelected(event)" />
-  <input id="chCustomColorPicker" type="color" value="#7EE8FA" style="display:none" onchange="onCustomCrosshairColorPicked(this.value)" />
+  <input id="chCustomColorPicker" type="color" value="#30D158" style="display:none" onchange="onCustomCrosshairColorPicked(this.value)" />
   <div id="cyberToast" role="status" aria-live="polite">SO2Teleport PRO</div>
 
   <div id="avatarPickerModal" class="shizuku-alert-backdrop" role="dialog" aria-modal="true" aria-labelledby="avatarModalTitle">
@@ -1336,10 +1317,10 @@
 
   <div id="touchTestOverlay" role="dialog" aria-modal="true">
     <h2 style="font-size:1rem; font-weight:700; color:#fff; margin-bottom:6px;">Проверка отклика касаний</h2>
-    <div id="touchTestCoords" style="font-size:0.75rem; color:#E0F2FE; font-weight:600; font-variant-numeric:tabular-nums; margin-bottom:10px;">
+    <div id="touchTestCoords" style="font-size:0.75rem; color:var(--accent-main); font-weight:600; font-variant-numeric:tabular-nums; margin-bottom:10px;">
       Проведите пальцем по области ниже…
     </div>
-    <canvas id="touchTestCanvas" width="320" height="320" style="background:rgba(20,36,72,0.75); border:1.5px solid rgba(255,255,255,0.75); border-radius:20px; touch-action:none;"></canvas>
+    <canvas id="touchTestCanvas" width="320" height="320" style="background:rgba(12,15,22,0.92); border:1.5px solid var(--glass-border-strong); border-radius:20px; touch-action:none;"></canvas>
     <button type="button" class="btn-main" style="max-width:320px; margin-top:12px;" onclick="closeTouchTestModal()">
       Закрыть тестер
     </button>
@@ -1361,9 +1342,9 @@
 
   <div id="authScreenOverlay" role="dialog" aria-modal="true" aria-labelledby="authTitleText">
     <div style="text-align:center; margin-bottom:14px;">
-      <div class="auth-badge">QUANTUM CORE V10 • CRYSTAL GLASS</div>
+      <div class="auth-badge">QUANTUM CORE V10 • MATERIAL 3 GLASS</div>
       <h1 id="authTitleText" style="font-size:1.75rem; font-weight:800; letter-spacing:-0.02em; color:#fff;">
-        SO2Teleport <span style="color:#E0F2FE;">PRO</span>
+        SO2Teleport <span style="color:var(--accent-main);">PRO</span>
       </h1>
     </div>
 
@@ -1372,7 +1353,7 @@
         Авторизация лицензии (1 ключ = 1 устройство)
       </p>
 
-      <div id="authErrorBanner" role="alert" style="display:none; background:rgba(244,63,94,0.28); border:1px solid rgba(253,164,175,0.75); color:#FFFFFF; border-radius:14px; padding:10px 12px; font-size:0.75rem; font-weight:600; text-align:center; margin-bottom:12px;">
+      <div id="authErrorBanner" role="alert" style="display:none; background:rgba(255,69,58,0.22); border:1.5px solid rgba(255,69,58,0.75); color:#FCA5A5; border-radius:14px; padding:10px 12px; font-size:0.75rem; font-weight:600; text-align:center; margin-bottom:12px;">
         Введите лицензионный ключ из Telegram-бота
       </div>
 
@@ -1387,7 +1368,7 @@
       </div>
 
       <button id="loginSubmitBtn" type="button" class="btn-main" onclick="handleLoginSubmit()" style="margin-top:4px;">
-        ✨ Активировать ключ и войти
+        ⚡ Активировать ключ и войти
       </button>
     </div>
 
@@ -1416,26 +1397,26 @@
           <div style="min-width:0;">
             <div class="brand-title-main">SO2Teleport <span>PRO</span></div>
             <div class="brand-meta-sub">
-              Игрок: <b id="topPlayerNick" style="color:#fff;">login</b> • <span id="topSubMini" style="color:#E0F2FE;">АКТИВНА</span>
+              Игрок: <b id="topPlayerNick" style="color:#fff;">login</b> • <span id="topSubMini" style="color:#30D158;">АКТИВНА</span>
             </div>
           </div>
         </div>
 
         <button type="button" class="shizuku-status-pill" onclick="requestAndRecheckShizuku()">
           <span id="shizukuDot" class="status-dot" aria-hidden="true"></span>
-          <span id="shizukuStateText" style="color:#FFE4E6;">Shizuku ВЫКЛ</span>
+          <span id="shizukuStateText" style="color:#FF453A;">Shizuku ВЫКЛ</span>
         </button>
       </div>
 
       <div class="top-header-bottom-bar">
-        <span>ЯДРО: <b id="headerLiveCoreBadge" style="color:#FFFFFF; font-variant-numeric:tabular-nums;">68.0X EXTREME CORE</b></span>
+        <span>ЯДРО: <b id="headerLiveCoreBadge" style="color:var(--accent-main); font-variant-numeric:tabular-nums;">68.0X EXTREME CORE</b></span>
         <div class="theme-dots" role="group" aria-label="Цветовая тема">
-          <button type="button" class="theme-dot active" data-theme-idx="0" aria-label="Кристальный лёд" style="background:linear-gradient(135deg,#A78BFA,#7DD3FC);" onclick="setNeonTheme('#8AD8FF', '138, 216, 255', '#A78BFA', '167, 139, 250', this, 0, false, '#FFFFFF')"></button>
-          <button type="button" class="theme-dot" data-theme-idx="1" aria-label="Бирюзовый лёд" style="background:linear-gradient(135deg,#38BDF8,#6EE7B7);" onclick="setNeonTheme('#7EE8FA', '126, 232, 250', '#38BDF8', '56, 189, 248', this, 1, false, '#FFFFFF')"></button>
-          <button type="button" class="theme-dot" data-theme-idx="2" aria-label="Лавандовый" style="background:linear-gradient(135deg,#C084FC,#818CF8);" onclick="setNeonTheme('#C4B5FD', '196, 181, 253', '#A78BFA', '167, 139, 250', this, 2, false, '#FFFFFF')"></button>
-          <button type="button" class="theme-dot" data-theme-idx="3" aria-label="Розовый кварц" style="background:linear-gradient(135deg,#F472B6,#A78BFA);" onclick="setNeonTheme('#F9A8D4', '249, 168, 212', '#C084FC', '192, 132, 252', this, 3, false, '#FFFFFF')"></button>
-          <button type="button" class="theme-dot" data-theme-idx="4" aria-label="Солнечный блик" style="background:linear-gradient(135deg,#FBBF24,#FB7185);" onclick="setNeonTheme('#FDE68A', '253, 230, 138', '#FBBF24', '251, 191, 36', this, 4, false, '#FFFFFF')"></button>
-          <button type="button" class="theme-dot" data-theme-idx="5" aria-label="Чистый алмаз" style="background:linear-gradient(135deg,#FFFFFF,#BAE6FD);" onclick="setNeonTheme('#FFFFFF', '255, 255, 255', '#BAE6FD', '186, 230, 253', this, 5, false, '#FFFFFF')"></button>
+          <button type="button" class="theme-dot active" data-theme-idx="0" aria-label="Тёмный Кристалл" style="background:linear-gradient(135deg,#E2E8F0,#7CC4FF);" onclick="setNeonTheme('', '', '', '', this, 0, false, '')"></button>
+          <button type="button" class="theme-dot" data-theme-idx="1" aria-label="Тёмный Рубин" style="background:linear-gradient(135deg,#FF453A,#E11D48);" onclick="setNeonTheme('', '', '', '', this, 1, false, '')"></button>
+          <button type="button" class="theme-dot" data-theme-idx="2" aria-label="Тёмный Сапфир" style="background:linear-gradient(135deg,#38BDF8,#2563EB);" onclick="setNeonTheme('', '', '', '', this, 2, false, '')"></button>
+          <button type="button" class="theme-dot" data-theme-idx="3" aria-label="Тёмный Изумруд" style="background:linear-gradient(135deg,#30D158,#059669);" onclick="setNeonTheme('', '', '', '', this, 3, false, '')"></button>
+          <button type="button" class="theme-dot" data-theme-idx="4" aria-label="Тёмный Аметист" style="background:linear-gradient(135deg,#D0BCFF,#7C3AED);" onclick="setNeonTheme('', '', '', '', this, 4, false, '')"></button>
+          <button type="button" class="theme-dot" data-theme-idx="5" aria-label="Тёмный Янтарь" style="background:linear-gradient(135deg,#FBBF24,#D97706);" onclick="setNeonTheme('', '', '', '', this, 5, false, '')"></button>
         </div>
       </div>
     </header>
@@ -1447,22 +1428,22 @@
           <div class="hub-text-col">
             <div class="hub-card-title">
               <span>TELEPORT ENGINE:</span>
-              <span id="hubEngineStateWord" class="hub-state-word">ВКЛЮЧЕН</span>
+              <span id="hubEngineStateWord" class="hub-state-word off">ВЫКЛЮЧЕН</span>
               <span id="liveScaleChip" class="badge-chip">68.0x</span>
             </div>
             <div id="activePresetTitle" class="hub-card-sub">
-              Instant Point-to-Point Transfer • 1 · Телепорт Ультра (68.0x MAX)
+              Quantum Instant Snap • 1 · Телепорт Ультра (68.0x MAX)
             </div>
           </div>
           <label class="cyber-switch-lg" aria-label="Включить Teleport Engine">
-            <input id="tgMainTeleportSwitch" type="checkbox" checked onchange="setMainEnginePower(this.checked, false)" />
+            <input id="tgMainTeleportSwitch" type="checkbox" onchange="setMainEnginePower(this.checked, false)" />
             <span class="cyber-slider-lg"></span>
           </label>
         </div>
 
         <div class="hub-actions-grid">
           <button id="btnMainTeleportTogglePill" type="button" class="hub-action-pill liquid-glass-btn" onclick="setMainEnginePower(!isMainTeleportOn, false)">
-            ✨ Teleport активен
+            Включить Teleport
           </button>
           <button type="button" class="hub-action-pill btn-dark" onclick="activateMaxH9ijeTeleport()">
             Включить H9IJE MAX
@@ -1471,7 +1452,7 @@
       </div>
 
       <button type="button" class="save-all-bar-btn liquid-glass-btn" onclick="saveAllAppSettingsMaster()">
-        ✨ Применить и сохранить настройки
+        ⚡ Применить и сохранить настройки
       </button>
 
       <div id="accSensPresets" class="acc-block liquid-glass-surface open">
@@ -1480,7 +1461,7 @@
             <div class="acc-icon" aria-hidden="true">✦</div>
             <div class="acc-title-wrap">
               <div class="acc-title">Киберспортивные профили наводки <span class="badge-chip">PRO V10</span></div>
-              <div class="acc-sub">Телепорт 68.0x, iOS 240Hz, ROG Phone 720Hz и анти-лаг A57</div>
+              <div class="acc-sub">Телепорт 68.0x, ROG Phone 720Hz, iOS 240Hz и анти-лаг A57</div>
             </div>
           </div>
           <div class="acc-chevron" aria-hidden="true">⌄</div>
@@ -1489,48 +1470,32 @@
           <div class="acc-body-inner">
             <div id="preset_extreme" class="character-card active" onclick="selectTeleportPreset('extreme')">
               <div style="min-width:0;">
-                <div class="char-title">1 · ТЕЛЕПОРТ УЛЬТРА <span class="char-tag">FULL MAX • 68.0X</span></div>
-                <div class="char-desc">Мгновенный переброс прицела за 1 кадр без сглаживания и без вязкости осей (Острота 2.50, Куски 100, Разгон 2.50, Выпрямление 0, Мёртвая зона 0).</div>
-              </div>
-              <span class="char-arrow" aria-hidden="true">→</span>
-            </div>
-
-            <div id="preset_tablet_pro" class="character-card" onclick="selectTeleportPreset('tablet_pro')">
-              <div style="min-width:0;">
-                <div class="char-title">2 · ДЛЯ ПАДОВ УЛЬТРА <span class="char-tag pad-badge">PAD IMPULSE • 128.0X</span></div>
-                <div class="char-desc">Экстремальный пробив для планшетов (Xiaomi Pad, Redmi Pad, Legion Y700, Galaxy Tab). Полный максимум кусков и снятие вязкости.</div>
-              </div>
-              <span class="char-arrow" aria-hidden="true">→</span>
-            </div>
-
-            <div id="preset_clean_sharp" class="character-card" onclick="selectTeleportPreset('clean_sharp')">
-              <div style="min-width:0;">
-                <div class="char-title">3 · AWM / DEAGLE РЕЗКИЙ <span class="char-tag">ТОЧНЫЙ ХВАТ • 48.0X</span></div>
-                <div class="char-desc">Хлёсткий срыв прицела и жёсткое выравнивание линии наводки по голове без лишнего залипания на осях.</div>
-              </div>
-              <span class="char-arrow" aria-hidden="true">→</span>
-            </div>
-
-            <div id="preset_budget_pro" class="character-card" onclick="selectTeleportPreset('budget_pro')">
-              <div style="min-width:0;">
-                <div class="char-title">4 · ДЛЯ БЮДЖЕТОК И A57 <span class="char-tag budget-badge">ANTI-LAG FPS • 42.0X</span></div>
-                <div class="char-desc">Резкая сенса и защита от просадок кадров на Samsung A57 / A55 / A54, Redmi и Poco (SkiaGL кэш и ровный FPS).</div>
-              </div>
-              <span class="char-arrow" aria-hidden="true">→</span>
-            </div>
-
-            <div id="preset_ios_pro" class="character-card" onclick="selectTeleportPreset('ios_pro')">
-              <div style="min-width:0;">
-                <div class="char-title">5 · КОНФИГ iOS <span class="char-tag">IPHONE / IPAD PRO • 240HZ</span></div>
-                <div class="char-desc">Эталонная линейная сенса iOS: нулевая задержка старта, отсутствие инерции Android и точная кривая для контроля зажима в голову.</div>
+                <div class="char-title">1 · ТЕЛЕПОРТ УЛЬТРА <span class="char-tag">QUANTUM SNAP • 68.0X</span></div>
+                <div class="char-desc">Мгновенная телепортация прицела в точку за 1 кадр: убрана вся вязкость осей, максимальный импульс кусков 150 и прямой Raw-отклик 720 Гц.</div>
               </div>
               <span class="char-arrow" aria-hidden="true">→</span>
             </div>
 
             <div id="preset_rog_pro" class="character-card" onclick="selectTeleportPreset('rog_pro')">
               <div style="min-width:0;">
-                <div class="char-title">6 · КОНФИГ ROG PHONE <span class="char-tag pad-badge">ASUS ROG • 720HZ X-MODE</span></div>
-                <div class="char-desc">Киберспортивный отклик матрицы ROG Phone: сверхбыстрый срыв флика, максимальная чувствительность краёв и 480–720 Гц тач.</div>
+                <div class="char-title">2 · КОНФИГ ROG PHONE <span class="char-tag pad-badge">ASUS ROG • 720HZ X-MODE</span></div>
+                <div class="char-desc">Сенса игрового смартфона ASUS ROG Phone 8/9 Pro: сверхрезкий срыв с места, агрессивные края и мгновенный флик без задержки.</div>
+              </div>
+              <span class="char-arrow" aria-hidden="true">→</span>
+            </div>
+
+            <div id="preset_ios_pro" class="character-card" onclick="selectTeleportPreset('ios_pro')">
+              <div style="min-width:0;">
+                <div class="char-title">3 · КОНФИГ iOS <span class="char-tag">IPHONE 16 PRO / IPAD • 240HZ</span></div>
+                <div class="char-desc">Точная копия сенсы iOS ProMotion: идеально линейная траектория без инерции Android и плотная фиксация спрея в голову.</div>
+              </div>
+              <span class="char-arrow" aria-hidden="true">→</span>
+            </div>
+
+            <div id="preset_budget_pro" class="character-card" onclick="selectTeleportPreset('budget_pro')">
+              <div style="min-width:0;">
+                <div class="char-title">4 · ДЛЯ БЮДЖЕТОК И A57 <span class="char-tag budget-badge">ANTI-LAG FPS • 48.0X</span></div>
+                <div class="char-desc">Резкая телепорт-сенса + защита от просадок FPS на Samsung A57/A55, Redmi, Poco и Realme (SkiaGL кэш 72MB).</div>
               </div>
               <span class="char-arrow" aria-hidden="true">→</span>
             </div>
@@ -1656,7 +1621,7 @@
             </div>
 
             <button type="button" class="btn-main" style="margin-top:12px;" onclick="saveAllAppSettingsMaster()">
-              ✨ Применить и перезапустить Teleport
+              ⚡ Применить и перезапустить Teleport
             </button>
 
             <div style="display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:8px; margin-top:8px;">
@@ -1675,8 +1640,8 @@
           <div class="acc-left">
             <div class="acc-icon" aria-hidden="true">🔖</div>
             <div class="acc-title-wrap">
-              <div class="acc-title">Мои варианты и Полка сборок</div>
-              <div class="acc-sub">Сохранение пресета, обмен кодами и готовые сборки</div>
+              <div class="acc-title">Другие конфиги и Полка сборок</div>
+              <div class="acc-sub">Конфиги для Падов, AWM, сохранение и обмен кодами</div>
             </div>
           </div>
           <div class="acc-chevron" aria-hidden="true">⌄</div>
@@ -1698,7 +1663,7 @@
             </div>
 
             <div class="code-input-bar">
-              <label for="cloudCodeInput" style="color:#FFFFFF; font-weight:700; font-size:0.75rem;">КОД</label>
+              <label for="cloudCodeInput" style="color:var(--accent-main); font-weight:700; font-size:0.75rem;">КОД</label>
               <input id="cloudCodeInput" class="auth-input" type="text" placeholder="SO2-7744" autocomplete="off" spellcheck="false" />
               <button type="button" class="icon-circle-action" aria-label="Применить облачный код" onclick="downloadCloudPresetNow()">📥</button>
             </div>
@@ -1709,52 +1674,36 @@
             </div>
 
             <div class="shelf-cards-grid">
-              <div class="shelf-preset-card" onclick="applyShelfPreset('demon_100')">
+              <div id="preset_tablet_pro" class="shelf-preset-card" onclick="selectTeleportPreset('tablet_pro')">
                 <div>
-                  <div style="font-size:0.75rem; font-weight:700; color:#fff;">1 · H9IJE TELEPORT MAX</div>
-                  <div style="font-size:0.6875rem; color:var(--text-muted); margin-top:2px;">Куски 100 · Потолок 30 · 68.0x</div>
+                  <div style="font-size:0.75rem; font-weight:700; color:#fff;">ДЛЯ ПАДОВ УЛЬТРА</div>
+                  <div style="font-size:0.6875rem; color:var(--text-muted); margin-top:2px;">Импульс 128.0x • Xiaomi Pad / iPad</div>
                 </div>
-                <div style="font-size:0.6875rem; color:#E0F2FE; font-weight:700; margin-top:8px;">Применить сборку →</div>
+                <div style="font-size:0.6875rem; color:var(--accent-main); font-weight:700; margin-top:8px;">Включить конфиг →</div>
               </div>
 
-              <div class="shelf-preset-card" onclick="applyShelfPreset('pad_cyber')">
+              <div id="preset_clean_sharp" class="shelf-preset-card" onclick="selectTeleportPreset('clean_sharp')">
                 <div>
-                  <div style="font-size:0.75rem; font-weight:700; color:#fff;">2 · ПАД КИБЕРСПОРТ</div>
-                  <div style="font-size:0.6875rem; color:var(--text-muted); margin-top:2px;">Импульс 128.0x · 4–6 пальцев</div>
+                  <div style="font-size:0.75rem; font-weight:700; color:#fff;">AWM / DEAGLE РЕЗКИЙ</div>
+                  <div style="font-size:0.6875rem; color:var(--text-muted); margin-top:2px;">Точный хват 48.0x • Снайперский флик</div>
                 </div>
-                <div style="font-size:0.6875rem; color:#E0F2FE; font-weight:700; margin-top:8px;">Применить сборку →</div>
+                <div style="font-size:0.6875rem; color:var(--accent-main); font-weight:700; margin-top:8px;">Включить конфиг →</div>
+              </div>
+
+              <div class="shelf-preset-card" onclick="applyShelfPreset('demon_100')">
+                <div>
+                  <div style="font-size:0.75rem; font-weight:700; color:#fff;">H9IJE TELEPORT MAX</div>
+                  <div style="font-size:0.6875rem; color:var(--text-muted); margin-top:2px;">Куски 150 • Полный овердрайв</div>
+                </div>
+                <div style="font-size:0.6875rem; color:var(--accent-main); font-weight:700; margin-top:8px;">Включить конфиг →</div>
               </div>
 
               <div class="shelf-preset-card" onclick="applyShelfPreset('heavy_pixel')">
                 <div>
-                  <div style="font-size:0.75rem; font-weight:700; color:#fff;">3 · AKR TRANSFER PRO</div>
-                  <div style="font-size:0.6875rem; color:var(--text-muted); margin-top:2px;">Куски 95 · Острота 2.50</div>
+                  <div style="font-size:0.75rem; font-weight:700; color:#fff;">AKR12 / M4 ЗАЖИМ</div>
+                  <div style="font-size:0.6875rem; color:var(--text-muted); margin-top:2px;">Куски 96 • Удержание точки</div>
                 </div>
-                <div style="font-size:0.6875rem; color:#E0F2FE; font-weight:700; margin-top:8px;">Применить сборку →</div>
-              </div>
-
-              <div class="shelf-preset-card" onclick="applyShelfPreset('a57_fps_god')">
-                <div>
-                  <div style="font-size:0.75rem; font-weight:700; color:#fff;">4 · A57 / БЮДЖЕТ FPS</div>
-                  <div style="font-size:0.6875rem; color:var(--text-muted); margin-top:2px;">Стабильный FPS · SkiaGL Boost</div>
-                </div>
-                <div style="font-size:0.6875rem; color:#E0F2FE; font-weight:700; margin-top:8px;">Применить сборку →</div>
-              </div>
-
-              <div id="shelf_ios_card" class="shelf-preset-card" onclick="applyShelfPreset('ios_touch')">
-                <div>
-                  <div style="font-size:0.75rem; font-weight:700; color:#fff;">5 · iOS PRO TOUCH</div>
-                  <div style="font-size:0.6875rem; color:var(--text-muted); margin-top:2px;">Сенса iPhone 16 Pro / iPad</div>
-                </div>
-                <div style="font-size:0.6875rem; color:#E0F2FE; font-weight:700; margin-top:8px;">Применить сборку →</div>
-              </div>
-
-              <div id="shelf_rog_card" class="shelf-preset-card" onclick="applyShelfPreset('rog_touch')">
-                <div>
-                  <div style="font-size:0.75rem; font-weight:700; color:#fff;">6 · ROG PHONE 720HZ</div>
-                  <div style="font-size:0.6875rem; color:var(--text-muted); margin-top:2px;">Сенса ASUS ROG X-Mode</div>
-                </div>
-                <div style="font-size:0.6875rem; color:#E0F2FE; font-weight:700; margin-top:8px;">Применить сборку →</div>
+                <div style="font-size:0.6875rem; color:var(--accent-main); font-weight:700; margin-top:8px;">Включить конфиг →</div>
               </div>
             </div>
           </div>
@@ -1790,7 +1739,7 @@
               <div style="position:absolute; top:9px; left:10px;"><span id="chModeRightLabel" class="badge-chip">КРЕСТ</span></div>
               <div style="position:absolute; top:9px; right:10px;"><button type="button" class="icon-circle-action" style="min-width:32px; min-height:32px;" aria-label="Переключить фон предпросмотра" onclick="togglePreviewDayNight()">🌙</button></div>
               <div style="position:absolute; bottom:9px; left:12px; display:flex; align-items:center; gap:6px; font-size:0.6875rem; color:var(--text-muted); font-variant-numeric:tabular-nums;">
-                <span id="chColorLiveDot" style="width:9px; height:9px; border-radius:50%; background:#7EE8FA; display:inline-block;"></span>
+                <span id="chColorLiveDot" style="width:9px; height:9px; border-radius:50%; background:#30D158; display:inline-block;"></span>
                 <span id="chSizeReadout">+ 8 × 3 px</span>
               </div>
               <div style="position:absolute; bottom:8px; right:10px; display:flex; gap:5px;">
@@ -1803,17 +1752,17 @@
             <div class="ch-color-palette-bar">
               <div style="display:flex; align-items:center; justify-content:space-between;">
                 <span style="font-size:0.8125rem; font-weight:600; color:#fff;">Цвет прицела</span>
-                <span id="chColorHexBadge" class="badge-chip" style="font-family:monospace;">#7EE8FA</span>
+                <span id="chColorHexBadge" class="badge-chip" style="font-family:monospace;">#30D158</span>
               </div>
               <div class="ch-color-dots-row" role="group" aria-label="Палитра цвета прицела">
-                <button type="button" class="ch-color-swatch active" data-ch-color="#7ee8fa" style="background:#7EE8FA;" onclick="setCrosshairColor('#7EE8FA', this)" aria-label="Ледяной циан"></button>
-                <button type="button" class="ch-color-swatch" data-ch-color="#34d399" style="background:#34D399;" onclick="setCrosshairColor('#34D399', this)" aria-label="Зелёный"></button>
-                <button type="button" class="ch-color-swatch" data-ch-color="#fb7185" style="background:#FB7185;" onclick="setCrosshairColor('#FB7185', this)" aria-label="Розово-красный"></button>
+                <button type="button" class="ch-color-swatch active" data-ch-color="#30d158" style="background:#30D158;" onclick="setCrosshairColor('#30D158', this)" aria-label="Зелёный"></button>
+                <button type="button" class="ch-color-swatch" data-ch-color="#7cc4ff" style="background:#7CC4FF;" onclick="setCrosshairColor('#7CC4FF', this)" aria-label="Голубой"></button>
+                <button type="button" class="ch-color-swatch" data-ch-color="#ff453a" style="background:#FF453A;" onclick="setCrosshairColor('#FF453A', this)" aria-label="Красный"></button>
                 <button type="button" class="ch-color-swatch" data-ch-color="#fbbf24" style="background:#FBBF24;" onclick="setCrosshairColor('#FBBF24', this)" aria-label="Жёлтый"></button>
-                <button type="button" class="ch-color-swatch" data-ch-color="#a78bfa" style="background:#A78BFA;" onclick="setCrosshairColor('#A78BFA', this)" aria-label="Лавандовый"></button>
+                <button type="button" class="ch-color-swatch" data-ch-color="#c084fc" style="background:#C084FC;" onclick="setCrosshairColor('#C084FC', this)" aria-label="Фиолетовый"></button>
                 <button type="button" class="ch-color-swatch" data-ch-color="#ff9f0a" style="background:#FF9F0A;" onclick="setCrosshairColor('#FF9F0A', this)" aria-label="Оранжевый"></button>
                 <button type="button" class="ch-color-swatch" data-ch-color="#ffffff" style="background:#FFFFFF;" onclick="setCrosshairColor('#FFFFFF', this)" aria-label="Белый"></button>
-                <button type="button" class="ch-color-swatch" data-ch-color="#38bdf8" style="background:#38BDF8;" onclick="setCrosshairColor('#38BDF8', this)" aria-label="Голубой"></button>
+                <button type="button" class="ch-color-swatch" data-ch-color="#38bdf8" style="background:#38BDF8;" onclick="setCrosshairColor('#38BDF8', this)" aria-label="Циан"></button>
                 <button type="button" class="ch-custom-color-btn" onclick="document.getElementById('chCustomColorPicker').click()" aria-label="Выбрать свой цвет">🌈</button>
               </div>
             </div>
@@ -1869,7 +1818,7 @@
             </div>
 
             <button type="button" class="btn-main" style="margin-top:12px;" onclick="saveAllAppSettingsMaster()">
-              ✨ Сохранить настройки прицела
+              ⚡ Сохранить настройки прицела
             </button>
           </div>
         </div>
@@ -1914,7 +1863,7 @@
             </div>
 
             <button id="btnLaunchFloatingStretch" type="button" class="btn-main" style="margin-bottom:8px;" onclick="launchFloatingTButton()">
-              ✨ Запустить плавающую кнопку «T» (4:3)
+              ⚡ Запустить плавающую кнопку «T» (4:3)
             </button>
 
             <div style="display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:8px; margin-bottom:8px;">
@@ -2005,7 +1954,7 @@
             </div>
 
             <button id="btnOneClickSettingsTweak" type="button" class="btn-main" onclick="runOneClickUltimateTweaks()">
-              ✨ Применить системные твики и фикс FPS
+              ⚡ Применить системные твики и фикс FPS
             </button>
 
             <div style="display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:8px; margin-top:8px;">
@@ -2087,7 +2036,7 @@
               <input id="sl_opt_ts" type="range" min="240" max="480" step="60" value="480" oninput="updateOptLabels()" />
             </div>
             <button type="button" class="btn-main" style="margin-top:12px;" onclick="applyFullShooterOptNow()">
-              ✨ Применить параметры разгона
+              ⚡ Применить параметры разгона
             </button>
           </div>
         </div>
@@ -2157,14 +2106,14 @@
 
     <div id="tabProfile" class="tab-section">
       <div class="acc-block liquid-glass-surface open" style="padding:16px;">
-        <div style="display:flex; align-items:center; gap:14px; margin-bottom:14px; padding-bottom:14px; border-bottom:1px solid rgba(220,240,255,0.35);">
+        <div style="display:flex; align-items:center; gap:14px; margin-bottom:14px; padding-bottom:14px; border-bottom:1px solid var(--glass-border);">
           <div class="header-avatar-holder" style="width:64px; height:64px; border-radius:18px;" onclick="triggerAvatarUpload()" role="button" tabindex="0" aria-label="Сменить аватарку">
             <img id="profAvatarImg" src="" alt="" />
-            <span id="profAvatarFallback" style="font-size:1.5rem; font-weight:700; color:#fff;">P</span>
+            <span id="profAvatarFallback" style="font-size:1.5rem; font-weight:700; color:var(--accent-main);">P</span>
           </div>
           <div style="flex:1; min-width:0;">
             <div style="font-size:1.125rem; font-weight:700; color:#fff;" id="profNickText">login</div>
-            <div style="font-size:0.75rem; color:#E0F2FE; font-weight:600; margin-top:2px;" id="profSubVal">АКТИВНА</div>
+            <div style="font-size:0.75rem; color:#30D158; font-weight:700; margin-top:2px;" id="profSubVal">АКТИВНА</div>
             <div style="display:flex; gap:6px; flex-wrap:wrap; margin-top:8px;">
               <button type="button" class="btn-dark" style="padding:7px 12px; font-size:0.6875rem; min-height:34px; width:auto;" onclick="triggerAvatarUpload()">
                 Сменить аватарку
@@ -2180,26 +2129,26 @@
         </div>
 
         <div style="font-size:0.8125rem; color:var(--text-main); display:flex; flex-direction:column; gap:10px; margin-bottom:16px;">
-          <div style="display:flex; justify-content:space-between; padding-bottom:8px; border-bottom:1px solid rgba(220,240,255,0.30);">
+          <div style="display:flex; justify-content:space-between; padding-bottom:8px; border-bottom:1px solid var(--glass-border);">
             <span style="color:var(--text-muted);">Лицензионный ключ</span>
-            <b id="profKeyMasked" style="color:#FFFFFF; font-variant-numeric:tabular-nums;">TP-***-******</b>
+            <b id="profKeyMasked" style="color:var(--accent-main); font-variant-numeric:tabular-nums;">TP-***-******</b>
           </div>
-          <div style="display:flex; justify-content:space-between; padding-bottom:8px; border-bottom:1px solid rgba(220,240,255,0.30);">
+          <div style="display:flex; justify-content:space-between; padding-bottom:8px; border-bottom:1px solid var(--glass-border);">
             <span style="color:var(--text-muted);">Аппаратный HWID</span>
             <b id="profHwidText" style="font-family:monospace; font-variant-numeric:tabular-nums; user-select:text;">…</b>
           </div>
-          <div style="display:flex; justify-content:space-between; padding-bottom:8px; border-bottom:1px solid rgba(220,240,255,0.30);">
+          <div style="display:flex; justify-content:space-between; padding-bottom:8px; border-bottom:1px solid var(--glass-border);">
             <span style="color:var(--text-muted);">Защита хранилища</span>
-            <b id="profModelText" style="color:#E0F2FE;">AES-GCM + TEE</b>
+            <b id="profModelText" style="color:#30D158;">AES-GCM + TEE</b>
           </div>
           <div style="display:flex; justify-content:space-between;">
             <span style="color:var(--text-muted);">Активный конфиг</span>
-            <b id="profDeviceModeText" style="color:#FFFFFF;">ТЕЛЕПОРТ УЛЬТРА</b>
+            <b id="profDeviceModeText" style="color:var(--accent-main);">ТЕЛЕПОРТ УЛЬТРА</b>
           </div>
         </div>
 
         <button type="button" class="btn-main" style="margin-bottom:10px;" onclick="saveAllAppSettingsMaster()">
-          ✨ Сохранить настройки профиля
+          ⚡ Сохранить настройки профиля
         </button>
 
         <div style="display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:8px;">
@@ -2237,7 +2186,7 @@
     const SO2_QUANTUM_SIGNATURE = "SO2TELEPORT_QUANTUM_V9_SEAL";
     let activeSessionKey = "";
     let activePlayerNick = "login";
-    let isMainTeleportOn = true;
+    let isMainTeleportOn = false;
     let currentPresetId = "extreme";
     let isPadModeEnabled = false;
     let currentStretchRatio = "4:3";
@@ -2245,7 +2194,7 @@
 
     let isCrosshairEnabled = false;
     let currentCrosshairType = "cross";
-    let currentCrosshairColor = "#7EE8FA";
+    let currentCrosshairColor = "#30D158";
     let previewDayMode = false;
     let previewZoomFactor = 1;
 
@@ -2256,96 +2205,48 @@
     let bridgeBatchTimer = null;
     let cachedShizukuState = false;
 
-    const CRYSTAL_THEMES = [
+    const M3_DARK_GLASS_THEMES = [
       {
-        name: "Прозрачный Белый (Кристалл)",
-        bg1: "#24375A", bg2: "#365382", bg3: "#486B9F", bg4: "#1E2F4F",
-        orb1: "rgba(255, 255, 255, 0.45)", orb2: "rgba(186, 230, 253, 0.42)",
-        panel: "linear-gradient(135deg, rgba(255, 255, 255, 0.30) 0%, rgba(186, 225, 255, 0.18) 50%, rgba(135, 180, 235, 0.24) 100%)",
-        card: "linear-gradient(145deg, rgba(255, 255, 255, 0.24) 0%, rgba(175, 215, 255, 0.14) 55%, rgba(130, 172, 230, 0.20) 100%)",
-        activeCard: "linear-gradient(145deg, rgba(255, 255, 255, 0.44) 0%, rgba(186, 230, 253, 0.32) 52%, rgba(224, 242, 254, 0.40) 100%)",
-        pillBtn: "linear-gradient(90deg, rgba(255, 255, 255, 0.88) 0%, rgba(186, 230, 253, 0.92) 52%, rgba(125, 211, 252, 0.95) 100%)",
-        secBtn: "linear-gradient(145deg, rgba(255, 255, 255, 0.26) 0%, rgba(165, 205, 250, 0.18) 100%)",
-        border: "rgba(240, 249, 255, 0.52)",
-        borderTop: "rgba(255, 255, 255, 0.95)",
-        borderLeft: "rgba(255, 255, 255, 0.80)",
-        navBg: "linear-gradient(135deg, rgba(210, 235, 255, 0.44) 0%, rgba(115, 160, 220, 0.56) 100%)",
-        accent: "#FFFFFF", accentRgb: "255, 255, 255", btnText: "#0F2347"
+        name: "Тёмный Кристалл (M3 Ice)",
+        bg1: "#0B0E17", bg2: "#121726", bg3: "#182036",
+        accent: "#7CC4FF", accentRgb: "124, 196, 255",
+        sec: "#5E5CE6", secRgb: "94, 92, 230",
+        btnText: "#071120"
       },
       {
-        name: "Прозрачный Красный (Рубин)",
-        bg1: "#3B1222", bg2: "#5C1B33", bg3: "#7A2342", bg4: "#280B17",
-        orb1: "rgba(255, 140, 165, 0.46)", orb2: "rgba(251, 113, 133, 0.40)",
-        panel: "linear-gradient(135deg, rgba(255, 190, 205, 0.28) 0%, rgba(225, 95, 125, 0.18) 50%, rgba(175, 55, 85, 0.25) 100%)",
-        card: "linear-gradient(145deg, rgba(255, 200, 212, 0.22) 0%, rgba(215, 85, 115, 0.14) 55%, rgba(160, 45, 75, 0.20) 100%)",
-        activeCard: "linear-gradient(145deg, rgba(255, 150, 175, 0.44) 0%, rgba(244, 63, 94, 0.32) 52%, rgba(251, 113, 133, 0.40) 100%)",
-        pillBtn: "linear-gradient(90deg, rgba(251, 113, 133, 0.92) 0%, rgba(244, 63, 94, 0.92) 52%, rgba(255, 160, 180, 0.95) 100%)",
-        secBtn: "linear-gradient(145deg, rgba(255, 195, 208, 0.24) 0%, rgba(205, 75, 105, 0.18) 100%)",
-        border: "rgba(255, 205, 215, 0.50)",
-        borderTop: "rgba(255, 240, 245, 0.92)",
-        borderLeft: "rgba(255, 225, 232, 0.78)",
-        navBg: "linear-gradient(135deg, rgba(235, 115, 145, 0.44) 0%, rgba(145, 38, 68, 0.58) 100%)",
-        accent: "#FECDD3", accentRgb: "251, 113, 133", btnText: "#FFFFFF"
+        name: "Тёмный Рубин (M3 Crimson)",
+        bg1: "#14080C", bg2: "#210C13", bg3: "#2E101B",
+        accent: "#FF5B69", accentRgb: "255, 91, 105",
+        sec: "#E11D48", secRgb: "225, 29, 72",
+        btnText: "#FFFFFF"
       },
       {
-        name: "Прозрачный Синий (Сапфир)",
-        bg1: "#172C54", bg2: "#254682", bg3: "#325CA8", bg4: "#112040",
-        orb1: "rgba(125, 211, 252, 0.48)", orb2: "rgba(96, 165, 250, 0.42)",
-        panel: "linear-gradient(135deg, rgba(190, 230, 255, 0.28) 0%, rgba(105, 170, 245, 0.18) 50%, rgba(65, 125, 215, 0.25) 100%)",
-        card: "linear-gradient(145deg, rgba(200, 235, 255, 0.22) 0%, rgba(95, 160, 235, 0.14) 55%, rgba(60, 115, 200, 0.20) 100%)",
-        activeCard: "linear-gradient(145deg, rgba(135, 215, 255, 0.42) 0%, rgba(59, 130, 246, 0.32) 52%, rgba(96, 165, 250, 0.40) 100%)",
-        pillBtn: "linear-gradient(90deg, rgba(96, 165, 250, 0.92) 0%, rgba(56, 189, 248, 0.92) 52%, rgba(147, 197, 253, 0.95) 100%)",
-        secBtn: "linear-gradient(145deg, rgba(190, 230, 255, 0.24) 0%, rgba(95, 155, 230, 0.18) 100%)",
-        border: "rgba(195, 232, 255, 0.50)",
-        borderTop: "rgba(240, 250, 255, 0.92)",
-        borderLeft: "rgba(220, 242, 255, 0.78)",
-        navBg: "linear-gradient(135deg, rgba(115, 185, 255, 0.44) 0%, rgba(45, 95, 178, 0.58) 100%)",
-        accent: "#BAE6FD", accentRgb: "96, 165, 250", btnText: "#FFFFFF"
+        name: "Тёмный Сапфир (M3 Ocean)",
+        bg1: "#07101E", bg2: "#0C1B33", bg3: "#122647",
+        accent: "#38BDF8", accentRgb: "56, 189, 248",
+        sec: "#2563EB", secRgb: "37, 99, 235",
+        btnText: "#051324"
       },
       {
-        name: "Прозрачный Зелёный (Изумруд)",
-        bg1: "#0F3832", bg2: "#19574E", bg3: "#237367", bg4: "#0A2924",
-        orb1: "rgba(110, 231, 183, 0.45)", orb2: "rgba(45, 212, 191, 0.40)",
-        panel: "linear-gradient(135deg, rgba(190, 255, 235, 0.27) 0%, rgba(80, 205, 175, 0.18) 50%, rgba(40, 150, 128, 0.25) 100%)",
-        card: "linear-gradient(145deg, rgba(200, 255, 238, 0.21) 0%, rgba(75, 195, 165, 0.14) 55%, rgba(35, 140, 118, 0.20) 100%)",
-        activeCard: "linear-gradient(145deg, rgba(110, 231, 183, 0.42) 0%, rgba(16, 185, 129, 0.32) 52%, rgba(52, 211, 153, 0.40) 100%)",
-        pillBtn: "linear-gradient(90deg, rgba(52, 211, 153, 0.92) 0%, rgba(45, 212, 191, 0.92) 52%, rgba(167, 243, 208, 0.95) 100%)",
-        secBtn: "linear-gradient(145deg, rgba(195, 255, 235, 0.24) 0%, rgba(75, 185, 155, 0.18) 100%)",
-        border: "rgba(195, 252, 235, 0.50)",
-        borderTop: "rgba(240, 255, 250, 0.92)",
-        borderLeft: "rgba(220, 255, 244, 0.78)",
-        navBg: "linear-gradient(135deg, rgba(95, 220, 185, 0.44) 0%, rgba(28, 118, 98, 0.58) 100%)",
-        accent: "#A7F3D0", accentRgb: "52, 211, 153", btnText: "#062E26"
+        name: "Тёмный Изумруд (M3 Emerald)",
+        bg1: "#061410", bg2: "#0B221B", bg3: "#103026",
+        accent: "#30D158", accentRgb: "48, 209, 88",
+        sec: "#059669", secRgb: "5, 150, 105",
+        btnText: "#041A0E"
       },
       {
-        name: "Прозрачный Фиолетовый (Аметист)",
-        bg1: "#2A184E", bg2: "#422778", bg3: "#58359E", bg4: "#1C1036",
-        orb1: "rgba(216, 180, 254, 0.46)", orb2: "rgba(167, 139, 250, 0.42)",
-        panel: "linear-gradient(135deg, rgba(235, 210, 255, 0.28) 0%, rgba(168, 125, 245, 0.18) 50%, rgba(125, 80, 210, 0.25) 100%)",
-        card: "linear-gradient(145deg, rgba(240, 218, 255, 0.22) 0%, rgba(160, 115, 235, 0.14) 55%, rgba(115, 70, 195, 0.20) 100%)",
-        activeCard: "linear-gradient(145deg, rgba(216, 180, 254, 0.42) 0%, rgba(139, 92, 246, 0.32) 52%, rgba(192, 132, 252, 0.40) 100%)",
-        pillBtn: "linear-gradient(90deg, rgba(167, 139, 250, 0.92) 0%, rgba(192, 132, 252, 0.92) 52%, rgba(233, 213, 255, 0.95) 100%)",
-        secBtn: "linear-gradient(145deg, rgba(235, 215, 255, 0.24) 0%, rgba(150, 105, 225, 0.18) 100%)",
-        border: "rgba(235, 215, 255, 0.50)",
-        borderTop: "rgba(250, 245, 255, 0.92)",
-        borderLeft: "rgba(243, 232, 255, 0.78)",
-        navBg: "linear-gradient(135deg, rgba(185, 145, 255, 0.44) 0%, rgba(95, 52, 168, 0.58) 100%)",
-        accent: "#E9D5FF", accentRgb: "167, 139, 250", btnText: "#FFFFFF"
+        name: "Тёмный Аметист (M3 Purple)",
+        bg1: "#110B1D", bg2: "#1B122E", bg3: "#261942",
+        accent: "#D0BCFF", accentRgb: "208, 188, 255",
+        sec: "#7C3AED", secRgb: "124, 58, 237",
+        btnText: "#1C0B3B"
       },
       {
-        name: "Прозрачный Золотой (Янтарь)",
-        bg1: "#3D2610", bg2: "#613C19", bg3: "#825122", bg4: "#29190A",
-        orb1: "rgba(253, 224, 71, 0.44)", orb2: "rgba(251, 146, 60, 0.40)",
-        panel: "linear-gradient(135deg, rgba(255, 235, 195, 0.28) 0%, rgba(235, 165, 85, 0.18) 50%, rgba(185, 115, 45, 0.25) 100%)",
-        card: "linear-gradient(145deg, rgba(255, 240, 205, 0.22) 0%, rgba(225, 155, 75, 0.14) 55%, rgba(175, 105, 38, 0.20) 100%)",
-        activeCard: "linear-gradient(145deg, rgba(253, 224, 71, 0.40) 0%, rgba(245, 158, 11, 0.32) 52%, rgba(251, 191, 36, 0.40) 100%)",
-        pillBtn: "linear-gradient(90deg, rgba(251, 191, 36, 0.92) 0%, rgba(245, 158, 11, 0.92) 52%, rgba(254, 240, 138, 0.95) 100%)",
-        secBtn: "linear-gradient(145deg, rgba(255, 238, 200, 0.24) 0%, rgba(210, 140, 65, 0.18) 100%)",
-        border: "rgba(255, 235, 200, 0.50)",
-        borderTop: "rgba(255, 250, 240, 0.92)",
-        borderLeft: "rgba(255, 245, 220, 0.78)",
-        navBg: "linear-gradient(135deg, rgba(245, 185, 85, 0.44) 0%, rgba(145, 88, 28, 0.58) 100%)",
-        accent: "#FDE68A", accentRgb: "251, 191, 36", btnText: "#2E1A05"
+        name: "Тёмный Янтарь (M3 Gold)",
+        bg1: "#161006", bg2: "#241A0A", bg3: "#33240E",
+        accent: "#FBBF24", accentRgb: "251, 191, 36",
+        sec: "#D97706", secRgb: "217, 119, 6",
+        btnText: "#211202"
       }
     ];
 
@@ -2444,48 +2345,19 @@
     }
 
     function setNeonTheme(accentHex, accentRgb, secHex, secRgb, dotEl, themeIdx, silent, btnTextColor) {
-      const idx = (typeof themeIdx === "number" && CRYSTAL_THEMES[themeIdx]) ? themeIdx : 0;
-      const th = CRYSTAL_THEMES[idx];
+      const idx = (typeof themeIdx === "number" && M3_DARK_GLASS_THEMES[themeIdx]) ? themeIdx : 0;
+      const th = M3_DARK_GLASS_THEMES[idx];
       const root = document.documentElement;
 
-      root.style.setProperty("--crystal-bg-1", th.bg1);
-      root.style.setProperty("--crystal-bg-2", th.bg2);
-      root.style.setProperty("--crystal-bg-3", th.bg3);
-      root.style.setProperty("--crystal-bg-4", th.bg4);
-      root.style.setProperty("--glass-panel-bg", th.panel);
-      root.style.setProperty("--glass-card-bg", th.card);
-      root.style.setProperty("--glass-card-active", th.activeCard);
-      root.style.setProperty("--glass-pill-btn", th.pillBtn);
-      root.style.setProperty("--glass-sec-btn", th.secBtn);
-      root.style.setProperty("--glass-border", th.border);
-      root.style.setProperty("--glass-border-top", th.borderTop);
-      root.style.setProperty("--glass-border-left", th.borderLeft);
+      root.style.setProperty("--m3-bg-1", th.bg1);
+      root.style.setProperty("--m3-bg-2", th.bg2);
+      root.style.setProperty("--m3-bg-3", th.bg3);
       root.style.setProperty("--accent-main", th.accent);
       root.style.setProperty("--accent-rgb", th.accentRgb);
+      root.style.setProperty("--accent-sec", th.sec);
+      root.style.setProperty("--accent-sec-rgb", th.secRgb);
       root.style.setProperty("--btn-text-color", th.btnText);
-
-      const bgLayer = document.getElementById("animatedBgLayer");
-      if (bgLayer) {
-        bgLayer.style.background =
-          "radial-gradient(circle at 14% 12%, " + th.orb1 + " 0%, transparent 52%)," +
-          "radial-gradient(circle at 88% 24%, " + th.orb2 + " 0%, transparent 56%)," +
-          "radial-gradient(circle at 18% 86%, " + th.orb1 + " 0%, transparent 50%)," +
-          "radial-gradient(circle at 84% 88%, " + th.orb2 + " 0%, transparent 48%)," +
-          "linear-gradient(145deg, " + th.bg1 + " 0%, " + th.bg2 + " 36%, " + th.bg3 + " 68%, " + th.bg4 + " 100%)";
-      }
-
-      const authOverlay = document.getElementById("authScreenOverlay");
-      if (authOverlay) {
-        authOverlay.style.background =
-          "radial-gradient(circle at 16% 14%, " + th.orb1 + " 0%, transparent 50%)," +
-          "radial-gradient(circle at 86% 82%, " + th.orb2 + " 0%, transparent 52%)," +
-          "linear-gradient(145deg, " + th.bg1 + " 0%, " + th.bg2 + " 48%, " + th.bg3 + " 78%, " + th.bg4 + " 100%)";
-      }
-
-      const navBar = document.querySelector(".bottom-nav-bar");
-      if (navBar) {
-        navBar.style.background = th.navBg;
-      }
+      root.style.setProperty("--focus-ring", th.accent);
 
       document.querySelectorAll(".theme-dot").forEach(d => d.classList.remove("active"));
       if (dotEl) {
@@ -2504,93 +2376,15 @@
       }
     }
 
-    function setupThemeDotsAndPresetsLayout() {
-      const dots = document.querySelectorAll(".theme-dot");
-      const dotColors = [
-        "linear-gradient(135deg, #FFFFFF, #BAE6FD)",
-        "linear-gradient(135deg, #FB7185, #E11D48)",
-        "linear-gradient(135deg, #60A5FA, #2563EB)",
-        "linear-gradient(135deg, #34D399, #059669)",
-        "linear-gradient(135deg, #C084FC, #7C3AED)",
-        "linear-gradient(135deg, #FBBF24, #D97706)"
-      ];
-      dots.forEach((d, i) => {
-        if (dotColors[i]) {
-          d.style.background = dotColors[i];
-          d.setAttribute("onclick", "setNeonTheme('', '', '', '', this, " + i + ", false, '')");
-        }
-      });
-
-      const presetsBox = document.querySelector("#accSensPresets .acc-body-inner");
-      if (presetsBox) {
-        presetsBox.innerHTML =
-          '<div id="preset_extreme" class="character-card active" onclick="selectTeleportPreset(\'extreme\')">' +
-            '<div style="min-width:0;">' +
-              '<div class="char-title">1 · ТЕЛЕПОРТ УЛЬТРА <span class="char-tag">QUANTUM SNAP • 68.0X</span></div>' +
-              '<div class="char-desc">Мгновенная телепортация прицела в точку за 1 кадр: убрана вся вязкость осей, максимальный импульс кусков 150 и прямой Raw-отклик 720 Гц.</div>' +
-            '</div>' +
-            '<span class="char-arrow" aria-hidden="true">→</span>' +
-          '</div>' +
-          '<div id="preset_rog_pro" class="character-card" onclick="selectTeleportPreset(\'rog_pro\')">' +
-            '<div style="min-width:0;">' +
-              '<div class="char-title">2 · КОНФИГ ROG PHONE <span class="char-tag pad-badge">ASUS ROG • 720HZ X-MODE</span></div>' +
-              '<div class="char-desc">Сенса игрового смартфона ASUS ROG Phone 8/9 Pro: сверхрезкий срыв с места, агрессивные края и мгновенный флик без задержки.</div>' +
-            '</div>' +
-            '<span class="char-arrow" aria-hidden="true">→</span>' +
-          '</div>' +
-          '<div id="preset_ios_pro" class="character-card" onclick="selectTeleportPreset(\'ios_pro\')">' +
-            '<div style="min-width:0;">' +
-              '<div class="char-title">3 · КОНФИГ iOS <span class="char-tag">IPHONE 16 PRO / IPAD • 240HZ</span></div>' +
-              '<div class="char-desc">Точная копия сенсы iOS ProMotion: идеально линейная траектория без инерции Android и плотная фиксация спрея в голову.</div>' +
-            '</div>' +
-            '<span class="char-arrow" aria-hidden="true">→</span>' +
-          '</div>' +
-          '<div id="preset_budget_pro" class="character-card" onclick="selectTeleportPreset(\'budget_pro\')">' +
-            '<div style="min-width:0;">' +
-              '<div class="char-title">4 · ДЛЯ БЮДЖЕТОК И A57 <span class="char-tag budget-badge">ANTI-LAG FPS • 48.0X</span></div>' +
-              '<div class="char-desc">Резкая телепорт-сенса + защита от просадок FPS на Samsung A57/A55, Redmi, Poco и Realme (SkiaGL кэш 72MB).</div>' +
-            '</div>' +
-            '<span class="char-arrow" aria-hidden="true">→</span>' +
-          '</div>';
+    function restoreSavedTheme() {
+      let idx = 0;
+      try {
+        idx = parseInt(localStorage.getItem("so2_theme_idx_v11") || "0", 10);
+      } catch (e) {
+        idx = 0;
       }
-
-      const shelfSub = document.querySelector("#accSensShelf .acc-sub");
-      if (shelfSub) {
-        shelfSub.textContent = "Другие конфиги (Пады, AWM), сохранение и обмен кодами";
-      }
-
-      const shelfGrid = document.querySelector("#accSensShelf .shelf-cards-grid");
-      if (shelfGrid) {
-        shelfGrid.innerHTML =
-          '<div id="preset_tablet_pro" class="shelf-preset-card" onclick="selectTeleportPreset(\'tablet_pro\')">' +
-            '<div>' +
-              '<div style="font-size:0.75rem; font-weight:700; color:#fff;">ДЛЯ ПАДОВ УЛЬТРА</div>' +
-              '<div style="font-size:0.6875rem; color:var(--text-muted); margin-top:2px;">Импульс 128.0x • Xiaomi Pad / iPad</div>' +
-            '</div>' +
-            '<div style="font-size:0.6875rem; color:#E0F2FE; font-weight:700; margin-top:8px;">Включить конфиг →</div>' +
-          '</div>' +
-          '<div id="preset_clean_sharp" class="shelf-preset-card" onclick="selectTeleportPreset(\'clean_sharp\')">' +
-            '<div>' +
-              '<div style="font-size:0.75rem; font-weight:700; color:#fff;">AWM / DEAGLE РЕЗКИЙ</div>' +
-              '<div style="font-size:0.6875rem; color:var(--text-muted); margin-top:2px;">Точный хват 48.0x • Снайперский флик</div>' +
-            '</div>' +
-            '<div style="font-size:0.6875rem; color:#E0F2FE; font-weight:700; margin-top:8px;">Включить конфиг →</div>' +
-          '</div>' +
-          '<div class="shelf-preset-card" onclick="applyShelfPreset(\'demon_100\')">' +
-            '<div>' +
-              '<div style="font-size:0.75rem; font-weight:700; color:#fff;">H9IJE TELEPORT MAX</div>' +
-              '<div style="font-size:0.6875rem; color:var(--text-muted); margin-top:2px;">Куски 150 • Полный овердрайв</div>' +
-            '</div>' +
-            '<div style="font-size:0.6875rem; color:#E0F2FE; font-weight:700; margin-top:8px;">Включить конфиг →</div>' +
-          '</div>' +
-          '<div class="shelf-preset-card" onclick="applyShelfPreset(\'heavy_pixel\')">' +
-            '<div>' +
-              '<div style="font-size:0.75rem; font-weight:700; color:#fff;">AKR12 / M4 ЗАЖИМ</div>' +
-              '<div style="font-size:0.6875rem; color:var(--text-muted); margin-top:2px;">Куски 96 • Удержание точки</div>' +
-            '</div>' +
-            '<div style="font-size:0.6875rem; color:#E0F2FE; font-weight:700; margin-top:8px;">Включить конфиг →</div>' +
-          '</div>';
-      }
+      if (isNaN(idx) || idx < 0 || idx >= M3_DARK_GLASS_THEMES.length) idx = 0;
+      setNeonTheme("", "", "", "", null, idx, true, "");
     }
 
     function upgradeShizukuModalGuideAndGuard() {
@@ -2599,18 +2393,18 @@
         const box = modal.querySelector(".shizuku-alert-box");
         if (box) {
           box.innerHTML =
-            '<h2 id="shizukuModalTitle" style="font-size:1.1rem; font-weight:800; color:#ffffff; margin-bottom:6px;">⚠️ Shizuku не активен</h2>' +
+            '<h2 id="shizukuModalTitle" style="font-size:1.1rem; font-weight:800; color:#FF453A; margin-bottom:6px;">⚠️ Shizuku не активен</h2>' +
             '<p style="font-size:0.78rem; color:var(--text-muted); line-height:1.45; margin-bottom:10px;">' +
               'Без запущенного <b>Shizuku</b> телепорт-сенса, растяг экрана «T» и бустер FPS не смогут примениться к системе.' +
             '</p>' +
-            '<div style="text-align:left; background:rgba(15,30,62,0.42); border:1px solid rgba(255,255,255,0.45); border-radius:16px; padding:10px 12px; margin-bottom:12px; font-size:0.74rem; line-height:1.5; color:#FFFFFF;">' +
-              '<div style="font-weight:700; margin-bottom:4px; color:#E0F2FE;">📋 Быстрый гайд по запуску:</div>' +
+            '<div style="text-align:left; background:rgba(12,15,24,0.88); border:1.5px solid var(--glass-border-top); border-radius:16px; padding:10px 12px; margin-bottom:12px; font-size:0.74rem; line-height:1.55; color:#FFFFFF;">' +
+              '<div style="font-weight:700; margin-bottom:4px; color:var(--accent-main);">📋 Быстрый гайд по запуску:</div>' +
               '<div>1. Открой приложение <b>Shizuku</b> на телефоне.</div>' +
               '<div>2. Включи <b>Беспроводную отладку</b> в Настройках для разработчиков и нажми <b>Запустить</b>.</div>' +
               '<div>3. Вернись сюда и нажми <b>«Проверить и выдать доступ»</b>.</div>' +
             '</div>' +
             '<button type="button" class="btn-main" style="margin-bottom:8px;" onclick="requestAndRecheckShizuku()">' +
-              '✨ Проверить и выдать доступ Shizuku' +
+              '⚡ Проверить и выдать доступ Shizuku' +
             '</button>' +
             '<div style="display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:8px; margin-bottom:8px;">' +
               '<button type="button" class="btn-dark" onclick="openSupportLink()">💬 Помощь в ТГ</button>' +
@@ -2650,17 +2444,6 @@
       showToast("Дискорд скопирован: " + dsTag + " (ТГ: @talent_dare)");
     }
 
-    function restoreSavedTheme() {
-      let idx = 0;
-      try {
-        idx = parseInt(localStorage.getItem("so2_theme_idx_v11") || "0", 10);
-      } catch (e) {
-        idx = 0;
-      }
-      if (isNaN(idx) || idx < 0 || idx >= CRYSTAL_THEMES.length) idx = 0;
-      setNeonTheme("", "", "", "", null, idx, true, "");
-    }
-
     function refreshShizukuIndicator() {
       let ready = false;
       if (hasBridge() && typeof AndroidBridge.isShizukuReady === "function") {
@@ -2673,15 +2456,18 @@
       cachedShizukuState = ready;
       const dot = document.getElementById("shizukuDot");
       const txt = document.getElementById("shizukuStateText");
+      const pill = document.querySelector(".shizuku-status-pill");
       if (dot && txt) {
         if (ready) {
           dot.classList.add("on");
-          txt.style.color = "#E0F2FE";
+          txt.style.color = "#30D158";
           txt.textContent = "Shizuku ВКЛ";
+          if (pill) pill.style.borderColor = "rgba(48, 209, 88, 0.65)";
         } else {
           dot.classList.remove("on");
-          txt.style.color = "#FFE4E6";
+          txt.style.color = "#FF453A";
           txt.textContent = "Shizuku ВЫКЛ";
+          if (pill) pill.style.borderColor = "rgba(255, 69, 58, 0.65)";
         }
       }
       return ready;
@@ -2768,12 +2554,10 @@
 
       updateProfileAndHeaderInfo(cleanNick, cleanKey, subLabel || "АКТИВНА");
       loadSavedConfigLocal(true);
+      setMainEnginePower(false, true);
 
       callBridgeAsync(b => {
         b.savePlayerNickname(cleanNick);
-        if (isMainTeleportOn) {
-          pushCurrentSlidersToBridge();
-        }
       });
 
       setTimeout(() => {
@@ -2781,7 +2565,7 @@
           const shizukuModal = document.getElementById("shizukuRequiredModal");
           if (shizukuModal) shizukuModal.style.display = "flex";
         }
-      }, 600);
+      }, 500);
     }
 
     function forceShowKickScreen(reasonMsg) {
@@ -2864,7 +2648,7 @@
         } finally {
           if (btn) {
             btn.removeAttribute("aria-disabled");
-            btn.textContent = "✨ Активировать ключ и войти";
+            btn.textContent = "⚡ Активировать ключ и войти";
           }
         }
       }, 20);
@@ -2927,17 +2711,20 @@
         word.classList.toggle("off", !isMainTeleportOn);
       }
       if (pill) {
-        pill.textContent = isMainTeleportOn ? "✨ Teleport активен" : "Включить Teleport";
+        pill.textContent = isMainTeleportOn ? "⚡ Teleport активен" : "Включить Teleport";
       }
 
       if (isMainTeleportOn) {
+        callBridgeAsync(b => {
+          b.startTeleport(mapPresetToEngineId(currentPresetId));
+        });
         pushCurrentSlidersToBridge();
       } else {
         callBridgeAsync(b => b.stopTeleport());
       }
 
       if (!silent) {
-        showToast(isMainTeleportOn ? "Teleport Engine включён" : "Teleport Engine приостановлен");
+        showToast(isMainTeleportOn ? "Teleport Engine ВКЛЮЧЕН" : "Teleport Engine ВЫКЛЮЧЕН");
       }
     }
 
@@ -3114,19 +2901,19 @@
       }
 
       refreshSensSliderPills();
-      pushCurrentSlidersToBridge();
+      if (isMainTeleportOn) {
+        pushCurrentSlidersToBridge();
+      }
 
       if (!silent) {
-        showToast("Конфиг «" + (profMode ? profMode.textContent : currentPresetId) + "» активирован");
+        showToast("Выбран конфиг «" + (profMode ? profMode.textContent : currentPresetId) + "»");
       }
     }
 
     function activateMaxH9ijeTeleport() {
-      isMainTeleportOn = true;
-      const sw = document.getElementById("tgMainTeleportSwitch");
-      if (sw) sw.checked = true;
       selectTeleportPreset("extreme", true);
-      showToast("Молниеносный Телепорт H9IJE MAX (68.0x) включён");
+      setMainEnginePower(true, true);
+      showToast("Молниеносный Телепорт H9IJE MAX (68.0x) ВКЛЮЧЕН");
     }
 
     function refreshSensSliderPills() {
@@ -3184,8 +2971,8 @@
       bridgeBatchTimer = setTimeout(() => {
         try {
           const boostMult = (currentPresetId === "extreme" || currentPresetId === "tablet_pro")
-            ? 1.95
-            : (currentPresetId === "rog_pro" ? 1.75 : (currentPresetId === "ios_pro" ? 1.48 : 1.65));
+            ? 2.15
+            : (currentPresetId === "rog_pro" ? 1.85 : (currentPresetId === "ios_pro" ? 1.55 : 1.70));
 
           const sharp = (getSliderNum("sl_sharp", 25) / 10.0) * boostMult;
           const sx = (getSliderNum("sl_sx", 25) / 10.0) * boostMult;
@@ -3205,7 +2992,7 @@
           const accel = (getSliderNum("sl_accel", 25) / 10.0) * boostMult;
 
           AndroidBridge.setRawInputNoSmoothing(true);
-          AndroidBridge. updateParameters(sharp, sx, sy, chunks, chunkFast, straight, stick, grid, pause, accel);
+          AndroidBridge.updateParameters(sharp, sx, sy, chunks, chunkFast, straight, stick, grid, pause, accel);
         } catch (e) {}
       }, 45);
     }
@@ -3252,7 +3039,7 @@
         sliders[id] = getSliderNum(id, 0);
       });
       return {
-        schemaVer: 14,
+        schemaVer: 15,
         preset: currentPresetId,
         mainOn: isMainTeleportOn,
         ratio: currentStretchRatio,
@@ -3268,7 +3055,7 @@
     function normalizeLegacySlidersObject(cfg) {
       if (!cfg || typeof cfg !== "object" || !cfg.sliders) return cfg;
       const s = cfg.sliders;
-      if (cfg.schemaVer !== 14) {
+      if (cfg.schemaVer !== 15) {
         s.sl_sharp = 25;
         s.sl_sx = 25;
         s.sl_sy = 25;
@@ -3330,7 +3117,9 @@
         syncCrosshairConfig(true);
       }
 
-      pushCurrentSlidersToBridge();
+      if (isMainTeleportOn) {
+        pushCurrentSlidersToBridge();
+      }
       if (!silent) {
         showToast("Сохранённые настройки применены");
       }
@@ -3340,22 +3129,24 @@
       const cfg = collectFullConfigObject();
       const jsonStr = JSON.stringify(cfg);
       try {
-        localStorage.setItem("so2_master_cfg_v14", jsonStr);
+        localStorage.setItem("so2_master_cfg_v15", jsonStr);
       } catch (e) {}
       callBridgeAsync(b => {
         if (typeof b.saveFullConfigJson === "function") {
           b.saveFullConfigJson(jsonStr);
         }
       });
-      pushCurrentSlidersToBridge();
+      if (isMainTeleportOn) {
+        pushCurrentSlidersToBridge();
+      }
       syncCrosshairConfig(true);
-      showToast("Настройки сохранены и применены");
+      showToast("Настройки сохранены");
     }
 
     function loadSavedConfigLocal(silent) {
       let raw = "";
       try {
-        raw = localStorage.getItem("so2_master_cfg_v14") || "";
+        raw = localStorage.getItem("so2_master_cfg_v15") || "";
       } catch (e) {}
       if (!raw) {
         selectTeleportPreset("extreme", true);
@@ -3430,7 +3221,7 @@
       previewDayMode = !previewDayMode;
       const stage = document.getElementById("chPreviewStage");
       if (stage) {
-        stage.style.background = previewDayMode ? "rgba(224, 242, 254, 0.85)" : "linear-gradient(145deg, rgba(25, 44, 82, 0.68) 0%, rgba(42, 68, 118, 0.55) 100%)";
+        stage.style.background = previewDayMode ? "#D8E2F0" : "rgba(12, 15, 22, 0.94)";
       }
       drawCrosshairPreview();
     }
@@ -3441,7 +3232,7 @@
     }
 
     function setCrosshairColor(hexColor, swatchEl, silent) {
-      currentCrosshairColor = hexColor || "#7EE8FA";
+      currentCrosshairColor = hexColor || "#30D158";
       document.querySelectorAll(".ch-color-swatch").forEach(s => s.classList.remove("active"));
       if (swatchEl) swatchEl.classList.add("active");
 
@@ -3620,7 +3411,7 @@
       const inner = document.getElementById("stretchPreviewInner");
 
       if (badge) badge.textContent = currentStretchRatio;
-      if (btn) btn.textContent = "✨ Запустить плавающую кнопку «T» (" + currentStretchRatio + ")";
+      if (btn) btn.textContent = "⚡ Запустить плавающую кнопку «T» (" + currentStretchRatio + ")";
       if (inner) {
         const widths = {
           "1:1": "122px",
@@ -3805,9 +3596,9 @@
         const y = Math.round(touch.clientY - rect.top);
         if (coords) coords.textContent = "Координаты отклика: X=" + x + " px • Y=" + y + " px (0.1 ms)";
         if (ctx) {
-          ctx.fillStyle = "rgba(20, 36, 72, 0.28)";
+          ctx.fillStyle = "rgba(12, 15, 22, 0.30)";
           ctx.fillRect(0, 0, canvas.width, canvas.height);
-          ctx.fillStyle = "#FFFFFF";
+          ctx.fillStyle = getComputedStyle(document.documentElement).getPropertyValue("--accent-main").trim() || "#7CC4FF";
           ctx.beginPath();
           ctx.arc(x, y, 7, 0, Math.PI * 2);
           ctx.fill();
@@ -3851,7 +3642,7 @@
           '<div style="display:flex;align-items:center;gap:10px;min-width:0;">' +
           '<div class="acc-icon" style="width:34px;height:34px;font-size:0.8125rem;" aria-hidden="true">🎙</div>' +
           '<div style="min-width:0;"><div style="font-size:0.8125rem;font-weight:600;color:#fff;">' + activePlayerNick + ' (Вы)</div>' +
-          '<div style="font-size:0.6875rem;color:#E0F2FE;">Чистый канал • 400% Squad Isolator</div></div></div>' +
+          '<div style="font-size:0.6875rem;color:#30D158;">Чистый канал • 400% Squad Isolator</div></div></div>' +
           (isMicMuted ? '<span class="badge-chip">MUTE</span>' : '<div class="voice-eq-bars" aria-label="Говорит"><span></span><span></span><span></span></div>') +
           '</div>';
       }
@@ -3920,7 +3711,7 @@
       box.innerHTML = list.map((code, idx) => (
         '<div class="friend-item">' +
         '<div style="min-width:0;"><div style="font-size:0.8125rem;font-weight:600;color:#fff;">Тиммейт <bdi>' + code + '</bdi></div>' +
-        '<div style="font-size:0.6875rem;color:#E0F2FE;">Онлайн • SO2Teleport PRO</div></div>' +
+        '<div style="font-size:0.6875rem;color:#30D158;">Онлайн • SO2Teleport PRO</div></div>' +
         '<button type="button" class="icon-circle-action" aria-label="Удалить тиммейта ' + code + '" onclick="removeFriendAtIndex(' + idx + ')">✕</button>' +
         '</div>'
       )).join("");
@@ -4084,10 +3875,10 @@
     }
 
     function initAppOnBoot() {
-      setupThemeDotsAndPresetsLayout();
       upgradeShizukuModalGuideAndGuard();
       restoreSavedTheme();
       selectTeleportPreset("extreme", true);
+      setMainEnginePower(false, true);
       updateOptLabels();
       renderFriendsList();
       refreshShizukuIndicator();
