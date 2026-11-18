@@ -1,4 +1,4 @@
-Package com.teleport.so2;
+package com.teleport.so2;
 
 import org.json.JSONObject;
 import java.io.BufferedReader;
