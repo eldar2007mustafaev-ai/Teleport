@@ -200,10 +200,8 @@ public class MainActivity extends Activity {
         ws.setAllowContentAccess(true);
         ws.setMediaPlaybackRequiresUserGesture(false);
 
-        // Включили жесткое кэширование интерфейса
+        // Включили жесткое кэширование интерфейса (без устаревших методов)
         ws.setCacheMode(WebSettings.LOAD_CACHE_ELSE_NETWORK);
-        ws.setAppCacheEnabled(true);
-        ws.setAppCachePath(getApplicationContext().getCacheDir().getAbsolutePath());
 
         webView.setBackgroundColor(Color.parseColor("#060709"));
 
