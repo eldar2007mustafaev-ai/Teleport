@@ -51,7 +51,6 @@ public class MainActivity extends Activity {
     private String currentCrosshairType = "off";
     private int crosshairScale = 50;
     private int crosshairOpacity = 100;
-    private int crosshairColor = Color.parseColor("#D946EF");
 
     private View floatingBtnView;
     private TextView floatingTxtView;
@@ -63,6 +62,20 @@ public class MainActivity extends Activity {
     private boolean isStretchedActive = false;
     private boolean stealthModeEnabled = false;
     private int cachedScreenHeight = 2400;
+    private boolean screenMetricsValid = false;
+    private final int[] cachedTrashLoc = new int[2];
+    private final int[] cachedTrashSize = new int[2];
+    private boolean cachedTrashValid = false;
+
+    private static final int OVERLAY_TYPE = Build.VERSION.SDK_INT >= Build.VERSION_CODES.O
+            ? WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY
+            : WindowManager.LayoutParams.TYPE_PHONE;
+            
+    private static final int COLOR_CROSSHAIR_DEFAULT = Color.parseColor("#D946EF");
+    private static final int COLOR_CROSSHAIR_FALLBACK = Color.parseColor("#00E5FF");
+    
+    private int crosshairColor = COLOR_CROSSHAIR_DEFAULT;
+
     private OnBackInvokedCallback backInvokedCallback;
 
     private static class CyberTrashView extends View {
@@ -161,6 +174,7 @@ public class MainActivity extends Activity {
         DisplayMetrics dm = new DisplayMetrics();
         windowManager.getDefaultDisplay().getRealMetrics(dm);
         cachedScreenHeight = Math.max(dm.widthPixels, dm.heightPixels);
+        screenMetricsValid = true;
 
         SharedPreferences prefs = getSharedPreferences("so2_teleport_prefs", Context.MODE_PRIVATE);
         int nativeShort = Math.min(dm.widthPixels, dm.heightPixels);
@@ -179,7 +193,8 @@ public class MainActivity extends Activity {
         stealthModeEnabled = prefs.getBoolean("stealth_overlays", false);
 
         webView = new WebView(this);
-        webView.setLayerType(View.LAYER_TYPE_HARDWARE, null);
+        // Отключаем аппаратное ускорение WebView для избавления от постоянной перерисовки GPU текстуры
+        webView.setLayerType(View.LAYER_TYPE_NONE, null);
         webView.setOverScrollMode(View.OVER_SCROLL_NEVER);
         webView.setVerticalScrollBarEnabled(false);
         webView.setHorizontalScrollBarEnabled(false);
@@ -187,7 +202,6 @@ public class MainActivity extends Activity {
         webView.setFocusableInTouchMode(true);
         webView.requestFocus(View.FOCUS_DOWN);
 
-        // Полная блокировка системного окна «Выбор с помощью ИИ» при долгом нажатии
         webView.setLongClickable(false);
         webView.setHapticFeedbackEnabled(false);
         webView.setOnLongClickListener(v -> true);
@@ -199,8 +213,6 @@ public class MainActivity extends Activity {
         ws.setAllowFileAccess(true);
         ws.setAllowContentAccess(true);
         ws.setMediaPlaybackRequiresUserGesture(false);
-
-        // Включили жесткое кэширование интерфейса (без устаревших методов)
         ws.setCacheMode(WebSettings.LOAD_CACHE_ELSE_NETWORK);
 
         webView.setBackgroundColor(Color.parseColor("#060709"));
@@ -326,7 +338,6 @@ public class MainActivity extends Activity {
     @Override
     protected void onPause() {
         super.onPause();
-        // Удерживаем аудио-поток и таймеры WebView активными в фоне во время игры в Standoff 2
         if (webView != null) {
             webView.resumeTimers();
         }
@@ -420,7 +431,7 @@ public class MainActivity extends Activity {
         try {
             this.crosshairColor = Color.parseColor(colorHex);
         } catch (Exception e) {
-            this.crosshairColor = Color.parseColor("#00E5FF");
+            this.crosshairColor = COLOR_CROSSHAIR_FALLBACK;
         }
         runOnUiThread(() -> {
             if (crosshairView != null) crosshairView.invalidate();
@@ -477,9 +488,7 @@ public class MainActivity extends Activity {
                 };
                 crosshairView.setLayerType(View.LAYER_TYPE_HARDWARE, null);
 
-                int overlayType = Build.VERSION.SDK_INT >= Build.VERSION_CODES.O
-                        ? WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY
-                        : WindowManager.LayoutParams.TYPE_PHONE;
+                int overlayType = OVERLAY_TYPE;
 
                 crosshairParams = new WindowManager.LayoutParams(
                         96, 96,
@@ -505,22 +514,30 @@ public class MainActivity extends Activity {
     }
 
     private boolean isOverTrashBox(float rawTouchX, float rawTouchY) {
-        DisplayMetrics m = new DisplayMetrics();
-        windowManager.getDefaultDisplay().getRealMetrics(m);
-        int curScreenH = m.heightPixels;
+        if (!screenMetricsValid) {
+            DisplayMetrics m = new DisplayMetrics();
+            windowManager.getDefaultDisplay().getRealMetrics(m);
+            cachedScreenHeight = m.heightPixels;
+            screenMetricsValid = true;
+        }
 
         if (cyberTrashIconView != null && trashDropView != null && trashDropView.getVisibility() == View.VISIBLE) {
-            int[] boxLoc = new int[2];
-            cyberTrashIconView.getLocationOnScreen(boxLoc);
-            int boxLeft = boxLoc[0] - 80;
-            int boxTop = boxLoc[1] - 90;
-            int boxRight = boxLoc[0] + cyberTrashIconView.getWidth() + 80;
-            int boxBottom = boxLoc[1] + cyberTrashIconView.getHeight() + 120;
+            if (!cachedTrashValid) {
+                cyberTrashIconView.getLocationOnScreen(cachedTrashLoc);
+                cachedTrashSize[0] = cyberTrashIconView.getWidth();
+                cachedTrashSize[1] = cyberTrashIconView.getHeight();
+                cachedTrashValid = true;
+            }
+            int boxLeft = cachedTrashLoc[0] - 80;
+            int boxTop = cachedTrashLoc[1] - 90;
+            int boxRight = cachedTrashLoc[0] + cachedTrashSize[0] + 80;
+            int boxBottom = cachedTrashLoc[1] + cachedTrashSize[1] + 120;
+
             if (rawTouchX >= boxLeft && rawTouchX <= boxRight && rawTouchY >= boxTop && rawTouchY <= boxBottom) {
                 return true;
             }
         }
-        return rawTouchY >= (curScreenH - 220);
+        return rawTouchY >= (cachedScreenHeight - 220);
     }
 
     public void toggleFloatingButton(boolean enable) {
@@ -539,10 +556,9 @@ public class MainActivity extends Activity {
             DisplayMetrics dm = new DisplayMetrics();
             windowManager.getDefaultDisplay().getRealMetrics(dm);
             cachedScreenHeight = dm.heightPixels;
+            screenMetricsValid = true;
 
-            int overlayType = Build.VERSION.SDK_INT >= Build.VERSION_CODES.O
-                    ? WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY
-                    : WindowManager.LayoutParams.TYPE_PHONE;
+            int overlayType = OVERLAY_TYPE;
 
             trashDropView = new FrameLayout(this);
             cyberTrashIconView = new CyberTrashView(this);
@@ -600,6 +616,7 @@ public class MainActivity extends Activity {
                             moved = false;
                             v.setScaleX(0.92f);
                             v.setScaleY(0.92f);
+                            cachedTrashValid = false;
                             return true;
 
                         case MotionEvent.ACTION_MOVE:
@@ -769,6 +786,8 @@ public class MainActivity extends Activity {
                 "settings put secure refresh_rate_mode 2; " +
                 "wm size " + baseShort + "x" + finalLong;
         TeleportEngine.execShizukuCommand(cmd);
+        screenMetricsValid = false;
+        cachedTrashValid = false;
     }
 
     public void resetResolution() {
@@ -786,6 +805,8 @@ public class MainActivity extends Activity {
                 "cmd window set-fix-to-user-rotation default; " +
                 "settings put system accelerometer_rotation 0"
         );
+        screenMetricsValid = false;
+        cachedTrashValid = false;
     }
 
     @Override
