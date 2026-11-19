@@ -18,6 +18,7 @@ import android.os.Bundle;
 import android.provider.Settings;
 import android.util.DisplayMetrics;
 import android.view.Gravity;
+import android.view.Display;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.Surface;
@@ -166,8 +167,24 @@ public class MainActivity extends Activity {
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
             WindowManager.LayoutParams lp = getWindow().getAttributes();
-            lp.preferredRefreshRate = 120.0f;
+            Display display = getWindowManager().getDefaultDisplay();
+            Display.Mode currentMode = display.getMode();
+            Display.Mode bestMode = currentMode;
+            float maxRate = 0f;
+            for (Display.Mode mode : display.getSupportedModes()) {
+                if (mode.getPhysicalWidth() == currentMode.getPhysicalWidth()
+                        && mode.getPhysicalHeight() == currentMode.getPhysicalHeight()
+                        && mode.getRefreshRate() > maxRate) {
+                    maxRate = mode.getRefreshRate();
+                    bestMode = mode;
+                }
+            }
+            lp.preferredDisplayModeId = bestMode.getModeId();
             getWindow().setAttributes(lp);
+            getWindow().setSustainedPerformanceMode(true);
+            if (maxRate > 0f) {
+                getWindow().setFrameRate(maxRate, WindowManager.LayoutParams.FRAME_RATE_COMPATIBILITY_FIXED_SOURCE);
+            }
         }
 
         windowManager = (WindowManager) getSystemService(WINDOW_SERVICE);
@@ -269,12 +286,11 @@ public class MainActivity extends Activity {
 
         setContentView(webView);
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            backInvokedCallback = this::handleSwipeBackNavigation;
-            getOnBackInvokedDispatcher().registerOnBackInvokedCallback(
-                    OnBackInvokedDispatcher.PRIORITY_DEFAULT,
-                    backInvokedCallback
-            );
+        if (Build.VERSION.SDK_INT >= 34) {
+            float rate = getWindowManager().getDefaultDisplay().getRefreshRate();
+            if (rate > 60f) {
+                webView.setRequestedFrameRate(rate);
+            }
         }
     }
 
