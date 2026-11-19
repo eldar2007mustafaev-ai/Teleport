@@ -182,9 +182,14 @@ public class MainActivity extends Activity {
             lp.preferredDisplayModeId = bestMode.getModeId();
             getWindow().setAttributes(lp);
             getWindow().setSustainedPerformanceMode(true);
-            if (maxRate > 0f) {
-                getWindow().setFrameRate(maxRate, WindowManager.LayoutParams.FRAME_RATE_COMPATIBILITY_FIXED_SOURCE);
-            }
+        }
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            backInvokedCallback = () -> handleSwipeBackNavigation();
+            getOnBackInvokedDispatcher().registerOnBackInvokedCallback(
+                    OnBackInvokedDispatcher.PRIORITY_DEFAULT,
+                    backInvokedCallback
+            );
         }
 
         windowManager = (WindowManager) getSystemService(WINDOW_SERVICE);
@@ -210,7 +215,6 @@ public class MainActivity extends Activity {
         stealthModeEnabled = prefs.getBoolean("stealth_overlays", false);
 
         webView = new WebView(this);
-        // Отключаем аппаратное ускорение WebView для избавления от постоянной перерисовки GPU текстуры
         webView.setLayerType(View.LAYER_TYPE_NONE, null);
         webView.setOverScrollMode(View.OVER_SCROLL_NEVER);
         webView.setVerticalScrollBarEnabled(false);
@@ -355,6 +359,7 @@ public class MainActivity extends Activity {
     protected void onPause() {
         super.onPause();
         if (webView != null) {
+            webView.onPause();
             webView.resumeTimers();
         }
     }
@@ -819,7 +824,10 @@ public class MainActivity extends Activity {
                 "wm size reset; " +
                 "cmd window set-ignore-orientation-request false; " +
                 "cmd window set-fix-to-user-rotation default; " +
-                "settings put system accelerometer_rotation 0"
+                "settings put system accelerometer_rotation 0; " +
+                "settings delete system peak_refresh_rate; " +
+                "settings delete system min_refresh_rate; " +
+                "settings put secure refresh_rate_mode 0"
         );
         screenMetricsValid = false;
         cachedTrashValid = false;
