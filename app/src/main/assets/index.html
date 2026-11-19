@@ -87,17 +87,17 @@
       --text-display: 1.75rem;
     }
 
-    /* НОВАЯ ТЕМА СВЕТЛОГО ИНТЕРФЕЙСА */
+    /* НОВАЯ ТЕМА СВЕТЛОГО ИНТЕРФЕЙСА (iOS Light) */
     body.light {
       --bg-fallback-1: #F8FAFC;
       --bg-fallback-2: #F1F5F9;
       --bg-fallback-3: #E2E8F0;
       
-      --accent-main: #0EA5E9;
-      --accent-bright: #38BDF8;
-      --accent-sec: #2563EB;
-      --accent-rgb: 14, 165, 233;
-      --accent-sec-rgb: 37, 99, 235;
+      --accent-main: #5BB5E0;
+      --accent-bright: #9CD8F0;
+      --accent-sec: #3B72B8;
+      --accent-rgb: 91, 181, 224;
+      --accent-sec-rgb: 59, 114, 184;
       
       --glass-tint-surface: linear-gradient(
         145deg,
@@ -198,55 +198,67 @@
       outline-offset: 2px;
     }
 
+    /* АНИМИРОВАННЫЕ CSS СФЕРЫ ВМЕСТО ВИДЕО (LIQUID GLASS BACKGROUND) */
     #animatedBgLayer {
       position: fixed;
       inset: 0;
       z-index: -3;
       overflow: hidden;
       pointer-events: none;
-      background:
-        radial-gradient(circle at 18% 14%, rgba(var(--accent-rgb), 0.34) 0%, transparent 55%),
-        radial-gradient(circle at 84% 82%, rgba(var(--accent-sec-rgb), 0.30) 0%, transparent 55%),
-        linear-gradient(160deg, var(--bg-fallback-1) 0%, var(--bg-fallback-2) 50%, var(--bg-fallback-3) 100%);
-    }
-    body.light #animatedBgLayer {
-      background:
-        radial-gradient(circle at 18% 14%, rgba(var(--accent-rgb), 0.12) 0%, transparent 55%),
-        radial-gradient(circle at 84% 82%, rgba(var(--accent-sec-rgb), 0.10) 0%, transparent 55%),
-        linear-gradient(160deg, var(--bg-fallback-1) 0%, var(--bg-fallback-2) 50%, var(--bg-fallback-3) 100%);
+      background: linear-gradient(160deg, var(--bg-fallback-1) 0%, var(--bg-fallback-2) 50%, var(--bg-fallback-3) 100%);
     }
 
-    #bgCustomVideo {
+    .liquid-orb {
       position: absolute;
-      inset: 0;
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-      display: block;
-      opacity: 0.90;
+      border-radius: 50%;
+      filter: blur(80px);
+      opacity: 0.65;
       transform: translateZ(0);
       will-change: transform;
+      animation: floatOrb 14s infinite alternate ease-in-out;
     }
-    #bgCustomGif {
-      position: absolute;
-      inset: 0;
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
+
+    .orb-1 {
+      width: 350px; 
+      height: 350px;
+      background: rgba(var(--accent-rgb), 0.7);
+      top: -10%; left: -10%;
+    }
+    
+    .orb-2 {
+      width: 450px; 
+      height: 450px;
+      background: rgba(var(--accent-sec-rgb), 0.6);
+      bottom: -15%; right: -10%;
+      animation-duration: 18s;
+      animation-direction: alternate-reverse;
+    }
+
+    .orb-3 {
+      width: 250px; 
+      height: 250px;
+      background: rgba(var(--accent-rgb), 0.5);
+      top: 40%; left: 55%;
+      animation-duration: 22s;
+    }
+
+    @keyframes floatOrb {
+      0% { transform: translate3d(0, 0, 0) scale(1); }
+      100% { transform: translate3d(50px, 80px, 0) scale(1.15); }
+    }
+
+    #bgCustomVideo, #bgCustomGif, #bgParticlesCanvas {
       display: none;
-      opacity: 0.90;
     }
-    #bgParticlesCanvas {
-      display: none;
-    }
+
     #bgThemeTintLayer {
       position: fixed;
       inset: 0;
       z-index: -2;
       pointer-events: none;
       background:
-        radial-gradient(ellipse 95% 42% at 50% 0%, rgba(var(--accent-rgb), 0.26) 0%, transparent 68%),
-        radial-gradient(ellipse 90% 45% at 50% 100%, rgba(var(--accent-sec-rgb), 0.24) 0%, transparent 70%),
+        radial-gradient(ellipse 95% 42% at 50% 0%, rgba(var(--accent-rgb), 0.15) 0%, transparent 68%),
+        radial-gradient(ellipse 90% 45% at 50% 100%, rgba(var(--accent-sec-rgb), 0.15) 0%, transparent 70%),
         rgba(4, 7, 15, 0.18);
       transition: background 260ms ease;
     }
@@ -1178,6 +1190,7 @@
     }
     body.light .stretch-solid-inner {
       box-shadow: 0 0 12px rgba(var(--accent-rgb), 0.20), inset 0 1.5px 2px rgba(255, 255, 255, 0.90);
+      color: var(--accent-sec);
     }
 
     .preset-pills-4 {
@@ -1791,7 +1804,7 @@
         inset 0 -3px 8px rgba(var(--accent-rgb), 0.65);
       transform: translate3d(calc(var(--nav-idx, 0) * 100%), 0, 0) scale(var(--lens-sx, 1), var(--lens-sy, 1));
       transition: transform 380ms var(--liquid-glide);
-      will-change: transform;
+      will-change: transform, background, box-shadow;
     }
     body.light .nav-liquid-lens {
       background: radial-gradient(
@@ -1938,6 +1951,9 @@
 <body>
 
   <div id="animatedBgLayer" aria-hidden="true">
+    <div class="liquid-orb orb-1"></div>
+    <div class="liquid-orb orb-2"></div>
+    <div class="liquid-orb orb-3"></div>
     <video id="bgCustomVideo" src="bg.mp4" autoplay loop muted playsinline preload="auto"></video>
     <img id="bgCustomGif" alt="" />
     <canvas id="bgParticlesCanvas"></canvas>
@@ -1952,7 +1968,7 @@
 
   <div id="avatarPickerModal" class="shizuku-alert-backdrop" role="dialog" aria-modal="true" aria-labelledby="avatarModalTitle">
     <div class="shizuku-alert-box liquid-glass-surface">
-      <h2 id="avatarModalTitle" style="font-size:1rem; font-weight:700; color:#fff; margin-bottom:4px;">Профиль и живой фон</h2>
+      <h2 id="avatarModalTitle" style="font-size:1rem; font-weight:700; color:var(--text-main); margin-bottom:4px;">Профиль и живой фон</h2>
       <p style="font-size:0.75rem; color:var(--text-muted); margin-bottom:10px; line-height:1.4;">
         Выберите эмблему, загрузите фото аватарки или установите видео/GIF на фон:
       </p>
@@ -1980,7 +1996,7 @@
 
   <div id="screenCalibOverlay" role="dialog" aria-modal="true" onclick="finishScreenCalibTap()">
     <div style="font-size:2.25rem; margin-bottom:10px;" aria-hidden="true">👆</div>
-    <h2 style="font-size:1.0625rem; font-weight:700; color:#fff; margin-bottom:8px; text-align:center;">
+    <h2 style="font-size:1.0625rem; font-weight:700; color:var(--text-main); margin-bottom:8px; text-align:center;">
       Проведите пальцем по периметру экрана
     </h2>
     <p style="font-size:0.8125rem; color:var(--text-muted); text-align:center; max-width:300px; line-height:1.5;">
@@ -1989,7 +2005,7 @@
   </div>
 
   <div id="touchTestOverlay" role="dialog" aria-modal="true">
-    <h2 style="font-size:1rem; font-weight:700; color:#fff; margin-bottom:6px;">Проверка отклика касаний</h2>
+    <h2 style="font-size:1rem; font-weight:700; color:var(--text-main); margin-bottom:6px;">Проверка отклика касаний</h2>
     <div id="touchTestCoords" style="font-size:0.75rem; color:var(--accent-bright); font-weight:600; font-variant-numeric:tabular-nums; margin-bottom:10px;">
       Проведите пальцем по области ниже…
     </div>
@@ -2001,7 +2017,7 @@
 
   <div id="shizukuRequiredModal" class="shizuku-alert-backdrop" role="dialog" aria-modal="true" aria-labelledby="shizukuModalTitle">
     <div class="shizuku-alert-box liquid-glass-surface">
-      <h2 id="shizukuModalTitle" style="font-size:1.0625rem; font-weight:700; color:#ffffff; margin-bottom:7px;">Требуется запуск Shizuku</h2>
+      <h2 id="shizukuModalTitle" style="font-size:1.0625rem; font-weight:700; color:var(--text-main); margin-bottom:7px;">Требуется запуск Shizuku</h2>
       <p style="font-size:0.8125rem; color:var(--text-muted); line-height:1.5; margin-bottom:14px;">
         Включите службу <b>Shizuku</b> и выдайте доступ для применения настроек сенсы, растяга и FPS.
       </p>
@@ -2016,7 +2032,7 @@
   <div id="authScreenOverlay" role="dialog" aria-modal="true" aria-labelledby="authTitleText">
     <div style="text-align:center; margin-bottom:14px;">
       <div class="auth-badge">QUANTUM CORE V10 • LIQUID GLASS 3D</div>
-      <h1 id="authTitleText" style="font-size:1.75rem; font-weight:800; letter-spacing:-0.02em; color:#fff;">
+      <h1 id="authTitleText" style="font-size:1.75rem; font-weight:800; letter-spacing:-0.02em; color:var(--text-main);">
         SO2Teleport <span style="color:var(--accent-bright);">PRO</span>
       </h1>
     </div>
@@ -2026,7 +2042,7 @@
         Авторизация лицензии (1 ключ = 1 устройство)
       </p>
 
-      <div id="authErrorBanner" role="alert" style="display:none; background:rgba(255,69,58,0.28); border:1px solid rgba(255,140,140,0.75); color:#FFFFFF; border-radius:16px; padding:10px 12px; font-size:0.75rem; font-weight:600; text-align:center; margin-bottom:12px;">
+      <div id="authErrorBanner" role="alert" style="display:none; background:rgba(255,69,58,0.28); border:1px solid rgba(255,140,140,0.75); color:var(--text-main); border-radius:16px; padding:10px 12px; font-size:0.75rem; font-weight:600; text-align:center; margin-bottom:12px;">
         Введите лицензионный ключ из Telegram-бота
       </div>
 
@@ -2047,7 +2063,7 @@
 
     <div style="width:100%; max-width:380px; margin-top:12px; display:flex; flex-direction:column; gap:8px;">
       <div class="btn-dark" style="text-align:center; font-size:0.75rem; color:var(--text-muted); cursor:default;">
-        Защищённый HWID: <b id="loginHwidLabel" style="color:#fff; font-variant-numeric:tabular-nums; user-select:text;">…</b>
+        Защищённый HWID: <b id="loginHwidLabel" style="color:var(--text-main); font-variant-numeric:tabular-nums; user-select:text;">…</b>
       </div>
       <button type="button" class="btn-dark" onclick="openBotShopLink()">
         Получить ключ в Telegram-боте
@@ -2070,7 +2086,7 @@
           <div style="min-width:0;">
             <div class="brand-title-main">SO2Teleport <span>PRO</span></div>
             <div class="brand-meta-sub">
-              Игрок: <b id="topPlayerNick" style="color:#fff;">login</b> • <span id="topSubMini" style="color:#30D158;">АКТИВНА</span>
+              Игрок: <b id="topPlayerNick" style="color:var(--text-main);">login</b> • <span id="topSubMini" style="color:#30D158;">АКТИВНА</span>
             </div>
           </div>
         </div>
@@ -2084,12 +2100,13 @@
       <div class="top-header-bottom-bar">
         <span>ЯДРО: <b id="headerLiveCoreBadge" style="color:var(--accent-bright); font-variant-numeric:tabular-nums;">68.0X EXTREME CORE</b></span>
         <div class="theme-dots" role="group" aria-label="Цветовая тема">
-          <button type="button" class="theme-dot active" data-theme-idx="0" aria-label="Ледяной Сапфир" style="background:linear-gradient(135deg,#E0F2FE,#38BDF8);" onclick="setNeonTheme('', '', '', '', this, 0, false, '')"></button>
-          <button type="button" class="theme-dot" data-theme-idx="1" aria-label="Красный Рубин" style="background:linear-gradient(135deg,#FF453A,#E11D48);" onclick="setNeonTheme('', '', '', '', this, 1, false, '')"></button>
-          <button type="button" class="theme-dot" data-theme-idx="2" aria-label="Синий Океан" style="background:linear-gradient(135deg,#60A5FA,#1D4ED8);" onclick="setNeonTheme('', '', '', '', this, 2, false, '')"></button>
-          <button type="button" class="theme-dot" data-theme-idx="3" aria-label="Зелёный Изумруд" style="background:linear-gradient(135deg,#30D158,#059669);" onclick="setNeonTheme('', '', '', '', this, 3, false, '')"></button>
-          <button type="button" class="theme-dot" data-theme-idx="4" aria-label="Фиолетовый Аметист" style="background:linear-gradient(135deg,#C084FC,#7C3AED);" onclick="setNeonTheme('', '', '', '', this, 4, false, '')"></button>
-          <button type="button" class="theme-dot" data-theme-idx="5" aria-label="Золотой Янтарь" style="background:linear-gradient(135deg,#FBBF24,#D97706);" onclick="setNeonTheme('', '', '', '', this, 5, false, '')"></button>
+          <button type="button" class="theme-dot active" data-theme-idx="0" aria-label="Светлая iOS" style="background:linear-gradient(135deg,#F1F5F9,#FFFFFF);" onclick="setNeonTheme('', '', '', '', this, 0, false, '')"></button>
+          <button type="button" class="theme-dot" data-theme-idx="1" aria-label="Ледяной Сапфир" style="background:linear-gradient(135deg,#E0F2FE,#38BDF8);" onclick="setNeonTheme('', '', '', '', this, 1, false, '')"></button>
+          <button type="button" class="theme-dot" data-theme-idx="2" aria-label="Красный Рубин" style="background:linear-gradient(135deg,#FF453A,#E11D48);" onclick="setNeonTheme('', '', '', '', this, 2, false, '')"></button>
+          <button type="button" class="theme-dot" data-theme-idx="3" aria-label="Синий Океан" style="background:linear-gradient(135deg,#60A5FA,#1D4ED8);" onclick="setNeonTheme('', '', '', '', this, 3, false, '')"></button>
+          <button type="button" class="theme-dot" data-theme-idx="4" aria-label="Зелёный Изумруд" style="background:linear-gradient(135deg,#30D158,#059669);" onclick="setNeonTheme('', '', '', '', this, 4, false, '')"></button>
+          <button type="button" class="theme-dot" data-theme-idx="5" aria-label="Фиолетовый Аметист" style="background:linear-gradient(135deg,#C084FC,#7C3AED);" onclick="setNeonTheme('', '', '', '', this, 5, false, '')"></button>
+          <button type="button" class="theme-dot" data-theme-idx="6" aria-label="Золотой Янтарь" style="background:linear-gradient(135deg,#FBBF24,#D97706);" onclick="setNeonTheme('', '', '', '', this, 6, false, '')"></button>
         </div>
       </div>
     </header>
@@ -2325,7 +2342,7 @@
               <div style="display:flex; align-items:center; gap:11px; min-width:0;">
                 <div class="acc-icon" style="width:34px; height:34px; font-size:0.8125rem;" aria-hidden="true">💾</div>
                 <div style="min-width:0;">
-                  <div id="mySavedSlotTitle" style="font-size:0.8125rem; font-weight:600; color:#fff;">Мой сохранённый конфиг</div>
+                  <div id="mySavedSlotTitle" style="font-size:0.8125rem; font-weight:600; color:var(--text-main);">Мой сохранённый конфиг</div>
                   <div style="font-size:0.6875rem; color:var(--text-muted);">персональный слот</div>
                 </div>
               </div>
@@ -2349,7 +2366,7 @@
             <div class="shelf-cards-grid">
               <div id="preset_tablet_pro" class="shelf-preset-card" onclick="selectTeleportPreset('tablet_pro')">
                 <div>
-                  <div style="font-size:0.75rem; font-weight:700; color:#fff;">ДЛЯ ПАДОВ УЛЬТРА</div>
+                  <div style="font-size:0.75rem; font-weight:700; color:var(--text-main);">ДЛЯ ПАДОВ УЛЬТРА</div>
                   <div style="font-size:0.6875rem; color:var(--text-muted); margin-top:2px;">Импульс 128.0x • Xiaomi Pad / iPad</div>
                 </div>
                 <div style="font-size:0.6875rem; color:var(--accent-bright); font-weight:700; margin-top:8px;">Включить конфиг →</div>
@@ -2357,7 +2374,7 @@
 
               <div id="preset_clean_sharp" class="shelf-preset-card" onclick="selectTeleportPreset('clean_sharp')">
                 <div>
-                  <div style="font-size:0.75rem; font-weight:700; color:#fff;">AWM / DEAGLE РЕЗКИЙ</div>
+                  <div style="font-size:0.75rem; font-weight:700; color:var(--text-main);">AWM / DEAGLE РЕЗКИЙ</div>
                   <div style="font-size:0.6875rem; color:var(--text-muted); margin-top:2px;">Точный хват 48.0x • Снайперский флик</div>
                 </div>
                 <div style="font-size:0.6875rem; color:var(--accent-bright); font-weight:700; margin-top:8px;">Включить конфиг →</div>
@@ -2365,7 +2382,7 @@
 
               <div class="shelf-preset-card" onclick="applyShelfPreset('demon_100')">
                 <div>
-                  <div style="font-size:0.75rem; font-weight:700; color:#fff;">H9IJE TELEPORT MAX</div>
+                  <div style="font-size:0.75rem; font-weight:700; color:var(--text-main);">H9IJE TELEPORT MAX</div>
                   <div style="font-size:0.6875rem; color:var(--text-muted); margin-top:2px;">Куски 150 • Полный овердрайв</div>
                 </div>
                 <div style="font-size:0.6875rem; color:var(--accent-bright); font-weight:700; margin-top:8px;">Включить конфиг →</div>
@@ -2373,7 +2390,7 @@
 
               <div class="shelf-preset-card" onclick="applyShelfPreset('heavy_pixel')">
                 <div>
-                  <div style="font-size:0.75rem; font-weight:700; color:#fff;">AKR12 / M4 ЗАЖИМ</div>
+                  <div style="font-size:0.75rem; font-weight:700; color:var(--text-main);">AKR12 / M4 ЗАЖИМ</div>
                   <div style="font-size:0.6875rem; color:var(--text-muted); margin-top:2px;">Куски 96 • Удержание точки</div>
                 </div>
                 <div style="font-size:0.6875rem; color:var(--accent-bright); font-weight:700; margin-top:8px;">Включить конфиг →</div>
@@ -2424,7 +2441,7 @@
 
             <div class="ch-color-palette-bar">
               <div style="display:flex; align-items:center; justify-content:space-between;">
-                <span style="font-size:0.8125rem; font-weight:600; color:#fff;">Цвет прицела</span>
+                <span style="font-size:0.8125rem; font-weight:600; color:var(--text-main);">Цвет прицела</span>
                 <span id="chColorHexBadge" class="badge-chip" style="font-family:monospace;">#30D158</span>
               </div>
               <div class="ch-color-dots-row" role="group" aria-label="Палитра цвета прицела">
@@ -2449,11 +2466,11 @@
 
             <div class="ch-subtoggle-grid-2">
               <div id="subBoxCrossLines" class="ch-subtoggle-box active" onclick="setCrosshairMode(this, 'cross')">
-                <span style="font-size:0.6875rem; font-weight:600; color:#fff;">ТОЛЬКО ЛУЧИ</span>
+                <span style="font-size:0.6875rem; font-weight:600; color:var(--text-main);">ТОЛЬКО ЛУЧИ</span>
                 <span class="badge-chip">БЕЗ ТОЧКИ</span>
               </div>
               <div id="subBoxCenterDot" class="ch-subtoggle-box" onclick="setCrosshairMode(this, 'crossdot')">
-                <span style="font-size:0.6875rem; font-weight:600; color:#fff;">ЛУЧИ + ТОЧКА</span>
+                <span style="font-size:0.6875rem; font-weight:600; color:var(--text-main);">ЛУЧИ + ТОЧКА</span>
                 <span class="badge-chip">КОМБО</span>
               </div>
             </div>
@@ -2785,7 +2802,7 @@
             <span id="profAvatarFallback" style="font-size:1.5rem; font-weight:700; color:#FFFFFF;">P</span>
           </div>
           <div style="flex:1; min-width:0;">
-            <div style="font-size:1.125rem; font-weight:700; color:#fff;" id="profNickText">login</div>
+            <div style="font-size:1.125rem; font-weight:700; color:var(--text-main);" id="profNickText">login</div>
             <div style="font-size:0.75rem; color:#30D158; font-weight:700; margin-top:2px;" id="profSubVal">АКТИВНА</div>
             <div style="display:flex; gap:6px; flex-wrap:wrap; margin-top:8px;">
               <button type="button" class="btn-dark" style="padding:7px 12px; font-size:0.6875rem; min-height:34px; width:auto;" onclick="triggerAvatarUpload()">
@@ -2881,76 +2898,46 @@
 
     const IOS27_LIQUID_THEMES = [
       {
+        name: "Светлая iOS (Light Mode)",
+        bgBase: "#F8FAFC", bgDeep1: "#F1F5F9", bgDeep2: "#E2E8F0",
+        accent: "#5BB5E0", accentRgb: "91, 181, 224",
+        sec: "#3B72B8", secRgb: "59, 114, 184"
+      },
+      {
         name: "Ледяной Сапфир (Ice Blue)",
         bgBase: "#070B16", bgDeep1: "#0E172C", bgDeep2: "#152342",
         accent: "#38BDF8", accentRgb: "56, 189, 248",
-        sec: "#2563EB", secRgb: "37, 99, 235",
-        surfaceTint: "linear-gradient(145deg, rgba(255, 255, 255, 0.14) 0%, rgba(56, 189, 248, 0.22) 42%, rgba(37, 99, 235, 0.18) 78%, rgba(8, 12, 24, 0.56) 100%)",
-        cardTint: "linear-gradient(145deg, rgba(255, 255, 255, 0.13) 0%, rgba(56, 189, 248, 0.18) 48%, rgba(10, 15, 28, 0.50) 100%)",
-        btnTint: "radial-gradient(125% 140% at 22% 18%, rgba(255, 255, 255, 0.26) 0%, rgba(56, 189, 248, 0.24) 48%, rgba(12, 18, 34, 0.52) 100%)",
-        activeTint: "radial-gradient(125% 140% at 20% 15%, rgba(255, 255, 255, 0.44) 0%, rgba(56, 189, 248, 0.64) 46%, rgba(37, 99, 235, 0.62) 100%)",
-        rimTl: "rgba(255, 255, 255, 0.72)", rimBr: "rgba(56, 189, 248, 0.58)",
-        activeTl: "rgba(255, 255, 255, 0.96)", activeBr: "rgba(56, 189, 248, 0.88)"
+        sec: "#2563EB", secRgb: "37, 99, 235"
       },
       {
         name: "Красный Рубин (Crimson Glass)",
         bgBase: "#14070B", bgDeep1: "#220B12", bgDeep2: "#30101A",
         accent: "#FF453A", accentRgb: "255, 69, 58",
-        sec: "#E11D48", secRgb: "225, 29, 72",
-        surfaceTint: "linear-gradient(145deg, rgba(255, 255, 255, 0.14) 0%, rgba(255, 69, 58, 0.22) 42%, rgba(225, 29, 72, 0.18) 78%, rgba(14, 6, 10, 0.56) 100%)",
-        cardTint: "linear-gradient(145deg, rgba(255, 255, 255, 0.13) 0%, rgba(255, 69, 58, 0.18) 48%, rgba(16, 7, 11, 0.50) 100%)",
-        btnTint: "radial-gradient(125% 140% at 22% 18%, rgba(255, 255, 255, 0.26) 0%, rgba(255, 69, 58, 0.24) 48%, rgba(18, 8, 12, 0.52) 100%)",
-        activeTint: "radial-gradient(125% 140% at 20% 15%, rgba(255, 255, 255, 0.44) 0%, rgba(255, 69, 58, 0.64) 46%, rgba(225, 29, 72, 0.62) 100%)",
-        rimTl: "rgba(255, 255, 255, 0.72)", rimBr: "rgba(255, 69, 58, 0.58)",
-        activeTl: "rgba(255, 255, 255, 0.96)", activeBr: "rgba(255, 69, 58, 0.88)"
+        sec: "#E11D48", secRgb: "225, 29, 72"
       },
       {
         name: "Синий Океан (Deep Ocean)",
         bgBase: "#060D1A", bgDeep1: "#0B172E", bgDeep2: "#112344",
         accent: "#60A5FA", accentRgb: "96, 165, 250",
-        sec: "#1D4ED8", secRgb: "29, 78, 216",
-        surfaceTint: "linear-gradient(145deg, rgba(255, 255, 255, 0.14) 0%, rgba(96, 165, 250, 0.22) 42%, rgba(29, 78, 216, 0.18) 78%, rgba(6, 11, 22, 0.56) 100%)",
-        cardTint: "linear-gradient(145deg, rgba(255, 255, 255, 0.13) 0%, rgba(96, 165, 250, 0.18) 48%, rgba(8, 13, 25, 0.50) 100%)",
-        btnTint: "radial-gradient(125% 140% at 22% 18%, rgba(255, 255, 255, 0.26) 0%, rgba(96, 165, 250, 0.24) 48%, rgba(10, 16, 30, 0.52) 100%)",
-        activeTint: "radial-gradient(125% 140% at 20% 15%, rgba(255, 255, 255, 0.44) 0%, rgba(96, 165, 250, 0.64) 46%, rgba(29, 78, 216, 0.62) 100%)",
-        rimTl: "rgba(255, 255, 255, 0.72)", rimBr: "rgba(96, 165, 250, 0.58)",
-        activeTl: "rgba(255, 255, 255, 0.96)", activeBr: "rgba(96, 165, 250, 0.88)"
+        sec: "#1D4ED8", secRgb: "29, 78, 216"
       },
       {
         name: "Зелёный Изумруд (Emerald Glass)",
         bgBase: "#05130F", bgDeep1: "#0A211A", bgDeep2: "#0F3026",
         accent: "#30D158", accentRgb: "48, 209, 88",
-        sec: "#059669", secRgb: "5, 150, 105",
-        surfaceTint: "linear-gradient(145deg, rgba(255, 255, 255, 0.14) 0%, rgba(48, 209, 88, 0.22) 42%, rgba(5, 150, 105, 0.18) 78%, rgba(5, 16, 13, 0.56) 100%)",
-        cardTint: "linear-gradient(145deg, rgba(255, 255, 255, 0.13) 0%, rgba(48, 209, 88, 0.18) 48%, rgba(7, 19, 15, 0.50) 100%)",
-        btnTint: "radial-gradient(125% 140% at 22% 18%, rgba(255, 255, 255, 0.26) 0%, rgba(48, 209, 88, 0.24) 48%, rgba(8, 22, 17, 0.52) 100%)",
-        activeTint: "radial-gradient(125% 140% at 20% 15%, rgba(255, 255, 255, 0.44) 0%, rgba(48, 209, 88, 0.64) 46%, rgba(5, 150, 105, 0.62) 100%)",
-        rimTl: "rgba(255, 255, 255, 0.72)", rimBr: "rgba(48, 209, 88, 0.58)",
-        activeTl: "rgba(255, 255, 255, 0.96)", activeBr: "rgba(48, 209, 88, 0.88)"
+        sec: "#059669", secRgb: "5, 150, 105"
       },
       {
         name: "Фиолетовый Аметист (Violet Glass)",
         bgBase: "#0F091C", bgDeep1: "#1A1030", bgDeep2: "#251745",
         accent: "#C084FC", accentRgb: "192, 132, 252",
-        sec: "#7C3AED", secRgb: "124, 58, 237",
-        surfaceTint: "linear-gradient(145deg, rgba(255, 255, 255, 0.14) 0%, rgba(192, 132, 252, 0.22) 42%, rgba(124, 58, 237, 0.18) 78%, rgba(12, 7, 22, 0.56) 100%)",
-        cardTint: "linear-gradient(145deg, rgba(255, 255, 255, 0.13) 0%, rgba(192, 132, 252, 0.18) 48%, rgba(16, 10, 28, 0.50) 100%)",
-        btnTint: "radial-gradient(125% 140% at 22% 18%, rgba(255, 255, 255, 0.26) 0%, rgba(192, 132, 252, 0.24) 48%, rgba(18, 11, 32, 0.52) 100%)",
-        activeTint: "radial-gradient(125% 140% at 20% 15%, rgba(255, 255, 255, 0.44) 0%, rgba(192, 132, 252, 0.64) 46%, rgba(124, 58, 237, 0.62) 100%)",
-        rimTl: "rgba(255, 255, 255, 0.72)", rimBr: "rgba(192, 132, 252, 0.58)",
-        activeTl: "rgba(255, 255, 255, 0.96)", activeBr: "rgba(192, 132, 252, 0.88)"
+        sec: "#7C3AED", secRgb: "124, 58, 237"
       },
       {
         name: "Золотой Янтарь (Amber Glass)",
         bgBase: "#140E05", bgDeep1: "#241909", bgDeep2: "#33240D",
         accent: "#FBBF24", accentRgb: "251, 191, 36",
-        sec: "#D97706", secRgb: "217, 119, 6",
-        surfaceTint: "linear-gradient(145deg, rgba(255, 255, 255, 0.14) 0%, rgba(251, 191, 36, 0.22) 42%, rgba(217, 119, 6, 0.18) 78%, rgba(16, 11, 4, 0.56) 100%)",
-        cardTint: "linear-gradient(145deg, rgba(255, 255, 255, 0.13) 0%, rgba(251, 191, 36, 0.18) 48%, rgba(22, 15, 5, 0.50) 100%)",
-        btnTint: "radial-gradient(125% 140% at 22% 18%, rgba(255, 255, 255, 0.26) 0%, rgba(251, 191, 36, 0.24) 48%, rgba(25, 17, 6, 0.52) 100%)",
-        activeTint: "radial-gradient(125% 140% at 20% 15%, rgba(255, 255, 255, 0.44) 0%, rgba(251, 191, 36, 0.64) 46%, rgba(217, 119, 6, 0.62) 100%)",
-        rimTl: "rgba(255, 255, 255, 0.72)", rimBr: "rgba(251, 191, 36, 0.58)",
-        activeTl: "rgba(255, 255, 255, 0.96)", activeBr: "rgba(251, 191, 36, 0.88)"
+        sec: "#D97706", secRgb: "217, 119, 6"
       }
     ];
 
@@ -3074,26 +3061,20 @@
       const idx = (typeof themeIdx === "number" && IOS27_LIQUID_THEMES[themeIdx]) ? themeIdx : 0;
       const th = IOS27_LIQUID_THEMES[idx];
       const root = document.documentElement;
-
-      root.style.setProperty("--bg-fallback-1", th.bgBase);
-      root.style.setProperty("--bg-fallback-2", th.bgDeep1);
-      root.style.setProperty("--bg-fallback-3", th.bgDeep2);
-      root.style.setProperty("--bg-wave-1", th.wave1);
-      root.style.setProperty("--bg-wave-2", th.wave2);
-      root.style.setProperty("--bg-wave-3", th.wave3);
-      root.style.setProperty("--accent-main", th.accent);
-      root.style.setProperty("--accent-rgb", th.accentRgb);
-      root.style.setProperty("--accent-sec", th.sec);
-      root.style.setProperty("--accent-sec-rgb", th.secRgb);
-      root.style.setProperty("--focus-ring", th.accent);
-      root.style.setProperty("--glass-tint-surface", th.surfaceTint);
-      root.style.setProperty("--glass-tint-card", th.cardTint);
-      root.style.setProperty("--glass-tint-btn", th.btnTint);
-      root.style.setProperty("--glass-tint-active", th.activeTint);
-      root.style.setProperty("--glass-rim-tl", th.rimTl);
-      root.style.setProperty("--glass-rim-br", th.rimBr);
-      root.style.setProperty("--glass-rim-active-tl", "rgba(255, 255, 255, 0.96)");
-      root.style.setProperty("--glass-rim-active-br", "rgba(" + th.accentRgb + ", 0.88)");
+      
+      if (idx === 0) {
+        document.body.classList.add("light");
+      } else {
+        document.body.classList.remove("light");
+        root.style.setProperty("--bg-fallback-1", th.bgBase);
+        root.style.setProperty("--bg-fallback-2", th.bgDeep1);
+        root.style.setProperty("--bg-fallback-3", th.bgDeep2);
+        root.style.setProperty("--accent-main", th.accent);
+        root.style.setProperty("--accent-rgb", th.accentRgb);
+        root.style.setProperty("--accent-sec", th.sec);
+        root.style.setProperty("--accent-sec-rgb", th.secRgb);
+        root.style.setProperty("--focus-ring", th.accent);
+      }
 
       document.querySelectorAll(".theme-dot").forEach(d => d.classList.remove("active"));
       if (dotEl) {
@@ -3114,12 +3095,18 @@
 
     function restoreSavedTheme() {
       let idx = 0;
+      let hasSaved = false;
       try {
-        idx = parseInt(localStorage.getItem("so2_theme_idx_v11") || "0", 10);
-      } catch (e) {
+        const saved = localStorage.getItem("so2_theme_idx_v11");
+        if (saved !== null) {
+          idx = parseInt(saved, 10);
+          hasSaved = true;
+        }
+      } catch (e) {}
+      if (isNaN(idx) || idx < 0 || idx >= IOS27_LIQUID_THEMES.length) {
         idx = 0;
+        hasSaved = false;
       }
-      if (isNaN(idx) || idx < 0 || idx >= IOS27_LIQUID_THEMES.length) idx = 0;
       setNeonTheme("", "", "", "", null, idx, true, "");
     }
 
@@ -4392,7 +4379,7 @@
           '<div class="voice-member-card">' +
           '<div style="display:flex;align-items:center;gap:10px;min-width:0;">' +
           '<div class="acc-icon" style="width:34px;height:34px;font-size:0.8125rem;" aria-hidden="true">🎙</div>' +
-          '<div style="min-width:0;"><div style="font-size:0.8125rem;font-weight:600;color:#fff;">' + activePlayerNick + ' (Вы)</div>' +
+          '<div style="min-width:0;"><div style="font-size:0.8125rem;font-weight:600;color:var(--text-main);">' + activePlayerNick + ' (Вы)</div>' +
           '<div style="font-size:0.6875rem;color:#30D158;">Чистый канал • 400% Squad Isolator</div></div></div>' +
           (isMicMuted ? '<span class="badge-chip">MUTE</span>' : '<div class="voice-eq-bars" aria-label="Говорит"><span></span><span></span><span></span></div>') +
           '</div>';
@@ -4461,7 +4448,7 @@
       }
       box.innerHTML = list.map((code, idx) => (
         '<div class="friend-item">' +
-        '<div style="min-width:0;"><div style="font-size:0.8125rem;font-weight:600;color:#fff;">Тиммейт <bdi>' + code + '</bdi></div>' +
+        '<div style="min-width:0;"><div style="font-size:0.8125rem;font-weight:600;color:var(--text-main);">Тиммейт <bdi>' + code + '</bdi></div>' +
         '<div style="font-size:0.6875rem;color:#30D158;">Онлайн • SO2Teleport PRO</div></div>' +
         '<button type="button" class="icon-circle-action" aria-label="Удалить тиммейта ' + code + '" onclick="removeFriendAtIndex(' + idx + ')">✕</button>' +
         '</div>'
@@ -4629,7 +4616,23 @@
     function initAppOnBoot() {
       startDefaultBackgroundVideo();
       upgradeShizukuModalGuideAndGuard();
-      restoreSavedTheme();
+      
+      // Инициализация тем (светлая iOS по умолчанию)
+      let idx = 0;
+      let hasSaved = false;
+      try {
+        const saved = localStorage.getItem("so2_theme_idx_v11");
+        if (saved !== null) {
+          idx = parseInt(saved, 10);
+          hasSaved = true;
+        }
+      } catch (e) {}
+      if (isNaN(idx) || idx < 0 || idx >= IOS27_LIQUID_THEMES.length) {
+        idx = 0; // Светлая тема iOS по умолчанию
+        hasSaved = false;
+      }
+      setNeonTheme("", "", "", "", null, idx, true, "");
+      
       selectTeleportPreset("extreme", true);
       setMainEnginePower(false, true);
       updateOptLabels();
