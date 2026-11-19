@@ -90,8 +90,8 @@
     /* НОВАЯ ТЕМА СВЕТЛОГО ИНТЕРФЕЙСА (iOS Light) */
     body.light {
       --bg-fallback-1: #F8FAFC;
-      --bg-fallback-2: #F1F5F9;
-      --bg-fallback-3: #E2E8F0;
+      --bg-fallback-2: #E2E8F0;
+      --bg-fallback-3: #CBD5E1;
       
       --accent-main: #5BB5E0;
       --accent-bright: #9CD8F0;
@@ -198,57 +198,57 @@
       outline-offset: 2px;
     }
 
-    /* АНИМИРОВАННЫЕ CSS СФЕРЫ ВМЕСТО ВИДЕО (LIQUID GLASS BACKGROUND) */
+    /* АНИМИРОВАННЫЙ CSS ФОН ВМЕСТО ВИДЕО (LIQUID GLASS BACKGROUND) */
     #animatedBgLayer {
       position: fixed;
       inset: 0;
       z-index: -3;
-      overflow: hidden;
       pointer-events: none;
-      background: linear-gradient(160deg, var(--bg-fallback-1) 0%, var(--bg-fallback-2) 50%, var(--bg-fallback-3) 100%);
+      background: linear-gradient(135deg, var(--bg-fallback-1) 0%, var(--bg-fallback-2) 50%, var(--bg-fallback-3) 100%);
+      overflow: hidden;
     }
-
+    
     .liquid-orb {
       position: absolute;
       border-radius: 50%;
       filter: blur(80px);
-      opacity: 0.65;
       transform: translateZ(0);
       will-change: transform;
-      animation: floatOrb 14s infinite alternate ease-in-out;
+      animation: floatOrb 12s infinite alternate ease-in-out;
     }
 
     .orb-1 {
       width: 350px; 
       height: 350px;
-      background: rgba(var(--accent-rgb), 0.7);
-      top: -10%; left: -10%;
+      background: rgba(var(--accent-rgb), 0.55);
+      top: -10%; left: -15%;
     }
     
     .orb-2 {
-      width: 450px; 
-      height: 450px;
-      background: rgba(var(--accent-sec-rgb), 0.6);
-      bottom: -15%; right: -10%;
-      animation-duration: 18s;
+      width: 400px; 
+      height: 400px;
+      background: rgba(var(--accent-sec-rgb), 0.45);
+      bottom: -15%; right: -15%;
+      animation-duration: 16s;
       animation-direction: alternate-reverse;
     }
 
     .orb-3 {
       width: 250px; 
       height: 250px;
-      background: rgba(var(--accent-rgb), 0.5);
-      top: 40%; left: 55%;
-      animation-duration: 22s;
+      background: rgba(var(--accent-rgb), 0.35);
+      top: 30%; right: 10%;
+      animation-duration: 20s;
     }
 
     @keyframes floatOrb {
       0% { transform: translate3d(0, 0, 0) scale(1); }
-      100% { transform: translate3d(50px, 80px, 0) scale(1.15); }
+      100% { transform: translate3d(40px, 60px, 0) scale(1.15); }
     }
 
+    /* Скрываем пустые иконки от несуществующего видео */
     #bgCustomVideo, #bgCustomGif, #bgParticlesCanvas {
-      display: none;
+      display: none !important;
     }
 
     #bgThemeTintLayer {
@@ -327,8 +327,10 @@
     .acc-chevron,
     .char-arrow {
       position: relative;
+      /* Немного снижен saturate, чтобы убрать фризы отрисовки */
       backdrop-filter: blur(var(--glass-blur)) saturate(120%);
       -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(120%);
+      /* Принудительное аппаратное ускорение для карточек */
       transform: translateZ(0);
       backface-visibility: hidden;
     }
@@ -402,6 +404,7 @@
       -webkit-mask-composite: xor;
       mask-composite: exclude;
       pointer-events: none;
+      /* Аппаратное ускорение для градиентных рамок */
       transform: translateZ(0);
     }
 
@@ -1950,19 +1953,16 @@
 </head>
 <body>
 
+  <!-- ПОЛНОСТЬЮ НОВЫЙ АНИМИРОВАННЫЙ ФОН LIQUID GLASS -->
   <div id="animatedBgLayer" aria-hidden="true">
     <div class="liquid-orb orb-1"></div>
     <div class="liquid-orb orb-2"></div>
     <div class="liquid-orb orb-3"></div>
-    <video id="bgCustomVideo" src="bg.mp4" autoplay loop muted playsinline preload="auto"></video>
-    <img id="bgCustomGif" alt="" />
-    <canvas id="bgParticlesCanvas"></canvas>
   </div>
   <div id="bgThemeTintLayer" aria-hidden="true"></div>
   <div id="bgVignetteOverlay" aria-hidden="true"></div>
 
   <input id="avatarFileInput" type="file" accept="image/*" style="display:none" onchange="onAvatarFileSelected(event)" />
-  <input id="bgMediaFileInput" type="file" accept="video/*,image/gif,image/webp,image/*" style="display:none" onchange="onCustomBgFileSelected(event)" />
   <input id="chCustomColorPicker" type="color" value="#30D158" style="display:none" onchange="onCustomCrosshairColorPicked(this.value)" />
   <div id="cyberToast" role="status" aria-live="polite">SO2Teleport PRO</div>
 
@@ -3110,22 +3110,6 @@
       setNeonTheme("", "", "", "", null, idx, true, "");
     }
 
-    function startDefaultBackgroundVideo() {
-      const vid = document.getElementById("bgCustomVideo");
-      const gif = document.getElementById("bgCustomGif");
-      if (!vid) return;
-      if (gif && gif.style.display === "block") return;
-      if (!vid.getAttribute("src")) {
-        vid.setAttribute("src", "bg.mp4");
-      }
-      vid.style.display = "block";
-      vid.muted = true;
-      const playPromise = vid.play();
-      if (playPromise && typeof playPromise.catch === "function") {
-        playPromise.catch(() => {});
-      }
-    }
-
     function upgradeShizukuModalGuideAndGuard() {
       const modal = document.getElementById("shizukuRequiredModal");
       if (modal) {
@@ -3156,7 +3140,6 @@
       }
 
       document.addEventListener("click", function(e) {
-        startDefaultBackgroundVideo();
         const authOverlay = document.getElementById("authScreenOverlay");
         if (authOverlay && authOverlay.style.display !== "none") return;
         const shizukuModal = document.getElementById("shizukuRequiredModal");
@@ -3292,7 +3275,6 @@
       updateProfileAndHeaderInfo(cleanNick, cleanKey, subLabel || "АКТИВНА");
       loadSavedConfigLocal(true);
       setMainEnginePower(false, true);
-      startDefaultBackgroundVideo();
 
       callBridgeAsync(b => {
         b.savePlayerNickname(cleanNick);
@@ -4548,53 +4530,15 @@
     }
 
     function triggerCustomBgUpload() {
-      const inp = document.getElementById("bgMediaFileInput");
-      if (inp) inp.click();
+      showToast("Кастомный фон отключен ради максимальной плавности 120 FPS");
     }
 
     function onCustomBgFileSelected(event) {
-      const file = event && event.target && event.target.files && event.target.files[0];
-      if (!file) return;
-      const url = URL.createObjectURL(file);
-      const vid = document.getElementById("bgCustomVideo");
-      const gif = document.getElementById("bgCustomGif");
-
-      if (file.type && file.type.indexOf("video") === 0) {
-        if (gif) gif.style.display = "none";
-        if (vid) {
-          vid.src = url;
-          vid.style.display = "block";
-          vid.play().catch(() => {});
-        }
-      } else {
-        if (vid) {
-          vid.pause();
-          vid.style.display = "none";
-        }
-        if (gif) {
-          gif.src = url;
-          gif.style.display = "block";
-        }
-      }
-      const modal = document.getElementById("avatarPickerModal");
-      if (modal) modal.style.display = "none";
-      showToast("Живой фон установлен");
+      // Игнорируется для оптимизации FPS
     }
 
     function resetCustomBgToCarbon() {
-      const vid = document.getElementById("bgCustomVideo");
-      const gif = document.getElementById("bgCustomGif");
-      if (gif) {
-        gif.removeAttribute("src");
-        gif.style.display = "none";
-      }
-      if (vid) {
-        vid.src = "bg.mp4";
-        vid.style.display = "block";
-        vid.muted = true;
-        vid.play().catch(() => {});
-      }
-      showToast("Стандартный видеофон bg.mp4 восстановлен");
+      showToast("Используется стандартный Liquid Glass (Аппаратный рендер)");
     }
 
     function openBotShopLink() {
@@ -4614,7 +4558,6 @@
     }
 
     function initAppOnBoot() {
-      startDefaultBackgroundVideo();
       upgradeShizukuModalGuideAndGuard();
       
       // Инициализация тем (светлая iOS по умолчанию)
