@@ -19,20 +19,16 @@
       --accent-sec-rgb: 156, 163, 175;
       --focus-ring: rgba(var(--accent-rgb), 0.6);
 
-      /* Ультимативный блюр для премиум-стекла */
       --glass-blur: 18px;
 
-      /* Глубокие прозрачные тинты */
       --glass-tint-surface: linear-gradient(145deg, rgba(255, 255, 255, 0.08) 0%, rgba(var(--accent-rgb), 0.12) 45%, rgba(0, 0, 0, 0.45) 100%);
       --glass-tint-card: linear-gradient(145deg, rgba(255, 255, 255, 0.05) 0%, rgba(var(--accent-rgb), 0.08) 50%, rgba(0, 0, 0, 0.35) 100%);
       
-      /* Мягкие тинты кнопок-капсул */
       --glass-tint-btn: radial-gradient(125% 140% at 20% 20%, rgba(255, 255, 255, 0.15) 0%, rgba(var(--accent-rgb), 0.20) 50%, rgba(0, 0, 0, 0.40) 100%);
       --glass-tint-active: radial-gradient(125% 140% at 20% 15%, rgba(255, 255, 255, 0.28) 0%, rgba(var(--accent-rgb), 0.38) 45%, rgba(var(--accent-sec-rgb), 0.28) 100%);
       --glass-sphere-fill: radial-gradient(circle at 28% 22%, rgba(255, 255, 255, 0.35) 0%, rgba(var(--accent-rgb), 0.35) 50%, rgba(var(--accent-sec-rgb), 0.25) 100%);
       --glass-tint-nav: linear-gradient(180deg, rgba(0, 0, 0, 0.45) 0%, rgba(var(--accent-sec-rgb), 0.15) 100%);
 
-      /* Градиенты для масок (1px преломление) */
       --glass-rim-tl: rgba(255, 255, 255, 0.65);
       --glass-rim-mid: rgba(255, 255, 255, 0.02);
       --glass-rim-br: rgba(var(--accent-rgb), 0.45);
@@ -96,10 +92,8 @@
     }
     input::placeholder { color: var(--text-hint); }
 
-    /* Обёртка с Motion Blur */
     #mainAppWorkspace {
       max-width: 500px; margin-inline: auto; padding-inline: 14px; padding-block-end: 16px; position: relative; z-index: 2;
-      will-change: filter; transition: filter 0.08s linear;
     }
 
     /* --- ПРЕМИАЛЬНЫЕ УНИВЕРСАЛЬНЫЕ КЛАССЫ СТЕКЛА --- */
@@ -115,11 +109,11 @@
       -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
       -webkit-mask-composite: xor; mask-composite: exclude; pointer-events: none; transition: background 260ms ease;
     }
-    .premium-glass.active-state::before {
+    .premium-glass.active-state::before, .premium-capsule.active-state::before {
       background: linear-gradient(135deg, var(--glass-rim-active-tl) 0%, rgba(255,255,255,0.08) 48%, var(--glass-rim-active-br) 100%);
     }
 
-    /* Карточки */
+    /* Карточки (оставляем мягкие углы 28px для блоков, но все кнопки внутри капсулы) */
     .premium-card {
       background: var(--glass-tint-card); border-radius: 28px;
       box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35), inset 0 1px 2px rgba(255, 255, 255, 0.15);
@@ -134,9 +128,9 @@
       box-shadow: 0 8px 24px rgba(var(--accent-sec-rgb), 0.35), inset 0 1.5px 3px rgba(255, 255, 255, 0.45);
     }
 
-    /* Кнопки-Капсулы (Круглые) */
+    /* ВЕЗДЕ КАПСУЛЫ (999px) ДЛЯ КНОПОК И ИНПУТОВ */
     .premium-capsule {
-      background: var(--glass-tint-btn); border-radius: 999px;
+      background: var(--glass-tint-btn); border-radius: 999px !important;
       box-shadow: 0 6px 16px rgba(0,0,0,0.30), inset 0 1px 2px rgba(255,255,255,0.20);
       display: flex; align-items: center; justify-content: center; text-align: center;
       transition: transform 280ms var(--spring-ease), background 200ms ease, box-shadow 200ms ease;
@@ -160,13 +154,12 @@
       transform: scale(0.95);
     }
 
-    /* Специфичные размеры для кнопок */
     .btn-main, .btn-dark, .btn-danger { min-height: 52px; padding: 12px 24px; font-size: var(--text-body-sm); font-weight: 700; }
     .btn-dark { font-weight: 600; }
     .hub-action-pill { min-height: 48px; padding: 12px 16px; font-size: var(--text-caption); }
     
-    /* Инпуты как капсулы */
-    .auth-input-wrap { padding: 12px 18px; margin-block-end: 14px; width: 100%; text-align: left; cursor: text; }
+    /* Инпуты (Логин, Войс, Друзья) теперь тоже круглые капсулы */
+    .auth-input-wrap { padding: 12px 24px; margin-block-end: 14px; width: 100%; text-align: left; cursor: text; border-radius: 999px !important; }
     .auth-input-label { display: block; font-size: 0.6875rem; font-weight: 700; color: var(--accent-bright); letter-spacing: 0.04em; margin-block-end: 4px; }
     
     /* Шапка */
@@ -249,7 +242,7 @@
     .hub-actions-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 10px; }
 
     /* Пресеты в аккордеонах */
-    .character-card { padding: 16px; margin-block-start: 10px; display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+    .character-card { padding: 16px; margin-block-start: 10px; display: flex; align-items: center; justify-content: space-between; gap: 12px; border-radius: 999px !important; }
     .char-title { font-size: 0.875rem; font-weight: 700; color: var(--text-main); line-height: 1.3; display: flex; align-items: center; flex-wrap: wrap; gap: 8px; }
     .char-tag {
       font-size: 0.6875rem; font-weight: 700; letter-spacing: 0.04em; padding: 4px 12px; border-radius: 999px;
@@ -267,7 +260,7 @@
 
     /* Слайдеры */
     .section-eyebrow { font-size: 0.6875rem; font-weight: 700; letter-spacing: 0.05em; color: var(--accent-bright); text-transform: uppercase; margin-block: 16px 8px; }
-    .pro-slider-row { padding: 14px 16px; margin-block-start: 10px; }
+    .pro-slider-row { padding: 14px 16px; margin-block-start: 10px; border-radius: 24px; }
     .pro-slider-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-block-end: 12px; }
     .pro-slider-name { font-size: var(--text-body-sm); font-weight: 600; color: var(--text-main); line-height: 1.3; }
     .pro-slider-pill {
@@ -290,9 +283,11 @@
       box-shadow: 0 6px 14px rgba(0,0,0,0.35), inset 0 1.5px 3px rgba(255,255,255,0.35); color: var(--text-main);
       display: inline-flex; align-items: center; justify-content: center; font-size: 1rem; cursor: pointer; flex-shrink: 0; transition: transform 280ms var(--spring-ease);
     }
-    .saved-variant-row { padding: 14px 16px; margin-block-start: 10px; display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+    .saved-variant-row { padding: 14px 16px; margin-block-start: 10px; display: flex; align-items: center; justify-content: space-between; gap: 12px; border-radius: 999px !important; }
+    .code-input-bar { border-radius: 999px; padding: 10px 16px; margin-block-start: 8px; display: flex; align-items: center; gap: 10px; }
+    
     .shelf-cards-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 10px; margin-block-start: 12px; }
-    .shelf-preset-card { padding: 16px; display: flex; flex-direction: column; justify-content: space-between; min-height: 100px; }
+    .shelf-preset-card { padding: 16px; display: flex; flex-direction: column; justify-content: space-between; min-height: 100px; border-radius: 32px !important; }
 
     /* Растяг экрана */
     .preview-stage-box {
@@ -306,33 +301,33 @@
       display: flex; align-items: center; justify-content: center; color: #FFFFFF; font-weight: 700; font-size: 1.35rem; transition: width 180ms ease;
     }
 
-    /* Формы внутри табов (прицел, пиксели) */
+    /* Все плитки - в капсулы (999px) */
     .preset-pills-4 { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; }
-    .preset-pill { padding: 14px 6px; }
+    .preset-pill { padding: 14px 6px; border-radius: 999px !important; }
     .preset-pill-name { font-size: 0.8125rem; font-weight: 700; font-variant-numeric: tabular-nums; color: var(--text-main); }
     .preset-pill-sub { font-size: 0.6875rem; color: var(--text-muted); margin-block-start: 2px; }
 
     .pixel-tiles-6 { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 8px; margin-block: 12px 14px; }
-    .pixel-tile { padding: 12px 2px; }
+    .pixel-tile { padding: 14px 2px; border-radius: 999px !important; }
     .pixel-tile b { display: block; font-size: 0.875rem; font-weight: 700; font-variant-numeric: tabular-nums; color: var(--text-main); }
     .pixel-tile span { font-size: 0.6875rem; color: var(--text-muted); }
     .pixel-big-readout { display: flex; align-items: baseline; justify-content: space-between; margin-block-end: 8px; }
     
     .ch-shape-grid-4 { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; margin-block-end: 12px; }
-    .ch-shape-tile { padding: 14px 6px; }
+    .ch-shape-tile { padding: 16px 6px; border-radius: 999px !important; }
     .ch-shape-icon { font-size: 1.45rem; color: var(--accent-bright); margin-block-end: 6px; line-height: 1; }
     .ch-shape-lbl { font-size: 0.75rem; font-weight: 700; color: var(--text-main); }
     
     .ch-subtoggle-grid-2 { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 10px; margin-block-end: 12px; }
-    .ch-subtoggle-box { padding: 14px; display: flex; flex-direction: column; align-items: center; gap: 6px; }
+    .ch-subtoggle-box { padding: 14px; display: flex; flex-direction: column; align-items: center; gap: 6px; border-radius: 999px !important; }
 
-    .ch-color-palette-bar { padding: 16px 18px; margin-block-end: 12px; }
+    .ch-color-palette-bar { padding: 16px 18px; margin-block-end: 12px; border-radius: 999px !important; }
     .ch-color-dots-row { display: flex; align-items: center; justify-content: space-between; gap: 6px; margin-block-start: 10px; flex-wrap: wrap; }
     .ch-color-swatch { width: 32px; height: 32px; border-radius: 50%; cursor: pointer; border: 1.5px solid rgba(255,255,255,0.40); flex-shrink: 0; transition: transform 280ms var(--spring-ease); }
     .ch-color-swatch.active { border-color: #FFFFFF; box-shadow: 0 0 14px #FFFFFF; transform: scale(1.16); }
     .ch-custom-color-btn { width: 34px; height: 32px; border-radius: 999px; border: 1.5px dashed rgba(255,255,255,0.50); background: rgba(0,0,0,0.40); display: flex; align-items: center; justify-content: center; font-size: 0.95rem; cursor: pointer; flex-shrink: 0; }
 
-    .toggle-row { padding: 14px 16px; margin-block-start: 10px; display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+    .toggle-row { padding: 14px 20px; margin-block-start: 10px; display: flex; align-items: center; justify-content: space-between; gap: 12px; border-radius: 999px !important; }
     .toggle-info-title { font-size: var(--text-body-sm); font-weight: 600; color: var(--text-main); line-height: 1.3; }
     .toggle-info-sub { font-size: var(--text-caption); color: var(--text-muted); margin-block-start: 2px; line-height: 1.4; }
     .cyber-switch { position: relative; width: 52px; height: 32px; flex-shrink: 0; display: inline-block; cursor: pointer; }
@@ -347,24 +342,24 @@
     .cyber-switch input:checked + .cyber-slider { background: var(--glass-tint-active); border-color: rgba(255,255,255,0.50); }
     .cyber-switch input:checked + .cyber-slider::before { transform: translateX(20px); background: #FFFFFF; }
 
-    .voice-member-card, .friend-item { padding: 14px 16px; margin-block-start: 10px; display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+    .voice-member-card, .friend-item { padding: 14px 20px; margin-block-start: 10px; display: flex; align-items: center; justify-content: space-between; gap: 12px; border-radius: 999px !important; }
     .voice-eq-bars { display: inline-flex; align-items: flex-end; gap: 3px; height: 16px; }
     .voice-eq-bars span { width: 4px; height: 12px; background: #30D158; border-radius: 2px; }
 
     /* Оверлеи и модалки */
     .shizuku-alert-backdrop { position: fixed; inset: 0; background: rgba(0,0,0,0.75); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); z-index: 99999; display: none; align-items: center; justify-content: center; padding: 18px; overscroll-behavior: contain; transform: translateZ(0); }
-    .shizuku-alert-box { width: 100%; max-width: 365px; text-align: center; }
+    .shizuku-alert-box { width: 100%; max-width: 365px; text-align: center; border-radius: 36px; }
     #screenCalibOverlay, #touchTestOverlay { position: fixed; inset: 0; background: rgba(0,0,0,0.85); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); z-index: 98000; display: none; flex-direction: column; align-items: center; justify-content: center; padding: 22px; overscroll-behavior: contain; transform: translateZ(0); }
     #authScreenOverlay { position: fixed; inset: 0; background: rgba(0,0,0,0.60); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); z-index: 95000; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px; pointer-events: auto; overscroll-behavior: contain; transform: translateZ(0); }
     
-    .auth-card { width: 100%; max-width: 380px; padding: 24px 20px; }
+    .auth-card { width: 100%; max-width: 380px; padding: 24px 20px; border-radius: 36px; }
     .auth-badge {
       display: inline-block; padding: 6px 16px; font-size: 0.6875rem; font-weight: 700; letter-spacing: 0.05em;
       margin-block-end: 14px; text-transform: uppercase;
     }
     
     .avatar-preset-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; margin-block: 12px; }
-    .avatar-preset-item { min-height: 56px; font-size: 1.5rem; }
+    .avatar-preset-item { min-height: 60px; border-radius: 999px !important; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; cursor: pointer; transition: transform 280ms var(--spring-ease); }
 
     .tab-section { display: none; }
     .tab-section.active { display: block; }
@@ -380,11 +375,15 @@
     }
     .nav-liquid-lens {
       position: absolute; top: 6px; bottom: 6px; left: 7px; width: calc((100% - 14px) / 5); pointer-events: none; z-index: 1;
-      background: var(--glass-sphere-fill);
+      background: var(--glass-sphere-fill); border-radius: 999px;
       box-shadow: 0 6px 18px rgba(0,0,0,0.55), inset 0 2px 4px rgba(255,255,255,0.40);
       transform: translate3d(calc(var(--nav-idx, 0) * 100%), 0, 0) scale(var(--lens-sx, 1), var(--lens-sy, 1));
       transition: transform 420ms var(--liquid-glide), box-shadow 260ms ease, background 260ms ease;
     }
+    .nav-liquid-lens.premium-glass::before {
+      background: linear-gradient(180deg, rgba(255,255,255,0.7) 0%, rgba(255,255,255,0.05) 48%, rgba(var(--accent-rgb),0.6) 100%);
+    }
+    
     .nav-liquid-lens.morphing {
       --lens-sx: 1.20; --lens-sy: 1.30;
       background: rgba(255,255,255,0.15);
@@ -420,7 +419,7 @@
   <input id="bgMediaFileInput" type="file" accept="video/*,image/gif,image/webp,image/*" style="display:none" onchange="onCustomBgFileSelected(event)" />
   <input id="chCustomColorPicker" type="color" value="#30D158" style="display:none" onchange="onCustomCrosshairColorPicked(this.value)" />
   
-  <div id="cyberToast" class="premium-glass capsule" role="status" aria-live="polite">SO2Teleport PRO</div>
+  <div id="cyberToast" class="premium-glass premium-capsule" role="status" aria-live="polite">SO2Teleport PRO</div>
 
   <div id="avatarPickerModal" class="shizuku-alert-backdrop" role="dialog" aria-modal="true" aria-labelledby="avatarModalTitle">
     <div class="shizuku-alert-box premium-glass premium-card surface">
@@ -429,22 +428,22 @@
         Выберите эмблему, загрузите фото аватарки или установите видео/GIF на фон:
       </p>
       <div class="avatar-preset-grid">
-        <div class="avatar-preset-item premium-glass capsule btn-dark" onclick="selectBuiltInAvatar('🔥')">🔥</div>
-        <div class="avatar-preset-item premium-glass capsule btn-dark" onclick="selectBuiltInAvatar('⚡')">⚡</div>
-        <div class="avatar-preset-item premium-glass capsule btn-dark" onclick="selectBuiltInAvatar('👑')">👑</div>
-        <div class="avatar-preset-item premium-glass capsule btn-dark" onclick="selectBuiltInAvatar('💀')">💀</div>
-        <div class="avatar-preset-item premium-glass capsule btn-dark" onclick="selectBuiltInAvatar('🎯')">🎯</div>
-        <div class="avatar-preset-item premium-glass capsule btn-dark" onclick="selectBuiltInAvatar('🐉')">🐉</div>
-        <div class="avatar-preset-item premium-glass capsule btn-dark" onclick="selectBuiltInAvatar('🥷')">🥷</div>
-        <div class="avatar-preset-item premium-glass capsule btn-dark" onclick="selectBuiltInAvatar('💎')">💎</div>
+        <div class="avatar-preset-item premium-glass premium-capsule btn-dark" onclick="selectBuiltInAvatar('🔥')">🔥</div>
+        <div class="avatar-preset-item premium-glass premium-capsule btn-dark" onclick="selectBuiltInAvatar('⚡')">⚡</div>
+        <div class="avatar-preset-item premium-glass premium-capsule btn-dark" onclick="selectBuiltInAvatar('👑')">👑</div>
+        <div class="avatar-preset-item premium-glass premium-capsule btn-dark" onclick="selectBuiltInAvatar('💀')">💀</div>
+        <div class="avatar-preset-item premium-glass premium-capsule btn-dark" onclick="selectBuiltInAvatar('🎯')">🎯</div>
+        <div class="avatar-preset-item premium-glass premium-capsule btn-dark" onclick="selectBuiltInAvatar('🐉')">🐉</div>
+        <div class="avatar-preset-item premium-glass premium-capsule btn-dark" onclick="selectBuiltInAvatar('🥷')">🥷</div>
+        <div class="avatar-preset-item premium-glass premium-capsule btn-dark" onclick="selectBuiltInAvatar('💎')">💎</div>
       </div>
-      <button type="button" class="btn-main premium-glass capsule" style="margin-bottom:10px;" onclick="openGalleryFileInput()">
+      <button type="button" class="btn-main premium-glass premium-capsule" style="margin-bottom:10px;" onclick="openGalleryFileInput()">
         Загрузить фото аватарки
       </button>
-      <button type="button" class="btn-dark premium-glass capsule" style="margin-bottom:10px;" onclick="triggerCustomBgUpload()">
+      <button type="button" class="btn-dark premium-glass premium-capsule" style="margin-bottom:10px;" onclick="triggerCustomBgUpload()">
         Выбрать видео или GIF на фон
       </button>
-      <button type="button" class="btn-dark premium-glass capsule" onclick="document.getElementById('avatarPickerModal').style.display='none'">
+      <button type="button" class="btn-dark premium-glass premium-capsule" onclick="document.getElementById('avatarPickerModal').style.display='none'">
         Закрыть окно
       </button>
     </div>
@@ -466,7 +465,7 @@
       Проведите пальцем по области ниже…
     </div>
     <canvas id="touchTestCanvas" width="320" height="320" style="background:rgba(0,0,0,0.65); border:1px solid rgba(255,255,255,0.25); border-radius:28px; touch-action:none; box-shadow: inset 0 2px 6px rgba(0,0,0,0.5);"></canvas>
-    <button type="button" class="btn-main premium-glass capsule" style="max-width:320px; margin-top:16px;" onclick="closeTouchTestModal()">
+    <button type="button" class="btn-main premium-glass premium-capsule" style="max-width:320px; margin-top:16px;" onclick="closeTouchTestModal()">
       Закрыть тестер
     </button>
   </div>
@@ -481,14 +480,14 @@
         <div style="font-weight:700; margin-bottom:6px; color:var(--accent-bright); font-size:0.85rem;">📋 Быстрый гайд по запуску:</div>
         <div style="font-size:0.8rem; color:#fff; line-height:1.6;">1. Открой приложение <b>Shizuku</b> на телефоне.<br>2. Включи <b>Беспроводную отладку</b> в Настройках для разработчиков и нажми <b>Запустить</b>.<br>3. Вернись сюда и нажми <b>«Проверить и выдать доступ»</b>.</div>
       </div>
-      <button type="button" class="btn-main premium-glass capsule" style="margin-bottom:10px;" onclick="requestAndRecheckShizuku()">
+      <button type="button" class="btn-main premium-glass premium-capsule" style="margin-bottom:10px;" onclick="requestAndRecheckShizuku()">
         ⚡ Проверить и выдать доступ Shizuku
       </button>
       <div style="display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:10px; margin-bottom:10px;">
-        <button type="button" class="btn-dark premium-glass capsule" onclick="openSupportLink()">💬 Помощь в ТГ</button>
-        <button type="button" class="btn-dark premium-glass capsule" onclick="copyDiscordSupport()">🎧 Мой Дискорд</button>
+        <button type="button" class="btn-dark premium-glass premium-capsule" onclick="openSupportLink()">💬 Помощь в ТГ</button>
+        <button type="button" class="btn-dark premium-glass premium-capsule" onclick="copyDiscordSupport()">🎧 Мой Дискорд</button>
       </div>
-      <button type="button" class="btn-dark premium-glass capsule" onclick="document.getElementById('shizukuRequiredModal').style.display='none'">
+      <button type="button" class="btn-dark premium-glass premium-capsule" onclick="document.getElementById('shizukuRequiredModal').style.display='none'">
         Закрыть окно
       </button>
     </div>
@@ -496,7 +495,7 @@
 
   <div id="authScreenOverlay" role="dialog" aria-modal="true" aria-labelledby="authTitleText">
     <div style="text-align:center; margin-bottom:18px;">
-      <div class="auth-badge premium-glass capsule">QUANTUM CORE V10 • TITANIUM GLASS</div>
+      <div class="auth-badge premium-glass premium-capsule">QUANTUM CORE V10 • TITANIUM GLASS</div>
       <h1 id="authTitleText" style="font-size:1.85rem; font-weight:800; letter-spacing:-0.02em; color:#fff; text-shadow: 0 2px 6px rgba(0,0,0,0.8);">
         SO2Teleport <span style="color:var(--accent-main); text-shadow: 0 0 16px rgba(var(--accent-rgb), 0.5);">PRO</span>
       </h1>
@@ -511,44 +510,44 @@
         Введите лицензионный ключ из Telegram-бота
       </div>
 
-      <div class="auth-input-wrap premium-glass capsule btn-dark">
+      <div class="auth-input-wrap premium-glass premium-capsule btn-dark">
         <div style="width:100%;">
           <label class="auth-input-label" for="loginNickInput">НИКНЕЙМ ИГРОКА</label>
           <input id="loginNickInput" name="username" class="auth-input" type="text" placeholder="login" value="" autocomplete="off" spellcheck="false" />
         </div>
       </div>
 
-      <div class="auth-input-wrap premium-glass capsule btn-dark">
+      <div class="auth-input-wrap premium-glass premium-capsule btn-dark">
         <div style="width:100%;">
           <label class="auth-input-label" for="loginKeyInput">ЛИЦЕНЗИОННЫЙ КЛЮЧ</label>
           <input id="loginKeyInput" name="license_key" class="auth-input" type="text" placeholder="TP-***-******" value="" autocomplete="off" spellcheck="false" aria-describedby="authErrorBanner" />
         </div>
       </div>
 
-      <button id="loginSubmitBtn" type="button" class="btn-main premium-glass capsule" style="margin-top:6px;" onclick="handleLoginSubmit()">
+      <button id="loginSubmitBtn" type="button" class="btn-main premium-glass premium-capsule" style="margin-top:6px;" onclick="handleLoginSubmit()">
         ⚡ Активировать ключ и войти
       </button>
     </div>
 
     <div style="width:100%; max-width:380px; margin-top:16px; display:flex; flex-direction:column; gap:10px;">
-      <div class="btn-dark premium-glass capsule" style="text-align:center; font-size:0.8rem; color:var(--text-muted); cursor:default;">
+      <div class="btn-dark premium-glass premium-capsule" style="text-align:center; font-size:0.8rem; color:var(--text-muted); cursor:default;">
         Защищённый HWID: <b id="loginHwidLabel" style="color:#fff; font-variant-numeric:tabular-nums; user-select:text;">…</b>
       </div>
-      <button type="button" class="btn-dark premium-glass capsule" onclick="openBotShopLink()">
+      <button type="button" class="btn-dark premium-glass premium-capsule" onclick="openBotShopLink()">
         Получить ключ в Telegram-боте
       </button>
-      <button type="button" class="btn-dark premium-glass capsule" onclick="openSupportLink()">
+      <button type="button" class="btn-dark premium-glass premium-capsule" onclick="openSupportLink()">
         Открыть поддержку по Shizuku
       </button>
     </div>
   </div>
 
-  <main id="mainAppWorkspace" class="app-container motion-blur-active">
+  <main id="mainAppWorkspace" class="app-container">
 
     <header class="top-brand-header premium-glass premium-card surface">
       <div class="top-brand-row">
         <div class="brand-left-wrap">
-          <div class="header-avatar-holder premium-glass capsule" onclick="triggerAvatarUpload()" role="button" tabindex="0" aria-label="Изменить аватарку и живой фон">
+          <div class="header-avatar-holder premium-glass" onclick="triggerAvatarUpload()" role="button" tabindex="0" aria-label="Изменить аватарку и живой фон">
             <img id="topHeaderAvatarImg" src="" alt="" />
             <span id="topHeaderAvatarFallback" class="header-avatar-fallback">P</span>
           </div>
@@ -560,7 +559,7 @@
           </div>
         </div>
 
-        <button type="button" class="shizuku-status-pill premium-glass capsule" onclick="requestAndRecheckShizuku()">
+        <button type="button" class="shizuku-status-pill premium-glass premium-capsule" onclick="requestAndRecheckShizuku()">
           <span id="shizukuDot" class="status-dot" aria-hidden="true"></span>
           <span id="shizukuStateText" style="color:#FF453A;">Shizuku ВЫКЛ</span>
         </button>
@@ -588,7 +587,7 @@
             <div class="hub-card-title">
               <span>TELEPORT ENGINE:</span>
               <span id="hubEngineStateWord" class="hub-state-word off">ВЫКЛЮЧЕН</span>
-              <span id="liveScaleChip" class="badge-chip">68.0x</span>
+              <span id="liveScaleChip" class="badge-chip premium-glass premium-capsule">68.0x</span>
             </div>
             <div id="activePresetTitle" class="hub-card-sub">
               Quantum Instant Snap • 1 · Телепорт Ультра (68.0x MAX)
@@ -601,239 +600,239 @@
         </div>
 
         <div class="hub-actions-grid">
-          <button id="btnMainTeleportTogglePill" type="button" class="hub-action-pill btn-main premium-glass capsule" onclick="setMainEnginePower(!isMainTeleportOn, false)">
+          <button id="btnMainTeleportTogglePill" type="button" class="hub-action-pill btn-main premium-glass premium-capsule" onclick="setMainEnginePower(!isMainTeleportOn, false)">
             Включить Teleport
           </button>
-          <button type="button" class="hub-action-pill btn-dark premium-glass capsule" onclick="activateMaxH9ijeTeleport()">
+          <button type="button" class="hub-action-pill btn-dark premium-glass premium-capsule" onclick="activateMaxH9ijeTeleport()">
             Включить H9IJE MAX
           </button>
         </div>
       </div>
 
-      <button type="button" class="save-all-bar-btn btn-main premium-glass capsule" onclick="saveAllAppSettingsMaster()">
+      <button type="button" class="save-all-bar-btn btn-main premium-glass premium-capsule" onclick="saveAllAppSettingsMaster()">
         ⚡ Применить и сохранить настройки
       </button>
 
-      <div id="accSensPresets" class="acc-block blur-container premium-glass open">
+      <div id="accSensPresets" class="acc-block premium-glass open">
         <div class="acc-header" onclick="toggleAccordionBlock('accSensPresets')">
           <div class="acc-left">
-            <div class="acc-icon premium-glass capsule" aria-hidden="true">✦</div>
+            <div class="acc-icon premium-glass" aria-hidden="true">✦</div>
             <div class="acc-title-wrap">
-              <div class="acc-title">Киберспортивные профили наводки <span class="badge-chip">PRO V10</span></div>
+              <div class="acc-title">Киберспортивные профили наводки <span class="badge-chip premium-glass premium-capsule">PRO V10</span></div>
               <div class="acc-sub">Телепорт 68.0x, ROG Phone 720Hz, iOS 240Hz и анти-лаг A57</div>
             </div>
           </div>
-          <div class="acc-chevron premium-glass capsule" aria-hidden="true">⌄</div>
+          <div class="acc-chevron premium-glass" aria-hidden="true">⌄</div>
         </div>
         <div class="acc-body-wrap">
           <div class="acc-body-inner">
-            <div id="preset_extreme" class="character-card premium-glass premium-card active-state" onclick="selectTeleportPreset('extreme')">
-              <div style="min-width:0;">
+            <div id="preset_extreme" class="character-card premium-glass premium-capsule active-state" onclick="selectTeleportPreset('extreme')">
+              <div style="min-width:0; text-align: left;">
                 <div class="char-title">1 · ТЕЛЕПОРТ УЛЬТРА <span class="char-tag">QUANTUM SNAP • 68.0X</span></div>
                 <div class="char-desc">Мгновенная телепортация прицела в точку за 1 кадр: убрана вся вязкость осей, максимальный импульс кусков 150 и прямой Raw-отклик 720 Гц.</div>
               </div>
-              <span class="char-arrow premium-glass capsule" aria-hidden="true">→</span>
+              <span class="char-arrow premium-glass" aria-hidden="true">→</span>
             </div>
 
-            <div id="preset_rog_pro" class="character-card premium-glass premium-card" onclick="selectTeleportPreset('rog_pro')">
-              <div style="min-width:0;">
+            <div id="preset_rog_pro" class="character-card premium-glass premium-capsule" onclick="selectTeleportPreset('rog_pro')">
+              <div style="min-width:0; text-align: left;">
                 <div class="char-title">2 · КОНФИГ ROG PHONE <span class="char-tag pad-badge">ASUS ROG • 720HZ X-MODE</span></div>
                 <div class="char-desc">Сенса игрового смартфона ASUS ROG Phone 8/9 Pro: сверхрезкий срыв с места, агрессивные края и мгновенный флик без задержки.</div>
               </div>
-              <span class="char-arrow premium-glass capsule" aria-hidden="true">→</span>
+              <span class="char-arrow premium-glass" aria-hidden="true">→</span>
             </div>
 
-            <div id="preset_ios_pro" class="character-card premium-glass premium-card" onclick="selectTeleportPreset('ios_pro')">
-              <div style="min-width:0;">
+            <div id="preset_ios_pro" class="character-card premium-glass premium-capsule" onclick="selectTeleportPreset('ios_pro')">
+              <div style="min-width:0; text-align: left;">
                 <div class="char-title">3 · КОНФИГ iOS <span class="char-tag">IPHONE 16 PRO / IPAD • 240HZ</span></div>
                 <div class="char-desc">Точная копия сенсы iOS ProMotion: идеально линейная траектория без инерции Android и плотная фиксация спрея в голову.</div>
               </div>
-              <span class="char-arrow premium-glass capsule" aria-hidden="true">→</span>
+              <span class="char-arrow premium-glass" aria-hidden="true">→</span>
             </div>
 
-            <div id="preset_budget_pro" class="character-card premium-glass premium-card" onclick="selectTeleportPreset('budget_pro')">
-              <div style="min-width:0;">
+            <div id="preset_budget_pro" class="character-card premium-glass premium-capsule" onclick="selectTeleportPreset('budget_pro')">
+              <div style="min-width:0; text-align: left;">
                 <div class="char-title">4 · ДЛЯ БЮДЖЕТОК И A57 <span class="char-tag budget-badge">ANTI-LAG FPS • 48.0X</span></div>
                 <div class="char-desc">Резкая телепорт-сенса + защита от просадок FPS на Samsung A57/A55, Redmi, Poco и Realme (SkiaGL кэш 72MB).</div>
               </div>
-              <span class="char-arrow premium-glass capsule" aria-hidden="true">→</span>
+              <span class="char-arrow premium-glass" aria-hidden="true">→</span>
             </div>
           </div>
         </div>
       </div>
 
-      <div id="accSensSliders" class="acc-block blur-container premium-glass">
+      <div id="accSensSliders" class="acc-block premium-glass">
         <div class="acc-header" onclick="toggleAccordionBlock('accSensSliders')">
           <div class="acc-left">
-            <div class="acc-icon premium-glass capsule" aria-hidden="true">🎛</div>
+            <div class="acc-icon premium-glass" aria-hidden="true">🎛</div>
             <div class="acc-title-wrap">
-              <div class="acc-title">Тонкая настройка и Куски <span class="badge-chip">19 ПАРАМЕТРОВ</span></div>
+              <div class="acc-title">Тонкая настройка и Куски <span class="badge-chip premium-glass premium-capsule">19 ПАРАМЕТРОВ</span></div>
               <div class="acc-sub">Все бафы Телепорта на максимуме, замедлители на нуле</div>
             </div>
           </div>
-          <div class="acc-chevron premium-glass capsule" aria-hidden="true">⌄</div>
+          <div class="acc-chevron premium-glass" aria-hidden="true">⌄</div>
         </div>
         <div class="acc-body-wrap">
           <div class="acc-body-inner">
             <div class="section-eyebrow">ОСТРОТА И КАМЕРА (МАКСИМУМ)</div>
             <div class="pro-slider-row premium-glass premium-card">
-              <div class="pro-slider-head"><label class="pro-slider-name" for="sl_sharp">1. Сила Телепорта (Резкость)</label><span id="val_sharp" class="pro-slider-pill">2.50</span></div>
+              <div class="pro-slider-head"><label class="pro-slider-name" for="sl_sharp">1. Сила Телепорта (Резкость)</label><span id="val_sharp" class="pro-slider-pill premium-glass premium-capsule">2.50</span></div>
               <input id="sl_sharp" type="range" min="10" max="25" step="1" value="25" oninput="onSensSliderChange()" />
               <div class="pro-slider-hint">Максимум (2.50) — мгновенный скачок прицела без анимации</div>
             </div>
 
             <div class="pro-slider-row premium-glass premium-card">
-              <div class="pro-slider-head"><label class="pro-slider-name" for="sl_sx">2. Резкость камеры X (Влево–вправо)</label><span id="val_sx" class="pro-slider-pill">2.50</span></div>
+              <div class="pro-slider-head"><label class="pro-slider-name" for="sl_sx">2. Резкость камеры X (Влево–вправо)</label><span id="val_sx" class="pro-slider-pill premium-glass premium-capsule">2.50</span></div>
               <input id="sl_sx" type="range" min="10" max="25" step="1" value="25" oninput="onSensSliderChange()" />
               <div class="pro-slider-hint">Горизонтальная резкость флика для Телепорта и AWM</div>
             </div>
 
             <div class="pro-slider-row premium-glass premium-card">
-              <div class="pro-slider-head"><label class="pro-slider-name" for="sl_sy">3. Резкость камеры Y (Вверх–вниз)</label><span id="val_sy" class="pro-slider-pill">2.50</span></div>
+              <div class="pro-slider-head"><label class="pro-slider-name" for="sl_sy">3. Резкость камеры Y (Вверх–вниз)</label><span id="val_sy" class="pro-slider-pill premium-glass premium-capsule">2.50</span></div>
               <input id="sl_sy" type="range" min="10" max="25" step="1" value="25" oninput="onSensSliderChange()" />
               <div class="pro-slider-hint">Вертикальная отзывчивость прицела для зажима в точку</div>
             </div>
 
             <div class="section-eyebrow">ТОЧНОСТЬ И ОТКЛИК (БЕЗ ЗАДЕРЖЕК)</div>
             <div class="pro-slider-row premium-glass premium-card">
-              <div class="pro-slider-head"><label class="pro-slider-name" for="sl_grid">Отсечка шума (фильтр)</label><span id="val_grid" class="pro-slider-pill">1</span></div>
+              <div class="pro-slider-head"><label class="pro-slider-name" for="sl_grid">Отсечка шума (фильтр)</label><span id="val_grid" class="pro-slider-pill premium-glass premium-capsule">1</span></div>
               <input id="sl_grid" type="range" min="1" max="10" step="1" value="1" oninput="onSensSliderChange()" />
               <div class="pro-slider-hint">Минимум (1) — сохраняет скорость микродвижений</div>
             </div>
 
             <div class="pro-slider-row premium-glass premium-card">
-              <div class="pro-slider-head"><label class="pro-slider-name" for="sl_pause">Мёртвая зона</label><span id="val_pause" class="pro-slider-pill">0</span></div>
+              <div class="pro-slider-head"><label class="pro-slider-name" for="sl_pause">Мёртвая зона</label><span id="val_pause" class="pro-slider-pill premium-glass premium-capsule">0</span></div>
               <input id="sl_pause" type="range" min="0" max="10" step="1" value="0" oninput="onSensSliderChange()" />
               <div class="pro-slider-hint">Ноль (0) — мгновенная реакция на касание</div>
             </div>
 
             <div class="pro-slider-row premium-glass premium-card">
-              <div class="pro-slider-head"><label class="pro-slider-name" for="sl_lead">Упреждение (Микро-флик)</label><span id="val_lead" class="pro-slider-pill">20</span></div>
+              <div class="pro-slider-head"><label class="pro-slider-name" for="sl_lead">Упреждение (Микро-флик)</label><span id="val_lead" class="pro-slider-pill premium-glass premium-capsule">20</span></div>
               <input id="sl_lead" type="range" min="0" max="20" step="1" value="20" oninput="onSensSliderChange()" />
             </div>
 
             <div class="pro-slider-row premium-glass premium-card">
-              <div class="pro-slider-head"><label class="pro-slider-name" for="sl_stick">Прилипание к осям</label><span id="val_stick" class="pro-slider-pill">0</span></div>
+              <div class="pro-slider-head"><label class="pro-slider-name" for="sl_stick">Прилипание к осям</label><span id="val_stick" class="pro-slider-pill premium-glass premium-capsule">0</span></div>
               <input id="sl_stick" type="range" min="0" max="100" step="5" value="0" oninput="onSensSliderChange()" />
             </div>
 
             <div class="pro-slider-row premium-glass premium-card">
-              <div class="pro-slider-head"><label class="pro-slider-name" for="sl_stick_delay">Задержка захвата оси</label><span id="val_stick_delay" class="pro-slider-pill">60</span></div>
+              <div class="pro-slider-head"><label class="pro-slider-name" for="sl_stick_delay">Задержка захвата оси</label><span id="val_stick_delay" class="pro-slider-pill premium-glass premium-capsule">60</span></div>
               <input id="sl_stick_delay" type="range" min="5" max="60" step="1" value="60" oninput="onSensSliderChange()" />
               <div class="pro-slider-hint">Максимум (60) — не тормозит свободный диагональный флик</div>
             </div>
 
             <div class="section-eyebrow">КВАНТОВЫЕ КУСКИ (FULL MAX)</div>
             <div class="pro-slider-row premium-glass premium-card">
-              <div class="pro-slider-head"><label class="pro-slider-name" for="sl_stick_force">Сила прилипания</label><span id="val_stick_force" class="pro-slider-pill">1</span></div>
+              <div class="pro-slider-head"><label class="pro-slider-name" for="sl_stick_force">Сила прилипания</label><span id="val_stick_force" class="pro-slider-pill premium-glass premium-capsule">1</span></div>
               <input id="sl_stick_force" type="range" min="1" max="15" step="1" value="1" oninput="onSensSliderChange()" />
             </div>
 
             <div class="pro-slider-row premium-glass premium-card">
-              <div class="pro-slider-head"><label class="pro-slider-name" for="sl_chunks">Куски (Импульс 90°/180°)</label><span id="val_chunks" class="pro-slider-pill">100</span></div>
+              <div class="pro-slider-head"><label class="pro-slider-name" for="sl_chunks">Куски (Импульс 90°/180°)</label><span id="val_chunks" class="pro-slider-pill premium-glass premium-capsule">100</span></div>
               <input id="sl_chunks" type="range" min="40" max="100" step="1" value="100" oninput="onSensSliderChange()" />
             </div>
 
             <div class="pro-slider-row premium-glass premium-card">
-              <div class="pro-slider-head"><label class="pro-slider-name" for="sl_chunk_bypass">Порог обхода кусков</label><span id="val_chunk_bypass" class="pro-slider-pill">0</span></div>
+              <div class="pro-slider-head"><label class="pro-slider-name" for="sl_chunk_bypass">Порог обхода кусков</label><span id="val_chunk_bypass" class="pro-slider-pill premium-glass premium-capsule">0</span></div>
               <input id="sl_chunk_bypass" type="range" min="0" max="20" step="1" value="0" oninput="onSensSliderChange()" />
             </div>
 
             <div class="pro-slider-row premium-glass premium-card">
-              <div class="pro-slider-head"><label class="pro-slider-name" for="sl_chunk_cap">Потолок куска</label><span id="val_chunk_cap" class="pro-slider-pill">30</span></div>
+              <div class="pro-slider-head"><label class="pro-slider-name" for="sl_chunk_cap">Потолок куска</label><span id="val_chunk_cap" class="pro-slider-pill premium-glass premium-capsule">30</span></div>
               <input id="sl_chunk_cap" type="range" min="5" max="30" step="1" value="30" oninput="onSensSliderChange()" />
             </div>
 
             <div class="pro-slider-row premium-glass premium-card">
-              <div class="pro-slider-head"><label class="pro-slider-name" for="sl_chunkfast">Ускорение быстрых кусков</label><span id="val_chunkfast" class="pro-slider-pill">100</span></div>
+              <div class="pro-slider-head"><label class="pro-slider-name" for="sl_chunkfast">Ускорение быстрых кусков</label><span id="val_chunkfast" class="pro-slider-pill premium-glass premium-capsule">100</span></div>
               <input id="sl_chunkfast" type="range" min="40" max="100" step="1" value="100" oninput="onSensSliderChange()" />
             </div>
 
             <div class="pro-slider-row premium-glass premium-card">
-              <div class="pro-slider-head"><label class="pro-slider-name" for="sl_shot_pause">Пауза после выстрела</label><span id="val_shot_pause" class="pro-slider-pill">0</span></div>
+              <div class="pro-slider-head"><label class="pro-slider-name" for="sl_shot_pause">Пауза после выстрела</label><span id="val_shot_pause" class="pro-slider-pill premium-glass premium-capsule">0</span></div>
               <input id="sl_shot_pause" type="range" min="0" max="15" step="1" value="0" oninput="onSensSliderChange()" />
             </div>
 
             <div class="pro-slider-row premium-glass premium-card">
-              <div class="pro-slider-head"><label class="pro-slider-name" for="sl_accel">Крутизна разгона</label><span id="val_accel" class="pro-slider-pill">2.50</span></div>
+              <div class="pro-slider-head"><label class="pro-slider-name" for="sl_accel">Крутизна разгона</label><span id="val_accel" class="pro-slider-pill premium-glass premium-capsule">2.50</span></div>
               <input id="sl_accel" type="range" min="10" max="25" step="1" value="25" oninput="onSensSliderChange()" />
             </div>
 
             <div class="pro-slider-row premium-glass premium-card">
-              <div class="pro-slider-head"><label class="pro-slider-name" for="sl_edge_reach">Чувствительность краёв</label><span id="val_edge_reach" class="pro-slider-pill">20</span></div>
+              <div class="pro-slider-head"><label class="pro-slider-name" for="sl_edge_reach">Чувствительность краёв</label><span id="val_edge_reach" class="pro-slider-pill premium-glass premium-capsule">20</span></div>
               <input id="sl_edge_reach" type="range" min="0" max="20" step="1" value="20" oninput="onSensSliderChange()" />
             </div>
 
             <div class="pro-slider-row premium-glass premium-card">
-              <div class="pro-slider-head"><label class="pro-slider-name" for="sl_straight">Выпрямление траектории</label><span id="val_straight" class="pro-slider-pill">0.00</span></div>
+              <div class="pro-slider-head"><label class="pro-slider-name" for="sl_straight">Выпрямление траектории</label><span id="val_straight" class="pro-slider-pill premium-glass premium-capsule">0.00</span></div>
               <input id="sl_straight" type="range" min="0" max="100" step="5" value="0" oninput="onSensSliderChange()" />
             </div>
 
             <div class="pro-slider-row premium-glass premium-card">
-              <div class="pro-slider-head"><label class="pro-slider-name" for="sl_recoil">Хват по осям (Уплотнение отдачи)</label><span id="val_recoil" class="pro-slider-pill">20%</span></div>
+              <div class="pro-slider-head"><label class="pro-slider-name" for="sl_recoil">Хват по осям (Уплотнение отдачи)</label><span id="val_recoil" class="pro-slider-pill premium-glass premium-capsule">20%</span></div>
               <input id="sl_recoil" type="range" min="20" max="100" step="1" value="20" oninput="onRecoilSliderChange()" />
             </div>
 
             <div class="pro-slider-row premium-glass premium-card">
-              <div class="pro-slider-head"><label class="pro-slider-name" for="sl_grip_cap">Потолок хвата (Фиксация точки)</label><span id="val_grip_cap" class="pro-slider-pill">1</span></div>
+              <div class="pro-slider-head"><label class="pro-slider-name" for="sl_grip_cap">Потолок хвата (Фиксация точки)</label><span id="val_grip_cap" class="pro-slider-pill premium-glass premium-capsule">1</span></div>
               <input id="sl_grip_cap" type="range" min="1" max="15" step="1" value="1" oninput="onSensSliderChange()" />
             </div>
 
-            <button type="button" class="btn-main premium-glass capsule" style="margin-top:14px;" onclick="saveAllAppSettingsMaster()">
+            <button type="button" class="btn-main premium-glass premium-capsule" style="margin-top:14px;" onclick="saveAllAppSettingsMaster()">
               ⚡ Применить и перезапустить Teleport
             </button>
 
             <div style="display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:10px; margin-top:10px;">
-              <button type="button" class="btn-dark premium-glass capsule" onclick="startScreenCalibModal()">Откалибровать экран</button>
-              <button type="button" class="btn-dark premium-glass capsule" onclick="openTouchTestModal()">Проверить тач</button>
+              <button type="button" class="btn-dark premium-glass premium-capsule" onclick="startScreenCalibModal()">Откалибровать экран</button>
+              <button type="button" class="btn-dark premium-glass premium-capsule" onclick="openTouchTestModal()">Проверить тач</button>
             </div>
-            <button type="button" class="btn-dark premium-glass capsule" style="margin-top:10px;" onclick="selectTeleportPreset(isPadModeEnabled ? 'tablet_pro' : 'extreme')">
+            <button type="button" class="btn-dark premium-glass premium-capsule" style="margin-top:10px;" onclick="selectTeleportPreset(isPadModeEnabled ? 'tablet_pro' : 'extreme')">
               Установить максимальные параметры
             </button>
           </div>
         </div>
       </div>
 
-      <div id="accSensShelf" class="acc-block blur-container premium-glass">
+      <div id="accSensShelf" class="acc-block premium-glass">
         <div class="acc-header" onclick="toggleAccordionBlock('accSensShelf')">
           <div class="acc-left">
-            <div class="acc-icon premium-glass capsule" aria-hidden="true">🔖</div>
+            <div class="acc-icon premium-glass" aria-hidden="true">🔖</div>
             <div class="acc-title-wrap">
               <div class="acc-title">Другие конфиги и Полка сборок</div>
               <div class="acc-sub">Конфиги для Падов, AWM, сохранение и обмен кодами</div>
             </div>
           </div>
-          <div class="acc-chevron premium-glass capsule" aria-hidden="true">⌄</div>
+          <div class="acc-chevron premium-glass" aria-hidden="true">⌄</div>
         </div>
         <div class="acc-body-wrap">
           <div class="acc-body-inner">
-            <div class="saved-variant-row premium-glass premium-card">
+            <div class="saved-variant-row premium-glass premium-capsule">
               <div style="display:flex; align-items:center; gap:11px; min-width:0;">
-                <div class="acc-icon premium-glass capsule" style="width:36px; height:36px; font-size:0.85rem;" aria-hidden="true">💾</div>
-                <div style="min-width:0;">
+                <div class="acc-icon premium-glass" style="width:36px; height:36px; font-size:0.85rem;" aria-hidden="true">💾</div>
+                <div style="min-width:0; text-align: left;">
                   <div id="mySavedSlotTitle" style="font-size:0.8125rem; font-weight:700; color:#fff;">Мой сохранённый конфиг</div>
                   <div style="font-size:0.6875rem; color:var(--text-muted);">персональный слот</div>
                 </div>
               </div>
               <div style="display:flex; gap:8px;">
-                <button type="button" class="icon-circle-action premium-glass capsule" aria-label="Загрузить сохранённый конфиг" onclick="loadSavedConfigLocal(false)">▼</button>
-                <button type="button" class="icon-circle-action premium-glass capsule" aria-label="Сохранить текущий конфиг" onclick="saveAllAppSettingsMaster()">💾</button>
+                <button type="button" class="icon-circle-action premium-glass" aria-label="Загрузить сохранённый конфиг" onclick="loadSavedConfigLocal(false)">▼</button>
+                <button type="button" class="icon-circle-action premium-glass" aria-label="Сохранить текущий конфиг" onclick="saveAllAppSettingsMaster()">💾</button>
               </div>
             </div>
 
-            <div class="code-input-bar btn-dark premium-glass capsule" style="cursor:text;">
+            <div class="code-input-bar btn-dark premium-glass premium-capsule" style="cursor:text;">
               <label for="cloudCodeInput" style="color:var(--accent-bright); font-weight:700; font-size:0.75rem;">КОД</label>
               <input id="cloudCodeInput" class="auth-input" type="text" placeholder="SO2-7744" autocomplete="off" spellcheck="false" />
-              <button type="button" class="icon-circle-action premium-glass capsule" aria-label="Применить облачный код" onclick="downloadCloudPresetNow()">📥</button>
+              <button type="button" class="icon-circle-action premium-glass" aria-label="Применить облачный код" onclick="downloadCloudPresetNow()">📥</button>
             </div>
 
             <div style="display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:10px; margin-top:12px;">
-              <button type="button" class="btn-dark premium-glass capsule" onclick="saveAllAppSettingsMaster()">Сохранить локально</button>
-              <button type="button" class="btn-main premium-glass capsule" onclick="uploadCloudPresetNow()">Создать облачный код</button>
+              <button type="button" class="btn-dark premium-glass premium-capsule" onclick="saveAllAppSettingsMaster()">Сохранить локально</button>
+              <button type="button" class="btn-main premium-glass premium-capsule" onclick="uploadCloudPresetNow()">Создать облачный код</button>
             </div>
 
             <div class="shelf-cards-grid">
-              <div id="preset_tablet_pro" class="shelf-preset-card premium-glass premium-card" onclick="selectTeleportPreset('tablet_pro')">
+              <div id="preset_tablet_pro" class="shelf-preset-card premium-glass premium-card" style="border-radius: 32px;" onclick="selectTeleportPreset('tablet_pro')">
                 <div>
                   <div style="font-size:0.75rem; font-weight:700; color:#fff;">ДЛЯ ПАДОВ УЛЬТРА</div>
                   <div style="font-size:0.6875rem; color:var(--text-muted); margin-top:2px;">Импульс 128.0x • Xiaomi Pad / iPad</div>
@@ -841,7 +840,7 @@
                 <div style="font-size:0.6875rem; color:var(--accent-bright); font-weight:700; margin-top:8px;">Включить конфиг →</div>
               </div>
 
-              <div id="preset_clean_sharp" class="shelf-preset-card premium-glass premium-card" onclick="selectTeleportPreset('clean_sharp')">
+              <div id="preset_clean_sharp" class="shelf-preset-card premium-glass premium-card" style="border-radius: 32px;" onclick="selectTeleportPreset('clean_sharp')">
                 <div>
                   <div style="font-size:0.75rem; font-weight:700; color:#fff;">AWM / DEAGLE РЕЗКИЙ</div>
                   <div style="font-size:0.6875rem; color:var(--text-muted); margin-top:2px;">Точный хват 48.0x • Снайперский флик</div>
@@ -849,7 +848,7 @@
                 <div style="font-size:0.6875rem; color:var(--accent-bright); font-weight:700; margin-top:8px;">Включить конфиг →</div>
               </div>
 
-              <div class="shelf-preset-card premium-glass premium-card" onclick="applyShelfPreset('demon_100')">
+              <div class="shelf-preset-card premium-glass premium-card" style="border-radius: 32px;" onclick="applyShelfPreset('demon_100')">
                 <div>
                   <div style="font-size:0.75rem; font-weight:700; color:#fff;">H9IJE TELEPORT MAX</div>
                   <div style="font-size:0.6875rem; color:var(--text-muted); margin-top:2px;">Куски 150 • Полный овердрайв</div>
@@ -857,7 +856,7 @@
                 <div style="font-size:0.6875rem; color:var(--accent-bright); font-weight:700; margin-top:8px;">Включить конфиг →</div>
               </div>
 
-              <div class="shelf-preset-card premium-glass premium-card" onclick="applyShelfPreset('heavy_pixel')">
+              <div class="shelf-preset-card premium-glass premium-card" style="border-radius: 32px;" onclick="applyShelfPreset('heavy_pixel')">
                 <div>
                   <div style="font-size:0.75rem; font-weight:700; color:#fff;">AKR12 / M4 ЗАЖИМ</div>
                   <div style="font-size:0.6875rem; color:var(--text-muted); margin-top:2px;">Куски 96 • Удержание точки</div>
@@ -869,21 +868,21 @@
         </div>
       </div>
 
-      <div id="accCrosshair" class="acc-block blur-container premium-glass">
+      <div id="accCrosshair" class="acc-block premium-glass">
         <div class="acc-header" onclick="toggleAccordionBlock('accCrosshair')">
           <div class="acc-left">
-            <div class="acc-icon premium-glass capsule" aria-hidden="true">⌖</div>
+            <div class="acc-icon premium-glass" aria-hidden="true">⌖</div>
             <div class="acc-title-wrap">
-              <div class="acc-title">Кастомный прицел <span id="crosshairStateChip" class="badge-chip">ВЫКЛ</span></div>
+              <div class="acc-title">Кастомный прицел <span id="crosshairStateChip" class="badge-chip premium-glass premium-capsule">ВЫКЛ</span></div>
               <div class="acc-sub">Выбор формы, цвета прицела и точная подгонка лучей</div>
             </div>
           </div>
-          <div class="acc-chevron premium-glass capsule" aria-hidden="true">⌄</div>
+          <div class="acc-chevron premium-glass" aria-hidden="true">⌄</div>
         </div>
         <div class="acc-body-wrap">
           <div id="crosshairCardAnchor" class="acc-body-inner">
-            <div class="toggle-row premium-glass premium-card" style="margin-top:4px; margin-bottom:10px;">
-              <div>
+            <div class="toggle-row premium-glass premium-capsule" style="margin-top:4px; margin-bottom:10px;">
+              <div style="text-align: left;">
                 <div class="toggle-info-title">Отображать прицел поверх игры</div>
                 <div class="toggle-info-sub">Аппаратный оверлей без потери FPS</div>
               </div>
@@ -895,25 +894,25 @@
 
             <div id="chPreviewStage" class="preview-stage-box">
               <canvas id="crosshairPreviewCanvas" width="280" height="148"></canvas>
-              <div style="position:absolute; top:9px; left:10px;"><span id="chModeRightLabel" class="badge-chip">КРЕСТ</span></div>
-              <div style="position:absolute; top:9px; right:10px;"><button type="button" class="icon-circle-action premium-glass capsule" style="min-width:32px; min-height:32px;" aria-label="Переключить фон предпросмотра" onclick="togglePreviewDayNight()">🌙</button></div>
+              <div style="position:absolute; top:9px; left:10px;"><span id="chModeRightLabel" class="badge-chip premium-glass premium-capsule">КРЕСТ</span></div>
+              <div style="position:absolute; top:9px; right:10px;"><button type="button" class="icon-circle-action premium-glass" style="min-width:32px; min-height:32px;" aria-label="Переключить фон предпросмотра" onclick="togglePreviewDayNight()">🌙</button></div>
               <div style="position:absolute; bottom:9px; left:12px; display:flex; align-items:center; gap:6px; font-size:0.6875rem; color:var(--text-muted); font-variant-numeric:tabular-nums;">
                 <span id="chColorLiveDot" style="width:9px; height:9px; border-radius:50%; background:#30D158; display:inline-block;"></span>
                 <span id="chSizeReadout">+ 8 × 3 px</span>
               </div>
               <div style="position:absolute; bottom:8px; right:10px; display:flex; gap:5px;">
-                <button type="button" class="badge-chip" style="cursor:pointer; padding:4px 8px;" aria-label="Масштаб 1x" onclick="setPreviewZoom(1)">×1</button>
-                <button type="button" class="badge-chip" style="cursor:pointer; padding:4px 8px;" aria-label="Масштаб 4x" onclick="setPreviewZoom(2)">×4</button>
-                <button type="button" class="badge-chip" style="cursor:pointer; padding:4px 8px;" aria-label="Масштаб 8x" onclick="setPreviewZoom(3.5)">×8</button>
+                <button type="button" class="badge-chip premium-glass premium-capsule" style="cursor:pointer; padding:4px 8px;" aria-label="Масштаб 1x" onclick="setPreviewZoom(1)">×1</button>
+                <button type="button" class="badge-chip premium-glass premium-capsule" style="cursor:pointer; padding:4px 8px;" aria-label="Масштаб 4x" onclick="setPreviewZoom(2)">×4</button>
+                <button type="button" class="badge-chip premium-glass premium-capsule" style="cursor:pointer; padding:4px 8px;" aria-label="Масштаб 8x" onclick="setPreviewZoom(3.5)">×8</button>
               </div>
             </div>
 
-            <div class="ch-color-palette-bar premium-glass premium-card">
-              <div style="display:flex; align-items:center; justify-content:space-between;">
+            <div class="ch-color-palette-bar premium-glass premium-capsule">
+              <div style="display:flex; align-items:center; justify-content:space-between; width: 100%;">
                 <span style="font-size:0.8125rem; font-weight:700; color:#fff;">Цвет прицела</span>
-                <span id="chColorHexBadge" class="badge-chip" style="font-family:monospace;">#30D158</span>
+                <span id="chColorHexBadge" class="badge-chip premium-glass premium-capsule" style="font-family:monospace;">#30D158</span>
               </div>
-              <div class="ch-color-dots-row" role="group" aria-label="Палитра цвета прицела">
+              <div class="ch-color-dots-row" role="group" aria-label="Палитра цвета прицела" style="width: 100%;">
                 <button type="button" class="ch-color-swatch active" data-ch-color="#30d158" style="background:#30D158;" onclick="setCrosshairColor('#30D158', this)" aria-label="Зелёный"></button>
                 <button type="button" class="ch-color-swatch" data-ch-color="#7cc4ff" style="background:#7CC4FF;" onclick="setCrosshairColor('#7CC4FF', this)" aria-label="Голубой"></button>
                 <button type="button" class="ch-color-swatch" data-ch-color="#ff453a" style="background:#FF453A;" onclick="setCrosshairColor('#FF453A', this)" aria-label="Красный"></button>
@@ -922,51 +921,67 @@
                 <button type="button" class="ch-color-swatch" data-ch-color="#ff9f0a" style="background:#FF9F0A;" onclick="setCrosshairColor('#FF9F0A', this)" aria-label="Оранжевый"></button>
                 <button type="button" class="ch-color-swatch" data-ch-color="#ffffff" style="background:#FFFFFF;" onclick="setCrosshairColor('#FFFFFF', this)" aria-label="Белый"></button>
                 <button type="button" class="ch-color-swatch" data-ch-color="#38bdf8" style="background:#38BDF8;" onclick="setCrosshairColor('#38BDF8', this)" aria-label="Циан"></button>
-                <button type="button" class="ch-custom-color-btn btn-dark premium-glass capsule" onclick="document.getElementById('chCustomColorPicker').click()" aria-label="Выбрать свой цвет">🌈</button>
+                <button type="button" class="ch-custom-color-btn btn-dark premium-glass" onclick="document.getElementById('chCustomColorPicker').click()" aria-label="Выбрать свой цвет">🌈</button>
               </div>
             </div>
 
             <div class="ch-shape-grid-4">
-              <div class="ch-shape-tile btn-dark premium-glass active-state" data-ch="cross" onclick="setCrosshairMode(this, 'cross')"><div class="ch-shape-icon" aria-hidden="true">✚</div><div class="ch-shape-lbl">КРЕСТ</div></div>
-              <div class="ch-shape-tile btn-dark premium-glass" data-ch="dot" onclick="setCrosshairMode(this, 'dot')"><div class="ch-shape-icon" aria-hidden="true">•</div><div class="ch-shape-lbl">ТОЧКА</div></div>
-              <div class="ch-shape-tile btn-dark premium-glass" data-ch="tshape" onclick="setCrosshairMode(this, 'tshape')"><div class="ch-shape-icon" aria-hidden="true">⊤</div><div class="ch-shape-lbl">Т-ОБРАЗ</div></div>
-              <div class="ch-shape-tile btn-dark premium-glass" data-ch="corners" onclick="setCrosshairMode(this, 'corners')"><div class="ch-shape-icon" aria-hidden="true">⌜⌟</div><div class="ch-shape-lbl">УГОЛКИ</div></div>
+              <div class="ch-shape-tile btn-dark premium-glass premium-capsule active-state" data-ch="cross" onclick="setCrosshairMode(this, 'cross')">
+                <div style="display:flex; flex-direction:column; align-items:center;">
+                  <div class="ch-shape-icon" aria-hidden="true">✚</div><div class="ch-shape-lbl">КРЕСТ</div>
+                </div>
+              </div>
+              <div class="ch-shape-tile btn-dark premium-glass premium-capsule" data-ch="dot" onclick="setCrosshairMode(this, 'dot')">
+                <div style="display:flex; flex-direction:column; align-items:center;">
+                  <div class="ch-shape-icon" aria-hidden="true">•</div><div class="ch-shape-lbl">ТОЧКА</div>
+                </div>
+              </div>
+              <div class="ch-shape-tile btn-dark premium-glass premium-capsule" data-ch="tshape" onclick="setCrosshairMode(this, 'tshape')">
+                <div style="display:flex; flex-direction:column; align-items:center;">
+                  <div class="ch-shape-icon" aria-hidden="true">⊤</div><div class="ch-shape-lbl">Т-ОБРАЗ</div>
+                </div>
+              </div>
+              <div class="ch-shape-tile btn-dark premium-glass premium-capsule" data-ch="corners" onclick="setCrosshairMode(this, 'corners')">
+                <div style="display:flex; flex-direction:column; align-items:center;">
+                  <div class="ch-shape-icon" aria-hidden="true">⌜⌟</div><div class="ch-shape-lbl">УГОЛКИ</div>
+                </div>
+              </div>
             </div>
 
             <div class="ch-subtoggle-grid-2">
-              <div id="subBoxCrossLines" class="ch-subtoggle-box btn-dark premium-glass active-state" onclick="setCrosshairMode(this, 'cross')">
+              <div id="subBoxCrossLines" class="ch-subtoggle-box btn-dark premium-glass premium-capsule active-state" onclick="setCrosshairMode(this, 'cross')">
                 <span style="font-size:0.6875rem; font-weight:700; color:#fff;">ТОЛЬКО ЛУЧИ</span>
-                <span class="badge-chip">БЕЗ ТОЧКИ</span>
+                <span class="badge-chip premium-glass premium-capsule">БЕЗ ТОЧКИ</span>
               </div>
-              <div id="subBoxCenterDot" class="ch-subtoggle-box btn-dark premium-glass" onclick="setCrosshairMode(this, 'crossdot')">
+              <div id="subBoxCenterDot" class="ch-subtoggle-box btn-dark premium-glass premium-capsule" onclick="setCrosshairMode(this, 'crossdot')">
                 <span style="font-size:0.6875rem; font-weight:700; color:#fff;">ЛУЧИ + ТОЧКА</span>
-                <span class="badge-chip">КОМБО</span>
+                <span class="badge-chip premium-glass premium-capsule">КОМБО</span>
               </div>
             </div>
 
             <div class="pro-slider-row premium-glass premium-card">
-              <div class="pro-slider-head"><label class="pro-slider-name" for="sl_ch_len">Размер лучей</label><span id="val_ch_len" class="pro-slider-pill">8</span></div>
+              <div class="pro-slider-head"><label class="pro-slider-name" for="sl_ch_len">Размер лучей</label><span id="val_ch_len" class="pro-slider-pill premium-glass premium-capsule">8</span></div>
               <input id="sl_ch_len" type="range" min="2" max="22" value="8" oninput="syncCrosshairConfig()" />
             </div>
             <div class="pro-slider-row premium-glass premium-card">
-              <div class="pro-slider-head"><label class="pro-slider-name" for="sl_ch_thick">Толщина линий</label><span id="val_ch_thick" class="pro-slider-pill">3</span></div>
+              <div class="pro-slider-head"><label class="pro-slider-name" for="sl_ch_thick">Толщина линий</label><span id="val_ch_thick" class="pro-slider-pill premium-glass premium-capsule">3</span></div>
               <input id="sl_ch_thick" type="range" min="1" max="10" value="3" oninput="syncCrosshairConfig()" />
             </div>
             <div class="pro-slider-row premium-glass premium-card">
-              <div class="pro-slider-head"><label class="pro-slider-name" for="sl_ch_gap">Зазор в центре</label><span id="val_ch_gap" class="pro-slider-pill">3</span></div>
+              <div class="pro-slider-head"><label class="pro-slider-name" for="sl_ch_gap">Зазор в центре</label><span id="val_ch_gap" class="pro-slider-pill premium-glass premium-capsule">3</span></div>
               <input id="sl_ch_gap" type="range" min="0" max="14" value="3" oninput="syncCrosshairConfig()" />
             </div>
             <div class="pro-slider-row premium-glass premium-card">
-              <div class="pro-slider-head"><label class="pro-slider-name" for="sl_ch_dot">Размер центральной точки</label><span id="val_ch_dot" class="pro-slider-pill">3</span></div>
+              <div class="pro-slider-head"><label class="pro-slider-name" for="sl_ch_dot">Размер центральной точки</label><span id="val_ch_dot" class="pro-slider-pill premium-glass premium-capsule">3</span></div>
               <input id="sl_ch_dot" type="range" min="1" max="10" value="3" oninput="syncCrosshairConfig()" />
             </div>
             <div class="pro-slider-row premium-glass premium-card">
-              <div class="pro-slider-head"><label class="pro-slider-name" for="sl_ch_op">Непрозрачность прицела</label><span id="val_ch_op" class="pro-slider-pill">100%</span></div>
+              <div class="pro-slider-head"><label class="pro-slider-name" for="sl_ch_op">Непрозрачность прицела</label><span id="val_ch_op" class="pro-slider-pill premium-glass premium-capsule">100%</span></div>
               <input id="sl_ch_op" type="range" min="20" max="100" value="100" oninput="syncCrosshairConfig()" />
             </div>
 
-            <div class="toggle-row premium-glass premium-card" style="margin-top:8px;">
-              <div>
+            <div class="toggle-row premium-glass premium-capsule" style="margin-top:8px;">
+              <div style="text-align: left;">
                 <div class="toggle-info-title">Чёрная контурная обводка</div>
                 <div class="toggle-info-sub">Прицел остаётся читаемым на светлом фоне и в дыму</div>
               </div>
@@ -976,7 +991,7 @@
               </label>
             </div>
 
-            <button type="button" class="btn-main premium-glass capsule" style="margin-top:14px;" onclick="saveAllAppSettingsMaster()">
+            <button type="button" class="btn-main premium-glass premium-capsule" style="margin-top:14px;" onclick="saveAllAppSettingsMaster()">
               ⚡ Сохранить настройки прицела
             </button>
           </div>
@@ -987,59 +1002,77 @@
 
     <div id="tabScreen" class="tab-section">
 
-      <div id="accScreenStretch" class="acc-block blur-container premium-glass open">
+      <div id="accScreenStretch" class="acc-block premium-glass open">
         <div class="acc-header" onclick="toggleAccordionBlock('accScreenStretch')">
           <div class="acc-left">
-            <div class="acc-icon premium-glass capsule" aria-hidden="true">📐</div>
+            <div class="acc-icon premium-glass" aria-hidden="true">📐</div>
             <div class="acc-title-wrap">
-              <div class="acc-title">Растяг экрана «T» <span id="curRatioBadge" class="badge-chip">4:3</span></div>
+              <div class="acc-title">Растяг экрана «T» <span id="curRatioBadge" class="badge-chip premium-glass premium-capsule">4:3</span></div>
               <div class="acc-sub">Широкие модельки и фиксация горизонтального режима</div>
             </div>
           </div>
-          <div class="acc-chevron premium-glass capsule" aria-hidden="true">⌄</div>
+          <div class="acc-chevron premium-glass" aria-hidden="true">⌄</div>
         </div>
         <div class="acc-body-wrap">
           <div class="acc-body-inner">
             <div class="preview-stage-box">
               <div class="stretch-dashed-outer">
-                <div id="stretchPreviewInner" class="stretch-solid-inner btn-main premium-glass capsule">+</div>
+                <div id="stretchPreviewInner" class="stretch-solid-inner btn-main premium-glass premium-capsule">+</div>
               </div>
             </div>
 
             <div class="preset-pills-4" style="grid-template-columns:repeat(5,minmax(0,1fr)); margin-bottom:8px;">
-              <div class="preset-pill btn-dark premium-glass capsule active-state" data-ratio="4:3" onclick="selectRatioPill(this, '4:3')"><div class="preset-pill-name">4:3</div><div class="preset-pill-sub">Классика</div></div>
-              <div class="preset-pill btn-dark premium-glass capsule" data-ratio="PAD-WIDE" onclick="selectRatioPill(this, 'PAD-WIDE')"><div class="preset-pill-name">PAD</div><div class="preset-pill-sub">На Пады</div></div>
-              <div class="preset-pill btn-dark premium-glass capsule" data-ratio="5:4" onclick="selectRatioPill(this, '5:4')"><div class="preset-pill-name">5:4</div><div class="preset-pill-sub">Кибер</div></div>
-              <div class="preset-pill btn-dark premium-glass capsule" data-ratio="16:10" onclick="selectRatioPill(this, '16:10')"><div class="preset-pill-name">16:10</div><div class="preset-pill-sub">Мягкий</div></div>
-              <div class="preset-pill btn-dark premium-glass capsule" data-ratio="1:1" onclick="selectRatioPill(this, '1:1')"><div class="preset-pill-name">1:1</div><div class="preset-pill-sub">Макс</div></div>
+              <div class="preset-pill btn-dark premium-glass premium-capsule active-state" data-ratio="4:3" onclick="selectRatioPill(this, '4:3')">
+                <div><div class="preset-pill-name">4:3</div><div class="preset-pill-sub">Классика</div></div>
+              </div>
+              <div class="preset-pill btn-dark premium-glass premium-capsule" data-ratio="PAD-WIDE" onclick="selectRatioPill(this, 'PAD-WIDE')">
+                <div><div class="preset-pill-name">PAD</div><div class="preset-pill-sub">На Пады</div></div>
+              </div>
+              <div class="preset-pill btn-dark premium-glass premium-capsule" data-ratio="5:4" onclick="selectRatioPill(this, '5:4')">
+                <div><div class="preset-pill-name">5:4</div><div class="preset-pill-sub">Кибер</div></div>
+              </div>
+              <div class="preset-pill btn-dark premium-glass premium-capsule" data-ratio="16:10" onclick="selectRatioPill(this, '16:10')">
+                <div><div class="preset-pill-name">16:10</div><div class="preset-pill-sub">Мягкий</div></div>
+              </div>
+              <div class="preset-pill btn-dark premium-glass premium-capsule" data-ratio="1:1" onclick="selectRatioPill(this, '1:1')">
+                <div><div class="preset-pill-name">1:1</div><div class="preset-pill-sub">Макс</div></div>
+              </div>
             </div>
 
             <div class="preset-pills-4" style="margin-bottom:14px;">
-              <div class="preset-pill btn-dark premium-glass capsule" data-ratio="3:2" onclick="selectRatioPill(this, '3:2')"><div class="preset-pill-name">3:2</div><div class="preset-pill-sub">Широкий</div></div>
-              <div class="preset-pill btn-dark premium-glass capsule" data-ratio="16:9" onclick="selectRatioPill(this, '16:9')"><div class="preset-pill-name">16:9</div><div class="preset-pill-sub">Сток+</div></div>
-              <div class="preset-pill btn-dark premium-glass capsule" data-ratio="SHRINK-84" onclick="selectRatioPill(this, 'SHRINK-84')"><div class="preset-pill-name">84%</div><div class="preset-pill-sub">Стяг</div></div>
-              <div class="preset-pill btn-dark premium-glass capsule" data-ratio="21:9" onclick="selectRatioPill(this, '21:9')"><div class="preset-pill-name">21:9</div><div class="preset-pill-sub">Ультра</div></div>
+              <div class="preset-pill btn-dark premium-glass premium-capsule" data-ratio="3:2" onclick="selectRatioPill(this, '3:2')">
+                <div><div class="preset-pill-name">3:2</div><div class="preset-pill-sub">Широкий</div></div>
+              </div>
+              <div class="preset-pill btn-dark premium-glass premium-capsule" data-ratio="16:9" onclick="selectRatioPill(this, '16:9')">
+                <div><div class="preset-pill-name">16:9</div><div class="preset-pill-sub">Сток+</div></div>
+              </div>
+              <div class="preset-pill btn-dark premium-glass premium-capsule" data-ratio="SHRINK-84" onclick="selectRatioPill(this, 'SHRINK-84')">
+                <div><div class="preset-pill-name">84%</div><div class="preset-pill-sub">Стяг</div></div>
+              </div>
+              <div class="preset-pill btn-dark premium-glass premium-capsule" data-ratio="21:9" onclick="selectRatioPill(this, '21:9')">
+                <div><div class="preset-pill-name">21:9</div><div class="preset-pill-sub">Ультра</div></div>
+              </div>
             </div>
 
-            <button id="btnLaunchFloatingStretch" type="button" class="btn-main premium-glass capsule" style="margin-bottom:10px;" onclick="launchFloatingTButton()">
+            <button id="btnLaunchFloatingStretch" type="button" class="btn-main premium-glass premium-capsule" style="margin-bottom:10px;" onclick="launchFloatingTButton()">
               ⚡ Запустить плавающую кнопку «T» (4:3)
             </button>
 
             <div style="display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:10px; margin-bottom:10px;">
-              <button type="button" class="btn-dark premium-glass capsule" onclick="applyStretchDirectlyNow()">
+              <button type="button" class="btn-dark premium-glass premium-capsule" onclick="applyStretchDirectlyNow()">
                 Шаг 1: Сжать экран
               </button>
-              <button type="button" class="btn-dark premium-glass capsule" onclick="releaseStretchFullNow()">
+              <button type="button" class="btn-dark premium-glass premium-capsule" onclick="releaseStretchFullNow()">
                 Шаг 2: Растянуть экран
               </button>
             </div>
 
-            <button type="button" class="btn-dark premium-glass capsule" style="margin-bottom:10px;" onclick="resetNativeScreen()">
+            <button type="button" class="btn-dark premium-glass premium-capsule" style="margin-bottom:10px;" onclick="resetNativeScreen()">
               Восстановить родное разрешение экрана
             </button>
 
-            <div class="toggle-row premium-glass premium-card">
-              <div>
+            <div class="toggle-row premium-glass premium-capsule">
+              <div style="text-align: left;">
                 <div class="toggle-info-title">Синхронизация кусков под растяг</div>
                 <div class="toggle-info-sub">Адаптирует шаг сенсы под выбранный формат экрана</div>
               </div>
@@ -1052,26 +1085,38 @@
         </div>
       </div>
 
-      <div id="accScreenPixels" class="acc-block blur-container premium-glass">
+      <div id="accScreenPixels" class="acc-block premium-glass">
         <div class="acc-header" onclick="toggleAccordionBlock('accScreenPixels')">
           <div class="acc-left">
-            <div class="acc-icon premium-glass capsule" aria-hidden="true">🚀</div>
+            <div class="acc-icon premium-glass" aria-hidden="true">🚀</div>
             <div class="acc-title-wrap">
-              <div class="acc-title">Оптимизация пикселей <span id="pixelScaleBadge" class="badge-chip">100%</span></div>
+              <div class="acc-title">Оптимизация пикселей <span id="pixelScaleBadge" class="badge-chip premium-glass premium-capsule">100%</span></div>
               <div class="acc-sub">Снижение нагрузки на GPU без чёрных полос</div>
             </div>
           </div>
-          <div class="acc-chevron premium-glass capsule" aria-hidden="true">⌄</div>
+          <div class="acc-chevron premium-glass" aria-hidden="true">⌄</div>
         </div>
         <div class="acc-body-wrap">
           <div class="acc-body-inner">
             <div class="pixel-tiles-6">
-              <div class="pixel-tile btn-dark premium-glass active-state" data-px="100" onclick="selectPixelTile(this, 100)"><b>100</b><span>%</span></div>
-              <div class="pixel-tile btn-dark premium-glass" data-px="90" onclick="selectPixelTile(this, 90)"><b>90</b><span>%</span></div>
-              <div class="pixel-tile btn-dark premium-glass" data-px="80" onclick="selectPixelTile(this, 80)"><b>80</b><span>%</span></div>
-              <div class="pixel-tile btn-dark premium-glass" data-px="70" onclick="selectPixelTile(this, 70)"><b>70</b><span>%</span></div>
-              <div class="pixel-tile btn-dark premium-glass" data-px="60" onclick="selectPixelTile(this, 60)"><b>60</b><span>%</span></div>
-              <div class="pixel-tile btn-dark premium-glass" data-px="50" onclick="selectPixelTile(this, 50)"><b>50</b><span>%</span></div>
+              <div class="pixel-tile btn-dark premium-glass premium-capsule active-state" data-px="100" onclick="selectPixelTile(this, 100)">
+                <div><b>100</b><span>%</span></div>
+              </div>
+              <div class="pixel-tile btn-dark premium-glass premium-capsule" data-px="90" onclick="selectPixelTile(this, 90)">
+                <div><b>90</b><span>%</span></div>
+              </div>
+              <div class="pixel-tile btn-dark premium-glass premium-capsule" data-px="80" onclick="selectPixelTile(this, 80)">
+                <div><b>80</b><span>%</span></div>
+              </div>
+              <div class="pixel-tile btn-dark premium-glass premium-capsule" data-px="70" onclick="selectPixelTile(this, 70)">
+                <div><b>70</b><span>%</span></div>
+              </div>
+              <div class="pixel-tile btn-dark premium-glass premium-capsule" data-px="60" onclick="selectPixelTile(this, 60)">
+                <div><b>60</b><span>%</span></div>
+              </div>
+              <div class="pixel-tile btn-dark premium-glass premium-capsule" data-px="50" onclick="selectPixelTile(this, 50)">
+                <div><b>50</b><span>%</span></div>
+              </div>
             </div>
             <div class="pixel-big-readout">
               <div id="pixelBigNumText" class="pixel-big-num">100 %</div>
@@ -1086,16 +1131,16 @@
 
     <div id="tabBoost" class="tab-section">
 
-      <div id="accBoostOneClick" class="acc-block blur-container premium-glass open">
+      <div id="accBoostOneClick" class="acc-block premium-glass open">
         <div class="acc-header" onclick="toggleAccordionBlock('accBoostOneClick')">
           <div class="acc-left">
-            <div class="acc-icon premium-glass capsule" aria-hidden="true">🔥</div>
+            <div class="acc-icon premium-glass" aria-hidden="true">🔥</div>
             <div class="acc-title-wrap">
-              <div class="acc-title">Имба-Твик и Фикс FPS <span id="oneClickTweakStatusBadge" class="badge-chip">SKIAGL 72MB</span></div>
+              <div class="acc-title">Имба-Твик и Фикс FPS <span id="oneClickTweakStatusBadge" class="badge-chip premium-glass premium-capsule">SKIAGL 72MB</span></div>
               <div class="acc-sub">Устранение просадок FPS на Samsung A57 и бюджетных устройствах</div>
             </div>
           </div>
-          <div class="acc-chevron premium-glass capsule" aria-hidden="true">⌄</div>
+          <div class="acc-chevron premium-glass" aria-hidden="true">⌄</div>
         </div>
         <div class="acc-body-wrap">
           <div class="acc-body-inner">
@@ -1104,97 +1149,97 @@
             </p>
 
             <div class="tweak-tags-wrap">
-              <span class="tweak-mini-tag">SkiaGL + Multithread</span>
-              <span class="tweak-mini-tag">HWUI Cache 72MB</span>
-              <span class="tweak-mini-tag">Apps Freezer (Max 16)</span>
-              <span class="tweak-mini-tag">TCP Fast Window 60</span>
-              <span class="tweak-mini-tag">GPU Debug OFF</span>
-              <span class="tweak-mini-tag">Trim Caches 256M</span>
+              <span class="tweak-mini-tag premium-glass premium-capsule">SkiaGL + Multithread</span>
+              <span class="tweak-mini-tag premium-glass premium-capsule">HWUI Cache 72MB</span>
+              <span class="tweak-mini-tag premium-glass premium-capsule">Apps Freezer (Max 16)</span>
+              <span class="tweak-mini-tag premium-glass premium-capsule">TCP Fast Window 60</span>
+              <span class="tweak-mini-tag premium-glass premium-capsule">GPU Debug OFF</span>
+              <span class="tweak-mini-tag premium-glass premium-capsule">Trim Caches 256M</span>
             </div>
 
-            <button id="btnOneClickSettingsTweak" type="button" class="btn-main premium-glass capsule" onclick="runOneClickUltimateTweaks()">
+            <button id="btnOneClickSettingsTweak" type="button" class="btn-main premium-glass premium-capsule" onclick="runOneClickUltimateTweaks()">
               ⚡ Применить системные твики и фикс FPS
             </button>
 
             <div style="display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:10px; margin-top:10px;">
-              <button type="button" class="btn-dark premium-glass capsule" onclick="runRamCleanNow()">Очистить ОЗУ и кэш</button>
-              <button type="button" class="btn-dark premium-glass capsule" onclick="runSmartScanNow()">Проверить устройство (<span id="scanTierBadge">ULTRA</span>)</button>
+              <button type="button" class="btn-dark premium-glass premium-capsule" onclick="runRamCleanNow()">Очистить ОЗУ и кэш</button>
+              <button type="button" class="btn-dark premium-glass premium-capsule" onclick="runSmartScanNow()">Проверить устройство (<span id="scanTierBadge">ULTRA</span>)</button>
             </div>
           </div>
         </div>
       </div>
 
-      <div id="accBoostModules" class="acc-block blur-container premium-glass">
+      <div id="accBoostModules" class="acc-block premium-glass">
         <div class="acc-header" onclick="toggleAccordionBlock('accBoostModules')">
           <div class="acc-left">
-            <div class="acc-icon premium-glass capsule" aria-hidden="true">⚡</div>
+            <div class="acc-icon premium-glass" aria-hidden="true">⚡</div>
             <div class="acc-title-wrap">
               <div class="acc-title">Системные модули Shizuku</div>
               <div class="acc-sub">Raw Input, SkiaGL Turbo, стабилизация пинга и удержание Гц</div>
             </div>
           </div>
-          <div class="acc-chevron premium-glass capsule" aria-hidden="true">⌄</div>
+          <div class="acc-chevron premium-glass" aria-hidden="true">⌄</div>
         </div>
         <div class="acc-body-wrap">
           <div class="acc-body-inner">
-            <div class="toggle-row premium-glass premium-card">
-              <div><div class="toggle-info-title">Прямой отклик без сглаживания (Zero-Animation Snap)</div><div class="toggle-info-sub">Мгновенный перенос прицела за 1 кадр</div></div>
+            <div class="toggle-row premium-glass premium-capsule">
+              <div style="text-align: left;"><div class="toggle-info-title">Прямой отклик без сглаживания</div><div class="toggle-info-sub">Мгновенный перенос прицела за 1 кадр</div></div>
               <label class="cyber-switch" aria-label="Прямой отклик без сглаживания"><input id="tgRawInput" type="checkbox" checked onchange="toggleBoostFeature('raw', this.checked)" /><span class="cyber-slider"></span></label>
             </div>
-            <div class="toggle-row premium-glass premium-card">
-              <div><div class="toggle-info-title">Ускоритель рендера (SkiaGL + Shader Cache)</div><div class="toggle-info-sub">Ускоряет отрисовку кадров и снижает нагрузку на GPU</div></div>
+            <div class="toggle-row premium-glass premium-capsule">
+              <div style="text-align: left;"><div class="toggle-info-title">Ускоритель рендера (SkiaGL)</div><div class="toggle-info-sub">Ускоряет отрисовку кадров и снижает нагрузку на GPU</div></div>
               <label class="cyber-switch" aria-label="Ускоритель рендера"><input id="tgVulkan" type="checkbox" checked onchange="toggleBoostFeature('vulkan', this.checked)" /><span class="cyber-slider"></span></label>
             </div>
-            <div class="toggle-row premium-glass premium-card">
-              <div><div class="toggle-info-title">Стабилизация сети (TCP Window 60 + DNS Boost)</div><div class="toggle-info-sub">Снижает скачки пинга и фоновый поиск Wi-Fi</div></div>
+            <div class="toggle-row premium-glass premium-capsule">
+              <div style="text-align: left;"><div class="toggle-info-title">Стабилизация сети (TCP Window)</div><div class="toggle-info-sub">Снижает скачки пинга и фоновый поиск Wi-Fi</div></div>
               <label class="cyber-switch" aria-label="Стабилизация сети"><input id="tgNetPing" type="checkbox" checked onchange="toggleBoostFeature('ping', this.checked)" /><span class="cyber-slider"></span></label>
             </div>
-            <div class="toggle-row premium-glass premium-card">
-              <div><div class="toggle-info-title">Удержание максимальной герцовки экрана</div><div class="toggle-info-sub">Фиксирует частоту обновления экрана при нагреве</div></div>
+            <div class="toggle-row premium-glass premium-capsule">
+              <div style="text-align: left;"><div class="toggle-info-title">Удержание максимальной герцовки экрана</div><div class="toggle-info-sub">Фиксирует частоту обновления экрана при нагреве</div></div>
               <label class="cyber-switch" aria-label="Удержание максимальной герцовки экрана"><input id="tgThermal" type="checkbox" checked onchange="toggleBoostFeature('thermal', this.checked)" /><span class="cyber-slider"></span></label>
             </div>
-            <div class="toggle-row premium-glass premium-card">
-              <div><div class="toggle-info-title">Скрытие оверлеев на записи экрана</div><div class="toggle-info-sub">Не отображает кнопку «T» и прицел на видеозаписи</div></div>
+            <div class="toggle-row premium-glass premium-capsule">
+              <div style="text-align: left;"><div class="toggle-info-title">Скрытие оверлеев на записи экрана</div><div class="toggle-info-sub">Не отображает кнопку «T» и прицел на видеозаписи</div></div>
               <label class="cyber-switch" aria-label="Скрытие оверлеев на записи экрана"><input id="tgStealth" type="checkbox" checked onchange="toggleBoostFeature('stealth', this.checked)" /><span class="cyber-slider"></span></label>
             </div>
           </div>
         </div>
       </div>
 
-      <div id="accBoostOverclock" class="acc-block blur-container premium-glass">
+      <div id="accBoostOverclock" class="acc-block premium-glass">
         <div class="acc-header" onclick="toggleAccordionBlock('accBoostOverclock')">
           <div class="acc-left">
-            <div class="acc-icon premium-glass capsule" aria-hidden="true">⚙️</div>
+            <div class="acc-icon premium-glass" aria-hidden="true">⚙️</div>
             <div class="acc-title-wrap">
               <div class="acc-title">Тонкий разгон Гц и Мультитача</div>
               <div class="acc-sub">Частота экрана, приоритет GPU/CPU и опрос тача 480 Гц</div>
             </div>
           </div>
-          <div class="acc-chevron premium-glass capsule" aria-hidden="true">⌄</div>
+          <div class="acc-chevron premium-glass" aria-hidden="true">⌄</div>
         </div>
         <div class="acc-body-wrap">
           <div class="acc-body-inner">
             <div class="pro-slider-row premium-glass premium-card">
-              <div class="pro-slider-head"><label class="pro-slider-name" for="sl_opt_fps">Фиксация частоты экрана</label><span id="val_opt_fps" class="pro-slider-pill">120 Hz</span></div>
+              <div class="pro-slider-head"><label class="pro-slider-name" for="sl_opt_fps">Фиксация частоты экрана</label><span id="val_opt_fps" class="pro-slider-pill premium-glass premium-capsule">120 Hz</span></div>
               <input id="sl_opt_fps" type="range" min="60" max="144" step="30" value="120" oninput="updateOptLabels()" />
             </div>
             <div class="pro-slider-row premium-glass premium-card">
-              <div class="pro-slider-head"><label class="pro-slider-name" for="sl_opt_gpu">Приоритет GPU/CPU</label><span id="val_opt_gpu" class="pro-slider-pill">100%</span></div>
+              <div class="pro-slider-head"><label class="pro-slider-name" for="sl_opt_gpu">Приоритет GPU/CPU</label><span id="val_opt_gpu" class="pro-slider-pill premium-glass premium-capsule">100%</span></div>
               <input id="sl_opt_gpu" type="range" min="20" max="100" value="100" oninput="updateOptLabels()" />
             </div>
             <div class="pro-slider-row premium-glass premium-card">
-              <div class="pro-slider-head"><label class="pro-slider-name" for="sl_opt_edge">Отклик краёв экрана</label><span id="val_opt_edge" class="pro-slider-pill">100%</span></div>
+              <div class="pro-slider-head"><label class="pro-slider-name" for="sl_opt_edge">Отклик краёв экрана</label><span id="val_opt_edge" class="pro-slider-pill premium-glass premium-capsule">100%</span></div>
               <input id="sl_opt_edge" type="range" min="10" max="100" value="100" oninput="updateOptLabels()" />
             </div>
             <div class="pro-slider-row premium-glass premium-card">
-              <div class="pro-slider-head"><label class="pro-slider-name" for="sl_opt_mt">Скорость Мультитача (3–6 пальцев)</label><span id="val_opt_mt" class="pro-slider-pill">160</span></div>
+              <div class="pro-slider-head"><label class="pro-slider-name" for="sl_opt_mt">Скорость Мультитача (3–6 пальцев)</label><span id="val_opt_mt" class="pro-slider-pill premium-glass premium-capsule">160</span></div>
               <input id="sl_opt_mt" type="range" min="50" max="160" value="160" oninput="updateOptLabels()" />
             </div>
             <div class="pro-slider-row premium-glass premium-card">
-              <div class="pro-slider-head"><label class="pro-slider-name" for="sl_opt_ts">Частота опроса сенсора</label><span id="val_opt_ts" class="pro-slider-pill">480 Hz</span></div>
+              <div class="pro-slider-head"><label class="pro-slider-name" for="sl_opt_ts">Частота опроса сенсора</label><span id="val_opt_ts" class="pro-slider-pill premium-glass premium-capsule">480 Hz</span></div>
               <input id="sl_opt_ts" type="range" min="240" max="480" step="60" value="480" oninput="updateOptLabels()" />
             </div>
-            <button type="button" class="btn-main premium-glass capsule" style="margin-top:14px;" onclick="applyFullShooterOptNow()">
+            <button type="button" class="btn-main premium-glass premium-capsule" style="margin-top:14px;" onclick="applyFullShooterOptNow()">
               ⚡ Применить параметры разгона
             </button>
           </div>
@@ -1205,29 +1250,29 @@
 
     <div id="tabSquad" class="tab-section">
 
-      <div id="accSquadVoice" class="acc-block blur-container premium-glass open">
+      <div id="accSquadVoice" class="acc-block premium-glass open">
         <div class="acc-header" onclick="toggleAccordionBlock('accSquadVoice')">
           <div class="acc-left">
-            <div class="acc-icon premium-glass capsule" aria-hidden="true">🎙</div>
+            <div class="acc-icon premium-glass" aria-hidden="true">🎙</div>
             <div class="acc-title-wrap">
-              <div class="acc-title">Рация отряда <span id="voiceStateBadge" class="badge-chip">ГОТОВ К ЭФИРУ</span></div>
+              <div class="acc-title">Рация отряда <span id="voiceStateBadge" class="badge-chip premium-glass premium-capsule">ГОТОВ К ЭФИРУ</span></div>
               <div class="acc-sub">Голосовая связь поверх игры без приглушения шагов</div>
             </div>
           </div>
-          <div class="acc-chevron premium-glass capsule" aria-hidden="true">⌄</div>
+          <div class="acc-chevron premium-glass" aria-hidden="true">⌄</div>
         </div>
         <div class="acc-body-wrap">
           <div class="acc-body-inner">
-            <div class="auth-input-wrap btn-dark premium-glass capsule" style="margin-top:8px; margin-bottom:12px;">
+            <div class="auth-input-wrap btn-dark premium-glass premium-capsule" style="margin-top:8px; margin-bottom:12px;">
               <div style="width:100%;">
                 <label class="auth-input-label" for="voiceRoomInput">КОД КОМНАТЫ ОТРЯДА</label>
                 <input id="voiceRoomInput" class="auth-input" type="text" value="SQUAD-MAIN" autocomplete="off" spellcheck="false" />
               </div>
             </div>
             <div style="display:grid; grid-template-columns:1.2fr 1fr 1fr; gap:10px; margin-bottom:12px;">
-              <button id="btnVoiceJoin" type="button" class="btn-main premium-glass capsule" style="padding:12px;" onclick="toggleVoiceConnection()">Войти в войс</button>
-              <button id="btnVoiceMute" type="button" class="btn-dark premium-glass capsule" style="padding:12px;" onclick="window.toggleMicMute()">Микрофон</button>
-              <button id="btnVoiceDeaf" type="button" class="btn-dark premium-glass capsule" style="padding:12px;" onclick="window.toggleDeafenSpeaker()">Динамик</button>
+              <button id="btnVoiceJoin" type="button" class="btn-main premium-glass premium-capsule" style="padding:12px;" onclick="toggleVoiceConnection()">Войти в войс</button>
+              <button id="btnVoiceMute" type="button" class="btn-dark premium-glass premium-capsule" style="padding:12px;" onclick="window.toggleMicMute()">Микрофон</button>
+              <button id="btnVoiceDeaf" type="button" class="btn-dark premium-glass premium-capsule" style="padding:12px;" onclick="window.toggleDeafenSpeaker()">Динамик</button>
             </div>
             <div id="voiceMembersBox">
               <div style="text-align:center; padding:12px; font-size:0.75rem; color:var(--text-muted);">
@@ -1238,27 +1283,27 @@
         </div>
       </div>
 
-      <div id="accSquadFriends" class="acc-block blur-container premium-glass open">
+      <div id="accSquadFriends" class="acc-block premium-glass open">
         <div class="acc-header" onclick="toggleAccordionBlock('accSquadFriends')">
           <div class="acc-left">
-            <div class="acc-icon premium-glass capsule" aria-hidden="true">👥</div>
+            <div class="acc-icon premium-glass" aria-hidden="true">👥</div>
             <div class="acc-title-wrap">
-              <div class="acc-title">Друзья и тиммейты <span id="myFriendCodeBadge" class="badge-chip">ID: SO2-0000</span></div>
+              <div class="acc-title">Друзья и тиммейты <span id="myFriendCodeBadge" class="badge-chip premium-glass premium-capsule">ID: SO2-0000</span></div>
               <div class="acc-sub">Добавление тиммейтов по личному ID</div>
             </div>
           </div>
-          <div class="acc-chevron premium-glass capsule" aria-hidden="true">⌄</div>
+          <div class="acc-chevron premium-glass" aria-hidden="true">⌄</div>
         </div>
         <div class="acc-body-wrap">
           <div class="acc-body-inner">
             <div style="display:grid; grid-template-columns:minmax(0,1fr) auto; gap:10px; margin-top:8px; margin-bottom:8px;">
-              <div class="auth-input-wrap btn-dark premium-glass capsule" style="margin-bottom:0;">
+              <div class="auth-input-wrap btn-dark premium-glass premium-capsule" style="margin-bottom:0;">
                 <div style="width:100%;">
                   <label class="auth-input-label" for="friendAddInput">ID ТИММЕЙТА</label>
                   <input id="friendAddInput" class="auth-input" type="text" placeholder="SO2-7744" autocomplete="off" spellcheck="false" />
                 </div>
               </div>
-              <button type="button" class="btn-main premium-glass capsule" style="width:auto; padding-inline:20px;" aria-label="Добавить тиммейта" onclick="addFriendByCode()">Добавить</button>
+              <button type="button" class="btn-main premium-glass premium-capsule" style="width:auto; padding-inline:20px;" aria-label="Добавить тиммейта" onclick="addFriendByCode()">Добавить</button>
             </div>
             <div id="friendsListBox"></div>
           </div>
@@ -1268,9 +1313,9 @@
     </div>
 
     <div id="tabProfile" class="tab-section">
-      <div class="acc-block blur-container premium-glass open" style="padding:16px;">
+      <div class="acc-block premium-glass open" style="padding:16px;">
         <div style="display:flex; align-items:center; gap:14px; margin-bottom:14px; padding-bottom:14px; border-bottom:1px solid rgba(255,255,255,0.08);">
-          <div class="header-avatar-holder premium-glass capsule" style="width:64px; height:64px;" onclick="triggerAvatarUpload()" role="button" tabindex="0" aria-label="Сменить аватарку">
+          <div class="header-avatar-holder premium-glass" style="width:64px; height:64px;" onclick="triggerAvatarUpload()" role="button" tabindex="0" aria-label="Сменить аватарку">
             <img id="profAvatarImg" src="" alt="" />
             <span id="profAvatarFallback" style="font-size:1.5rem; font-weight:800; color:#FFFFFF;">P</span>
           </div>
@@ -1278,13 +1323,13 @@
             <div style="font-size:1.15rem; font-weight:800; color:#fff;" id="profNickText">login</div>
             <div style="font-size:0.75rem; color:#30D158; font-weight:700; margin-top:2px;" id="profSubVal">АКТИВНА</div>
             <div style="display:flex; gap:8px; flex-wrap:wrap; margin-top:10px;">
-              <button type="button" class="btn-dark premium-glass capsule" style="padding:8px 14px; font-size:0.6875rem; min-height:36px; width:auto;" onclick="triggerAvatarUpload()">
+              <button type="button" class="btn-dark premium-glass premium-capsule" style="padding:8px 14px; font-size:0.6875rem; min-height:36px; width:auto;" onclick="triggerAvatarUpload()">
                 Сменить аватарку
               </button>
-              <button type="button" class="btn-dark premium-glass capsule" style="padding:8px 14px; font-size:0.6875rem; min-height:36px; width:auto;" onclick="triggerCustomBgUpload()">
+              <button type="button" class="btn-dark premium-glass premium-capsule" style="padding:8px 14px; font-size:0.6875rem; min-height:36px; width:auto;" onclick="triggerCustomBgUpload()">
                 Установить фон
               </button>
-              <button type="button" class="btn-dark premium-glass capsule" style="padding:8px 14px; font-size:0.6875rem; min-height:36px; width:auto;" onclick="resetCustomBgToCarbon()">
+              <button type="button" class="btn-dark premium-glass premium-capsule" style="padding:8px 14px; font-size:0.6875rem; min-height:36px; width:auto;" onclick="resetCustomBgToCarbon()">
                 Сбросить фон
               </button>
             </div>
@@ -1310,13 +1355,13 @@
           </div>
         </div>
 
-        <button type="button" class="btn-main premium-glass capsule" style="margin-bottom:12px;" onclick="saveAllAppSettingsMaster()">
+        <button type="button" class="btn-main premium-glass premium-capsule" style="margin-bottom:12px;" onclick="saveAllAppSettingsMaster()">
           ⚡ Сохранить настройки профиля
         </button>
 
         <div style="display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:10px;">
-          <button type="button" class="btn-dark premium-glass capsule" onclick="openSupportLink()">Написать в поддержку</button>
-          <button type="button" class="btn-danger premium-glass capsule" onclick="handleLogoutClick()">Сменить ключ</button>
+          <button type="button" class="btn-dark premium-glass premium-capsule" onclick="openSupportLink()">Написать в поддержку</button>
+          <button type="button" class="btn-danger premium-glass premium-capsule" onclick="handleLogoutClick()">Сменить ключ</button>
         </div>
       </div>
     </div>
@@ -1324,7 +1369,7 @@
   </main>
 
   <nav id="bottomNavBar" class="bottom-nav-bar blur-container" aria-label="Основная навигация">
-    <div id="navLiquidLens" class="nav-liquid-lens" aria-hidden="true"></div>
+    <div id="navLiquidLens" class="nav-liquid-lens premium-glass" aria-hidden="true"></div>
     <div class="nav-item active" data-tab="tabSens" data-nav-idx="0" role="button" tabindex="0" onclick="switchTab('tabSens');">
       <svg aria-hidden="true" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>
       <span>Главное</span>
@@ -1369,7 +1414,6 @@
     let bridgeBatchTimer = null;
     let cachedShizukuState = false;
 
-    // Оптимизированные темы (Титановый Серый - дефолт)
     const DARK_LIQUID_THEMES = [
       {
         name: "Серый Титан (Titanium)",
@@ -1606,14 +1650,14 @@
               '<div style="font-weight:700; margin-bottom:6px; color:var(--accent-bright); font-size:0.85rem;">📋 Быстрый гайд по запуску:</div>' +
               '<div style="font-size:0.8rem; color:#fff; line-height:1.6;">1. Открой приложение <b>Shizuku</b> на телефоне.<br>2. Включи <b>Беспроводную отладку</b> в Настройках для разработчиков и нажми <b>Запустить</b>.<br>3. Вернись сюда и нажми <b>«Проверить и выдать доступ»</b>.</div>' +
             '</div>' +
-            '<button type="button" class="btn-main premium-capsule" style="margin-bottom:10px;" onclick="requestAndRecheckShizuku()">' +
+            '<button type="button" class="btn-main premium-glass premium-capsule" style="margin-bottom:10px;" onclick="requestAndRecheckShizuku()">' +
               '⚡ Проверить и выдать доступ Shizuku' +
             '</button>' +
             '<div style="display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:10px; margin-bottom:10px;">' +
-              '<button type="button" class="btn-dark premium-capsule" onclick="openSupportLink()">💬 Помощь в ТГ</button>' +
-              '<button type="button" class="btn-dark premium-capsule" onclick="copyDiscordSupport()">🎧 Мой Дискорд</button>' +
+              '<button type="button" class="btn-dark premium-glass premium-capsule" onclick="openSupportLink()">💬 Помощь в ТГ</button>' +
+              '<button type="button" class="btn-dark premium-glass premium-capsule" onclick="copyDiscordSupport()">🎧 Мой Дискорд</button>' +
             '</div>' +
-            '<button type="button" class="btn-dark premium-capsule" onclick="document.getElementById(\'shizukuRequiredModal\').style.display=\'none\'">' +
+            '<button type="button" class="btn-dark premium-glass premium-capsule" onclick="document.getElementById(\'shizukuRequiredModal\').style.display=\'none\'">' +
               'Закрыть окно' +
             '</button>';
         }
@@ -3121,27 +3165,6 @@
         if (e.key === "Escape") {
           window.handleSystemBack();
         }
-      });
-
-      // Динамический Motion Blur при скролле
-      let scrollTimeout = null;
-      let lastScrollY = window.scrollY;
-      const workspace = document.getElementById('mainAppWorkspace');
-
-      window.addEventListener('scroll', () => {
-        const currentScrollY = window.scrollY;
-        const velocity = Math.abs(currentScrollY - lastScrollY);
-        lastScrollY = currentScrollY;
-
-        if (velocity > 5) {
-          const blurAmount = Math.min(velocity * 0.15, 6);
-          workspace.style.filter = 'blur(' + blurAmount + 'px)';
-        }
-
-        clearTimeout(scrollTimeout);
-        scrollTimeout = setTimeout(() => {
-          workspace.style.filter = 'blur(0px)';
-        }, 100);
       });
 
       let savedNick = "login";
