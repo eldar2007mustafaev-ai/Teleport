@@ -199,7 +199,11 @@ public class MainActivity extends Activity {
         ws.setAllowFileAccess(true);
         ws.setAllowContentAccess(true);
         ws.setMediaPlaybackRequiresUserGesture(false);
-        ws.setCacheMode(WebSettings.LOAD_DEFAULT);
+
+        // Включили жесткое кэширование интерфейса
+        ws.setCacheMode(WebSettings.LOAD_CACHE_ELSE_NETWORK);
+        ws.setAppCacheEnabled(true);
+        ws.setAppCachePath(getApplicationContext().getCacheDir().getAbsolutePath());
 
         webView.setBackgroundColor(Color.parseColor("#060709"));
 
