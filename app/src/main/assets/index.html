@@ -8,73 +8,38 @@
   <title>SO2Teleport PRO</title>
   <style>
     :root {
-      --bg-fallback-1: #070B16;
-      --bg-fallback-2: #0E172C;
-      --bg-fallback-3: #152342;
+      --bg-fallback-1: #09090B;
+      --bg-fallback-2: #141417;
+      --bg-fallback-3: #1F1F24;
 
-      --accent-main: #38BDF8;
-      --accent-bright: #7DD3FC;
-      --accent-sec: #2563EB;
-      --accent-rgb: 56, 189, 248;
-      --accent-sec-rgb: 37, 99, 235;
-      --focus-ring: rgba(125, 211, 252, 0.92);
+      --accent-main: #D1D5DB;
+      --accent-bright: #F3F4F6;
+      --accent-sec: #9CA3AF;
+      --accent-rgb: 209, 213, 219;
+      --accent-sec-rgb: 156, 163, 175;
+      --focus-ring: rgba(var(--accent-rgb), 0.6);
 
-      --glass-blur: 10px;
+      --glass-blur: 18px;
 
-      --glass-tint-surface: linear-gradient(
-        145deg,
-        rgba(255, 255, 255, 0.14) 0%,
-        rgba(var(--accent-rgb), 0.22) 42%,
-        rgba(var(--accent-sec-rgb), 0.18) 78%,
-        rgba(8, 12, 24, 0.56) 100%
-      );
+      /* Глубокие стеклянные заливки */
+      --glass-tint-surface: linear-gradient(145deg, rgba(255, 255, 255, 0.08) 0%, rgba(var(--accent-rgb), 0.12) 45%, rgba(0, 0, 0, 0.55) 100%);
+      --glass-tint-card: linear-gradient(145deg, rgba(255, 255, 255, 0.05) 0%, rgba(var(--accent-rgb), 0.08) 50%, rgba(0, 0, 0, 0.40) 100%);
+      
+      --glass-tint-btn: radial-gradient(125% 140% at 20% 20%, rgba(255, 255, 255, 0.15) 0%, rgba(var(--accent-rgb), 0.18) 50%, rgba(0, 0, 0, 0.55) 100%);
+      --glass-tint-active: radial-gradient(125% 140% at 20% 15%, rgba(255, 255, 255, 0.28) 0%, rgba(var(--accent-rgb), 0.35) 45%, rgba(var(--accent-sec-rgb), 0.25) 100%);
+      --glass-sphere-fill: radial-gradient(circle at 28% 22%, rgba(255, 255, 255, 0.40) 0%, rgba(var(--accent-rgb), 0.40) 50%, rgba(var(--accent-sec-rgb), 0.30) 100%);
+      --glass-tint-nav: linear-gradient(180deg, rgba(0, 0, 0, 0.45) 0%, rgba(var(--accent-sec-rgb), 0.15) 100%);
 
-      --glass-tint-card: linear-gradient(
-        145deg,
-        rgba(255, 255, 255, 0.13) 0%,
-        rgba(var(--accent-rgb), 0.18) 48%,
-        rgba(10, 15, 28, 0.50) 100%
-      );
+      /* Градиенты 1px рамок для красивого блика */
+      --glass-rim-tl: rgba(255, 255, 255, 0.65);
+      --glass-rim-mid: rgba(255, 255, 255, 0.02);
+      --glass-rim-br: rgba(var(--accent-rgb), 0.45);
+      --glass-rim-active-tl: rgba(255, 255, 255, 0.95);
+      --glass-rim-active-br: rgba(var(--accent-rgb), 0.75);
 
-      --glass-tint-btn: radial-gradient(
-        125% 140% at 22% 18%,
-        rgba(255, 255, 255, 0.26) 0%,
-        rgba(var(--accent-rgb), 0.24) 48%,
-        rgba(12, 18, 34, 0.52) 100%
-      );
-
-      --glass-tint-active: radial-gradient(
-        125% 140% at 20% 15%,
-        rgba(255, 255, 255, 0.44) 0%,
-        rgba(var(--accent-rgb), 0.64) 46%,
-        rgba(var(--accent-sec-rgb), 0.62) 100%
-      );
-
-      --glass-sphere-fill: radial-gradient(
-        circle at 28% 22%,
-        rgba(255, 255, 255, 0.52) 0%,
-        rgba(var(--accent-rgb), 0.58) 50%,
-        rgba(var(--accent-sec-rgb), 0.56) 100%
-      );
-
-      --glass-tint-nav: linear-gradient(
-        180deg,
-        rgba(16, 22, 38, 0.66) 0%,
-        rgba(var(--accent-sec-rgb), 0.22) 100%
-      );
-
-      --glass-rim-tl: rgba(255, 255, 255, 0.72);
-      --glass-rim-mid: rgba(var(--accent-rgb), 0.22);
-      --glass-rim-br: rgba(var(--accent-rgb), 0.58);
-
-      --glass-rim-active-tl: rgba(255, 255, 255, 0.96);
-      --glass-rim-active-br: rgba(var(--accent-rgb), 0.88);
-
-      --text-main: #FFFFFF;
-      --text-muted: rgba(232, 242, 255, 0.78);
-      --text-hint: rgba(205, 222, 250, 0.50);
-      --ok-green: #30D158;
-      --danger-red: #FF453A;
+      --text-main: rgba(255, 255, 255, 0.95);
+      --text-muted: rgba(235, 235, 245, 0.65);
+      --text-hint: rgba(235, 235, 245, 0.40);
 
       --spring-ease: cubic-bezier(0.34, 1.56, 0.64, 1);
       --liquid-glide: cubic-bezier(0.22, 1.32, 0.36, 1);
@@ -84,25 +49,13 @@
       --text-body: 0.9375rem;
       --text-heading: 1.0625rem;
       --text-title: 1.375rem;
-      --text-display: 1.75rem;
     }
 
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-      -webkit-tap-highlight-color: transparent;
-    }
-
-    html {
-      font-size: 16px;
-      -webkit-font-smoothing: antialiased;
-      -moz-osx-font-smoothing: grayscale;
-      text-size-adjust: 100%;
-    }
-
+    * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+    html { font-size: 16px; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; text-size-adjust: 100%; }
+    
     body {
-      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", Roboto, Inter, sans-serif;
+      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", Roboto, sans-serif;
       background-color: var(--bg-fallback-1);
       color: var(--text-main);
       font-size: var(--text-body);
@@ -111,1432 +64,349 @@
       overflow-x: hidden;
       padding-block-start: max(calc(env(safe-area-inset-top, 42px) + 12px), 44px);
       padding-block-end: calc(env(safe-area-inset-bottom, 0px) + 108px);
-      position: relative;
     }
 
-    button,
-    label,
-    .nav-item,
-    .preset-pill,
-    .pixel-tile,
-    .ch-shape-tile,
-    .ch-subtoggle-box,
-    .character-card,
-    .shelf-preset-card,
-    .acc-header,
-    .shizuku-status-pill,
-    .theme-dot,
-    .ch-color-swatch,
-    .avatar-preset-item {
-      user-select: none;
-    }
-
-    :focus-visible {
-      outline: 2px solid var(--focus-ring);
-      outline-offset: 2px;
-    }
+    button, label, .nav-item, .premium-capsule, .premium-card { user-select: none; cursor: pointer; }
+    :focus-visible { outline: 2px solid var(--focus-ring); outline-offset: 2px; }
 
     #animatedBgLayer {
-      position: fixed;
-      inset: 0;
-      z-index: -3;
-      overflow: hidden;
-      pointer-events: none;
+      position: fixed; inset: 0; z-index: -3; overflow: hidden; pointer-events: none;
       background:
-        radial-gradient(circle at 18% 14%, rgba(var(--accent-rgb), 0.34) 0%, transparent 55%),
-        radial-gradient(circle at 84% 82%, rgba(var(--accent-sec-rgb), 0.30) 0%, transparent 55%),
+        radial-gradient(circle at 18% 14%, rgba(var(--accent-rgb), 0.22) 0%, transparent 55%),
+        radial-gradient(circle at 84% 82%, rgba(var(--accent-sec-rgb), 0.18) 0%, transparent 55%),
         linear-gradient(160deg, var(--bg-fallback-1) 0%, var(--bg-fallback-2) 50%, var(--bg-fallback-3) 100%);
     }
-    #bgCustomVideo {
-      position: absolute;
-      inset: 0;
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-      display: block;
-      opacity: 0.90;
-    }
-    #bgCustomGif {
-      position: absolute;
-      inset: 0;
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-      display: none;
-      opacity: 0.90;
-    }
-    #bgParticlesCanvas {
-      display: none;
-    }
+    #bgCustomVideo { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: block; opacity: 0.95; transform: translateZ(0); }
+    #bgCustomGif { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: none; opacity: 0.95; transform: translateZ(0); }
+    #bgParticlesCanvas { display: none; }
     #bgThemeTintLayer {
-      position: fixed;
-      inset: 0;
-      z-index: -2;
-      pointer-events: none;
+      position: fixed; inset: 0; z-index: -2; pointer-events: none;
       background:
-        radial-gradient(ellipse 95% 42% at 50% 0%, rgba(var(--accent-rgb), 0.26) 0%, transparent 68%),
-        radial-gradient(ellipse 90% 45% at 50% 100%, rgba(var(--accent-sec-rgb), 0.24) 0%, transparent 70%),
-        rgba(4, 7, 15, 0.18);
+        radial-gradient(ellipse 95% 42% at 50% 0%, rgba(var(--accent-rgb), 0.15) 0%, transparent 68%),
+        rgba(0, 0, 0, 0.25);
       transition: background 260ms ease;
-    }
-    #bgVignetteOverlay {
-      display: none;
     }
 
     input, textarea, select {
-      font-family: inherit;
-      user-select: text;
-      background: transparent;
-      border: none;
-      outline: none;
-      box-shadow: none;
-      color: var(--text-main);
-      font-size: 1rem;
-      line-height: 1.4;
-      caret-color: var(--accent-bright);
-      -webkit-appearance: none;
-      appearance: none;
+      font-family: inherit; user-select: text; background: transparent; border: none; outline: none; box-shadow: none;
+      color: var(--text-main); font-size: 1rem; line-height: 1.4; caret-color: var(--accent-bright); -webkit-appearance: none; appearance: none;
+    }
+    input::placeholder { color: var(--text-hint); }
+
+    /* Обёртка с Motion Blur (меняется через JS) */
+    #mainAppWorkspace {
+      max-width: 500px; margin-inline: auto; padding-inline: 14px; padding-block-end: 16px; position: relative; z-index: 2;
+      will-change: filter; transition: filter 0.15s ease-out;
     }
 
-    input::placeholder {
-      color: var(--text-hint);
-    }
-
-    .app-container {
-      max-width: 500px;
-      margin-inline: auto;
-      padding-inline: 14px;
-      padding-block-end: 16px;
-      position: relative;
-      z-index: 2;
-    }
-
-    .liquid-glass-surface,
-    .liquid-glass-btn,
-    .btn-main,
-    .btn-dark,
-    .btn-danger,
-    .shizuku-status-pill,
-    .character-card,
-    .pro-slider-row,
-    .saved-variant-row,
-    .code-input-bar,
-    .shelf-preset-card,
-    .preset-pill,
-    .pixel-tile,
-    .ch-shape-tile,
-    .ch-subtoggle-box,
-    .ch-color-palette-bar,
-    .toggle-row,
-    .voice-member-card,
-    .friend-item,
-    .auth-input-wrap,
-    .bottom-nav-bar,
-    .icon-circle-action,
-    .header-avatar-holder,
-    .acc-icon,
-    .acc-chevron,
-    .char-arrow {
+    /* --- ПРЕМИАЛЬНЫЕ УНИВЕРСАЛЬНЫЕ КЛАССЫ СТЕКЛА --- */
+    .premium-glass {
       position: relative;
       backdrop-filter: blur(var(--glass-blur)) saturate(160%);
       -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(160%);
+      transform: translateZ(0);
     }
-
-    .liquid-glass-surface::before,
-    .liquid-glass-btn::before,
-    .btn-main::before,
-    .btn-dark::before,
-    .btn-danger::before,
-    .shizuku-status-pill::before,
-    .character-card::before,
-    .pro-slider-row::before,
-    .saved-variant-row::before,
-    .code-input-bar::before,
-    .shelf-preset-card::before,
-    .preset-pill::before,
-    .pixel-tile::before,
-    .ch-shape-tile::before,
-    .ch-subtoggle-box::before,
-    .ch-color-palette-bar::before,
-    .toggle-row::before,
-    .voice-member-card::before,
-    .friend-item::before,
-    .auth-input-wrap::before,
-    .bottom-nav-bar::before,
-    .icon-circle-action::before,
-    .header-avatar-holder::before,
-    .acc-icon::before,
-    .acc-chevron::before,
-    .char-arrow::before {
-      content: "";
-      position: absolute;
-      inset: 0;
-      border-radius: inherit;
-      padding: 1.2px;
-      background: linear-gradient(
-        135deg,
-        var(--glass-rim-tl) 0%,
-        var(--glass-rim-mid) 48%,
-        var(--glass-rim-br) 100%
-      );
+    .premium-glass::before {
+      content: ""; position: absolute; inset: 0; border-radius: inherit; padding: 1.5px;
+      background: linear-gradient(135deg, var(--glass-rim-tl) 0%, var(--glass-rim-mid) 48%, var(--glass-rim-br) 100%);
       -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-      -webkit-mask-composite: xor;
-      mask-composite: exclude;
-      pointer-events: none;
+      -webkit-mask-composite: xor; mask-composite: exclude; pointer-events: none; transition: background 260ms ease;
+    }
+    .premium-glass.active-state::before, .premium-capsule.active-state::before {
+      background: linear-gradient(135deg, var(--glass-rim-active-tl) 0%, rgba(255,255,255,0.15) 48%, var(--glass-rim-active-br) 100%);
     }
 
-    .liquid-glass-surface {
+    /* Карточки (очень круглые - 36px) */
+    .premium-card {
+      background: var(--glass-tint-card); border-radius: 36px;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.40), inset 0 1px 2px rgba(255, 255, 255, 0.20);
+      transition: transform 280ms var(--spring-ease), background 200ms ease, box-shadow 200ms ease;
+    }
+    .premium-card.surface {
       background: var(--glass-tint-surface);
-      box-shadow:
-        0 12px 28px rgba(0, 0, 0, 0.42),
-        inset 0 1.5px 2px rgba(255, 255, 255, 0.52),
-        inset 0 -4px 12px rgba(var(--accent-rgb), 0.28),
-        inset 0 0 22px rgba(var(--accent-rgb), 0.12);
+      box-shadow: 0 14px 32px rgba(0, 0, 0, 0.60), inset 0 2px 4px rgba(255, 255, 255, 0.25), inset 0 -4px 12px rgba(var(--accent-rgb), 0.25);
     }
-
-    .liquid-glass-btn {
+    .premium-card.active-state {
       background: var(--glass-tint-active);
-      box-shadow:
-        0 8px 22px rgba(var(--accent-sec-rgb), 0.38),
-        inset 0 2px 4px rgba(255, 255, 255, 0.78),
-        inset 0 -4px 10px rgba(var(--accent-sec-rgb), 0.55);
-      color: var(--text-main);
-      font-weight: 700;
-      text-shadow: 0 1px 3px rgba(0, 0, 0, 0.35);
-      transition: transform 280ms var(--spring-ease);
+      box-shadow: 0 8px 24px rgba(var(--accent-sec-rgb), 0.45), inset 0 1.5px 3px rgba(255, 255, 255, 0.50);
     }
 
-    .liquid-glass-btn::before,
-    .btn-main::before,
-    .character-card.active::before,
-    .preset-pill.active::before,
-    .pixel-tile.active::before,
-    .ch-shape-tile.active::before,
-    .ch-subtoggle-box.active::before,
-    .shelf-preset-card.active::before,
-    .acc-icon::before,
-    .header-avatar-holder::before {
-      background: linear-gradient(
-        135deg,
-        var(--glass-rim-active-tl) 0%,
-        rgba(255, 255, 255, 0.30) 48%,
-        var(--glass-rim-active-br) 100%
-      );
+    /* ВЕЗДЕ КАПСУЛЫ (999px) ДЛЯ КНОПОК И ИНПУТОВ */
+    .premium-capsule {
+      background: var(--glass-tint-btn); border-radius: 999px !important;
+      box-shadow: 0 6px 16px rgba(0,0,0,0.35), inset 0 1px 3px rgba(255,255,255,0.25);
+      display: flex; align-items: center; justify-content: center; text-align: center;
+      transition: transform 280ms var(--spring-ease), background 200ms ease, box-shadow 200ms ease;
+    }
+    .premium-capsule.primary {
+      background: var(--glass-tint-active);
+      box-shadow: 0 8px 24px rgba(var(--accent-sec-rgb), 0.45), inset 0 1.5px 3px rgba(255,255,255,0.45), inset 0 -4px 12px rgba(var(--accent-sec-rgb),0.35);
+      color: var(--text-main); font-weight: 700; text-shadow: 0 1px 3px rgba(0,0,0,0.6);
+    }
+    .premium-capsule.danger {
+      background: rgba(255, 69, 58, 0.25);
+      box-shadow: 0 6px 16px rgba(255, 69, 58, 0.35), inset 0 1px 2px rgba(255, 255, 255, 0.40);
+      color: #FF8A8A;
+    }
+    .premium-capsule.active-state {
+      background: var(--glass-tint-active);
+      box-shadow: 0 6px 18px rgba(var(--accent-sec-rgb), 0.45), inset 0 1.5px 3px rgba(255,255,255,0.50);
+    }
+    
+    .premium-capsule:not(:disabled):active, .premium-card.interactive:not(:disabled):active, .icon-circle-action:active, .shizuku-status-pill:active, .header-avatar-holder:active {
+      transform: scale(0.95);
     }
 
-    .top-brand-header {
-      border-radius: 28px;
-      padding: 14px 16px;
-      margin-block-end: 12px;
-    }
-    .top-brand-row {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 12px;
-    }
-    .brand-left-wrap {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      min-width: 0;
-      flex: 1;
-    }
+    /* Специфичные размеры для кнопок */
+    .btn-main, .btn-dark, .btn-danger { min-height: 54px; padding: 14px 24px; font-size: var(--text-body-sm); font-weight: 700; }
+    .btn-dark { font-weight: 600; }
+    .hub-action-pill { min-height: 50px; padding: 14px 16px; font-size: var(--text-caption); }
+    
+    /* Инпуты как капсулы */
+    .auth-input-wrap { padding: 14px 20px; margin-block-end: 14px; width: 100%; text-align: left; cursor: text; }
+    .auth-input-label { display: block; font-size: 0.6875rem; font-weight: 700; color: var(--accent-bright); letter-spacing: 0.04em; margin-block-end: 6px; }
+    
+    /* Шапка */
+    .top-brand-header { padding: 16px 18px; margin-block-end: 14px; }
+    .top-brand-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+    .brand-left-wrap { display: flex; align-items: center; gap: 12px; min-width: 0; flex: 1; }
     .header-avatar-holder {
-      width: 46px;
-      height: 46px;
-      border-radius: 50%;
-      background: var(--glass-sphere-fill);
-      box-shadow:
-        0 6px 16px rgba(var(--accent-sec-rgb), 0.38),
-        inset 0 2px 3px rgba(255, 255, 255, 0.82),
-        inset 0 -3px 8px rgba(var(--accent-sec-rgb), 0.62);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      flex-shrink: 0;
-      overflow: hidden;
-      cursor: pointer;
-      transition: transform 280ms var(--spring-ease);
+      width: 50px; height: 50px; border-radius: 50%; background: var(--glass-sphere-fill);
+      box-shadow: 0 6px 16px rgba(0,0,0, 0.55), inset 0 2px 4px rgba(255,255,255,0.55), inset 0 -3px 8px rgba(0,0,0,0.45);
+      display: flex; align-items: center; justify-content: center; flex-shrink: 0; overflow: hidden; cursor: pointer; transition: transform 280ms var(--spring-ease);
     }
-    .header-avatar-holder img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-      display: none;
-    }
-    .header-avatar-fallback {
-      font-size: 1.15rem;
-      font-weight: 800;
-      color: #FFFFFF;
-      text-shadow: 0 1px 3px rgba(0, 0, 0, 0.35);
-    }
-    .brand-title-main {
-      font-size: var(--text-heading);
-      font-weight: 800;
-      letter-spacing: -0.01em;
-      color: var(--text-main);
-      line-height: 1.2;
-    }
-    .brand-title-main span {
-      color: var(--accent-bright);
-      text-shadow: 0 0 12px rgba(var(--accent-rgb), 0.45);
-    }
-    .brand-meta-sub {
-      font-size: var(--text-caption);
-      color: var(--text-muted);
-      font-weight: 500;
-      margin-block-start: 2px;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
+    .header-avatar-holder img { width: 100%; height: 100%; object-fit: cover; display: none; }
+    .header-avatar-fallback { font-size: 1.25rem; font-weight: 800; color: #FFFFFF; text-shadow: 0 1px 3px rgba(0,0,0,0.7); }
+    .brand-title-main { font-size: var(--text-heading); font-weight: 800; letter-spacing: -0.01em; color: var(--text-main); line-height: 1.2; }
+    .brand-title-main span { color: var(--accent-bright); text-shadow: 0 0 12px rgba(var(--accent-rgb), 0.55); }
+    .brand-meta-sub { font-size: var(--text-caption); color: var(--text-muted); font-weight: 500; margin-block-start: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    
     .shizuku-status-pill {
-      display: inline-flex;
-      align-items: center;
-      gap: 7px;
-      min-height: 38px;
-      padding-inline: 14px;
-      padding-block: 6px;
-      border-radius: 999px;
-      background: var(--glass-tint-btn);
-      box-shadow:
-        0 6px 14px rgba(0, 0, 0, 0.32),
-        inset 0 1.5px 2px rgba(255, 255, 255, 0.55),
-        inset 0 -2px 6px rgba(var(--accent-rgb), 0.25);
-      border: none;
-      font-size: var(--text-caption);
-      font-weight: 700;
-      cursor: pointer;
-      flex-shrink: 0;
-      transition: transform 280ms var(--spring-ease);
+      display: inline-flex; align-items: center; gap: 8px; min-height: 42px; padding-inline: 16px;
+      font-size: var(--text-caption); font-weight: 700; cursor: pointer;
     }
-    .status-dot {
-      width: 9px;
-      height: 9px;
-      border-radius: 50%;
-      background: #FF453A;
-      box-shadow: 0 0 8px #FF453A;
-    }
-    .status-dot.on {
-      background: #30D158;
-      box-shadow: 0 0 8px #30D158;
-    }
+    .status-dot { width: 9px; height: 9px; border-radius: 50%; background: #FF453A; box-shadow: 0 0 8px #FF453A; }
+    .status-dot.on { background: #30D158; box-shadow: 0 0 8px #30D158; }
+    
     .top-header-bottom-bar {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 8px;
-      margin-block-start: 10px;
-      padding-block-start: 10px;
-      border-block-start: 1px solid rgba(255, 255, 255, 0.16);
-      font-size: var(--text-caption);
-      color: var(--text-muted);
-      font-weight: 600;
+      display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-block-start: 14px; padding-block-start: 14px;
+      border-block-start: 1px solid rgba(255, 255, 255, 0.15); font-size: var(--text-caption); color: var(--text-muted); font-weight: 600;
     }
-    .theme-dots {
-      display: flex;
-      gap: 8px;
-      align-items: center;
-    }
+    .theme-dots { display: flex; gap: 8px; align-items: center; }
     .theme-dot {
-      width: 24px;
-      height: 24px;
-      border-radius: 50%;
-      cursor: pointer;
-      border: 1.5px solid rgba(255, 255, 255, 0.65);
-      box-shadow:
-        0 3px 8px rgba(0, 0, 0, 0.45),
-        inset 0 1.5px 2px rgba(255, 255, 255, 0.78);
+      width: 26px; height: 26px; border-radius: 50%; cursor: pointer; background: rgba(0,0,0,0.35);
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.75), inset 0 1.5px 3px rgba(255, 255, 255, 0.55);
       transition: transform 280ms var(--spring-ease);
     }
-    .theme-dot.active {
-      border-color: #FFFFFF;
-      box-shadow: 0 0 14px var(--accent-bright), inset 0 2px 3px #FFFFFF;
-      transform: scale(1.16);
-    }
+    .theme-dot.active { box-shadow: 0 0 14px var(--accent-bright), inset 0 2px 4px #FFFFFF; transform: scale(1.18); }
 
-    .acc-block {
-      border-radius: 28px;
-      margin-block-end: 12px;
-      overflow: hidden;
-    }
-    .acc-header {
-      padding: 15px 16px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 12px;
-      cursor: pointer;
-    }
-    .acc-left {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      min-width: 0;
-      flex: 1;
-    }
+    /* Аккордеоны */
+    .acc-header { padding: 18px 20px; display: flex; align-items: center; justify-content: space-between; gap: 12px; cursor: pointer; }
+    .acc-left { display: flex; align-items: center; gap: 12px; min-width: 0; flex: 1; }
     .acc-icon {
-      width: 42px;
-      height: 42px;
-      border-radius: 50%;
-      background: var(--glass-sphere-fill);
-      box-shadow:
-        0 6px 14px rgba(var(--accent-sec-rgb), 0.36),
-        inset 0 2px 3px rgba(255, 255, 255, 0.80),
-        inset 0 -3px 7px rgba(var(--accent-sec-rgb), 0.58);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 1.05rem;
-      color: #FFFFFF;
-      flex-shrink: 0;
+      width: 46px; height: 46px; border-radius: 50%; background: var(--glass-sphere-fill);
+      box-shadow: 0 6px 16px rgba(0,0,0,0.50), inset 0 2px 4px rgba(255,255,255,0.55);
+      display: flex; align-items: center; justify-content: center; font-size: 1.15rem; color: #FFFFFF; flex-shrink: 0;
     }
     .acc-title-wrap { min-width: 0; flex: 1; }
-    .acc-title {
-      font-size: 0.9375rem;
-      font-weight: 700;
-      color: var(--text-main);
-      line-height: 1.3;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      flex-wrap: wrap;
-    }
-    .acc-sub {
-      font-size: var(--text-caption);
-      color: var(--text-muted);
-      font-weight: 400;
-      line-height: 1.4;
-      margin-block-start: 2px;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
+    .acc-title { font-size: 0.9375rem; font-weight: 700; color: var(--text-main); line-height: 1.3; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+    .acc-sub { font-size: var(--text-caption); color: var(--text-muted); font-weight: 400; line-height: 1.4; margin-block-start: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     .acc-chevron {
-      width: 30px;
-      height: 30px;
-      border-radius: 50%;
-      background: var(--glass-tint-btn);
-      box-shadow:
-        0 4px 10px rgba(0, 0, 0, 0.28),
-        inset 0 1.5px 2px rgba(255, 255, 255, 0.62);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      color: #FFFFFF;
-      font-size: 0.8125rem;
-      font-weight: 700;
-      flex-shrink: 0;
+      width: 34px; height: 34px; border-radius: 50%; background: var(--glass-tint-btn);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.45), inset 0 1px 3px rgba(255,255,255,0.35);
+      display: flex; align-items: center; justify-content: center; color: #FFFFFF; font-size: 0.85rem; font-weight: 700; flex-shrink: 0; transition: transform 280ms var(--spring-ease);
     }
-    .acc-block.open .acc-chevron {
-      transform: rotate(180deg);
-      background: var(--glass-sphere-fill);
-    }
-    .acc-body-wrap {
-      display: none;
-    }
-    .acc-block.open .acc-body-wrap {
-      display: block;
-    }
-    .acc-body-inner {
-      padding: 8px 16px 16px;
-      border-block-start: 1px solid rgba(255, 255, 255, 0.16);
-    }
+    .acc-block.open .acc-chevron { transform: rotate(180deg); background: var(--glass-sphere-fill); }
+    .acc-body-wrap { display: none; }
+    .acc-block.open .acc-body-wrap { display: block; }
+    .acc-body-inner { padding: 8px 20px 20px; border-block-start: 1px solid rgba(255,255,255,0.12); }
 
-    .cyber-hub-card {
-      border-radius: 28px;
-      padding: 16px;
-      margin-block-end: 12px;
-      display: flex;
-      flex-direction: column;
-      gap: 14px;
-    }
-    .hub-top-bar {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 12px;
-    }
-    .hub-text-col {
-      display: flex;
-      flex-direction: column;
-      min-width: 0;
-      flex: 1;
-    }
-    .hub-card-title {
-      font-size: 0.9375rem;
-      font-weight: 800;
-      color: var(--text-main);
-      line-height: 1.3;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      flex-wrap: wrap;
-    }
-    .hub-state-word {
-      color: #30D158;
-    }
-    .hub-state-word.off {
-      color: #FF453A;
-    }
-    .hub-card-sub {
-      font-size: var(--text-caption);
-      color: var(--text-muted);
-      font-weight: 400;
-      margin-block-start: 3px;
-      line-height: 1.4;
-    }
-    .cyber-switch-lg {
-      position: relative;
-      width: 54px;
-      height: 32px;
-      flex-shrink: 0;
-      display: inline-block;
-      cursor: pointer;
-    }
-    .cyber-switch-lg input {
-      opacity: 0;
-      width: 0;
-      height: 0;
-    }
+    /* Хаб Телепорта */
+    .cyber-hub-card { padding: 20px; margin-block-end: 14px; display: flex; flex-direction: column; gap: 18px; }
+    .hub-top-bar { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+    .hub-text-col { display: flex; flex-direction: column; min-width: 0; flex: 1; }
+    .hub-card-title { font-size: 0.9375rem; font-weight: 800; color: var(--text-main); line-height: 1.3; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+    .hub-state-word { color: #30D158; }
+    .hub-state-word.off { color: #FF453A; }
+    .hub-card-sub { font-size: var(--text-caption); color: var(--text-muted); font-weight: 400; margin-block-start: 3px; line-height: 1.4; }
+    .cyber-switch-lg { position: relative; width: 64px; height: 38px; flex-shrink: 0; display: inline-block; cursor: pointer; }
+    .cyber-switch-lg input { opacity: 0; width: 0; height: 0; }
     .cyber-slider-lg {
-      position: absolute;
-      inset: 0;
-      background: rgba(10, 14, 26, 0.52);
-      border: 1px solid rgba(255, 255, 255, 0.35);
-      box-shadow:
-        inset 0 2px 4px rgba(0, 0, 0, 0.45),
-        inset 0 -1.5px 3px rgba(var(--accent-rgb), 0.25);
-      border-radius: 999px;
+      position: absolute; inset: 0; background: rgba(0,0,0,0.50);
+      box-shadow: inset 0 2px 8px rgba(0,0,0,0.75), inset 0 -1px 3px rgba(255,255,255,0.20); border-radius: 999px;
     }
     .cyber-slider-lg::before {
-      content: "";
-      position: absolute;
-      width: 24px;
-      height: 24px;
-      inset-inline-start: 3px;
-      inset-block-start: 3px;
-      border-radius: 50%;
+      content: ""; position: absolute; width: 30px; height: 30px; inset-inline-start: 4px; inset-block-start: 4px; border-radius: 50%;
       background: radial-gradient(circle at 32% 28%, #FFFFFF 0%, #E2E8F0 70%, #CBD5E1 100%);
-      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.50), inset 0 1.5px 2px #FFFFFF;
-      transition: transform 280ms var(--spring-ease);
+      box-shadow: 0 4px 8px rgba(0,0,0,0.65), inset 0 1px 3px #FFFFFF; transition: transform 280ms var(--spring-ease);
     }
-    .cyber-switch-lg input:checked + .cyber-slider-lg {
-      background: var(--glass-tint-active);
-      border-color: rgba(255, 255, 255, 0.85);
-      box-shadow: 0 0 14px rgba(var(--accent-rgb), 0.45), inset 0 1.5px 2px rgba(255, 255, 255, 0.65);
-    }
-    .cyber-switch-lg input:checked + .cyber-slider-lg::before {
-      transform: translateX(22px);
-      background: #FFFFFF;
-    }
+    .cyber-switch-lg input:checked + .cyber-slider-lg { background: var(--glass-tint-active); box-shadow: 0 0 18px rgba(var(--accent-rgb),0.40), inset 0 2px 8px rgba(0,0,0,0.45); }
+    .cyber-switch-lg input:checked + .cyber-slider-lg::before { transform: translateX(26px); background: #FFFFFF; }
+    
+    .hub-actions-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 12px; }
 
-    .hub-actions-grid {
-      display: grid;
-      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-      gap: 10px;
-    }
-    .hub-action-pill {
-      min-height: 44px;
-      padding: 11px 14px;
-      border-radius: 999px;
-      border: none;
-      font-size: var(--text-caption);
-      font-weight: 700;
-      text-align: center;
-      cursor: pointer;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      transition: transform 280ms var(--spring-ease);
-    }
-
-    .save-all-bar-btn {
-      width: 100%;
-      min-height: 48px;
-      margin-block-end: 12px;
-      padding: 13px 20px;
-      border-radius: 999px;
-      border: none;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 8px;
-      font-size: var(--text-body-sm);
-      font-weight: 700;
-      cursor: pointer;
-      transition: transform 280ms var(--spring-ease);
-    }
-
-    .character-card {
-      background: var(--glass-tint-card);
-      box-shadow:
-        0 6px 18px rgba(0, 0, 0, 0.32),
-        inset 0 1.5px 2px rgba(255, 255, 255, 0.45),
-        inset 0 -3px 8px rgba(var(--accent-rgb), 0.22);
-      border-radius: 24px;
-      padding: 13px 14px;
-      margin-block-start: 9px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 10px;
-      cursor: pointer;
-      transition: transform 280ms var(--spring-ease);
-    }
-    .character-card.active {
-      background: var(--glass-tint-active);
-      box-shadow:
-        0 8px 24px rgba(var(--accent-sec-rgb), 0.38),
-        inset 0 2px 3px rgba(255, 255, 255, 0.78),
-        inset 0 -4px 10px rgba(var(--accent-sec-rgb), 0.52);
-    }
-    .char-title {
-      font-size: 0.875rem;
-      font-weight: 700;
-      color: var(--text-main);
-      line-height: 1.3;
-      display: flex;
-      align-items: center;
-      flex-wrap: wrap;
-      gap: 6px;
-    }
+    /* Пресеты в аккордеонах */
+    .character-card { padding: 18px 20px; margin-block-start: 12px; display: flex; align-items: center; justify-content: space-between; gap: 14px; }
+    .char-title { font-size: 0.875rem; font-weight: 700; color: var(--text-main); line-height: 1.3; display: flex; align-items: center; flex-wrap: wrap; gap: 8px; }
     .char-tag {
-      font-size: 0.6875rem;
-      font-weight: 700;
-      letter-spacing: 0.04em;
-      padding: 2px 10px;
-      border-radius: 999px;
-      background: rgba(255, 255, 255, 0.16);
-      border: 1px solid rgba(255, 255, 255, 0.45);
-      box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.55);
-      color: #FFFFFF;
-      text-transform: uppercase;
-      font-variant-numeric: tabular-nums;
+      font-size: 0.6875rem; font-weight: 700; letter-spacing: 0.04em; padding: 4px 14px; border-radius: 999px;
+      background: rgba(0, 0, 0, 0.45); box-shadow: inset 0 1px 2px rgba(255, 255, 255, 0.35);
+      color: #FFFFFF; text-transform: uppercase; font-variant-numeric: tabular-nums;
     }
-    .char-tag.pad-badge {
-      background: rgba(var(--accent-sec-rgb), 0.38);
-      border-color: rgba(255, 255, 255, 0.62);
-    }
-    .char-tag.budget-badge {
-      background: rgba(48, 209, 88, 0.30);
-      border-color: rgba(134, 239, 172, 0.65);
-    }
-    .char-desc {
-      font-size: var(--text-caption);
-      color: var(--text-muted);
-      margin-block-start: 4px;
-      font-weight: 400;
-      line-height: 1.45;
-      text-wrap: pretty;
-    }
+    .char-tag.pad-badge { background: rgba(var(--accent-sec-rgb), 0.45); }
+    .char-tag.budget-badge { background: rgba(48, 209, 88, 0.35); }
+    .char-desc { font-size: var(--text-caption); color: var(--text-muted); margin-block-start: 6px; font-weight: 400; line-height: 1.45; text-wrap: pretty; }
     .char-arrow {
-      width: 30px;
-      height: 30px;
-      border-radius: 50%;
-      background: var(--glass-sphere-fill);
-      box-shadow:
-        0 4px 10px rgba(0, 0, 0, 0.30),
-        inset 0 1.5px 2px rgba(255, 255, 255, 0.78);
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 0.9rem;
-      font-weight: 700;
-      color: #FFFFFF;
-      flex-shrink: 0;
+      width: 38px; height: 38px; border-radius: 50%; background: var(--glass-sphere-fill);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.50), inset 0 1.5px 3px rgba(255,255,255,0.55);
+      display: inline-flex; align-items: center; justify-content: center; font-size: 1.1rem; font-weight: 700; color: #FFFFFF; flex-shrink: 0;
     }
 
-    .section-eyebrow {
-      font-size: 0.6875rem;
-      font-weight: 700;
-      letter-spacing: 0.05em;
-      color: var(--accent-bright);
-      text-transform: uppercase;
-      margin-block: 14px 6px;
-    }
-    .pro-slider-row {
-      padding: 12px 14px;
-      margin-block-start: 8px;
-      background: var(--glass-tint-card);
-      box-shadow:
-        inset 0 1.5px 2px rgba(255, 255, 255, 0.42),
-        inset 0 -2px 6px rgba(var(--accent-rgb), 0.18);
-      border-radius: 22px;
-    }
-    .pro-slider-head {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 8px;
-      margin-block-end: 8px;
-    }
-    .pro-slider-name {
-      font-size: var(--text-body-sm);
-      font-weight: 600;
-      color: var(--text-main);
-      line-height: 1.3;
-    }
+    /* Слайдеры */
+    .section-eyebrow { font-size: 0.6875rem; font-weight: 700; letter-spacing: 0.05em; color: var(--accent-bright); text-transform: uppercase; margin-block: 18px 10px; }
+    .pro-slider-row { padding: 16px 18px; margin-block-start: 12px; border-radius: 32px; }
+    .pro-slider-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-block-end: 14px; }
+    .pro-slider-name { font-size: var(--text-body-sm); font-weight: 600; color: var(--text-main); line-height: 1.3; }
     .pro-slider-pill {
-      font-size: var(--text-caption);
-      font-weight: 700;
-      font-variant-numeric: tabular-nums;
-      color: #FFFFFF;
-      background: var(--glass-sphere-fill);
-      border: 1px solid rgba(255, 255, 255, 0.55);
-      box-shadow: inset 0 1px 2px rgba(255, 255, 255, 0.65);
-      padding: 2px 10px;
-      border-radius: 999px;
-      min-width: 44px;
-      text-align: center;
-      flex-shrink: 0;
+      font-size: var(--text-caption); font-weight: 700; font-variant-numeric: tabular-nums; color: #FFFFFF;
+      background: var(--glass-sphere-fill); box-shadow: inset 0 1.5px 3px rgba(255,255,255,0.45);
+      padding: 4px 14px; border-radius: 999px; min-width: 56px; text-align: center; flex-shrink: 0;
     }
-    .pro-slider-hint {
-      font-size: 0.6875rem;
-      color: var(--text-muted);
-      margin-block-start: 6px;
-      line-height: 1.4;
-    }
-
-    input[type="range"] {
-      -webkit-appearance: none;
-      appearance: none;
-      width: 100%;
-      height: 6px;
-      border-radius: 999px;
-      background: linear-gradient(90deg, var(--accent-sec) 0%, var(--accent-main) 70%, rgba(255, 255, 255, 0.22) 100%);
-      outline: none;
-      cursor: pointer;
-    }
+    .pro-slider-hint { font-size: 0.6875rem; color: var(--text-muted); margin-block-start: 10px; line-height: 1.4; }
+    
+    input[type="range"] { -webkit-appearance: none; appearance: none; width: 100%; height: 8px; border-radius: 999px; background: linear-gradient(90deg, rgba(var(--accent-sec-rgb), 0.6) 0%, rgba(var(--accent-rgb), 0.7) 70%, rgba(255,255,255,0.20) 100%); outline: none; cursor: pointer; }
     input[type="range"]::-webkit-slider-thumb {
-      -webkit-appearance: none;
-      appearance: none;
-      width: 22px;
-      height: 22px;
-      border-radius: 50%;
-      background: radial-gradient(circle at 32% 28%, #FFFFFF 0%, #E0F2FE 65%, var(--accent-main) 100%);
-      border: 1.5px solid #FFFFFF;
-      box-shadow: 0 0 12px rgba(var(--accent-rgb), 0.85), 0 2px 6px rgba(0, 0, 0, 0.55);
-      cursor: pointer;
+      -webkit-appearance: none; appearance: none; width: 26px; height: 26px; border-radius: 50%;
+      background: radial-gradient(circle at 32% 28%, #FFFFFF 0%, var(--accent-bright) 65%, var(--accent-main) 100%);
+      box-shadow: 0 0 14px rgba(var(--accent-rgb),0.65), 0 4px 8px rgba(0,0,0,0.75); cursor: pointer;
     }
 
-    .saved-variant-row {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 10px;
-      background: var(--glass-tint-card);
-      box-shadow: inset 0 1.5px 2px rgba(255, 255, 255, 0.42);
-      border-radius: 22px;
-      padding: 12px 14px;
-      margin-block-start: 8px;
-    }
+    /* Мои пресеты */
     .icon-circle-action {
-      min-width: 40px;
-      min-height: 40px;
-      border-radius: 50%;
-      border: none;
-      background: var(--glass-sphere-fill);
-      box-shadow:
-        0 4px 12px rgba(var(--accent-sec-rgb), 0.34),
-        inset 0 2px 3px rgba(255, 255, 255, 0.78);
-      color: var(--text-main);
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 0.875rem;
-      cursor: pointer;
-      flex-shrink: 0;
-      transition: transform 280ms var(--spring-ease);
+      min-width: 48px; min-height: 48px; border-radius: 50%; background: var(--glass-sphere-fill);
+      box-shadow: 0 6px 14px rgba(0,0,0,0.40), inset 0 1.5px 3px rgba(255,255,255,0.40); color: var(--text-main);
+      display: inline-flex; align-items: center; justify-content: center; font-size: 1.1rem; cursor: pointer; flex-shrink: 0; transition: transform 280ms var(--spring-ease);
     }
-    .code-input-bar {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      background: var(--glass-tint-card);
-      box-shadow: inset 0 1.5px 2px rgba(255, 255, 255, 0.42);
-      border-radius: 999px;
-      padding: 8px 14px;
-      margin-block-start: 8px;
-    }
-    .shelf-cards-grid {
-      display: grid;
-      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-      gap: 9px;
-      margin-block-start: 10px;
-    }
-    .shelf-preset-card {
-      background: var(--glass-tint-card);
-      box-shadow:
-        0 6px 16px rgba(0, 0, 0, 0.30),
-        inset 0 1.5px 2px rgba(255, 255, 255, 0.45),
-        inset 0 -3px 8px rgba(var(--accent-rgb), 0.20);
-      border-radius: 22px;
-      padding: 13px;
-      cursor: pointer;
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
-      min-height: 86px;
-      transition: transform 280ms var(--spring-ease);
-    }
-    .shelf-preset-card.active {
-      background: var(--glass-tint-active);
-    }
+    .saved-variant-row { padding: 16px 20px; margin-block-start: 12px; display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+    .code-input-bar { border-radius: 999px; padding: 12px 18px; margin-block-start: 10px; display: flex; align-items: center; gap: 12px; }
+    
+    .shelf-cards-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 12px; margin-block-start: 14px; }
+    .shelf-preset-card { padding: 20px; display: flex; flex-direction: column; justify-content: space-between; min-height: 110px; border-radius: 36px !important; }
 
+    /* Растяг экрана */
     .preview-stage-box {
-      width: 100%;
-      min-height: 148px;
-      background: rgba(8, 12, 24, 0.48);
-      border: 1px solid rgba(255, 255, 255, 0.32);
-      box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.45);
-      border-radius: 22px;
-      position: relative;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      margin-block: 8px 12px;
-      overflow: hidden;
+      width: 100%; min-height: 170px; background: rgba(0,0,0,0.50); box-shadow: inset 0 4px 12px rgba(0,0,0,0.65);
+      border-radius: 32px; position: relative; display: flex; align-items: center; justify-content: center; margin-block: 10px 16px; overflow: hidden;
     }
-    .stretch-dashed-outer {
-      width: 220px;
-      height: 114px;
-      border: 1.5px dashed rgba(255, 255, 255, 0.45);
-      border-radius: 12px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
+    .stretch-dashed-outer { width: 230px; height: 120px; border: 1.5px dashed rgba(255,255,255,0.30); border-radius: 18px; display: flex; align-items: center; justify-content: center; }
     .stretch-solid-inner {
-      width: 168px;
-      height: 114px;
-      border: 1.5px solid #FFFFFF;
-      background: var(--glass-tint-active);
-      box-shadow: 0 0 16px rgba(var(--accent-rgb), 0.38), inset 0 1.5px 2px rgba(255, 255, 255, 0.72);
-      border-radius: 10px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      color: #FFFFFF;
-      font-weight: 700;
-      font-size: 1.25rem;
+      width: 172px; height: 120px; background: var(--glass-tint-active);
+      box-shadow: 0 0 20px rgba(var(--accent-rgb),0.40), inset 0 1.5px 4px rgba(255,255,255,0.60); border-radius: 14px;
+      display: flex; align-items: center; justify-content: center; color: #FFFFFF; font-weight: 700; font-size: 1.35rem; transition: width 180ms ease;
     }
 
-    .preset-pills-4 {
-      display: grid;
-      grid-template-columns: repeat(4, minmax(0, 1fr));
-      gap: 8px;
-    }
-    .preset-pill {
-      background: var(--glass-tint-card);
-      box-shadow: inset 0 1.5px 2px rgba(255, 255, 255, 0.42);
-      border-radius: 18px;
-      padding: 10px 4px;
-      text-align: center;
-      cursor: pointer;
-      transition: transform 280ms var(--spring-ease);
-    }
-    .preset-pill.active {
-      background: var(--glass-tint-active);
-      box-shadow:
-        0 6px 16px rgba(var(--accent-sec-rgb), 0.35),
-        inset 0 2px 3px rgba(255, 255, 255, 0.78);
-    }
-    .preset-pill-name {
-      font-size: var(--text-caption);
-      font-weight: 700;
-      font-variant-numeric: tabular-nums;
-      color: var(--text-main);
-    }
-    .preset-pill-sub {
-      font-size: 0.625rem;
-      color: var(--text-muted);
-      margin-block-start: 2px;
-    }
+    /* Все плитки - в капсулы (999px) */
+    .preset-pills-4 { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; }
+    .preset-pill { padding: 16px 8px; }
+    .preset-pill-name { font-size: 0.8125rem; font-weight: 700; font-variant-numeric: tabular-nums; color: var(--text-main); }
+    .preset-pill-sub { font-size: 0.6875rem; color: var(--text-muted); margin-block-start: 4px; }
 
-    .pixel-tiles-6 {
-      display: grid;
-      grid-template-columns: repeat(6, minmax(0, 1fr));
-      gap: 6px;
-      margin-block: 10px 12px;
-    }
-    .pixel-tile {
-      background: var(--glass-tint-card);
-      box-shadow: inset 0 1.5px 2px rgba(255, 255, 255, 0.42);
-      border-radius: 16px;
-      padding: 10px 2px;
-      text-align: center;
-      cursor: pointer;
-      transition: transform 280ms var(--spring-ease);
-    }
-    .pixel-tile.active {
-      background: var(--glass-tint-active);
-      box-shadow: inset 0 2px 3px rgba(255, 255, 255, 0.78);
-    }
-    .pixel-tile b {
-      display: block;
-      font-size: var(--text-body-sm);
-      font-weight: 700;
-      font-variant-numeric: tabular-nums;
-      color: var(--text-main);
-    }
-    .pixel-tile span { font-size: 0.625rem; color: var(--text-muted); }
-    .pixel-big-readout {
-      display: flex;
-      align-items: baseline;
-      justify-content: space-between;
-      margin-block-end: 6px;
-    }
-    .pixel-big-num {
-      font-size: var(--text-title);
-      font-weight: 700;
-      font-variant-numeric: tabular-nums;
-      color: var(--text-main);
-    }
-    .pixel-progress-bar {
-      width: 100%;
-      height: 6px;
-      background: rgba(0, 0, 0, 0.35);
-      border-radius: 999px;
-      overflow: hidden;
-    }
-    .pixel-progress-fill {
-      height: 100%;
-      width: 100%;
-      background: linear-gradient(90deg, var(--accent-sec), var(--accent-main));
-    }
+    .pixel-tiles-6 { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 10px; margin-block: 14px 16px; }
+    .pixel-tile { padding: 16px 4px; }
+    .pixel-tile b { display: block; font-size: 0.875rem; font-weight: 700; font-variant-numeric: tabular-nums; color: var(--text-main); }
+    .pixel-tile span { font-size: 0.6875rem; color: var(--text-muted); }
+    .pixel-big-readout { display: flex; align-items: baseline; justify-content: space-between; margin-block-end: 10px; }
+    
+    .ch-shape-grid-4 { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; margin-block-end: 14px; }
+    .ch-shape-tile { padding: 18px 8px; }
+    .ch-shape-icon { font-size: 1.55rem; color: var(--accent-bright); margin-block-end: 8px; line-height: 1; }
+    .ch-shape-lbl { font-size: 0.75rem; font-weight: 700; color: var(--text-main); }
+    
+    .ch-subtoggle-grid-2 { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 12px; margin-block-end: 14px; }
+    .ch-subtoggle-box { padding: 16px; display: flex; flex-direction: column; align-items: center; gap: 8px; }
 
-    .ch-shape-grid-4 {
-      display: grid;
-      grid-template-columns: repeat(4, minmax(0, 1fr));
-      gap: 8px;
-      margin-block-end: 10px;
-    }
-    .ch-shape-tile {
-      background: var(--glass-tint-card);
-      box-shadow: inset 0 1.5px 2px rgba(255, 255, 255, 0.42);
-      border-radius: 18px;
-      padding: 11px 6px;
-      text-align: center;
-      cursor: pointer;
-      transition: transform 280ms var(--spring-ease);
-    }
-    .ch-shape-tile.active {
-      background: var(--glass-tint-active);
-    }
-    .ch-shape-icon { font-size: 1.25rem; color: var(--accent-bright); margin-block-end: 4px; line-height: 1; }
-    .ch-shape-lbl { font-size: 0.6875rem; font-weight: 700; color: var(--text-main); }
+    .ch-color-palette-bar { padding: 18px 20px; margin-block-end: 14px; }
+    .ch-color-dots-row { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-block-start: 12px; flex-wrap: wrap; }
+    .ch-color-swatch { width: 34px; height: 34px; border-radius: 50%; cursor: pointer; border: 1.5px solid rgba(255,255,255,0.45); flex-shrink: 0; transition: transform 280ms var(--spring-ease); }
+    .ch-color-swatch.active { border-color: #FFFFFF; box-shadow: 0 0 14px #FFFFFF; transform: scale(1.18); }
+    .ch-custom-color-btn { width: 36px; height: 34px; border-radius: 999px; border: 1.5px dashed rgba(255,255,255,0.55); background: rgba(0,0,0,0.45); display: flex; align-items: center; justify-content: center; font-size: 1rem; cursor: pointer; flex-shrink: 0; }
 
-    .ch-subtoggle-grid-2 {
-      display: grid;
-      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-      gap: 8px;
-      margin-block-end: 10px;
-    }
-    .ch-subtoggle-box {
-      background: var(--glass-tint-card);
-      box-shadow: inset 0 1.5px 2px rgba(255, 255, 255, 0.42);
-      border-radius: 18px;
-      padding: 10px;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 5px;
-      cursor: pointer;
-      transition: transform 280ms var(--spring-ease);
-    }
-    .ch-subtoggle-box.active {
-      background: var(--glass-tint-active);
-    }
-
-    .ch-color-palette-bar {
-      background: var(--glass-tint-card);
-      box-shadow: inset 0 1.5px 2px rgba(255, 255, 255, 0.42);
-      border-radius: 20px;
-      padding: 12px 14px;
-      margin-block-end: 10px;
-    }
-    .ch-color-dots-row {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 6px;
-      margin-block-start: 8px;
-      flex-wrap: wrap;
-    }
-    .ch-color-swatch {
-      width: 28px;
-      height: 28px;
-      border-radius: 50%;
-      cursor: pointer;
-      border: 1.5px solid rgba(255, 255, 255, 0.60);
-      box-shadow: inset 0 1.5px 2px rgba(255, 255, 255, 0.72);
-      flex-shrink: 0;
-      transition: transform 280ms var(--spring-ease);
-    }
-    .ch-color-swatch.active {
-      border-color: #FFFFFF;
-      box-shadow: 0 0 12px #FFFFFF;
-      transform: scale(1.14);
-    }
-    .ch-custom-color-btn {
-      width: 30px;
-      height: 28px;
-      border-radius: 50%;
-      border: 1.5px dashed rgba(255, 255, 255, 0.75);
-      background: rgba(255, 255, 255, 0.14);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 0.875rem;
-      cursor: pointer;
-      flex-shrink: 0;
-    }
-
-    .toggle-row {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      background: var(--glass-tint-card);
-      box-shadow:
-        inset 0 1.5px 2px rgba(255, 255, 255, 0.42),
-        inset 0 -2px 6px rgba(var(--accent-rgb), 0.18);
-      border-radius: 22px;
-      padding: 12px 14px;
-      margin-block-start: 8px;
-      gap: 12px;
-    }
+    .toggle-row { padding: 16px 20px; margin-block-start: 12px; display: flex; align-items: center; justify-content: space-between; gap: 14px; }
     .toggle-info-title { font-size: var(--text-body-sm); font-weight: 600; color: var(--text-main); line-height: 1.3; }
     .toggle-info-sub { font-size: var(--text-caption); color: var(--text-muted); margin-block-start: 2px; line-height: 1.4; }
-    .cyber-switch { position: relative; width: 48px; height: 28px; flex-shrink: 0; display: inline-block; cursor: pointer; }
+    .cyber-switch { position: relative; width: 54px; height: 34px; flex-shrink: 0; display: inline-block; cursor: pointer; }
     .cyber-switch input { opacity: 0; width: 0; height: 0; }
     .cyber-slider {
-      position: absolute;
-      inset: 0;
-      background: rgba(10, 14, 26, 0.52);
-      border: 1px solid rgba(255, 255, 255, 0.35);
-      border-radius: 999px;
+      position: absolute; inset: 0; background: rgba(0,0,0,0.50); border-radius: 999px;
     }
     .cyber-slider::before {
-      content: "";
-      position: absolute;
-      width: 20px;
-      height: 20px;
-      inset-inline-start: 3px;
-      inset-block-start: 3px;
-      border-radius: 50%;
-      background: radial-gradient(circle at 32% 28%, #FFFFFF 0%, #CBD5E1 100%);
-      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.45);
-      transition: transform 280ms var(--spring-ease);
+      content: ""; position: absolute; width: 26px; height: 26px; inset-inline-start: 4px; inset-block-start: 4px; border-radius: 50%;
+      background: radial-gradient(circle at 32% 28%, #FFFFFF 0%, #CBD5E1 100%); box-shadow: 0 2px 6px rgba(0,0,0,0.70); transition: transform 280ms var(--spring-ease);
     }
-    .cyber-switch input:checked + .cyber-slider {
-      background: var(--glass-tint-active);
-      border-color: rgba(255, 255, 255, 0.85);
-    }
-    .cyber-switch input:checked + .cyber-slider::before {
-      transform: translateX(20px);
-      background: #FFFFFF;
-    }
+    .cyber-switch input:checked + .cyber-slider { background: var(--glass-tint-active); }
+    .cyber-switch input:checked + .cyber-slider::before { transform: translateX(20px); background: #FFFFFF; }
 
-    .btn-main {
-      width: 100%;
-      min-height: 48px;
-      padding: 14px 28px;
-      border-radius: 999px;
-      border: none;
-      font-size: var(--text-body-sm);
-      font-weight: 700;
-      cursor: pointer;
-      background: var(--glass-tint-active);
-      box-shadow:
-        0 8px 22px rgba(var(--accent-sec-rgb), 0.38),
-        inset 0 2px 4px rgba(255, 255, 255, 0.78),
-        inset 0 -4px 10px rgba(var(--accent-sec-rgb), 0.55);
-      color: var(--text-main);
-      text-shadow: 0 1px 2px rgba(0, 0, 0, 0.32);
-      transition: transform 280ms var(--spring-ease);
-    }
-    .btn-dark {
-      width: 100%;
-      min-height: 46px;
-      border: none;
-      background: var(--glass-tint-btn);
-      box-shadow:
-        0 6px 16px rgba(0, 0, 0, 0.30),
-        inset 0 1.5px 2px rgba(255, 255, 255, 0.52),
-        inset 0 -3px 8px rgba(var(--accent-rgb), 0.24);
-      color: var(--text-main);
-      padding: 12px 20px;
-      border-radius: 999px;
-      font-size: var(--text-caption);
-      font-weight: 600;
-      cursor: pointer;
-      transition: transform 280ms var(--spring-ease);
-    }
-    .btn-danger {
-      width: 100%;
-      min-height: 46px;
-      border: none;
-      background: radial-gradient(120% 140% at 20% 15%, rgba(255, 255, 255, 0.30) 0%, rgba(255, 69, 58, 0.48) 55%, rgba(190, 18, 60, 0.52) 100%);
-      box-shadow:
-        0 6px 16px rgba(255, 69, 58, 0.28),
-        inset 0 1.5px 2px rgba(255, 255, 255, 0.65);
-      color: #FFFFFF;
-      padding: 12px 20px;
-      border-radius: 999px;
-      font-size: var(--text-caption);
-      font-weight: 700;
-      cursor: pointer;
-      transition: transform 280ms var(--spring-ease);
-    }
+    .voice-member-card, .friend-item { padding: 16px 20px; margin-block-start: 12px; display: flex; align-items: center; justify-content: space-between; gap: 14px; }
+    .voice-eq-bars { display: inline-flex; align-items: flex-end; gap: 3px; height: 16px; }
+    .voice-eq-bars span { width: 4px; height: 12px; background: #30D158; border-radius: 2px; }
 
-    .btn-main:not(:disabled):active,
-    .btn-dark:not(:disabled):active,
-    .btn-danger:not(:disabled):active,
-    .liquid-glass-btn:not(:disabled):active,
-    .hub-action-pill:not(:disabled):active,
-    .save-all-bar-btn:not(:disabled):active,
-    .icon-circle-action:not(:disabled):active,
-    .shizuku-status-pill:not(:disabled):active,
-    .header-avatar-holder:active,
-    .character-card:active,
-    .preset-pill:active,
-    .pixel-tile:active,
-    .ch-shape-tile:active,
-    .ch-subtoggle-box:active,
-    .shelf-preset-card:active {
-      transform: scale(0.96);
-    }
-
-    .badge-chip {
-      font-size: 0.6875rem;
-      font-weight: 700;
-      font-variant-numeric: tabular-nums;
-      padding: 3px 10px;
-      border-radius: 999px;
-      background: rgba(var(--accent-rgb), 0.22);
-      border: 1px solid rgba(255, 255, 255, 0.48);
-      box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.55);
-      color: var(--text-main);
-      white-space: nowrap;
-    }
-
-    .tweak-tags-wrap {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 6px;
-      margin-block: 10px 12px;
-    }
-    .tweak-mini-tag {
-      font-size: 0.6875rem;
-      font-weight: 600;
-      padding: 5px 11px;
-      border-radius: 999px;
-      background: rgba(var(--accent-rgb), 0.18);
-      border: 1px solid rgba(255, 255, 255, 0.36);
-      box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.45);
-      color: var(--text-main);
-    }
-
-    .voice-member-card, .friend-item {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 10px;
-      background: var(--glass-tint-card);
-      box-shadow: inset 0 1.5px 2px rgba(255, 255, 255, 0.42);
-      border-radius: 22px;
-      padding: 12px 14px;
-      margin-block-start: 8px;
-    }
-    .voice-eq-bars {
-      display: inline-flex;
-      align-items: flex-end;
-      gap: 3px;
-      height: 14px;
-    }
-    .voice-eq-bars span {
-      width: 3px;
-      height: 10px;
-      background: #30D158;
-      border-radius: 2px;
-    }
-
-    .shizuku-alert-backdrop {
-      position: fixed;
-      inset: 0;
-      background: rgba(4, 7, 15, 0.68);
-      backdrop-filter: blur(12px);
-      -webkit-backdrop-filter: blur(12px);
-      z-index: 99999;
-      display: none;
-      align-items: center;
-      justify-content: center;
-      padding: 18px;
-      overscroll-behavior: contain;
-    }
-    .shizuku-alert-box {
-      width: 100%;
-      max-width: 365px;
-      border-radius: 28px;
-      padding: 20px 18px;
-      text-align: center;
-    }
-
-    #screenCalibOverlay, #touchTestOverlay {
-      position: fixed;
-      inset: 0;
-      background: rgba(6, 9, 18, 0.80);
-      backdrop-filter: blur(12px);
-      -webkit-backdrop-filter: blur(12px);
-      z-index: 98000;
-      display: none;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      padding: 22px;
-      overscroll-behavior: contain;
-    }
-
-    #authScreenOverlay {
-      position: fixed;
-      inset: 0;
-      background: rgba(4, 7, 16, 0.30);
-      backdrop-filter: blur(8px);
-      -webkit-backdrop-filter: blur(8px);
-      z-index: 95000;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      padding: 20px;
-      pointer-events: auto;
-      overscroll-behavior: contain;
-    }
-    .auth-card {
-      width: 100%;
-      max-width: 380px;
-      border-radius: 28px;
-      padding: 20px 18px;
-    }
+    /* Оверлеи и модалки */
+    .shizuku-alert-backdrop { position: fixed; inset: 0; background: rgba(0,0,0,0.80); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); z-index: 99999; display: none; align-items: center; justify-content: center; padding: 20px; overscroll-behavior: contain; transform: translateZ(0); }
+    .shizuku-alert-box { width: 100%; max-width: 365px; text-align: center; border-radius: 36px; padding: 24px; }
+    #screenCalibOverlay, #touchTestOverlay { position: fixed; inset: 0; background: rgba(0,0,0,0.90); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); z-index: 98000; display: none; flex-direction: column; align-items: center; justify-content: center; padding: 24px; overscroll-behavior: contain; transform: translateZ(0); }
+    #authScreenOverlay { position: fixed; inset: 0; background: rgba(0,0,0,0.65); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); z-index: 95000; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px; pointer-events: auto; overscroll-behavior: contain; transform: translateZ(0); }
+    
+    .auth-card { width: 100%; max-width: 380px; padding: 28px 24px; border-radius: 40px; }
     .auth-badge {
-      display: inline-block;
-      padding: 5px 14px;
-      border-radius: 999px;
-      font-size: 0.6875rem;
-      font-weight: 700;
-      letter-spacing: 0.05em;
-      color: var(--text-main);
-      background: var(--glass-tint-btn);
-      border: 1px solid rgba(255, 255, 255, 0.45);
-      box-shadow: inset 0 1px 2px rgba(255, 255, 255, 0.60);
-      margin-block-end: 10px;
+      display: inline-block; padding: 8px 18px; font-size: 0.75rem; font-weight: 700; letter-spacing: 0.05em;
+      margin-block-end: 16px; text-transform: uppercase;
     }
-    .auth-input-wrap {
-      background: var(--glass-tint-card);
-      box-shadow: inset 0 1.5px 2px rgba(255, 255, 255, 0.40);
-      border-radius: 22px;
-      padding: 10px 14px;
-      margin-block-end: 12px;
-    }
-    .auth-input-label {
-      display: block;
-      font-size: 0.6875rem;
-      font-weight: 700;
-      color: var(--accent-bright);
-      letter-spacing: 0.04em;
-      margin-block-end: 4px;
-    }
-    .auth-input {
-      width: 100%;
-      background: transparent !important;
-      border: none !important;
-      outline: none !important;
-      box-shadow: none !important;
-      border-radius: 0 !important;
-      padding: 0 !important;
-      color: var(--text-main) !important;
-      font-size: 1rem;
-      font-weight: 600;
-    }
-
-    .avatar-preset-grid {
-      display: grid;
-      grid-template-columns: repeat(4, minmax(0, 1fr));
-      gap: 8px;
-      margin-block: 12px;
-    }
-    .avatar-preset-item {
-      min-height: 54px;
-      border-radius: 18px;
-      background: var(--glass-tint-btn);
-      border: 1px solid rgba(255, 255, 255, 0.40);
-      box-shadow: inset 0 1.5px 2px rgba(255, 255, 255, 0.55);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 1.5rem;
-      cursor: pointer;
-      transition: transform 280ms var(--spring-ease);
-    }
+    
+    .avatar-preset-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; margin-block: 16px; }
+    .avatar-preset-item { min-height: 64px; font-size: 1.6rem; }
 
     .tab-section { display: none; }
     .tab-section.active { display: block; }
 
+    /* Нижняя навигация */
     .bottom-nav-bar {
-      --nav-idx: 0;
-      --lens-sx: 1;
-      --lens-sy: 1;
-      position: fixed;
-      bottom: calc(env(safe-area-inset-bottom, 0px) + 12px);
-      left: 12px;
-      right: 12px;
-      max-width: 480px;
-      margin-inline: auto;
-      height: 68px;
+      --nav-idx: 0; --lens-sx: 1; --lens-sy: 1;
+      position: fixed; bottom: calc(env(safe-area-inset-bottom, 0px) + 16px); left: 14px; right: 14px; max-width: 480px; margin-inline: auto; height: 76px;
+      display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); align-items: center; padding-inline: 8px; z-index: 9000; overflow: visible; touch-action: pan-y;
       background: var(--glass-tint-nav);
-      border-radius: 999px;
-      display: grid;
-      grid-template-columns: repeat(5, minmax(0, 1fr));
-      align-items: center;
-      padding-inline: 6px;
-      z-index: 9000;
-      overflow: visible;
-      touch-action: pan-y;
-      box-shadow:
-        0 14px 34px rgba(0, 0, 0, 0.58),
-        inset 0 1.5px 2px rgba(255, 255, 255, 0.45),
-        inset 0 -3px 10px rgba(var(--accent-rgb), 0.24);
+      border-radius: 999px; box-shadow: 0 16px 40px rgba(0,0,0,0.80), inset 0 1px 3px rgba(255,255,255,0.20);
+      backdrop-filter: blur(24px) saturate(180%); -webkit-backdrop-filter: blur(24px) saturate(180%); transform: translateZ(0);
     }
-
     .nav-liquid-lens {
-      position: absolute;
-      top: 5px;
-      bottom: 5px;
-      left: 6px;
-      width: calc((100% - 12px) / 5);
-      border-radius: 999px;
-      pointer-events: none;
-      z-index: 1;
-      background: radial-gradient(
-        120% 130% at 50% 18%,
-        rgba(255, 255, 255, 0.34) 0%,
-        rgba(var(--accent-rgb), 0.32) 52%,
-        rgba(var(--accent-sec-rgb), 0.28) 100%
-      );
-      backdrop-filter: blur(12px) saturate(190%) brightness(1.15);
-      -webkit-backdrop-filter: blur(12px) saturate(190%) brightness(1.15);
-      box-shadow:
-        0 6px 20px rgba(0, 0, 0, 0.42),
-        inset 0 2px 3px rgba(255, 255, 255, 0.85),
-        inset 0 -3px 8px rgba(var(--accent-rgb), 0.65);
+      position: absolute; top: 8px; bottom: 8px; left: 8px; width: calc((100% - 16px) / 5); pointer-events: none; z-index: 1;
+      background: var(--glass-sphere-fill); border-radius: 999px;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.60), inset 0 2px 4px rgba(255,255,255,0.45);
       transform: translate3d(calc(var(--nav-idx, 0) * 100%), 0, 0) scale(var(--lens-sx, 1), var(--lens-sy, 1));
-      transition:
-        transform 420ms var(--liquid-glide),
-        box-shadow 260ms ease,
-        background 260ms ease;
+      transition: transform 420ms var(--liquid-glide), box-shadow 260ms ease, background 260ms ease;
     }
-    .nav-liquid-lens::before {
-      content: "";
-      position: absolute;
-      inset: 0;
-      border-radius: inherit;
-      padding: 1.4px;
-      background: linear-gradient(
-        180deg,
-        rgba(255, 255, 255, 0.96) 0%,
-        rgba(255, 255, 255, 0.20) 48%,
-        rgba(var(--accent-rgb), 0.90) 100%
-      );
-      -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-      -webkit-mask-composite: xor;
-      mask-composite: exclude;
+    .nav-liquid-lens.premium-glass::before {
+      background: linear-gradient(180deg, rgba(255,255,255,0.75) 0%, rgba(255,255,255,0.05) 48%, rgba(var(--accent-rgb),0.65) 100%);
     }
+    
     .nav-liquid-lens.morphing {
-      --lens-sx: 1.18;
-      --lens-sy: 1.28;
-      background: radial-gradient(
-        120% 140% at 50% 15%,
-        rgba(255, 255, 255, 0.48) 0%,
-        rgba(var(--accent-rgb), 0.44) 50%,
-        rgba(var(--accent-sec-rgb), 0.38) 100%
-      );
-      box-shadow:
-        0 10px 28px rgba(var(--accent-rgb), 0.42),
-        0 -2px 14px rgba(255, 255, 255, 0.32),
-        inset 0 2.5px 5px rgba(255, 255, 255, 0.96),
-        inset 0 -4px 12px rgba(var(--accent-rgb), 0.88);
+      --lens-sx: 1.20; --lens-sy: 1.30;
+      background: rgba(255,255,255,0.18);
+      box-shadow: 0 8px 28px rgba(0,0,0,0.70), inset 0 1px 4px rgba(255,255,255,0.35);
     }
-
     .nav-item {
-      position: relative;
-      z-index: 2;
-      height: 56px;
-      border-radius: 999px;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      gap: 3px;
-      color: rgba(255, 255, 255, 0.82);
-      font-size: 0.6875rem;
-      font-weight: 600;
-      cursor: pointer;
-      transition: color 200ms ease, transform 260ms var(--spring-ease);
+      position: relative; z-index: 2; height: 60px; border-radius: 999px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px;
+      color: rgba(255,255,255,0.60); font-size: 0.6875rem; font-weight: 600; transition: color 200ms ease, transform 260ms var(--spring-ease);
     }
-    .nav-item svg {
-      width: 21px;
-      height: 21px;
-      stroke: currentColor;
-      fill: none;
-      stroke-width: 2.1;
-      vector-effect: non-scaling-stroke;
-      transition: transform 260ms var(--spring-ease), filter 200ms ease;
-    }
-    .nav-item.active,
-    .nav-item.lens-pass {
-      color: var(--accent-bright);
-      text-shadow: 0 0 10px rgba(var(--accent-rgb), 0.55);
-    }
-    .nav-item.active svg,
-    .nav-item.lens-pass svg {
-      transform: scale(1.10);
-      filter: drop-shadow(0 0 6px rgba(var(--accent-rgb), 0.65));
-    }
+    .nav-item svg { width: 24px; height: 24px; stroke: currentColor; fill: none; stroke-width: 2.1; vector-effect: non-scaling-stroke; transition: transform 260ms var(--spring-ease), filter 200ms ease; }
+    .nav-item.active, .nav-item.lens-pass { color: var(--text-main); text-shadow: 0 0 12px rgba(0,0,0,0.95); }
+    .nav-item.active svg, .nav-item.lens-pass svg { transform: scale(1.12); filter: drop-shadow(0 0 8px rgba(0,0,0,0.95)); }
 
     #cyberToast {
-      position: fixed;
-      top: max(calc(env(safe-area-inset-top, 42px) + 10px), 42px);
-      left: 50%;
-      transform: translateX(-50%) translateY(-130px);
-      background: var(--glass-tint-active);
-      backdrop-filter: blur(12px);
-      -webkit-backdrop-filter: blur(12px);
-      border: 1px solid rgba(255, 255, 255, 0.65);
-      box-shadow:
-        0 8px 24px rgba(0, 0, 0, 0.48),
-        inset 0 1.5px 2px rgba(255, 255, 255, 0.78);
-      color: var(--text-main);
-      padding: 10px 20px;
-      border-radius: 999px;
-      font-size: var(--text-caption);
-      font-weight: 700;
-      z-index: 100000;
-      opacity: 0;
-      transition-property: opacity, transform;
-      transition-duration: 240ms;
-      transition-timing-function: var(--spring-ease);
-      pointer-events: none;
-      white-space: nowrap;
-      max-width: calc(100% - 28px);
-      overflow: hidden;
-      text-overflow: ellipsis;
+      position: fixed; top: max(calc(env(safe-area-inset-top, 42px) + 12px), 42px); left: 50%; transform: translateX(-50%) translateY(-140px) translateZ(0);
+      color: var(--text-main); padding: 14px 28px; font-size: var(--text-caption); font-weight: 700; z-index: 100000; opacity: 0;
+      transition: opacity 240ms var(--spring-ease), transform 240ms var(--spring-ease); pointer-events: none; white-space: nowrap; max-width: calc(100% - 32px);
     }
-    #cyberToast.show {
-      opacity: 1;
-      transform: translateX(-50%) translateY(0);
-    }
+    #cyberToast.show { opacity: 1; transform: translateX(-50%) translateY(0) translateZ(0); }
   </style>
 </head>
 <body>
@@ -1552,122 +422,136 @@
   <input id="avatarFileInput" type="file" accept="image/*" style="display:none" onchange="onAvatarFileSelected(event)" />
   <input id="bgMediaFileInput" type="file" accept="video/*,image/gif,image/webp,image/*" style="display:none" onchange="onCustomBgFileSelected(event)" />
   <input id="chCustomColorPicker" type="color" value="#30D158" style="display:none" onchange="onCustomCrosshairColorPicked(this.value)" />
-  <div id="cyberToast" role="status" aria-live="polite">SO2Teleport PRO</div>
+  
+  <div id="cyberToast" class="premium-glass premium-capsule" role="status" aria-live="polite">SO2Teleport PRO</div>
 
   <div id="avatarPickerModal" class="shizuku-alert-backdrop" role="dialog" aria-modal="true" aria-labelledby="avatarModalTitle">
-    <div class="shizuku-alert-box liquid-glass-surface">
-      <h2 id="avatarModalTitle" style="font-size:1rem; font-weight:700; color:#fff; margin-bottom:4px;">Профиль и живой фон</h2>
-      <p style="font-size:0.75rem; color:var(--text-muted); margin-bottom:10px; line-height:1.4;">
+    <div class="shizuku-alert-box premium-glass premium-card surface">
+      <h2 id="avatarModalTitle" style="font-size:1.15rem; font-weight:800; color:#fff; margin-bottom:8px;">Профиль и живой фон</h2>
+      <p style="font-size:0.85rem; color:var(--text-muted); margin-bottom:14px; line-height:1.45;">
         Выберите эмблему, загрузите фото аватарки или установите видео/GIF на фон:
       </p>
       <div class="avatar-preset-grid">
-        <div class="avatar-preset-item" onclick="selectBuiltInAvatar('🔥')">🔥</div>
-        <div class="avatar-preset-item" onclick="selectBuiltInAvatar('⚡')">⚡</div>
-        <div class="avatar-preset-item" onclick="selectBuiltInAvatar('👑')">👑</div>
-        <div class="avatar-preset-item" onclick="selectBuiltInAvatar('💀')">💀</div>
-        <div class="avatar-preset-item" onclick="selectBuiltInAvatar('🎯')">🎯</div>
-        <div class="avatar-preset-item" onclick="selectBuiltInAvatar('🐉')">🐉</div>
-        <div class="avatar-preset-item" onclick="selectBuiltInAvatar('🥷')">🥷</div>
-        <div class="avatar-preset-item" onclick="selectBuiltInAvatar('💎')">💎</div>
+        <div class="avatar-preset-item premium-glass premium-capsule btn-dark" onclick="selectBuiltInAvatar('🔥')">🔥</div>
+        <div class="avatar-preset-item premium-glass premium-capsule btn-dark" onclick="selectBuiltInAvatar('⚡')">⚡</div>
+        <div class="avatar-preset-item premium-glass premium-capsule btn-dark" onclick="selectBuiltInAvatar('👑')">👑</div>
+        <div class="avatar-preset-item premium-glass premium-capsule btn-dark" onclick="selectBuiltInAvatar('💀')">💀</div>
+        <div class="avatar-preset-item premium-glass premium-capsule btn-dark" onclick="selectBuiltInAvatar('🎯')">🎯</div>
+        <div class="avatar-preset-item premium-glass premium-capsule btn-dark" onclick="selectBuiltInAvatar('🐉')">🐉</div>
+        <div class="avatar-preset-item premium-glass premium-capsule btn-dark" onclick="selectBuiltInAvatar('🥷')">🥷</div>
+        <div class="avatar-preset-item premium-glass premium-capsule btn-dark" onclick="selectBuiltInAvatar('💎')">💎</div>
       </div>
-      <button type="button" class="btn-main" style="margin-bottom:8px;" onclick="openGalleryFileInput()">
+      <button type="button" class="btn-main premium-glass premium-capsule" style="margin-bottom:12px;" onclick="openGalleryFileInput()">
         Загрузить фото аватарки
       </button>
-      <button type="button" class="btn-dark" style="margin-bottom:8px;" onclick="triggerCustomBgUpload()">
+      <button type="button" class="btn-dark premium-glass premium-capsule" style="margin-bottom:12px;" onclick="triggerCustomBgUpload()">
         Выбрать видео или GIF на фон
       </button>
-      <button type="button" class="btn-dark" onclick="document.getElementById('avatarPickerModal').style.display='none'">
+      <button type="button" class="btn-dark premium-glass premium-capsule" onclick="document.getElementById('avatarPickerModal').style.display='none'">
         Закрыть окно
       </button>
     </div>
   </div>
 
   <div id="screenCalibOverlay" role="dialog" aria-modal="true" onclick="finishScreenCalibTap()">
-    <div style="font-size:2.25rem; margin-bottom:10px;" aria-hidden="true">👆</div>
-    <h2 style="font-size:1.0625rem; font-weight:700; color:#fff; margin-bottom:8px; text-align:center;">
+    <div style="font-size:3rem; margin-bottom:14px;" aria-hidden="true">👆</div>
+    <h2 style="font-size:1.25rem; font-weight:800; color:#fff; margin-bottom:12px; text-align:center;">
       Проведите пальцем по периметру экрана
     </h2>
-    <p style="font-size:0.8125rem; color:var(--text-muted); text-align:center; max-width:300px; line-height:1.5;">
+    <p style="font-size:0.95rem; color:var(--text-muted); text-align:center; max-width:340px; line-height:1.55;">
       Калибровка герцовки и шага кусков под матрицу устройства. Коснитесь экрана для завершения.
     </p>
   </div>
 
   <div id="touchTestOverlay" role="dialog" aria-modal="true">
-    <h2 style="font-size:1rem; font-weight:700; color:#fff; margin-bottom:6px;">Проверка отклика касаний</h2>
-    <div id="touchTestCoords" style="font-size:0.75rem; color:var(--accent-bright); font-weight:600; font-variant-numeric:tabular-nums; margin-bottom:10px;">
+    <h2 style="font-size:1.15rem; font-weight:800; color:#fff; margin-bottom:10px;">Проверка отклика касаний</h2>
+    <div id="touchTestCoords" style="font-size:0.85rem; color:var(--accent-bright); font-weight:700; font-variant-numeric:tabular-nums; margin-bottom:14px;">
       Проведите пальцем по области ниже…
     </div>
-    <canvas id="touchTestCanvas" width="320" height="320" style="background:rgba(0,0,0,0.45); border:1px solid rgba(255,255,255,0.45); border-radius:24px; touch-action:none;"></canvas>
-    <button type="button" class="btn-main" style="max-width:320px; margin-top:12px;" onclick="closeTouchTestModal()">
+    <canvas id="touchTestCanvas" width="340" height="340" style="background:rgba(0,0,0,0.65); border:1px solid rgba(255,255,255,0.25); border-radius:32px; touch-action:none; box-shadow: inset 0 2px 8px rgba(0,0,0,0.55);"></canvas>
+    <button type="button" class="btn-main premium-glass premium-capsule" style="max-width:340px; margin-top:20px;" onclick="closeTouchTestModal()">
       Закрыть тестер
     </button>
   </div>
 
   <div id="shizukuRequiredModal" class="shizuku-alert-backdrop" role="dialog" aria-modal="true" aria-labelledby="shizukuModalTitle">
-    <div class="shizuku-alert-box liquid-glass-surface">
-      <h2 id="shizukuModalTitle" style="font-size:1.0625rem; font-weight:700; color:#ffffff; margin-bottom:7px;">Требуется запуск Shizuku</h2>
-      <p style="font-size:0.8125rem; color:var(--text-muted); line-height:1.5; margin-bottom:14px;">
-        Включите службу <b>Shizuku</b> и выдайте доступ для применения настроек сенсы, растяга и FPS.
+    <div class="shizuku-alert-box premium-glass premium-card surface">
+      <h2 id="shizukuModalTitle" style="font-size:1.2rem; font-weight:800; color:#FF453A; margin-bottom:10px;">⚠️ Shizuku не активен</h2>
+      <p style="font-size:0.85rem; color:var(--text-muted); line-height:1.55; margin-bottom:18px;">
+        Без запущенного <b>Shizuku</b> телепорт-сенса, растяг экрана «T» и бустер FPS не смогут примениться к системе.
       </p>
-      <div style="display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:8px;">
-        <button type="button" class="btn-main" onclick="openSupportLink()">Открыть инструкцию</button>
-        <button type="button" class="btn-dark" onclick="requestAndRecheckShizuku()">Проверить статус</button>
+      <div class="premium-glass premium-card" style="margin-bottom:18px; cursor:default; align-items:flex-start; flex-direction:column; padding:16px; text-align:left;">
+        <div style="font-weight:800; margin-bottom:8px; color:var(--accent-bright); font-size:0.9rem;">📋 Быстрый гайд по запуску:</div>
+        <div style="font-size:0.85rem; color:#fff; line-height:1.65;">1. Открой приложение <b>Shizuku</b> на телефоне.<br>2. Включи <b>Беспроводную отладку</b> в Настройках для разработчиков и нажми <b>Запустить</b>.<br>3. Вернись сюда и нажми <b>«Проверить и выдать доступ»</b>.</div>
       </div>
-      <button type="button" class="btn-dark" style="margin-top:8px;" onclick="document.getElementById('shizukuRequiredModal').style.display='none'">Закрыть окно</button>
+      <button type="button" class="btn-main premium-glass premium-capsule" style="margin-bottom:12px;" onclick="requestAndRecheckShizuku()">
+        ⚡ Проверить и выдать доступ Shizuku
+      </button>
+      <div style="display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:12px; margin-bottom:12px;">
+        <button type="button" class="btn-dark premium-glass premium-capsule" onclick="openSupportLink()">💬 Помощь в ТГ</button>
+        <button type="button" class="btn-dark premium-glass premium-capsule" onclick="copyDiscordSupport()">🎧 Мой Дискорд</button>
+      </div>
+      <button type="button" class="btn-dark premium-glass premium-capsule" onclick="document.getElementById('shizukuRequiredModal').style.display='none'">
+        Закрыть окно
+      </button>
     </div>
   </div>
 
   <div id="authScreenOverlay" role="dialog" aria-modal="true" aria-labelledby="authTitleText">
-    <div style="text-align:center; margin-bottom:14px;">
-      <div class="auth-badge">QUANTUM CORE V10 • LIQUID GLASS 3D</div>
-      <h1 id="authTitleText" style="font-size:1.75rem; font-weight:800; letter-spacing:-0.02em; color:#fff;">
-        SO2Teleport <span style="color:var(--accent-bright);">PRO</span>
+    <div style="text-align:center; margin-bottom:20px;">
+      <div class="auth-badge premium-glass premium-capsule">QUANTUM CORE V10 • TITANIUM GLASS</div>
+      <h1 id="authTitleText" style="font-size:2rem; font-weight:800; letter-spacing:-0.02em; color:#fff; text-shadow: 0 2px 8px rgba(0,0,0,0.8);">
+        SO2Teleport <span style="color:var(--accent-main); text-shadow: 0 0 20px rgba(var(--accent-rgb), 0.55);">PRO</span>
       </h1>
     </div>
 
-    <div class="auth-card liquid-glass-surface">
-      <p style="text-align:center; font-size:0.8125rem; font-weight:500; color:var(--text-muted); margin-bottom:14px;">
+    <div class="auth-card premium-glass premium-card surface">
+      <p style="text-align:center; font-size:0.9rem; font-weight:600; color:var(--text-muted); margin-bottom:20px;">
         Авторизация лицензии (1 ключ = 1 устройство)
       </p>
 
-      <div id="authErrorBanner" role="alert" style="display:none; background:rgba(255,69,58,0.28); border:1px solid rgba(255,140,140,0.75); color:#FFFFFF; border-radius:16px; padding:10px 12px; font-size:0.75rem; font-weight:600; text-align:center; margin-bottom:12px;">
+      <div id="authErrorBanner" role="alert" style="display:none; background:rgba(255,69,58,0.20); border:1px solid rgba(255,100,100,0.45); color:#FF8A8A; border-radius:999px; padding:12px 16px; font-size:0.85rem; font-weight:700; text-align:center; margin-bottom:16px;">
         Введите лицензионный ключ из Telegram-бота
       </div>
 
-      <div class="auth-input-wrap">
-        <label class="auth-input-label" for="loginNickInput">НИКНЕЙМ ИГРОКА</label>
-        <input id="loginNickInput" name="username" class="auth-input" type="text" placeholder="login" value="" autocomplete="off" spellcheck="false" />
+      <div class="auth-input-wrap premium-glass premium-capsule btn-dark">
+        <div style="width:100%;">
+          <label class="auth-input-label" for="loginNickInput">НИКНЕЙМ ИГРОКА</label>
+          <input id="loginNickInput" name="username" class="auth-input" type="text" placeholder="login" value="" autocomplete="off" spellcheck="false" />
+        </div>
       </div>
 
-      <div class="auth-input-wrap">
-        <label class="auth-input-label" for="loginKeyInput">ЛИЦЕНЗИОННЫЙ КЛЮЧ</label>
-        <input id="loginKeyInput" name="license_key" class="auth-input" type="text" placeholder="TP-***-******" value="" autocomplete="off" spellcheck="false" aria-describedby="authErrorBanner" />
+      <div class="auth-input-wrap premium-glass premium-capsule btn-dark">
+        <div style="width:100%;">
+          <label class="auth-input-label" for="loginKeyInput">ЛИЦЕНЗИОННЫЙ КЛЮЧ</label>
+          <input id="loginKeyInput" name="license_key" class="auth-input" type="text" placeholder="TP-***-******" value="" autocomplete="off" spellcheck="false" aria-describedby="authErrorBanner" />
+        </div>
       </div>
 
-      <button id="loginSubmitBtn" type="button" class="btn-main" onclick="handleLoginSubmit()" style="margin-top:4px;">
+      <button id="loginSubmitBtn" type="button" class="btn-main premium-glass premium-capsule" style="margin-top:8px;" onclick="handleLoginSubmit()">
         ⚡ Активировать ключ и войти
       </button>
     </div>
 
-    <div style="width:100%; max-width:380px; margin-top:12px; display:flex; flex-direction:column; gap:8px;">
-      <div class="btn-dark" style="text-align:center; font-size:0.75rem; color:var(--text-muted); cursor:default;">
+    <div style="width:100%; max-width:380px; margin-top:20px; display:flex; flex-direction:column; gap:12px;">
+      <div class="btn-dark premium-glass premium-capsule" style="text-align:center; font-size:0.85rem; color:var(--text-muted); cursor:default;">
         Защищённый HWID: <b id="loginHwidLabel" style="color:#fff; font-variant-numeric:tabular-nums; user-select:text;">…</b>
       </div>
-      <button type="button" class="btn-dark" onclick="openBotShopLink()">
+      <button type="button" class="btn-dark premium-glass premium-capsule" onclick="openBotShopLink()">
         Получить ключ в Telegram-боте
       </button>
-      <button type="button" class="btn-dark" onclick="openSupportLink()">
+      <button type="button" class="btn-dark premium-glass premium-capsule" onclick="openSupportLink()">
         Открыть поддержку по Shizuku
       </button>
     </div>
   </div>
 
-  <main id="mainAppWorkspace" class="app-container">
+  <main id="mainAppWorkspace">
 
-    <header class="top-brand-header liquid-glass-surface">
+    <header class="top-brand-header premium-glass premium-card surface">
       <div class="top-brand-row">
         <div class="brand-left-wrap">
-          <div class="header-avatar-holder" onclick="triggerAvatarUpload()" role="button" tabindex="0" aria-label="Изменить аватарку и живой фон">
+          <div class="header-avatar-holder premium-glass" onclick="triggerAvatarUpload()" role="button" tabindex="0" aria-label="Изменить аватарку и живой фон">
             <img id="topHeaderAvatarImg" src="" alt="" />
             <span id="topHeaderAvatarFallback" class="header-avatar-fallback">P</span>
           </div>
@@ -1679,7 +563,7 @@
           </div>
         </div>
 
-        <button type="button" class="shizuku-status-pill" onclick="requestAndRecheckShizuku()">
+        <button type="button" class="shizuku-status-pill premium-glass premium-capsule" onclick="requestAndRecheckShizuku()">
           <span id="shizukuDot" class="status-dot" aria-hidden="true"></span>
           <span id="shizukuStateText" style="color:#FF453A;">Shizuku ВЫКЛ</span>
         </button>
@@ -1688,25 +572,26 @@
       <div class="top-header-bottom-bar">
         <span>ЯДРО: <b id="headerLiveCoreBadge" style="color:var(--accent-bright); font-variant-numeric:tabular-nums;">68.0X EXTREME CORE</b></span>
         <div class="theme-dots" role="group" aria-label="Цветовая тема">
-          <button type="button" class="theme-dot active" data-theme-idx="0" aria-label="Ледяной Сапфир" style="background:linear-gradient(135deg,#E0F2FE,#38BDF8);" onclick="setNeonTheme('', '', '', '', this, 0, false, '')"></button>
-          <button type="button" class="theme-dot" data-theme-idx="1" aria-label="Красный Рубин" style="background:linear-gradient(135deg,#FF453A,#E11D48);" onclick="setNeonTheme('', '', '', '', this, 1, false, '')"></button>
-          <button type="button" class="theme-dot" data-theme-idx="2" aria-label="Синий Океан" style="background:linear-gradient(135deg,#60A5FA,#1D4ED8);" onclick="setNeonTheme('', '', '', '', this, 2, false, '')"></button>
-          <button type="button" class="theme-dot" data-theme-idx="3" aria-label="Зелёный Изумруд" style="background:linear-gradient(135deg,#30D158,#059669);" onclick="setNeonTheme('', '', '', '', this, 3, false, '')"></button>
-          <button type="button" class="theme-dot" data-theme-idx="4" aria-label="Фиолетовый Аметист" style="background:linear-gradient(135deg,#C084FC,#7C3AED);" onclick="setNeonTheme('', '', '', '', this, 4, false, '')"></button>
-          <button type="button" class="theme-dot" data-theme-idx="5" aria-label="Золотой Янтарь" style="background:linear-gradient(135deg,#FBBF24,#D97706);" onclick="setNeonTheme('', '', '', '', this, 5, false, '')"></button>
+          <button type="button" class="theme-dot active" data-theme-idx="0" aria-label="Серый Титан" style="background:linear-gradient(135deg,#D1D5DB,#9CA3AF);" onclick="setNeonTheme('', '', '', '', this, 0, false, '')"></button>
+          <button type="button" class="theme-dot" data-theme-idx="1" aria-label="Ледяной Сапфир" style="background:linear-gradient(135deg,#7DD3FC,#38BDF8);" onclick="setNeonTheme('', '', '', '', this, 1, false, '')"></button>
+          <button type="button" class="theme-dot" data-theme-idx="2" aria-label="Красный Рубин" style="background:linear-gradient(135deg,#FDA4AF,#F43F5E);" onclick="setNeonTheme('', '', '', '', this, 2, false, '')"></button>
+          <button type="button" class="theme-dot" data-theme-idx="3" aria-label="Синий Океан" style="background:linear-gradient(135deg,#93C5FD,#3B82F6);" onclick="setNeonTheme('', '', '', '', this, 3, false, '')"></button>
+          <button type="button" class="theme-dot" data-theme-idx="4" aria-label="Зелёный Изумруд" style="background:linear-gradient(135deg,#6EE7B7,#10B981);" onclick="setNeonTheme('', '', '', '', this, 4, false, '')"></button>
+          <button type="button" class="theme-dot" data-theme-idx="5" aria-label="Фиолетовый Аметист" style="background:linear-gradient(135deg,#D8B4FE,#A855F7);" onclick="setNeonTheme('', '', '', '', this, 5, false, '')"></button>
+          <button type="button" class="theme-dot" data-theme-idx="6" aria-label="Золотой Янтарь" style="background:linear-gradient(135deg,#FDE047,#EAB308);" onclick="setNeonTheme('', '', '', '', this, 6, false, '')"></button>
         </div>
       </div>
     </header>
 
     <div id="tabSens" class="tab-section active">
 
-      <div class="cyber-hub-card liquid-glass-surface">
+      <div class="cyber-hub-card premium-glass premium-card surface">
         <div class="hub-top-bar">
           <div class="hub-text-col">
             <div class="hub-card-title">
               <span>TELEPORT ENGINE:</span>
               <span id="hubEngineStateWord" class="hub-state-word off">ВЫКЛЮЧЕН</span>
-              <span id="liveScaleChip" class="badge-chip">68.0x</span>
+              <span id="liveScaleChip" class="badge-chip premium-glass premium-capsule">68.0x</span>
             </div>
             <div id="activePresetTitle" class="hub-card-sub">
               Quantum Instant Snap • 1 · Телепорт Ультра (68.0x MAX)
@@ -1719,289 +604,289 @@
         </div>
 
         <div class="hub-actions-grid">
-          <button id="btnMainTeleportTogglePill" type="button" class="hub-action-pill liquid-glass-btn" onclick="setMainEnginePower(!isMainTeleportOn, false)">
+          <button id="btnMainTeleportTogglePill" type="button" class="hub-action-pill btn-main premium-glass premium-capsule" onclick="setMainEnginePower(!isMainTeleportOn, false)">
             Включить Teleport
           </button>
-          <button type="button" class="hub-action-pill btn-dark" onclick="activateMaxH9ijeTeleport()">
+          <button type="button" class="hub-action-pill btn-dark premium-glass premium-capsule" onclick="activateMaxH9ijeTeleport()">
             Включить H9IJE MAX
           </button>
         </div>
       </div>
 
-      <button type="button" class="save-all-bar-btn liquid-glass-btn" onclick="saveAllAppSettingsMaster()">
+      <button type="button" class="save-all-bar-btn btn-main premium-glass premium-capsule" onclick="saveAllAppSettingsMaster()">
         ⚡ Применить и сохранить настройки
       </button>
 
-      <div id="accSensPresets" class="acc-block liquid-glass-surface open">
+      <div id="accSensPresets" class="acc-block premium-glass open">
         <div class="acc-header" onclick="toggleAccordionBlock('accSensPresets')">
           <div class="acc-left">
-            <div class="acc-icon" aria-hidden="true">✦</div>
+            <div class="acc-icon premium-glass" aria-hidden="true">✦</div>
             <div class="acc-title-wrap">
-              <div class="acc-title">Киберспортивные профили наводки <span class="badge-chip">PRO V10</span></div>
+              <div class="acc-title">Киберспортивные профили наводки <span class="badge-chip premium-glass premium-capsule">PRO V10</span></div>
               <div class="acc-sub">Телепорт 68.0x, ROG Phone 720Hz, iOS 240Hz и анти-лаг A57</div>
             </div>
           </div>
-          <div class="acc-chevron" aria-hidden="true">⌄</div>
+          <div class="acc-chevron premium-glass" aria-hidden="true">⌄</div>
         </div>
         <div class="acc-body-wrap">
           <div class="acc-body-inner">
-            <div id="preset_extreme" class="character-card active" onclick="selectTeleportPreset('extreme')">
-              <div style="min-width:0;">
+            <div id="preset_extreme" class="character-card premium-glass premium-capsule active-state" onclick="selectTeleportPreset('extreme')">
+              <div style="min-width:0; text-align: left;">
                 <div class="char-title">1 · ТЕЛЕПОРТ УЛЬТРА <span class="char-tag">QUANTUM SNAP • 68.0X</span></div>
                 <div class="char-desc">Мгновенная телепортация прицела в точку за 1 кадр: убрана вся вязкость осей, максимальный импульс кусков 150 и прямой Raw-отклик 720 Гц.</div>
               </div>
-              <span class="char-arrow" aria-hidden="true">→</span>
+              <span class="char-arrow premium-glass" aria-hidden="true">→</span>
             </div>
 
-            <div id="preset_rog_pro" class="character-card" onclick="selectTeleportPreset('rog_pro')">
-              <div style="min-width:0;">
+            <div id="preset_rog_pro" class="character-card premium-glass premium-capsule" onclick="selectTeleportPreset('rog_pro')">
+              <div style="min-width:0; text-align: left;">
                 <div class="char-title">2 · КОНФИГ ROG PHONE <span class="char-tag pad-badge">ASUS ROG • 720HZ X-MODE</span></div>
                 <div class="char-desc">Сенса игрового смартфона ASUS ROG Phone 8/9 Pro: сверхрезкий срыв с места, агрессивные края и мгновенный флик без задержки.</div>
               </div>
-              <span class="char-arrow" aria-hidden="true">→</span>
+              <span class="char-arrow premium-glass" aria-hidden="true">→</span>
             </div>
 
-            <div id="preset_ios_pro" class="character-card" onclick="selectTeleportPreset('ios_pro')">
-              <div style="min-width:0;">
+            <div id="preset_ios_pro" class="character-card premium-glass premium-capsule" onclick="selectTeleportPreset('ios_pro')">
+              <div style="min-width:0; text-align: left;">
                 <div class="char-title">3 · КОНФИГ iOS <span class="char-tag">IPHONE 16 PRO / IPAD • 240HZ</span></div>
                 <div class="char-desc">Точная копия сенсы iOS ProMotion: идеально линейная траектория без инерции Android и плотная фиксация спрея в голову.</div>
               </div>
-              <span class="char-arrow" aria-hidden="true">→</span>
+              <span class="char-arrow premium-glass" aria-hidden="true">→</span>
             </div>
 
-            <div id="preset_budget_pro" class="character-card" onclick="selectTeleportPreset('budget_pro')">
-              <div style="min-width:0;">
+            <div id="preset_budget_pro" class="character-card premium-glass premium-capsule" onclick="selectTeleportPreset('budget_pro')">
+              <div style="min-width:0; text-align: left;">
                 <div class="char-title">4 · ДЛЯ БЮДЖЕТОК И A57 <span class="char-tag budget-badge">ANTI-LAG FPS • 48.0X</span></div>
                 <div class="char-desc">Резкая телепорт-сенса + защита от просадок FPS на Samsung A57/A55, Redmi, Poco и Realme (SkiaGL кэш 72MB).</div>
               </div>
-              <span class="char-arrow" aria-hidden="true">→</span>
+              <span class="char-arrow premium-glass" aria-hidden="true">→</span>
             </div>
           </div>
         </div>
       </div>
 
-      <div id="accSensSliders" class="acc-block liquid-glass-surface">
+      <div id="accSensSliders" class="acc-block premium-glass">
         <div class="acc-header" onclick="toggleAccordionBlock('accSensSliders')">
           <div class="acc-left">
-            <div class="acc-icon" aria-hidden="true">🎛</div>
+            <div class="acc-icon premium-glass" aria-hidden="true">🎛</div>
             <div class="acc-title-wrap">
-              <div class="acc-title">Тонкая настройка и Куски <span class="badge-chip">19 ПАРАМЕТРОВ</span></div>
+              <div class="acc-title">Тонкая настройка и Куски <span class="badge-chip premium-glass premium-capsule">19 ПАРАМЕТРОВ</span></div>
               <div class="acc-sub">Все бафы Телепорта на максимуме, замедлители на нуле</div>
             </div>
           </div>
-          <div class="acc-chevron" aria-hidden="true">⌄</div>
+          <div class="acc-chevron premium-glass" aria-hidden="true">⌄</div>
         </div>
         <div class="acc-body-wrap">
           <div class="acc-body-inner">
             <div class="section-eyebrow">ОСТРОТА И КАМЕРА (МАКСИМУМ)</div>
-            <div class="pro-slider-row">
-              <div class="pro-slider-head"><label class="pro-slider-name" for="sl_sharp">1. Сила Телепорта (Резкость)</label><span id="val_sharp" class="pro-slider-pill">2.50</span></div>
+            <div class="pro-slider-row premium-glass premium-card">
+              <div class="pro-slider-head"><label class="pro-slider-name" for="sl_sharp">1. Сила Телепорта (Резкость)</label><span id="val_sharp" class="pro-slider-pill premium-glass premium-capsule">2.50</span></div>
               <input id="sl_sharp" type="range" min="10" max="25" step="1" value="25" oninput="onSensSliderChange()" />
               <div class="pro-slider-hint">Максимум (2.50) — мгновенный скачок прицела без анимации</div>
             </div>
 
-            <div class="pro-slider-row">
-              <div class="pro-slider-head"><label class="pro-slider-name" for="sl_sx">2. Резкость камеры X (Влево–вправо)</label><span id="val_sx" class="pro-slider-pill">2.50</span></div>
+            <div class="pro-slider-row premium-glass premium-card">
+              <div class="pro-slider-head"><label class="pro-slider-name" for="sl_sx">2. Резкость камеры X (Влево–вправо)</label><span id="val_sx" class="pro-slider-pill premium-glass premium-capsule">2.50</span></div>
               <input id="sl_sx" type="range" min="10" max="25" step="1" value="25" oninput="onSensSliderChange()" />
               <div class="pro-slider-hint">Горизонтальная резкость флика для Телепорта и AWM</div>
             </div>
 
-            <div class="pro-slider-row">
-              <div class="pro-slider-head"><label class="pro-slider-name" for="sl_sy">3. Резкость камеры Y (Вверх–вниз)</label><span id="val_sy" class="pro-slider-pill">2.50</span></div>
+            <div class="pro-slider-row premium-glass premium-card">
+              <div class="pro-slider-head"><label class="pro-slider-name" for="sl_sy">3. Резкость камеры Y (Вверх–вниз)</label><span id="val_sy" class="pro-slider-pill premium-glass premium-capsule">2.50</span></div>
               <input id="sl_sy" type="range" min="10" max="25" step="1" value="25" oninput="onSensSliderChange()" />
               <div class="pro-slider-hint">Вертикальная отзывчивость прицела для зажима в точку</div>
             </div>
 
             <div class="section-eyebrow">ТОЧНОСТЬ И ОТКЛИК (БЕЗ ЗАДЕРЖЕК)</div>
-            <div class="pro-slider-row">
-              <div class="pro-slider-head"><label class="pro-slider-name" for="sl_grid">Отсечка шума (фильтр)</label><span id="val_grid" class="pro-slider-pill">1</span></div>
+            <div class="pro-slider-row premium-glass premium-card">
+              <div class="pro-slider-head"><label class="pro-slider-name" for="sl_grid">Отсечка шума (фильтр)</label><span id="val_grid" class="pro-slider-pill premium-glass premium-capsule">1</span></div>
               <input id="sl_grid" type="range" min="1" max="10" step="1" value="1" oninput="onSensSliderChange()" />
               <div class="pro-slider-hint">Минимум (1) — сохраняет скорость микродвижений</div>
             </div>
 
-            <div class="pro-slider-row">
-              <div class="pro-slider-head"><label class="pro-slider-name" for="sl_pause">Мёртвая зона</label><span id="val_pause" class="pro-slider-pill">0</span></div>
+            <div class="pro-slider-row premium-glass premium-card">
+              <div class="pro-slider-head"><label class="pro-slider-name" for="sl_pause">Мёртвая зона</label><span id="val_pause" class="pro-slider-pill premium-glass premium-capsule">0</span></div>
               <input id="sl_pause" type="range" min="0" max="10" step="1" value="0" oninput="onSensSliderChange()" />
               <div class="pro-slider-hint">Ноль (0) — мгновенная реакция на касание</div>
             </div>
 
-            <div class="pro-slider-row">
-              <div class="pro-slider-head"><label class="pro-slider-name" for="sl_lead">Упреждение (Микро-флик)</label><span id="val_lead" class="pro-slider-pill">20</span></div>
+            <div class="pro-slider-row premium-glass premium-card">
+              <div class="pro-slider-head"><label class="pro-slider-name" for="sl_lead">Упреждение (Микро-флик)</label><span id="val_lead" class="pro-slider-pill premium-glass premium-capsule">20</span></div>
               <input id="sl_lead" type="range" min="0" max="20" step="1" value="20" oninput="onSensSliderChange()" />
             </div>
 
-            <div class="pro-slider-row">
-              <div class="pro-slider-head"><label class="pro-slider-name" for="sl_stick">Прилипание к осям</label><span id="val_stick" class="pro-slider-pill">0</span></div>
+            <div class="pro-slider-row premium-glass premium-card">
+              <div class="pro-slider-head"><label class="pro-slider-name" for="sl_stick">Прилипание к осям</label><span id="val_stick" class="pro-slider-pill premium-glass premium-capsule">0</span></div>
               <input id="sl_stick" type="range" min="0" max="100" step="5" value="0" oninput="onSensSliderChange()" />
             </div>
 
-            <div class="pro-slider-row">
-              <div class="pro-slider-head"><label class="pro-slider-name" for="sl_stick_delay">Задержка захвата оси</label><span id="val_stick_delay" class="pro-slider-pill">60</span></div>
+            <div class="pro-slider-row premium-glass premium-card">
+              <div class="pro-slider-head"><label class="pro-slider-name" for="sl_stick_delay">Задержка захвата оси</label><span id="val_stick_delay" class="pro-slider-pill premium-glass premium-capsule">60</span></div>
               <input id="sl_stick_delay" type="range" min="5" max="60" step="1" value="60" oninput="onSensSliderChange()" />
               <div class="pro-slider-hint">Максимум (60) — не тормозит свободный диагональный флик</div>
             </div>
 
             <div class="section-eyebrow">КВАНТОВЫЕ КУСКИ (FULL MAX)</div>
-            <div class="pro-slider-row">
-              <div class="pro-slider-head"><label class="pro-slider-name" for="sl_stick_force">Сила прилипания</label><span id="val_stick_force" class="pro-slider-pill">1</span></div>
+            <div class="pro-slider-row premium-glass premium-card">
+              <div class="pro-slider-head"><label class="pro-slider-name" for="sl_stick_force">Сила прилипания</label><span id="val_stick_force" class="pro-slider-pill premium-glass premium-capsule">1</span></div>
               <input id="sl_stick_force" type="range" min="1" max="15" step="1" value="1" oninput="onSensSliderChange()" />
             </div>
 
-            <div class="pro-slider-row">
-              <div class="pro-slider-head"><label class="pro-slider-name" for="sl_chunks">Куски (Импульс 90°/180°)</label><span id="val_chunks" class="pro-slider-pill">100</span></div>
+            <div class="pro-slider-row premium-glass premium-card">
+              <div class="pro-slider-head"><label class="pro-slider-name" for="sl_chunks">Куски (Импульс 90°/180°)</label><span id="val_chunks" class="pro-slider-pill premium-glass premium-capsule">100</span></div>
               <input id="sl_chunks" type="range" min="40" max="100" step="1" value="100" oninput="onSensSliderChange()" />
             </div>
 
-            <div class="pro-slider-row">
-              <div class="pro-slider-head"><label class="pro-slider-name" for="sl_chunk_bypass">Порог обхода кусков</label><span id="val_chunk_bypass" class="pro-slider-pill">0</span></div>
+            <div class="pro-slider-row premium-glass premium-card">
+              <div class="pro-slider-head"><label class="pro-slider-name" for="sl_chunk_bypass">Порог обхода кусков</label><span id="val_chunk_bypass" class="pro-slider-pill premium-glass premium-capsule">0</span></div>
               <input id="sl_chunk_bypass" type="range" min="0" max="20" step="1" value="0" oninput="onSensSliderChange()" />
             </div>
 
-            <div class="pro-slider-row">
-              <div class="pro-slider-head"><label class="pro-slider-name" for="sl_chunk_cap">Потолок куска</label><span id="val_chunk_cap" class="pro-slider-pill">30</span></div>
+            <div class="pro-slider-row premium-glass premium-card">
+              <div class="pro-slider-head"><label class="pro-slider-name" for="sl_chunk_cap">Потолок куска</label><span id="val_chunk_cap" class="pro-slider-pill premium-glass premium-capsule">30</span></div>
               <input id="sl_chunk_cap" type="range" min="5" max="30" step="1" value="30" oninput="onSensSliderChange()" />
             </div>
 
-            <div class="pro-slider-row">
-              <div class="pro-slider-head"><label class="pro-slider-name" for="sl_chunkfast">Ускорение быстрых кусков</label><span id="val_chunkfast" class="pro-slider-pill">100</span></div>
+            <div class="pro-slider-row premium-glass premium-card">
+              <div class="pro-slider-head"><label class="pro-slider-name" for="sl_chunkfast">Ускорение быстрых кусков</label><span id="val_chunkfast" class="pro-slider-pill premium-glass premium-capsule">100</span></div>
               <input id="sl_chunkfast" type="range" min="40" max="100" step="1" value="100" oninput="onSensSliderChange()" />
             </div>
 
-            <div class="pro-slider-row">
-              <div class="pro-slider-head"><label class="pro-slider-name" for="sl_shot_pause">Пауза после выстрела</label><span id="val_shot_pause" class="pro-slider-pill">0</span></div>
+            <div class="pro-slider-row premium-glass premium-card">
+              <div class="pro-slider-head"><label class="pro-slider-name" for="sl_shot_pause">Пауза после выстрела</label><span id="val_shot_pause" class="pro-slider-pill premium-glass premium-capsule">0</span></div>
               <input id="sl_shot_pause" type="range" min="0" max="15" step="1" value="0" oninput="onSensSliderChange()" />
             </div>
 
-            <div class="pro-slider-row">
-              <div class="pro-slider-head"><label class="pro-slider-name" for="sl_accel">Крутизна разгона</label><span id="val_accel" class="pro-slider-pill">2.50</span></div>
+            <div class="pro-slider-row premium-glass premium-card">
+              <div class="pro-slider-head"><label class="pro-slider-name" for="sl_accel">Крутизна разгона</label><span id="val_accel" class="pro-slider-pill premium-glass premium-capsule">2.50</span></div>
               <input id="sl_accel" type="range" min="10" max="25" step="1" value="25" oninput="onSensSliderChange()" />
             </div>
 
-            <div class="pro-slider-row">
-              <div class="pro-slider-head"><label class="pro-slider-name" for="sl_edge_reach">Чувствительность краёв</label><span id="val_edge_reach" class="pro-slider-pill">20</span></div>
+            <div class="pro-slider-row premium-glass premium-card">
+              <div class="pro-slider-head"><label class="pro-slider-name" for="sl_edge_reach">Чувствительность краёв</label><span id="val_edge_reach" class="pro-slider-pill premium-glass premium-capsule">20</span></div>
               <input id="sl_edge_reach" type="range" min="0" max="20" step="1" value="20" oninput="onSensSliderChange()" />
             </div>
 
-            <div class="pro-slider-row">
-              <div class="pro-slider-head"><label class="pro-slider-name" for="sl_straight">Выпрямление траектории</label><span id="val_straight" class="pro-slider-pill">0.00</span></div>
+            <div class="pro-slider-row premium-glass premium-card">
+              <div class="pro-slider-head"><label class="pro-slider-name" for="sl_straight">Выпрямление траектории</label><span id="val_straight" class="pro-slider-pill premium-glass premium-capsule">0.00</span></div>
               <input id="sl_straight" type="range" min="0" max="100" step="5" value="0" oninput="onSensSliderChange()" />
             </div>
 
-            <div class="pro-slider-row">
-              <div class="pro-slider-head"><label class="pro-slider-name" for="sl_recoil">Хват по осям (Уплотнение отдачи)</label><span id="val_recoil" class="pro-slider-pill">20%</span></div>
+            <div class="pro-slider-row premium-glass premium-card">
+              <div class="pro-slider-head"><label class="pro-slider-name" for="sl_recoil">Хват по осям (Уплотнение отдачи)</label><span id="val_recoil" class="pro-slider-pill premium-glass premium-capsule">20%</span></div>
               <input id="sl_recoil" type="range" min="20" max="100" step="1" value="20" oninput="onRecoilSliderChange()" />
             </div>
 
-            <div class="pro-slider-row">
-              <div class="pro-slider-head"><label class="pro-slider-name" for="sl_grip_cap">Потолок хвата (Фиксация точки)</label><span id="val_grip_cap" class="pro-slider-pill">1</span></div>
+            <div class="pro-slider-row premium-glass premium-card">
+              <div class="pro-slider-head"><label class="pro-slider-name" for="sl_grip_cap">Потолок хвата (Фиксация точки)</label><span id="val_grip_cap" class="pro-slider-pill premium-glass premium-capsule">1</span></div>
               <input id="sl_grip_cap" type="range" min="1" max="15" step="1" value="1" oninput="onSensSliderChange()" />
             </div>
 
-            <button type="button" class="btn-main" style="margin-top:12px;" onclick="saveAllAppSettingsMaster()">
+            <button type="button" class="btn-main premium-glass premium-capsule" style="margin-top:16px;" onclick="saveAllAppSettingsMaster()">
               ⚡ Применить и перезапустить Teleport
             </button>
 
-            <div style="display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:8px; margin-top:8px;">
-              <button type="button" class="btn-dark" onclick="startScreenCalibModal()">Откалибровать экран</button>
-              <button type="button" class="btn-dark" onclick="openTouchTestModal()">Проверить тач</button>
+            <div style="display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:12px; margin-top:12px;">
+              <button type="button" class="btn-dark premium-glass premium-capsule" onclick="startScreenCalibModal()">Откалибровать экран</button>
+              <button type="button" class="btn-dark premium-glass premium-capsule" onclick="openTouchTestModal()">Проверить тач</button>
             </div>
-            <button type="button" class="btn-dark" style="margin-top:8px;" onclick="selectTeleportPreset(isPadModeEnabled ? 'tablet_pro' : 'extreme')">
+            <button type="button" class="btn-dark premium-glass premium-capsule" style="margin-top:12px;" onclick="selectTeleportPreset(isPadModeEnabled ? 'tablet_pro' : 'extreme')">
               Установить максимальные параметры
             </button>
           </div>
         </div>
       </div>
 
-      <div id="accSensShelf" class="acc-block liquid-glass-surface">
+      <div id="accSensShelf" class="acc-block premium-glass">
         <div class="acc-header" onclick="toggleAccordionBlock('accSensShelf')">
           <div class="acc-left">
-            <div class="acc-icon" aria-hidden="true">🔖</div>
+            <div class="acc-icon premium-glass" aria-hidden="true">🔖</div>
             <div class="acc-title-wrap">
               <div class="acc-title">Другие конфиги и Полка сборок</div>
               <div class="acc-sub">Конфиги для Падов, AWM, сохранение и обмен кодами</div>
             </div>
           </div>
-          <div class="acc-chevron" aria-hidden="true">⌄</div>
+          <div class="acc-chevron premium-glass" aria-hidden="true">⌄</div>
         </div>
         <div class="acc-body-wrap">
           <div class="acc-body-inner">
-            <div class="saved-variant-row">
-              <div style="display:flex; align-items:center; gap:11px; min-width:0;">
-                <div class="acc-icon" style="width:34px; height:34px; font-size:0.8125rem;" aria-hidden="true">💾</div>
-                <div style="min-width:0;">
-                  <div id="mySavedSlotTitle" style="font-size:0.8125rem; font-weight:600; color:#fff;">Мой сохранённый конфиг</div>
-                  <div style="font-size:0.6875rem; color:var(--text-muted);">персональный слот</div>
+            <div class="saved-variant-row premium-glass premium-capsule">
+              <div style="display:flex; align-items:center; gap:12px; min-width:0;">
+                <div class="acc-icon premium-glass" style="width:38px; height:38px; font-size:0.9rem;" aria-hidden="true">💾</div>
+                <div style="min-width:0; text-align: left;">
+                  <div id="mySavedSlotTitle" style="font-size:0.85rem; font-weight:700; color:#fff;">Мой сохранённый конфиг</div>
+                  <div style="font-size:0.7rem; color:var(--text-muted);">персональный слот</div>
                 </div>
               </div>
-              <div style="display:flex; gap:8px;">
-                <button type="button" class="icon-circle-action" aria-label="Загрузить сохранённый конфиг" onclick="loadSavedConfigLocal(false)">▼</button>
-                <button type="button" class="icon-circle-action" aria-label="Сохранить текущий конфиг" onclick="saveAllAppSettingsMaster()">💾</button>
+              <div style="display:flex; gap:10px;">
+                <button type="button" class="icon-circle-action premium-glass" aria-label="Загрузить сохранённый конфиг" onclick="loadSavedConfigLocal(false)">▼</button>
+                <button type="button" class="icon-circle-action premium-glass" aria-label="Сохранить текущий конфиг" onclick="saveAllAppSettingsMaster()">💾</button>
               </div>
             </div>
 
-            <div class="code-input-bar">
+            <div class="code-input-bar btn-dark premium-glass premium-capsule" style="cursor:text;">
               <label for="cloudCodeInput" style="color:var(--accent-bright); font-weight:700; font-size:0.75rem;">КОД</label>
               <input id="cloudCodeInput" class="auth-input" type="text" placeholder="SO2-7744" autocomplete="off" spellcheck="false" />
-              <button type="button" class="icon-circle-action" aria-label="Применить облачный код" onclick="downloadCloudPresetNow()">📥</button>
+              <button type="button" class="icon-circle-action premium-glass" aria-label="Применить облачный код" onclick="downloadCloudPresetNow()">📥</button>
             </div>
 
-            <div style="display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:8px; margin-top:10px;">
-              <button type="button" class="btn-dark" onclick="saveAllAppSettingsMaster()">Сохранить локально</button>
-              <button type="button" class="btn-main" onclick="uploadCloudPresetNow()">Создать облачный код</button>
+            <div style="display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:12px; margin-top:14px;">
+              <button type="button" class="btn-dark premium-glass premium-capsule" onclick="saveAllAppSettingsMaster()">Сохранить локально</button>
+              <button type="button" class="btn-main premium-glass premium-capsule" onclick="uploadCloudPresetNow()">Создать облачный код</button>
             </div>
 
             <div class="shelf-cards-grid">
-              <div id="preset_tablet_pro" class="shelf-preset-card" onclick="selectTeleportPreset('tablet_pro')">
-                <div>
-                  <div style="font-size:0.75rem; font-weight:700; color:#fff;">ДЛЯ ПАДОВ УЛЬТРА</div>
-                  <div style="font-size:0.6875rem; color:var(--text-muted); margin-top:2px;">Импульс 128.0x • Xiaomi Pad / iPad</div>
+              <div id="preset_tablet_pro" class="shelf-preset-card premium-glass premium-capsule" style="flex-direction:column; justify-content:center; align-items:center;" onclick="selectTeleportPreset('tablet_pro')">
+                <div style="text-align:center;">
+                  <div style="font-size:0.8rem; font-weight:700; color:#fff;">ДЛЯ ПАДОВ УЛЬТРА</div>
+                  <div style="font-size:0.7rem; color:var(--text-muted); margin-top:4px;">Импульс 128.0x • iPad</div>
                 </div>
-                <div style="font-size:0.6875rem; color:var(--accent-bright); font-weight:700; margin-top:8px;">Включить конфиг →</div>
+                <div style="font-size:0.75rem; color:var(--accent-bright); font-weight:700; margin-top:10px;">Включить конфиг →</div>
               </div>
 
-              <div id="preset_clean_sharp" class="shelf-preset-card" onclick="selectTeleportPreset('clean_sharp')">
-                <div>
-                  <div style="font-size:0.75rem; font-weight:700; color:#fff;">AWM / DEAGLE РЕЗКИЙ</div>
-                  <div style="font-size:0.6875rem; color:var(--text-muted); margin-top:2px;">Точный хват 48.0x • Снайперский флик</div>
+              <div id="preset_clean_sharp" class="shelf-preset-card premium-glass premium-capsule" style="flex-direction:column; justify-content:center; align-items:center;" onclick="selectTeleportPreset('clean_sharp')">
+                <div style="text-align:center;">
+                  <div style="font-size:0.8rem; font-weight:700; color:#fff;">AWM / DEAGLE РЕЗКИЙ</div>
+                  <div style="font-size:0.7rem; color:var(--text-muted); margin-top:4px;">Точный хват 48.0x</div>
                 </div>
-                <div style="font-size:0.6875rem; color:var(--accent-bright); font-weight:700; margin-top:8px;">Включить конфиг →</div>
+                <div style="font-size:0.75rem; color:var(--accent-bright); font-weight:700; margin-top:10px;">Включить конфиг →</div>
               </div>
 
-              <div class="shelf-preset-card" onclick="applyShelfPreset('demon_100')">
-                <div>
-                  <div style="font-size:0.75rem; font-weight:700; color:#fff;">H9IJE TELEPORT MAX</div>
-                  <div style="font-size:0.6875rem; color:var(--text-muted); margin-top:2px;">Куски 150 • Полный овердрайв</div>
+              <div class="shelf-preset-card premium-glass premium-capsule" style="flex-direction:column; justify-content:center; align-items:center;" onclick="applyShelfPreset('demon_100')">
+                <div style="text-align:center;">
+                  <div style="font-size:0.8rem; font-weight:700; color:#fff;">H9IJE TELEPORT MAX</div>
+                  <div style="font-size:0.7rem; color:var(--text-muted); margin-top:4px;">Куски 150 • Овердрайв</div>
                 </div>
-                <div style="font-size:0.6875rem; color:var(--accent-bright); font-weight:700; margin-top:8px;">Включить конфиг →</div>
+                <div style="font-size:0.75rem; color:var(--accent-bright); font-weight:700; margin-top:10px;">Включить конфиг →</div>
               </div>
 
-              <div class="shelf-preset-card" onclick="applyShelfPreset('heavy_pixel')">
-                <div>
-                  <div style="font-size:0.75rem; font-weight:700; color:#fff;">AKR12 / M4 ЗАЖИМ</div>
-                  <div style="font-size:0.6875rem; color:var(--text-muted); margin-top:2px;">Куски 96 • Удержание точки</div>
+              <div class="shelf-preset-card premium-glass premium-capsule" style="flex-direction:column; justify-content:center; align-items:center;" onclick="applyShelfPreset('heavy_pixel')">
+                <div style="text-align:center;">
+                  <div style="font-size:0.8rem; font-weight:700; color:#fff;">AKR12 / M4 ЗАЖИМ</div>
+                  <div style="font-size:0.7rem; color:var(--text-muted); margin-top:4px;">Куски 96 • Удержание</div>
                 </div>
-                <div style="font-size:0.6875rem; color:var(--accent-bright); font-weight:700; margin-top:8px;">Включить конфиг →</div>
+                <div style="font-size:0.75rem; color:var(--accent-bright); font-weight:700; margin-top:10px;">Включить конфиг →</div>
               </div>
             </div>
           </div>
         </div>
       </div>
 
-      <div id="accCrosshair" class="acc-block liquid-glass-surface">
+      <div id="accCrosshair" class="acc-block premium-glass">
         <div class="acc-header" onclick="toggleAccordionBlock('accCrosshair')">
           <div class="acc-left">
-            <div class="acc-icon" aria-hidden="true">⌖</div>
+            <div class="acc-icon premium-glass" aria-hidden="true">⌖</div>
             <div class="acc-title-wrap">
-              <div class="acc-title">Кастомный прицел <span id="crosshairStateChip" class="badge-chip">ВЫКЛ</span></div>
+              <div class="acc-title">Кастомный прицел <span id="crosshairStateChip" class="badge-chip premium-glass premium-capsule">ВЫКЛ</span></div>
               <div class="acc-sub">Выбор формы, цвета прицела и точная подгонка лучей</div>
             </div>
           </div>
-          <div class="acc-chevron" aria-hidden="true">⌄</div>
+          <div class="acc-chevron premium-glass" aria-hidden="true">⌄</div>
         </div>
         <div class="acc-body-wrap">
           <div id="crosshairCardAnchor" class="acc-body-inner">
-            <div class="toggle-row" style="margin-top:4px; margin-bottom:10px;">
-              <div>
+            <div class="toggle-row premium-glass premium-capsule" style="margin-top:4px; margin-bottom:12px;">
+              <div style="text-align: left;">
                 <div class="toggle-info-title">Отображать прицел поверх игры</div>
                 <div class="toggle-info-sub">Аппаратный оверлей без потери FPS</div>
               </div>
@@ -2011,27 +896,27 @@
               </label>
             </div>
 
-            <div id="chPreviewStage" class="preview-stage-box">
-              <canvas id="crosshairPreviewCanvas" width="280" height="148"></canvas>
-              <div style="position:absolute; top:9px; left:10px;"><span id="chModeRightLabel" class="badge-chip">КРЕСТ</span></div>
-              <div style="position:absolute; top:9px; right:10px;"><button type="button" class="icon-circle-action" style="min-width:32px; min-height:32px;" aria-label="Переключить фон предпросмотра" onclick="togglePreviewDayNight()">🌙</button></div>
-              <div style="position:absolute; bottom:9px; left:12px; display:flex; align-items:center; gap:6px; font-size:0.6875rem; color:var(--text-muted); font-variant-numeric:tabular-nums;">
-                <span id="chColorLiveDot" style="width:9px; height:9px; border-radius:50%; background:#30D158; display:inline-block;"></span>
+            <div id="chPreviewStage" class="preview-stage-box premium-card">
+              <canvas id="crosshairPreviewCanvas" width="280" height="150"></canvas>
+              <div style="position:absolute; top:12px; left:12px;"><span id="chModeRightLabel" class="badge-chip premium-glass premium-capsule">КРЕСТ</span></div>
+              <div style="position:absolute; top:12px; right:12px;"><button type="button" class="icon-circle-action premium-glass" style="min-width:36px; min-height:36px;" aria-label="Переключить фон предпросмотра" onclick="togglePreviewDayNight()">🌙</button></div>
+              <div style="position:absolute; bottom:12px; left:14px; display:flex; align-items:center; gap:8px; font-size:0.75rem; color:var(--text-muted); font-variant-numeric:tabular-nums;">
+                <span id="chColorLiveDot" style="width:10px; height:10px; border-radius:50%; background:#30D158; display:inline-block;"></span>
                 <span id="chSizeReadout">+ 8 × 3 px</span>
               </div>
-              <div style="position:absolute; bottom:8px; right:10px; display:flex; gap:5px;">
-                <button type="button" class="badge-chip" style="cursor:pointer; border:none; padding:4px 8px;" aria-label="Масштаб 1x" onclick="setPreviewZoom(1)">×1</button>
-                <button type="button" class="badge-chip" style="cursor:pointer; border:none; padding:4px 8px;" aria-label="Масштаб 4x" onclick="setPreviewZoom(2)">×4</button>
-                <button type="button" class="badge-chip" style="cursor:pointer; border:none; padding:4px 8px;" aria-label="Масштаб 8x" onclick="setPreviewZoom(3.5)">×8</button>
+              <div style="position:absolute; bottom:10px; right:12px; display:flex; gap:6px;">
+                <button type="button" class="badge-chip premium-glass premium-capsule" style="cursor:pointer; padding:6px 12px;" aria-label="Масштаб 1x" onclick="setPreviewZoom(1)">×1</button>
+                <button type="button" class="badge-chip premium-glass premium-capsule" style="cursor:pointer; padding:6px 12px;" aria-label="Масштаб 4x" onclick="setPreviewZoom(2)">×4</button>
+                <button type="button" class="badge-chip premium-glass premium-capsule" style="cursor:pointer; padding:6px 12px;" aria-label="Масштаб 8x" onclick="setPreviewZoom(3.5)">×8</button>
               </div>
             </div>
 
-            <div class="ch-color-palette-bar">
-              <div style="display:flex; align-items:center; justify-content:space-between;">
-                <span style="font-size:0.8125rem; font-weight:600; color:#fff;">Цвет прицела</span>
-                <span id="chColorHexBadge" class="badge-chip" style="font-family:monospace;">#30D158</span>
+            <div class="ch-color-palette-bar premium-glass premium-capsule">
+              <div style="display:flex; align-items:center; justify-content:space-between; width: 100%;">
+                <span style="font-size:0.85rem; font-weight:700; color:#fff;">Цвет прицела</span>
+                <span id="chColorHexBadge" class="badge-chip premium-glass premium-capsule" style="font-family:monospace;">#30D158</span>
               </div>
-              <div class="ch-color-dots-row" role="group" aria-label="Палитра цвета прицела">
+              <div class="ch-color-dots-row" role="group" aria-label="Палитра цвета прицела" style="width: 100%;">
                 <button type="button" class="ch-color-swatch active" data-ch-color="#30d158" style="background:#30D158;" onclick="setCrosshairColor('#30D158', this)" aria-label="Зелёный"></button>
                 <button type="button" class="ch-color-swatch" data-ch-color="#7cc4ff" style="background:#7CC4FF;" onclick="setCrosshairColor('#7CC4FF', this)" aria-label="Голубой"></button>
                 <button type="button" class="ch-color-swatch" data-ch-color="#ff453a" style="background:#FF453A;" onclick="setCrosshairColor('#FF453A', this)" aria-label="Красный"></button>
@@ -2040,51 +925,67 @@
                 <button type="button" class="ch-color-swatch" data-ch-color="#ff9f0a" style="background:#FF9F0A;" onclick="setCrosshairColor('#FF9F0A', this)" aria-label="Оранжевый"></button>
                 <button type="button" class="ch-color-swatch" data-ch-color="#ffffff" style="background:#FFFFFF;" onclick="setCrosshairColor('#FFFFFF', this)" aria-label="Белый"></button>
                 <button type="button" class="ch-color-swatch" data-ch-color="#38bdf8" style="background:#38BDF8;" onclick="setCrosshairColor('#38BDF8', this)" aria-label="Циан"></button>
-                <button type="button" class="ch-custom-color-btn" onclick="document.getElementById('chCustomColorPicker').click()" aria-label="Выбрать свой цвет">🌈</button>
+                <button type="button" class="ch-custom-color-btn btn-dark premium-glass" onclick="document.getElementById('chCustomColorPicker').click()" aria-label="Выбрать свой цвет">🌈</button>
               </div>
             </div>
 
             <div class="ch-shape-grid-4">
-              <div class="ch-shape-tile active" data-ch="cross" onclick="setCrosshairMode(this, 'cross')"><div class="ch-shape-icon" aria-hidden="true">✚</div><div class="ch-shape-lbl">КРЕСТ</div></div>
-              <div class="ch-shape-tile" data-ch="dot" onclick="setCrosshairMode(this, 'dot')"><div class="ch-shape-icon" aria-hidden="true">•</div><div class="ch-shape-lbl">ТОЧКА</div></div>
-              <div class="ch-shape-tile" data-ch="tshape" onclick="setCrosshairMode(this, 'tshape')"><div class="ch-shape-icon" aria-hidden="true">⊤</div><div class="ch-shape-lbl">Т-ОБРАЗ</div></div>
-              <div class="ch-shape-tile" data-ch="corners" onclick="setCrosshairMode(this, 'corners')"><div class="ch-shape-icon" aria-hidden="true">⌜⌟</div><div class="ch-shape-lbl">УГОЛКИ</div></div>
+              <div class="ch-shape-tile btn-dark premium-glass premium-capsule active-state" data-ch="cross" onclick="setCrosshairMode(this, 'cross')">
+                <div style="display:flex; flex-direction:column; align-items:center;">
+                  <div class="ch-shape-icon" aria-hidden="true">✚</div><div class="ch-shape-lbl">КРЕСТ</div>
+                </div>
+              </div>
+              <div class="ch-shape-tile btn-dark premium-glass premium-capsule" data-ch="dot" onclick="setCrosshairMode(this, 'dot')">
+                <div style="display:flex; flex-direction:column; align-items:center;">
+                  <div class="ch-shape-icon" aria-hidden="true">•</div><div class="ch-shape-lbl">ТОЧКА</div>
+                </div>
+              </div>
+              <div class="ch-shape-tile btn-dark premium-glass premium-capsule" data-ch="tshape" onclick="setCrosshairMode(this, 'tshape')">
+                <div style="display:flex; flex-direction:column; align-items:center;">
+                  <div class="ch-shape-icon" aria-hidden="true">⊤</div><div class="ch-shape-lbl">Т-ОБРАЗ</div>
+                </div>
+              </div>
+              <div class="ch-shape-tile btn-dark premium-glass premium-capsule" data-ch="corners" onclick="setCrosshairMode(this, 'corners')">
+                <div style="display:flex; flex-direction:column; align-items:center;">
+                  <div class="ch-shape-icon" aria-hidden="true">⌜⌟</div><div class="ch-shape-lbl">УГОЛКИ</div>
+                </div>
+              </div>
             </div>
 
             <div class="ch-subtoggle-grid-2">
-              <div id="subBoxCrossLines" class="ch-subtoggle-box active" onclick="setCrosshairMode(this, 'cross')">
-                <span style="font-size:0.6875rem; font-weight:600; color:#fff;">ТОЛЬКО ЛУЧИ</span>
-                <span class="badge-chip">БЕЗ ТОЧКИ</span>
+              <div id="subBoxCrossLines" class="ch-subtoggle-box btn-dark premium-glass premium-capsule active-state" onclick="setCrosshairMode(this, 'cross')">
+                <span style="font-size:0.75rem; font-weight:700; color:#fff;">ТОЛЬКО ЛУЧИ</span>
+                <span class="badge-chip premium-glass premium-capsule" style="margin-top:4px;">БЕЗ ТОЧКИ</span>
               </div>
-              <div id="subBoxCenterDot" class="ch-subtoggle-box" onclick="setCrosshairMode(this, 'crossdot')">
-                <span style="font-size:0.6875rem; font-weight:600; color:#fff;">ЛУЧИ + ТОЧКА</span>
-                <span class="badge-chip">КОМБО</span>
+              <div id="subBoxCenterDot" class="ch-subtoggle-box btn-dark premium-glass premium-capsule" onclick="setCrosshairMode(this, 'crossdot')">
+                <span style="font-size:0.75rem; font-weight:700; color:#fff;">ЛУЧИ + ТОЧКА</span>
+                <span class="badge-chip premium-glass premium-capsule" style="margin-top:4px;">КОМБО</span>
               </div>
             </div>
 
-            <div class="pro-slider-row">
-              <div class="pro-slider-head"><label class="pro-slider-name" for="sl_ch_len">Размер лучей</label><span id="val_ch_len" class="pro-slider-pill">8</span></div>
+            <div class="pro-slider-row premium-glass premium-card">
+              <div class="pro-slider-head"><label class="pro-slider-name" for="sl_ch_len">Размер лучей</label><span id="val_ch_len" class="pro-slider-pill premium-glass premium-capsule">8</span></div>
               <input id="sl_ch_len" type="range" min="2" max="22" value="8" oninput="syncCrosshairConfig()" />
             </div>
-            <div class="pro-slider-row">
-              <div class="pro-slider-head"><label class="pro-slider-name" for="sl_ch_thick">Толщина линий</label><span id="val_ch_thick" class="pro-slider-pill">3</span></div>
+            <div class="pro-slider-row premium-glass premium-card">
+              <div class="pro-slider-head"><label class="pro-slider-name" for="sl_ch_thick">Толщина линий</label><span id="val_ch_thick" class="pro-slider-pill premium-glass premium-capsule">3</span></div>
               <input id="sl_ch_thick" type="range" min="1" max="10" value="3" oninput="syncCrosshairConfig()" />
             </div>
-            <div class="pro-slider-row">
-              <div class="pro-slider-head"><label class="pro-slider-name" for="sl_ch_gap">Зазор в центре</label><span id="val_ch_gap" class="pro-slider-pill">3</span></div>
+            <div class="pro-slider-row premium-glass premium-card">
+              <div class="pro-slider-head"><label class="pro-slider-name" for="sl_ch_gap">Зазор в центре</label><span id="val_ch_gap" class="pro-slider-pill premium-glass premium-capsule">3</span></div>
               <input id="sl_ch_gap" type="range" min="0" max="14" value="3" oninput="syncCrosshairConfig()" />
             </div>
-            <div class="pro-slider-row">
-              <div class="pro-slider-head"><label class="pro-slider-name" for="sl_ch_dot">Размер центральной точки</label><span id="val_ch_dot" class="pro-slider-pill">3</span></div>
+            <div class="pro-slider-row premium-glass premium-card">
+              <div class="pro-slider-head"><label class="pro-slider-name" for="sl_ch_dot">Размер центральной точки</label><span id="val_ch_dot" class="pro-slider-pill premium-glass premium-capsule">3</span></div>
               <input id="sl_ch_dot" type="range" min="1" max="10" value="3" oninput="syncCrosshairConfig()" />
             </div>
-            <div class="pro-slider-row">
-              <div class="pro-slider-head"><label class="pro-slider-name" for="sl_ch_op">Непрозрачность прицела</label><span id="val_ch_op" class="pro-slider-pill">100%</span></div>
+            <div class="pro-slider-row premium-glass premium-card">
+              <div class="pro-slider-head"><label class="pro-slider-name" for="sl_ch_op">Непрозрачность прицела</label><span id="val_ch_op" class="pro-slider-pill premium-glass premium-capsule">100%</span></div>
               <input id="sl_ch_op" type="range" min="20" max="100" value="100" oninput="syncCrosshairConfig()" />
             </div>
 
-            <div class="toggle-row" style="margin-top:8px;">
-              <div>
+            <div class="toggle-row premium-glass premium-capsule" style="margin-top:12px;">
+              <div style="text-align: left;">
                 <div class="toggle-info-title">Чёрная контурная обводка</div>
                 <div class="toggle-info-sub">Прицел остаётся читаемым на светлом фоне и в дыму</div>
               </div>
@@ -2094,7 +995,7 @@
               </label>
             </div>
 
-            <button type="button" class="btn-main" style="margin-top:12px;" onclick="saveAllAppSettingsMaster()">
+            <button type="button" class="btn-main premium-glass premium-capsule" style="margin-top:16px;" onclick="saveAllAppSettingsMaster()">
               ⚡ Сохранить настройки прицела
             </button>
           </div>
@@ -2105,59 +1006,77 @@
 
     <div id="tabScreen" class="tab-section">
 
-      <div id="accScreenStretch" class="acc-block liquid-glass-surface open">
+      <div id="accScreenStretch" class="acc-block premium-glass open">
         <div class="acc-header" onclick="toggleAccordionBlock('accScreenStretch')">
           <div class="acc-left">
-            <div class="acc-icon" aria-hidden="true">📐</div>
+            <div class="acc-icon premium-glass" aria-hidden="true">📐</div>
             <div class="acc-title-wrap">
-              <div class="acc-title">Растяг экрана «T» <span id="curRatioBadge" class="badge-chip">4:3</span></div>
+              <div class="acc-title">Растяг экрана «T» <span id="curRatioBadge" class="badge-chip premium-glass premium-capsule">4:3</span></div>
               <div class="acc-sub">Широкие модельки и фиксация горизонтального режима</div>
             </div>
           </div>
-          <div class="acc-chevron" aria-hidden="true">⌄</div>
+          <div class="acc-chevron premium-glass" aria-hidden="true">⌄</div>
         </div>
         <div class="acc-body-wrap">
           <div class="acc-body-inner">
-            <div class="preview-stage-box">
+            <div class="preview-stage-box premium-card">
               <div class="stretch-dashed-outer">
-                <div id="stretchPreviewInner" class="stretch-solid-inner">+</div>
+                <div id="stretchPreviewInner" class="stretch-solid-inner btn-main premium-glass premium-capsule" style="border-radius: 16px !important;">+</div>
               </div>
             </div>
 
-            <div class="preset-pills-4" style="grid-template-columns:repeat(5,minmax(0,1fr)); margin-bottom:8px;">
-              <div class="preset-pill active" data-ratio="4:3" onclick="selectRatioPill(this, '4:3')"><div class="preset-pill-name">4:3</div><div class="preset-pill-sub">Классика</div></div>
-              <div class="preset-pill" data-ratio="PAD-WIDE" onclick="selectRatioPill(this, 'PAD-WIDE')"><div class="preset-pill-name">PAD</div><div class="preset-pill-sub">На Пады</div></div>
-              <div class="preset-pill" data-ratio="5:4" onclick="selectRatioPill(this, '5:4')"><div class="preset-pill-name">5:4</div><div class="preset-pill-sub">Кибер</div></div>
-              <div class="preset-pill" data-ratio="16:10" onclick="selectRatioPill(this, '16:10')"><div class="preset-pill-name">16:10</div><div class="preset-pill-sub">Мягкий</div></div>
-              <div class="preset-pill" data-ratio="1:1" onclick="selectRatioPill(this, '1:1')"><div class="preset-pill-name">1:1</div><div class="preset-pill-sub">Макс</div></div>
+            <div class="preset-pills-4" style="grid-template-columns:repeat(5,minmax(0,1fr)); margin-bottom:12px;">
+              <div class="preset-pill btn-dark premium-glass premium-capsule active-state" data-ratio="4:3" onclick="selectRatioPill(this, '4:3')">
+                <div><div class="preset-pill-name">4:3</div><div class="preset-pill-sub">Классика</div></div>
+              </div>
+              <div class="preset-pill btn-dark premium-glass premium-capsule" data-ratio="PAD-WIDE" onclick="selectRatioPill(this, 'PAD-WIDE')">
+                <div><div class="preset-pill-name">PAD</div><div class="preset-pill-sub">На Пады</div></div>
+              </div>
+              <div class="preset-pill btn-dark premium-glass premium-capsule" data-ratio="5:4" onclick="selectRatioPill(this, '5:4')">
+                <div><div class="preset-pill-name">5:4</div><div class="preset-pill-sub">Кибер</div></div>
+              </div>
+              <div class="preset-pill btn-dark premium-glass premium-capsule" data-ratio="16:10" onclick="selectRatioPill(this, '16:10')">
+                <div><div class="preset-pill-name">16:10</div><div class="preset-pill-sub">Мягкий</div></div>
+              </div>
+              <div class="preset-pill btn-dark premium-glass premium-capsule" data-ratio="1:1" onclick="selectRatioPill(this, '1:1')">
+                <div><div class="preset-pill-name">1:1</div><div class="preset-pill-sub">Макс</div></div>
+              </div>
             </div>
 
-            <div class="preset-pills-4" style="margin-bottom:14px;">
-              <div class="preset-pill" data-ratio="3:2" onclick="selectRatioPill(this, '3:2')"><div class="preset-pill-name">3:2</div><div class="preset-pill-sub">Широкий</div></div>
-              <div class="preset-pill" data-ratio="16:9" onclick="selectRatioPill(this, '16:9')"><div class="preset-pill-name">16:9</div><div class="preset-pill-sub">Сток+</div></div>
-              <div class="preset-pill" data-ratio="SHRINK-84" onclick="selectRatioPill(this, 'SHRINK-84')"><div class="preset-pill-name">84%</div><div class="preset-pill-sub">Стяг</div></div>
-              <div class="preset-pill" data-ratio="21:9" onclick="selectRatioPill(this, '21:9')"><div class="preset-pill-name">21:9</div><div class="preset-pill-sub">Ультра</div></div>
+            <div class="preset-pills-4" style="margin-bottom:18px;">
+              <div class="preset-pill btn-dark premium-glass premium-capsule" data-ratio="3:2" onclick="selectRatioPill(this, '3:2')">
+                <div><div class="preset-pill-name">3:2</div><div class="preset-pill-sub">Широкий</div></div>
+              </div>
+              <div class="preset-pill btn-dark premium-glass premium-capsule" data-ratio="16:9" onclick="selectRatioPill(this, '16:9')">
+                <div><div class="preset-pill-name">16:9</div><div class="preset-pill-sub">Сток+</div></div>
+              </div>
+              <div class="preset-pill btn-dark premium-glass premium-capsule" data-ratio="SHRINK-84" onclick="selectRatioPill(this, 'SHRINK-84')">
+                <div><div class="preset-pill-name">84%</div><div class="preset-pill-sub">Стяг</div></div>
+              </div>
+              <div class="preset-pill btn-dark premium-glass premium-capsule" data-ratio="21:9" onclick="selectRatioPill(this, '21:9')">
+                <div><div class="preset-pill-name">21:9</div><div class="preset-pill-sub">Ультра</div></div>
+              </div>
             </div>
 
-            <button id="btnLaunchFloatingStretch" type="button" class="btn-main" style="margin-bottom:8px;" onclick="launchFloatingTButton()">
+            <button id="btnLaunchFloatingStretch" type="button" class="btn-main premium-glass premium-capsule" style="margin-bottom:12px;" onclick="launchFloatingTButton()">
               ⚡ Запустить плавающую кнопку «T» (4:3)
             </button>
 
-            <div style="display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:8px; margin-bottom:8px;">
-              <button type="button" class="btn-dark" onclick="applyStretchDirectlyNow()">
+            <div style="display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:12px; margin-bottom:12px;">
+              <button type="button" class="btn-dark premium-glass premium-capsule" onclick="applyStretchDirectlyNow()">
                 Шаг 1: Сжать экран
               </button>
-              <button type="button" class="btn-dark" onclick="releaseStretchFullNow()">
+              <button type="button" class="btn-dark premium-glass premium-capsule" onclick="releaseStretchFullNow()">
                 Шаг 2: Растянуть экран
               </button>
             </div>
 
-            <button type="button" class="btn-dark" style="margin-bottom:8px;" onclick="resetNativeScreen()">
+            <button type="button" class="btn-dark premium-glass premium-capsule" style="margin-bottom:12px;" onclick="resetNativeScreen()">
               Восстановить родное разрешение экрана
             </button>
 
-            <div class="toggle-row">
-              <div>
+            <div class="toggle-row premium-glass premium-capsule">
+              <div style="text-align: left;">
                 <div class="toggle-info-title">Синхронизация кусков под растяг</div>
                 <div class="toggle-info-sub">Адаптирует шаг сенсы под выбранный формат экрана</div>
               </div>
@@ -2170,30 +1089,42 @@
         </div>
       </div>
 
-      <div id="accScreenPixels" class="acc-block liquid-glass-surface">
+      <div id="accScreenPixels" class="acc-block premium-glass">
         <div class="acc-header" onclick="toggleAccordionBlock('accScreenPixels')">
           <div class="acc-left">
-            <div class="acc-icon" aria-hidden="true">🚀</div>
+            <div class="acc-icon premium-glass" aria-hidden="true">🚀</div>
             <div class="acc-title-wrap">
-              <div class="acc-title">Оптимизация пикселей <span id="pixelScaleBadge" class="badge-chip">100%</span></div>
+              <div class="acc-title">Оптимизация пикселей <span id="pixelScaleBadge" class="badge-chip premium-glass premium-capsule">100%</span></div>
               <div class="acc-sub">Снижение нагрузки на GPU без чёрных полос</div>
             </div>
           </div>
-          <div class="acc-chevron" aria-hidden="true">⌄</div>
+          <div class="acc-chevron premium-glass" aria-hidden="true">⌄</div>
         </div>
         <div class="acc-body-wrap">
           <div class="acc-body-inner">
             <div class="pixel-tiles-6">
-              <div class="pixel-tile active" data-px="100" onclick="selectPixelTile(this, 100)"><b>100</b><span>%</span></div>
-              <div class="pixel-tile" data-px="90" onclick="selectPixelTile(this, 90)"><b>90</b><span>%</span></div>
-              <div class="pixel-tile" data-px="80" onclick="selectPixelTile(this, 80)"><b>80</b><span>%</span></div>
-              <div class="pixel-tile" data-px="70" onclick="selectPixelTile(this, 70)"><b>70</b><span>%</span></div>
-              <div class="pixel-tile" data-px="60" onclick="selectPixelTile(this, 60)"><b>60</b><span>%</span></div>
-              <div class="pixel-tile" data-px="50" onclick="selectPixelTile(this, 50)"><b>50</b><span>%</span></div>
+              <div class="pixel-tile btn-dark premium-glass premium-capsule active-state" data-px="100" onclick="selectPixelTile(this, 100)">
+                <div><b>100</b><span>%</span></div>
+              </div>
+              <div class="pixel-tile btn-dark premium-glass premium-capsule" data-px="90" onclick="selectPixelTile(this, 90)">
+                <div><b>90</b><span>%</span></div>
+              </div>
+              <div class="pixel-tile btn-dark premium-glass premium-capsule" data-px="80" onclick="selectPixelTile(this, 80)">
+                <div><b>80</b><span>%</span></div>
+              </div>
+              <div class="pixel-tile btn-dark premium-glass premium-capsule" data-px="70" onclick="selectPixelTile(this, 70)">
+                <div><b>70</b><span>%</span></div>
+              </div>
+              <div class="pixel-tile btn-dark premium-glass premium-capsule" data-px="60" onclick="selectPixelTile(this, 60)">
+                <div><b>60</b><span>%</span></div>
+              </div>
+              <div class="pixel-tile btn-dark premium-glass premium-capsule" data-px="50" onclick="selectPixelTile(this, 50)">
+                <div><b>50</b><span>%</span></div>
+              </div>
             </div>
             <div class="pixel-big-readout">
               <div id="pixelBigNumText" class="pixel-big-num">100 %</div>
-              <div style="font-size:0.75rem; color:var(--text-muted); font-weight:500;">Аппаратный скейлер</div>
+              <div style="font-size:0.8rem; color:var(--text-muted); font-weight:600;">Аппаратный скейлер</div>
             </div>
             <div class="pixel-progress-bar"><div id="pixelProgressFill" class="pixel-progress-fill"></div></div>
           </div>
@@ -2204,115 +1135,115 @@
 
     <div id="tabBoost" class="tab-section">
 
-      <div id="accBoostOneClick" class="acc-block liquid-glass-surface open">
+      <div id="accBoostOneClick" class="acc-block premium-glass open">
         <div class="acc-header" onclick="toggleAccordionBlock('accBoostOneClick')">
           <div class="acc-left">
-            <div class="acc-icon" aria-hidden="true">🔥</div>
+            <div class="acc-icon premium-glass" aria-hidden="true">🔥</div>
             <div class="acc-title-wrap">
-              <div class="acc-title">Имба-Твик и Фикс FPS <span id="oneClickTweakStatusBadge" class="badge-chip">SKIAGL 72MB</span></div>
+              <div class="acc-title">Имба-Твик и Фикс FPS <span id="oneClickTweakStatusBadge" class="badge-chip premium-glass premium-capsule">SKIAGL 72MB</span></div>
               <div class="acc-sub">Устранение просадок FPS на Samsung A57 и бюджетных устройствах</div>
             </div>
           </div>
-          <div class="acc-chevron" aria-hidden="true">⌄</div>
+          <div class="acc-chevron premium-glass" aria-hidden="true">⌄</div>
         </div>
         <div class="acc-body-wrap">
           <div class="acc-body-inner">
-            <p style="font-size:0.75rem; color:var(--text-muted); line-height:1.5; margin-top:6px;">
+            <p style="font-size:0.8rem; color:var(--text-muted); line-height:1.5; margin-top:8px; margin-bottom: 16px;">
               Применяет пакет системных настроек: аппаратный кэш текстур <b>SkiaGL 72 МБ</b>, многопоточный рендер, отключение троттлинга GOS, заморозку фоновых процессов Android Freezer и оптимизацию сети.
             </p>
 
             <div class="tweak-tags-wrap">
-              <span class="tweak-mini-tag">SkiaGL + Multithread</span>
-              <span class="tweak-mini-tag">HWUI Cache 72MB</span>
-              <span class="tweak-mini-tag">Apps Freezer (Max 16)</span>
-              <span class="tweak-mini-tag">TCP Fast Window 60</span>
-              <span class="tweak-mini-tag">GPU Debug OFF</span>
-              <span class="tweak-mini-tag">Trim Caches 256M</span>
+              <span class="tweak-mini-tag premium-glass premium-capsule">SkiaGL + Multithread</span>
+              <span class="tweak-mini-tag premium-glass premium-capsule">HWUI Cache 72MB</span>
+              <span class="tweak-mini-tag premium-glass premium-capsule">Apps Freezer (Max 16)</span>
+              <span class="tweak-mini-tag premium-glass premium-capsule">TCP Fast Window 60</span>
+              <span class="tweak-mini-tag premium-glass premium-capsule">GPU Debug OFF</span>
+              <span class="tweak-mini-tag premium-glass premium-capsule">Trim Caches 256M</span>
             </div>
 
-            <button id="btnOneClickSettingsTweak" type="button" class="btn-main" onclick="runOneClickUltimateTweaks()">
+            <button id="btnOneClickSettingsTweak" type="button" class="btn-main premium-glass premium-capsule" style="margin-top: 10px;" onclick="runOneClickUltimateTweaks()">
               ⚡ Применить системные твики и фикс FPS
             </button>
 
-            <div style="display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:8px; margin-top:8px;">
-              <button type="button" class="btn-dark" onclick="runRamCleanNow()">Очистить ОЗУ и кэш</button>
-              <button type="button" class="btn-dark" onclick="runSmartScanNow()">Проверить устройство (<span id="scanTierBadge">ULTRA</span>)</button>
+            <div style="display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:12px; margin-top:12px;">
+              <button type="button" class="btn-dark premium-glass premium-capsule" onclick="runRamCleanNow()">Очистить ОЗУ и кэш</button>
+              <button type="button" class="btn-dark premium-glass premium-capsule" onclick="runSmartScanNow()">Проверить устройство (<span id="scanTierBadge">ULTRA</span>)</button>
             </div>
           </div>
         </div>
       </div>
 
-      <div id="accBoostModules" class="acc-block liquid-glass-surface">
+      <div id="accBoostModules" class="acc-block premium-glass">
         <div class="acc-header" onclick="toggleAccordionBlock('accBoostModules')">
           <div class="acc-left">
-            <div class="acc-icon" aria-hidden="true">⚡</div>
+            <div class="acc-icon premium-glass" aria-hidden="true">⚡</div>
             <div class="acc-title-wrap">
               <div class="acc-title">Системные модули Shizuku</div>
               <div class="acc-sub">Raw Input, SkiaGL Turbo, стабилизация пинга и удержание Гц</div>
             </div>
           </div>
-          <div class="acc-chevron" aria-hidden="true">⌄</div>
+          <div class="acc-chevron premium-glass" aria-hidden="true">⌄</div>
         </div>
         <div class="acc-body-wrap">
           <div class="acc-body-inner">
-            <div class="toggle-row">
-              <div><div class="toggle-info-title">Прямой отклик без сглаживания (Zero-Animation Snap)</div><div class="toggle-info-sub">Мгновенный перенос прицела за 1 кадр</div></div>
+            <div class="toggle-row premium-glass premium-capsule">
+              <div style="text-align: left;"><div class="toggle-info-title">Прямой отклик без сглаживания</div><div class="toggle-info-sub">Мгновенный перенос прицела за 1 кадр</div></div>
               <label class="cyber-switch" aria-label="Прямой отклик без сглаживания"><input id="tgRawInput" type="checkbox" checked onchange="toggleBoostFeature('raw', this.checked)" /><span class="cyber-slider"></span></label>
             </div>
-            <div class="toggle-row">
-              <div><div class="toggle-info-title">Ускоритель рендера (SkiaGL + Shader Cache)</div><div class="toggle-info-sub">Ускоряет отрисовку кадров и снижает нагрузку на GPU</div></div>
+            <div class="toggle-row premium-glass premium-capsule">
+              <div style="text-align: left;"><div class="toggle-info-title">Ускоритель рендера (SkiaGL)</div><div class="toggle-info-sub">Ускоряет отрисовку кадров и снижает нагрузку на GPU</div></div>
               <label class="cyber-switch" aria-label="Ускоритель рендера"><input id="tgVulkan" type="checkbox" checked onchange="toggleBoostFeature('vulkan', this.checked)" /><span class="cyber-slider"></span></label>
             </div>
-            <div class="toggle-row">
-              <div><div class="toggle-info-title">Стабилизация сети (TCP Window 60 + DNS Boost)</div><div class="toggle-info-sub">Снижает скачки пинга и фоновый поиск Wi-Fi</div></div>
+            <div class="toggle-row premium-glass premium-capsule">
+              <div style="text-align: left;"><div class="toggle-info-title">Стабилизация сети (TCP Window)</div><div class="toggle-info-sub">Снижает скачки пинга и фоновый поиск Wi-Fi</div></div>
               <label class="cyber-switch" aria-label="Стабилизация сети"><input id="tgNetPing" type="checkbox" checked onchange="toggleBoostFeature('ping', this.checked)" /><span class="cyber-slider"></span></label>
             </div>
-            <div class="toggle-row">
-              <div><div class="toggle-info-title">Удержание максимальной герцовки экрана</div><div class="toggle-info-sub">Фиксирует частоту обновления экрана при нагреве</div></div>
+            <div class="toggle-row premium-glass premium-capsule">
+              <div style="text-align: left;"><div class="toggle-info-title">Удержание максимальной герцовки экрана</div><div class="toggle-info-sub">Фиксирует частоту обновления экрана при нагреве</div></div>
               <label class="cyber-switch" aria-label="Удержание максимальной герцовки экрана"><input id="tgThermal" type="checkbox" checked onchange="toggleBoostFeature('thermal', this.checked)" /><span class="cyber-slider"></span></label>
             </div>
-            <div class="toggle-row">
-              <div><div class="toggle-info-title">Скрытие оверлеев на записи экрана</div><div class="toggle-info-sub">Не отображает кнопку «T» и прицел на видеозаписи</div></div>
+            <div class="toggle-row premium-glass premium-capsule">
+              <div style="text-align: left;"><div class="toggle-info-title">Скрытие оверлеев на записи экрана</div><div class="toggle-info-sub">Не отображает кнопку «T» и прицел на видеозаписи</div></div>
               <label class="cyber-switch" aria-label="Скрытие оверлеев на записи экрана"><input id="tgStealth" type="checkbox" checked onchange="toggleBoostFeature('stealth', this.checked)" /><span class="cyber-slider"></span></label>
             </div>
           </div>
         </div>
       </div>
 
-      <div id="accBoostOverclock" class="acc-block liquid-glass-surface">
+      <div id="accBoostOverclock" class="acc-block premium-glass">
         <div class="acc-header" onclick="toggleAccordionBlock('accBoostOverclock')">
           <div class="acc-left">
-            <div class="acc-icon" aria-hidden="true">⚙️</div>
+            <div class="acc-icon premium-glass" aria-hidden="true">⚙️</div>
             <div class="acc-title-wrap">
               <div class="acc-title">Тонкий разгон Гц и Мультитача</div>
               <div class="acc-sub">Частота экрана, приоритет GPU/CPU и опрос тача 480 Гц</div>
             </div>
           </div>
-          <div class="acc-chevron" aria-hidden="true">⌄</div>
+          <div class="acc-chevron premium-glass" aria-hidden="true">⌄</div>
         </div>
         <div class="acc-body-wrap">
           <div class="acc-body-inner">
-            <div class="pro-slider-row">
-              <div class="pro-slider-head"><label class="pro-slider-name" for="sl_opt_fps">Фиксация частоты экрана</label><span id="val_opt_fps" class="pro-slider-pill">120 Hz</span></div>
+            <div class="pro-slider-row premium-glass premium-card">
+              <div class="pro-slider-head"><label class="pro-slider-name" for="sl_opt_fps">Фиксация частоты экрана</label><span id="val_opt_fps" class="pro-slider-pill premium-glass premium-capsule">120 Hz</span></div>
               <input id="sl_opt_fps" type="range" min="60" max="144" step="30" value="120" oninput="updateOptLabels()" />
             </div>
-            <div class="pro-slider-row">
-              <div class="pro-slider-head"><label class="pro-slider-name" for="sl_opt_gpu">Приоритет GPU/CPU</label><span id="val_opt_gpu" class="pro-slider-pill">100%</span></div>
+            <div class="pro-slider-row premium-glass premium-card">
+              <div class="pro-slider-head"><label class="pro-slider-name" for="sl_opt_gpu">Приоритет GPU/CPU</label><span id="val_opt_gpu" class="pro-slider-pill premium-glass premium-capsule">100%</span></div>
               <input id="sl_opt_gpu" type="range" min="20" max="100" value="100" oninput="updateOptLabels()" />
             </div>
-            <div class="pro-slider-row">
-              <div class="pro-slider-head"><label class="pro-slider-name" for="sl_opt_edge">Отклик краёв экрана</label><span id="val_opt_edge" class="pro-slider-pill">100%</span></div>
+            <div class="pro-slider-row premium-glass premium-card">
+              <div class="pro-slider-head"><label class="pro-slider-name" for="sl_opt_edge">Отклик краёв экрана</label><span id="val_opt_edge" class="pro-slider-pill premium-glass premium-capsule">100%</span></div>
               <input id="sl_opt_edge" type="range" min="10" max="100" value="100" oninput="updateOptLabels()" />
             </div>
-            <div class="pro-slider-row">
-              <div class="pro-slider-head"><label class="pro-slider-name" for="sl_opt_mt">Скорость Мультитача (3–6 пальцев)</label><span id="val_opt_mt" class="pro-slider-pill">160</span></div>
+            <div class="pro-slider-row premium-glass premium-card">
+              <div class="pro-slider-head"><label class="pro-slider-name" for="sl_opt_mt">Скорость Мультитача (3–6 пальцев)</label><span id="val_opt_mt" class="pro-slider-pill premium-glass premium-capsule">160</span></div>
               <input id="sl_opt_mt" type="range" min="50" max="160" value="160" oninput="updateOptLabels()" />
             </div>
-            <div class="pro-slider-row">
-              <div class="pro-slider-head"><label class="pro-slider-name" for="sl_opt_ts">Частота опроса сенсора</label><span id="val_opt_ts" class="pro-slider-pill">480 Hz</span></div>
+            <div class="pro-slider-row premium-glass premium-card">
+              <div class="pro-slider-head"><label class="pro-slider-name" for="sl_opt_ts">Частота опроса сенсора</label><span id="val_opt_ts" class="pro-slider-pill premium-glass premium-capsule">480 Hz</span></div>
               <input id="sl_opt_ts" type="range" min="240" max="480" step="60" value="480" oninput="updateOptLabels()" />
             </div>
-            <button type="button" class="btn-main" style="margin-top:12px;" onclick="applyFullShooterOptNow()">
+            <button type="button" class="btn-main premium-glass premium-capsule" style="margin-top:16px;" onclick="applyFullShooterOptNow()">
               ⚡ Применить параметры разгона
             </button>
           </div>
@@ -2323,30 +1254,32 @@
 
     <div id="tabSquad" class="tab-section">
 
-      <div id="accSquadVoice" class="acc-block liquid-glass-surface open">
+      <div id="accSquadVoice" class="acc-block premium-glass open">
         <div class="acc-header" onclick="toggleAccordionBlock('accSquadVoice')">
           <div class="acc-left">
-            <div class="acc-icon" aria-hidden="true">🎙</div>
+            <div class="acc-icon premium-glass" aria-hidden="true">🎙</div>
             <div class="acc-title-wrap">
-              <div class="acc-title">Рация отряда <span id="voiceStateBadge" class="badge-chip">ГОТОВ К ЭФИРУ</span></div>
+              <div class="acc-title">Рация отряда <span id="voiceStateBadge" class="badge-chip premium-glass premium-capsule">ГОТОВ К ЭФИРУ</span></div>
               <div class="acc-sub">Голосовая связь поверх игры без приглушения шагов</div>
             </div>
           </div>
-          <div class="acc-chevron" aria-hidden="true">⌄</div>
+          <div class="acc-chevron premium-glass" aria-hidden="true">⌄</div>
         </div>
         <div class="acc-body-wrap">
           <div class="acc-body-inner">
-            <div class="auth-input-wrap" style="margin-top:8px; margin-bottom:10px;">
-              <label class="auth-input-label" for="voiceRoomInput">КОД КОМНАТЫ ОТРЯДА</label>
-              <input id="voiceRoomInput" class="auth-input" type="text" value="SQUAD-MAIN" autocomplete="off" spellcheck="false" />
+            <div class="auth-input-wrap btn-dark premium-glass premium-capsule" style="margin-top:8px; margin-bottom:14px;">
+              <div style="width:100%;">
+                <label class="auth-input-label" for="voiceRoomInput">КОД КОМНАТЫ ОТРЯДА</label>
+                <input id="voiceRoomInput" class="auth-input" type="text" value="SQUAD-MAIN" autocomplete="off" spellcheck="false" />
+              </div>
             </div>
-            <div style="display:grid; grid-template-columns:1.2fr 1fr 1fr; gap:8px; margin-bottom:10px;">
-              <button id="btnVoiceJoin" type="button" class="btn-main" style="padding:10px;" onclick="toggleVoiceConnection()">Войти в войс</button>
-              <button id="btnVoiceMute" type="button" class="btn-dark" style="padding:10px;" onclick="window.toggleMicMute()">Микрофон</button>
-              <button id="btnVoiceDeaf" type="button" class="btn-dark" style="padding:10px;" onclick="window.toggleDeafenSpeaker()">Динамик</button>
+            <div style="display:grid; grid-template-columns:1.2fr 1fr 1fr; gap:12px; margin-bottom:16px;">
+              <button id="btnVoiceJoin" type="button" class="btn-main premium-glass premium-capsule" onclick="toggleVoiceConnection()">Войти в войс</button>
+              <button id="btnVoiceMute" type="button" class="btn-dark premium-glass premium-capsule" onclick="window.toggleMicMute()">Микрофон</button>
+              <button id="btnVoiceDeaf" type="button" class="btn-dark premium-glass premium-capsule" onclick="window.toggleDeafenSpeaker()">Динамик</button>
             </div>
             <div id="voiceMembersBox">
-              <div style="text-align:center; padding:12px; font-size:0.75rem; color:var(--text-muted);">
+              <div style="text-align:center; padding:12px; font-size:0.8rem; color:var(--text-muted);">
                 Нажмите «Войти в войс», чтобы подключиться к комнате отряда.
               </div>
             </div>
@@ -2354,25 +1287,27 @@
         </div>
       </div>
 
-      <div id="accSquadFriends" class="acc-block liquid-glass-surface open">
+      <div id="accSquadFriends" class="acc-block premium-glass open">
         <div class="acc-header" onclick="toggleAccordionBlock('accSquadFriends')">
           <div class="acc-left">
-            <div class="acc-icon" aria-hidden="true">👥</div>
+            <div class="acc-icon premium-glass" aria-hidden="true">👥</div>
             <div class="acc-title-wrap">
-              <div class="acc-title">Друзья и тиммейты <span id="myFriendCodeBadge" class="badge-chip">ID: SO2-0000</span></div>
+              <div class="acc-title">Друзья и тиммейты <span id="myFriendCodeBadge" class="badge-chip premium-glass premium-capsule">ID: SO2-0000</span></div>
               <div class="acc-sub">Добавление тиммейтов по личному ID</div>
             </div>
           </div>
-          <div class="acc-chevron" aria-hidden="true">⌄</div>
+          <div class="acc-chevron premium-glass" aria-hidden="true">⌄</div>
         </div>
         <div class="acc-body-wrap">
           <div class="acc-body-inner">
-            <div style="display:grid; grid-template-columns:minmax(0,1fr) auto; gap:8px; margin-top:8px; margin-bottom:6px;">
-              <div class="auth-input-wrap" style="margin-bottom:0;">
-                <label class="auth-input-label" for="friendAddInput">ID ТИММЕЙТА</label>
-                <input id="friendAddInput" class="auth-input" type="text" placeholder="SO2-7744" autocomplete="off" spellcheck="false" />
+            <div style="display:grid; grid-template-columns:minmax(0,1fr) auto; gap:12px; margin-top:10px; margin-bottom:12px;">
+              <div class="auth-input-wrap btn-dark premium-glass premium-capsule" style="margin-bottom:0;">
+                <div style="width:100%;">
+                  <label class="auth-input-label" for="friendAddInput">ID ТИММЕЙТА</label>
+                  <input id="friendAddInput" class="auth-input" type="text" placeholder="SO2-7744" autocomplete="off" spellcheck="false" />
+                </div>
               </div>
-              <button type="button" class="btn-main" style="width:auto; padding-inline:18px;" aria-label="Добавить тиммейта" onclick="addFriendByCode()">Добавить</button>
+              <button type="button" class="btn-main premium-glass premium-capsule" style="width:auto; padding-inline:24px;" aria-label="Добавить тиммейта" onclick="addFriendByCode()">Добавить</button>
             </div>
             <div id="friendsListBox"></div>
           </div>
@@ -2382,63 +1317,63 @@
     </div>
 
     <div id="tabProfile" class="tab-section">
-      <div class="acc-block liquid-glass-surface open" style="padding:16px;">
-        <div style="display:flex; align-items:center; gap:14px; margin-bottom:14px; padding-bottom:14px; border-bottom:1px solid rgba(255,255,255,0.16);">
-          <div class="header-avatar-holder" style="width:64px; height:64px; border-radius:50%;" onclick="triggerAvatarUpload()" role="button" tabindex="0" aria-label="Сменить аватарку">
+      <div class="acc-block premium-glass open" style="padding:18px;">
+        <div style="display:flex; align-items:center; gap:16px; margin-bottom:16px; padding-bottom:16px; border-bottom:1px solid rgba(255,255,255,0.08);">
+          <div class="header-avatar-holder premium-glass" style="width:68px; height:68px;" onclick="triggerAvatarUpload()" role="button" tabindex="0" aria-label="Сменить аватарку">
             <img id="profAvatarImg" src="" alt="" />
-            <span id="profAvatarFallback" style="font-size:1.5rem; font-weight:700; color:#FFFFFF;">P</span>
+            <span id="profAvatarFallback" style="font-size:1.6rem; font-weight:800; color:#FFFFFF;">P</span>
           </div>
           <div style="flex:1; min-width:0;">
-            <div style="font-size:1.125rem; font-weight:700; color:#fff;" id="profNickText">login</div>
-            <div style="font-size:0.75rem; color:#30D158; font-weight:700; margin-top:2px;" id="profSubVal">АКТИВНА</div>
-            <div style="display:flex; gap:6px; flex-wrap:wrap; margin-top:8px;">
-              <button type="button" class="btn-dark" style="padding:7px 12px; font-size:0.6875rem; min-height:34px; width:auto;" onclick="triggerAvatarUpload()">
+            <div style="font-size:1.2rem; font-weight:800; color:#fff;" id="profNickText">login</div>
+            <div style="font-size:0.8rem; color:#30D158; font-weight:700; margin-top:2px;" id="profSubVal">АКТИВНА</div>
+            <div style="display:flex; gap:10px; flex-wrap:wrap; margin-top:12px;">
+              <button type="button" class="btn-dark premium-glass premium-capsule" style="padding:8px 16px; font-size:0.75rem; min-height:38px; width:auto;" onclick="triggerAvatarUpload()">
                 Сменить аватарку
               </button>
-              <button type="button" class="btn-dark" style="padding:7px 12px; font-size:0.6875rem; min-height:34px; width:auto;" onclick="triggerCustomBgUpload()">
+              <button type="button" class="btn-dark premium-glass premium-capsule" style="padding:8px 16px; font-size:0.75rem; min-height:38px; width:auto;" onclick="triggerCustomBgUpload()">
                 Установить фон
               </button>
-              <button type="button" class="btn-dark" style="padding:7px 12px; font-size:0.6875rem; min-height:34px; width:auto;" onclick="resetCustomBgToCarbon()">
+              <button type="button" class="btn-dark premium-glass premium-capsule" style="padding:8px 16px; font-size:0.75rem; min-height:38px; width:auto;" onclick="resetCustomBgToCarbon()">
                 Сбросить фон
               </button>
             </div>
           </div>
         </div>
 
-        <div style="font-size:0.8125rem; color:var(--text-main); display:flex; flex-direction:column; gap:10px; margin-bottom:16px;">
-          <div style="display:flex; justify-content:space-between; padding-bottom:8px; border-bottom:1px solid rgba(255,255,255,0.12);">
-            <span style="color:var(--text-muted);">Лицензионный ключ</span>
+        <div style="font-size:0.85rem; color:var(--text-main); display:flex; flex-direction:column; gap:14px; margin-bottom:20px;">
+          <div style="display:flex; justify-content:space-between; padding-bottom:12px; border-bottom:1px solid rgba(255,255,255,0.08);">
+            <span style="color:var(--text-muted); font-weight:600;">Лицензионный ключ</span>
             <b id="profKeyMasked" style="color:var(--accent-bright); font-variant-numeric:tabular-nums;">TP-***-******</b>
           </div>
-          <div style="display:flex; justify-content:space-between; padding-bottom:8px; border-bottom:1px solid rgba(255,255,255,0.12);">
-            <span style="color:var(--text-muted);">Аппаратный HWID</span>
+          <div style="display:flex; justify-content:space-between; padding-bottom:12px; border-bottom:1px solid rgba(255,255,255,0.08);">
+            <span style="color:var(--text-muted); font-weight:600;">Аппаратный HWID</span>
             <b id="profHwidText" style="font-family:monospace; font-variant-numeric:tabular-nums; user-select:text;">…</b>
           </div>
-          <div style="display:flex; justify-content:space-between; padding-bottom:8px; border-bottom:1px solid rgba(255,255,255,0.12);">
-            <span style="color:var(--text-muted);">Защита хранилища</span>
+          <div style="display:flex; justify-content:space-between; padding-bottom:12px; border-bottom:1px solid rgba(255,255,255,0.08);">
+            <span style="color:var(--text-muted); font-weight:600;">Защита хранилища</span>
             <b id="profModelText" style="color:#30D158;">AES-GCM + TEE</b>
           </div>
           <div style="display:flex; justify-content:space-between;">
-            <span style="color:var(--text-muted);">Активный конфиг</span>
+            <span style="color:var(--text-muted); font-weight:600;">Активный конфиг</span>
             <b id="profDeviceModeText" style="color:var(--accent-bright);">ТЕЛЕПОРТ УЛЬТРА</b>
           </div>
         </div>
 
-        <button type="button" class="btn-main" style="margin-bottom:10px;" onclick="saveAllAppSettingsMaster()">
+        <button type="button" class="btn-main premium-glass premium-capsule" style="margin-bottom:14px;" onclick="saveAllAppSettingsMaster()">
           ⚡ Сохранить настройки профиля
         </button>
 
-        <div style="display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:8px;">
-          <button type="button" class="btn-dark" onclick="openSupportLink()">Написать в поддержку</button>
-          <button type="button" class="btn-danger" onclick="handleLogoutClick()">Сменить ключ</button>
+        <div style="display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:12px;">
+          <button type="button" class="btn-dark premium-glass premium-capsule" onclick="openSupportLink()">Написать в поддержку</button>
+          <button type="button" class="btn-danger premium-glass premium-capsule" onclick="handleLogoutClick()">Сменить ключ</button>
         </div>
       </div>
     </div>
 
   </main>
 
-  <nav id="bottomNavBar" class="bottom-nav-bar" aria-label="Основная навигация">
-    <div id="navLiquidLens" class="nav-liquid-lens" aria-hidden="true"></div>
+  <nav id="bottomNavBar" class="bottom-nav-bar premium-glass" aria-label="Основная навигация">
+    <div id="navLiquidLens" class="nav-liquid-lens premium-glass" aria-hidden="true"></div>
     <div class="nav-item active" data-tab="tabSens" data-nav-idx="0" role="button" tabindex="0" onclick="switchTab('tabSens');">
       <svg aria-hidden="true" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>
       <span>Главное</span>
@@ -2472,7 +1407,7 @@
 
     let isCrosshairEnabled = false;
     let currentCrosshairType = "cross";
-    let currentCrosshairColor = "#30D158";
+    let currentCrosshairColor = "#D1D5DB";
     let previewDayMode = false;
     let previewZoomFactor = 1;
 
@@ -2483,78 +1418,48 @@
     let bridgeBatchTimer = null;
     let cachedShizukuState = false;
 
-    const IOS27_LIQUID_THEMES = [
+    const DARK_LIQUID_THEMES = [
+      {
+        name: "Серый Титан (Titanium)",
+        bg1: "#09090B", bg2: "#141417", bg3: "#1F1F24",
+        accent: "#D1D5DB", accentRgb: "209, 213, 219",
+        sec: "#9CA3AF", secRgb: "156, 163, 175"
+      },
       {
         name: "Ледяной Сапфир (Ice Blue)",
-        bgBase: "#070B16", bgDeep1: "#0E172C", bgDeep2: "#152342",
+        bg1: "#070B16", bg2: "#0E172C", bg3: "#152342",
         accent: "#38BDF8", accentRgb: "56, 189, 248",
-        sec: "#2563EB", secRgb: "37, 99, 235",
-        surfaceTint: "linear-gradient(145deg, rgba(255, 255, 255, 0.14) 0%, rgba(56, 189, 248, 0.22) 42%, rgba(37, 99, 235, 0.18) 78%, rgba(8, 12, 24, 0.56) 100%)",
-        cardTint: "linear-gradient(145deg, rgba(255, 255, 255, 0.13) 0%, rgba(56, 189, 248, 0.18) 48%, rgba(10, 15, 28, 0.50) 100%)",
-        btnTint: "radial-gradient(125% 140% at 22% 18%, rgba(255, 255, 255, 0.26) 0%, rgba(56, 189, 248, 0.24) 48%, rgba(12, 18, 34, 0.52) 100%)",
-        activeTint: "radial-gradient(125% 140% at 20% 15%, rgba(255, 255, 255, 0.44) 0%, rgba(56, 189, 248, 0.64) 46%, rgba(37, 99, 235, 0.62) 100%)",
-        rimTl: "rgba(255, 255, 255, 0.72)", rimBr: "rgba(56, 189, 248, 0.58)",
-        activeTl: "rgba(255, 255, 255, 0.96)", activeBr: "rgba(56, 189, 248, 0.88)"
+        sec: "#2563EB", secRgb: "37, 99, 235"
       },
       {
         name: "Красный Рубин (Crimson Glass)",
-        bgBase: "#14070B", bgDeep1: "#220B12", bgDeep2: "#30101A",
+        bg1: "#14070B", bg2: "#220B12", bg3: "#30101A",
         accent: "#FF453A", accentRgb: "255, 69, 58",
-        sec: "#E11D48", secRgb: "225, 29, 72",
-        surfaceTint: "linear-gradient(145deg, rgba(255, 255, 255, 0.14) 0%, rgba(255, 69, 58, 0.22) 42%, rgba(225, 29, 72, 0.18) 78%, rgba(14, 6, 10, 0.56) 100%)",
-        cardTint: "linear-gradient(145deg, rgba(255, 255, 255, 0.13) 0%, rgba(255, 69, 58, 0.18) 48%, rgba(16, 7, 11, 0.50) 100%)",
-        btnTint: "radial-gradient(125% 140% at 22% 18%, rgba(255, 255, 255, 0.26) 0%, rgba(255, 69, 58, 0.24) 48%, rgba(18, 8, 12, 0.52) 100%)",
-        activeTint: "radial-gradient(125% 140% at 20% 15%, rgba(255, 255, 255, 0.44) 0%, rgba(255, 69, 58, 0.64) 46%, rgba(225, 29, 72, 0.62) 100%)",
-        rimTl: "rgba(255, 255, 255, 0.72)", rimBr: "rgba(255, 69, 58, 0.58)",
-        activeTl: "rgba(255, 255, 255, 0.96)", activeBr: "rgba(255, 69, 58, 0.88)"
+        sec: "#E11D48", secRgb: "225, 29, 72"
       },
       {
         name: "Синий Океан (Deep Ocean)",
-        bgBase: "#060D1A", bgDeep1: "#0B172E", bgDeep2: "#112344",
+        bg1: "#060D1A", bg2: "#0B172E", bg3: "#112344",
         accent: "#60A5FA", accentRgb: "96, 165, 250",
-        sec: "#1D4ED8", secRgb: "29, 78, 216",
-        surfaceTint: "linear-gradient(145deg, rgba(255, 255, 255, 0.14) 0%, rgba(96, 165, 250, 0.22) 42%, rgba(29, 78, 216, 0.18) 78%, rgba(6, 11, 22, 0.56) 100%)",
-        cardTint: "linear-gradient(145deg, rgba(255, 255, 255, 0.13) 0%, rgba(96, 165, 250, 0.18) 48%, rgba(8, 13, 25, 0.50) 100%)",
-        btnTint: "radial-gradient(125% 140% at 22% 18%, rgba(255, 255, 255, 0.26) 0%, rgba(96, 165, 250, 0.24) 48%, rgba(10, 16, 30, 0.52) 100%)",
-        activeTint: "radial-gradient(125% 140% at 20% 15%, rgba(255, 255, 255, 0.44) 0%, rgba(96, 165, 250, 0.64) 46%, rgba(29, 78, 216, 0.62) 100%)",
-        rimTl: "rgba(255, 255, 255, 0.72)", rimBr: "rgba(96, 165, 250, 0.58)",
-        activeTl: "rgba(255, 255, 255, 0.96)", activeBr: "rgba(96, 165, 250, 0.88)"
+        sec: "#1D4ED8", secRgb: "29, 78, 216"
       },
       {
         name: "Зелёный Изумруд (Emerald Glass)",
-        bgBase: "#05130F", bgDeep1: "#0A211A", bgDeep2: "#0F3026",
+        bg1: "#05130F", bg2: "#0A211A", bg3: "#0F3026",
         accent: "#30D158", accentRgb: "48, 209, 88",
-        sec: "#059669", secRgb: "5, 150, 105",
-        surfaceTint: "linear-gradient(145deg, rgba(255, 255, 255, 0.14) 0%, rgba(48, 209, 88, 0.22) 42%, rgba(5, 150, 105, 0.18) 78%, rgba(5, 16, 13, 0.56) 100%)",
-        cardTint: "linear-gradient(145deg, rgba(255, 255, 255, 0.13) 0%, rgba(48, 209, 88, 0.18) 48%, rgba(7, 19, 15, 0.50) 100%)",
-        btnTint: "radial-gradient(125% 140% at 22% 18%, rgba(255, 255, 255, 0.26) 0%, rgba(48, 209, 88, 0.24) 48%, rgba(8, 22, 17, 0.52) 100%)",
-        activeTint: "radial-gradient(125% 140% at 20% 15%, rgba(255, 255, 255, 0.44) 0%, rgba(48, 209, 88, 0.64) 46%, rgba(5, 150, 105, 0.62) 100%)",
-        rimTl: "rgba(255, 255, 255, 0.72)", rimBr: "rgba(48, 209, 88, 0.58)",
-        activeTl: "rgba(255, 255, 255, 0.96)", activeBr: "rgba(48, 209, 88, 0.88)"
+        sec: "#059669", secRgb: "5, 150, 105"
       },
       {
         name: "Фиолетовый Аметист (Violet Glass)",
-        bgBase: "#0F091C", bgDeep1: "#1A1030", bgDeep2: "#251745",
+        bg1: "#0F091C", bg2: "#1A1030", bg3: "#251745",
         accent: "#C084FC", accentRgb: "192, 132, 252",
-        sec: "#7C3AED", secRgb: "124, 58, 237",
-        surfaceTint: "linear-gradient(145deg, rgba(255, 255, 255, 0.14) 0%, rgba(192, 132, 252, 0.22) 42%, rgba(124, 58, 237, 0.18) 78%, rgba(12, 7, 22, 0.56) 100%)",
-        cardTint: "linear-gradient(145deg, rgba(255, 255, 255, 0.13) 0%, rgba(192, 132, 252, 0.18) 48%, rgba(16, 10, 28, 0.50) 100%)",
-        btnTint: "radial-gradient(125% 140% at 22% 18%, rgba(255, 255, 255, 0.26) 0%, rgba(192, 132, 252, 0.24) 48%, rgba(18, 11, 32, 0.52) 100%)",
-        activeTint: "radial-gradient(125% 140% at 20% 15%, rgba(255, 255, 255, 0.44) 0%, rgba(192, 132, 252, 0.64) 46%, rgba(124, 58, 237, 0.62) 100%)",
-        rimTl: "rgba(255, 255, 255, 0.72)", rimBr: "rgba(192, 132, 252, 0.58)",
-        activeTl: "rgba(255, 255, 255, 0.96)", activeBr: "rgba(192, 132, 252, 0.88)"
+        sec: "#7C3AED", secRgb: "124, 58, 237"
       },
       {
         name: "Золотой Янтарь (Amber Glass)",
-        bgBase: "#140E05", bgDeep1: "#241909", bgDeep2: "#33240D",
+        bg1: "#140E05", bg2: "#241909", bg3: "#33240D",
         accent: "#FBBF24", accentRgb: "251, 191, 36",
-        sec: "#D97706", secRgb: "217, 119, 6",
-        surfaceTint: "linear-gradient(145deg, rgba(255, 255, 255, 0.14) 0%, rgba(251, 191, 36, 0.22) 42%, rgba(217, 119, 6, 0.18) 78%, rgba(16, 11, 4, 0.56) 100%)",
-        cardTint: "linear-gradient(145deg, rgba(255, 255, 255, 0.13) 0%, rgba(251, 191, 36, 0.18) 48%, rgba(22, 15, 5, 0.50) 100%)",
-        btnTint: "radial-gradient(125% 140% at 22% 18%, rgba(255, 255, 255, 0.26) 0%, rgba(251, 191, 36, 0.24) 48%, rgba(25, 17, 6, 0.52) 100%)",
-        activeTint: "radial-gradient(125% 140% at 20% 15%, rgba(255, 255, 255, 0.44) 0%, rgba(251, 191, 36, 0.64) 46%, rgba(217, 119, 6, 0.62) 100%)",
-        rimTl: "rgba(255, 255, 255, 0.72)", rimBr: "rgba(251, 191, 36, 0.58)",
-        activeTl: "rgba(255, 255, 255, 0.96)", activeBr: "rgba(251, 191, 36, 0.88)"
+        sec: "#D97706", secRgb: "217, 119, 6"
       }
     ];
 
@@ -2614,13 +1519,15 @@
 
     function updateNavLiquidLens(activeItemEl, isMorphing) {
       const lens = document.getElementById("navLiquidLens");
-      const navBar = document.getElementById("bottomNavBar");
-      if (!lens || !navBar || !activeItemEl) return;
-
+      if (!lens || !activeItemEl) return;
+      
       const idx = parseInt(activeItemEl.getAttribute("data-nav-idx") || "0", 10);
       lens.style.setProperty("--nav-idx", String(idx));
-      lens.classList.toggle("morphing", !!isMorphing);
-
+      
+      if (isMorphing) {
+        lens.classList.add("morphing");
+      }
+      
       document.querySelectorAll(".bottom-nav-bar .nav-item").forEach(item => {
         const itemIdx = parseInt(item.getAttribute("data-nav-idx") || "0", 10);
         item.classList.toggle("lens-pass", Math.abs(itemIdx - idx) === 1);
@@ -2635,6 +1542,7 @@
         const isCurrent = item.getAttribute("data-tab") === tabId;
         item.classList.toggle("active", isCurrent);
         item.setAttribute("aria-current", isCurrent ? "page" : "false");
+        
         if (isCurrent) {
           updateNavLiquidLens(item, true);
           setTimeout(() => {
@@ -2675,29 +1583,18 @@
     }
 
     function setNeonTheme(accentHex, accentRgb, secHex, secRgb, dotEl, themeIdx, silent, btnTextColor) {
-      const idx = (typeof themeIdx === "number" && IOS27_LIQUID_THEMES[themeIdx]) ? themeIdx : 0;
-      const th = IOS27_LIQUID_THEMES[idx];
+      const idx = (typeof themeIdx === "number" && DARK_LIQUID_THEMES[themeIdx]) ? themeIdx : 0;
+      const th = DARK_LIQUID_THEMES[idx];
       const root = document.documentElement;
 
-      root.style.setProperty("--bg-fallback-1", th.bgBase);
-      root.style.setProperty("--bg-fallback-2", th.bgDeep1);
-      root.style.setProperty("--bg-fallback-3", th.bgDeep2);
-      root.style.setProperty("--bg-wave-1", th.wave1);
-      root.style.setProperty("--bg-wave-2", th.wave2);
-      root.style.setProperty("--bg-wave-3", th.wave3);
+      root.style.setProperty("--bg-fallback-1", th.bg1);
+      root.style.setProperty("--bg-fallback-2", th.bg2);
+      root.style.setProperty("--bg-fallback-3", th.bg3);
       root.style.setProperty("--accent-main", th.accent);
       root.style.setProperty("--accent-rgb", th.accentRgb);
       root.style.setProperty("--accent-sec", th.sec);
       root.style.setProperty("--accent-sec-rgb", th.secRgb);
-      root.style.setProperty("--focus-ring", th.accent);
-      root.style.setProperty("--glass-tint-surface", th.surfaceTint);
-      root.style.setProperty("--glass-tint-card", th.cardTint);
-      root.style.setProperty("--glass-tint-btn", th.btnTint);
-      root.style.setProperty("--glass-tint-active", th.activeTint);
-      root.style.setProperty("--glass-rim-tl", th.rimTl);
-      root.style.setProperty("--glass-rim-br", th.rimBr);
-      root.style.setProperty("--glass-rim-active-tl", "rgba(255, 255, 255, 0.96)");
-      root.style.setProperty("--glass-rim-active-br", "rgba(" + th.accentRgb + ", 0.88)");
+      root.style.setProperty("--focus-ring", "rgba(" + th.accentRgb + ", 0.6)");
 
       document.querySelectorAll(".theme-dot").forEach(d => d.classList.remove("active"));
       if (dotEl) {
@@ -2712,7 +1609,7 @@
       } catch (e) {}
 
       if (!silent) {
-        showToast("Тема: " + th.name);
+        showToast("Стиль: " + th.name);
       }
     }
 
@@ -2723,7 +1620,7 @@
       } catch (e) {
         idx = 0;
       }
-      if (isNaN(idx) || idx < 0 || idx >= IOS27_LIQUID_THEMES.length) idx = 0;
+      if (isNaN(idx) || idx < 0 || idx >= DARK_LIQUID_THEMES.length) idx = 0;
       setNeonTheme("", "", "", "", null, idx, true, "");
     }
 
@@ -2732,7 +1629,7 @@
       const gif = document.getElementById("bgCustomGif");
       if (!vid) return;
       if (gif && gif.style.display === "block") return;
-      if (!vid.getAttribute("src")) {
+      if (!vid.getAttribute("src") || vid.getAttribute("src") !== "bg.mp4") {
         vid.setAttribute("src", "bg.mp4");
       }
       vid.style.display = "block";
@@ -2749,24 +1646,22 @@
         const box = modal.querySelector(".shizuku-alert-box");
         if (box) {
           box.innerHTML =
-            '<h2 id="shizukuModalTitle" style="font-size:1.1rem; font-weight:800; color:#FF453A; margin-bottom:6px;">⚠️ Shizuku не активен</h2>' +
-            '<p style="font-size:0.78rem; color:var(--text-muted); line-height:1.45; margin-bottom:10px;">' +
+            '<h2 id="shizukuModalTitle" style="font-size:1.1rem; font-weight:800; color:#FF453A; margin-bottom:8px;">⚠️ Shizuku не активен</h2>' +
+            '<p style="font-size:0.8rem; color:var(--text-muted); line-height:1.5; margin-bottom:16px;">' +
               'Без запущенного <b>Shizuku</b> телепорт-сенса, растяг экрана «T» и бустер FPS не смогут примениться к системе.' +
             '</p>' +
-            '<div style="text-align:left; background:rgba(0,0,0,0.36); border:1px solid rgba(255,255,255,0.22); border-radius:18px; padding:11px 13px; margin-bottom:12px; font-size:0.74rem; line-height:1.55; color:#FFFFFF;">' +
-              '<div style="font-weight:700; margin-bottom:4px; color:var(--accent-bright);">📋 Быстрый гайд по запуску:</div>' +
-              '<div>1. Открой приложение <b>Shizuku</b> на телефоне.</div>' +
-              '<div>2. Включи <b>Беспроводную отладку</b> в Настройках для разработчиков и нажми <b>Запустить</b>.</div>' +
-              '<div>3. Вернись сюда и нажми <b>«Проверить и выдать доступ»</b>.</div>' +
+            '<div class="premium-glass premium-card" style="margin-bottom:16px; cursor:default; align-items:flex-start; flex-direction:column; padding:14px; text-align:left;">' +
+              '<div style="font-weight:700; margin-bottom:6px; color:var(--accent-bright); font-size:0.85rem;">📋 Быстрый гайд по запуску:</div>' +
+              '<div style="font-size:0.8rem; color:#fff; line-height:1.6;">1. Открой приложение <b>Shizuku</b> на телефоне.<br>2. Включи <b>Беспроводную отладку</b> в Настройках для разработчиков и нажми <b>Запустить</b>.<br>3. Вернись сюда и нажми <b>«Проверить и выдать доступ»</b>.</div>' +
             '</div>' +
-            '<button type="button" class="btn-main" style="margin-bottom:8px;" onclick="requestAndRecheckShizuku()">' +
+            '<button type="button" class="btn-main premium-glass premium-capsule" style="margin-bottom:10px;" onclick="requestAndRecheckShizuku()">' +
               '⚡ Проверить и выдать доступ Shizuku' +
             '</button>' +
-            '<div style="display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:8px; margin-bottom:8px;">' +
-              '<button type="button" class="btn-dark" onclick="openSupportLink()">💬 Помощь в ТГ</button>' +
-              '<button type="button" class="btn-dark" onclick="copyDiscordSupport()">🎧 Мой Дискорд</button>' +
+            '<div style="display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:10px; margin-bottom:10px;">' +
+              '<button type="button" class="btn-dark premium-glass premium-capsule" onclick="openSupportLink()">💬 Помощь в ТГ</button>' +
+              '<button type="button" class="btn-dark premium-glass premium-capsule" onclick="copyDiscordSupport()">🎧 Мой Дискорд</button>' +
             '</div>' +
-            '<button type="button" class="btn-dark" onclick="document.getElementById(\'shizukuRequiredModal\').style.display=\'none\'">' +
+            '<button type="button" class="btn-dark premium-glass premium-capsule" onclick="document.getElementById(\'shizukuRequiredModal\').style.display=\'none\'">' +
               'Закрыть окно' +
             '</button>';
         }
@@ -3101,7 +1996,13 @@
 
       ["extreme", "rog_pro", "ios_pro", "budget_pro", "tablet_pro", "clean_sharp"].forEach(id => {
         const card = document.getElementById("preset_" + id);
-        if (card) card.classList.toggle("active", id === currentPresetId);
+        if (card) {
+          if (id === currentPresetId) {
+            card.classList.add("active-state");
+          } else {
+            card.classList.remove("active-state");
+          }
+        }
       });
 
       const scaleChip = document.getElementById("liveScaleChip");
@@ -3113,16 +2014,16 @@
         setSliderVal("sl_sharp", 25);
         setSliderVal("sl_sx", 25);
         setSliderVal("sl_sy", 25);
-        setSliderVal("sl_grid", 1);
+        setSliderVal("sl_grid", 0);
         setSliderVal("sl_pause", 0);
         setSliderVal("sl_lead", 20);
         setSliderVal("sl_stick", 0);
         setSliderVal("sl_stick_delay", 60);
         setSliderVal("sl_stick_force", 1);
-        setSliderVal("sl_chunks", 98);
+        setSliderVal("sl_chunks", 120);
         setSliderVal("sl_chunk_bypass", 0);
         setSliderVal("sl_chunk_cap", 30);
-        setSliderVal("sl_chunkfast", 100);
+        setSliderVal("sl_chunkfast", 120);
         setSliderVal("sl_shot_pause", 0);
         setSliderVal("sl_accel", 25);
         setSliderVal("sl_edge_reach", 20);
@@ -3137,16 +2038,16 @@
         setSliderVal("sl_sharp", 24);
         setSliderVal("sl_sx", 24);
         setSliderVal("sl_sy", 24);
-        setSliderVal("sl_grid", 1);
+        setSliderVal("sl_grid", 0);
         setSliderVal("sl_pause", 0);
         setSliderVal("sl_lead", 19);
         setSliderVal("sl_stick", 5);
         setSliderVal("sl_stick_delay", 45);
         setSliderVal("sl_stick_force", 2);
-        setSliderVal("sl_chunks", 90);
+        setSliderVal("sl_chunks", 110);
         setSliderVal("sl_chunk_bypass", 0);
         setSliderVal("sl_chunk_cap", 28);
-        setSliderVal("sl_chunkfast", 94);
+        setSliderVal("sl_chunkfast", 110);
         setSliderVal("sl_shot_pause", 0);
         setSliderVal("sl_accel", 22);
         setSliderVal("sl_edge_reach", 20);
@@ -3161,7 +2062,7 @@
         setSliderVal("sl_sharp", 25);
         setSliderVal("sl_sx", 25);
         setSliderVal("sl_sy", 24);
-        setSliderVal("sl_grid", 1);
+        setSliderVal("sl_grid", 0);
         setSliderVal("sl_pause", 0);
         setSliderVal("sl_lead", 20);
         setSliderVal("sl_stick", 0);
@@ -3185,16 +2086,16 @@
         setSliderVal("sl_sharp", 25);
         setSliderVal("sl_sx", 25);
         setSliderVal("sl_sy", 25);
-        setSliderVal("sl_grid", 1);
+        setSliderVal("sl_grid", 0);
         setSliderVal("sl_pause", 0);
         setSliderVal("sl_lead", 20);
         setSliderVal("sl_stick", 0);
         setSliderVal("sl_stick_delay", 60);
         setSliderVal("sl_stick_force", 1);
-        setSliderVal("sl_chunks", 100);
+        setSliderVal("sl_chunks", 120);
         setSliderVal("sl_chunk_bypass", 0);
         setSliderVal("sl_chunk_cap", 30);
-        setSliderVal("sl_chunkfast", 100);
+        setSliderVal("sl_chunkfast", 120);
         setSliderVal("sl_shot_pause", 0);
         setSliderVal("sl_accel", 25);
         setSliderVal("sl_edge_reach", 20);
@@ -3209,7 +2110,7 @@
         setSliderVal("sl_sharp", 25);
         setSliderVal("sl_sx", 25);
         setSliderVal("sl_sy", 24);
-        setSliderVal("sl_grid", 1);
+        setSliderVal("sl_grid", 0);
         setSliderVal("sl_pause", 0);
         setSliderVal("sl_lead", 20);
         setSliderVal("sl_stick", 10);
@@ -3233,16 +2134,16 @@
         setSliderVal("sl_sharp", 25);
         setSliderVal("sl_sx", 25);
         setSliderVal("sl_sy", 25);
-        setSliderVal("sl_grid", 1);
+        setSliderVal("sl_grid", 0);
         setSliderVal("sl_pause", 0);
         setSliderVal("sl_lead", 20);
         setSliderVal("sl_stick", 0);
         setSliderVal("sl_stick_delay", 60);
         setSliderVal("sl_stick_force", 1);
-        setSliderVal("sl_chunks", 100);
+        setSliderVal("sl_chunks", 150);
         setSliderVal("sl_chunk_bypass", 0);
         setSliderVal("sl_chunk_cap", 30);
-        setSliderVal("sl_chunkfast", 100);
+        setSliderVal("sl_chunkfast", 150);
         setSliderVal("sl_shot_pause", 0);
         setSliderVal("sl_accel", 25);
         setSliderVal("sl_edge_reach", 20);
@@ -3334,12 +2235,15 @@
           const sy = (getSliderNum("sl_sy", 25) / 10.0) * boostMult;
           const baseChunks = Math.round(getSliderNum("sl_chunks", 100));
           const baseFast = Math.round(getSliderNum("sl_chunkfast", 100));
+          
           const chunks = (currentPresetId === "extreme" || currentPresetId === "tablet_pro" || currentPresetId === "rog_pro")
             ? Math.round(baseChunks * 1.5)
             : Math.round(baseChunks * 1.25);
+            
           const chunkFast = (currentPresetId === "extreme" || currentPresetId === "tablet_pro" || currentPresetId === "rog_pro")
             ? Math.round(baseFast * 1.5)
             : Math.round(baseFast * 1.25);
+            
           const straight = getSliderNum("sl_straight", 0) / 100.0;
           const stick = Math.round(getSliderNum("sl_stick", 0));
           const grid = 0;
@@ -3394,7 +2298,7 @@
         sliders[id] = getSliderNum(id, 0);
       });
       return {
-        schemaVer: 18,
+        schemaVer: 23,
         preset: currentPresetId,
         mainOn: isMainTeleportOn,
         ratio: currentStretchRatio,
@@ -3410,20 +2314,20 @@
     function normalizeLegacySlidersObject(cfg) {
       if (!cfg || typeof cfg !== "object" || !cfg.sliders) return cfg;
       const s = cfg.sliders;
-      if (cfg.schemaVer !== 18) {
+      if (cfg.schemaVer !== 23) {
         s.sl_sharp = 25;
         s.sl_sx = 25;
         s.sl_sy = 25;
-        s.sl_grid = 1;
+        s.sl_grid = 0;
         s.sl_pause = 0;
         s.sl_lead = 20;
         s.sl_stick = 0;
         s.sl_stick_delay = 60;
         s.sl_stick_force = 1;
-        s.sl_chunks = 100;
+        s.sl_chunks = 150;
         s.sl_chunk_bypass = 0;
         s.sl_chunk_cap = 30;
-        s.sl_chunkfast = 100;
+        s.sl_chunkfast = 150;
         s.sl_shot_pause = 0;
         s.sl_accel = 25;
         s.sl_edge_reach = 20;
@@ -3484,7 +2388,7 @@
       const cfg = collectFullConfigObject();
       const jsonStr = JSON.stringify(cfg);
       try {
-        localStorage.setItem("so2_master_cfg_v18", jsonStr);
+        localStorage.setItem("so2_master_cfg_v23", jsonStr);
       } catch (e) {}
       callBridgeAsync(b => {
         if (typeof b.saveFullConfigJson === "function") {
@@ -3501,7 +2405,7 @@
     function loadSavedConfigLocal(silent) {
       let raw = "";
       try {
-        raw = localStorage.getItem("so2_master_cfg_v18") || "";
+        raw = localStorage.getItem("so2_master_cfg_v23") || "";
       } catch (e) {}
       if (!raw) {
         selectTeleportPreset("extreme", true);
@@ -3576,7 +2480,9 @@
       previewDayMode = !previewDayMode;
       const stage = document.getElementById("chPreviewStage");
       if (stage) {
-        stage.style.background = previewDayMode ? "rgba(220, 235, 255, 0.45)" : "rgba(0, 0, 0, 0.32)";
+        stage.style.background = previewDayMode
+          ? "linear-gradient(165deg, rgba(226, 232, 240, 0.45), rgba(203, 213, 225, 0.35)) padding-box, var(--glass-rim-gradient) border-box"
+          : "rgba(0, 0, 0, 0.45)";
       }
       drawCrosshairPreview();
     }
@@ -3611,12 +2517,21 @@
       currentCrosshairType = mode || "cross";
       document.querySelectorAll(".ch-shape-tile").forEach(t => {
         const m = t.getAttribute("data-ch");
-        t.classList.toggle("active", m === currentCrosshairType || (currentCrosshairType === "crossdot" && m === "cross"));
+        t.classList.remove("active-state");
+        if (m === currentCrosshairType || (currentCrosshairType === "crossdot" && m === "cross")) {
+           t.classList.add("active-state");
+        }
       });
       const b1 = document.getElementById("subBoxCrossLines");
       const b2 = document.getElementById("subBoxCenterDot");
-      if (b1) b1.classList.toggle("active", currentCrosshairType === "cross");
-      if (b2) b2.classList.toggle("active", currentCrosshairType === "crossdot");
+      if (b1) {
+        b1.classList.remove("active-state");
+        if (currentCrosshairType === "cross") b1.classList.add("active-state");
+      }
+      if (b2) {
+        b2.classList.remove("active-state");
+        if (currentCrosshairType === "crossdot") b2.classList.add("active-state");
+      }
 
       const names = {
         cross: "КРЕСТ",
@@ -3759,7 +2674,11 @@
     function selectRatioPill(el, ratio, silent) {
       currentStretchRatio = ratio || "4:3";
       document.querySelectorAll("#accScreenStretch .preset-pill").forEach(p => {
-        p.classList.toggle("active", p.getAttribute("data-ratio") === currentStretchRatio);
+        if (p.getAttribute("data-ratio") === currentStretchRatio) {
+          p.classList.add("active-state");
+        } else {
+          p.classList.remove("active-state");
+        }
       });
       const badge = document.getElementById("curRatioBadge");
       const btn = document.getElementById("btnLaunchFloatingStretch");
@@ -3829,7 +2748,11 @@
     function selectPixelTile(el, pct) {
       currentPixelScale = pct || 100;
       document.querySelectorAll(".pixel-tile").forEach(t => {
-        t.classList.toggle("active", parseInt(t.getAttribute("data-px"), 10) === currentPixelScale);
+        if (parseInt(t.getAttribute("data-px"), 10) === currentPixelScale) {
+          t.classList.add("active-state");
+        } else {
+          t.classList.remove("active-state");
+        }
       });
       const badge = document.getElementById("pixelScaleBadge");
       const big = document.getElementById("pixelBigNumText");
@@ -3951,9 +2874,9 @@
         const y = Math.round(touch.clientY - rect.top);
         if (coords) coords.textContent = "Координаты отклика: X=" + x + " px • Y=" + y + " px (0.1 ms)";
         if (ctx) {
-          ctx.fillStyle = "rgba(0, 0, 0, 0.28)";
+          ctx.fillStyle = "rgba(0, 0, 0, 0.45)";
           ctx.fillRect(0, 0, canvas.width, canvas.height);
-          ctx.fillStyle = getComputedStyle(document.documentElement).getPropertyValue("--accent-bright").trim() || "#7CC4FF";
+          ctx.fillStyle = getComputedStyle(document.documentElement).getPropertyValue("--accent-main").trim() || "#D1D5DB";
           ctx.beginPath();
           ctx.arc(x, y, 7, 0, Math.PI * 2);
           ctx.fill();
@@ -4067,7 +2990,7 @@
         '<div class="friend-item">' +
         '<div style="min-width:0;"><div style="font-size:0.8125rem;font-weight:600;color:#fff;">Тиммейт <bdi>' + code + '</bdi></div>' +
         '<div style="font-size:0.6875rem;color:#30D158;">Онлайн • SO2Teleport PRO</div></div>' +
-        '<button type="button" class="icon-circle-action" aria-label="Удалить тиммейта ' + code + '" onclick="removeFriendAtIndex(' + idx + ')">✕</button>' +
+        '<button type="button" class="icon-circle-action premium-glass capsule" aria-label="Удалить тиммейта ' + code + '" onclick="removeFriendAtIndex(' + idx + ')">✕</button>' +
         '</div>'
       )).join("");
     }
