@@ -24,16 +24,17 @@
       /* Оптимизированный блюр */
       --glass-blur: 16px;
 
-      /* Тинты для стекла (прозрачные подложки) */
+      /* Тинты для карточек (нативный бордер) */
       --glass-tint-surface: linear-gradient(145deg, rgba(255, 255, 255, 0.08) 0%, rgba(var(--accent-rgb), 0.12) 45%, rgba(0, 0, 0, 0.55) 100%);
-      --glass-tint-card: linear-gradient(145deg, rgba(255, 255, 255, 0.05) 0%, rgba(var(--accent-rgb), 0.10) 50%, rgba(0, 0, 0, 0.45) 100%);
-      --glass-tint-btn: radial-gradient(125% 140% at 20% 20%, rgba(255, 255, 255, 0.14) 0%, rgba(var(--accent-rgb), 0.18) 50%, rgba(0, 0, 0, 0.55) 100%);
+      --glass-tint-card: linear-gradient(145deg, rgba(255, 255, 255, 0.05) 0%, rgba(var(--accent-rgb), 0.08) 50%, rgba(0, 0, 0, 0.40) 100%);
       
-      --glass-tint-active: radial-gradient(125% 140% at 20% 15%, rgba(255, 255, 255, 0.25) 0%, rgba(var(--accent-rgb), 0.32) 45%, rgba(var(--accent-sec-rgb), 0.25) 100%);
+      /* Тинты для кнопок-капсул */
+      --glass-tint-btn: radial-gradient(125% 140% at 20% 20%, rgba(255, 255, 255, 0.12) 0%, rgba(var(--accent-rgb), 0.16) 50%, rgba(0, 0, 0, 0.50) 100%);
+      --glass-tint-active: radial-gradient(125% 140% at 20% 15%, rgba(255, 255, 255, 0.22) 0%, rgba(var(--accent-rgb), 0.32) 45%, rgba(var(--accent-sec-rgb), 0.22) 100%);
       --glass-sphere-fill: radial-gradient(circle at 28% 22%, rgba(255, 255, 255, 0.35) 0%, rgba(var(--accent-rgb), 0.35) 50%, rgba(var(--accent-sec-rgb), 0.25) 100%);
-      --glass-tint-nav: linear-gradient(180deg, rgba(0, 0, 0, 0.50) 0%, rgba(var(--accent-sec-rgb), 0.15) 100%);
+      --glass-tint-nav: linear-gradient(180deg, rgba(0, 0, 0, 0.45) 0%, rgba(var(--accent-sec-rgb), 0.15) 100%);
 
-      /* Градиенты для GPU-рамок */
+      /* Градиенты для 1px рамок кнопок (через ::before) */
       --glass-rim-tl: rgba(255, 255, 255, 0.55);
       --glass-rim-mid: rgba(255, 255, 255, 0.03);
       --glass-rim-br: rgba(var(--accent-rgb), 0.35);
@@ -41,6 +42,7 @@
       --glass-rim-active-tl: rgba(255, 255, 255, 0.85);
       --glass-rim-active-br: rgba(var(--accent-rgb), 0.65);
 
+      /* Цвета текста */
       --text-main: rgba(255, 255, 255, 0.95);
       --text-muted: rgba(235, 235, 245, 0.65);
       --text-hint: rgba(235, 235, 245, 0.40);
@@ -90,7 +92,7 @@
       position: fixed; inset: 0; z-index: -2; pointer-events: none;
       background:
         radial-gradient(ellipse 95% 42% at 50% 0%, rgba(var(--accent-rgb), 0.15) 0%, transparent 68%),
-        rgba(0, 0, 0, 0.25);
+        rgba(0, 0, 0, 0.35);
       transition: background 260ms ease;
     }
     #bgVignetteOverlay { display: none; }
@@ -105,92 +107,78 @@
       max-width: 500px; margin-inline: auto; padding-inline: 14px; padding-block-end: 16px; position: relative; z-index: 2;
     }
 
-    /* --- GPU Оптимизированные рамки --- */
-    /* Это создает прозрачный бордер с градиентом, который не лагает при скролле */
-    .glass-border {
+    /* --- GPU Оптимизированные рамки капсул --- */
+    .glass-capsule {
       position: relative;
     }
-    .glass-border::before {
-      content: "";
-      position: absolute;
-      inset: 0;
-      border-radius: inherit;
-      padding: 1.5px; /* Толщина рамки */
+    .glass-capsule::before {
+      content: ""; position: absolute; inset: 0; border-radius: inherit; padding: 1.5px;
       background: linear-gradient(135deg, var(--glass-rim-tl) 0%, var(--glass-rim-mid) 48%, var(--glass-rim-br) 100%);
-      -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-      -webkit-mask-composite: xor;
-      mask-composite: exclude;
-      pointer-events: none;
-      transition: background 260ms ease;
+      -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0); -webkit-mask-composite: xor; mask-composite: exclude; pointer-events: none; transition: background 260ms ease;
     }
-    
-    .glass-border-active::before {
-      background: linear-gradient(135deg, var(--glass-rim-active-tl) 0%, rgba(255,255,255,0.1) 48%, var(--glass-rim-active-br) 100%);
+    .glass-capsule-active::before {
+      background: linear-gradient(135deg, var(--glass-rim-active-tl) 0%, rgba(255,255,255,0.08) 48%, var(--glass-rim-active-br) 100%);
     }
 
     /* Главные контейнеры (с блюром) */
     .blur-container {
-      backdrop-filter: blur(var(--glass-blur)) saturate(150%);
-      -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(150%);
-      transform: translateZ(0);
+      backdrop-filter: blur(var(--glass-blur)) saturate(150%); -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(150%); transform: translateZ(0);
     }
-
     .liquid-glass-surface {
       background: var(--glass-tint-surface);
-      box-shadow: 0 12px 28px rgba(0, 0, 0, 0.65), inset 0 2px 4px rgba(255, 255, 255, 0.15), inset 0 -4px 12px rgba(var(--accent-rgb), 0.25);
+      border: 1px solid rgba(255,255,255,0.06); border-top-color: rgba(255,255,255,0.22); border-bottom-color: rgba(var(--accent-rgb),0.20);
+      box-shadow: 0 12px 28px rgba(0,0,0,0.65), inset 0 2px 4px rgba(255,255,255,0.15), inset 0 -4px 12px rgba(var(--accent-rgb),0.25);
       border-radius: 28px;
     }
 
+    /* Карточки-контейнеры (без внутренних блюров для FPS) */
     .acc-block {
-      border-radius: 26px;
-      margin-block-end: 12px;
-      background: rgba(0, 0, 0, 0.25);
-      overflow: hidden;
+      border-radius: 26px; margin-block-end: 12px; background: rgba(0,0,0,0.20); overflow: hidden;
+      border: 1px solid rgba(255,255,255,0.06); border-top-color: rgba(255,255,255,0.12); border-bottom-color: rgba(0,0,0,0.4);
     }
-    .acc-block.open {
-      background: var(--glass-tint-surface);
-    }
-    .acc-block.open::before {
-      background: linear-gradient(135deg, var(--glass-rim-active-tl) 0%, rgba(255,255,255,0.05) 50%, var(--glass-rim-active-br) 100%);
-    }
+    .acc-block.open { background: var(--glass-tint-surface); }
+    .acc-block.open::before { background: linear-gradient(135deg, var(--glass-rim-active-tl) 0%, rgba(255,255,255,0.05) 50%, var(--glass-rim-active-br) 100%); }
     
-    /* Внутренние карточки (без блюра) */
-    .character-card, .pro-slider-row, .saved-variant-row, .code-input-bar, .shelf-preset-card, .preset-pill, .pixel-tile, .ch-shape-tile, .ch-subtoggle-box, .ch-color-palette-bar, .toggle-row, .voice-member-card, .friend-item, .auth-input-wrap, .avatar-preset-item {
-      background: var(--glass-tint-card);
-      box-shadow: 0 6px 16px rgba(0, 0, 0, 0.45), inset 0 1px 2px rgba(255, 255, 255, 0.15);
+    .character-card, .pro-slider-row, .saved-variant-row, .shelf-preset-card, .toggle-row, .voice-member-card, .friend-item {
+      background: var(--glass-tint-card); border-radius: 24px;
+      border: 1px solid rgba(255,255,255,0.05); border-top-color: rgba(255,255,255,0.15); border-bottom-color: rgba(0,0,0,0.3);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.40), inset 0 1px 2px rgba(255, 255, 255, 0.10);
       transition: transform 280ms var(--spring-ease), background 200ms ease;
     }
     
-    .character-card.active, .preset-pill.active, .pixel-tile.active, .ch-shape-tile.active, .ch-subtoggle-box.active, .shelf-preset-card.active {
-      background: var(--glass-tint-active);
-      box-shadow: 0 8px 24px rgba(var(--accent-sec-rgb), 0.45), inset 0 1.5px 3px rgba(255, 255, 255, 0.55);
-    }
-    .character-card.active::before, .preset-pill.active::before, .pixel-tile.active::before, .ch-shape-tile.active::before, .ch-subtoggle-box.active::before, .shelf-preset-card.active::before {
-      background: linear-gradient(135deg, var(--glass-rim-active-tl) 0%, rgba(255,255,255,0.1) 48%, var(--glass-rim-active-br) 100%);
-    }
-
-    /* Кнопки и инпуты */
-    .btn-main, .liquid-glass-btn, .btn-dark, .btn-danger, .hub-action-pill, .save-all-bar-btn, .shizuku-status-pill, .auth-input-wrap {
+    /* Красивые кнопки-капсулы (инпуты, кнопки профиля, пресеты) */
+    .btn-main, .liquid-glass-btn, .btn-dark, .btn-danger, .hub-action-pill, .save-all-bar-btn, .shizuku-status-pill, .auth-input-wrap, .preset-pill, .pixel-tile, .ch-shape-tile, .ch-subtoggle-box, .code-input-bar, .avatar-preset-item {
+      border-radius: 999px; /* Капсула */
       transition: transform 280ms var(--spring-ease);
     }
+    /* Для элементов, которым не подходит 999px (квадратные плитки прицела) */
+    .ch-shape-tile, .ch-subtoggle-box, .pixel-tile, .avatar-preset-item { border-radius: 22px; }
     
     .btn-main, .liquid-glass-btn, .save-all-bar-btn {
       background: var(--glass-tint-active);
-      box-shadow: 0 8px 24px rgba(var(--accent-sec-rgb), 0.45), inset 0 1.5px 3px rgba(255, 255, 255, 0.45), inset 0 -4px 12px rgba(var(--accent-sec-rgb), 0.35);
-      color: var(--text-main);
-      font-weight: 700;
-      text-shadow: 0 1px 3px rgba(0, 0, 0, 0.6);
+      box-shadow: 0 8px 24px rgba(var(--accent-sec-rgb), 0.40), inset 0 1.5px 3px rgba(255,255,255,0.40), inset 0 -4px 12px rgba(var(--accent-sec-rgb),0.30);
+      color: var(--text-main); font-weight: 700; text-shadow: 0 1px 3px rgba(0,0,0,0.6);
     }
     
-    .btn-dark, .hub-action-pill {
+    .btn-dark, .hub-action-pill, .auth-input-wrap, .preset-pill, .pixel-tile, .ch-shape-tile, .ch-subtoggle-box, .code-input-bar, .avatar-preset-item {
       background: var(--glass-tint-btn);
-      box-shadow: 0 6px 16px rgba(0, 0, 0, 0.45), inset 0 1px 2px rgba(255, 255, 255, 0.35);
+      box-shadow: 0 6px 16px rgba(0,0,0,0.40), inset 0 1px 2px rgba(255,255,255,0.20);
     }
     
     .btn-danger {
       background: rgba(255, 69, 58, 0.20);
-      box-shadow: 0 6px 16px rgba(255, 69, 58, 0.35), inset 0 1px 2px rgba(255, 255, 255, 0.45);
+      box-shadow: 0 6px 16px rgba(255, 69, 58, 0.30), inset 0 1px 2px rgba(255, 255, 255, 0.35);
       color: #FF8A8A;
+    }
+
+    /* Активные состояния для плиток (пресеты) */
+    .character-card.active {
+      background: var(--glass-tint-active);
+      box-shadow: 0 8px 24px rgba(var(--accent-sec-rgb), 0.40), inset 0 1.5px 3px rgba(255,255,255,0.45);
+    }
+    .preset-pill.active, .pixel-tile.active, .ch-shape-tile.active, .ch-subtoggle-box.active, .shelf-preset-card.active {
+      background: var(--glass-tint-active);
+      box-shadow: 0 6px 18px rgba(var(--accent-sec-rgb), 0.40), inset 0 1.5px 3px rgba(255,255,255,0.45);
     }
     
     .btn-main:not(:disabled):active, .btn-dark:not(:disabled):active, .btn-danger:not(:disabled):active, .liquid-glass-btn:not(:disabled):active, .hub-action-pill:not(:disabled):active, .save-all-bar-btn:not(:disabled):active, .icon-circle-action:not(:disabled):active, .shizuku-status-pill:not(:disabled):active, .header-avatar-holder:active, .character-card:active, .preset-pill:active, .pixel-tile:active, .ch-shape-tile:active, .ch-subtoggle-box:active, .shelf-preset-card:active {
@@ -202,20 +190,18 @@
     .top-brand-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
     .brand-left-wrap { display: flex; align-items: center; gap: 12px; min-width: 0; flex: 1; }
     .header-avatar-holder {
-      width: 48px; height: 48px; border-radius: 50%;
-      background: var(--glass-sphere-fill);
-      box-shadow: 0 6px 16px rgba(0,0,0, 0.55), inset 0 2px 4px rgba(255,255,255,0.55), inset 0 -3px 8px rgba(0,0,0,0.45);
+      width: 48px; height: 48px; border-radius: 50%; background: var(--glass-sphere-fill);
+      box-shadow: 0 6px 16px rgba(0,0,0, 0.50), inset 0 2px 4px rgba(255,255,255,0.50), inset 0 -3px 8px rgba(0,0,0,0.40);
       display: flex; align-items: center; justify-content: center; flex-shrink: 0; overflow: hidden; cursor: pointer; transition: transform 280ms var(--spring-ease);
     }
     .header-avatar-holder img { width: 100%; height: 100%; object-fit: cover; display: none; }
-    .header-avatar-fallback { font-size: 1.25rem; font-weight: 800; color: #FFFFFF; text-shadow: 0 1px 3px rgba(0, 0, 0, 0.7); }
+    .header-avatar-fallback { font-size: 1.25rem; font-weight: 800; color: #FFFFFF; text-shadow: 0 1px 3px rgba(0,0,0,0.7); }
     .brand-title-main { font-size: var(--text-heading); font-weight: 800; letter-spacing: -0.01em; color: var(--text-main); line-height: 1.2; }
     .brand-title-main span { color: var(--accent-bright); text-shadow: 0 0 12px rgba(var(--accent-rgb), 0.45); }
     .brand-meta-sub { font-size: var(--text-caption); color: var(--text-muted); font-weight: 500; margin-block-start: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     
     .shizuku-status-pill {
       display: inline-flex; align-items: center; gap: 7px; min-height: 40px; padding-inline: 14px; padding-block: 6px;
-      border-radius: 999px; background: var(--glass-tint-btn);
       font-size: var(--text-caption); font-weight: 700; cursor: pointer; flex-shrink: 0;
     }
     .status-dot { width: 9px; height: 9px; border-radius: 50%; background: #FF453A; box-shadow: 0 0 8px #FF453A; }
@@ -226,9 +212,8 @@
     }
     .theme-dots { display: flex; gap: 8px; align-items: center; }
     .theme-dot {
-      width: 26px; height: 26px; border-radius: 50%; cursor: pointer;
-      background: rgba(0,0,0,0.3); box-shadow: 0 4px 10px rgba(0, 0, 0, 0.7), inset 0 1.5px 3px rgba(255, 255, 255, 0.5);
-      transition: transform 280ms var(--spring-ease);
+      width: 26px; height: 26px; border-radius: 50%; cursor: pointer; background: rgba(0,0,0,0.3);
+      box-shadow: 0 4px 10px rgba(0,0,0,0.7), inset 0 1.5px 3px rgba(255,255,255,0.45); transition: transform 280ms var(--spring-ease);
     }
     .theme-dot.active { box-shadow: 0 0 14px var(--accent-bright), inset 0 2px 4px #FFFFFF; transform: scale(1.18); }
 
@@ -236,24 +221,22 @@
     .acc-header { padding: 15px 16px; display: flex; align-items: center; justify-content: space-between; gap: 12px; cursor: pointer; }
     .acc-left { display: flex; align-items: center; gap: 12px; min-width: 0; flex: 1; }
     .acc-icon {
-      width: 44px; height: 44px; border-radius: 50%;
-      background: var(--glass-sphere-fill);
-      box-shadow: 0 6px 16px rgba(0, 0, 0, 0.45), inset 0 2px 4px rgba(255, 255, 255, 0.55);
+      width: 44px; height: 44px; border-radius: 50%; background: var(--glass-sphere-fill);
+      box-shadow: 0 6px 16px rgba(0,0,0,0.45), inset 0 2px 4px rgba(255,255,255,0.50);
       display: flex; align-items: center; justify-content: center; font-size: 1.15rem; color: #FFFFFF; flex-shrink: 0;
     }
     .acc-title-wrap { min-width: 0; flex: 1; }
     .acc-title { font-size: 0.9375rem; font-weight: 700; color: var(--text-main); line-height: 1.3; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
     .acc-sub { font-size: var(--text-caption); color: var(--text-muted); font-weight: 400; line-height: 1.4; margin-block-start: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     .acc-chevron {
-      width: 32px; height: 32px; border-radius: 50%;
-      background: var(--glass-tint-btn);
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4), inset 0 1px 3px rgba(255, 255, 255, 0.35);
+      width: 32px; height: 32px; border-radius: 50%; background: var(--glass-tint-btn);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.4), inset 0 1px 3px rgba(255,255,255,0.30);
       display: flex; align-items: center; justify-content: center; color: #FFFFFF; font-size: 0.85rem; font-weight: 700; flex-shrink: 0;
     }
     .acc-block.open .acc-chevron { transform: rotate(180deg); background: var(--glass-sphere-fill); }
     .acc-body-wrap { display: none; }
     .acc-block.open .acc-body-wrap { display: block; }
-    .acc-body-inner { padding: 8px 16px 16px; border-block-start: 1px solid rgba(255, 255, 255, 0.12); }
+    .acc-body-inner { padding: 8px 16px 16px; border-block-start: 1px solid rgba(255,255,255,0.08); }
 
     /* Хаб Телепорта */
     .cyber-hub-card { padding: 16px; margin-block-end: 12px; display: flex; flex-direction: column; gap: 14px; }
@@ -266,145 +249,143 @@
     .cyber-switch-lg { position: relative; width: 56px; height: 34px; flex-shrink: 0; display: inline-block; cursor: pointer; }
     .cyber-switch-lg input { opacity: 0; width: 0; height: 0; }
     .cyber-slider-lg {
-      position: absolute; inset: 0; background: rgba(0, 0, 0, 0.5);
-      box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.7), inset 0 -1px 3px rgba(255, 255, 255, 0.15); border-radius: 999px;
+      position: absolute; inset: 0; background: rgba(0,0,0,0.45); border: 1px solid rgba(255,255,255,0.15);
+      box-shadow: inset 0 2px 8px rgba(0,0,0,0.65), inset 0 -1px 3px rgba(255,255,255,0.15); border-radius: 999px;
     }
     .cyber-slider-lg::before {
       content: ""; position: absolute; width: 26px; height: 26px; inset-inline-start: 3px; inset-block-start: 3px; border-radius: 50%;
       background: radial-gradient(circle at 32% 28%, #FFFFFF 0%, #E2E8F0 70%, #CBD5E1 100%);
-      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.65), inset 0 1px 3px #FFFFFF; transition: transform 280ms var(--spring-ease);
+      box-shadow: 0 4px 8px rgba(0,0,0,0.60), inset 0 1px 3px #FFFFFF; transition: transform 280ms var(--spring-ease);
     }
-    .cyber-switch-lg input:checked + .cyber-slider-lg {
-      background: var(--glass-tint-active);
-      box-shadow: 0 0 16px rgba(var(--accent-rgb), 0.35), inset 0 2px 8px rgba(0,0,0,0.4);
-    }
-    .cyber-switch-lg input:checked + .cyber-slider-lg::before { transform: translateX(24px); background: #FFFFFF; }
+    .cyber-switch-lg input:checked + .cyber-slider-lg { background: var(--glass-tint-active); border-color: rgba(255,255,255,0.6); box-shadow: 0 0 16px rgba(var(--accent-rgb),0.35), inset 0 2px 8px rgba(0,0,0,0.4); }
+    .cyber-switch-lg input:checked + .cyber-slider-lg::before { transform: translateX(22px); background: #FFFFFF; }
+    
     .hub-actions-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 10px; }
-    .hub-action-pill { min-height: 46px; padding: 11px 14px; border-radius: 999px; font-size: var(--text-caption); text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .hub-action-pill { padding: 11px 14px; font-size: var(--text-caption); text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .save-all-bar-btn { padding: 13px 20px; margin-block-end: 12px; display: flex; align-items: center; justify-content: center; gap: 8px; font-size: var(--text-body-sm); }
 
-    .character-card { border-radius: 24px; padding: 14px 16px; margin-block-start: 9px; display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+    /* Пресеты */
+    .character-card { padding: 14px 16px; margin-block-start: 9px; display: flex; align-items: center; justify-content: space-between; gap: 10px; }
     .char-title { font-size: 0.875rem; font-weight: 700; color: var(--text-main); line-height: 1.3; display: flex; align-items: center; flex-wrap: wrap; gap: 6px; }
     .char-tag {
       font-size: 0.6875rem; font-weight: 700; letter-spacing: 0.04em; padding: 3px 12px; border-radius: 999px;
-      background: rgba(0, 0, 0, 0.45); box-shadow: inset 0 1px 2px rgba(255, 255, 255, 0.3);
+      background: rgba(0, 0, 0, 0.45); box-shadow: inset 0 1px 2px rgba(255, 255, 255, 0.25);
       color: #FFFFFF; text-transform: uppercase; font-variant-numeric: tabular-nums;
     }
-    .char-tag.pad-badge { background: rgba(var(--accent-sec-rgb), 0.45); }
-    .char-tag.budget-badge { background: rgba(48, 209, 88, 0.35); }
+    .char-tag.pad-badge { background: rgba(var(--accent-sec-rgb), 0.40); }
+    .char-tag.budget-badge { background: rgba(48, 209, 88, 0.30); }
     .char-desc { font-size: var(--text-caption); color: var(--text-muted); margin-block-start: 4px; font-weight: 400; line-height: 1.45; text-wrap: pretty; }
     .char-arrow {
-      width: 32px; height: 32px; border-radius: 50%;
-      background: var(--glass-sphere-fill);
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.45), inset 0 1.5px 3px rgba(255, 255, 255, 0.55);
+      width: 32px; height: 32px; border-radius: 50%; background: var(--glass-sphere-fill);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.45), inset 0 1.5px 3px rgba(255,255,255,0.50);
       display: inline-flex; align-items: center; justify-content: center; font-size: 0.95rem; font-weight: 700; color: #FFFFFF; flex-shrink: 0;
     }
 
+    /* Слайдеры */
     .section-eyebrow { font-size: 0.6875rem; font-weight: 700; letter-spacing: 0.05em; color: var(--accent-bright); text-transform: uppercase; margin-block: 16px 8px; }
-    .pro-slider-row { padding: 14px 16px; margin-block-start: 8px; border-radius: 24px; }
     .pro-slider-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-block-end: 10px; }
     .pro-slider-name { font-size: var(--text-body-sm); font-weight: 600; color: var(--text-main); line-height: 1.3; }
     .pro-slider-pill {
       font-size: var(--text-caption); font-weight: 700; font-variant-numeric: tabular-nums; color: #FFFFFF;
-      background: var(--glass-sphere-fill); box-shadow: inset 0 1.5px 3px rgba(255, 255, 255, 0.45);
+      background: var(--glass-sphere-fill); box-shadow: inset 0 1.5px 3px rgba(255,255,255,0.40);
       padding: 3px 12px; border-radius: 999px; min-width: 48px; text-align: center; flex-shrink: 0;
     }
     .pro-slider-hint { font-size: 0.6875rem; color: var(--text-muted); margin-block-start: 8px; line-height: 1.4; }
-
-    input[type="range"] { -webkit-appearance: none; appearance: none; width: 100%; height: 6px; border-radius: 999px; background: linear-gradient(90deg, rgba(var(--accent-sec-rgb), 0.6) 0%, rgba(var(--accent-rgb), 0.7) 70%, rgba(255, 255, 255, 0.15) 100%); outline: none; cursor: pointer; }
+    input[type="range"] { -webkit-appearance: none; appearance: none; width: 100%; height: 6px; border-radius: 999px; background: linear-gradient(90deg, rgba(var(--accent-sec-rgb), 0.6) 0%, rgba(var(--accent-rgb), 0.7) 70%, rgba(255,255,255,0.15) 100%); outline: none; cursor: pointer; }
     input[type="range"]::-webkit-slider-thumb {
       -webkit-appearance: none; appearance: none; width: 24px; height: 24px; border-radius: 50%;
       background: radial-gradient(circle at 32% 28%, #FFFFFF 0%, var(--accent-bright) 65%, var(--accent-main) 100%);
-      border: 1.5px solid #FFFFFF; box-shadow: 0 0 14px rgba(var(--accent-rgb), 0.65), 0 4px 8px rgba(0, 0, 0, 0.75); cursor: pointer;
+      border: 1.5px solid #FFFFFF; box-shadow: 0 0 14px rgba(var(--accent-rgb),0.60), 0 4px 8px rgba(0,0,0,0.70); cursor: pointer;
     }
 
-    .saved-variant-row { border-radius: 24px; padding: 14px 16px; margin-block-start: 8px; display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+    /* Мои пресеты */
     .icon-circle-action {
       min-width: 42px; min-height: 42px; border-radius: 50%; background: var(--glass-sphere-fill);
-      box-shadow: 0 6px 14px rgba(0, 0, 0, 0.4), inset 0 1.5px 3px rgba(255, 255, 255, 0.4); color: var(--text-main);
+      box-shadow: 0 6px 14px rgba(0,0,0,0.35), inset 0 1.5px 3px rgba(255,255,255,0.35); color: var(--text-main);
       display: inline-flex; align-items: center; justify-content: center; font-size: 0.95rem; cursor: pointer; flex-shrink: 0; transition: transform 280ms var(--spring-ease);
     }
-    .code-input-bar { border-radius: 999px; padding: 10px 16px; margin-block-start: 8px; display: flex; align-items: center; gap: 10px; }
     .shelf-cards-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 10px; margin-block-start: 12px; }
-    .shelf-preset-card { border-radius: 24px; padding: 15px; cursor: pointer; display: flex; flex-direction: column; justify-content: space-between; min-height: 94px; }
 
+    /* Растяг экрана */
     .preview-stage-box {
-      width: 100%; min-height: 156px; background: rgba(0, 0, 0, 0.55); box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.6);
+      width: 100%; min-height: 156px; background: rgba(0,0,0,0.50); box-shadow: inset 0 2px 8px rgba(0,0,0,0.6);
       border-radius: 24px; position: relative; display: flex; align-items: center; justify-content: center; margin-block: 8px 12px; overflow: hidden;
     }
-    .stretch-dashed-outer { width: 220px; height: 114px; border: 1.5px dashed rgba(255, 255, 255, 0.25); border-radius: 12px; display: flex; align-items: center; justify-content: center; }
+    .stretch-dashed-outer { width: 220px; height: 114px; border: 1.5px dashed rgba(255,255,255,0.25); border-radius: 12px; display: flex; align-items: center; justify-content: center; }
     .stretch-solid-inner {
       width: 168px; height: 114px; background: var(--glass-tint-active);
-      box-shadow: 0 0 18px rgba(var(--accent-rgb), 0.35), inset 0 1px 4px rgba(255, 255, 255, 0.45); border-radius: 10px;
+      box-shadow: 0 0 18px rgba(var(--accent-rgb),0.35), inset 0 1.5px 3px rgba(255,255,255,0.55); border-radius: 10px;
       display: flex; align-items: center; justify-content: center; color: #FFFFFF; font-weight: 700; font-size: 1.25rem; transition: width 180ms ease;
     }
-    .stretch-solid-inner.glass-border-active::before { background: linear-gradient(135deg, rgba(255,255,255,0.9) 0%, rgba(255,255,255,0.1) 48%, rgba(255,255,255,0.5) 100%); }
 
     .preset-pills-4 { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; }
-    .preset-pill { border-radius: 20px; padding: 12px 6px; text-align: center; cursor: pointer; }
+    .preset-pill { padding: 12px 6px; text-align: center; cursor: pointer; }
     .preset-pill-name { font-size: var(--text-caption); font-weight: 700; font-variant-numeric: tabular-nums; color: var(--text-main); }
     .preset-pill-sub { font-size: 0.625rem; color: var(--text-muted); margin-block-start: 2px; }
 
+    /* Пиксели */
     .pixel-tiles-6 { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 8px; margin-block: 10px 12px; }
-    .pixel-tile { border-radius: 18px; padding: 12px 2px; text-align: center; cursor: pointer; }
+    .pixel-tile { padding: 12px 2px; text-align: center; cursor: pointer; }
     .pixel-tile b { display: block; font-size: var(--text-body-sm); font-weight: 700; font-variant-numeric: tabular-nums; color: var(--text-main); }
     .pixel-tile span { font-size: 0.625rem; color: var(--text-muted); }
     .pixel-big-readout { display: flex; align-items: baseline; justify-content: space-between; margin-block-end: 6px; }
     .pixel-big-num { font-size: var(--text-title); font-weight: 700; font-variant-numeric: tabular-nums; color: var(--text-main); }
-    .pixel-progress-bar { width: 100%; height: 6px; background: rgba(0, 0, 0, 0.55); border-radius: 999px; overflow: hidden; }
+    .pixel-progress-bar { width: 100%; height: 6px; background: rgba(0,0,0,0.50); border-radius: 999px; overflow: hidden; }
     .pixel-progress-fill { height: 100%; width: 100%; background: linear-gradient(90deg, var(--accent-sec), var(--accent-main)); }
 
+    /* Прицел */
     .ch-shape-grid-4 { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; margin-block-end: 10px; }
-    .ch-shape-tile { border-radius: 20px; padding: 12px 6px; text-align: center; cursor: pointer; }
+    .ch-shape-tile { padding: 12px 6px; text-align: center; cursor: pointer; }
     .ch-shape-icon { font-size: 1.35rem; color: var(--accent-bright); margin-block-end: 4px; line-height: 1; }
     .ch-shape-lbl { font-size: 0.6875rem; font-weight: 700; color: var(--text-main); }
     .ch-subtoggle-grid-2 { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 8px; margin-block-end: 10px; }
-    .ch-subtoggle-box { border-radius: 20px; padding: 12px; display: flex; flex-direction: column; align-items: center; gap: 5px; cursor: pointer; }
+    .ch-subtoggle-box { padding: 12px; display: flex; flex-direction: column; align-items: center; gap: 5px; cursor: pointer; }
 
-    .ch-color-palette-bar { border-radius: 22px; padding: 14px 16px; margin-block-end: 10px; }
+    .ch-color-palette-bar { padding: 14px 16px; margin-block-end: 10px; }
     .ch-color-dots-row { display: flex; align-items: center; justify-content: space-between; gap: 6px; margin-block-start: 8px; flex-wrap: wrap; }
-    .ch-color-swatch { width: 30px; height: 30px; border-radius: 50%; cursor: pointer; border: 1px solid rgba(255, 255, 255, 0.35); flex-shrink: 0; transition: transform 280ms var(--spring-ease); }
+    .ch-color-swatch { width: 30px; height: 30px; border-radius: 50%; cursor: pointer; border: 1px solid rgba(255,255,255,0.40); flex-shrink: 0; transition: transform 280ms var(--spring-ease); }
     .ch-color-swatch.active { border-color: #FFFFFF; box-shadow: 0 0 12px #FFFFFF; transform: scale(1.14); }
-    .ch-custom-color-btn { width: 32px; height: 30px; border-radius: 50%; border: 1.5px dashed rgba(255, 255, 255, 0.55); background: rgba(0, 0, 0, 0.45); display: flex; align-items: center; justify-content: center; font-size: 0.875rem; cursor: pointer; flex-shrink: 0; }
+    .ch-custom-color-btn { width: 32px; height: 30px; border-radius: 50%; border: 1.5px dashed rgba(255,255,255,0.50); background: rgba(0,0,0,0.40); display: flex; align-items: center; justify-content: center; font-size: 0.875rem; cursor: pointer; flex-shrink: 0; }
 
-    .toggle-row { border-radius: 24px; padding: 14px 16px; margin-block-start: 8px; display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+    .toggle-row { display: flex; align-items: center; justify-content: space-between; padding: 12px 14px; margin-block-start: 8px; gap: 12px; }
     .toggle-info-title { font-size: var(--text-body-sm); font-weight: 600; color: var(--text-main); line-height: 1.3; }
     .toggle-info-sub { font-size: var(--text-caption); color: var(--text-muted); margin-block-start: 2px; line-height: 1.4; }
     .cyber-switch { position: relative; width: 50px; height: 30px; flex-shrink: 0; display: inline-block; cursor: pointer; }
     .cyber-switch input { opacity: 0; width: 0; height: 0; }
     .cyber-slider {
-      position: absolute; inset: 0; background: rgba(0, 0, 0, 0.45); border: 1px solid rgba(255, 255, 255, 0.20); border-radius: 999px;
+      position: absolute; inset: 0; background: rgba(0,0,0,0.45); border: 1px solid rgba(255,255,255,0.20); border-radius: 999px;
     }
     .cyber-slider::before {
       content: ""; position: absolute; width: 22px; height: 22px; inset-inline-start: 3px; inset-block-start: 3px; border-radius: 50%;
-      background: radial-gradient(circle at 32% 28%, #FFFFFF 0%, #CBD5E1 100%); box-shadow: 0 2px 6px rgba(0, 0, 0, 0.65); transition: transform 280ms var(--spring-ease);
+      background: radial-gradient(circle at 32% 28%, #FFFFFF 0%, #CBD5E1 100%); box-shadow: 0 2px 6px rgba(0,0,0,0.65); transition: transform 280ms var(--spring-ease);
     }
-    .cyber-switch input:checked + .cyber-slider { background: var(--glass-tint-active); }
+    .cyber-switch input:checked + .cyber-slider { background: var(--glass-tint-active); border-color: rgba(255,255,255,0.50); }
     .cyber-switch input:checked + .cyber-slider::before { transform: translateX(20px); background: #FFFFFF; }
 
     .badge-chip {
       font-size: 0.6875rem; font-weight: 700; font-variant-numeric: tabular-nums; padding: 4px 12px; border-radius: 999px;
-      background: rgba(0, 0, 0, 0.40); box-shadow: inset 0 1px 2px rgba(255, 255, 255, 0.20); color: var(--text-main); white-space: nowrap;
+      background: rgba(0,0,0,0.40); box-shadow: inset 0 1px 2px rgba(255,255,255,0.20); color: var(--text-main); white-space: nowrap;
     }
     .tweak-tags-wrap { display: flex; flex-wrap: wrap; gap: 8px; margin-block: 10px 12px; }
     .tweak-mini-tag {
       font-size: 0.6875rem; font-weight: 600; padding: 6px 12px; border-radius: 999px;
-      background: rgba(0, 0, 0, 0.35); box-shadow: inset 0 1px 2px rgba(255, 255, 255, 0.15); color: var(--text-main);
+      background: rgba(0,0,0,0.35); box-shadow: inset 0 1px 2px rgba(255,255,255,0.15); color: var(--text-main);
     }
 
-    .voice-member-card, .friend-item { border-radius: 22px; padding: 14px 16px; margin-block-start: 8px; display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+    .voice-member-card, .friend-item { padding: 14px 16px; margin-block-start: 8px; display: flex; align-items: center; justify-content: space-between; gap: 10px; }
     .voice-eq-bars { display: inline-flex; align-items: flex-end; gap: 3px; height: 14px; }
     .voice-eq-bars span { width: 3px; height: 10px; background: #30D158; border-radius: 2px; }
 
-    .shizuku-alert-backdrop { position: fixed; inset: 0; background: rgba(0, 0, 0, 0.75); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); z-index: 99999; display: none; align-items: center; justify-content: center; padding: 18px; overscroll-behavior: contain; transform: translateZ(0); }
+    /* Оверлеи и модалки - здесь оставляем блюр, так как они поверх всего */
+    .shizuku-alert-backdrop { position: fixed; inset: 0; background: rgba(0,0,0,0.75); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); z-index: 99999; display: none; align-items: center; justify-content: center; padding: 18px; overscroll-behavior: contain; transform: translateZ(0); }
     .shizuku-alert-box { width: 100%; max-width: 365px; text-align: center; }
-
-    #screenCalibOverlay, #touchTestOverlay { position: fixed; inset: 0; background: rgba(0, 0, 0, 0.88); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); z-index: 98000; display: none; flex-direction: column; align-items: center; justify-content: center; padding: 22px; overscroll-behavior: contain; transform: translateZ(0); }
-    #authScreenOverlay { position: fixed; inset: 0; background: rgba(0, 0, 0, 0.60); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); z-index: 95000; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px; pointer-events: auto; overscroll-behavior: contain; transform: translateZ(0); }
-    .auth-card { width: 100%; max-width: 380px; }
+    #screenCalibOverlay, #touchTestOverlay { position: fixed; inset: 0; background: rgba(0,0,0,0.85); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); z-index: 98000; display: none; flex-direction: column; align-items: center; justify-content: center; padding: 22px; overscroll-behavior: contain; transform: translateZ(0); }
+    #authScreenOverlay { position: fixed; inset: 0; background: rgba(0,0,0,0.60); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); z-index: 95000; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px; pointer-events: auto; overscroll-behavior: contain; transform: translateZ(0); }
     
+    .auth-card { width: 100%; max-width: 380px; }
     .auth-badge {
       display: inline-block; padding: 6px 16px; border-radius: 999px; font-size: 0.6875rem; font-weight: 700; letter-spacing: 0.05em;
-      color: var(--text-main); background: rgba(0, 0, 0, 0.45); box-shadow: inset 0 1px 2px rgba(255, 255, 255, 0.20); margin-block-end: 12px;
+      color: var(--text-main); background: rgba(0,0,0,0.45); box-shadow: inset 0 1px 2px rgba(255,255,255,0.20); margin-block-end: 12px;
     }
     
     /* Инпуты с чётким стеклом */
@@ -412,7 +393,7 @@
     .auth-input-label { display: block; font-size: 0.6875rem; font-weight: 700; color: var(--accent-bright); letter-spacing: 0.04em; margin-block-end: 6px; }
     
     .avatar-preset-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; margin-block: 12px; }
-    .avatar-preset-item { min-height: 56px; border-radius: 20px; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; cursor: pointer; transition: transform 280ms var(--spring-ease); }
+    .avatar-preset-item { min-height: 56px; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; cursor: pointer; transition: transform 280ms var(--spring-ease); }
 
     .tab-section { display: none; }
     .tab-section.active { display: block; }
@@ -422,33 +403,31 @@
       --nav-idx: 0; --lens-sx: 1; --lens-sy: 1;
       position: fixed; bottom: calc(env(safe-area-inset-bottom, 0px) + 12px); left: 12px; right: 12px; max-width: 480px; margin-inline: auto; height: 72px;
       display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); align-items: center; padding-inline: 6px; z-index: 9000; overflow: visible; touch-action: pan-y;
-      background: var(--glass-tint-nav); border: 1px solid var(--border-base); border-top-color: rgba(255,255,255,0.25);
-      border-radius: 999px; box-shadow: 0 16px 36px rgba(0, 0, 0, 0.75), inset 0 1px 3px rgba(255, 255, 255, 0.20);
+      background: var(--glass-tint-nav); border-radius: 999px; box-shadow: 0 16px 36px rgba(0,0,0,0.75), inset 0 1px 3px rgba(255,255,255,0.15);
     }
     .nav-liquid-lens {
       position: absolute; top: 6px; bottom: 6px; left: 7px; width: calc((100% - 14px) / 5); border-radius: 999px; pointer-events: none; z-index: 1;
       background: var(--glass-sphere-fill);
-      box-shadow: 0 6px 18px rgba(0, 0, 0, 0.55), inset 0 2px 4px rgba(255, 255, 255, 0.40);
+      box-shadow: 0 6px 18px rgba(0,0,0,0.55), inset 0 2px 4px rgba(255,255,255,0.40);
       transform: translate3d(calc(var(--nav-idx, 0) * 100%), 0, 0) scale(var(--lens-sx, 1), var(--lens-sy, 1));
       transition: transform 420ms var(--liquid-glide), box-shadow 260ms ease, background 260ms ease;
     }
-    /* Граница капли тоже не грузит GPU */
-    .nav-liquid-lens::before {
+    .nav-liquid-lens.glass-capsule::before {
       background: linear-gradient(180deg, rgba(255,255,255,0.7) 0%, rgba(255,255,255,0.05) 48%, rgba(var(--accent-rgb),0.6) 100%);
     }
     
     .nav-liquid-lens.morphing {
       --lens-sx: 1.20; --lens-sy: 1.30;
-      background: rgba(255, 255, 255, 0.12);
-      box-shadow: 0 8px 26px rgba(0, 0, 0, 0.6), inset 0 1px 4px rgba(255, 255, 255, 0.25);
+      background: rgba(255,255,255,0.15);
+      box-shadow: 0 8px 26px rgba(0,0,0,0.65), inset 0 1px 4px rgba(255,255,255,0.30);
     }
     .nav-item {
       position: relative; z-index: 2; height: 60px; border-radius: 999px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px;
-      color: rgba(255, 255, 255, 0.55); font-size: 0.6875rem; font-weight: 600; cursor: pointer; transition: color 200ms ease, transform 260ms var(--spring-ease);
+      color: rgba(255,255,255,0.55); font-size: 0.6875rem; font-weight: 600; cursor: pointer; transition: color 200ms ease, transform 260ms var(--spring-ease);
     }
     .nav-item svg { width: 22px; height: 22px; stroke: currentColor; fill: none; stroke-width: 2.1; vector-effect: non-scaling-stroke; transition: transform 260ms var(--spring-ease), filter 200ms ease; }
-    .nav-item.active, .nav-item.lens-pass { color: var(--text-main); text-shadow: 0 0 12px rgba(0, 0, 0, 0.9); }
-    .nav-item.active svg, .nav-item.lens-pass svg { transform: scale(1.12); filter: drop-shadow(0 0 8px rgba(0, 0, 0, 0.9)); }
+    .nav-item.active, .nav-item.lens-pass { color: var(--text-main); text-shadow: 0 0 12px rgba(0,0,0,0.9); }
+    .nav-item.active svg, .nav-item.lens-pass svg { transform: scale(1.12); filter: drop-shadow(0 0 8px rgba(0,0,0,0.9)); }
 
     #cyberToast {
       position: fixed; top: max(calc(env(safe-area-inset-top, 42px) + 10px), 42px); left: 50%; transform: translateX(-50%) translateY(-130px) translateZ(0);
@@ -481,22 +460,22 @@
         Выберите эмблему, загрузите фото аватарки или установите видео/GIF на фон:
       </p>
       <div class="avatar-preset-grid">
-        <div class="avatar-preset-item character-card glass-border" onclick="selectBuiltInAvatar('🔥')">🔥</div>
-        <div class="avatar-preset-item character-card glass-border" onclick="selectBuiltInAvatar('⚡')">⚡</div>
-        <div class="avatar-preset-item character-card glass-border" onclick="selectBuiltInAvatar('👑')">👑</div>
-        <div class="avatar-preset-item character-card glass-border" onclick="selectBuiltInAvatar('💀')">💀</div>
-        <div class="avatar-preset-item character-card glass-border" onclick="selectBuiltInAvatar('🎯')">🎯</div>
-        <div class="avatar-preset-item character-card glass-border" onclick="selectBuiltInAvatar('🐉')">🐉</div>
-        <div class="avatar-preset-item character-card glass-border" onclick="selectBuiltInAvatar('🥷')">🥷</div>
-        <div class="avatar-preset-item character-card glass-border" onclick="selectBuiltInAvatar('💎')">💎</div>
+        <div class="avatar-preset-item character-card glass-capsule" onclick="selectBuiltInAvatar('🔥')">🔥</div>
+        <div class="avatar-preset-item character-card glass-capsule" onclick="selectBuiltInAvatar('⚡')">⚡</div>
+        <div class="avatar-preset-item character-card glass-capsule" onclick="selectBuiltInAvatar('👑')">👑</div>
+        <div class="avatar-preset-item character-card glass-capsule" onclick="selectBuiltInAvatar('💀')">💀</div>
+        <div class="avatar-preset-item character-card glass-capsule" onclick="selectBuiltInAvatar('🎯')">🎯</div>
+        <div class="avatar-preset-item character-card glass-capsule" onclick="selectBuiltInAvatar('🐉')">🐉</div>
+        <div class="avatar-preset-item character-card glass-capsule" onclick="selectBuiltInAvatar('🥷')">🥷</div>
+        <div class="avatar-preset-item character-card glass-capsule" onclick="selectBuiltInAvatar('💎')">💎</div>
       </div>
-      <button type="button" class="btn-main glass-border" style="margin-bottom:10px;" onclick="openGalleryFileInput()">
+      <button type="button" class="btn-main glass-capsule" style="margin-bottom:10px;" onclick="openGalleryFileInput()">
         Загрузить фото аватарки
       </button>
-      <button type="button" class="btn-dark glass-border" style="margin-bottom:10px;" onclick="triggerCustomBgUpload()">
+      <button type="button" class="btn-dark glass-capsule" style="margin-bottom:10px;" onclick="triggerCustomBgUpload()">
         Выбрать видео или GIF на фон
       </button>
-      <button type="button" class="btn-dark glass-border" onclick="document.getElementById('avatarPickerModal').style.display='none'">
+      <button type="button" class="btn-dark glass-capsule" onclick="document.getElementById('avatarPickerModal').style.display='none'">
         Закрыть окно
       </button>
     </div>
@@ -518,7 +497,7 @@
       Проведите пальцем по области ниже…
     </div>
     <canvas id="touchTestCanvas" width="320" height="320" style="background:rgba(0,0,0,0.65); border:1px solid rgba(255,255,255,0.25); border-radius:28px; touch-action:none; box-shadow: inset 0 2px 6px rgba(0,0,0,0.5);"></canvas>
-    <button type="button" class="btn-main blur-container glass-border" style="max-width:320px; margin-top:16px;" onclick="closeTouchTestModal()">
+    <button type="button" class="btn-main blur-container glass-capsule" style="max-width:320px; margin-top:16px;" onclick="closeTouchTestModal()">
       Закрыть тестер
     </button>
   </div>
@@ -529,18 +508,18 @@
       <p style="font-size:0.8rem; color:var(--text-muted); line-height:1.5; margin-bottom:16px;">
         Без запущенного <b>Shizuku</b> телепорт-сенса, растяг экрана «T» и бустер FPS не смогут примениться к системе.
       </p>
-      <div class="character-card glass-border" style="margin-bottom:16px; cursor:default; align-items:flex-start; flex-direction:column; padding:14px; text-align:left;">
+      <div class="character-card" style="margin-bottom:16px; cursor:default; align-items:flex-start; flex-direction:column; padding:14px; text-align:left;">
         <div style="font-weight:700; margin-bottom:6px; color:var(--accent-bright); font-size:0.85rem;">📋 Быстрый гайд по запуску:</div>
         <div style="font-size:0.8rem; color:#fff; line-height:1.6;">1. Открой приложение <b>Shizuku</b> на телефоне.<br>2. Включи <b>Беспроводную отладку</b> в Настройках для разработчиков и нажми <b>Запустить</b>.<br>3. Вернись сюда и нажми <b>«Проверить и выдать доступ»</b>.</div>
       </div>
-      <button type="button" class="btn-main glass-border" style="margin-bottom:10px;" onclick="requestAndRecheckShizuku()">
+      <button type="button" class="btn-main glass-capsule" style="margin-bottom:10px;" onclick="requestAndRecheckShizuku()">
         ⚡ Проверить и выдать доступ Shizuku
       </button>
       <div style="display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:10px; margin-bottom:10px;">
-        <button type="button" class="btn-dark glass-border" onclick="openSupportLink()">💬 Помощь в ТГ</button>
-        <button type="button" class="btn-dark glass-border" onclick="copyDiscordSupport()">🎧 Мой Дискорд</button>
+        <button type="button" class="btn-dark glass-capsule" onclick="openSupportLink()">💬 Помощь в ТГ</button>
+        <button type="button" class="btn-dark glass-capsule" onclick="copyDiscordSupport()">🎧 Мой Дискорд</button>
       </div>
-      <button type="button" class="btn-dark glass-border" onclick="document.getElementById('shizukuRequiredModal').style.display='none'">
+      <button type="button" class="btn-dark glass-capsule" onclick="document.getElementById('shizukuRequiredModal').style.display='none'">
         Закрыть окно
       </button>
     </div>
@@ -548,7 +527,7 @@
 
   <div id="authScreenOverlay" role="dialog" aria-modal="true" aria-labelledby="authTitleText">
     <div style="text-align:center; margin-bottom:18px;">
-      <div class="auth-badge blur-container glass-border">QUANTUM CORE V10 • TITANIUM GLASS</div>
+      <div class="auth-badge blur-container glass-capsule">QUANTUM CORE V10 • TITANIUM GLASS</div>
       <h1 id="authTitleText" style="font-size:1.85rem; font-weight:800; letter-spacing:-0.02em; color:#fff; text-shadow: 0 2px 6px rgba(0,0,0,0.8);">
         SO2Teleport <span style="color:var(--accent-main); text-shadow: 0 0 16px rgba(var(--accent-rgb), 0.5);">PRO</span>
       </h1>
@@ -563,33 +542,33 @@
         Введите лицензионный ключ из Telegram-бота
       </div>
 
-      <div class="auth-input-wrap character-card glass-border">
+      <div class="auth-input-wrap btn-dark glass-capsule" style="cursor: text;">
         <div style="width:100%;">
           <label class="auth-input-label" for="loginNickInput">НИКНЕЙМ ИГРОКА</label>
           <input id="loginNickInput" name="username" class="auth-input" type="text" placeholder="login" value="" autocomplete="off" spellcheck="false" />
         </div>
       </div>
 
-      <div class="auth-input-wrap character-card glass-border">
+      <div class="auth-input-wrap btn-dark glass-capsule" style="cursor: text;">
         <div style="width:100%;">
           <label class="auth-input-label" for="loginKeyInput">ЛИЦЕНЗИОННЫЙ КЛЮЧ</label>
           <input id="loginKeyInput" name="license_key" class="auth-input" type="text" placeholder="TP-***-******" value="" autocomplete="off" spellcheck="false" aria-describedby="authErrorBanner" />
         </div>
       </div>
 
-      <button id="loginSubmitBtn" type="button" class="btn-main glass-border" style="margin-top:6px; min-height: 52px; font-size: 0.95rem;" onclick="handleLoginSubmit()">
+      <button id="loginSubmitBtn" type="button" class="btn-main glass-capsule" style="margin-top:6px; min-height: 52px; font-size: 0.95rem;" onclick="handleLoginSubmit()">
         ⚡ Активировать ключ и войти
       </button>
     </div>
 
     <div style="width:100%; max-width:380px; margin-top:16px; display:flex; flex-direction:column; gap:10px;">
-      <div class="btn-dark blur-container glass-border" style="text-align:center; font-size:0.8rem; color:var(--text-muted); cursor:default;">
+      <div class="btn-dark blur-container glass-capsule" style="text-align:center; font-size:0.8rem; color:var(--text-muted); cursor:default;">
         Защищённый HWID: <b id="loginHwidLabel" style="color:#fff; font-variant-numeric:tabular-nums; user-select:text;">…</b>
       </div>
-      <button type="button" class="btn-dark blur-container glass-border" onclick="openBotShopLink()">
+      <button type="button" class="btn-dark blur-container glass-capsule" onclick="openBotShopLink()">
         Получить ключ в Telegram-боте
       </button>
-      <button type="button" class="btn-dark blur-container glass-border" onclick="openSupportLink()">
+      <button type="button" class="btn-dark blur-container glass-capsule" onclick="openSupportLink()">
         Открыть поддержку по Shizuku
       </button>
     </div>
@@ -600,7 +579,7 @@
     <header class="top-brand-header blur-container liquid-glass-surface glass-border">
       <div class="top-brand-row">
         <div class="brand-left-wrap">
-          <div class="header-avatar-holder glass-border" onclick="triggerAvatarUpload()" role="button" tabindex="0" aria-label="Изменить аватарку и живой фон">
+          <div class="header-avatar-holder glass-capsule" onclick="triggerAvatarUpload()" role="button" tabindex="0" aria-label="Изменить аватарку и живой фон">
             <img id="topHeaderAvatarImg" src="" alt="" />
             <span id="topHeaderAvatarFallback" class="header-avatar-fallback">P</span>
           </div>
@@ -612,7 +591,7 @@
           </div>
         </div>
 
-        <button type="button" class="shizuku-status-pill glass-border" onclick="requestAndRecheckShizuku()">
+        <button type="button" class="shizuku-status-pill glass-capsule" onclick="requestAndRecheckShizuku()">
           <span id="shizukuDot" class="status-dot" aria-hidden="true"></span>
           <span id="shizukuStateText" style="color:#FF453A;">Shizuku ВЫКЛ</span>
         </button>
@@ -653,62 +632,62 @@
         </div>
 
         <div class="hub-actions-grid">
-          <button id="btnMainTeleportTogglePill" type="button" class="hub-action-pill liquid-glass-btn glass-border" onclick="setMainEnginePower(!isMainTeleportOn, false)">
+          <button id="btnMainTeleportTogglePill" type="button" class="hub-action-pill liquid-glass-btn glass-capsule" onclick="setMainEnginePower(!isMainTeleportOn, false)">
             Включить Teleport
           </button>
-          <button type="button" class="hub-action-pill btn-dark glass-border" onclick="activateMaxH9ijeTeleport()">
+          <button type="button" class="hub-action-pill btn-dark glass-capsule" onclick="activateMaxH9ijeTeleport()">
             Включить H9IJE MAX
           </button>
         </div>
       </div>
 
-      <button type="button" class="save-all-bar-btn blur-container btn-main glass-border" onclick="saveAllAppSettingsMaster()">
+      <button type="button" class="save-all-bar-btn blur-container btn-main glass-capsule" onclick="saveAllAppSettingsMaster()">
         ⚡ Применить и сохранить настройки
       </button>
 
       <div id="accSensPresets" class="acc-block blur-container open">
         <div class="acc-header" onclick="toggleAccordionBlock('accSensPresets')">
           <div class="acc-left">
-            <div class="acc-icon glass-border" aria-hidden="true">✦</div>
+            <div class="acc-icon glass-capsule" aria-hidden="true">✦</div>
             <div class="acc-title-wrap">
               <div class="acc-title">Киберспортивные профили наводки <span class="badge-chip">PRO V10</span></div>
               <div class="acc-sub">Телепорт 68.0x, ROG Phone 720Hz, iOS 240Hz и анти-лаг A57</div>
             </div>
           </div>
-          <div class="acc-chevron glass-border" aria-hidden="true">⌄</div>
+          <div class="acc-chevron glass-capsule" aria-hidden="true">⌄</div>
         </div>
         <div class="acc-body-wrap">
           <div class="acc-body-inner">
-            <div id="preset_extreme" class="character-card glass-border active" onclick="selectTeleportPreset('extreme')">
+            <div id="preset_extreme" class="character-card glass-capsule active" onclick="selectTeleportPreset('extreme')">
               <div style="min-width:0;">
                 <div class="char-title">1 · ТЕЛЕПОРТ УЛЬТРА <span class="char-tag">QUANTUM SNAP • 68.0X</span></div>
                 <div class="char-desc">Мгновенная телепортация прицела в точку за 1 кадр: убрана вся вязкость осей, максимальный импульс кусков 150 и прямой Raw-отклик 720 Гц.</div>
               </div>
-              <span class="char-arrow glass-border" aria-hidden="true">→</span>
+              <span class="char-arrow glass-capsule" aria-hidden="true">→</span>
             </div>
 
-            <div id="preset_rog_pro" class="character-card glass-border" onclick="selectTeleportPreset('rog_pro')">
+            <div id="preset_rog_pro" class="character-card glass-capsule" onclick="selectTeleportPreset('rog_pro')">
               <div style="min-width:0;">
                 <div class="char-title">2 · КОНФИГ ROG PHONE <span class="char-tag pad-badge">ASUS ROG • 720HZ X-MODE</span></div>
                 <div class="char-desc">Сенса игрового смартфона ASUS ROG Phone 8/9 Pro: сверхрезкий срыв с места, агрессивные края и мгновенный флик без задержки.</div>
               </div>
-              <span class="char-arrow glass-border" aria-hidden="true">→</span>
+              <span class="char-arrow glass-capsule" aria-hidden="true">→</span>
             </div>
 
-            <div id="preset_ios_pro" class="character-card glass-border" onclick="selectTeleportPreset('ios_pro')">
+            <div id="preset_ios_pro" class="character-card glass-capsule" onclick="selectTeleportPreset('ios_pro')">
               <div style="min-width:0;">
                 <div class="char-title">3 · КОНФИГ iOS <span class="char-tag">IPHONE 16 PRO / IPAD • 240HZ</span></div>
                 <div class="char-desc">Точная копия сенсы iOS ProMotion: идеально линейная траектория без инерции Android и плотная фиксация спрея в голову.</div>
               </div>
-              <span class="char-arrow glass-border" aria-hidden="true">→</span>
+              <span class="char-arrow glass-capsule" aria-hidden="true">→</span>
             </div>
 
-            <div id="preset_budget_pro" class="character-card glass-border" onclick="selectTeleportPreset('budget_pro')">
+            <div id="preset_budget_pro" class="character-card glass-capsule" onclick="selectTeleportPreset('budget_pro')">
               <div style="min-width:0;">
                 <div class="char-title">4 · ДЛЯ БЮДЖЕТОК И A57 <span class="char-tag budget-badge">ANTI-LAG FPS • 48.0X</span></div>
                 <div class="char-desc">Резкая телепорт-сенса + защита от просадок FPS на Samsung A57/A55, Redmi, Poco и Realme (SkiaGL кэш 72MB).</div>
               </div>
-              <span class="char-arrow glass-border" aria-hidden="true">→</span>
+              <span class="char-arrow glass-capsule" aria-hidden="true">→</span>
             </div>
           </div>
         </div>
@@ -717,129 +696,129 @@
       <div id="accSensSliders" class="acc-block blur-container">
         <div class="acc-header" onclick="toggleAccordionBlock('accSensSliders')">
           <div class="acc-left">
-            <div class="acc-icon glass-border" aria-hidden="true">🎛</div>
+            <div class="acc-icon glass-capsule" aria-hidden="true">🎛</div>
             <div class="acc-title-wrap">
               <div class="acc-title">Тонкая настройка и Куски <span class="badge-chip">19 ПАРАМЕТРОВ</span></div>
               <div class="acc-sub">Все бафы Телепорта на максимуме, замедлители на нуле</div>
             </div>
           </div>
-          <div class="acc-chevron glass-border" aria-hidden="true">⌄</div>
+          <div class="acc-chevron glass-capsule" aria-hidden="true">⌄</div>
         </div>
         <div class="acc-body-wrap">
           <div class="acc-body-inner">
             <div class="section-eyebrow">ОСТРОТА И КАМЕРА (МАКСИМУМ)</div>
-            <div class="pro-slider-row glass-border">
+            <div class="pro-slider-row">
               <div class="pro-slider-head"><label class="pro-slider-name" for="sl_sharp">1. Сила Телепорта (Резкость)</label><span id="val_sharp" class="pro-slider-pill">2.50</span></div>
               <input id="sl_sharp" type="range" min="10" max="25" step="1" value="25" oninput="onSensSliderChange()" />
               <div class="pro-slider-hint">Максимум (2.50) — мгновенный скачок прицела без анимации</div>
             </div>
 
-            <div class="pro-slider-row glass-border">
+            <div class="pro-slider-row">
               <div class="pro-slider-head"><label class="pro-slider-name" for="sl_sx">2. Резкость камеры X (Влево–вправо)</label><span id="val_sx" class="pro-slider-pill">2.50</span></div>
               <input id="sl_sx" type="range" min="10" max="25" step="1" value="25" oninput="onSensSliderChange()" />
               <div class="pro-slider-hint">Горизонтальная резкость флика для Телепорта и AWM</div>
             </div>
 
-            <div class="pro-slider-row glass-border">
+            <div class="pro-slider-row">
               <div class="pro-slider-head"><label class="pro-slider-name" for="sl_sy">3. Резкость камеры Y (Вверх–вниз)</label><span id="val_sy" class="pro-slider-pill">2.50</span></div>
               <input id="sl_sy" type="range" min="10" max="25" step="1" value="25" oninput="onSensSliderChange()" />
               <div class="pro-slider-hint">Вертикальная отзывчивость прицела для зажима в точку</div>
             </div>
 
             <div class="section-eyebrow">ТОЧНОСТЬ И ОТКЛИК (БЕЗ ЗАДЕРЖЕК)</div>
-            <div class="pro-slider-row glass-border">
+            <div class="pro-slider-row">
               <div class="pro-slider-head"><label class="pro-slider-name" for="sl_grid">Отсечка шума (фильтр)</label><span id="val_grid" class="pro-slider-pill">1</span></div>
               <input id="sl_grid" type="range" min="1" max="10" step="1" value="1" oninput="onSensSliderChange()" />
               <div class="pro-slider-hint">Минимум (1) — сохраняет скорость микродвижений</div>
             </div>
 
-            <div class="pro-slider-row glass-border">
+            <div class="pro-slider-row">
               <div class="pro-slider-head"><label class="pro-slider-name" for="sl_pause">Мёртвая зона</label><span id="val_pause" class="pro-slider-pill">0</span></div>
               <input id="sl_pause" type="range" min="0" max="10" step="1" value="0" oninput="onSensSliderChange()" />
               <div class="pro-slider-hint">Ноль (0) — мгновенная реакция на касание</div>
             </div>
 
-            <div class="pro-slider-row glass-border">
+            <div class="pro-slider-row">
               <div class="pro-slider-head"><label class="pro-slider-name" for="sl_lead">Упреждение (Микро-флик)</label><span id="val_lead" class="pro-slider-pill">20</span></div>
               <input id="sl_lead" type="range" min="0" max="20" step="1" value="20" oninput="onSensSliderChange()" />
             </div>
 
-            <div class="pro-slider-row glass-border">
+            <div class="pro-slider-row">
               <div class="pro-slider-head"><label class="pro-slider-name" for="sl_stick">Прилипание к осям</label><span id="val_stick" class="pro-slider-pill">0</span></div>
               <input id="sl_stick" type="range" min="0" max="100" step="5" value="0" oninput="onSensSliderChange()" />
             </div>
 
-            <div class="pro-slider-row glass-border">
+            <div class="pro-slider-row">
               <div class="pro-slider-head"><label class="pro-slider-name" for="sl_stick_delay">Задержка захвата оси</label><span id="val_stick_delay" class="pro-slider-pill">60</span></div>
               <input id="sl_stick_delay" type="range" min="5" max="60" step="1" value="60" oninput="onSensSliderChange()" />
               <div class="pro-slider-hint">Максимум (60) — не тормозит свободный диагональный флик</div>
             </div>
 
             <div class="section-eyebrow">КВАНТОВЫЕ КУСКИ (FULL MAX)</div>
-            <div class="pro-slider-row glass-border">
+            <div class="pro-slider-row">
               <div class="pro-slider-head"><label class="pro-slider-name" for="sl_stick_force">Сила прилипания</label><span id="val_stick_force" class="pro-slider-pill">1</span></div>
               <input id="sl_stick_force" type="range" min="1" max="15" step="1" value="1" oninput="onSensSliderChange()" />
             </div>
 
-            <div class="pro-slider-row glass-border">
+            <div class="pro-slider-row">
               <div class="pro-slider-head"><label class="pro-slider-name" for="sl_chunks">Куски (Импульс 90°/180°)</label><span id="val_chunks" class="pro-slider-pill">100</span></div>
               <input id="sl_chunks" type="range" min="40" max="100" step="1" value="100" oninput="onSensSliderChange()" />
             </div>
 
-            <div class="pro-slider-row glass-border">
+            <div class="pro-slider-row">
               <div class="pro-slider-head"><label class="pro-slider-name" for="sl_chunk_bypass">Порог обхода кусков</label><span id="val_chunk_bypass" class="pro-slider-pill">0</span></div>
               <input id="sl_chunk_bypass" type="range" min="0" max="20" step="1" value="0" oninput="onSensSliderChange()" />
             </div>
 
-            <div class="pro-slider-row glass-border">
+            <div class="pro-slider-row">
               <div class="pro-slider-head"><label class="pro-slider-name" for="sl_chunk_cap">Потолок куска</label><span id="val_chunk_cap" class="pro-slider-pill">30</span></div>
               <input id="sl_chunk_cap" type="range" min="5" max="30" step="1" value="30" oninput="onSensSliderChange()" />
             </div>
 
-            <div class="pro-slider-row glass-border">
+            <div class="pro-slider-row">
               <div class="pro-slider-head"><label class="pro-slider-name" for="sl_chunkfast">Ускорение быстрых кусков</label><span id="val_chunkfast" class="pro-slider-pill">100</span></div>
               <input id="sl_chunkfast" type="range" min="40" max="100" step="1" value="100" oninput="onSensSliderChange()" />
             </div>
 
-            <div class="pro-slider-row glass-border">
+            <div class="pro-slider-row">
               <div class="pro-slider-head"><label class="pro-slider-name" for="sl_shot_pause">Пауза после выстрела</label><span id="val_shot_pause" class="pro-slider-pill">0</span></div>
               <input id="sl_shot_pause" type="range" min="0" max="15" step="1" value="0" oninput="onSensSliderChange()" />
             </div>
 
-            <div class="pro-slider-row glass-border">
+            <div class="pro-slider-row">
               <div class="pro-slider-head"><label class="pro-slider-name" for="sl_accel">Крутизна разгона</label><span id="val_accel" class="pro-slider-pill">2.50</span></div>
               <input id="sl_accel" type="range" min="10" max="25" step="1" value="25" oninput="onSensSliderChange()" />
             </div>
 
-            <div class="pro-slider-row glass-border">
+            <div class="pro-slider-row">
               <div class="pro-slider-head"><label class="pro-slider-name" for="sl_edge_reach">Чувствительность краёв</label><span id="val_edge_reach" class="pro-slider-pill">20</span></div>
               <input id="sl_edge_reach" type="range" min="0" max="20" step="1" value="20" oninput="onSensSliderChange()" />
             </div>
 
-            <div class="pro-slider-row glass-border">
+            <div class="pro-slider-row">
               <div class="pro-slider-head"><label class="pro-slider-name" for="sl_straight">Выпрямление траектории</label><span id="val_straight" class="pro-slider-pill">0.00</span></div>
               <input id="sl_straight" type="range" min="0" max="100" step="5" value="0" oninput="onSensSliderChange()" />
             </div>
 
-            <div class="pro-slider-row glass-border">
+            <div class="pro-slider-row">
               <div class="pro-slider-head"><label class="pro-slider-name" for="sl_recoil">Хват по осям (Уплотнение отдачи)</label><span id="val_recoil" class="pro-slider-pill">20%</span></div>
               <input id="sl_recoil" type="range" min="20" max="100" step="1" value="20" oninput="onRecoilSliderChange()" />
             </div>
 
-            <div class="pro-slider-row glass-border">
+            <div class="pro-slider-row">
               <div class="pro-slider-head"><label class="pro-slider-name" for="sl_grip_cap">Потолок хвата (Фиксация точки)</label><span id="val_grip_cap" class="pro-slider-pill">1</span></div>
               <input id="sl_grip_cap" type="range" min="1" max="15" step="1" value="1" oninput="onSensSliderChange()" />
             </div>
 
-            <button type="button" class="btn-main glass-border" style="margin-top:14px;" onclick="saveAllAppSettingsMaster()">
+            <button type="button" class="btn-main glass-capsule" style="margin-top:14px;" onclick="saveAllAppSettingsMaster()">
               ⚡ Применить и перезапустить Teleport
             </button>
 
             <div style="display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:10px; margin-top:10px;">
-              <button type="button" class="btn-dark glass-border" onclick="startScreenCalibModal()">Откалибровать экран</button>
-              <button type="button" class="btn-dark glass-border" onclick="openTouchTestModal()">Проверить тач</button>
+              <button type="button" class="btn-dark glass-capsule" onclick="startScreenCalibModal()">Откалибровать экран</button>
+              <button type="button" class="btn-dark glass-capsule" onclick="openTouchTestModal()">Проверить тач</button>
             </div>
-            <button type="button" class="btn-dark glass-border" style="margin-top:10px;" onclick="selectTeleportPreset(isPadModeEnabled ? 'tablet_pro' : 'extreme')">
+            <button type="button" class="btn-dark glass-capsule" style="margin-top:10px;" onclick="selectTeleportPreset(isPadModeEnabled ? 'tablet_pro' : 'extreme')">
               Установить максимальные параметры
             </button>
           </div>
@@ -849,43 +828,43 @@
       <div id="accSensShelf" class="acc-block blur-container">
         <div class="acc-header" onclick="toggleAccordionBlock('accSensShelf')">
           <div class="acc-left">
-            <div class="acc-icon glass-border" aria-hidden="true">🔖</div>
+            <div class="acc-icon glass-capsule" aria-hidden="true">🔖</div>
             <div class="acc-title-wrap">
               <div class="acc-title">Другие конфиги и Полка сборок</div>
               <div class="acc-sub">Конфиги для Падов, AWM, сохранение и обмен кодами</div>
             </div>
           </div>
-          <div class="acc-chevron glass-border" aria-hidden="true">⌄</div>
+          <div class="acc-chevron glass-capsule" aria-hidden="true">⌄</div>
         </div>
         <div class="acc-body-wrap">
           <div class="acc-body-inner">
-            <div class="saved-variant-row glass-border">
+            <div class="saved-variant-row">
               <div style="display:flex; align-items:center; gap:11px; min-width:0;">
-                <div class="acc-icon glass-border" style="width:36px; height:36px; font-size:0.85rem;" aria-hidden="true">💾</div>
+                <div class="acc-icon glass-capsule" style="width:36px; height:36px; font-size:0.85rem;" aria-hidden="true">💾</div>
                 <div style="min-width:0;">
                   <div id="mySavedSlotTitle" style="font-size:0.8125rem; font-weight:700; color:#fff;">Мой сохранённый конфиг</div>
                   <div style="font-size:0.6875rem; color:var(--text-muted);">персональный слот</div>
                 </div>
               </div>
               <div style="display:flex; gap:8px;">
-                <button type="button" class="icon-circle-action glass-border" aria-label="Загрузить сохранённый конфиг" onclick="loadSavedConfigLocal(false)">▼</button>
-                <button type="button" class="icon-circle-action glass-border" aria-label="Сохранить текущий конфиг" onclick="saveAllAppSettingsMaster()">💾</button>
+                <button type="button" class="icon-circle-action glass-capsule" aria-label="Загрузить сохранённый конфиг" onclick="loadSavedConfigLocal(false)">▼</button>
+                <button type="button" class="icon-circle-action glass-capsule" aria-label="Сохранить текущий конфиг" onclick="saveAllAppSettingsMaster()">💾</button>
               </div>
             </div>
 
-            <div class="code-input-bar glass-border">
+            <div class="code-input-bar btn-dark glass-capsule" style="cursor:text;">
               <label for="cloudCodeInput" style="color:var(--accent-bright); font-weight:700; font-size:0.75rem;">КОД</label>
               <input id="cloudCodeInput" class="auth-input" type="text" placeholder="SO2-7744" autocomplete="off" spellcheck="false" />
-              <button type="button" class="icon-circle-action glass-border" aria-label="Применить облачный код" onclick="downloadCloudPresetNow()">📥</button>
+              <button type="button" class="icon-circle-action glass-capsule" aria-label="Применить облачный код" onclick="downloadCloudPresetNow()">📥</button>
             </div>
 
             <div style="display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:10px; margin-top:12px;">
-              <button type="button" class="btn-dark glass-border" onclick="saveAllAppSettingsMaster()">Сохранить локально</button>
-              <button type="button" class="btn-main glass-border" onclick="uploadCloudPresetNow()">Создать облачный код</button>
+              <button type="button" class="btn-dark glass-capsule" onclick="saveAllAppSettingsMaster()">Сохранить локально</button>
+              <button type="button" class="btn-main glass-capsule" onclick="uploadCloudPresetNow()">Создать облачный код</button>
             </div>
 
             <div class="shelf-cards-grid">
-              <div id="preset_tablet_pro" class="shelf-preset-card glass-border" onclick="selectTeleportPreset('tablet_pro')">
+              <div id="preset_tablet_pro" class="shelf-preset-card glass-capsule" onclick="selectTeleportPreset('tablet_pro')">
                 <div>
                   <div style="font-size:0.75rem; font-weight:700; color:#fff;">ДЛЯ ПАДОВ УЛЬТРА</div>
                   <div style="font-size:0.6875rem; color:var(--text-muted); margin-top:2px;">Импульс 128.0x • Xiaomi Pad / iPad</div>
@@ -893,7 +872,7 @@
                 <div style="font-size:0.6875rem; color:var(--accent-bright); font-weight:700; margin-top:8px;">Включить конфиг →</div>
               </div>
 
-              <div id="preset_clean_sharp" class="shelf-preset-card glass-border" onclick="selectTeleportPreset('clean_sharp')">
+              <div id="preset_clean_sharp" class="shelf-preset-card glass-capsule" onclick="selectTeleportPreset('clean_sharp')">
                 <div>
                   <div style="font-size:0.75rem; font-weight:700; color:#fff;">AWM / DEAGLE РЕЗКИЙ</div>
                   <div style="font-size:0.6875rem; color:var(--text-muted); margin-top:2px;">Точный хват 48.0x • Снайперский флик</div>
@@ -901,7 +880,7 @@
                 <div style="font-size:0.6875rem; color:var(--accent-bright); font-weight:700; margin-top:8px;">Включить конфиг →</div>
               </div>
 
-              <div class="shelf-preset-card glass-border" onclick="applyShelfPreset('demon_100')">
+              <div class="shelf-preset-card glass-capsule" onclick="applyShelfPreset('demon_100')">
                 <div>
                   <div style="font-size:0.75rem; font-weight:700; color:#fff;">H9IJE TELEPORT MAX</div>
                   <div style="font-size:0.6875rem; color:var(--text-muted); margin-top:2px;">Куски 150 • Полный овердрайв</div>
@@ -909,7 +888,7 @@
                 <div style="font-size:0.6875rem; color:var(--accent-bright); font-weight:700; margin-top:8px;">Включить конфиг →</div>
               </div>
 
-              <div class="shelf-preset-card glass-border" onclick="applyShelfPreset('heavy_pixel')">
+              <div class="shelf-preset-card glass-capsule" onclick="applyShelfPreset('heavy_pixel')">
                 <div>
                   <div style="font-size:0.75rem; font-weight:700; color:#fff;">AKR12 / M4 ЗАЖИМ</div>
                   <div style="font-size:0.6875rem; color:var(--text-muted); margin-top:2px;">Куски 96 • Удержание точки</div>
@@ -924,17 +903,17 @@
       <div id="accCrosshair" class="acc-block blur-container">
         <div class="acc-header" onclick="toggleAccordionBlock('accCrosshair')">
           <div class="acc-left">
-            <div class="acc-icon glass-border" aria-hidden="true">⌖</div>
+            <div class="acc-icon glass-capsule" aria-hidden="true">⌖</div>
             <div class="acc-title-wrap">
               <div class="acc-title">Кастомный прицел <span id="crosshairStateChip" class="badge-chip">ВЫКЛ</span></div>
               <div class="acc-sub">Выбор формы, цвета прицела и точная подгонка лучей</div>
             </div>
           </div>
-          <div class="acc-chevron glass-border" aria-hidden="true">⌄</div>
+          <div class="acc-chevron glass-capsule" aria-hidden="true">⌄</div>
         </div>
         <div class="acc-body-wrap">
           <div id="crosshairCardAnchor" class="acc-body-inner">
-            <div class="toggle-row glass-border" style="margin-top:4px; margin-bottom:10px;">
+            <div class="toggle-row" style="margin-top:4px; margin-bottom:10px;">
               <div>
                 <div class="toggle-info-title">Отображать прицел поверх игры</div>
                 <div class="toggle-info-sub">Аппаратный оверлей без потери FPS</div>
@@ -948,7 +927,7 @@
             <div id="chPreviewStage" class="preview-stage-box">
               <canvas id="crosshairPreviewCanvas" width="280" height="148"></canvas>
               <div style="position:absolute; top:9px; left:10px;"><span id="chModeRightLabel" class="badge-chip">КРЕСТ</span></div>
-              <div style="position:absolute; top:9px; right:10px;"><button type="button" class="icon-circle-action glass-border" style="min-width:32px; min-height:32px;" aria-label="Переключить фон предпросмотра" onclick="togglePreviewDayNight()">🌙</button></div>
+              <div style="position:absolute; top:9px; right:10px;"><button type="button" class="icon-circle-action glass-capsule" style="min-width:32px; min-height:32px;" aria-label="Переключить фон предпросмотра" onclick="togglePreviewDayNight()">🌙</button></div>
               <div style="position:absolute; bottom:9px; left:12px; display:flex; align-items:center; gap:6px; font-size:0.6875rem; color:var(--text-muted); font-variant-numeric:tabular-nums;">
                 <span id="chColorLiveDot" style="width:9px; height:9px; border-radius:50%; background:#30D158; display:inline-block;"></span>
                 <span id="chSizeReadout">+ 8 × 3 px</span>
@@ -960,9 +939,9 @@
               </div>
             </div>
 
-            <div class="ch-color-palette-bar glass-border">
+            <div class="ch-color-palette-bar">
               <div style="display:flex; align-items:center; justify-content:space-between;">
-                <span style="font-size:0.8125rem; font-weight:700; color:#fff;">Цвет прицела</span>
+                <span style="font-size:0.8125rem; font-weight:600; color:#fff;">Цвет прицела</span>
                 <span id="chColorHexBadge" class="badge-chip" style="font-family:monospace;">#30D158</span>
               </div>
               <div class="ch-color-dots-row" role="group" aria-label="Палитра цвета прицела">
@@ -974,50 +953,50 @@
                 <button type="button" class="ch-color-swatch" data-ch-color="#ff9f0a" style="background:#FF9F0A;" onclick="setCrosshairColor('#FF9F0A', this)" aria-label="Оранжевый"></button>
                 <button type="button" class="ch-color-swatch" data-ch-color="#ffffff" style="background:#FFFFFF;" onclick="setCrosshairColor('#FFFFFF', this)" aria-label="Белый"></button>
                 <button type="button" class="ch-color-swatch" data-ch-color="#38bdf8" style="background:#38BDF8;" onclick="setCrosshairColor('#38BDF8', this)" aria-label="Циан"></button>
-                <button type="button" class="ch-custom-color-btn" onclick="document.getElementById('chCustomColorPicker').click()" aria-label="Выбрать свой цвет">🌈</button>
+                <button type="button" class="ch-custom-color-btn glass-capsule" onclick="document.getElementById('chCustomColorPicker').click()" aria-label="Выбрать свой цвет">🌈</button>
               </div>
             </div>
 
             <div class="ch-shape-grid-4">
-              <div class="ch-shape-tile glass-border active" data-ch="cross" onclick="setCrosshairMode(this, 'cross')"><div class="ch-shape-icon" aria-hidden="true">✚</div><div class="ch-shape-lbl">КРЕСТ</div></div>
-              <div class="ch-shape-tile glass-border" data-ch="dot" onclick="setCrosshairMode(this, 'dot')"><div class="ch-shape-icon" aria-hidden="true">•</div><div class="ch-shape-lbl">ТОЧКА</div></div>
-              <div class="ch-shape-tile glass-border" data-ch="tshape" onclick="setCrosshairMode(this, 'tshape')"><div class="ch-shape-icon" aria-hidden="true">⊤</div><div class="ch-shape-lbl">Т-ОБРАЗ</div></div>
-              <div class="ch-shape-tile glass-border" data-ch="corners" onclick="setCrosshairMode(this, 'corners')"><div class="ch-shape-icon" aria-hidden="true">⌜⌟</div><div class="ch-shape-lbl">УГОЛКИ</div></div>
+              <div class="ch-shape-tile glass-capsule active" data-ch="cross" onclick="setCrosshairMode(this, 'cross')"><div class="ch-shape-icon" aria-hidden="true">✚</div><div class="ch-shape-lbl">КРЕСТ</div></div>
+              <div class="ch-shape-tile glass-capsule" data-ch="dot" onclick="setCrosshairMode(this, 'dot')"><div class="ch-shape-icon" aria-hidden="true">•</div><div class="ch-shape-lbl">ТОЧКА</div></div>
+              <div class="ch-shape-tile glass-capsule" data-ch="tshape" onclick="setCrosshairMode(this, 'tshape')"><div class="ch-shape-icon" aria-hidden="true">⊤</div><div class="ch-shape-lbl">Т-ОБРАЗ</div></div>
+              <div class="ch-shape-tile glass-capsule" data-ch="corners" onclick="setCrosshairMode(this, 'corners')"><div class="ch-shape-icon" aria-hidden="true">⌜⌟</div><div class="ch-shape-lbl">УГОЛКИ</div></div>
             </div>
 
             <div class="ch-subtoggle-grid-2">
-              <div id="subBoxCrossLines" class="ch-subtoggle-box glass-border active" onclick="setCrosshairMode(this, 'cross')">
+              <div id="subBoxCrossLines" class="ch-subtoggle-box glass-capsule active" onclick="setCrosshairMode(this, 'cross')">
                 <span style="font-size:0.6875rem; font-weight:700; color:#fff;">ТОЛЬКО ЛУЧИ</span>
                 <span class="badge-chip">БЕЗ ТОЧКИ</span>
               </div>
-              <div id="subBoxCenterDot" class="ch-subtoggle-box glass-border" onclick="setCrosshairMode(this, 'crossdot')">
+              <div id="subBoxCenterDot" class="ch-subtoggle-box glass-capsule" onclick="setCrosshairMode(this, 'crossdot')">
                 <span style="font-size:0.6875rem; font-weight:700; color:#fff;">ЛУЧИ + ТОЧКА</span>
                 <span class="badge-chip">КОМБО</span>
               </div>
             </div>
 
-            <div class="pro-slider-row glass-border">
+            <div class="pro-slider-row">
               <div class="pro-slider-head"><label class="pro-slider-name" for="sl_ch_len">Размер лучей</label><span id="val_ch_len" class="pro-slider-pill">8</span></div>
               <input id="sl_ch_len" type="range" min="2" max="22" value="8" oninput="syncCrosshairConfig()" />
             </div>
-            <div class="pro-slider-row glass-border">
+            <div class="pro-slider-row">
               <div class="pro-slider-head"><label class="pro-slider-name" for="sl_ch_thick">Толщина линий</label><span id="val_ch_thick" class="pro-slider-pill">3</span></div>
               <input id="sl_ch_thick" type="range" min="1" max="10" value="3" oninput="syncCrosshairConfig()" />
             </div>
-            <div class="pro-slider-row glass-border">
+            <div class="pro-slider-row">
               <div class="pro-slider-head"><label class="pro-slider-name" for="sl_ch_gap">Зазор в центре</label><span id="val_ch_gap" class="pro-slider-pill">3</span></div>
               <input id="sl_ch_gap" type="range" min="0" max="14" value="3" oninput="syncCrosshairConfig()" />
             </div>
-            <div class="pro-slider-row glass-border">
+            <div class="pro-slider-row">
               <div class="pro-slider-head"><label class="pro-slider-name" for="sl_ch_dot">Размер центральной точки</label><span id="val_ch_dot" class="pro-slider-pill">3</span></div>
               <input id="sl_ch_dot" type="range" min="1" max="10" value="3" oninput="syncCrosshairConfig()" />
             </div>
-            <div class="pro-slider-row glass-border">
+            <div class="pro-slider-row">
               <div class="pro-slider-head"><label class="pro-slider-name" for="sl_ch_op">Непрозрачность прицела</label><span id="val_ch_op" class="pro-slider-pill">100%</span></div>
               <input id="sl_ch_op" type="range" min="20" max="100" value="100" oninput="syncCrosshairConfig()" />
             </div>
 
-            <div class="toggle-row glass-border" style="margin-top:8px;">
+            <div class="toggle-row" style="margin-top:8px;">
               <div>
                 <div class="toggle-info-title">Чёрная контурная обводка</div>
                 <div class="toggle-info-sub">Прицел остаётся читаемым на светлом фоне и в дыму</div>
@@ -1028,7 +1007,7 @@
               </label>
             </div>
 
-            <button type="button" class="btn-main glass-border" style="margin-top:14px;" onclick="saveAllAppSettingsMaster()">
+            <button type="button" class="btn-main glass-capsule" style="margin-top:14px;" onclick="saveAllAppSettingsMaster()">
               ⚡ Сохранить настройки прицела
             </button>
           </div>
@@ -1042,55 +1021,55 @@
       <div id="accScreenStretch" class="acc-block blur-container open">
         <div class="acc-header" onclick="toggleAccordionBlock('accScreenStretch')">
           <div class="acc-left">
-            <div class="acc-icon glass-border" aria-hidden="true">📐</div>
+            <div class="acc-icon glass-capsule" aria-hidden="true">📐</div>
             <div class="acc-title-wrap">
               <div class="acc-title">Растяг экрана «T» <span id="curRatioBadge" class="badge-chip">4:3</span></div>
               <div class="acc-sub">Широкие модельки и фиксация горизонтального режима</div>
             </div>
           </div>
-          <div class="acc-chevron glass-border" aria-hidden="true">⌄</div>
+          <div class="acc-chevron glass-capsule" aria-hidden="true">⌄</div>
         </div>
         <div class="acc-body-wrap">
           <div class="acc-body-inner">
             <div class="preview-stage-box">
               <div class="stretch-dashed-outer">
-                <div id="stretchPreviewInner" class="stretch-solid-inner glass-border-active">+</div>
+                <div id="stretchPreviewInner" class="stretch-solid-inner glass-capsule-active">+</div>
               </div>
             </div>
 
             <div class="preset-pills-4" style="grid-template-columns:repeat(5,minmax(0,1fr)); margin-bottom:8px;">
-              <div class="preset-pill glass-border active" data-ratio="4:3" onclick="selectRatioPill(this, '4:3')"><div class="preset-pill-name">4:3</div><div class="preset-pill-sub">Классика</div></div>
-              <div class="preset-pill glass-border" data-ratio="PAD-WIDE" onclick="selectRatioPill(this, 'PAD-WIDE')"><div class="preset-pill-name">PAD</div><div class="preset-pill-sub">На Пады</div></div>
-              <div class="preset-pill glass-border" data-ratio="5:4" onclick="selectRatioPill(this, '5:4')"><div class="preset-pill-name">5:4</div><div class="preset-pill-sub">Кибер</div></div>
-              <div class="preset-pill glass-border" data-ratio="16:10" onclick="selectRatioPill(this, '16:10')"><div class="preset-pill-name">16:10</div><div class="preset-pill-sub">Мягкий</div></div>
-              <div class="preset-pill glass-border" data-ratio="1:1" onclick="selectRatioPill(this, '1:1')"><div class="preset-pill-name">1:1</div><div class="preset-pill-sub">Макс</div></div>
+              <div class="preset-pill glass-capsule active" data-ratio="4:3" onclick="selectRatioPill(this, '4:3')"><div class="preset-pill-name">4:3</div><div class="preset-pill-sub">Классика</div></div>
+              <div class="preset-pill glass-capsule" data-ratio="PAD-WIDE" onclick="selectRatioPill(this, 'PAD-WIDE')"><div class="preset-pill-name">PAD</div><div class="preset-pill-sub">На Пады</div></div>
+              <div class="preset-pill glass-capsule" data-ratio="5:4" onclick="selectRatioPill(this, '5:4')"><div class="preset-pill-name">5:4</div><div class="preset-pill-sub">Кибер</div></div>
+              <div class="preset-pill glass-capsule" data-ratio="16:10" onclick="selectRatioPill(this, '16:10')"><div class="preset-pill-name">16:10</div><div class="preset-pill-sub">Мягкий</div></div>
+              <div class="preset-pill glass-capsule" data-ratio="1:1" onclick="selectRatioPill(this, '1:1')"><div class="preset-pill-name">1:1</div><div class="preset-pill-sub">Макс</div></div>
             </div>
 
             <div class="preset-pills-4" style="margin-bottom:14px;">
-              <div class="preset-pill glass-border" data-ratio="3:2" onclick="selectRatioPill(this, '3:2')"><div class="preset-pill-name">3:2</div><div class="preset-pill-sub">Широкий</div></div>
-              <div class="preset-pill glass-border" data-ratio="16:9" onclick="selectRatioPill(this, '16:9')"><div class="preset-pill-name">16:9</div><div class="preset-pill-sub">Сток+</div></div>
-              <div class="preset-pill glass-border" data-ratio="SHRINK-84" onclick="selectRatioPill(this, 'SHRINK-84')"><div class="preset-pill-name">84%</div><div class="preset-pill-sub">Стяг</div></div>
-              <div class="preset-pill glass-border" data-ratio="21:9" onclick="selectRatioPill(this, '21:9')"><div class="preset-pill-name">21:9</div><div class="preset-pill-sub">Ультра</div></div>
+              <div class="preset-pill glass-capsule" data-ratio="3:2" onclick="selectRatioPill(this, '3:2')"><div class="preset-pill-name">3:2</div><div class="preset-pill-sub">Широкий</div></div>
+              <div class="preset-pill glass-capsule" data-ratio="16:9" onclick="selectRatioPill(this, '16:9')"><div class="preset-pill-name">16:9</div><div class="preset-pill-sub">Сток+</div></div>
+              <div class="preset-pill glass-capsule" data-ratio="SHRINK-84" onclick="selectRatioPill(this, 'SHRINK-84')"><div class="preset-pill-name">84%</div><div class="preset-pill-sub">Стяг</div></div>
+              <div class="preset-pill glass-capsule" data-ratio="21:9" onclick="selectRatioPill(this, '21:9')"><div class="preset-pill-name">21:9</div><div class="preset-pill-sub">Ультра</div></div>
             </div>
 
-            <button id="btnLaunchFloatingStretch" type="button" class="btn-main glass-border" style="margin-bottom:10px;" onclick="launchFloatingTButton()">
+            <button id="btnLaunchFloatingStretch" type="button" class="btn-main glass-capsule" style="margin-bottom:10px;" onclick="launchFloatingTButton()">
               ⚡ Запустить плавающую кнопку «T» (4:3)
             </button>
 
             <div style="display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:10px; margin-bottom:10px;">
-              <button type="button" class="btn-dark glass-border" onclick="applyStretchDirectlyNow()">
+              <button type="button" class="btn-dark glass-capsule" onclick="applyStretchDirectlyNow()">
                 Шаг 1: Сжать экран
               </button>
-              <button type="button" class="btn-dark glass-border" onclick="releaseStretchFullNow()">
+              <button type="button" class="btn-dark glass-capsule" onclick="releaseStretchFullNow()">
                 Шаг 2: Растянуть экран
               </button>
             </div>
 
-            <button type="button" class="btn-dark glass-border" style="margin-bottom:10px;" onclick="resetNativeScreen()">
+            <button type="button" class="btn-dark glass-capsule" style="margin-bottom:10px;" onclick="resetNativeScreen()">
               Восстановить родное разрешение экрана
             </button>
 
-            <div class="toggle-row glass-border">
+            <div class="toggle-row">
               <div>
                 <div class="toggle-info-title">Синхронизация кусков под растяг</div>
                 <div class="toggle-info-sub">Адаптирует шаг сенсы под выбранный формат экрана</div>
@@ -1107,23 +1086,23 @@
       <div id="accScreenPixels" class="acc-block blur-container">
         <div class="acc-header" onclick="toggleAccordionBlock('accScreenPixels')">
           <div class="acc-left">
-            <div class="acc-icon glass-border" aria-hidden="true">🚀</div>
+            <div class="acc-icon glass-capsule" aria-hidden="true">🚀</div>
             <div class="acc-title-wrap">
               <div class="acc-title">Оптимизация пикселей <span id="pixelScaleBadge" class="badge-chip">100%</span></div>
               <div class="acc-sub">Снижение нагрузки на GPU без чёрных полос</div>
             </div>
           </div>
-          <div class="acc-chevron glass-border" aria-hidden="true">⌄</div>
+          <div class="acc-chevron glass-capsule" aria-hidden="true">⌄</div>
         </div>
         <div class="acc-body-wrap">
           <div class="acc-body-inner">
             <div class="pixel-tiles-6">
-              <div class="pixel-tile glass-border active" data-px="100" onclick="selectPixelTile(this, 100)"><b>100</b><span>%</span></div>
-              <div class="pixel-tile glass-border" data-px="90" onclick="selectPixelTile(this, 90)"><b>90</b><span>%</span></div>
-              <div class="pixel-tile glass-border" data-px="80" onclick="selectPixelTile(this, 80)"><b>80</b><span>%</span></div>
-              <div class="pixel-tile glass-border" data-px="70" onclick="selectPixelTile(this, 70)"><b>70</b><span>%</span></div>
-              <div class="pixel-tile glass-border" data-px="60" onclick="selectPixelTile(this, 60)"><b>60</b><span>%</span></div>
-              <div class="pixel-tile glass-border" data-px="50" onclick="selectPixelTile(this, 50)"><b>50</b><span>%</span></div>
+              <div class="pixel-tile glass-capsule active" data-px="100" onclick="selectPixelTile(this, 100)"><b>100</b><span>%</span></div>
+              <div class="pixel-tile glass-capsule" data-px="90" onclick="selectPixelTile(this, 90)"><b>90</b><span>%</span></div>
+              <div class="pixel-tile glass-capsule" data-px="80" onclick="selectPixelTile(this, 80)"><b>80</b><span>%</span></div>
+              <div class="pixel-tile glass-capsule" data-px="70" onclick="selectPixelTile(this, 70)"><b>70</b><span>%</span></div>
+              <div class="pixel-tile glass-capsule" data-px="60" onclick="selectPixelTile(this, 60)"><b>60</b><span>%</span></div>
+              <div class="pixel-tile glass-capsule" data-px="50" onclick="selectPixelTile(this, 50)"><b>50</b><span>%</span></div>
             </div>
             <div class="pixel-big-readout">
               <div id="pixelBigNumText" class="pixel-big-num">100 %</div>
@@ -1141,13 +1120,13 @@
       <div id="accBoostOneClick" class="acc-block blur-container open">
         <div class="acc-header" onclick="toggleAccordionBlock('accBoostOneClick')">
           <div class="acc-left">
-            <div class="acc-icon glass-border" aria-hidden="true">🔥</div>
+            <div class="acc-icon glass-capsule" aria-hidden="true">🔥</div>
             <div class="acc-title-wrap">
               <div class="acc-title">Имба-Твик и Фикс FPS <span id="oneClickTweakStatusBadge" class="badge-chip">SKIAGL 72MB</span></div>
               <div class="acc-sub">Устранение просадок FPS на Samsung A57 и бюджетных устройствах</div>
             </div>
           </div>
-          <div class="acc-chevron glass-border" aria-hidden="true">⌄</div>
+          <div class="acc-chevron glass-capsule" aria-hidden="true">⌄</div>
         </div>
         <div class="acc-body-wrap">
           <div class="acc-body-inner">
@@ -1164,13 +1143,13 @@
               <span class="tweak-mini-tag">Trim Caches 256M</span>
             </div>
 
-            <button id="btnOneClickSettingsTweak" type="button" class="btn-main glass-border" onclick="runOneClickUltimateTweaks()">
+            <button id="btnOneClickSettingsTweak" type="button" class="btn-main glass-capsule" onclick="runOneClickUltimateTweaks()">
               ⚡ Применить системные твики и фикс FPS
             </button>
 
             <div style="display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:10px; margin-top:10px;">
-              <button type="button" class="btn-dark glass-border" onclick="runRamCleanNow()">Очистить ОЗУ и кэш</button>
-              <button type="button" class="btn-dark glass-border" onclick="runSmartScanNow()">Проверить устройство (<span id="scanTierBadge">ULTRA</span>)</button>
+              <button type="button" class="btn-dark glass-capsule" onclick="runRamCleanNow()">Очистить ОЗУ и кэш</button>
+              <button type="button" class="btn-dark glass-capsule" onclick="runSmartScanNow()">Проверить устройство (<span id="scanTierBadge">ULTRA</span>)</button>
             </div>
           </div>
         </div>
@@ -1179,33 +1158,33 @@
       <div id="accBoostModules" class="acc-block blur-container">
         <div class="acc-header" onclick="toggleAccordionBlock('accBoostModules')">
           <div class="acc-left">
-            <div class="acc-icon glass-border" aria-hidden="true">⚡</div>
+            <div class="acc-icon glass-capsule" aria-hidden="true">⚡</div>
             <div class="acc-title-wrap">
               <div class="acc-title">Системные модули Shizuku</div>
               <div class="acc-sub">Raw Input, SkiaGL Turbo, стабилизация пинга и удержание Гц</div>
             </div>
           </div>
-          <div class="acc-chevron glass-border" aria-hidden="true">⌄</div>
+          <div class="acc-chevron glass-capsule" aria-hidden="true">⌄</div>
         </div>
         <div class="acc-body-wrap">
           <div class="acc-body-inner">
-            <div class="toggle-row glass-border">
+            <div class="toggle-row">
               <div><div class="toggle-info-title">Прямой отклик без сглаживания (Zero-Animation Snap)</div><div class="toggle-info-sub">Мгновенный перенос прицела за 1 кадр</div></div>
               <label class="cyber-switch" aria-label="Прямой отклик без сглаживания"><input id="tgRawInput" type="checkbox" checked onchange="toggleBoostFeature('raw', this.checked)" /><span class="cyber-slider"></span></label>
             </div>
-            <div class="toggle-row glass-border">
+            <div class="toggle-row">
               <div><div class="toggle-info-title">Ускоритель рендера (SkiaGL + Shader Cache)</div><div class="toggle-info-sub">Ускоряет отрисовку кадров и снижает нагрузку на GPU</div></div>
               <label class="cyber-switch" aria-label="Ускоритель рендера"><input id="tgVulkan" type="checkbox" checked onchange="toggleBoostFeature('vulkan', this.checked)" /><span class="cyber-slider"></span></label>
             </div>
-            <div class="toggle-row glass-border">
+            <div class="toggle-row">
               <div><div class="toggle-info-title">Стабилизация сети (TCP Window 60 + DNS Boost)</div><div class="toggle-info-sub">Снижает скачки пинга и фоновый поиск Wi-Fi</div></div>
               <label class="cyber-switch" aria-label="Стабилизация сети"><input id="tgNetPing" type="checkbox" checked onchange="toggleBoostFeature('ping', this.checked)" /><span class="cyber-slider"></span></label>
             </div>
-            <div class="toggle-row glass-border">
+            <div class="toggle-row">
               <div><div class="toggle-info-title">Удержание максимальной герцовки экрана</div><div class="toggle-info-sub">Фиксирует частоту обновления экрана при нагреве</div></div>
               <label class="cyber-switch" aria-label="Удержание максимальной герцовки экрана"><input id="tgThermal" type="checkbox" checked onchange="toggleBoostFeature('thermal', this.checked)" /><span class="cyber-slider"></span></label>
             </div>
-            <div class="toggle-row glass-border">
+            <div class="toggle-row">
               <div><div class="toggle-info-title">Скрытие оверлеев на записи экрана</div><div class="toggle-info-sub">Не отображает кнопку «T» и прицел на видеозаписи</div></div>
               <label class="cyber-switch" aria-label="Скрытие оверлеев на записи экрана"><input id="tgStealth" type="checkbox" checked onchange="toggleBoostFeature('stealth', this.checked)" /><span class="cyber-slider"></span></label>
             </div>
@@ -1216,37 +1195,37 @@
       <div id="accBoostOverclock" class="acc-block blur-container">
         <div class="acc-header" onclick="toggleAccordionBlock('accBoostOverclock')">
           <div class="acc-left">
-            <div class="acc-icon glass-border" aria-hidden="true">⚙️</div>
+            <div class="acc-icon glass-capsule" aria-hidden="true">⚙️</div>
             <div class="acc-title-wrap">
               <div class="acc-title">Тонкий разгон Гц и Мультитача</div>
               <div class="acc-sub">Частота экрана, приоритет GPU/CPU и опрос тача 480 Гц</div>
             </div>
           </div>
-          <div class="acc-chevron glass-border" aria-hidden="true">⌄</div>
+          <div class="acc-chevron glass-capsule" aria-hidden="true">⌄</div>
         </div>
         <div class="acc-body-wrap">
           <div class="acc-body-inner">
-            <div class="pro-slider-row glass-border">
+            <div class="pro-slider-row">
               <div class="pro-slider-head"><label class="pro-slider-name" for="sl_opt_fps">Фиксация частоты экрана</label><span id="val_opt_fps" class="pro-slider-pill">120 Hz</span></div>
               <input id="sl_opt_fps" type="range" min="60" max="144" step="30" value="120" oninput="updateOptLabels()" />
             </div>
-            <div class="pro-slider-row glass-border">
+            <div class="pro-slider-row">
               <div class="pro-slider-head"><label class="pro-slider-name" for="sl_opt_gpu">Приоритет GPU/CPU</label><span id="val_opt_gpu" class="pro-slider-pill">100%</span></div>
               <input id="sl_opt_gpu" type="range" min="20" max="100" value="100" oninput="updateOptLabels()" />
             </div>
-            <div class="pro-slider-row glass-border">
+            <div class="pro-slider-row">
               <div class="pro-slider-head"><label class="pro-slider-name" for="sl_opt_edge">Отклик краёв экрана</label><span id="val_opt_edge" class="pro-slider-pill">100%</span></div>
               <input id="sl_opt_edge" type="range" min="10" max="100" value="100" oninput="updateOptLabels()" />
             </div>
-            <div class="pro-slider-row glass-border">
+            <div class="pro-slider-row">
               <div class="pro-slider-head"><label class="pro-slider-name" for="sl_opt_mt">Скорость Мультитача (3–6 пальцев)</label><span id="val_opt_mt" class="pro-slider-pill">160</span></div>
               <input id="sl_opt_mt" type="range" min="50" max="160" value="160" oninput="updateOptLabels()" />
             </div>
-            <div class="pro-slider-row glass-border">
+            <div class="pro-slider-row">
               <div class="pro-slider-head"><label class="pro-slider-name" for="sl_opt_ts">Частота опроса сенсора</label><span id="val_opt_ts" class="pro-slider-pill">480 Hz</span></div>
               <input id="sl_opt_ts" type="range" min="240" max="480" step="60" value="480" oninput="updateOptLabels()" />
             </div>
-            <button type="button" class="btn-main glass-border" style="margin-top:14px;" onclick="applyFullShooterOptNow()">
+            <button type="button" class="btn-main glass-capsule" style="margin-top:14px;" onclick="applyFullShooterOptNow()">
               ⚡ Применить параметры разгона
             </button>
           </div>
@@ -1260,26 +1239,26 @@
       <div id="accSquadVoice" class="acc-block blur-container open">
         <div class="acc-header" onclick="toggleAccordionBlock('accSquadVoice')">
           <div class="acc-left">
-            <div class="acc-icon glass-border" aria-hidden="true">🎙</div>
+            <div class="acc-icon glass-capsule" aria-hidden="true">🎙</div>
             <div class="acc-title-wrap">
               <div class="acc-title">Рация отряда <span id="voiceStateBadge" class="badge-chip">ГОТОВ К ЭФИРУ</span></div>
               <div class="acc-sub">Голосовая связь поверх игры без приглушения шагов</div>
             </div>
           </div>
-          <div class="acc-chevron glass-border" aria-hidden="true">⌄</div>
+          <div class="acc-chevron glass-capsule" aria-hidden="true">⌄</div>
         </div>
         <div class="acc-body-wrap">
           <div class="acc-body-inner">
-            <div class="auth-input-wrap character-card glass-border" style="margin-top:8px; margin-bottom:12px;">
+            <div class="auth-input-wrap btn-dark glass-capsule" style="margin-top:8px; margin-bottom:12px; cursor:text;">
               <div style="width:100%;">
                 <label class="auth-input-label" for="voiceRoomInput">КОД КОМНАТЫ ОТРЯДА</label>
                 <input id="voiceRoomInput" class="auth-input" type="text" value="SQUAD-MAIN" autocomplete="off" spellcheck="false" />
               </div>
             </div>
             <div style="display:grid; grid-template-columns:1.2fr 1fr 1fr; gap:10px; margin-bottom:12px;">
-              <button id="btnVoiceJoin" type="button" class="btn-main glass-border" style="padding:12px;" onclick="toggleVoiceConnection()">Войти в войс</button>
-              <button id="btnVoiceMute" type="button" class="btn-dark glass-border" style="padding:12px;" onclick="window.toggleMicMute()">Микрофон</button>
-              <button id="btnVoiceDeaf" type="button" class="btn-dark glass-border" style="padding:12px;" onclick="window.toggleDeafenSpeaker()">Динамик</button>
+              <button id="btnVoiceJoin" type="button" class="btn-main glass-capsule" style="padding:12px;" onclick="toggleVoiceConnection()">Войти в войс</button>
+              <button id="btnVoiceMute" type="button" class="btn-dark glass-capsule" style="padding:12px;" onclick="window.toggleMicMute()">Микрофон</button>
+              <button id="btnVoiceDeaf" type="button" class="btn-dark glass-capsule" style="padding:12px;" onclick="window.toggleDeafenSpeaker()">Динамик</button>
             </div>
             <div id="voiceMembersBox">
               <div style="text-align:center; padding:12px; font-size:0.75rem; color:var(--text-muted);">
@@ -1293,24 +1272,24 @@
       <div id="accSquadFriends" class="acc-block blur-container open">
         <div class="acc-header" onclick="toggleAccordionBlock('accSquadFriends')">
           <div class="acc-left">
-            <div class="acc-icon glass-border" aria-hidden="true">👥</div>
+            <div class="acc-icon glass-capsule" aria-hidden="true">👥</div>
             <div class="acc-title-wrap">
               <div class="acc-title">Друзья и тиммейты <span id="myFriendCodeBadge" class="badge-chip">ID: SO2-0000</span></div>
               <div class="acc-sub">Добавление тиммейтов по личному ID</div>
             </div>
           </div>
-          <div class="acc-chevron glass-border" aria-hidden="true">⌄</div>
+          <div class="acc-chevron glass-capsule" aria-hidden="true">⌄</div>
         </div>
         <div class="acc-body-wrap">
           <div class="acc-body-inner">
             <div style="display:grid; grid-template-columns:minmax(0,1fr) auto; gap:10px; margin-top:8px; margin-bottom:8px;">
-              <div class="auth-input-wrap character-card glass-border" style="margin-bottom:0;">
+              <div class="auth-input-wrap btn-dark glass-capsule" style="margin-bottom:0; cursor:text;">
                 <div style="width:100%;">
                   <label class="auth-input-label" for="friendAddInput">ID ТИММЕЙТА</label>
                   <input id="friendAddInput" class="auth-input" type="text" placeholder="SO2-7744" autocomplete="off" spellcheck="false" />
                 </div>
               </div>
-              <button type="button" class="btn-main glass-border" style="width:auto; padding-inline:20px; border-radius:18px;" aria-label="Добавить тиммейта" onclick="addFriendByCode()">Добавить</button>
+              <button type="button" class="btn-main glass-capsule" style="width:auto; padding-inline:20px;" aria-label="Добавить тиммейта" onclick="addFriendByCode()">Добавить</button>
             </div>
             <div id="friendsListBox"></div>
           </div>
@@ -1322,7 +1301,7 @@
     <div id="tabProfile" class="tab-section">
       <div class="acc-block blur-container open" style="padding:16px;">
         <div style="display:flex; align-items:center; gap:14px; margin-bottom:14px; padding-bottom:14px; border-bottom:1px solid rgba(255,255,255,0.08);">
-          <div class="header-avatar-holder glass-border" style="width:64px; height:64px; border-radius:50%;" onclick="triggerAvatarUpload()" role="button" tabindex="0" aria-label="Сменить аватарку">
+          <div class="header-avatar-holder glass-capsule" style="width:64px; height:64px; border-radius:50%;" onclick="triggerAvatarUpload()" role="button" tabindex="0" aria-label="Сменить аватарку">
             <img id="profAvatarImg" src="" alt="" />
             <span id="profAvatarFallback" style="font-size:1.5rem; font-weight:800; color:#FFFFFF;">P</span>
           </div>
@@ -1330,13 +1309,13 @@
             <div style="font-size:1.15rem; font-weight:800; color:#fff;" id="profNickText">login</div>
             <div style="font-size:0.75rem; color:#30D158; font-weight:700; margin-top:2px;" id="profSubVal">АКТИВНА</div>
             <div style="display:flex; gap:8px; flex-wrap:wrap; margin-top:10px;">
-              <button type="button" class="btn-dark glass-border" style="padding:8px 14px; font-size:0.6875rem; min-height:36px; width:auto;" onclick="triggerAvatarUpload()">
+              <button type="button" class="btn-dark glass-capsule" style="padding:8px 14px; font-size:0.6875rem; min-height:36px; width:auto;" onclick="triggerAvatarUpload()">
                 Сменить аватарку
               </button>
-              <button type="button" class="btn-dark glass-border" style="padding:8px 14px; font-size:0.6875rem; min-height:36px; width:auto;" onclick="triggerCustomBgUpload()">
+              <button type="button" class="btn-dark glass-capsule" style="padding:8px 14px; font-size:0.6875rem; min-height:36px; width:auto;" onclick="triggerCustomBgUpload()">
                 Установить фон
               </button>
-              <button type="button" class="btn-dark glass-border" style="padding:8px 14px; font-size:0.6875rem; min-height:36px; width:auto;" onclick="resetCustomBgToCarbon()">
+              <button type="button" class="btn-dark glass-capsule" style="padding:8px 14px; font-size:0.6875rem; min-height:36px; width:auto;" onclick="resetCustomBgToCarbon()">
                 Сбросить фон
               </button>
             </div>
@@ -1346,7 +1325,7 @@
         <div style="font-size:0.8125rem; color:var(--text-main); display:flex; flex-direction:column; gap:12px; margin-bottom:18px;">
           <div style="display:flex; justify-content:space-between; padding-bottom:10px; border-bottom:1px solid rgba(255,255,255,0.08);">
             <span style="color:var(--text-muted); font-weight:500;">Лицензионный ключ</span>
-            <b id="profKeyMasked" style="color:var(--accent-main); font-variant-numeric:tabular-nums;">TP-***-******</b>
+            <b id="profKeyMasked" style="color:var(--accent-bright); font-variant-numeric:tabular-nums;">TP-***-******</b>
           </div>
           <div style="display:flex; justify-content:space-between; padding-bottom:10px; border-bottom:1px solid rgba(255,255,255,0.08);">
             <span style="color:var(--text-muted); font-weight:500;">Аппаратный HWID</span>
@@ -1358,17 +1337,17 @@
           </div>
           <div style="display:flex; justify-content:space-between;">
             <span style="color:var(--text-muted); font-weight:500;">Активный конфиг</span>
-            <b id="profDeviceModeText" style="color:var(--accent-main);">ТЕЛЕПОРТ УЛЬТРА</b>
+            <b id="profDeviceModeText" style="color:var(--accent-bright);">ТЕЛЕПОРТ УЛЬТРА</b>
           </div>
         </div>
 
-        <button type="button" class="btn-main glass-border" style="margin-bottom:12px;" onclick="saveAllAppSettingsMaster()">
+        <button type="button" class="btn-main glass-capsule" style="margin-bottom:12px;" onclick="saveAllAppSettingsMaster()">
           ⚡ Сохранить настройки профиля
         </button>
 
         <div style="display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:10px;">
-          <button type="button" class="btn-dark glass-border" onclick="openSupportLink()">Написать в поддержку</button>
-          <button type="button" class="btn-danger glass-border" onclick="handleLogoutClick()">Сменить ключ</button>
+          <button type="button" class="btn-dark glass-capsule" onclick="openSupportLink()">Написать в поддержку</button>
+          <button type="button" class="btn-danger glass-capsule" onclick="handleLogoutClick()">Сменить ключ</button>
         </div>
       </div>
     </div>
@@ -1376,7 +1355,7 @@
   </main>
 
   <nav id="bottomNavBar" class="bottom-nav-bar blur-container" aria-label="Основная навигация">
-    <div id="navLiquidLens" class="nav-liquid-lens" aria-hidden="true"></div>
+    <div id="navLiquidLens" class="nav-liquid-lens glass-capsule" aria-hidden="true"></div>
     <div class="nav-item active" data-tab="tabSens" data-nav-idx="0" role="button" tabindex="0" onclick="switchTab('tabSens');">
       <svg aria-hidden="true" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>
       <span>Главное</span>
@@ -1574,7 +1553,7 @@
         return true;
       }
       return false;
-    };
+    }
 
     function toggleAccordionBlock(id) {
       const el = document.getElementById(id);
@@ -1653,18 +1632,18 @@
             '<p style="font-size:0.78rem; color:var(--text-muted); line-height:1.45; margin-bottom:10px;">' +
               'Без запущенного <b>Shizuku</b> телепорт-сенса, растяг экрана «T» и бустер FPS не смогут примениться к системе.' +
             '</p>' +
-            '<div class="character-card glass-border" style="margin-bottom:12px; cursor:default; align-items:flex-start; flex-direction:column; padding:12px;">' +
-              '<div style="font-weight:700; margin-bottom:4px; color:var(--accent-main); font-size:0.8125rem;">📋 Быстрый гайд по запуску:</div>' +
-              '<div style="font-size:0.75rem; color:#fff; line-height:1.5; text-align:left;">1. Открой приложение <b>Shizuku</b> на телефоне.<br>2. Включи <b>Беспроводную отладку</b> в Настройках для разработчиков и нажми <b>Запустить</b>.<br>3. Вернись сюда и нажми <b>«Проверить и выдать доступ»</b>.</div>' +
+            '<div class="character-card glass-capsule" style="margin-bottom:12px; cursor:default; align-items:flex-start; flex-direction:column; padding:12px; text-align:left; border-radius: 20px;">' +
+              '<div style="font-weight:700; margin-bottom:4px; color:var(--accent-bright); font-size:0.8125rem;">📋 Быстрый гайд по запуску:</div>' +
+              '<div style="font-size:0.75rem; color:#fff; line-height:1.5;">1. Открой приложение <b>Shizuku</b> на телефоне.<br>2. Включи <b>Беспроводную отладку</b> в Настройках для разработчиков и нажми <b>Запустить</b>.<br>3. Вернись сюда и нажми <b>«Проверить и выдать доступ»</b>.</div>' +
             '</div>' +
-            '<button type="button" class="btn-main glass-border" style="margin-bottom:8px;" onclick="requestAndRecheckShizuku()">' +
+            '<button type="button" class="btn-main glass-capsule" style="margin-bottom:8px;" onclick="requestAndRecheckShizuku()">' +
               '⚡ Проверить и выдать доступ Shizuku' +
             '</button>' +
             '<div style="display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:8px; margin-bottom:8px;">' +
-              '<button type="button" class="btn-dark glass-border" onclick="openSupportLink()">💬 Помощь в ТГ</button>' +
-              '<button type="button" class="btn-dark glass-border" onclick="copyDiscordSupport()">🎧 Мой Дискорд</button>' +
+              '<button type="button" class="btn-dark glass-capsule" onclick="openSupportLink()">💬 Помощь в ТГ</button>' +
+              '<button type="button" class="btn-dark glass-capsule" onclick="copyDiscordSupport()">🎧 Мой Дискорд</button>' +
             '</div>' +
-            '<button type="button" class="btn-dark glass-border" onclick="document.getElementById(\'shizukuRequiredModal\').style.display=\'none\'">' +
+            '<button type="button" class="btn-dark glass-capsule" onclick="document.getElementById(\'shizukuRequiredModal\').style.display=\'none\'">' +
               'Закрыть окно' +
             '</button>';
         }
@@ -2970,7 +2949,7 @@
         '<div class="friend-item">' +
         '<div style="min-width:0;"><div style="font-size:0.8125rem;font-weight:600;color:#fff;">Тиммейт <bdi>' + code + '</bdi></div>' +
         '<div style="font-size:0.6875rem;color:#30D158;">Онлайн • SO2Teleport PRO</div></div>' +
-        '<button type="button" class="icon-circle-action glass-border" aria-label="Удалить тиммейта ' + code + '" onclick="removeFriendAtIndex(' + idx + ')">✕</button>' +
+        '<button type="button" class="icon-circle-action glass-capsule" aria-label="Удалить тиммейта ' + code + '" onclick="removeFriendAtIndex(' + idx + ')">✕</button>' +
         '</div>'
       )).join("");
     }
