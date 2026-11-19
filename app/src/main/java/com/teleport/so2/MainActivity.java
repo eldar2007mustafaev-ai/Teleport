@@ -358,8 +358,9 @@ public class MainActivity extends Activity {
     @Override
     protected void onPause() {
         super.onPause();
+        // ВАЖНО: Мы убрали webView.onPause(); 
+        // Теперь WebView продолжает работать в фоне, и скрипты не замораживаются!
         if (webView != null) {
-            webView.onPause();
             webView.resumeTimers();
         }
     }
@@ -824,10 +825,7 @@ public class MainActivity extends Activity {
                 "wm size reset; " +
                 "cmd window set-ignore-orientation-request false; " +
                 "cmd window set-fix-to-user-rotation default; " +
-                "settings put system accelerometer_rotation 0; " +
-                "settings delete system peak_refresh_rate; " +
-                "settings delete system min_refresh_rate; " +
-                "settings put secure refresh_rate_mode 0"
+                "settings put system accelerometer_rotation 0"
         );
         screenMetricsValid = false;
         cachedTrashValid = false;
