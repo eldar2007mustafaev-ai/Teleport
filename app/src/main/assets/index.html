@@ -19,7 +19,7 @@
       --accent-sec-rgb: 59, 114, 184;
       --focus-ring: rgba(156, 216, 240, 0.92);
 
-      --glass-blur: 14px;
+      --glass-blur: 10px; /* Снизили блюр до безопасного значения */
 
       --glass-tint-surface: linear-gradient(
         145deg,
@@ -198,56 +198,19 @@
       outline-offset: 2px;
     }
 
-    /* АНИМИРОВАННЫЙ CSS ФОН ВМЕСТО ВИДЕО (LIQUID GLASS BACKGROUND) */
+    /* МАКСИМАЛЬНО ЛЕГКИЙ ГРАДИЕНТНЫЙ ФОН БЕЗ СФЕР И ВИДЕО */
     #animatedBgLayer {
       position: fixed;
       inset: 0;
       z-index: -3;
       pointer-events: none;
-      background: linear-gradient(135deg, var(--bg-fallback-1) 0%, var(--bg-fallback-2) 50%, var(--bg-fallback-3) 100%);
-      overflow: hidden;
-    }
-    
-    .liquid-orb {
-      position: absolute;
-      border-radius: 50%;
-      filter: blur(80px);
-      transform: translateZ(0);
-      will-change: transform;
-      animation: floatOrb 12s infinite alternate ease-in-out;
-    }
-
-    .orb-1 {
-      width: 350px; 
-      height: 350px;
-      background: rgba(var(--accent-rgb), 0.55);
-      top: -10%; left: -15%;
-    }
-    
-    .orb-2 {
-      width: 400px; 
-      height: 400px;
-      background: rgba(var(--accent-sec-rgb), 0.45);
-      bottom: -15%; right: -15%;
-      animation-duration: 16s;
-      animation-direction: alternate-reverse;
-    }
-
-    .orb-3 {
-      width: 250px; 
-      height: 250px;
-      background: rgba(var(--accent-rgb), 0.35);
-      top: 30%; right: 10%;
-      animation-duration: 20s;
-    }
-
-    @keyframes floatOrb {
-      0% { transform: translate3d(0, 0, 0) scale(1); }
-      100% { transform: translate3d(40px, 60px, 0) scale(1.15); }
+      background: radial-gradient(circle at 50% -20%, rgba(var(--accent-rgb), 0.25) 0%, transparent 60%),
+                  radial-gradient(circle at 100% 100%, rgba(var(--accent-sec-rgb), 0.25) 0%, transparent 60%),
+                  linear-gradient(135deg, var(--bg-fallback-1) 0%, var(--bg-fallback-2) 50%, var(--bg-fallback-3) 100%);
     }
 
     /* Скрываем пустые иконки от несуществующего видео */
-    #bgCustomVideo, #bgCustomGif, #bgParticlesCanvas {
+    #bgCustomVideo, #bgCustomGif, #bgParticlesCanvas, .liquid-orb {
       display: none !important;
     }
 
@@ -256,17 +219,12 @@
       inset: 0;
       z-index: -2;
       pointer-events: none;
-      background:
-        radial-gradient(ellipse 95% 42% at 50% 0%, rgba(var(--accent-rgb), 0.15) 0%, transparent 68%),
-        radial-gradient(ellipse 90% 45% at 50% 100%, rgba(var(--accent-sec-rgb), 0.15) 0%, transparent 70%),
-        rgba(4, 7, 15, 0.18);
+      /* Отключаем тяжелые радиальные градиенты на весь экран */
+      background: rgba(4, 7, 15, 0.05);
       transition: background 260ms ease;
     }
     body.light #bgThemeTintLayer {
-      background:
-        radial-gradient(ellipse 95% 42% at 50% 0%, rgba(var(--accent-rgb), 0.12) 0%, transparent 68%),
-        radial-gradient(ellipse 90% 45% at 50% 100%, rgba(var(--accent-sec-rgb), 0.10) 0%, transparent 70%),
-        rgba(255, 255, 255, 0.10);
+      background: rgba(255, 255, 255, 0.05);
     }
     #bgVignetteOverlay {
       display: none;
@@ -327,10 +285,9 @@
     .acc-chevron,
     .char-arrow {
       position: relative;
-      /* Немного снижен saturate, чтобы убрать фризы отрисовки */
-      backdrop-filter: blur(var(--glass-blur)) saturate(120%);
-      -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(120%);
-      /* Принудительное аппаратное ускорение для карточек */
+      /* Снижен saturate до 100% (убирает перерасчет цветов) */
+      backdrop-filter: blur(var(--glass-blur)) saturate(100%);
+      -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(100%);
       transform: translateZ(0);
       backface-visibility: hidden;
     }
@@ -404,7 +361,6 @@
       -webkit-mask-composite: xor;
       mask-composite: exclude;
       pointer-events: none;
-      /* Аппаратное ускорение для градиентных рамок */
       transform: translateZ(0);
     }
 
@@ -2210,7 +2166,7 @@
             <div class="pro-slider-row">
               <div class="pro-slider-head"><label class="pro-slider-name" for="sl_sharp">1. Сила Телепорта (Резкость)</label><span id="val_sharp" class="pro-slider-pill">2.50</span></div>
               <input id="sl_sharp" type="range" min="10" max="25" step="1" value="25" oninput="onSensSliderChange()" />
-              <div class="pro-slider-hint">Максимум (2.50) — мгновенный скачок прицела без анимации</div>
+              <div class="pro-slider-hint">Максимум (2.50) — мгновен скачок прицела без анимации</div>
             </div>
 
             <div class="pro-slider-row">
