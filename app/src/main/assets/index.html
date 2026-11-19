@@ -21,20 +21,21 @@
 
       --glass-blur: 18px;
 
-      --glass-tint-surface: linear-gradient(145deg, rgba(255, 255, 255, 0.08) 0%, rgba(var(--accent-rgb), 0.12) 45%, rgba(0, 0, 0, 0.45) 100%);
-      --glass-tint-card: linear-gradient(145deg, rgba(255, 255, 255, 0.05) 0%, rgba(var(--accent-rgb), 0.08) 50%, rgba(0, 0, 0, 0.35) 100%);
+      /* Глубокие стеклянные заливки */
+      --glass-tint-surface: linear-gradient(145deg, rgba(255, 255, 255, 0.08) 0%, rgba(var(--accent-rgb), 0.12) 45%, rgba(0, 0, 0, 0.55) 100%);
+      --glass-tint-card: linear-gradient(145deg, rgba(255, 255, 255, 0.05) 0%, rgba(var(--accent-rgb), 0.08) 50%, rgba(0, 0, 0, 0.40) 100%);
       
-      --glass-tint-btn: radial-gradient(125% 140% at 20% 20%, rgba(255, 255, 255, 0.15) 0%, rgba(var(--accent-rgb), 0.20) 50%, rgba(0, 0, 0, 0.40) 100%);
-      --glass-tint-active: radial-gradient(125% 140% at 20% 15%, rgba(255, 255, 255, 0.28) 0%, rgba(var(--accent-rgb), 0.38) 45%, rgba(var(--accent-sec-rgb), 0.28) 100%);
-      --glass-sphere-fill: radial-gradient(circle at 28% 22%, rgba(255, 255, 255, 0.35) 0%, rgba(var(--accent-rgb), 0.35) 50%, rgba(var(--accent-sec-rgb), 0.25) 100%);
+      --glass-tint-btn: radial-gradient(125% 140% at 20% 20%, rgba(255, 255, 255, 0.15) 0%, rgba(var(--accent-rgb), 0.18) 50%, rgba(0, 0, 0, 0.55) 100%);
+      --glass-tint-active: radial-gradient(125% 140% at 20% 15%, rgba(255, 255, 255, 0.28) 0%, rgba(var(--accent-rgb), 0.35) 45%, rgba(var(--accent-sec-rgb), 0.25) 100%);
+      --glass-sphere-fill: radial-gradient(circle at 28% 22%, rgba(255, 255, 255, 0.40) 0%, rgba(var(--accent-rgb), 0.40) 50%, rgba(var(--accent-sec-rgb), 0.30) 100%);
       --glass-tint-nav: linear-gradient(180deg, rgba(0, 0, 0, 0.45) 0%, rgba(var(--accent-sec-rgb), 0.15) 100%);
 
+      /* Градиенты 1px рамок для красивого блика */
       --glass-rim-tl: rgba(255, 255, 255, 0.65);
       --glass-rim-mid: rgba(255, 255, 255, 0.02);
       --glass-rim-br: rgba(var(--accent-rgb), 0.45);
-
-      --glass-rim-active-tl: rgba(255, 255, 255, 0.90);
-      --glass-rim-active-br: rgba(var(--accent-rgb), 0.70);
+      --glass-rim-active-tl: rgba(255, 255, 255, 0.95);
+      --glass-rim-active-br: rgba(var(--accent-rgb), 0.75);
 
       --text-main: rgba(255, 255, 255, 0.95);
       --text-muted: rgba(235, 235, 245, 0.65);
@@ -92,15 +93,17 @@
     }
     input::placeholder { color: var(--text-hint); }
 
+    /* Обёртка с Motion Blur (меняется через JS) */
     #mainAppWorkspace {
       max-width: 500px; margin-inline: auto; padding-inline: 14px; padding-block-end: 16px; position: relative; z-index: 2;
+      will-change: filter; transition: filter 0.15s ease-out;
     }
 
     /* --- ПРЕМИАЛЬНЫЕ УНИВЕРСАЛЬНЫЕ КЛАССЫ СТЕКЛА --- */
     .premium-glass {
       position: relative;
-      backdrop-filter: blur(var(--glass-blur)) saturate(150%);
-      -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(150%);
+      backdrop-filter: blur(var(--glass-blur)) saturate(160%);
+      -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(160%);
       transform: translateZ(0);
     }
     .premium-glass::before {
@@ -110,256 +113,257 @@
       -webkit-mask-composite: xor; mask-composite: exclude; pointer-events: none; transition: background 260ms ease;
     }
     .premium-glass.active-state::before, .premium-capsule.active-state::before {
-      background: linear-gradient(135deg, var(--glass-rim-active-tl) 0%, rgba(255,255,255,0.08) 48%, var(--glass-rim-active-br) 100%);
+      background: linear-gradient(135deg, var(--glass-rim-active-tl) 0%, rgba(255,255,255,0.15) 48%, var(--glass-rim-active-br) 100%);
     }
 
-    /* Карточки (оставляем мягкие углы 28px для блоков, но все кнопки внутри капсулы) */
+    /* Карточки (очень круглые - 36px) */
     .premium-card {
-      background: var(--glass-tint-card); border-radius: 28px;
-      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35), inset 0 1px 2px rgba(255, 255, 255, 0.15);
+      background: var(--glass-tint-card); border-radius: 36px;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.40), inset 0 1px 2px rgba(255, 255, 255, 0.20);
       transition: transform 280ms var(--spring-ease), background 200ms ease, box-shadow 200ms ease;
     }
     .premium-card.surface {
       background: var(--glass-tint-surface);
-      box-shadow: 0 12px 32px rgba(0, 0, 0, 0.55), inset 0 2px 4px rgba(255, 255, 255, 0.20), inset 0 -4px 12px rgba(var(--accent-rgb), 0.15);
+      box-shadow: 0 14px 32px rgba(0, 0, 0, 0.60), inset 0 2px 4px rgba(255, 255, 255, 0.25), inset 0 -4px 12px rgba(var(--accent-rgb), 0.25);
     }
     .premium-card.active-state {
       background: var(--glass-tint-active);
-      box-shadow: 0 8px 24px rgba(var(--accent-sec-rgb), 0.35), inset 0 1.5px 3px rgba(255, 255, 255, 0.45);
+      box-shadow: 0 8px 24px rgba(var(--accent-sec-rgb), 0.45), inset 0 1.5px 3px rgba(255, 255, 255, 0.50);
     }
 
     /* ВЕЗДЕ КАПСУЛЫ (999px) ДЛЯ КНОПОК И ИНПУТОВ */
     .premium-capsule {
       background: var(--glass-tint-btn); border-radius: 999px !important;
-      box-shadow: 0 6px 16px rgba(0,0,0,0.30), inset 0 1px 2px rgba(255,255,255,0.20);
+      box-shadow: 0 6px 16px rgba(0,0,0,0.35), inset 0 1px 3px rgba(255,255,255,0.25);
       display: flex; align-items: center; justify-content: center; text-align: center;
       transition: transform 280ms var(--spring-ease), background 200ms ease, box-shadow 200ms ease;
     }
     .premium-capsule.primary {
       background: var(--glass-tint-active);
-      box-shadow: 0 8px 24px rgba(var(--accent-sec-rgb), 0.40), inset 0 1.5px 3px rgba(255,255,255,0.40), inset 0 -4px 12px rgba(var(--accent-sec-rgb),0.30);
+      box-shadow: 0 8px 24px rgba(var(--accent-sec-rgb), 0.45), inset 0 1.5px 3px rgba(255,255,255,0.45), inset 0 -4px 12px rgba(var(--accent-sec-rgb),0.35);
       color: var(--text-main); font-weight: 700; text-shadow: 0 1px 3px rgba(0,0,0,0.6);
     }
     .premium-capsule.danger {
-      background: rgba(255, 69, 58, 0.20);
-      box-shadow: 0 6px 16px rgba(255, 69, 58, 0.30), inset 0 1px 2px rgba(255, 255, 255, 0.35);
+      background: rgba(255, 69, 58, 0.25);
+      box-shadow: 0 6px 16px rgba(255, 69, 58, 0.35), inset 0 1px 2px rgba(255, 255, 255, 0.40);
       color: #FF8A8A;
     }
     .premium-capsule.active-state {
       background: var(--glass-tint-active);
-      box-shadow: 0 6px 18px rgba(var(--accent-sec-rgb), 0.40), inset 0 1.5px 3px rgba(255,255,255,0.45);
+      box-shadow: 0 6px 18px rgba(var(--accent-sec-rgb), 0.45), inset 0 1.5px 3px rgba(255,255,255,0.50);
     }
     
     .premium-capsule:not(:disabled):active, .premium-card.interactive:not(:disabled):active, .icon-circle-action:active, .shizuku-status-pill:active, .header-avatar-holder:active {
       transform: scale(0.95);
     }
 
-    .btn-main, .btn-dark, .btn-danger { min-height: 52px; padding: 12px 24px; font-size: var(--text-body-sm); font-weight: 700; }
+    /* Специфичные размеры для кнопок */
+    .btn-main, .btn-dark, .btn-danger { min-height: 54px; padding: 14px 24px; font-size: var(--text-body-sm); font-weight: 700; }
     .btn-dark { font-weight: 600; }
-    .hub-action-pill { min-height: 48px; padding: 12px 16px; font-size: var(--text-caption); }
+    .hub-action-pill { min-height: 50px; padding: 14px 16px; font-size: var(--text-caption); }
     
-    /* Инпуты (Логин, Войс, Друзья) теперь тоже круглые капсулы */
-    .auth-input-wrap { padding: 12px 24px; margin-block-end: 14px; width: 100%; text-align: left; cursor: text; border-radius: 999px !important; }
-    .auth-input-label { display: block; font-size: 0.6875rem; font-weight: 700; color: var(--accent-bright); letter-spacing: 0.04em; margin-block-end: 4px; }
+    /* Инпуты как капсулы */
+    .auth-input-wrap { padding: 14px 20px; margin-block-end: 14px; width: 100%; text-align: left; cursor: text; }
+    .auth-input-label { display: block; font-size: 0.6875rem; font-weight: 700; color: var(--accent-bright); letter-spacing: 0.04em; margin-block-end: 6px; }
     
     /* Шапка */
-    .top-brand-header { padding: 14px 16px; margin-block-end: 12px; }
+    .top-brand-header { padding: 16px 18px; margin-block-end: 14px; }
     .top-brand-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
     .brand-left-wrap { display: flex; align-items: center; gap: 12px; min-width: 0; flex: 1; }
     .header-avatar-holder {
-      width: 48px; height: 48px; border-radius: 50%; background: var(--glass-sphere-fill);
-      box-shadow: 0 6px 16px rgba(0,0,0, 0.50), inset 0 2px 4px rgba(255,255,255,0.50), inset 0 -3px 8px rgba(0,0,0,0.40);
+      width: 50px; height: 50px; border-radius: 50%; background: var(--glass-sphere-fill);
+      box-shadow: 0 6px 16px rgba(0,0,0, 0.55), inset 0 2px 4px rgba(255,255,255,0.55), inset 0 -3px 8px rgba(0,0,0,0.45);
       display: flex; align-items: center; justify-content: center; flex-shrink: 0; overflow: hidden; cursor: pointer; transition: transform 280ms var(--spring-ease);
     }
     .header-avatar-holder img { width: 100%; height: 100%; object-fit: cover; display: none; }
     .header-avatar-fallback { font-size: 1.25rem; font-weight: 800; color: #FFFFFF; text-shadow: 0 1px 3px rgba(0,0,0,0.7); }
     .brand-title-main { font-size: var(--text-heading); font-weight: 800; letter-spacing: -0.01em; color: var(--text-main); line-height: 1.2; }
-    .brand-title-main span { color: var(--accent-bright); text-shadow: 0 0 12px rgba(var(--accent-rgb), 0.45); }
+    .brand-title-main span { color: var(--accent-bright); text-shadow: 0 0 12px rgba(var(--accent-rgb), 0.55); }
     .brand-meta-sub { font-size: var(--text-caption); color: var(--text-muted); font-weight: 500; margin-block-start: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     
     .shizuku-status-pill {
       display: inline-flex; align-items: center; gap: 8px; min-height: 42px; padding-inline: 16px;
-      font-size: var(--text-caption); font-weight: 700;
+      font-size: var(--text-caption); font-weight: 700; cursor: pointer;
     }
     .status-dot { width: 9px; height: 9px; border-radius: 50%; background: #FF453A; box-shadow: 0 0 8px #FF453A; }
     .status-dot.on { background: #30D158; box-shadow: 0 0 8px #30D158; }
     
     .top-header-bottom-bar {
-      display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-block-start: 12px; padding-block-start: 12px;
+      display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-block-start: 14px; padding-block-start: 14px;
       border-block-start: 1px solid rgba(255, 255, 255, 0.15); font-size: var(--text-caption); color: var(--text-muted); font-weight: 600;
     }
     .theme-dots { display: flex; gap: 8px; align-items: center; }
     .theme-dot {
-      width: 26px; height: 26px; border-radius: 50%; cursor: pointer; background: rgba(0,0,0,0.3);
-      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.7), inset 0 1.5px 3px rgba(255, 255, 255, 0.5);
-      transition: transform 280ms var(--spring-ease); border: 1px solid rgba(255,255,255,0.4);
+      width: 26px; height: 26px; border-radius: 50%; cursor: pointer; background: rgba(0,0,0,0.35);
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.75), inset 0 1.5px 3px rgba(255, 255, 255, 0.55);
+      transition: transform 280ms var(--spring-ease);
     }
-    .theme-dot.active { box-shadow: 0 0 14px var(--accent-bright), inset 0 2px 4px #FFFFFF; transform: scale(1.18); border-color: #fff; }
+    .theme-dot.active { box-shadow: 0 0 14px var(--accent-bright), inset 0 2px 4px #FFFFFF; transform: scale(1.18); }
 
     /* Аккордеоны */
-    .acc-header { padding: 16px 18px; display: flex; align-items: center; justify-content: space-between; gap: 12px; cursor: pointer; }
+    .acc-header { padding: 18px 20px; display: flex; align-items: center; justify-content: space-between; gap: 12px; cursor: pointer; }
     .acc-left { display: flex; align-items: center; gap: 12px; min-width: 0; flex: 1; }
     .acc-icon {
-      width: 44px; height: 44px; border-radius: 50%; background: var(--glass-sphere-fill);
-      box-shadow: 0 6px 16px rgba(0,0,0,0.45), inset 0 2px 4px rgba(255,255,255,0.50);
+      width: 46px; height: 46px; border-radius: 50%; background: var(--glass-sphere-fill);
+      box-shadow: 0 6px 16px rgba(0,0,0,0.50), inset 0 2px 4px rgba(255,255,255,0.55);
       display: flex; align-items: center; justify-content: center; font-size: 1.15rem; color: #FFFFFF; flex-shrink: 0;
     }
     .acc-title-wrap { min-width: 0; flex: 1; }
     .acc-title { font-size: 0.9375rem; font-weight: 700; color: var(--text-main); line-height: 1.3; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
     .acc-sub { font-size: var(--text-caption); color: var(--text-muted); font-weight: 400; line-height: 1.4; margin-block-start: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     .acc-chevron {
-      width: 32px; height: 32px; border-radius: 50%; background: var(--glass-tint-btn);
-      box-shadow: 0 4px 12px rgba(0,0,0,0.4), inset 0 1px 3px rgba(255,255,255,0.30);
+      width: 34px; height: 34px; border-radius: 50%; background: var(--glass-tint-btn);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.45), inset 0 1px 3px rgba(255,255,255,0.35);
       display: flex; align-items: center; justify-content: center; color: #FFFFFF; font-size: 0.85rem; font-weight: 700; flex-shrink: 0; transition: transform 280ms var(--spring-ease);
     }
     .acc-block.open .acc-chevron { transform: rotate(180deg); background: var(--glass-sphere-fill); }
     .acc-body-wrap { display: none; }
     .acc-block.open .acc-body-wrap { display: block; }
-    .acc-body-inner { padding: 8px 18px 18px; border-block-start: 1px solid rgba(255,255,255,0.08); }
+    .acc-body-inner { padding: 8px 20px 20px; border-block-start: 1px solid rgba(255,255,255,0.12); }
 
     /* Хаб Телепорта */
-    .cyber-hub-card { padding: 18px; margin-block-end: 14px; display: flex; flex-direction: column; gap: 16px; }
+    .cyber-hub-card { padding: 20px; margin-block-end: 14px; display: flex; flex-direction: column; gap: 18px; }
     .hub-top-bar { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
     .hub-text-col { display: flex; flex-direction: column; min-width: 0; flex: 1; }
     .hub-card-title { font-size: 0.9375rem; font-weight: 800; color: var(--text-main); line-height: 1.3; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
     .hub-state-word { color: #30D158; }
     .hub-state-word.off { color: #FF453A; }
     .hub-card-sub { font-size: var(--text-caption); color: var(--text-muted); font-weight: 400; margin-block-start: 3px; line-height: 1.4; }
-    .cyber-switch-lg { position: relative; width: 60px; height: 36px; flex-shrink: 0; display: inline-block; cursor: pointer; }
+    .cyber-switch-lg { position: relative; width: 64px; height: 38px; flex-shrink: 0; display: inline-block; cursor: pointer; }
     .cyber-switch-lg input { opacity: 0; width: 0; height: 0; }
     .cyber-slider-lg {
-      position: absolute; inset: 0; background: rgba(0,0,0,0.45); border: 1px solid rgba(255,255,255,0.15);
-      box-shadow: inset 0 2px 8px rgba(0,0,0,0.65), inset 0 -1px 3px rgba(255,255,255,0.15); border-radius: 999px;
+      position: absolute; inset: 0; background: rgba(0,0,0,0.50);
+      box-shadow: inset 0 2px 8px rgba(0,0,0,0.75), inset 0 -1px 3px rgba(255,255,255,0.20); border-radius: 999px;
     }
     .cyber-slider-lg::before {
-      content: ""; position: absolute; width: 28px; height: 28px; inset-inline-start: 3px; inset-block-start: 3px; border-radius: 50%;
+      content: ""; position: absolute; width: 30px; height: 30px; inset-inline-start: 4px; inset-block-start: 4px; border-radius: 50%;
       background: radial-gradient(circle at 32% 28%, #FFFFFF 0%, #E2E8F0 70%, #CBD5E1 100%);
-      box-shadow: 0 4px 8px rgba(0,0,0,0.60), inset 0 1px 3px #FFFFFF; transition: transform 280ms var(--spring-ease);
+      box-shadow: 0 4px 8px rgba(0,0,0,0.65), inset 0 1px 3px #FFFFFF; transition: transform 280ms var(--spring-ease);
     }
-    .cyber-switch-lg input:checked + .cyber-slider-lg { background: var(--glass-tint-active); border-color: rgba(255,255,255,0.6); box-shadow: 0 0 16px rgba(var(--accent-rgb),0.35), inset 0 2px 8px rgba(0,0,0,0.4); }
-    .cyber-switch-lg input:checked + .cyber-slider-lg::before { transform: translateX(24px); background: #FFFFFF; }
+    .cyber-switch-lg input:checked + .cyber-slider-lg { background: var(--glass-tint-active); box-shadow: 0 0 18px rgba(var(--accent-rgb),0.40), inset 0 2px 8px rgba(0,0,0,0.45); }
+    .cyber-switch-lg input:checked + .cyber-slider-lg::before { transform: translateX(26px); background: #FFFFFF; }
     
-    .hub-actions-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 10px; }
+    .hub-actions-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 12px; }
 
     /* Пресеты в аккордеонах */
-    .character-card { padding: 16px; margin-block-start: 10px; display: flex; align-items: center; justify-content: space-between; gap: 12px; border-radius: 999px !important; }
+    .character-card { padding: 18px 20px; margin-block-start: 12px; display: flex; align-items: center; justify-content: space-between; gap: 14px; }
     .char-title { font-size: 0.875rem; font-weight: 700; color: var(--text-main); line-height: 1.3; display: flex; align-items: center; flex-wrap: wrap; gap: 8px; }
     .char-tag {
-      font-size: 0.6875rem; font-weight: 700; letter-spacing: 0.04em; padding: 4px 12px; border-radius: 999px;
-      background: rgba(0, 0, 0, 0.45); box-shadow: inset 0 1px 2px rgba(255, 255, 255, 0.3);
+      font-size: 0.6875rem; font-weight: 700; letter-spacing: 0.04em; padding: 4px 14px; border-radius: 999px;
+      background: rgba(0, 0, 0, 0.45); box-shadow: inset 0 1px 2px rgba(255, 255, 255, 0.35);
       color: #FFFFFF; text-transform: uppercase; font-variant-numeric: tabular-nums;
     }
-    .char-tag.pad-badge { background: rgba(var(--accent-sec-rgb), 0.40); }
-    .char-tag.budget-badge { background: rgba(48, 209, 88, 0.30); }
+    .char-tag.pad-badge { background: rgba(var(--accent-sec-rgb), 0.45); }
+    .char-tag.budget-badge { background: rgba(48, 209, 88, 0.35); }
     .char-desc { font-size: var(--text-caption); color: var(--text-muted); margin-block-start: 6px; font-weight: 400; line-height: 1.45; text-wrap: pretty; }
     .char-arrow {
-      width: 36px; height: 36px; border-radius: 50%; background: var(--glass-sphere-fill);
-      box-shadow: 0 4px 12px rgba(0,0,0,0.45), inset 0 1.5px 3px rgba(255,255,255,0.50);
-      display: inline-flex; align-items: center; justify-content: center; font-size: 1rem; font-weight: 700; color: #FFFFFF; flex-shrink: 0;
+      width: 38px; height: 38px; border-radius: 50%; background: var(--glass-sphere-fill);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.50), inset 0 1.5px 3px rgba(255,255,255,0.55);
+      display: inline-flex; align-items: center; justify-content: center; font-size: 1.1rem; font-weight: 700; color: #FFFFFF; flex-shrink: 0;
     }
 
     /* Слайдеры */
-    .section-eyebrow { font-size: 0.6875rem; font-weight: 700; letter-spacing: 0.05em; color: var(--accent-bright); text-transform: uppercase; margin-block: 16px 8px; }
-    .pro-slider-row { padding: 14px 16px; margin-block-start: 10px; border-radius: 24px; }
-    .pro-slider-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-block-end: 12px; }
+    .section-eyebrow { font-size: 0.6875rem; font-weight: 700; letter-spacing: 0.05em; color: var(--accent-bright); text-transform: uppercase; margin-block: 18px 10px; }
+    .pro-slider-row { padding: 16px 18px; margin-block-start: 12px; border-radius: 32px; }
+    .pro-slider-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-block-end: 14px; }
     .pro-slider-name { font-size: var(--text-body-sm); font-weight: 600; color: var(--text-main); line-height: 1.3; }
     .pro-slider-pill {
       font-size: var(--text-caption); font-weight: 700; font-variant-numeric: tabular-nums; color: #FFFFFF;
-      background: var(--glass-sphere-fill); box-shadow: inset 0 1.5px 3px rgba(255,255,255,0.40);
-      padding: 4px 12px; border-radius: 999px; min-width: 52px; text-align: center; flex-shrink: 0;
+      background: var(--glass-sphere-fill); box-shadow: inset 0 1.5px 3px rgba(255,255,255,0.45);
+      padding: 4px 14px; border-radius: 999px; min-width: 56px; text-align: center; flex-shrink: 0;
     }
-    .pro-slider-hint { font-size: 0.6875rem; color: var(--text-muted); margin-block-start: 8px; line-height: 1.4; }
+    .pro-slider-hint { font-size: 0.6875rem; color: var(--text-muted); margin-block-start: 10px; line-height: 1.4; }
     
-    input[type="range"] { -webkit-appearance: none; appearance: none; width: 100%; height: 8px; border-radius: 999px; background: linear-gradient(90deg, rgba(var(--accent-sec-rgb), 0.6) 0%, rgba(var(--accent-rgb), 0.7) 70%, rgba(255,255,255,0.15) 100%); outline: none; cursor: pointer; }
+    input[type="range"] { -webkit-appearance: none; appearance: none; width: 100%; height: 8px; border-radius: 999px; background: linear-gradient(90deg, rgba(var(--accent-sec-rgb), 0.6) 0%, rgba(var(--accent-rgb), 0.7) 70%, rgba(255,255,255,0.20) 100%); outline: none; cursor: pointer; }
     input[type="range"]::-webkit-slider-thumb {
       -webkit-appearance: none; appearance: none; width: 26px; height: 26px; border-radius: 50%;
       background: radial-gradient(circle at 32% 28%, #FFFFFF 0%, var(--accent-bright) 65%, var(--accent-main) 100%);
-      border: 1.5px solid #FFFFFF; box-shadow: 0 0 14px rgba(var(--accent-rgb),0.60), 0 4px 8px rgba(0,0,0,0.70); cursor: pointer;
+      box-shadow: 0 0 14px rgba(var(--accent-rgb),0.65), 0 4px 8px rgba(0,0,0,0.75); cursor: pointer;
     }
 
     /* Мои пресеты */
     .icon-circle-action {
-      min-width: 44px; min-height: 44px; border-radius: 50%; background: var(--glass-sphere-fill);
-      box-shadow: 0 6px 14px rgba(0,0,0,0.35), inset 0 1.5px 3px rgba(255,255,255,0.35); color: var(--text-main);
-      display: inline-flex; align-items: center; justify-content: center; font-size: 1rem; cursor: pointer; flex-shrink: 0; transition: transform 280ms var(--spring-ease);
+      min-width: 48px; min-height: 48px; border-radius: 50%; background: var(--glass-sphere-fill);
+      box-shadow: 0 6px 14px rgba(0,0,0,0.40), inset 0 1.5px 3px rgba(255,255,255,0.40); color: var(--text-main);
+      display: inline-flex; align-items: center; justify-content: center; font-size: 1.1rem; cursor: pointer; flex-shrink: 0; transition: transform 280ms var(--spring-ease);
     }
-    .saved-variant-row { padding: 14px 16px; margin-block-start: 10px; display: flex; align-items: center; justify-content: space-between; gap: 12px; border-radius: 999px !important; }
-    .code-input-bar { border-radius: 999px; padding: 10px 16px; margin-block-start: 8px; display: flex; align-items: center; gap: 10px; }
+    .saved-variant-row { padding: 16px 20px; margin-block-start: 12px; display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+    .code-input-bar { border-radius: 999px; padding: 12px 18px; margin-block-start: 10px; display: flex; align-items: center; gap: 12px; }
     
-    .shelf-cards-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 10px; margin-block-start: 12px; }
-    .shelf-preset-card { padding: 16px; display: flex; flex-direction: column; justify-content: space-between; min-height: 100px; border-radius: 32px !important; }
+    .shelf-cards-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 12px; margin-block-start: 14px; }
+    .shelf-preset-card { padding: 20px; display: flex; flex-direction: column; justify-content: space-between; min-height: 110px; border-radius: 36px !important; }
 
     /* Растяг экрана */
     .preview-stage-box {
-      width: 100%; min-height: 160px; background: rgba(0,0,0,0.45); box-shadow: inset 0 4px 12px rgba(0,0,0,0.6);
-      border-radius: 28px; position: relative; display: flex; align-items: center; justify-content: center; margin-block: 8px 14px; overflow: hidden;
+      width: 100%; min-height: 170px; background: rgba(0,0,0,0.50); box-shadow: inset 0 4px 12px rgba(0,0,0,0.65);
+      border-radius: 32px; position: relative; display: flex; align-items: center; justify-content: center; margin-block: 10px 16px; overflow: hidden;
     }
-    .stretch-dashed-outer { width: 230px; height: 120px; border: 1.5px dashed rgba(255,255,255,0.25); border-radius: 16px; display: flex; align-items: center; justify-content: center; }
+    .stretch-dashed-outer { width: 230px; height: 120px; border: 1.5px dashed rgba(255,255,255,0.30); border-radius: 18px; display: flex; align-items: center; justify-content: center; }
     .stretch-solid-inner {
       width: 172px; height: 120px; background: var(--glass-tint-active);
-      box-shadow: 0 0 20px rgba(var(--accent-rgb),0.35), inset 0 1.5px 4px rgba(255,255,255,0.55); border-radius: 12px;
+      box-shadow: 0 0 20px rgba(var(--accent-rgb),0.40), inset 0 1.5px 4px rgba(255,255,255,0.60); border-radius: 14px;
       display: flex; align-items: center; justify-content: center; color: #FFFFFF; font-weight: 700; font-size: 1.35rem; transition: width 180ms ease;
     }
 
     /* Все плитки - в капсулы (999px) */
-    .preset-pills-4 { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; }
-    .preset-pill { padding: 14px 6px; border-radius: 999px !important; }
+    .preset-pills-4 { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; }
+    .preset-pill { padding: 16px 8px; }
     .preset-pill-name { font-size: 0.8125rem; font-weight: 700; font-variant-numeric: tabular-nums; color: var(--text-main); }
-    .preset-pill-sub { font-size: 0.6875rem; color: var(--text-muted); margin-block-start: 2px; }
+    .preset-pill-sub { font-size: 0.6875rem; color: var(--text-muted); margin-block-start: 4px; }
 
-    .pixel-tiles-6 { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 8px; margin-block: 12px 14px; }
-    .pixel-tile { padding: 14px 2px; border-radius: 999px !important; }
+    .pixel-tiles-6 { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 10px; margin-block: 14px 16px; }
+    .pixel-tile { padding: 16px 4px; }
     .pixel-tile b { display: block; font-size: 0.875rem; font-weight: 700; font-variant-numeric: tabular-nums; color: var(--text-main); }
     .pixel-tile span { font-size: 0.6875rem; color: var(--text-muted); }
-    .pixel-big-readout { display: flex; align-items: baseline; justify-content: space-between; margin-block-end: 8px; }
+    .pixel-big-readout { display: flex; align-items: baseline; justify-content: space-between; margin-block-end: 10px; }
     
-    .ch-shape-grid-4 { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; margin-block-end: 12px; }
-    .ch-shape-tile { padding: 16px 6px; border-radius: 999px !important; }
-    .ch-shape-icon { font-size: 1.45rem; color: var(--accent-bright); margin-block-end: 6px; line-height: 1; }
+    .ch-shape-grid-4 { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; margin-block-end: 14px; }
+    .ch-shape-tile { padding: 18px 8px; }
+    .ch-shape-icon { font-size: 1.55rem; color: var(--accent-bright); margin-block-end: 8px; line-height: 1; }
     .ch-shape-lbl { font-size: 0.75rem; font-weight: 700; color: var(--text-main); }
     
-    .ch-subtoggle-grid-2 { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 10px; margin-block-end: 12px; }
-    .ch-subtoggle-box { padding: 14px; display: flex; flex-direction: column; align-items: center; gap: 6px; border-radius: 999px !important; }
+    .ch-subtoggle-grid-2 { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 12px; margin-block-end: 14px; }
+    .ch-subtoggle-box { padding: 16px; display: flex; flex-direction: column; align-items: center; gap: 8px; }
 
-    .ch-color-palette-bar { padding: 16px 18px; margin-block-end: 12px; border-radius: 999px !important; }
-    .ch-color-dots-row { display: flex; align-items: center; justify-content: space-between; gap: 6px; margin-block-start: 10px; flex-wrap: wrap; }
-    .ch-color-swatch { width: 32px; height: 32px; border-radius: 50%; cursor: pointer; border: 1.5px solid rgba(255,255,255,0.40); flex-shrink: 0; transition: transform 280ms var(--spring-ease); }
-    .ch-color-swatch.active { border-color: #FFFFFF; box-shadow: 0 0 14px #FFFFFF; transform: scale(1.16); }
-    .ch-custom-color-btn { width: 34px; height: 32px; border-radius: 999px; border: 1.5px dashed rgba(255,255,255,0.50); background: rgba(0,0,0,0.40); display: flex; align-items: center; justify-content: center; font-size: 0.95rem; cursor: pointer; flex-shrink: 0; }
+    .ch-color-palette-bar { padding: 18px 20px; margin-block-end: 14px; }
+    .ch-color-dots-row { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-block-start: 12px; flex-wrap: wrap; }
+    .ch-color-swatch { width: 34px; height: 34px; border-radius: 50%; cursor: pointer; border: 1.5px solid rgba(255,255,255,0.45); flex-shrink: 0; transition: transform 280ms var(--spring-ease); }
+    .ch-color-swatch.active { border-color: #FFFFFF; box-shadow: 0 0 14px #FFFFFF; transform: scale(1.18); }
+    .ch-custom-color-btn { width: 36px; height: 34px; border-radius: 999px; border: 1.5px dashed rgba(255,255,255,0.55); background: rgba(0,0,0,0.45); display: flex; align-items: center; justify-content: center; font-size: 1rem; cursor: pointer; flex-shrink: 0; }
 
-    .toggle-row { padding: 14px 20px; margin-block-start: 10px; display: flex; align-items: center; justify-content: space-between; gap: 12px; border-radius: 999px !important; }
+    .toggle-row { padding: 16px 20px; margin-block-start: 12px; display: flex; align-items: center; justify-content: space-between; gap: 14px; }
     .toggle-info-title { font-size: var(--text-body-sm); font-weight: 600; color: var(--text-main); line-height: 1.3; }
     .toggle-info-sub { font-size: var(--text-caption); color: var(--text-muted); margin-block-start: 2px; line-height: 1.4; }
-    .cyber-switch { position: relative; width: 52px; height: 32px; flex-shrink: 0; display: inline-block; cursor: pointer; }
+    .cyber-switch { position: relative; width: 54px; height: 34px; flex-shrink: 0; display: inline-block; cursor: pointer; }
     .cyber-switch input { opacity: 0; width: 0; height: 0; }
     .cyber-slider {
-      position: absolute; inset: 0; background: rgba(0,0,0,0.45); border: 1px solid rgba(255,255,255,0.20); border-radius: 999px;
+      position: absolute; inset: 0; background: rgba(0,0,0,0.50); border-radius: 999px;
     }
     .cyber-slider::before {
-      content: ""; position: absolute; width: 24px; height: 24px; inset-inline-start: 3px; inset-block-start: 3px; border-radius: 50%;
-      background: radial-gradient(circle at 32% 28%, #FFFFFF 0%, #CBD5E1 100%); box-shadow: 0 2px 6px rgba(0,0,0,0.65); transition: transform 280ms var(--spring-ease);
+      content: ""; position: absolute; width: 26px; height: 26px; inset-inline-start: 4px; inset-block-start: 4px; border-radius: 50%;
+      background: radial-gradient(circle at 32% 28%, #FFFFFF 0%, #CBD5E1 100%); box-shadow: 0 2px 6px rgba(0,0,0,0.70); transition: transform 280ms var(--spring-ease);
     }
-    .cyber-switch input:checked + .cyber-slider { background: var(--glass-tint-active); border-color: rgba(255,255,255,0.50); }
+    .cyber-switch input:checked + .cyber-slider { background: var(--glass-tint-active); }
     .cyber-switch input:checked + .cyber-slider::before { transform: translateX(20px); background: #FFFFFF; }
 
-    .voice-member-card, .friend-item { padding: 14px 20px; margin-block-start: 10px; display: flex; align-items: center; justify-content: space-between; gap: 12px; border-radius: 999px !important; }
+    .voice-member-card, .friend-item { padding: 16px 20px; margin-block-start: 12px; display: flex; align-items: center; justify-content: space-between; gap: 14px; }
     .voice-eq-bars { display: inline-flex; align-items: flex-end; gap: 3px; height: 16px; }
     .voice-eq-bars span { width: 4px; height: 12px; background: #30D158; border-radius: 2px; }
 
     /* Оверлеи и модалки */
-    .shizuku-alert-backdrop { position: fixed; inset: 0; background: rgba(0,0,0,0.75); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); z-index: 99999; display: none; align-items: center; justify-content: center; padding: 18px; overscroll-behavior: contain; transform: translateZ(0); }
-    .shizuku-alert-box { width: 100%; max-width: 365px; text-align: center; border-radius: 36px; }
-    #screenCalibOverlay, #touchTestOverlay { position: fixed; inset: 0; background: rgba(0,0,0,0.85); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); z-index: 98000; display: none; flex-direction: column; align-items: center; justify-content: center; padding: 22px; overscroll-behavior: contain; transform: translateZ(0); }
-    #authScreenOverlay { position: fixed; inset: 0; background: rgba(0,0,0,0.60); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); z-index: 95000; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px; pointer-events: auto; overscroll-behavior: contain; transform: translateZ(0); }
+    .shizuku-alert-backdrop { position: fixed; inset: 0; background: rgba(0,0,0,0.80); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); z-index: 99999; display: none; align-items: center; justify-content: center; padding: 20px; overscroll-behavior: contain; transform: translateZ(0); }
+    .shizuku-alert-box { width: 100%; max-width: 365px; text-align: center; border-radius: 36px; padding: 24px; }
+    #screenCalibOverlay, #touchTestOverlay { position: fixed; inset: 0; background: rgba(0,0,0,0.90); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); z-index: 98000; display: none; flex-direction: column; align-items: center; justify-content: center; padding: 24px; overscroll-behavior: contain; transform: translateZ(0); }
+    #authScreenOverlay { position: fixed; inset: 0; background: rgba(0,0,0,0.65); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); z-index: 95000; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px; pointer-events: auto; overscroll-behavior: contain; transform: translateZ(0); }
     
-    .auth-card { width: 100%; max-width: 380px; padding: 24px 20px; border-radius: 36px; }
+    .auth-card { width: 100%; max-width: 380px; padding: 28px 24px; border-radius: 40px; }
     .auth-badge {
-      display: inline-block; padding: 6px 16px; font-size: 0.6875rem; font-weight: 700; letter-spacing: 0.05em;
-      margin-block-end: 14px; text-transform: uppercase;
+      display: inline-block; padding: 8px 18px; font-size: 0.75rem; font-weight: 700; letter-spacing: 0.05em;
+      margin-block-end: 16px; text-transform: uppercase;
     }
     
-    .avatar-preset-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; margin-block: 12px; }
-    .avatar-preset-item { min-height: 60px; border-radius: 999px !important; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; cursor: pointer; transition: transform 280ms var(--spring-ease); }
+    .avatar-preset-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; margin-block: 16px; }
+    .avatar-preset-item { min-height: 64px; font-size: 1.6rem; }
 
     .tab-section { display: none; }
     .tab-section.active { display: block; }
@@ -367,40 +371,40 @@
     /* Нижняя навигация */
     .bottom-nav-bar {
       --nav-idx: 0; --lens-sx: 1; --lens-sy: 1;
-      position: fixed; bottom: calc(env(safe-area-inset-bottom, 0px) + 12px); left: 12px; right: 12px; max-width: 480px; margin-inline: auto; height: 72px;
-      display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); align-items: center; padding-inline: 6px; z-index: 9000; overflow: visible; touch-action: pan-y;
-      background: var(--glass-tint-nav); border: 1px solid rgba(255,255,255,0.08); border-top-color: rgba(255,255,255,0.25);
-      border-radius: 999px; box-shadow: 0 16px 36px rgba(0,0,0,0.75), inset 0 1px 3px rgba(255,255,255,0.15);
-      backdrop-filter: blur(20px) saturate(180%); -webkit-backdrop-filter: blur(20px) saturate(180%); transform: translateZ(0);
+      position: fixed; bottom: calc(env(safe-area-inset-bottom, 0px) + 16px); left: 14px; right: 14px; max-width: 480px; margin-inline: auto; height: 76px;
+      display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); align-items: center; padding-inline: 8px; z-index: 9000; overflow: visible; touch-action: pan-y;
+      background: var(--glass-tint-nav);
+      border-radius: 999px; box-shadow: 0 16px 40px rgba(0,0,0,0.80), inset 0 1px 3px rgba(255,255,255,0.20);
+      backdrop-filter: blur(24px) saturate(180%); -webkit-backdrop-filter: blur(24px) saturate(180%); transform: translateZ(0);
     }
     .nav-liquid-lens {
-      position: absolute; top: 6px; bottom: 6px; left: 7px; width: calc((100% - 14px) / 5); pointer-events: none; z-index: 1;
+      position: absolute; top: 8px; bottom: 8px; left: 8px; width: calc((100% - 16px) / 5); pointer-events: none; z-index: 1;
       background: var(--glass-sphere-fill); border-radius: 999px;
-      box-shadow: 0 6px 18px rgba(0,0,0,0.55), inset 0 2px 4px rgba(255,255,255,0.40);
+      box-shadow: 0 6px 20px rgba(0,0,0,0.60), inset 0 2px 4px rgba(255,255,255,0.45);
       transform: translate3d(calc(var(--nav-idx, 0) * 100%), 0, 0) scale(var(--lens-sx, 1), var(--lens-sy, 1));
       transition: transform 420ms var(--liquid-glide), box-shadow 260ms ease, background 260ms ease;
     }
     .nav-liquid-lens.premium-glass::before {
-      background: linear-gradient(180deg, rgba(255,255,255,0.7) 0%, rgba(255,255,255,0.05) 48%, rgba(var(--accent-rgb),0.6) 100%);
+      background: linear-gradient(180deg, rgba(255,255,255,0.75) 0%, rgba(255,255,255,0.05) 48%, rgba(var(--accent-rgb),0.65) 100%);
     }
     
     .nav-liquid-lens.morphing {
       --lens-sx: 1.20; --lens-sy: 1.30;
-      background: rgba(255,255,255,0.15);
-      box-shadow: 0 8px 26px rgba(0,0,0,0.65), inset 0 1px 4px rgba(255,255,255,0.30);
+      background: rgba(255,255,255,0.18);
+      box-shadow: 0 8px 28px rgba(0,0,0,0.70), inset 0 1px 4px rgba(255,255,255,0.35);
     }
     .nav-item {
       position: relative; z-index: 2; height: 60px; border-radius: 999px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px;
-      color: rgba(255,255,255,0.55); font-size: 0.6875rem; font-weight: 600; transition: color 200ms ease, transform 260ms var(--spring-ease);
+      color: rgba(255,255,255,0.60); font-size: 0.6875rem; font-weight: 600; transition: color 200ms ease, transform 260ms var(--spring-ease);
     }
-    .nav-item svg { width: 22px; height: 22px; stroke: currentColor; fill: none; stroke-width: 2.1; vector-effect: non-scaling-stroke; transition: transform 260ms var(--spring-ease), filter 200ms ease; }
-    .nav-item.active, .nav-item.lens-pass { color: var(--text-main); text-shadow: 0 0 12px rgba(0,0,0,0.9); }
-    .nav-item.active svg, .nav-item.lens-pass svg { transform: scale(1.12); filter: drop-shadow(0 0 8px rgba(0,0,0,0.9)); }
+    .nav-item svg { width: 24px; height: 24px; stroke: currentColor; fill: none; stroke-width: 2.1; vector-effect: non-scaling-stroke; transition: transform 260ms var(--spring-ease), filter 200ms ease; }
+    .nav-item.active, .nav-item.lens-pass { color: var(--text-main); text-shadow: 0 0 12px rgba(0,0,0,0.95); }
+    .nav-item.active svg, .nav-item.lens-pass svg { transform: scale(1.12); filter: drop-shadow(0 0 8px rgba(0,0,0,0.95)); }
 
     #cyberToast {
-      position: fixed; top: max(calc(env(safe-area-inset-top, 42px) + 10px), 42px); left: 50%; transform: translateX(-50%) translateY(-130px) translateZ(0);
-      color: var(--text-main); padding: 12px 24px; font-size: var(--text-caption); font-weight: 700; z-index: 100000; opacity: 0;
-      transition: opacity 240ms var(--spring-ease), transform 240ms var(--spring-ease); pointer-events: none; white-space: nowrap; max-width: calc(100% - 28px);
+      position: fixed; top: max(calc(env(safe-area-inset-top, 42px) + 12px), 42px); left: 50%; transform: translateX(-50%) translateY(-140px) translateZ(0);
+      color: var(--text-main); padding: 14px 28px; font-size: var(--text-caption); font-weight: 700; z-index: 100000; opacity: 0;
+      transition: opacity 240ms var(--spring-ease), transform 240ms var(--spring-ease); pointer-events: none; white-space: nowrap; max-width: calc(100% - 32px);
     }
     #cyberToast.show { opacity: 1; transform: translateX(-50%) translateY(0) translateZ(0); }
   </style>
@@ -423,8 +427,8 @@
 
   <div id="avatarPickerModal" class="shizuku-alert-backdrop" role="dialog" aria-modal="true" aria-labelledby="avatarModalTitle">
     <div class="shizuku-alert-box premium-glass premium-card surface">
-      <h2 id="avatarModalTitle" style="font-size:1.05rem; font-weight:700; color:#fff; margin-bottom:6px;">Профиль и живой фон</h2>
-      <p style="font-size:0.78rem; color:var(--text-muted); margin-bottom:12px; line-height:1.45;">
+      <h2 id="avatarModalTitle" style="font-size:1.15rem; font-weight:800; color:#fff; margin-bottom:8px;">Профиль и живой фон</h2>
+      <p style="font-size:0.85rem; color:var(--text-muted); margin-bottom:14px; line-height:1.45;">
         Выберите эмблему, загрузите фото аватарки или установите видео/GIF на фон:
       </p>
       <div class="avatar-preset-grid">
@@ -437,10 +441,10 @@
         <div class="avatar-preset-item premium-glass premium-capsule btn-dark" onclick="selectBuiltInAvatar('🥷')">🥷</div>
         <div class="avatar-preset-item premium-glass premium-capsule btn-dark" onclick="selectBuiltInAvatar('💎')">💎</div>
       </div>
-      <button type="button" class="btn-main premium-glass premium-capsule" style="margin-bottom:10px;" onclick="openGalleryFileInput()">
+      <button type="button" class="btn-main premium-glass premium-capsule" style="margin-bottom:12px;" onclick="openGalleryFileInput()">
         Загрузить фото аватарки
       </button>
-      <button type="button" class="btn-dark premium-glass premium-capsule" style="margin-bottom:10px;" onclick="triggerCustomBgUpload()">
+      <button type="button" class="btn-dark premium-glass premium-capsule" style="margin-bottom:12px;" onclick="triggerCustomBgUpload()">
         Выбрать видео или GIF на фон
       </button>
       <button type="button" class="btn-dark premium-glass premium-capsule" onclick="document.getElementById('avatarPickerModal').style.display='none'">
@@ -450,40 +454,40 @@
   </div>
 
   <div id="screenCalibOverlay" role="dialog" aria-modal="true" onclick="finishScreenCalibTap()">
-    <div style="font-size:2.5rem; margin-bottom:12px;" aria-hidden="true">👆</div>
-    <h2 style="font-size:1.15rem; font-weight:700; color:#fff; margin-bottom:10px; text-align:center;">
+    <div style="font-size:3rem; margin-bottom:14px;" aria-hidden="true">👆</div>
+    <h2 style="font-size:1.25rem; font-weight:800; color:#fff; margin-bottom:12px; text-align:center;">
       Проведите пальцем по периметру экрана
     </h2>
-    <p style="font-size:0.85rem; color:var(--text-muted); text-align:center; max-width:320px; line-height:1.55;">
+    <p style="font-size:0.95rem; color:var(--text-muted); text-align:center; max-width:340px; line-height:1.55;">
       Калибровка герцовки и шага кусков под матрицу устройства. Коснитесь экрана для завершения.
     </p>
   </div>
 
   <div id="touchTestOverlay" role="dialog" aria-modal="true">
-    <h2 style="font-size:1.05rem; font-weight:700; color:#fff; margin-bottom:8px;">Проверка отклика касаний</h2>
-    <div id="touchTestCoords" style="font-size:0.8rem; color:var(--accent-bright); font-weight:600; font-variant-numeric:tabular-nums; margin-bottom:12px;">
+    <h2 style="font-size:1.15rem; font-weight:800; color:#fff; margin-bottom:10px;">Проверка отклика касаний</h2>
+    <div id="touchTestCoords" style="font-size:0.85rem; color:var(--accent-bright); font-weight:700; font-variant-numeric:tabular-nums; margin-bottom:14px;">
       Проведите пальцем по области ниже…
     </div>
-    <canvas id="touchTestCanvas" width="320" height="320" style="background:rgba(0,0,0,0.65); border:1px solid rgba(255,255,255,0.25); border-radius:28px; touch-action:none; box-shadow: inset 0 2px 6px rgba(0,0,0,0.5);"></canvas>
-    <button type="button" class="btn-main premium-glass premium-capsule" style="max-width:320px; margin-top:16px;" onclick="closeTouchTestModal()">
+    <canvas id="touchTestCanvas" width="340" height="340" style="background:rgba(0,0,0,0.65); border:1px solid rgba(255,255,255,0.25); border-radius:32px; touch-action:none; box-shadow: inset 0 2px 8px rgba(0,0,0,0.55);"></canvas>
+    <button type="button" class="btn-main premium-glass premium-capsule" style="max-width:340px; margin-top:20px;" onclick="closeTouchTestModal()">
       Закрыть тестер
     </button>
   </div>
 
   <div id="shizukuRequiredModal" class="shizuku-alert-backdrop" role="dialog" aria-modal="true" aria-labelledby="shizukuModalTitle">
     <div class="shizuku-alert-box premium-glass premium-card surface">
-      <h2 id="shizukuModalTitle" style="font-size:1.1rem; font-weight:800; color:#FF453A; margin-bottom:8px;">⚠️ Shizuku не активен</h2>
-      <p style="font-size:0.8rem; color:var(--text-muted); line-height:1.5; margin-bottom:16px;">
+      <h2 id="shizukuModalTitle" style="font-size:1.2rem; font-weight:800; color:#FF453A; margin-bottom:10px;">⚠️ Shizuku не активен</h2>
+      <p style="font-size:0.85rem; color:var(--text-muted); line-height:1.55; margin-bottom:18px;">
         Без запущенного <b>Shizuku</b> телепорт-сенса, растяг экрана «T» и бустер FPS не смогут примениться к системе.
       </p>
-      <div class="premium-glass premium-card" style="margin-bottom:16px; cursor:default; align-items:flex-start; flex-direction:column; padding:14px; text-align:left;">
-        <div style="font-weight:700; margin-bottom:6px; color:var(--accent-bright); font-size:0.85rem;">📋 Быстрый гайд по запуску:</div>
-        <div style="font-size:0.8rem; color:#fff; line-height:1.6;">1. Открой приложение <b>Shizuku</b> на телефоне.<br>2. Включи <b>Беспроводную отладку</b> в Настройках для разработчиков и нажми <b>Запустить</b>.<br>3. Вернись сюда и нажми <b>«Проверить и выдать доступ»</b>.</div>
+      <div class="premium-glass premium-card" style="margin-bottom:18px; cursor:default; align-items:flex-start; flex-direction:column; padding:16px; text-align:left;">
+        <div style="font-weight:800; margin-bottom:8px; color:var(--accent-bright); font-size:0.9rem;">📋 Быстрый гайд по запуску:</div>
+        <div style="font-size:0.85rem; color:#fff; line-height:1.65;">1. Открой приложение <b>Shizuku</b> на телефоне.<br>2. Включи <b>Беспроводную отладку</b> в Настройках для разработчиков и нажми <b>Запустить</b>.<br>3. Вернись сюда и нажми <b>«Проверить и выдать доступ»</b>.</div>
       </div>
-      <button type="button" class="btn-main premium-glass premium-capsule" style="margin-bottom:10px;" onclick="requestAndRecheckShizuku()">
+      <button type="button" class="btn-main premium-glass premium-capsule" style="margin-bottom:12px;" onclick="requestAndRecheckShizuku()">
         ⚡ Проверить и выдать доступ Shizuku
       </button>
-      <div style="display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:10px; margin-bottom:10px;">
+      <div style="display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:12px; margin-bottom:12px;">
         <button type="button" class="btn-dark premium-glass premium-capsule" onclick="openSupportLink()">💬 Помощь в ТГ</button>
         <button type="button" class="btn-dark premium-glass premium-capsule" onclick="copyDiscordSupport()">🎧 Мой Дискорд</button>
       </div>
@@ -494,19 +498,19 @@
   </div>
 
   <div id="authScreenOverlay" role="dialog" aria-modal="true" aria-labelledby="authTitleText">
-    <div style="text-align:center; margin-bottom:18px;">
+    <div style="text-align:center; margin-bottom:20px;">
       <div class="auth-badge premium-glass premium-capsule">QUANTUM CORE V10 • TITANIUM GLASS</div>
-      <h1 id="authTitleText" style="font-size:1.85rem; font-weight:800; letter-spacing:-0.02em; color:#fff; text-shadow: 0 2px 6px rgba(0,0,0,0.8);">
-        SO2Teleport <span style="color:var(--accent-main); text-shadow: 0 0 16px rgba(var(--accent-rgb), 0.5);">PRO</span>
+      <h1 id="authTitleText" style="font-size:2rem; font-weight:800; letter-spacing:-0.02em; color:#fff; text-shadow: 0 2px 8px rgba(0,0,0,0.8);">
+        SO2Teleport <span style="color:var(--accent-main); text-shadow: 0 0 20px rgba(var(--accent-rgb), 0.55);">PRO</span>
       </h1>
     </div>
 
     <div class="auth-card premium-glass premium-card surface">
-      <p style="text-align:center; font-size:0.85rem; font-weight:600; color:var(--text-muted); margin-bottom:18px;">
+      <p style="text-align:center; font-size:0.9rem; font-weight:600; color:var(--text-muted); margin-bottom:20px;">
         Авторизация лицензии (1 ключ = 1 устройство)
       </p>
 
-      <div id="authErrorBanner" role="alert" style="display:none; background:rgba(255,69,58,0.15); border:1px solid rgba(255,100,100,0.4); color:#FF8A8A; border-radius:16px; padding:12px 14px; font-size:0.8rem; font-weight:600; text-align:center; margin-bottom:14px;">
+      <div id="authErrorBanner" role="alert" style="display:none; background:rgba(255,69,58,0.20); border:1px solid rgba(255,100,100,0.45); color:#FF8A8A; border-radius:999px; padding:12px 16px; font-size:0.85rem; font-weight:700; text-align:center; margin-bottom:16px;">
         Введите лицензионный ключ из Telegram-бота
       </div>
 
@@ -524,13 +528,13 @@
         </div>
       </div>
 
-      <button id="loginSubmitBtn" type="button" class="btn-main premium-glass premium-capsule" style="margin-top:6px;" onclick="handleLoginSubmit()">
+      <button id="loginSubmitBtn" type="button" class="btn-main premium-glass premium-capsule" style="margin-top:8px;" onclick="handleLoginSubmit()">
         ⚡ Активировать ключ и войти
       </button>
     </div>
 
-    <div style="width:100%; max-width:380px; margin-top:16px; display:flex; flex-direction:column; gap:10px;">
-      <div class="btn-dark premium-glass premium-capsule" style="text-align:center; font-size:0.8rem; color:var(--text-muted); cursor:default;">
+    <div style="width:100%; max-width:380px; margin-top:20px; display:flex; flex-direction:column; gap:12px;">
+      <div class="btn-dark premium-glass premium-capsule" style="text-align:center; font-size:0.85rem; color:var(--text-muted); cursor:default;">
         Защищённый HWID: <b id="loginHwidLabel" style="color:#fff; font-variant-numeric:tabular-nums; user-select:text;">…</b>
       </div>
       <button type="button" class="btn-dark premium-glass premium-capsule" onclick="openBotShopLink()">
@@ -542,7 +546,7 @@
     </div>
   </div>
 
-  <main id="mainAppWorkspace" class="app-container">
+  <main id="mainAppWorkspace">
 
     <header class="top-brand-header premium-glass premium-card surface">
       <div class="top-brand-row">
@@ -778,15 +782,15 @@
               <input id="sl_grip_cap" type="range" min="1" max="15" step="1" value="1" oninput="onSensSliderChange()" />
             </div>
 
-            <button type="button" class="btn-main premium-glass premium-capsule" style="margin-top:14px;" onclick="saveAllAppSettingsMaster()">
+            <button type="button" class="btn-main premium-glass premium-capsule" style="margin-top:16px;" onclick="saveAllAppSettingsMaster()">
               ⚡ Применить и перезапустить Teleport
             </button>
 
-            <div style="display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:10px; margin-top:10px;">
+            <div style="display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:12px; margin-top:12px;">
               <button type="button" class="btn-dark premium-glass premium-capsule" onclick="startScreenCalibModal()">Откалибровать экран</button>
               <button type="button" class="btn-dark premium-glass premium-capsule" onclick="openTouchTestModal()">Проверить тач</button>
             </div>
-            <button type="button" class="btn-dark premium-glass premium-capsule" style="margin-top:10px;" onclick="selectTeleportPreset(isPadModeEnabled ? 'tablet_pro' : 'extreme')">
+            <button type="button" class="btn-dark premium-glass premium-capsule" style="margin-top:12px;" onclick="selectTeleportPreset(isPadModeEnabled ? 'tablet_pro' : 'extreme')">
               Установить максимальные параметры
             </button>
           </div>
@@ -807,14 +811,14 @@
         <div class="acc-body-wrap">
           <div class="acc-body-inner">
             <div class="saved-variant-row premium-glass premium-capsule">
-              <div style="display:flex; align-items:center; gap:11px; min-width:0;">
-                <div class="acc-icon premium-glass" style="width:36px; height:36px; font-size:0.85rem;" aria-hidden="true">💾</div>
+              <div style="display:flex; align-items:center; gap:12px; min-width:0;">
+                <div class="acc-icon premium-glass" style="width:38px; height:38px; font-size:0.9rem;" aria-hidden="true">💾</div>
                 <div style="min-width:0; text-align: left;">
-                  <div id="mySavedSlotTitle" style="font-size:0.8125rem; font-weight:700; color:#fff;">Мой сохранённый конфиг</div>
-                  <div style="font-size:0.6875rem; color:var(--text-muted);">персональный слот</div>
+                  <div id="mySavedSlotTitle" style="font-size:0.85rem; font-weight:700; color:#fff;">Мой сохранённый конфиг</div>
+                  <div style="font-size:0.7rem; color:var(--text-muted);">персональный слот</div>
                 </div>
               </div>
-              <div style="display:flex; gap:8px;">
+              <div style="display:flex; gap:10px;">
                 <button type="button" class="icon-circle-action premium-glass" aria-label="Загрузить сохранённый конфиг" onclick="loadSavedConfigLocal(false)">▼</button>
                 <button type="button" class="icon-circle-action premium-glass" aria-label="Сохранить текущий конфиг" onclick="saveAllAppSettingsMaster()">💾</button>
               </div>
@@ -826,42 +830,42 @@
               <button type="button" class="icon-circle-action premium-glass" aria-label="Применить облачный код" onclick="downloadCloudPresetNow()">📥</button>
             </div>
 
-            <div style="display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:10px; margin-top:12px;">
+            <div style="display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:12px; margin-top:14px;">
               <button type="button" class="btn-dark premium-glass premium-capsule" onclick="saveAllAppSettingsMaster()">Сохранить локально</button>
               <button type="button" class="btn-main premium-glass premium-capsule" onclick="uploadCloudPresetNow()">Создать облачный код</button>
             </div>
 
             <div class="shelf-cards-grid">
-              <div id="preset_tablet_pro" class="shelf-preset-card premium-glass premium-card" style="border-radius: 32px;" onclick="selectTeleportPreset('tablet_pro')">
-                <div>
-                  <div style="font-size:0.75rem; font-weight:700; color:#fff;">ДЛЯ ПАДОВ УЛЬТРА</div>
-                  <div style="font-size:0.6875rem; color:var(--text-muted); margin-top:2px;">Импульс 128.0x • Xiaomi Pad / iPad</div>
+              <div id="preset_tablet_pro" class="shelf-preset-card premium-glass premium-capsule" style="flex-direction:column; justify-content:center; align-items:center;" onclick="selectTeleportPreset('tablet_pro')">
+                <div style="text-align:center;">
+                  <div style="font-size:0.8rem; font-weight:700; color:#fff;">ДЛЯ ПАДОВ УЛЬТРА</div>
+                  <div style="font-size:0.7rem; color:var(--text-muted); margin-top:4px;">Импульс 128.0x • iPad</div>
                 </div>
-                <div style="font-size:0.6875rem; color:var(--accent-bright); font-weight:700; margin-top:8px;">Включить конфиг →</div>
+                <div style="font-size:0.75rem; color:var(--accent-bright); font-weight:700; margin-top:10px;">Включить конфиг →</div>
               </div>
 
-              <div id="preset_clean_sharp" class="shelf-preset-card premium-glass premium-card" style="border-radius: 32px;" onclick="selectTeleportPreset('clean_sharp')">
-                <div>
-                  <div style="font-size:0.75rem; font-weight:700; color:#fff;">AWM / DEAGLE РЕЗКИЙ</div>
-                  <div style="font-size:0.6875rem; color:var(--text-muted); margin-top:2px;">Точный хват 48.0x • Снайперский флик</div>
+              <div id="preset_clean_sharp" class="shelf-preset-card premium-glass premium-capsule" style="flex-direction:column; justify-content:center; align-items:center;" onclick="selectTeleportPreset('clean_sharp')">
+                <div style="text-align:center;">
+                  <div style="font-size:0.8rem; font-weight:700; color:#fff;">AWM / DEAGLE РЕЗКИЙ</div>
+                  <div style="font-size:0.7rem; color:var(--text-muted); margin-top:4px;">Точный хват 48.0x</div>
                 </div>
-                <div style="font-size:0.6875rem; color:var(--accent-bright); font-weight:700; margin-top:8px;">Включить конфиг →</div>
+                <div style="font-size:0.75rem; color:var(--accent-bright); font-weight:700; margin-top:10px;">Включить конфиг →</div>
               </div>
 
-              <div class="shelf-preset-card premium-glass premium-card" style="border-radius: 32px;" onclick="applyShelfPreset('demon_100')">
-                <div>
-                  <div style="font-size:0.75rem; font-weight:700; color:#fff;">H9IJE TELEPORT MAX</div>
-                  <div style="font-size:0.6875rem; color:var(--text-muted); margin-top:2px;">Куски 150 • Полный овердрайв</div>
+              <div class="shelf-preset-card premium-glass premium-capsule" style="flex-direction:column; justify-content:center; align-items:center;" onclick="applyShelfPreset('demon_100')">
+                <div style="text-align:center;">
+                  <div style="font-size:0.8rem; font-weight:700; color:#fff;">H9IJE TELEPORT MAX</div>
+                  <div style="font-size:0.7rem; color:var(--text-muted); margin-top:4px;">Куски 150 • Овердрайв</div>
                 </div>
-                <div style="font-size:0.6875rem; color:var(--accent-bright); font-weight:700; margin-top:8px;">Включить конфиг →</div>
+                <div style="font-size:0.75rem; color:var(--accent-bright); font-weight:700; margin-top:10px;">Включить конфиг →</div>
               </div>
 
-              <div class="shelf-preset-card premium-glass premium-card" style="border-radius: 32px;" onclick="applyShelfPreset('heavy_pixel')">
-                <div>
-                  <div style="font-size:0.75rem; font-weight:700; color:#fff;">AKR12 / M4 ЗАЖИМ</div>
-                  <div style="font-size:0.6875rem; color:var(--text-muted); margin-top:2px;">Куски 96 • Удержание точки</div>
+              <div class="shelf-preset-card premium-glass premium-capsule" style="flex-direction:column; justify-content:center; align-items:center;" onclick="applyShelfPreset('heavy_pixel')">
+                <div style="text-align:center;">
+                  <div style="font-size:0.8rem; font-weight:700; color:#fff;">AKR12 / M4 ЗАЖИМ</div>
+                  <div style="font-size:0.7rem; color:var(--text-muted); margin-top:4px;">Куски 96 • Удержание</div>
                 </div>
-                <div style="font-size:0.6875rem; color:var(--accent-bright); font-weight:700; margin-top:8px;">Включить конфиг →</div>
+                <div style="font-size:0.75rem; color:var(--accent-bright); font-weight:700; margin-top:10px;">Включить конфиг →</div>
               </div>
             </div>
           </div>
@@ -881,7 +885,7 @@
         </div>
         <div class="acc-body-wrap">
           <div id="crosshairCardAnchor" class="acc-body-inner">
-            <div class="toggle-row premium-glass premium-capsule" style="margin-top:4px; margin-bottom:10px;">
+            <div class="toggle-row premium-glass premium-capsule" style="margin-top:4px; margin-bottom:12px;">
               <div style="text-align: left;">
                 <div class="toggle-info-title">Отображать прицел поверх игры</div>
                 <div class="toggle-info-sub">Аппаратный оверлей без потери FPS</div>
@@ -892,24 +896,24 @@
               </label>
             </div>
 
-            <div id="chPreviewStage" class="preview-stage-box">
-              <canvas id="crosshairPreviewCanvas" width="280" height="148"></canvas>
-              <div style="position:absolute; top:9px; left:10px;"><span id="chModeRightLabel" class="badge-chip premium-glass premium-capsule">КРЕСТ</span></div>
-              <div style="position:absolute; top:9px; right:10px;"><button type="button" class="icon-circle-action premium-glass" style="min-width:32px; min-height:32px;" aria-label="Переключить фон предпросмотра" onclick="togglePreviewDayNight()">🌙</button></div>
-              <div style="position:absolute; bottom:9px; left:12px; display:flex; align-items:center; gap:6px; font-size:0.6875rem; color:var(--text-muted); font-variant-numeric:tabular-nums;">
-                <span id="chColorLiveDot" style="width:9px; height:9px; border-radius:50%; background:#30D158; display:inline-block;"></span>
+            <div id="chPreviewStage" class="preview-stage-box premium-card">
+              <canvas id="crosshairPreviewCanvas" width="280" height="150"></canvas>
+              <div style="position:absolute; top:12px; left:12px;"><span id="chModeRightLabel" class="badge-chip premium-glass premium-capsule">КРЕСТ</span></div>
+              <div style="position:absolute; top:12px; right:12px;"><button type="button" class="icon-circle-action premium-glass" style="min-width:36px; min-height:36px;" aria-label="Переключить фон предпросмотра" onclick="togglePreviewDayNight()">🌙</button></div>
+              <div style="position:absolute; bottom:12px; left:14px; display:flex; align-items:center; gap:8px; font-size:0.75rem; color:var(--text-muted); font-variant-numeric:tabular-nums;">
+                <span id="chColorLiveDot" style="width:10px; height:10px; border-radius:50%; background:#30D158; display:inline-block;"></span>
                 <span id="chSizeReadout">+ 8 × 3 px</span>
               </div>
-              <div style="position:absolute; bottom:8px; right:10px; display:flex; gap:5px;">
-                <button type="button" class="badge-chip premium-glass premium-capsule" style="cursor:pointer; padding:4px 8px;" aria-label="Масштаб 1x" onclick="setPreviewZoom(1)">×1</button>
-                <button type="button" class="badge-chip premium-glass premium-capsule" style="cursor:pointer; padding:4px 8px;" aria-label="Масштаб 4x" onclick="setPreviewZoom(2)">×4</button>
-                <button type="button" class="badge-chip premium-glass premium-capsule" style="cursor:pointer; padding:4px 8px;" aria-label="Масштаб 8x" onclick="setPreviewZoom(3.5)">×8</button>
+              <div style="position:absolute; bottom:10px; right:12px; display:flex; gap:6px;">
+                <button type="button" class="badge-chip premium-glass premium-capsule" style="cursor:pointer; padding:6px 12px;" aria-label="Масштаб 1x" onclick="setPreviewZoom(1)">×1</button>
+                <button type="button" class="badge-chip premium-glass premium-capsule" style="cursor:pointer; padding:6px 12px;" aria-label="Масштаб 4x" onclick="setPreviewZoom(2)">×4</button>
+                <button type="button" class="badge-chip premium-glass premium-capsule" style="cursor:pointer; padding:6px 12px;" aria-label="Масштаб 8x" onclick="setPreviewZoom(3.5)">×8</button>
               </div>
             </div>
 
             <div class="ch-color-palette-bar premium-glass premium-capsule">
               <div style="display:flex; align-items:center; justify-content:space-between; width: 100%;">
-                <span style="font-size:0.8125rem; font-weight:700; color:#fff;">Цвет прицела</span>
+                <span style="font-size:0.85rem; font-weight:700; color:#fff;">Цвет прицела</span>
                 <span id="chColorHexBadge" class="badge-chip premium-glass premium-capsule" style="font-family:monospace;">#30D158</span>
               </div>
               <div class="ch-color-dots-row" role="group" aria-label="Палитра цвета прицела" style="width: 100%;">
@@ -950,12 +954,12 @@
 
             <div class="ch-subtoggle-grid-2">
               <div id="subBoxCrossLines" class="ch-subtoggle-box btn-dark premium-glass premium-capsule active-state" onclick="setCrosshairMode(this, 'cross')">
-                <span style="font-size:0.6875rem; font-weight:700; color:#fff;">ТОЛЬКО ЛУЧИ</span>
-                <span class="badge-chip premium-glass premium-capsule">БЕЗ ТОЧКИ</span>
+                <span style="font-size:0.75rem; font-weight:700; color:#fff;">ТОЛЬКО ЛУЧИ</span>
+                <span class="badge-chip premium-glass premium-capsule" style="margin-top:4px;">БЕЗ ТОЧКИ</span>
               </div>
               <div id="subBoxCenterDot" class="ch-subtoggle-box btn-dark premium-glass premium-capsule" onclick="setCrosshairMode(this, 'crossdot')">
-                <span style="font-size:0.6875rem; font-weight:700; color:#fff;">ЛУЧИ + ТОЧКА</span>
-                <span class="badge-chip premium-glass premium-capsule">КОМБО</span>
+                <span style="font-size:0.75rem; font-weight:700; color:#fff;">ЛУЧИ + ТОЧКА</span>
+                <span class="badge-chip premium-glass premium-capsule" style="margin-top:4px;">КОМБО</span>
               </div>
             </div>
 
@@ -980,7 +984,7 @@
               <input id="sl_ch_op" type="range" min="20" max="100" value="100" oninput="syncCrosshairConfig()" />
             </div>
 
-            <div class="toggle-row premium-glass premium-capsule" style="margin-top:8px;">
+            <div class="toggle-row premium-glass premium-capsule" style="margin-top:12px;">
               <div style="text-align: left;">
                 <div class="toggle-info-title">Чёрная контурная обводка</div>
                 <div class="toggle-info-sub">Прицел остаётся читаемым на светлом фоне и в дыму</div>
@@ -991,7 +995,7 @@
               </label>
             </div>
 
-            <button type="button" class="btn-main premium-glass premium-capsule" style="margin-top:14px;" onclick="saveAllAppSettingsMaster()">
+            <button type="button" class="btn-main premium-glass premium-capsule" style="margin-top:16px;" onclick="saveAllAppSettingsMaster()">
               ⚡ Сохранить настройки прицела
             </button>
           </div>
@@ -1015,13 +1019,13 @@
         </div>
         <div class="acc-body-wrap">
           <div class="acc-body-inner">
-            <div class="preview-stage-box">
+            <div class="preview-stage-box premium-card">
               <div class="stretch-dashed-outer">
-                <div id="stretchPreviewInner" class="stretch-solid-inner btn-main premium-glass premium-capsule">+</div>
+                <div id="stretchPreviewInner" class="stretch-solid-inner btn-main premium-glass premium-capsule" style="border-radius: 16px !important;">+</div>
               </div>
             </div>
 
-            <div class="preset-pills-4" style="grid-template-columns:repeat(5,minmax(0,1fr)); margin-bottom:8px;">
+            <div class="preset-pills-4" style="grid-template-columns:repeat(5,minmax(0,1fr)); margin-bottom:12px;">
               <div class="preset-pill btn-dark premium-glass premium-capsule active-state" data-ratio="4:3" onclick="selectRatioPill(this, '4:3')">
                 <div><div class="preset-pill-name">4:3</div><div class="preset-pill-sub">Классика</div></div>
               </div>
@@ -1039,7 +1043,7 @@
               </div>
             </div>
 
-            <div class="preset-pills-4" style="margin-bottom:14px;">
+            <div class="preset-pills-4" style="margin-bottom:18px;">
               <div class="preset-pill btn-dark premium-glass premium-capsule" data-ratio="3:2" onclick="selectRatioPill(this, '3:2')">
                 <div><div class="preset-pill-name">3:2</div><div class="preset-pill-sub">Широкий</div></div>
               </div>
@@ -1054,11 +1058,11 @@
               </div>
             </div>
 
-            <button id="btnLaunchFloatingStretch" type="button" class="btn-main premium-glass premium-capsule" style="margin-bottom:10px;" onclick="launchFloatingTButton()">
+            <button id="btnLaunchFloatingStretch" type="button" class="btn-main premium-glass premium-capsule" style="margin-bottom:12px;" onclick="launchFloatingTButton()">
               ⚡ Запустить плавающую кнопку «T» (4:3)
             </button>
 
-            <div style="display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:10px; margin-bottom:10px;">
+            <div style="display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:12px; margin-bottom:12px;">
               <button type="button" class="btn-dark premium-glass premium-capsule" onclick="applyStretchDirectlyNow()">
                 Шаг 1: Сжать экран
               </button>
@@ -1067,7 +1071,7 @@
               </button>
             </div>
 
-            <button type="button" class="btn-dark premium-glass premium-capsule" style="margin-bottom:10px;" onclick="resetNativeScreen()">
+            <button type="button" class="btn-dark premium-glass premium-capsule" style="margin-bottom:12px;" onclick="resetNativeScreen()">
               Восстановить родное разрешение экрана
             </button>
 
@@ -1120,7 +1124,7 @@
             </div>
             <div class="pixel-big-readout">
               <div id="pixelBigNumText" class="pixel-big-num">100 %</div>
-              <div style="font-size:0.75rem; color:var(--text-muted); font-weight:500;">Аппаратный скейлер</div>
+              <div style="font-size:0.8rem; color:var(--text-muted); font-weight:600;">Аппаратный скейлер</div>
             </div>
             <div class="pixel-progress-bar"><div id="pixelProgressFill" class="pixel-progress-fill"></div></div>
           </div>
@@ -1144,7 +1148,7 @@
         </div>
         <div class="acc-body-wrap">
           <div class="acc-body-inner">
-            <p style="font-size:0.75rem; color:var(--text-muted); line-height:1.5; margin-top:6px;">
+            <p style="font-size:0.8rem; color:var(--text-muted); line-height:1.5; margin-top:8px; margin-bottom: 16px;">
               Применяет пакет системных настроек: аппаратный кэш текстур <b>SkiaGL 72 МБ</b>, многопоточный рендер, отключение троттлинга GOS, заморозку фоновых процессов Android Freezer и оптимизацию сети.
             </p>
 
@@ -1157,11 +1161,11 @@
               <span class="tweak-mini-tag premium-glass premium-capsule">Trim Caches 256M</span>
             </div>
 
-            <button id="btnOneClickSettingsTweak" type="button" class="btn-main premium-glass premium-capsule" onclick="runOneClickUltimateTweaks()">
+            <button id="btnOneClickSettingsTweak" type="button" class="btn-main premium-glass premium-capsule" style="margin-top: 10px;" onclick="runOneClickUltimateTweaks()">
               ⚡ Применить системные твики и фикс FPS
             </button>
 
-            <div style="display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:10px; margin-top:10px;">
+            <div style="display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:12px; margin-top:12px;">
               <button type="button" class="btn-dark premium-glass premium-capsule" onclick="runRamCleanNow()">Очистить ОЗУ и кэш</button>
               <button type="button" class="btn-dark premium-glass premium-capsule" onclick="runSmartScanNow()">Проверить устройство (<span id="scanTierBadge">ULTRA</span>)</button>
             </div>
@@ -1239,7 +1243,7 @@
               <div class="pro-slider-head"><label class="pro-slider-name" for="sl_opt_ts">Частота опроса сенсора</label><span id="val_opt_ts" class="pro-slider-pill premium-glass premium-capsule">480 Hz</span></div>
               <input id="sl_opt_ts" type="range" min="240" max="480" step="60" value="480" oninput="updateOptLabels()" />
             </div>
-            <button type="button" class="btn-main premium-glass premium-capsule" style="margin-top:14px;" onclick="applyFullShooterOptNow()">
+            <button type="button" class="btn-main premium-glass premium-capsule" style="margin-top:16px;" onclick="applyFullShooterOptNow()">
               ⚡ Применить параметры разгона
             </button>
           </div>
@@ -1263,19 +1267,19 @@
         </div>
         <div class="acc-body-wrap">
           <div class="acc-body-inner">
-            <div class="auth-input-wrap btn-dark premium-glass premium-capsule" style="margin-top:8px; margin-bottom:12px;">
+            <div class="auth-input-wrap btn-dark premium-glass premium-capsule" style="margin-top:8px; margin-bottom:14px;">
               <div style="width:100%;">
                 <label class="auth-input-label" for="voiceRoomInput">КОД КОМНАТЫ ОТРЯДА</label>
                 <input id="voiceRoomInput" class="auth-input" type="text" value="SQUAD-MAIN" autocomplete="off" spellcheck="false" />
               </div>
             </div>
-            <div style="display:grid; grid-template-columns:1.2fr 1fr 1fr; gap:10px; margin-bottom:12px;">
-              <button id="btnVoiceJoin" type="button" class="btn-main premium-glass premium-capsule" style="padding:12px;" onclick="toggleVoiceConnection()">Войти в войс</button>
-              <button id="btnVoiceMute" type="button" class="btn-dark premium-glass premium-capsule" style="padding:12px;" onclick="window.toggleMicMute()">Микрофон</button>
-              <button id="btnVoiceDeaf" type="button" class="btn-dark premium-glass premium-capsule" style="padding:12px;" onclick="window.toggleDeafenSpeaker()">Динамик</button>
+            <div style="display:grid; grid-template-columns:1.2fr 1fr 1fr; gap:12px; margin-bottom:16px;">
+              <button id="btnVoiceJoin" type="button" class="btn-main premium-glass premium-capsule" onclick="toggleVoiceConnection()">Войти в войс</button>
+              <button id="btnVoiceMute" type="button" class="btn-dark premium-glass premium-capsule" onclick="window.toggleMicMute()">Микрофон</button>
+              <button id="btnVoiceDeaf" type="button" class="btn-dark premium-glass premium-capsule" onclick="window.toggleDeafenSpeaker()">Динамик</button>
             </div>
             <div id="voiceMembersBox">
-              <div style="text-align:center; padding:12px; font-size:0.75rem; color:var(--text-muted);">
+              <div style="text-align:center; padding:12px; font-size:0.8rem; color:var(--text-muted);">
                 Нажмите «Войти в войс», чтобы подключиться к комнате отряда.
               </div>
             </div>
@@ -1296,14 +1300,14 @@
         </div>
         <div class="acc-body-wrap">
           <div class="acc-body-inner">
-            <div style="display:grid; grid-template-columns:minmax(0,1fr) auto; gap:10px; margin-top:8px; margin-bottom:8px;">
+            <div style="display:grid; grid-template-columns:minmax(0,1fr) auto; gap:12px; margin-top:10px; margin-bottom:12px;">
               <div class="auth-input-wrap btn-dark premium-glass premium-capsule" style="margin-bottom:0;">
                 <div style="width:100%;">
                   <label class="auth-input-label" for="friendAddInput">ID ТИММЕЙТА</label>
                   <input id="friendAddInput" class="auth-input" type="text" placeholder="SO2-7744" autocomplete="off" spellcheck="false" />
                 </div>
               </div>
-              <button type="button" class="btn-main premium-glass premium-capsule" style="width:auto; padding-inline:20px;" aria-label="Добавить тиммейта" onclick="addFriendByCode()">Добавить</button>
+              <button type="button" class="btn-main premium-glass premium-capsule" style="width:auto; padding-inline:24px;" aria-label="Добавить тиммейта" onclick="addFriendByCode()">Добавить</button>
             </div>
             <div id="friendsListBox"></div>
           </div>
@@ -1313,53 +1317,53 @@
     </div>
 
     <div id="tabProfile" class="tab-section">
-      <div class="acc-block premium-glass open" style="padding:16px;">
-        <div style="display:flex; align-items:center; gap:14px; margin-bottom:14px; padding-bottom:14px; border-bottom:1px solid rgba(255,255,255,0.08);">
-          <div class="header-avatar-holder premium-glass" style="width:64px; height:64px;" onclick="triggerAvatarUpload()" role="button" tabindex="0" aria-label="Сменить аватарку">
+      <div class="acc-block premium-glass open" style="padding:18px;">
+        <div style="display:flex; align-items:center; gap:16px; margin-bottom:16px; padding-bottom:16px; border-bottom:1px solid rgba(255,255,255,0.08);">
+          <div class="header-avatar-holder premium-glass" style="width:68px; height:68px;" onclick="triggerAvatarUpload()" role="button" tabindex="0" aria-label="Сменить аватарку">
             <img id="profAvatarImg" src="" alt="" />
-            <span id="profAvatarFallback" style="font-size:1.5rem; font-weight:800; color:#FFFFFF;">P</span>
+            <span id="profAvatarFallback" style="font-size:1.6rem; font-weight:800; color:#FFFFFF;">P</span>
           </div>
           <div style="flex:1; min-width:0;">
-            <div style="font-size:1.15rem; font-weight:800; color:#fff;" id="profNickText">login</div>
-            <div style="font-size:0.75rem; color:#30D158; font-weight:700; margin-top:2px;" id="profSubVal">АКТИВНА</div>
-            <div style="display:flex; gap:8px; flex-wrap:wrap; margin-top:10px;">
-              <button type="button" class="btn-dark premium-glass premium-capsule" style="padding:8px 14px; font-size:0.6875rem; min-height:36px; width:auto;" onclick="triggerAvatarUpload()">
+            <div style="font-size:1.2rem; font-weight:800; color:#fff;" id="profNickText">login</div>
+            <div style="font-size:0.8rem; color:#30D158; font-weight:700; margin-top:2px;" id="profSubVal">АКТИВНА</div>
+            <div style="display:flex; gap:10px; flex-wrap:wrap; margin-top:12px;">
+              <button type="button" class="btn-dark premium-glass premium-capsule" style="padding:8px 16px; font-size:0.75rem; min-height:38px; width:auto;" onclick="triggerAvatarUpload()">
                 Сменить аватарку
               </button>
-              <button type="button" class="btn-dark premium-glass premium-capsule" style="padding:8px 14px; font-size:0.6875rem; min-height:36px; width:auto;" onclick="triggerCustomBgUpload()">
+              <button type="button" class="btn-dark premium-glass premium-capsule" style="padding:8px 16px; font-size:0.75rem; min-height:38px; width:auto;" onclick="triggerCustomBgUpload()">
                 Установить фон
               </button>
-              <button type="button" class="btn-dark premium-glass premium-capsule" style="padding:8px 14px; font-size:0.6875rem; min-height:36px; width:auto;" onclick="resetCustomBgToCarbon()">
+              <button type="button" class="btn-dark premium-glass premium-capsule" style="padding:8px 16px; font-size:0.75rem; min-height:38px; width:auto;" onclick="resetCustomBgToCarbon()">
                 Сбросить фон
               </button>
             </div>
           </div>
         </div>
 
-        <div style="font-size:0.8125rem; color:var(--text-main); display:flex; flex-direction:column; gap:12px; margin-bottom:18px;">
-          <div style="display:flex; justify-content:space-between; padding-bottom:10px; border-bottom:1px solid rgba(255,255,255,0.08);">
-            <span style="color:var(--text-muted); font-weight:500;">Лицензионный ключ</span>
+        <div style="font-size:0.85rem; color:var(--text-main); display:flex; flex-direction:column; gap:14px; margin-bottom:20px;">
+          <div style="display:flex; justify-content:space-between; padding-bottom:12px; border-bottom:1px solid rgba(255,255,255,0.08);">
+            <span style="color:var(--text-muted); font-weight:600;">Лицензионный ключ</span>
             <b id="profKeyMasked" style="color:var(--accent-bright); font-variant-numeric:tabular-nums;">TP-***-******</b>
           </div>
-          <div style="display:flex; justify-content:space-between; padding-bottom:10px; border-bottom:1px solid rgba(255,255,255,0.08);">
-            <span style="color:var(--text-muted); font-weight:500;">Аппаратный HWID</span>
+          <div style="display:flex; justify-content:space-between; padding-bottom:12px; border-bottom:1px solid rgba(255,255,255,0.08);">
+            <span style="color:var(--text-muted); font-weight:600;">Аппаратный HWID</span>
             <b id="profHwidText" style="font-family:monospace; font-variant-numeric:tabular-nums; user-select:text;">…</b>
           </div>
-          <div style="display:flex; justify-content:space-between; padding-bottom:10px; border-bottom:1px solid rgba(255,255,255,0.08);">
-            <span style="color:var(--text-muted); font-weight:500;">Защита хранилища</span>
+          <div style="display:flex; justify-content:space-between; padding-bottom:12px; border-bottom:1px solid rgba(255,255,255,0.08);">
+            <span style="color:var(--text-muted); font-weight:600;">Защита хранилища</span>
             <b id="profModelText" style="color:#30D158;">AES-GCM + TEE</b>
           </div>
           <div style="display:flex; justify-content:space-between;">
-            <span style="color:var(--text-muted); font-weight:500;">Активный конфиг</span>
+            <span style="color:var(--text-muted); font-weight:600;">Активный конфиг</span>
             <b id="profDeviceModeText" style="color:var(--accent-bright);">ТЕЛЕПОРТ УЛЬТРА</b>
           </div>
         </div>
 
-        <button type="button" class="btn-main premium-glass premium-capsule" style="margin-bottom:12px;" onclick="saveAllAppSettingsMaster()">
+        <button type="button" class="btn-main premium-glass premium-capsule" style="margin-bottom:14px;" onclick="saveAllAppSettingsMaster()">
           ⚡ Сохранить настройки профиля
         </button>
 
-        <div style="display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:10px;">
+        <div style="display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:12px;">
           <button type="button" class="btn-dark premium-glass premium-capsule" onclick="openSupportLink()">Написать в поддержку</button>
           <button type="button" class="btn-danger premium-glass premium-capsule" onclick="handleLogoutClick()">Сменить ключ</button>
         </div>
@@ -1368,7 +1372,7 @@
 
   </main>
 
-  <nav id="bottomNavBar" class="bottom-nav-bar blur-container" aria-label="Основная навигация">
+  <nav id="bottomNavBar" class="bottom-nav-bar premium-glass" aria-label="Основная навигация">
     <div id="navLiquidLens" class="nav-liquid-lens premium-glass" aria-hidden="true"></div>
     <div class="nav-item active" data-tab="tabSens" data-nav-idx="0" role="button" tabindex="0" onclick="switchTab('tabSens');">
       <svg aria-hidden="true" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>
@@ -2513,11 +2517,9 @@
       currentCrosshairType = mode || "cross";
       document.querySelectorAll(".ch-shape-tile").forEach(t => {
         const m = t.getAttribute("data-ch");
-        if (t.classList.contains('active-state')) {
-           t.classList.remove('active-state');
-        }
+        t.classList.remove("active-state");
         if (m === currentCrosshairType || (currentCrosshairType === "crossdot" && m === "cross")) {
-           t.classList.add('active-state');
+           t.classList.add("active-state");
         }
       });
       const b1 = document.getElementById("subBoxCrossLines");
