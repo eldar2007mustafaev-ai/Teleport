@@ -1055,20 +1055,8 @@
               </div>
             </div>
 
-            <div class="preset-pills-4" style="grid-template-columns:repeat(5,minmax(0,1fr)); margin-bottom:8px;">
-              <div class="preset-pill active" data-ratio="4:3" onclick="selectRatioPill(this, '4:3')"><div class="preset-pill-name">4:3</div><div class="preset-pill-sub">Классика</div></div>
-              <div class="preset-pill" data-ratio="PAD-WIDE" onclick="selectRatioPill(this, 'PAD-WIDE')"><div class="preset-pill-name">PAD</div><div class="preset-pill-sub">На Пады</div></div>
-              <div class="preset-pill" data-ratio="5:4" onclick="selectRatioPill(this, '5:4')"><div class="preset-pill-name">5:4</div><div class="preset-pill-sub">Кибер</div></div>
-              <div class="preset-pill" data-ratio="16:10" onclick="selectRatioPill(this, '16:10')"><div class="preset-pill-name">16:10</div><div class="preset-pill-sub">Мягкий</div></div>
-              <div class="preset-pill" data-ratio="1:1" onclick="selectRatioPill(this, '1:1')"><div class="preset-pill-name">1:1</div><div class="preset-pill-sub">Макс</div></div>
-            </div>
+            <div id="stretchPresetsContainer"></div>
 
-            <div class="preset-pills-4" style="margin-bottom:14px;">
-              <div class="preset-pill" data-ratio="3:2" onclick="selectRatioPill(this, '3:2')"><div class="preset-pill-name">3:2</div><div class="preset-pill-sub">Широкий</div></div>
-              <div class="preset-pill" data-ratio="16:9" onclick="selectRatioPill(this, '16:9')"><div class="preset-pill-name">16:9</div><div class="preset-pill-sub">Сток+</div></div>
-              <div class="preset-pill" data-ratio="SHRINK-84" onclick="selectRatioPill(this, 'SHRINK-84')"><div class="preset-pill-name">84%</div><div class="preset-pill-sub">Стяг</div></div>
-              <div class="preset-pill" data-ratio="21:9" onclick="selectRatioPill(this, '21:9')"><div class="preset-pill-name">21:9</div><div class="preset-pill-sub">Ультра</div></div>
-            </div>
 
             <button id="btnLaunchFloatingStretch" type="button" class="btn-main" style="margin-bottom:8px;" onclick="launchFloatingTButton()">
               ⚡ Запустить плавающую кнопку «T» (4:3)
@@ -3063,41 +3051,70 @@
         }
       });
     }
+    
+    function renderStretchPresets(presets) {
+      const container = document.getElementById("stretchPresetsContainer");
+      if (!container) return;
+      
+      let html = '';
+      presets.forEach((preset, index) => {
+        if (index % 5 === 0) {
+            if (index > 0) html += '</div>';
+            html += '<div class="preset-pills-4" style="grid-template-columns:repeat(5,minmax(0,1fr)); margin-bottom:8px;">';
+        }
+        const activeClass = (preset.ratio === currentStretchRatio) ? "active" : "";
+        html += `
+          <div class="preset-pill ${activeClass}" data-ratio="${preset.ratio}" onclick="selectRatioPill(this, '${preset.ratio}')">
+            <div class="preset-pill-name">${preset.label}</div>
+            <div class="preset-pill-sub">${preset.sub_label || ''}</div>
+          </div>
+        `;
+      });
+      if (presets.length > 0) html += '</div>';
+      container.innerHTML = html;
+    }
 
     function initAppOnBoot() {
       upgradeShizukuModalGuideAndGuard();
       
-      // Инициализация тем (Графитовый Титан по умолчанию)
       let idx = 0;
-      let hasSaved = false;
       try {
         const saved = localStorage.getItem("so2_theme_idx_v11");
-        if (saved !== null) {
-          idx = parseInt(saved, 10);
-          hasSaved = true;
-        }
+        if (saved !== null) idx = parseInt(saved, 10);
       } catch (e) {}
-      if (isNaN(idx) || idx < 0 || idx >= IOS27_LIQUID_THEMES.length) {
-        idx = 0; 
-        hasSaved = false;
-      }
+      if (isNaN(idx) || idx < 0 || idx >= IOS27_LIQUID_THEMES.length) idx = 0; 
       setNeonTheme("", "", "", "", null, idx, true, "");
       
-      // Убрали принудительное отключение Телепорта,
-      // чтобы он не выключался при разворачивании приложения.
+      // ЗАГРУЗКА УДАЛЕННОГО КОНФИГА
+      if (hasBridge()) {
+          try {
+              const rawConfig = AndroidBridge.getRemoteConfigJson();
+              const config = JSON.parse(rawConfig);
+              
+              if (config && config.payload) {
+                  if (config.payload.default_ratio) {
+                      currentStretchRatio = config.payload.default_ratio;
+                  }
+                  if (config.payload.stretch_presets && Array.isArray(config.payload.stretch_presets)) {
+                      renderStretchPresets(config.payload.stretch_presets);
+                  }
+              }
+          } catch (e) {
+              console.error("Config parse error");
+          }
+          AndroidBridge.fetchRemoteConfig();
+      }
+
       updateOptLabels();
       renderFriendsList();
       refreshShizukuIndicator();
 
       document.addEventListener("keydown", function(e) {
-        if (e.key === "Escape") {
-          window.handleSystemBack();
-        }
+        if (e.key === "Escape") window.handleSystemBack();
       });
 
       let savedNick = "login";
       let savedKey = "";
-
       try {
         savedNick = localStorage.getItem("so2_saved_nick_v11") || "login";
         savedKey = sanitizeLicenseKeyInput(localStorage.getItem("so2_saved_lic_key_v11") || "");
@@ -3123,14 +3140,13 @@
         unlockWorkspaceWithKey(savedNick, savedKey, "АКТИВНА");
         setTimeout(pollLicenseExpiration, 1500);
       } else {
-        // Если юзер еще не вошел, просто ставим визуал (без сброса тумблера)
         selectTeleportPreset("extreme", true);
       }
 
       setInterval(pollLicenseExpiration, 30000);
       setInterval(refreshShizukuIndicator, 6000);
     }
-
+    
     document.addEventListener("DOMContentLoaded", initAppOnBoot);
   </script>
 </body>
