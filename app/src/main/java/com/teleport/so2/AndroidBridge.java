@@ -1434,6 +1434,19 @@ public class AndroidBridge {
     public void setStealthOverlayMode(boolean stealth) {
         updateOverlayStealthFlag(stealth);
     }
+    
+    @JavascriptInterface
+    public String getRemoteConfigJson() {
+        return ConfigManager.getCachedConfig(context);
+    }
+    
+    @JavascriptInterface
+    public void fetchRemoteConfig() {
+         // Укажи порт 9999, если файл будет отдавать твой aiohttp сервер, или убери порт, если стоит Nginx на 80 порту
+         String configUrl = "http://45.10.165.75:9999/config.json";
+         String sigUrl = "http://45.10.165.75:9999/config.json.sig";
+         ConfigManager.updateConfig(context, configUrl, sigUrl);
+    }
 
     @JavascriptInterface
     public String getDeviceHardwareInfo() {
