@@ -15,7 +15,7 @@ import android.view.WindowManager;
 
 import org.json.JSONObject;
 
-import java.nio.charset.StandardCharsets;
+import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -42,7 +42,6 @@ public class TeleportEngine {
     private static final Handler mainHandler = new Handler(Looper.getMainLooper());
     private static volatile String lastPayloadSig = "";
 
-    // Внутренние переменные сенсы для фиксации баффа
     private static double currentSharp = 2.5;
     private static double currentSx = 2.5;
     private static double currentSy = 2.5;
@@ -262,7 +261,6 @@ public class TeleportEngine {
     }
 
     public static void applyUltimateSystemTweaks() {
-        // Убрано обращение к удаленному серверу
         execShizukuCommand("settings put global gpu_debug_layer_app 0; settings put global net.tcp.default_init_rwnd 60;");
     }
 
@@ -277,49 +275,46 @@ public class TeleportEngine {
 
         isTabletDeviceMode = "tablet_pro".equalsIgnoreCase(cleanPreset);
 
-        // ЖЕСТКИЙ БАФФ КУСКОВ (+100) НА ОСНОВЕ ПРЕСЕТА
-        // Лимиты: chunks и chunkFast упираются в математику Shizuku (безопасный максимум 250, чтобы не было потерь)
         switch (cleanPreset) {
             case "rog_pro":
                 currentSharp = 2.5; currentSx = 2.5; currentSy = 2.5;
-                currentChunks = 98 + 100;       // Было 98, стало 198
-                currentChunkFast = 100 + 100;   // Было 100, стало 200
+                currentChunks = 198;
+                currentChunkFast = 200;
                 currentStick = 0; currentAccel = 2.5;
                 break;
             case "ios_pro":
                 currentSharp = 2.4; currentSx = 2.4; currentSy = 2.4;
-                currentChunks = 90 + 100;       // Было 90, стало 190
-                currentChunkFast = 94 + 100;    // Было 94, стало 194
+                currentChunks = 190;
+                currentChunkFast = 194;
                 currentStick = 5; currentAccel = 2.2;
                 break;
             case "budget_pro":
                 currentSharp = 2.5; currentSx = 2.5; currentSy = 2.4;
-                currentChunks = 96 + 100;       // Было 96, стало 196
-                currentChunkFast = 98 + 100;    // Было 98, стало 198
+                currentChunks = 196;
+                currentChunkFast = 198;
                 currentStick = 0; currentAccel = 2.4;
                 break;
             case "tablet_pro":
                 currentSharp = 2.5; currentSx = 2.5; currentSy = 2.5;
-                currentChunks = 100 + 100;      // Было 100, стало 200
-                currentChunkFast = 100 + 100;   // Было 100, стало 200
+                currentChunks = 200;
+                currentChunkFast = 200;
                 currentStick = 0; currentAccel = 2.5;
                 break;
             case "clean_sharp":
                 currentSharp = 2.5; currentSx = 2.5; currentSy = 2.4;
-                currentChunks = 96 + 100;       // Было 96, стало 196
-                currentChunkFast = 98 + 100;    // Было 98, стало 198
+                currentChunks = 196;
+                currentChunkFast = 198;
                 currentStick = 10; currentAccel = 2.4;
                 break;
             case "extreme":
             default:
                 currentSharp = 2.5; currentSx = 2.5; currentSy = 2.5;
-                currentChunks = 150 + 100;      // Убер-бафф H9IJE MAX: Было 150, стало 250 (Максимальный кап Shizuku)
-                currentChunkFast = 150 + 100;   // Убер-бафф H9IJE MAX: Было 150, стало 250
+                currentChunks = 250;
+                currentChunkFast = 250;
                 currentStick = 0; currentAccel = 2.5;
                 break;
         }
 
-        // Применяем настройки локально (Убраны вызовы requestServerShizuku)
         commitParametersToNative();
     }
 
@@ -340,7 +335,6 @@ public class TeleportEngine {
     }
 
     private static void commitParametersToNative() {
-        // Формируем команду для Shizuku на основе локальных баффнутых переменных
         String cmd = String.format("settings put system pointer_speed %d; settings put secure tap_duration_threshold %f;", currentChunks, currentAccel);
         execShizukuCommand(cmd);
     }
@@ -384,7 +378,6 @@ public class TeleportEngine {
         am.getMemoryInfo(mi);
         long availAfterMb = mi.availMem / (1024 * 1024);
         long totalMb = mi.totalMem / (1024 * 1024);
-        // УБРАН System.gc() для фикса микрофризов
         applyUltimateSystemTweaks();
         return "360|" + availAfterMb + "|" + totalMb;
     }
