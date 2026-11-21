@@ -4,9 +4,7 @@
   <meta charset="UTF-8" />
   <meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' data: blob:; img-src 'self' data: blob:; media-src 'self' data: blob:; connect-src 'none'; object-src 'none'; frame-src 'none';" />
   
-  <!-- ФИКС ЗАДЕРЖКИ: добавлено user-scalable=no, чтобы WebView не ждал двойного тапа -->
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
-  
   <meta name="so2-seal" content="SO2TELEPORT_QUANTUM_V9_SEAL SO2TELEPORT_V10_CORE pollLicenseExpiration" />
   <title>SO2Teleport PRO</title>
   <style>
@@ -75,7 +73,6 @@
 
     button, label, .nav-item, .preset-pill, .pixel-tile, .ch-shape-tile, .ch-subtoggle-box, .character-card, .shelf-preset-card, .acc-header, .shizuku-status-pill, .theme-dot, .ch-color-swatch, .avatar-preset-item {
       user-select: none;
-      /* ФИКС ЗАДЕРЖКИ: Запрещает браузеру ждать 300мс на кнопках */
       touch-action: manipulation;
     }
 
@@ -93,6 +90,10 @@
         linear-gradient(135deg, var(--bg-fallback-1) 0%, var(--bg-fallback-2) 50%, var(--bg-fallback-3) 100%);
     }
 
+    #bgCustomVideo, #bgCustomGif, #bgParticlesCanvas, .liquid-orb {
+      display: none !important;
+    }
+
     #bgThemeTintLayer {
       position: fixed;
       inset: 0;
@@ -101,7 +102,9 @@
       background: rgba(4, 7, 15, 0.05);
       transition: background 260ms ease;
     }
-    
+
+    #bgVignetteOverlay { display: none; }
+
     input, textarea, select {
       font-family: inherit;
       user-select: text;
@@ -127,13 +130,12 @@
       z-index: 2;
     }
 
-    .liquid-glass-surface, .liquid-glass-btn, .btn-main, .btn-dark, .btn-danger, .shizuku-status-pill, .character-card, .pro-slider-row, .saved-variant-row, .code-input-bar, .shelf-preset-card, .preset-pill, .pixel-tile, .ch-shape-tile, .ch-subtoggle-box, .ch-color-palette-bar, .toggle-row, .auth-input-wrap, .bottom-nav-bar, .icon-circle-action, .header-avatar-holder, .acc-icon, .acc-chevron, .char-arrow {
+    .liquid-glass-surface, .liquid-glass-btn, .btn-main, .btn-dark, .btn-danger, .shizuku-status-pill, .character-card, .pro-slider-row, .saved-variant-row, .code-input-bar, .shelf-preset-card, .preset-pill, .pixel-tile, .ch-shape-tile, .ch-subtoggle-box, .ch-color-palette-bar, .toggle-row, .friend-item, .auth-input-wrap, .bottom-nav-bar, .icon-circle-action, .header-avatar-holder, .acc-icon, .acc-chevron, .char-arrow {
       position: relative;
       backdrop-filter: blur(var(--glass-blur)) saturate(120%);
       -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(120%);
       transform: translateZ(0);
       backface-visibility: hidden;
-      
       border: 1px solid rgba(255, 255, 255, 0.08);
       border-top-color: rgba(255, 255, 255, 0.25);
       border-left-color: rgba(255, 255, 255, 0.15);
@@ -158,11 +160,7 @@
       transition: transform 280ms var(--spring-ease);
     }
 
-    .top-brand-header {
-      border-radius: 28px;
-      padding: 14px 16px;
-      margin-block-end: 12px;
-    }
+    .top-brand-header { border-radius: 28px; padding: 14px 16px; margin-block-end: 12px; }
     .top-brand-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
     .brand-left-wrap { display: flex; align-items: center; gap: 12px; min-width: 0; flex: 1; }
     
@@ -205,11 +203,7 @@
       box-shadow: 0 3px 8px rgba(0, 0, 0, 0.45);
       transition: transform 280ms var(--spring-ease);
     }
-    .theme-dot.active {
-      border-color: #FFFFFF;
-      box-shadow: 0 0 14px var(--accent-bright);
-      transform: scale(1.16);
-    }
+    .theme-dot.active { border-color: #FFFFFF; box-shadow: 0 0 14px var(--accent-bright); transform: scale(1.16); }
 
     .acc-block { border-radius: 28px; margin-block-end: 12px; overflow: hidden; }
     .acc-header { padding: 15px 16px; display: flex; align-items: center; justify-content: space-between; gap: 12px; cursor: pointer; }
@@ -251,23 +245,19 @@
     .cyber-switch-lg input, .cyber-switch input { opacity: 0; width: 0; height: 0; }
     
     .cyber-slider-lg, .cyber-slider {
-      position: absolute; inset: 0;
-      background: rgba(10, 14, 26, 0.52);
-      border: 1px solid rgba(255, 255, 255, 0.35);
-      border-radius: 999px;
+      position: absolute; inset: 0; background: rgba(10, 14, 26, 0.52);
+      border: 1px solid rgba(255, 255, 255, 0.35); border-radius: 999px;
     }
     .cyber-slider-lg::before, .cyber-slider::before {
       content: ""; position: absolute; border-radius: 50%;
       background: radial-gradient(circle at 32% 28%, #FFFFFF 0%, #E2E8F0 70%, #CBD5E1 100%);
-      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.45);
-      transition: transform 280ms var(--spring-ease);
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.45); transition: transform 280ms var(--spring-ease);
     }
     .cyber-slider-lg::before { width: 24px; height: 24px; inset-inline-start: 3px; inset-block-start: 3px; }
     .cyber-slider::before { width: 20px; height: 20px; inset-inline-start: 3px; inset-block-start: 3px; }
     
     .cyber-switch-lg input:checked + .cyber-slider-lg, .cyber-switch input:checked + .cyber-slider {
-      background: var(--glass-tint-active);
-      border-color: rgba(255, 255, 255, 0.85);
+      background: var(--glass-tint-active); border-color: rgba(255, 255, 255, 0.85);
     }
     .cyber-switch-lg input:checked + .cyber-slider-lg::before { transform: translateX(22px); background: #FFFFFF; }
     .cyber-switch input:checked + .cyber-slider::before { transform: translateX(20px); background: #FFFFFF; }
@@ -285,21 +275,14 @@
     }
 
     .character-card {
-      background: var(--glass-tint-card);
-      box-shadow: 0 6px 18px rgba(0, 0, 0, 0.32);
+      background: var(--glass-tint-card); box-shadow: 0 6px 18px rgba(0, 0, 0, 0.32);
       border-radius: 24px; padding: 13px 14px; margin-block-start: 9px;
       display: flex; align-items: center; justify-content: space-between; gap: 10px; cursor: pointer;
       transition: transform 280ms var(--spring-ease);
     }
-
     .character-card.active { 
       background: var(--glass-tint-active); 
-      box-shadow: 
-        0 8px 24px rgba(var(--accent-sec-rgb), 0.38), 
-        inset 0 2px 3px rgba(255, 255, 255, 0.78), 
-        inset 0 -4px 10px rgba(var(--accent-sec-rgb), 0.52),
-        0 0 0 1.5px var(--accent-bright),
-        0 0 16px rgba(var(--accent-rgb), 0.65);
+      box-shadow: 0 8px 24px rgba(var(--accent-sec-rgb), 0.38), inset 0 2px 3px rgba(255, 255, 255, 0.78), inset 0 -4px 10px rgba(var(--accent-sec-rgb), 0.52), 0 0 0 1.5px var(--accent-bright), 0 0 16px rgba(var(--accent-rgb), 0.65);
     }
     
     .char-title { font-size: 0.875rem; font-weight: 700; line-height: 1.3; display: flex; align-items: center; flex-wrap: wrap; gap: 6px; }
@@ -348,9 +331,7 @@
     
     .code-input-bar { display: flex; align-items: center; gap: 10px; background: var(--glass-tint-card); border-radius: 999px; padding: 8px 14px; margin-block-start: 8px; }
     .shelf-cards-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 9px; margin-block-start: 10px; }
-    .shelf-preset-card {
-      background: var(--glass-tint-card); border-radius: 22px; padding: 13px; cursor: pointer; display: flex; flex-direction: column; justify-content: space-between; min-height: 86px; transition: transform 280ms var(--spring-ease);
-    }
+    .shelf-preset-card { background: var(--glass-tint-card); border-radius: 22px; padding: 13px; cursor: pointer; display: flex; flex-direction: column; justify-content: space-between; min-height: 86px; transition: transform 280ms var(--spring-ease); }
     .shelf-preset-card.active { background: var(--glass-tint-active); }
 
     .preview-stage-box { width: 100%; min-height: 148px; background: rgba(8, 12, 24, 0.48); border: 1px solid rgba(255, 255, 255, 0.32); border-radius: 22px; position: relative; display: flex; align-items: center; justify-content: center; margin-block: 8px 12px; overflow: hidden; }
@@ -403,6 +384,8 @@
     .tweak-tags-wrap { display: flex; flex-wrap: wrap; gap: 6px; margin-block: 10px 12px; }
     .tweak-mini-tag { font-size: 0.6875rem; font-weight: 600; padding: 5px 11px; border-radius: 999px; background: rgba(var(--accent-rgb), 0.18); border: 1px solid rgba(255, 255, 255, 0.36); }
     
+    .friend-item { display: flex; align-items: center; justify-content: space-between; gap: 10px; background: var(--glass-tint-card); border-radius: 22px; padding: 12px 14px; margin-block-start: 8px; }
+
     .auth-input-wrap { background: var(--glass-tint-card); border-radius: 22px; padding: 10px 14px; margin-block-end: 12px; }
     .auth-input-label { display: block; font-size: 0.6875rem; font-weight: 700; color: var(--accent-bright); letter-spacing: 0.04em; margin-block-end: 4px; }
     .auth-input { width: 100%; background: transparent !important; border: none !important; outline: none !important; box-shadow: none !important; border-radius: 0 !important; padding: 0 !important; color: var(--text-main) !important; font-size: 1rem; font-weight: 600; }
@@ -425,7 +408,7 @@
       --nav-idx: 0; --lens-sx: 1; --lens-sy: 1;
       position: fixed; bottom: calc(env(safe-area-inset-bottom, 0px) + 12px); left: 12px; right: 12px;
       max-width: 480px; margin-inline: auto; height: 68px; background: var(--glass-tint-nav); border-radius: 999px;
-      display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); align-items: center; padding-inline: 6px;
+      display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); align-items: center; padding-inline: 6px;
       z-index: 9000; touch-action: pan-y;
       box-shadow: 0 14px 34px rgba(0, 0, 0, 0.58);
       border: 1px solid rgba(255, 255, 255, 0.1);
@@ -433,7 +416,7 @@
     }
     
     .nav-liquid-lens {
-      position: absolute; top: 5px; bottom: 5px; left: 6px; width: calc((100% - 12px) / 4); border-radius: 999px; pointer-events: none; z-index: 1;
+      position: absolute; top: 5px; bottom: 5px; left: 6px; width: calc((100% - 12px) / 5); border-radius: 999px; pointer-events: none; z-index: 1;
       background: radial-gradient(120% 130% at 50% 18%, rgba(255, 255, 255, 0.34) 0%, rgba(var(--accent-rgb), 0.32) 52%, rgba(var(--accent-sec-rgb), 0.28) 100%);
       backdrop-filter: blur(12px) saturate(190%) brightness(1.15); -webkit-backdrop-filter: blur(12px) saturate(190%) brightness(1.15);
       border: 1px solid rgba(var(--accent-bright), 0.4);
@@ -1023,7 +1006,6 @@
       </div>
 
     </div>
-
     <div id="tabScreen" class="tab-section">
 
       <div id="accScreenStretch" class="acc-block liquid-glass-surface open">
@@ -1242,6 +1224,33 @@
 
     </div>
 
+    <div id="tabSquad" class="tab-section">
+      <div id="accSquadFriends" class="acc-block liquid-glass-surface open">
+        <div class="acc-header" onclick="toggleAccordionBlock('accSquadFriends')">
+          <div class="acc-left">
+            <div class="acc-icon" aria-hidden="true">👥</div>
+            <div class="acc-title-wrap">
+              <div class="acc-title">Друзья и тиммейты <span id="myFriendCodeBadge" class="badge-chip">ID: SO2-0000</span></div>
+              <div class="acc-sub">Добавление тиммейтов по личному ID</div>
+            </div>
+          </div>
+          <div class="acc-chevron" aria-hidden="true">⌄</div>
+        </div>
+        <div class="acc-body-wrap">
+          <div class="acc-body-inner">
+            <div style="display:grid; grid-template-columns:minmax(0,1fr) auto; gap:8px; margin-top:8px; margin-bottom:6px;">
+              <div class="auth-input-wrap" style="margin-bottom:0;">
+                <label class="auth-input-label" for="friendAddInput">ID ТИММЕЙТА</label>
+                <input id="friendAddInput" class="auth-input" type="text" placeholder="SO2-7744" autocomplete="off" spellcheck="false" />
+              </div>
+              <button type="button" class="btn-main" style="width:auto; padding-inline:18px;" aria-label="Добавить тиммейта" onclick="addFriendByCode()">Добавить</button>
+            </div>
+            <div id="friendsListBox"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <div id="tabProfile" class="tab-section">
       <div class="acc-block liquid-glass-surface open" style="padding:16px;">
         <div style="display:flex; align-items:center; gap:14px; margin-bottom:14px; padding-bottom:14px; border-bottom:1px solid rgba(255,255,255,0.16);">
@@ -1297,6 +1306,31 @@
     </div>
 
   </main>
+
+  <nav id="bottomNavBar" class="bottom-nav-bar" aria-label="Основная навигация">
+    <div id="navLiquidLens" class="nav-liquid-lens" aria-hidden="true"></div>
+    <div class="nav-item active" data-tab="tabSens" data-nav-idx="0" role="button" tabindex="0" onclick="switchTab('tabSens');">
+      <svg aria-hidden="true" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>
+      <span>Главное</span>
+    </div>
+    <div class="nav-item" data-tab="tabScreen" data-nav-idx="1" role="button" tabindex="0" onclick="switchTab('tabScreen')">
+      <svg aria-hidden="true" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M8 9h8M8 15h8"/></svg>
+      <span>Экран «T»</span>
+    </div>
+    <div class="nav-item" data-tab="tabBoost" data-nav-idx="2" role="button" tabindex="0" onclick="switchTab('tabBoost')">
+      <svg aria-hidden="true" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+      <span>Бустер</span>
+    </div>
+    <div class="nav-item" data-tab="tabSquad" data-nav-idx="3" role="button" tabindex="0" onclick="switchTab('tabSquad'); syncFriendsHub();">
+      <svg aria-hidden="true" viewBox="0 0 24 24"><path d="M3 18v-6a9 9 0 0 1 18 0v6"/><path d="M21 19a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3zM3 19a2 2 0 0 0 2 2h1a2 2 0 0 0 2-2v-3a2 2 0 0 0-2-2H3z"/></svg>
+      <span>Друзья</span>
+    </div>
+    <div class="nav-item" data-tab="tabProfile" data-nav-idx="4" role="button" tabindex="0" onclick="switchTab('tabProfile')">
+      <svg aria-hidden="true" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 4-6 8-6s8 2 8 6"/></svg>
+      <span>Профиль</span>
+    </div>
+  </nav>
+
   <script>
     const SO2_QUANTUM_SIGNATURE = "SO2TELEPORT_QUANTUM_V9_SEAL";
     let activeSessionKey = "";
@@ -1874,7 +1908,6 @@
       const subTitle = document.getElementById("activePresetTitle");
       const profMode = document.getElementById("profDeviceModeText");
 
-      // БАФФ КУСКОВ (+100) НА ФРОНТЕНДЕ 
       if (currentPresetId === "rog_pro") {
         setSliderVal("sl_sharp", 25);
         setSliderVal("sl_sx", 25);
@@ -1885,10 +1918,10 @@
         setSliderVal("sl_stick", 0);
         setSliderVal("sl_stick_delay", 60);
         setSliderVal("sl_stick_force", 1);
-        setSliderVal("sl_chunks", 198);      // Бафф: было 98
+        setSliderVal("sl_chunks", 98);
         setSliderVal("sl_chunk_bypass", 0);
         setSliderVal("sl_chunk_cap", 30);
-        setSliderVal("sl_chunkfast", 200);   // Бафф: было 100
+        setSliderVal("sl_chunkfast", 100);
         setSliderVal("sl_shot_pause", 0);
         setSliderVal("sl_accel", 25);
         setSliderVal("sl_edge_reach", 20);
@@ -1909,10 +1942,10 @@
         setSliderVal("sl_stick", 5);
         setSliderVal("sl_stick_delay", 45);
         setSliderVal("sl_stick_force", 2);
-        setSliderVal("sl_chunks", 190);      // Бафф: было 90
+        setSliderVal("sl_chunks", 90);
         setSliderVal("sl_chunk_bypass", 0);
         setSliderVal("sl_chunk_cap", 28);
-        setSliderVal("sl_chunkfast", 194);   // Бафф: было 94
+        setSliderVal("sl_chunkfast", 94);
         setSliderVal("sl_shot_pause", 0);
         setSliderVal("sl_accel", 22);
         setSliderVal("sl_edge_reach", 20);
@@ -1933,10 +1966,10 @@
         setSliderVal("sl_stick", 0);
         setSliderVal("sl_stick_delay", 60);
         setSliderVal("sl_stick_force", 1);
-        setSliderVal("sl_chunks", 196);      // Бафф: было 96
+        setSliderVal("sl_chunks", 96);
         setSliderVal("sl_chunk_bypass", 0);
         setSliderVal("sl_chunk_cap", 30);
-        setSliderVal("sl_chunkfast", 198);   // Бафф: было 98
+        setSliderVal("sl_chunkfast", 98);
         setSliderVal("sl_shot_pause", 0);
         setSliderVal("sl_accel", 24);
         setSliderVal("sl_edge_reach", 20);
@@ -1957,10 +1990,10 @@
         setSliderVal("sl_stick", 0);
         setSliderVal("sl_stick_delay", 60);
         setSliderVal("sl_stick_force", 1);
-        setSliderVal("sl_chunks", 200);      // Бафф: было 100
+        setSliderVal("sl_chunks", 100);
         setSliderVal("sl_chunk_bypass", 0);
         setSliderVal("sl_chunk_cap", 30);
-        setSliderVal("sl_chunkfast", 200);   // Бафф: было 100
+        setSliderVal("sl_chunkfast", 100);
         setSliderVal("sl_shot_pause", 0);
         setSliderVal("sl_accel", 25);
         setSliderVal("sl_edge_reach", 20);
@@ -1981,10 +2014,10 @@
         setSliderVal("sl_stick", 10);
         setSliderVal("sl_stick_delay", 40);
         setSliderVal("sl_stick_force", 2);
-        setSliderVal("sl_chunks", 196);      // Бафф: было 96
+        setSliderVal("sl_chunks", 96);
         setSliderVal("sl_chunk_bypass", 0);
         setSliderVal("sl_chunk_cap", 30);
-        setSliderVal("sl_chunkfast", 198);   // Бафф: было 98
+        setSliderVal("sl_chunkfast", 98);
         setSliderVal("sl_shot_pause", 0);
         setSliderVal("sl_accel", 24);
         setSliderVal("sl_edge_reach", 20);
@@ -2005,10 +2038,10 @@
         setSliderVal("sl_stick", 0);
         setSliderVal("sl_stick_delay", 60);
         setSliderVal("sl_stick_force", 1);
-        setSliderVal("sl_chunks", 250);      // УБЕР-БАФФ H9IJE MAX
+        setSliderVal("sl_chunks", 100);
         setSliderVal("sl_chunk_bypass", 0);
         setSliderVal("sl_chunk_cap", 30);
-        setSliderVal("sl_chunkfast", 250);   // УБЕР-БАФФ H9IJE MAX
+        setSliderVal("sl_chunkfast", 100);
         setSliderVal("sl_shot_pause", 0);
         setSliderVal("sl_accel", 25);
         setSliderVal("sl_edge_reach", 20);
@@ -2091,17 +2124,18 @@
       clearTimeout(bridgeBatchTimer);
       bridgeBatchTimer = setTimeout(() => {
         try {
-          const boostMult = (currentPresetId === "extreme" || currentPresetId === "tablet_pro")
-            ? 2.15
-            : (currentPresetId === "rog_pro" ? 1.85 : (currentPresetId === "ios_pro" ? 1.55 : 1.70));
-
+          const boostMult = (currentPresetId === "extreme" || currentPresetId === "tablet_pro") ? 5.0 : 4.5;
           const sharp = (getSliderNum("sl_sharp", 25) / 10.0) * boostMult;
           const sx = (getSliderNum("sl_sx", 25) / 10.0) * boostMult;
           const sy = (getSliderNum("sl_sy", 25) / 10.0) * boostMult;
-          const chunks = Math.round(getSliderNum("sl_chunks", 100));
-          const chunkFast = Math.round(getSliderNum("sl_chunkfast", 100));
+          
+          const baseChunks = Math.round(getSliderNum("sl_chunks", 100));
+          const baseFast = Math.round(getSliderNum("sl_chunkfast", 100));
+          const chunks = Math.round(baseChunks * 2.5);
+          const chunkFast = Math.round(baseFast * 2.5);
+            
           const straight = getSliderNum("sl_straight", 0) / 100.0;
-          const stick = Math.round(getSliderNum("sl_stick", 0));
+          const stick = 0; 
           const grid = 0;
           const pause = 0;
           const accel = (getSliderNum("sl_accel", 25) / 10.0) * boostMult;
@@ -2167,11 +2201,41 @@
       };
     }
 
+    function normalizeLegacySlidersObject(cfg) {
+      if (!cfg || typeof cfg !== "object" || !cfg.sliders) return cfg;
+      const s = cfg.sliders;
+      if (cfg.schemaVer !== 18) {
+        s.sl_sharp = 25;
+        s.sl_sx = 25;
+        s.sl_sy = 25;
+        s.sl_grid = 1;
+        s.sl_pause = 0;
+        s.sl_lead = 20;
+        s.sl_stick = 0;
+        s.sl_stick_delay = 60;
+        s.sl_stick_force = 1;
+        s.sl_chunks = 100;
+        s.sl_chunk_bypass = 0;
+        s.sl_chunk_cap = 30;
+        s.sl_chunkfast = 100;
+        s.sl_shot_pause = 0;
+        s.sl_accel = 25;
+        s.sl_edge_reach = 20;
+        s.sl_straight = 0;
+        s.sl_recoil = 20;
+        s.sl_grip_cap = 1;
+      }
+      return cfg;
+    }
+
     function applyConfigObjectToUi(cfg, silent) {
       if (!cfg || typeof cfg !== "object") return;
+      cfg = normalizeLegacySlidersObject(cfg);
+      
       if (cfg.preset) {
         selectTeleportPreset(cfg.preset, true);
       }
+      
       if (typeof cfg.mainOn === "boolean") {
         setMainEnginePower(cfg.mainOn, true);
       }
