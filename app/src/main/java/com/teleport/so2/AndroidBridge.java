@@ -1,9 +1,11 @@
 package com.teleport.so2;
 
 import android.app.Activity;
+import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.LinearGradient;
@@ -78,13 +80,10 @@ public class AndroidBridge {
     }
 
     private static native String nativeComputeHwid(String drmHex, String androidId, String boardInfo);
-    private static native String nativeComputeDailyHmac(String payload, String dayUtc);
-    private static native boolean nativeVerifyServerHmac(String cleanKey, String hwid, String status, String serverSig, String dayUtc);
     private static native boolean nativeIsHtmlTampered(byte[] htmlBytes);
     private static native boolean nativeIsBlacklisted(String candidate);
     private static native void nativeSetSessionVerified(String cleanKey, boolean verified);
     private static native boolean nativeIsSessionVerified();
-    private static native String nativeGetSessionKey();
     private static native void nativeForceTerminate();
 
     private final Context context;
@@ -136,11 +135,31 @@ public class AndroidBridge {
         startLicenseWatchdog();
     }
 
+    // МЕТОД dpToPx ВОЗВРАЩЕН В КЛАСС
+    private int dpToPx(int dp) {
+        return Math.round(dp * context.getResources().getDisplayMetrics().density);
+    }
+
+    private boolean isValidOfficialBotKeyFormat(String rawKey) {
+        String u = ApiManager.normalizeKeyInput(rawKey);
+        if (u.length() < 8 || u.length() > 42 || isBlacklistedArtifact(u)) return false;
+        String baseKey = u.split("_")[0];
+        String[] parts = baseKey.split("-");
+        if (parts.length < 2 || parts.length > 3) return false;
+        String prefix = parts[0];
+        boolean validPrefix = prefix.startsWith("TP") || "TRIAL".equals(prefix) || "UNLIM".equals(prefix);
+        if (!validPrefix) return false;
+        if (parts.length == 3) {
+            if (parts[1].length() < 2 || parts[1].length() > 10) return false;
+            if (parts[2].length() < 4) return false;
+        }
+        return true;
+    }
+
     private void migrateExistingKeysAcrossStores() {
         String currentVault = readEncryptedKeyFromVault();
-        if (!currentVault.isEmpty() && !isBlacklistedArtifact(currentVault)) {
-            return;
-        }
+        if (!currentVault.isEmpty() && !isBlacklistedArtifact(currentVault)) return;
+
         String[] candidates = new String[]{
                 prefs.getString("saved_license_key", ""),
                 profilePrefs.getString("activated_key", ""),
@@ -151,10 +170,7 @@ public class AndroidBridge {
             String clean = ApiManager.normalizeKeyInput(cand);
             if (clean.length() >= 5 && !isBlacklistedArtifact(clean)) {
                 saveEncryptedKeyToVault(clean);
-                prefs.edit()
-                        .remove("saved_license_key")
-                        .putBoolean(PREF_FIRST_LOGIN_DONE, true)
-                        .apply();
+                prefs.edit().remove("saved_license_key").putBoolean(PREF_FIRST_LOGIN_DONE, true).apply();
                 safeNativeSetSession(clean, true);
                 break;
             }
@@ -163,33 +179,23 @@ public class AndroidBridge {
 
     private void safeNativeSetSession(String key, boolean ok) {
         if (isNativeLoaded) {
-            try {
-                nativeSetSessionVerified(key == null ? "" : key, ok);
-            } catch (Throwable ignored) {}
+            try { nativeSetSessionVerified(key == null ? "" : key, ok); } catch (Throwable ignored) {}
         }
     }
 
     private boolean safeNativeIsSessionOk() {
         if (isNativeLoaded) {
-            try {
-                if (nativeIsSessionVerified()) return true;
-            } catch (Throwable ignored) {}
+            try { if (nativeIsSessionVerified()) return true; } catch (Throwable ignored) {}
         }
         return ApiManager.isSessionVerified() || !getSavedKey().isEmpty();
     }
 
     private void executeNativeKillOnTamper() {
         if (isNativeLoaded) {
-            try {
-                nativeForceTerminate();
-            } catch (Throwable ignored) {}
+            try { nativeForceTerminate(); } catch (Throwable ignored) {}
         }
-        try {
-            Process.killProcess(Process.myPid());
-        } catch (Throwable ignored) {}
-        try {
-            Runtime.getRuntime().halt(1);
-        } catch (Throwable ignored) {}
+        try { Process.killProcess(Process.myPid()); } catch (Throwable ignored) {}
+        try { Runtime.getRuntime().halt(1); } catch (Throwable ignored) {}
     }
 
     private SecretKey getOrCreateKeystoreSecret() throws Exception {
@@ -211,12 +217,7 @@ public class AndroidBridge {
                 KeyGenParameterSpec strongSpec = new KeyGenParameterSpec.Builder(
                         KEYSTORE_ALIAS_STRONGBOX,
                         KeyProperties.PURPOSE_ENCRYPT | KeyProperties.PURPOSE_DECRYPT
-                )
-                        .setBlockModes(KeyProperties.BLOCK_MODE_GCM)
-                        .setEncryptionPaddings(KeyProperties.ENCRYPTION_PADDING_NONE)
-                        .setKeySize(256)
-                        .setIsStrongBoxBacked(true)
-                        .build();
+                ).setBlockModes(KeyProperties.BLOCK_MODE_GCM).setEncryptionPaddings(KeyProperties.ENCRYPTION_PADDING_NONE).setKeySize(256).setIsStrongBoxBacked(true).build();
                 kgStrong.init(strongSpec);
                 return kgStrong.generateKey();
             } catch (Throwable ignored) {}
@@ -226,11 +227,7 @@ public class AndroidBridge {
         KeyGenParameterSpec teeSpec = new KeyGenParameterSpec.Builder(
                 KEYSTORE_ALIAS_TEE,
                 KeyProperties.PURPOSE_ENCRYPT | KeyProperties.PURPOSE_DECRYPT
-        )
-                .setBlockModes(KeyProperties.BLOCK_MODE_GCM)
-                .setEncryptionPaddings(KeyProperties.ENCRYPTION_PADDING_NONE)
-                .setKeySize(256)
-                .build();
+        ).setBlockModes(KeyProperties.BLOCK_MODE_GCM).setEncryptionPaddings(KeyProperties.ENCRYPTION_PADDING_NONE).setKeySize(256).build();
         kgTee.init(teeSpec);
         return kgTee.generateKey();
     }
@@ -262,22 +259,11 @@ public class AndroidBridge {
                 String[] parts = blob.split(":", 2);
                 byte[] iv = Base64.decode(parts[0], Base64.NO_WRAP);
                 byte[] enc = Base64.decode(parts[1], Base64.NO_WRAP);
-                try {
-                    Cipher cipher = Cipher.getInstance("AES/GCM/NoPadding");
-                    cipher.init(Cipher.DECRYPT_MODE, getOrCreateKeystoreSecret(), new GCMParameterSpec(128, iv));
-                    cipher.updateAAD(VAULT_FIXED_AAD.getBytes(StandardCharsets.UTF_8));
-                    String dec = ApiManager.normalizeKeyInput(new String(cipher.doFinal(enc), StandardCharsets.UTF_8));
-                    if (!isBlacklistedArtifact(dec)) return dec;
-                } catch (Throwable ignored) {
-                    Cipher cipherLegacy = Cipher.getInstance("AES/GCM/NoPadding");
-                    cipherLegacy.init(Cipher.DECRYPT_MODE, getOrCreateKeystoreSecret(), new GCMParameterSpec(128, iv));
-                    cipherLegacy.updateAAD(getImmutableDrmId().getBytes(StandardCharsets.UTF_8));
-                    String decLegacy = ApiManager.normalizeKeyInput(new String(cipherLegacy.doFinal(enc), StandardCharsets.UTF_8));
-                    if (!isBlacklistedArtifact(decLegacy)) {
-                        saveEncryptedKeyToVault(decLegacy);
-                        return decLegacy;
-                    }
-                }
+                Cipher cipher = Cipher.getInstance("AES/GCM/NoPadding");
+                cipher.init(Cipher.DECRYPT_MODE, getOrCreateKeystoreSecret(), new GCMParameterSpec(128, iv));
+                cipher.updateAAD(VAULT_FIXED_AAD.getBytes(StandardCharsets.UTF_8));
+                String dec = ApiManager.normalizeKeyInput(new String(cipher.doFinal(enc), StandardCharsets.UTF_8));
+                if (!isBlacklistedArtifact(dec)) return dec;
             }
         } catch (Throwable ignored) {}
 
@@ -294,53 +280,19 @@ public class AndroidBridge {
     private boolean isBlacklistedArtifact(String val) {
         if (val == null || val.trim().isEmpty()) return true;
         if (isNativeLoaded) {
-            try {
-                if (nativeIsBlacklisted(val)) return true;
-            } catch (Throwable ignored) {}
+            try { if (nativeIsBlacklisted(val)) return true; } catch (Throwable ignored) {}
         }
         String u = val.trim().toUpperCase(Locale.US);
-        return u.contains("BA465E1492CBB45A")
-                || u.contains("HW9900AABB1122CC")
-                || u.contains("SO2-HWID-V10")
-                || u.contains("SO2TELEPORT-LOCAL-KEY")
-                || u.contains("BOHDANIUK")
-                || u.contains("CRACK")
-                || u.contains("FREE_KEY")
-                || u.contains("I6RUSOKAI")
-                || u.contains("6RUSOK")
-                || u.contains("TP99999")
-                || u.contains("00000002029292992");
-    }
-
-    private boolean isValidOfficialBotKeyFormat(String rawKey) {
-        String u = ApiManager.normalizeKeyInput(rawKey);
-        if (u.length() < 8 || u.length() > 42 || isBlacklistedArtifact(u)) return false;
-        String baseKey = u.split("_")[0];
-        String[] parts = baseKey.split("-");
-        if (parts.length < 2 || parts.length > 3) return false;
-        String prefix = parts[0];
-        boolean validPrefix = prefix.startsWith("TP") || "TRIAL".equals(prefix) || "UNLIM".equals(prefix);
-        if (!validPrefix) return false;
-        if (parts.length == 3) {
-            if (parts[1].length() < 2 || parts[1].length() > 10) return false;
-            if (parts[2].length() < 4) return false;
-        }
-        return true;
+        return u.contains("BA465E1492CBB45A") || u.contains("HW9900AABB1122CC") || u.contains("SO2-HWID-V10") || u.contains("SO2TELEPORT-LOCAL-KEY") || u.contains("BOHDANIUK") || u.contains("CRACK") || u.contains("FREE_KEY") || u.contains("I6RUSOKAI") || u.contains("6RUSOK") || u.contains("TP99999") || u.contains("00000002029292992");
     }
 
     private boolean isFridaOrXposedActive() {
-        try {
-            Class.forName("de.robv.android.xposed.XposedBridge");
-            return true;
-        } catch (Throwable ignored) {}
-
+        try { Class.forName("de.robv.android.xposed.XposedBridge"); return true; } catch (Throwable ignored) {}
         try (BufferedReader br = new BufferedReader(new FileReader("/proc/self/maps"))) {
             String line;
             while ((line = br.readLine()) != null) {
                 String l = line.toLowerCase(Locale.US);
-                if (l.contains("frida-agent") || l.contains("gum-js-loop") || l.contains("xposedbridge")) {
-                    return true;
-                }
+                if (l.contains("frida-agent") || l.contains("gum-js-loop") || l.contains("xposedbridge")) return true;
             }
         } catch (Throwable ignored) {}
         return false;
@@ -353,27 +305,17 @@ public class AndroidBridge {
             ByteArrayOutputStream bos = new ByteArrayOutputStream();
             byte[] buf = new byte[4096];
             int r;
-            while ((r = is.read(buf)) != -1) {
-                bos.write(buf, 0, r);
-            }
+            while ((r = is.read(buf)) != -1) bos.write(buf, 0, r);
             is.close();
             byte[] htmlBytes = bos.toByteArray();
 
             if (isNativeLoaded) {
-                try {
-                    if (nativeIsHtmlTampered(htmlBytes)) return true;
-                } catch (Throwable ignored) {}
+                try { if (nativeIsHtmlTampered(htmlBytes)) return true; } catch (Throwable ignored) {}
             }
 
             String html = new String(htmlBytes, StandardCharsets.UTF_8);
             String lower = html.toLowerCase(Locale.US);
-            if (lower.contains("bohdaniuk")
-                    || lower.contains("локальная активация")
-                    || lower.contains("cracked")
-                    || lower.contains("so2teleport-local-key")
-                    || lower.contains("ba465e1492cbb45a")
-                    || !html.contains("SO2TELEPORT_QUANTUM_V9_SEAL")
-                    || !html.contains("pollLicenseExpiration")) {
+            if (lower.contains("bohdaniuk") || lower.contains("локальная активация") || lower.contains("cracked") || lower.contains("so2teleport-local-key") || lower.contains("ba465e1492cbb45a") || !html.contains("SO2TELEPORT_QUANTUM_V9_SEAL") || !html.contains("pollLicenseExpiration")) {
                 return true;
             }
         } catch (Throwable ignored) {}
@@ -385,20 +327,14 @@ public class AndroidBridge {
             MessageDigest md = MessageDigest.getInstance("SHA-256");
             byte[] digest = md.digest(input.getBytes(StandardCharsets.UTF_8));
             StringBuilder hex = new StringBuilder();
-            for (int i = 0; i < 8; i++) {
-                hex.append(String.format("%02x", digest[i]));
-            }
+            for (int i = 0; i < 8; i++) hex.append(String.format("%02x", digest[i]));
             return hex.toString();
-        } catch (Exception e) {
-            return "hw7744aabb1122cc";
-        }
+        } catch (Exception e) { return "hw7744aabb1122cc"; }
     }
 
     private String getRawDrmHex() {
         String savedDrm = prefs.getString("cached_raw_drm_hex_v11", "");
-        if (savedDrm != null && savedDrm.length() >= 8) {
-            return savedDrm;
-        }
+        if (savedDrm != null && savedDrm.length() >= 8) return savedDrm;
         StringBuilder drmHex = new StringBuilder();
         try {
             UUID widevineUuid = new UUID(-0x121074568629b532L, -0x5c37d8232ae2de13L);
@@ -412,16 +348,12 @@ public class AndroidBridge {
         } catch (Throwable ignored) {}
 
         String res = drmHex.toString();
-        if (res.length() >= 8) {
-            prefs.edit().putString("cached_raw_drm_hex_v11", res).apply();
-        }
+        if (res.length() >= 8) prefs.edit().putString("cached_raw_drm_hex_v11", res).apply();
         return res;
     }
 
     private String getImmutableDrmId() {
-        if (sCachedDrmHwid != null && sCachedDrmHwid.length() >= 16) {
-            return sCachedDrmHwid;
-        }
+        if (sCachedDrmHwid != null && sCachedDrmHwid.length() >= 16) return sCachedDrmHwid;
         String cachedPref = prefs.getString("cached_immutable_drm_v11", "");
         if (cachedPref != null && cachedPref.length() >= 16 && !isBlacklistedArtifact(cachedPref)) {
             sCachedDrmHwid = cachedPref;
@@ -441,9 +373,7 @@ public class AndroidBridge {
                 String natHwid = nativeComputeHwid(drmHex, androidId, boardInfo);
                 if (natHwid != null && natHwid.length() >= 16 && !isBlacklistedArtifact(natHwid)) {
                     sCachedDrmHwid = natHwid;
-                    if (!drmHex.isEmpty()) {
-                        prefs.edit().putString("cached_immutable_drm_v11", natHwid).apply();
-                    }
+                    if (!drmHex.isEmpty()) prefs.edit().putString("cached_immutable_drm_v11", natHwid).apply();
                     return natHwid;
                 }
             } catch (Throwable ignored) {}
@@ -451,25 +381,18 @@ public class AndroidBridge {
 
         String fallbackHwid = sha256Hex16(drmHex + "|" + boardInfo);
         sCachedDrmHwid = fallbackHwid;
-        if (!drmHex.isEmpty()) {
-            prefs.edit().putString("cached_immutable_drm_v11", fallbackHwid).apply();
-        }
+        if (!drmHex.isEmpty()) prefs.edit().putString("cached_immutable_drm_v11", fallbackHwid).apply();
         return fallbackHwid;
     }
 
     private String getAllHwidCandidatesCsv(String cleanKey) {
         Set<String> candidates = new LinkedHashSet<>();
-
         if (cleanKey != null && !cleanKey.isEmpty()) {
             String keySpecific = prefs.getString("bound_hwid_" + cleanKey, "");
-            if (keySpecific != null && !keySpecific.isEmpty() && !isBlacklistedArtifact(keySpecific)) {
-                candidates.add(keySpecific.trim().toLowerCase(Locale.US));
-            }
+            if (keySpecific != null && !keySpecific.isEmpty() && !isBlacklistedArtifact(keySpecific)) candidates.add(keySpecific.trim().toLowerCase(Locale.US));
         }
         String globalBound = prefs.getString("bound_working_hwid", "");
-        if (globalBound != null && !globalBound.isEmpty() && !isBlacklistedArtifact(globalBound)) {
-            candidates.add(globalBound.trim().toLowerCase(Locale.US));
-        }
+        if (globalBound != null && !globalBound.isEmpty() && !isBlacklistedArtifact(globalBound)) candidates.add(globalBound.trim().toLowerCase(Locale.US));
 
         String drmHwid = getImmutableDrmId().toLowerCase(Locale.US);
         candidates.add(drmHwid);
@@ -486,11 +409,6 @@ public class AndroidBridge {
             candidates.add(drmHwid + "|" + androidId);
         }
 
-        String prevBoundAid = profilePrefs.getString("bound_android_id", "");
-        if (prevBoundAid != null && prevBoundAid.length() >= 8 && !isBlacklistedArtifact(prevBoundAid)) {
-            candidates.add(prevBoundAid.trim().toLowerCase(Locale.US));
-        }
-
         StringBuilder sb = new StringBuilder();
         for (String c : candidates) {
             if (c != null && !c.isEmpty() && !isBlacklistedArtifact(c)) {
@@ -503,30 +421,19 @@ public class AndroidBridge {
 
     private void recordWorkingHwid(String cleanKey, JSONObject res) {
         String matched = (res != null) ? res.optString("matched_hwid", "") : "";
-        if (matched == null || matched.isEmpty()) {
-            matched = getImmutableDrmId();
-        }
-        prefs.edit()
-                .putString("bound_working_hwid", matched)
-                .putString("bound_hwid_" + cleanKey, matched)
-                .apply();
+        if (matched == null || matched.isEmpty()) matched = getImmutableDrmId();
+        prefs.edit().putString("bound_working_hwid", matched).putString("bound_hwid_" + cleanKey, matched).apply();
         SecurityShield.setVerifiedHwid(context, matched);
     }
 
     @JavascriptInterface
-    public String getDeviceHwid() {
-        return getImmutableDrmId();
-    }
+    public String getDeviceHwid() { return getImmutableDrmId(); }
 
     @JavascriptInterface
-    public String getDisplayHwid() {
-        return getImmutableDrmId();
-    }
+    public String getDisplayHwid() { return getImmutableDrmId(); }
 
     @JavascriptInterface
-    public String getHardwareId() {
-        return getImmutableDrmId();
-    }
+    public String getHardwareId() { return getImmutableDrmId(); }
 
     private long getDefaultDurationMsForKey(String cleanKey) {
         if (cleanKey == null || isBlacklistedArtifact(cleanKey)) return 0L;
@@ -537,9 +444,6 @@ public class AndroidBridge {
         if (u.startsWith("TP-6HR") || u.contains("6HR") || u.startsWith("TRIAL") || u.startsWith("TP-")) return 6L * 3600L * 1000L;
         if (u.startsWith("TP1D") || u.contains("-1D-") || u.contains("24H")) return 24L * 3600L * 1000L;
         if (u.startsWith("TP7D") || u.contains("-7D-")) return 7L * 24L * 3600L * 1000L;
-        if (u.startsWith("TP21D") || u.contains("21D")) return 21L * 24L * 3600L * 1000L;
-        if (u.startsWith("TP50D") || u.contains("50D")) return 50L * 24L * 3600L * 1000L;
-        if (u.startsWith("TP90D") || u.contains("90D")) return 90L * 24L * 3600L * 1000L;
         return 30L * 24L * 3600L * 1000L;
     }
 
@@ -549,33 +453,21 @@ public class AndroidBridge {
         long now = System.currentTimeMillis();
 
         if (serverRes != null) {
-            long remSec = serverRes.optLong("remaining_sec",
-                    serverRes.optLong("time_left_sec",
-                            serverRes.optLong("seconds_left", -1L)));
+            long remSec = serverRes.optLong("remaining_sec", serverRes.optLong("seconds_left", -1L));
             if (remSec > 0) {
                 long newDeadline = now + (remSec * 1000L);
                 prefs.edit().putLong(deadlinePrefKey, newDeadline).apply();
                 return newDeadline;
             }
-            long expUnix = serverRes.optLong("expires_at", serverRes.optLong("exp", -1L));
+            long expUnix = serverRes.optLong("expires_at", -1L);
             if (expUnix > 1700000000L) {
                 long newDeadline = (expUnix < 100000000000L) ? (expUnix * 1000L) : expUnix;
                 prefs.edit().putLong(deadlinePrefKey, newDeadline).apply();
                 return newDeadline;
             }
-            String st = serverRes.optString("status", "");
-            if (serverRes.optBoolean("ok", false) || "ok".equalsIgnoreCase(st) || "active".equalsIgnoreCase(st)) {
-                long existing = prefs.getLong(deadlinePrefKey, 0L);
-                if (existing <= now) {
-                    long refreshed = now + getDefaultDurationMsForKey(cleanKey);
-                    prefs.edit().putLong(deadlinePrefKey, refreshed).apply();
-                    return refreshed;
-                }
-            }
         }
 
         long savedDeadline = prefs.getLong(deadlinePrefKey, 0L);
-        if (savedDeadline > now + (4000L * 24L * 3600L * 1000L)) return now + getDefaultDurationMsForKey(cleanKey);
         if (savedDeadline > 0L) return savedDeadline;
 
         long computedDeadline = now + getDefaultDurationMsForKey(cleanKey);
@@ -585,18 +477,6 @@ public class AndroidBridge {
 
     private String buildLiveSubscriptionLabel(JSONObject serverRes, String cleanKey) {
         if (cleanKey == null || cleanKey.isEmpty() || isBlacklistedArtifact(cleanKey)) return "EXPIRED";
-
-        if (serverRes != null) {
-            String serverText = serverRes.optString("expires_in",
-                    serverRes.optString("days_left",
-                            serverRes.optString("time_left", "")));
-            if (serverText != null && !serverText.isEmpty() && !serverText.equalsIgnoreCase("null")) {
-                getOrInitKeyDeadlineMs(cleanKey, serverRes);
-                if (serverText.toUpperCase(Locale.US).contains("АКТИВНА")) return serverText;
-                return "АКТИВНА (" + serverText + ")";
-            }
-        }
-
         long deadlineMs = getOrInitKeyDeadlineMs(cleanKey, serverRes);
         long diffMs = deadlineMs - System.currentTimeMillis();
         if (diffMs <= 0L) return "EXPIRED";
@@ -604,12 +484,9 @@ public class AndroidBridge {
         long totalMinutes = diffMs / (60L * 1000L);
         long days = totalMinutes / (60L * 24L);
         long hours = (totalMinutes % (60L * 24L)) / 60L;
-        long mins = totalMinutes % 60L;
-
         if (days >= 1800) return "АКТИВНА (НАВСЕГДА)";
         if (days > 0) return "АКТИВНА (" + days + " дн. " + hours + " ч.)";
-        if (hours > 0) return "АКТИВНА (" + hours + " ч. " + mins + " мин.)";
-        return "АКТИВНА (" + Math.max(1, mins) + " мин.)";
+        return "АКТИВНА (" + hours + " ч.)";
     }
 
     private void startLicenseWatchdog() {
@@ -628,16 +505,9 @@ public class AndroidBridge {
                             String hwidCsv = getAllHwidCandidatesCsv(savedKey);
                             String raw = ApiManager.verifyLicense(savedKey, hwidCsv);
                             JSONObject res = new JSONObject(raw);
-                            String status = res.optString("status", "");
-
-                            if ("offline".equalsIgnoreCase(status)) {
-                                return;
-                            }
-
-                            boolean explicitlyBanned = "banned".equalsIgnoreCase(status);
-                            if (explicitlyBanned) {
+                            if ("banned".equalsIgnoreCase(res.optString("status", ""))) {
                                 forceKickExpiredUser(res.optString("message", "Ключ заблокирован!"));
-                            } else if ("ok".equalsIgnoreCase(status) || "active".equalsIgnoreCase(status) || res.optBoolean("ok", false)) {
+                            } else {
                                 recordWorkingHwid(savedKey, res);
                                 getOrInitKeyDeadlineMs(savedKey, res);
                                 prefs.edit().putLong("last_server_ok_ts", System.currentTimeMillis()).apply();
@@ -654,57 +524,22 @@ public class AndroidBridge {
 
     private void removeOverlayViewSafe(View v) {
         if (v == null) return;
-        try {
-            v.clearAnimation();
-            v.setVisibility(View.GONE);
-        } catch (Throwable ignored) {}
+        try { v.clearAnimation(); v.setVisibility(View.GONE); } catch (Throwable ignored) {}
         if (windowManager == null) return;
-        try {
-            windowManager.removeViewImmediate(v);
-            return;
-        } catch (Throwable ignored) {}
-        try {
-            windowManager.removeView(v);
-        } catch (Throwable ignored) {}
+        try { windowManager.removeViewImmediate(v); return; } catch (Throwable ignored) {}
+        try { windowManager.removeView(v); } catch (Throwable ignored) {}
     }
 
     private void detachTrashOverlaySafe() {
-        if (trashContainer != null) {
-            removeOverlayViewSafe(trashContainer);
-        }
+        if (trashContainer != null) removeOverlayViewSafe(trashContainer);
         isTrashAttached = false;
-    }
-
-    private void attachTrashOverlaySafe() {
-        if (!isTrashAttached && trashContainer != null && trashParams != null && windowManager != null) {
-            try {
-                if (trashPillView != null) {
-                    trashPillView.setHovered(false);
-                }
-                trashContainer.setVisibility(View.VISIBLE);
-                trashContainer.setAlpha(0f);
-                windowManager.addView(trashContainer, trashParams);
-                trashContainer.animate().alpha(0.95f).setDuration(110).start();
-                isTrashAttached = true;
-            } catch (Exception ignored) {
-                try {
-                    trashContainer.setVisibility(View.VISIBLE);
-                    trashContainer.setAlpha(0.95f);
-                    windowManager.updateViewLayout(trashContainer, trashParams);
-                    isTrashAttached = true;
-                } catch (Exception ignored2) {}
-            }
-        }
     }
 
     private void forceKickExpiredUser(String reasonToast) {
         saveEncryptedKeyToVault("");
         safeNativeSetSession("", false);
         SecurityShield.clearSessionToken(context);
-        prefs.edit()
-                .remove("saved_license_key")
-                .putBoolean(PREF_FIRST_LOGIN_DONE, false)
-                .apply();
+        prefs.edit().remove("saved_license_key").putBoolean(PREF_FIRST_LOGIN_DONE, false).apply();
         legacyPrefs.edit().remove("license_key").apply();
         profilePrefs.edit().remove("activated_key").apply();
         ApiManager.invalidateSession();
@@ -716,31 +551,20 @@ public class AndroidBridge {
                 removeOverlayViewSafe(floatingStretchBtn);
                 floatingStretchBtn = null;
             }
-            trashContainer = null;
-            trashPillView = null;
             isStretchOverlayShown = false;
-
             if (isCrosshairShown && crosshairView != null) {
                 removeOverlayViewSafe(crosshairView);
                 crosshairView = null;
                 isCrosshairShown = false;
             }
-
             if (activity instanceof MainActivity) {
                 ((MainActivity) activity).toggleFloatingButton(false);
                 ((MainActivity) activity).updateCrosshair("off");
             }
-
-            if (reasonToast != null && !reasonToast.isEmpty()) {
-                Toast.makeText(context, reasonToast, Toast.LENGTH_LONG).show();
-            }
-
+            if (reasonToast != null && !reasonToast.isEmpty()) Toast.makeText(context, reasonToast, Toast.LENGTH_LONG).show();
             if (activity instanceof MainActivity) {
-                String safeMsg = (reasonToast == null ? "Введите лицензионный ключ" : reasonToast)
-                        .replace("'", "").replace("\"", "");
-                ((MainActivity) activity).evalJsFromNotification(
-                        "try { if(typeof forceShowKickScreen==='function') forceShowKickScreen('" + safeMsg + "'); } catch(e){}"
-                );
+                String safeMsg = (reasonToast == null ? "Введите лицензионный ключ" : reasonToast).replace("'", "").replace("\"", "");
+                ((MainActivity) activity).evalJsFromNotification("try { if(typeof forceShowKickScreen==='function') forceShowKickScreen('" + safeMsg + "'); } catch(e){}");
             }
         });
     }
@@ -759,10 +583,7 @@ public class AndroidBridge {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && !Settings.canDrawOverlays(context)) {
                 try {
                     Toast.makeText(context, "Выдайте разрешение «Поверх других окон» для кнопки «T»!", Toast.LENGTH_LONG).show();
-                    Intent intent = new Intent(
-                            Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
-                            Uri.parse("package:" + context.getPackageName())
-                    );
+                    Intent intent = new Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION, Uri.parse("package:" + context.getPackageName()));
                     intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                     context.startActivity(intent);
                 } catch (Exception e) {
@@ -779,15 +600,9 @@ public class AndroidBridge {
     @JavascriptInterface
     public String activateStretchFloatingButton(String ratio) {
         if (getSavedKey().isEmpty() || isClientTampered()) return "NEED_AUTH";
-        if (ratio != null && !ratio.trim().isEmpty()) {
-            this.selectedStretchRatio = ratio.trim().toUpperCase(Locale.US);
-        }
+        if (ratio != null && !ratio.trim().isEmpty()) this.selectedStretchRatio = ratio.trim().toUpperCase(Locale.US);
         prefs.edit().putString("saved_stretch_ratio", this.selectedStretchRatio).apply();
-        legacyPrefs.edit()
-                .putString("stretch_ratio", this.selectedStretchRatio)
-                .putBoolean("float_btn_enabled", true)
-                .apply();
-
+        legacyPrefs.edit().putString("stretch_ratio", this.selectedStretchRatio).putBoolean("float_btn_enabled", true).apply();
         TeleportEngine.startTeleport("SET_RATIO:" + this.selectedStretchRatio);
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && !Settings.canDrawOverlays(context)) {
@@ -796,18 +611,11 @@ public class AndroidBridge {
         }
 
         TeleportEngine.requestShizukuPermissionIfNeeded();
-        TeleportEngine.execShizukuCommand(
-                "settings put global block_untrusted_touches 0; " +
-                "settings put secure block_untrusted_touches 0; " +
-                "device_config put input_native_boot maximum_obscuring_opacity_for_touch 1.0;"
-        );
+        TeleportEngine.execShizukuCommand("settings put global block_untrusted_touches 0; settings put secure block_untrusted_touches 0; device_config put input_native_boot maximum_obscuring_opacity_for_touch 1.0;");
 
         mainHandler.post(() -> {
             try {
-                if (activity instanceof MainActivity) {
-                    ((MainActivity) activity).toggleFloatingButton(false);
-                }
-
+                if (activity instanceof MainActivity) ((MainActivity) activity).toggleFloatingButton(false);
                 detachTrashOverlaySafe();
                 if (floatingStretchBtn != null) {
                     removeOverlayViewSafe(floatingStretchBtn);
@@ -815,24 +623,16 @@ public class AndroidBridge {
                 }
                 isStretchOverlayShown = false;
 
-                int overlayType = (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O)
-                        ? WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY
-                        : WindowManager.LayoutParams.TYPE_PHONE;
-
+                int overlayType = (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) ? WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY : WindowManager.LayoutParams.TYPE_PHONE;
                 trashContainer = new FrameLayout(context);
                 trashPillView = new BridgeTrashView(context);
                 FrameLayout.LayoutParams pillLp = new FrameLayout.LayoutParams(dpToPx(276), dpToPx(58), Gravity.CENTER);
                 trashContainer.addView(trashPillView, pillLp);
 
-                int trashFlags = WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE
-                        | WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE
-                        | WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL
-                        | WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN;
+                int trashFlags = WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE | WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE | WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL | WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN;
                 if (stealthOverlayFlag) trashFlags |= WindowManager.LayoutParams.FLAG_SECURE;
 
-                trashParams = new WindowManager.LayoutParams(
-                        dpToPx(300), dpToPx(84), overlayType, trashFlags, PixelFormat.TRANSLUCENT
-                );
+                trashParams = new WindowManager.LayoutParams(dpToPx(300), dpToPx(84), overlayType, trashFlags, PixelFormat.TRANSLUCENT);
                 trashParams.gravity = Gravity.BOTTOM | Gravity.CENTER_HORIZONTAL;
                 trashParams.y = dpToPx(22);
                 trashParams.alpha = 0.95f;
@@ -845,18 +645,13 @@ public class AndroidBridge {
                 floatingStretchBtn.setIncludeFontPadding(false);
 
                 int sizePx = dpToPx(54);
-                int btnFlags = WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE
-                        | WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL
-                        | WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN;
+                int btnFlags = WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE | WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL | WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN;
                 if (stealthOverlayFlag) btnFlags |= WindowManager.LayoutParams.FLAG_SECURE;
 
-                stretchParams = new WindowManager.LayoutParams(
-                        sizePx, sizePx, overlayType, btnFlags, PixelFormat.TRANSLUCENT
-                );
+                stretchParams = new WindowManager.LayoutParams(sizePx, sizePx, overlayType, btnFlags, PixelFormat.TRANSLUCENT);
                 stretchParams.gravity = Gravity.TOP | Gravity.START;
                 stretchParams.x = dpToPx(20);
                 stretchParams.y = dpToPx(140);
-
                 isBoxBarsActive = false;
                 updateFloatingBtnAppearance();
 
@@ -871,65 +666,46 @@ public class AndroidBridge {
                     public boolean onTouch(View v, MotionEvent event) {
                         switch (event.getActionMasked()) {
                             case MotionEvent.ACTION_DOWN:
-                                initialX = stretchParams.x;
-                                initialY = stretchParams.y;
-                                initialTouchX = event.getRawX();
-                                initialTouchY = event.getRawY();
-                                isDragging = false;
-                                wasInTrashZone = false;
-                                v.setScaleX(0.92f);
-                                v.setScaleY(0.92f);
+                                initialX = stretchParams.x; initialY = stretchParams.y;
+                                initialTouchX = event.getRawX(); initialTouchY = event.getRawY();
+                                isDragging = false; wasInTrashZone = false;
+                                v.setScaleX(0.92f); v.setScaleY(0.92f);
                                 return true;
-
                             case MotionEvent.ACTION_MOVE:
                                 int dx = Math.round(event.getRawX() - initialTouchX);
                                 int dy = Math.round(event.getRawY() - initialTouchY);
                                 if (!isDragging && (Math.abs(dx) > touchSlop || Math.abs(dy) > touchSlop)) {
                                     isDragging = true;
-                                    attachTrashOverlaySafe();
+                                    if (!isTrashAttached && trashContainer != null && trashParams != null && windowManager != null) {
+                                        if (trashPillView != null) trashPillView.setHovered(false);
+                                        trashContainer.setVisibility(View.VISIBLE);
+                                        trashContainer.setAlpha(0f);
+                                        windowManager.addView(trashContainer, trashParams);
+                                        trashContainer.animate().alpha(0.95f).setDuration(110).start();
+                                        isTrashAttached = true;
+                                    }
                                 }
                                 if (isDragging && windowManager != null && floatingStretchBtn != null) {
-                                    stretchParams.x = initialX + dx;
-                                    stretchParams.y = initialY + dy;
-                                    try {
-                                        windowManager.updateViewLayout(floatingStretchBtn, stretchParams);
-                                    } catch (Exception ignored) {}
-
+                                    stretchParams.x = initialX + dx; stretchParams.y = initialY + dy;
+                                    try { windowManager.updateViewLayout(floatingStretchBtn, stretchParams); } catch (Exception ignored) {}
                                     boolean inTrash = isTouchOverTrashZone(event.getRawX(), event.getRawY());
-                                    if (trashPillView != null) {
-                                        trashPillView.setHovered(inTrash);
-                                    }
+                                    if (trashPillView != null) trashPillView.setHovered(inTrash);
                                     floatingStretchBtn.setAlpha(inTrash ? 0.62f : 1.0f);
-                                    if (inTrash && !wasInTrashZone) {
-                                        try {
-                                            floatingStretchBtn.performHapticFeedback(HapticFeedbackConstants.LONG_PRESS);
-                                        } catch (Throwable ignored) {}
-                                    }
+                                    if (inTrash && !wasInTrashZone) try { floatingStretchBtn.performHapticFeedback(HapticFeedbackConstants.LONG_PRESS); } catch (Throwable ignored) {}
                                     wasInTrashZone = inTrash;
                                 }
                                 return true;
-
                             case MotionEvent.ACTION_UP:
                             case MotionEvent.ACTION_CANCEL:
-                                v.setScaleX(1.0f);
-                                v.setScaleY(1.0f);
-                                v.setAlpha(1.0f);
-
+                                v.setScaleX(1.0f); v.setScaleY(1.0f); v.setAlpha(1.0f);
                                 if (isDragging) {
                                     boolean droppedInTrash = wasInTrashZone || isTouchOverTrashZone(event.getRawX(), event.getRawY());
-                                    if (trashPillView != null) {
-                                        trashPillView.setHovered(false);
-                                    }
+                                    if (trashPillView != null) trashPillView.setHovered(false);
                                     detachTrashOverlaySafe();
-                                    isDragging = false;
-                                    wasInTrashZone = false;
-
-                                    if (droppedInTrash) {
-                                        removeFloatingTpButtonOnly();
-                                    }
+                                    isDragging = false; wasInTrashZone = false;
+                                    if (droppedInTrash) removeFloatingTpButtonOnly();
                                     return true;
                                 }
-
                                 detachTrashOverlaySafe();
                                 toggleTwoStepStretchAction();
                                 return true;
@@ -945,18 +721,14 @@ public class AndroidBridge {
                 Toast.makeText(context, "Ошибка кнопки T: " + e.getMessage(), Toast.LENGTH_LONG).show();
             }
         });
-
         return "OK";
     }
 
     private boolean isTouchOverTrashZone(float rawX, float rawY) {
         try {
             DisplayMetrics dm = new DisplayMetrics();
-            if (windowManager != null && windowManager.getDefaultDisplay() != null) {
-                windowManager.getDefaultDisplay().getRealMetrics(dm);
-            } else {
-                dm = context.getResources().getDisplayMetrics();
-            }
+            if (windowManager != null && windowManager.getDefaultDisplay() != null) windowManager.getDefaultDisplay().getRealMetrics(dm);
+            else dm = context.getResources().getDisplayMetrics();
 
             int sw = dm.widthPixels;
             int sh = dm.heightPixels;
@@ -965,54 +737,32 @@ public class AndroidBridge {
             if (trashPillView != null && isTrashAttached && trashPillView.getWidth() > 0) {
                 int[] tLoc = new int[2];
                 trashPillView.getLocationOnScreen(tLoc);
-                int padX = dpToPx(55);
-                int padY = dpToPx(55);
-
-                if (rawX >= tLoc[0] - padX && rawX <= tLoc[0] + trashPillView.getWidth() + padX
-                        && rawY >= tLoc[1] - padY && rawY <= tLoc[1] + trashPillView.getHeight() + padY) {
-                    return true;
-                }
-
+                int padX = dpToPx(55); int padY = dpToPx(55);
+                if (rawX >= tLoc[0] - padX && rawX <= tLoc[0] + trashPillView.getWidth() + padX && rawY >= tLoc[1] - padY && rawY <= tLoc[1] + trashPillView.getHeight() + padY) return true;
                 if (floatingStretchBtn != null) {
                     int[] bLoc = new int[2];
                     floatingStretchBtn.getLocationOnScreen(bLoc);
                     float bCx = bLoc[0] + floatingStretchBtn.getWidth() / 2f;
                     float bCy = bLoc[1] + floatingStretchBtn.getHeight() / 2f;
-                    if (bCx >= tLoc[0] - padX && bCx <= tLoc[0] + trashPillView.getWidth() + padX
-                            && bCy >= tLoc[1] - padY && bCy <= tLoc[1] + trashPillView.getHeight() + padY) {
-                        return true;
-                    }
+                    if (bCx >= tLoc[0] - padX && bCx <= tLoc[0] + trashPillView.getWidth() + padX && bCy >= tLoc[1] - padY && bCy <= tLoc[1] + trashPillView.getHeight() + padY) return true;
                 }
             }
-
-            boolean yNearBottom = rawY >= (sh - dpToPx(140))
-                    || (stretchParams != null && (stretchParams.y + btnSize) >= (sh - dpToPx(140)))
-                    || (stretchParams != null && stretchParams.y >= (sh * 0.68f));
-
-            boolean xNearCenter = Math.abs(rawX - (sw / 2f)) <= (sw * 0.38f)
-                    || (stretchParams != null && Math.abs((stretchParams.x + btnSize / 2f) - (sw / 2f)) <= (sw * 0.38f));
-
+            boolean yNearBottom = rawY >= (sh - dpToPx(140)) || (stretchParams != null && (stretchParams.y + btnSize) >= (sh - dpToPx(140))) || (stretchParams != null && stretchParams.y >= (sh * 0.68f));
+            boolean xNearCenter = Math.abs(rawX - (sw / 2f)) <= (sw * 0.38f) || (stretchParams != null && Math.abs((stretchParams.x + btnSize / 2f) - (sw / 2f)) <= (sw * 0.38f));
             return yNearBottom && xNearCenter;
-        } catch (Throwable t) {
-            return false;
-        }
+        } catch (Throwable t) { return false; }
     }
 
     private void toggleTwoStepStretchAction() {
-        if (getSavedKey().isEmpty()) {
-            forceKickExpiredUser("Ключ не активен!");
-            return;
-        }
-        boolean shizukuOk = TeleportEngine.isShizukuReady() || ShizukuManager.isPermissionGranted();
-        if (!shizukuOk) {
+        if (getSavedKey().isEmpty()) { forceKickExpiredUser("Ключ не активен!"); return; }
+        if (!TeleportEngine.isShizukuReady() && !ShizukuManager.isPermissionGranted()) {
             Toast.makeText(context, "Включите Shizuku! Помощь: @talent_dare", Toast.LENGTH_LONG).show();
             TeleportEngine.requestShizukuPermissionIfNeeded();
             return;
         }
 
         if (!isBoxBarsActive) {
-            boolean ok = TeleportEngine.applyAspectRatioStretch(selectedStretchRatio);
-            if (ok) {
+            if (TeleportEngine.applyAspectRatioStretch(selectedStretchRatio)) {
                 isBoxBarsActive = true;
                 Toast.makeText(context, "Шаг 1 (" + selectedStretchRatio + ") включен! Зайди в игру и нажми «T» снова", Toast.LENGTH_SHORT).show();
             }
@@ -1026,18 +776,10 @@ public class AndroidBridge {
 
     private void removeFloatingTpButtonOnly() {
         mainHandler.post(() -> {
-            if (isBoxBarsActive) {
-                TeleportEngine.releaseBoxToFullStretch();
-                isBoxBarsActive = false;
-            }
+            if (isBoxBarsActive) { TeleportEngine.releaseBoxToFullStretch(); isBoxBarsActive = false; }
             detachTrashOverlaySafe();
-            if (floatingStretchBtn != null) {
-                removeOverlayViewSafe(floatingStretchBtn);
-                floatingStretchBtn = null;
-            }
-            trashContainer = null;
-            trashPillView = null;
-            isStretchOverlayShown = false;
+            if (floatingStretchBtn != null) { removeOverlayViewSafe(floatingStretchBtn); floatingStretchBtn = null; }
+            trashContainer = null; trashPillView = null; isStretchOverlayShown = false;
             legacyPrefs.edit().putBoolean("float_btn_enabled", false).apply();
             Toast.makeText(context, "Кнопка «T» убрана с экрана, приятной катки!", Toast.LENGTH_SHORT).show();
         });
@@ -1046,41 +788,28 @@ public class AndroidBridge {
     private void updateFloatingBtnAppearance() {
         if (floatingStretchBtn == null) return;
         String shortLabel = selectedStretchRatio.replace("SHRINK-", "");
-
         GradientDrawable glassLens = new GradientDrawable();
         glassLens.setShape(GradientDrawable.OVAL);
         glassLens.setGradientType(GradientDrawable.LINEAR_GRADIENT);
         glassLens.setOrientation(GradientDrawable.Orientation.TL_BR);
 
         if (isBoxBarsActive) {
-            glassLens.setColors(new int[]{
-                    Color.parseColor("#CC30D158"),
-                    Color.parseColor("#99248A3D"),
-                    Color.parseColor("#CC1C1C1E")
-            });
+            glassLens.setColors(new int[]{Color.parseColor("#CC30D158"), Color.parseColor("#99248A3D"), Color.parseColor("#CC1C1C1E")});
             glassLens.setStroke(dpToPx(2), Color.parseColor("#EEFFFFFF"));
             floatingStretchBtn.setText("2\n" + shortLabel);
         } else {
-            glassLens.setColors(new int[]{
-                    Color.parseColor("#CC2C2C2E"),
-                    Color.parseColor("#CC1C1C1E"),
-                    Color.parseColor("#EE000000")
-            });
+            glassLens.setColors(new int[]{Color.parseColor("#CC2C2C2E"), Color.parseColor("#CC1C1C1E"), Color.parseColor("#EE000000")});
             glassLens.setStroke(dpToPx(2), Color.parseColor("#EE0A84FF"));
             floatingStretchBtn.setText("T\n" + shortLabel);
         }
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            floatingStretchBtn.setElevation(dpToPx(10));
-        }
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) floatingStretchBtn.setElevation(dpToPx(10));
         floatingStretchBtn.setShadowLayer(8f, 0f, 2f, Color.parseColor("#CC000000"));
         floatingStretchBtn.setBackground(glassLens);
     }
 
     @JavascriptInterface
-    public void applyStretchDirectlyNow(String ratio) {
-        activateStretchFloatingButton(ratio);
-    }
+    public void applyStretchDirectlyNow(String ratio) { activateStretchFloatingButton(ratio); }
 
     @JavascriptInterface
     public void applyDirectStretchRatio(String ratio) {
@@ -1092,19 +821,12 @@ public class AndroidBridge {
     public void resetResolution() {
         legacyPrefs.edit().putBoolean("float_btn_enabled", false).apply();
         mainHandler.post(() -> {
-            if (activity instanceof MainActivity) {
-                ((MainActivity) activity).toggleFloatingButton(false);
-            }
+            if (activity instanceof MainActivity) ((MainActivity) activity).toggleFloatingButton(false);
             TeleportEngine.resetResolutionToNative();
             isBoxBarsActive = false;
             detachTrashOverlaySafe();
-            if (floatingStretchBtn != null) {
-                removeOverlayViewSafe(floatingStretchBtn);
-                floatingStretchBtn = null;
-            }
-            trashContainer = null;
-            trashPillView = null;
-            isStretchOverlayShown = false;
+            if (floatingStretchBtn != null) { removeOverlayViewSafe(floatingStretchBtn); floatingStretchBtn = null; }
+            trashContainer = null; trashPillView = null; isStretchOverlayShown = false;
             Toast.makeText(context, "Кнопка «T» убрана, родной экран восстановлен", Toast.LENGTH_SHORT).show();
         });
     }
@@ -1117,9 +839,7 @@ public class AndroidBridge {
     }
 
     @JavascriptInterface
-    public String loadFullConfigJson() {
-        return prefs.getString("full_user_config_v410", "");
-    }
+    public String loadFullConfigJson() { return prefs.getString("full_user_config_v410", ""); }
 
     @JavascriptInterface
     public String setWideHitboxMode(boolean enabled, String ratio) {
@@ -1140,19 +860,13 @@ public class AndroidBridge {
     }
 
     @JavascriptInterface
-    public boolean isShizukuReady() {
-        return TeleportEngine.isShizukuReady() || ShizukuManager.isPermissionGranted();
-    }
+    public boolean isShizukuReady() { return TeleportEngine.isShizukuReady() || ShizukuManager.isPermissionGranted(); }
 
     @JavascriptInterface
-    public boolean isShizukuActive() {
-        return TeleportEngine.isShizukuReady() || ShizukuManager.isPermissionGranted();
-    }
+    public boolean isShizukuActive() { return TeleportEngine.isShizukuReady() || ShizukuManager.isPermissionGranted(); }
 
     @JavascriptInterface
-    public void requestShizukuPermission() {
-        TeleportEngine.requestShizukuPermissionIfNeeded();
-    }
+    public void requestShizukuPermission() { TeleportEngine.requestShizukuPermissionIfNeeded(); }
 
     @JavascriptInterface
     public void healTouch() {
@@ -1167,16 +881,10 @@ public class AndroidBridge {
     }
 
     @JavascriptInterface
-    public void stopTeleport() {
-        TeleportEngine.stopTeleport();
-    }
+    public void stopTeleport() { TeleportEngine.stopTeleport(); }
 
     @JavascriptInterface
-    public void updateParameters(
-            double sharp, double sx, double sy,
-            int chunks, int chunkFast, double straight,
-            int stick, int grid, int pause, double accel
-    ) {
+    public void updateParameters(double sharp, double sx, double sy, int chunks, int chunkFast, double straight, int stick, int grid, int pause, double accel) {
         if (getSavedKey().isEmpty() || isClientTampered()) return;
         TeleportEngine.updateParameters(sharp, sx, sy, chunks, chunkFast, straight, stick, grid, pause, accel);
     }
@@ -1206,20 +914,13 @@ public class AndroidBridge {
     }
 
     @JavascriptInterface
-    public String performRamBoost() {
-        return TeleportEngine.performRamBoost(context);
-    }
+    public String performRamBoost() { return TeleportEngine.performRamBoost(context); }
 
     @JavascriptInterface
-    public void setHzThermalGuard(boolean enabled) {
-        TeleportEngine.setHzThermalGuard(enabled);
-    }
+    public void setHzThermalGuard(boolean enabled) { TeleportEngine.setHzThermalGuard(enabled); }
 
     @JavascriptInterface
-    public void applyShooterOptimizer(
-            int fpsLock, int gpuBoost, int frameTime,
-            int edgeSens, int multiTouch, int netBuffer, int thermalLim
-    ) {
+    public void applyShooterOptimizer(int fpsLock, int gpuBoost, int frameTime, int edgeSens, int multiTouch, int netBuffer, int thermalLim) {
         if (getSavedKey().isEmpty() || isClientTampered()) return;
         TeleportEngine.applyShooterOptimizer(fpsLock, gpuBoost, frameTime, edgeSens, multiTouch, netBuffer, thermalLim);
     }
@@ -1240,9 +941,7 @@ public class AndroidBridge {
     }
 
     @JavascriptInterface
-    public String runSmartDeviceScan() {
-        return TeleportEngine.runSmartDeviceScan(context);
-    }
+    public String runSmartDeviceScan() { return TeleportEngine.runSmartDeviceScan(context); }
 
     @JavascriptInterface
     public void applyUltraProTouchMatrix(int modeLevel) {
@@ -1254,31 +953,23 @@ public class AndroidBridge {
     @JavascriptInterface
     public String uploadCloudConfig(String title, String presetJson) {
         String key = getSavedKey();
-        if (key.isEmpty() || isClientTampered()) {
-            return "{\"status\":\"error\",\"ok\":false,\"message\":\"Сначала активируйте ключ\"}";
-        }
+        if (key.isEmpty() || isClientTampered()) return "{\"status\":\"error\",\"ok\":false,\"message\":\"Сначала активируйте ключ\"}";
         try {
             Callable<String> task = () -> ApiManager.uploadCloudPreset(key, getAllHwidCandidatesCsv(key), title, presetJson);
             Future<String> future = networkExecutor.submit(task);
             return future.get(5500, TimeUnit.MILLISECONDS);
-        } catch (Exception e) {
-            return "{\"status\":\"error\",\"ok\":false,\"message\":\"Ошибка создания кода\"}";
-        }
+        } catch (Exception e) { return "{\"status\":\"error\",\"ok\":false,\"message\":\"Ошибка создания кода\"}"; }
     }
 
     @JavascriptInterface
     public String downloadCloudConfig(String shareCode) {
         String key = getSavedKey();
-        if (key.isEmpty() || isClientTampered()) {
-            return "{\"status\":\"error\",\"ok\":false,\"message\":\"Сначала активируйте ключ\"}";
-        }
+        if (key.isEmpty() || isClientTampered()) return "{\"status\":\"error\",\"ok\":false,\"message\":\"Сначала активируйте ключ\"}";
         try {
             Callable<String> task = () -> ApiManager.downloadCloudPresetByCode(key, getAllHwidCandidatesCsv(key), shareCode);
             Future<String> future = networkExecutor.submit(task);
             return future.get(5500, TimeUnit.MILLISECONDS);
-        } catch (Exception e) {
-            return "{\"status\":\"error\",\"ok\":false,\"message\":\"Ошибка загрузки конфига\"}";
-        }
+        } catch (Exception e) { return "{\"status\":\"error\",\"ok\":false,\"message\":\"Ошибка загрузки конфига\"}"; }
     }
 
     @JavascriptInterface
@@ -1287,49 +978,26 @@ public class AndroidBridge {
         if (getSavedKey().isEmpty() && !"off".equalsIgnoreCase(cleanType)) return;
 
         mainHandler.post(() -> {
-            if (activity instanceof MainActivity) {
-                ((MainActivity) activity).updateCrosshair("off");
-            }
+            if (activity instanceof MainActivity) ((MainActivity) activity).updateCrosshair("off");
             if ("off".equalsIgnoreCase(cleanType) || "none".equalsIgnoreCase(cleanType) || cleanType.isEmpty()) {
-                if (crosshairView != null) {
-                    crosshairView.setCrosshairType("off");
-                    removeOverlayViewSafe(crosshairView);
-                }
-                crosshairView = null;
-                isCrosshairShown = false;
+                if (crosshairView != null) { crosshairView.setCrosshairType("off"); removeOverlayViewSafe(crosshairView); }
+                crosshairView = null; isCrosshairShown = false;
                 return;
             }
-
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && !Settings.canDrawOverlays(context)) {
                 requestOverlayPermission();
                 return;
             }
             if (!isCrosshairShown || crosshairView == null) {
                 crosshairView = new CrosshairOverlayView(context);
-                int overlayType = (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O)
-                        ? WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY
-                        : WindowManager.LayoutParams.TYPE_PHONE;
-                int flags = WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE
-                        | WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE
-                        | WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL
-                        | WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN;
+                int overlayType = (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) ? WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY : WindowManager.LayoutParams.TYPE_PHONE;
+                int flags = WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE | WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE | WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL | WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN;
                 if (stealthOverlayFlag) flags |= WindowManager.LayoutParams.FLAG_SECURE;
-                crosshairParams = new WindowManager.LayoutParams(
-                        dpToPx(48), dpToPx(48), overlayType, flags, PixelFormat.TRANSLUCENT
-                );
-                crosshairParams.gravity = Gravity.CENTER;
-                crosshairParams.x = 0;
-                crosshairParams.y = 0;
-                crosshairParams.alpha = 0.78f;
-                try {
-                    windowManager.addView(crosshairView, crosshairParams);
-                    isCrosshairShown = true;
-                } catch (Exception ignored) {}
+                crosshairParams = new WindowManager.LayoutParams(dpToPx(48), dpToPx(48), overlayType, flags, PixelFormat.TRANSLUCENT);
+                crosshairParams.gravity = Gravity.CENTER; crosshairParams.x = 0; crosshairParams.y = 0; crosshairParams.alpha = 0.78f;
+                try { windowManager.addView(crosshairView, crosshairParams); isCrosshairShown = true; } catch (Exception ignored) {}
             }
-            if (crosshairView != null) {
-                crosshairView.setVisibility(View.VISIBLE);
-                crosshairView.setCrosshairType(cleanType);
-            }
+            if (crosshairView != null) { crosshairView.setVisibility(View.VISIBLE); crosshairView.setCrosshairType(cleanType); }
         });
     }
 
@@ -1337,8 +1005,7 @@ public class AndroidBridge {
     public void setCrosshairOffset(int offsetXDp, int offsetYDp) {
         mainHandler.post(() -> {
             if (isCrosshairShown && crosshairView != null && crosshairParams != null && windowManager != null) {
-                crosshairParams.x = 0;
-                crosshairParams.y = 0;
+                crosshairParams.x = 0; crosshairParams.y = 0;
                 try { windowManager.updateViewLayout(crosshairView, crosshairParams); } catch (Exception ignored) {}
             }
         });
@@ -1346,23 +1013,12 @@ public class AndroidBridge {
 
     @JavascriptInterface
     public void updateCrosshairStyle(int scalePct, int opacityPct, String hexColor) {
-        mainHandler.post(() -> {
-            if (crosshairView != null) {
-                crosshairView.setStyle(scalePct, opacityPct, hexColor);
-            }
-        });
+        mainHandler.post(() -> { if (crosshairView != null) crosshairView.setStyle(scalePct, opacityPct, hexColor); });
     }
 
     @JavascriptInterface
-    public void updateCrosshairAdvanced(
-            String type, String hexColor, int opacityPct,
-            int lengthDp, int thicknessDp, int gapDp,
-            int dotSizeDp, boolean showOutline
-    ) {
-        if ("off".equalsIgnoreCase(type) || type == null || type.trim().isEmpty() || opacityPct <= 0) {
-            updateCrosshair("off");
-            return;
-        }
+    public void updateCrosshairAdvanced(String type, String hexColor, int opacityPct, int lengthDp, int thicknessDp, int gapDp, int dotSizeDp, boolean showOutline) {
+        if ("off".equalsIgnoreCase(type) || type == null || type.trim().isEmpty() || opacityPct <= 0) { updateCrosshair("off"); return; }
         if (getSavedKey().isEmpty()) return;
         updateCrosshair(type);
         mainHandler.post(() -> {
@@ -1394,16 +1050,11 @@ public class AndroidBridge {
     }
 
     @JavascriptInterface
-    public void setStealthOverlayMode(boolean stealth) {
-        updateOverlayStealthFlag(stealth);
-    }
+    public void setStealthOverlayMode(boolean stealth) { updateOverlayStealthFlag(stealth); }
 
     @JavascriptInterface
     public String getDeviceHardwareInfo() {
-        String model = Build.MODEL;
-        int shortPx = TeleportEngine.getNativeShortSide();
-        int longPx = TeleportEngine.getNativeLongSide();
-        return model + "|" + shortPx + "x" + longPx + " (120 Гц)";
+        return Build.MODEL + "|" + TeleportEngine.getNativeShortSide() + "x" + TeleportEngine.getNativeLongSide() + " (120 Гц)";
     }
 
     @JavascriptInterface
@@ -1421,12 +1072,8 @@ public class AndroidBridge {
     @JavascriptInterface
     public String getSavedNickname() {
         String nick = prefs.getString("saved_player_nick", "");
-        if (nick == null || nick.trim().isEmpty()) {
-            nick = profilePrefs.getString("nickname", "");
-        }
-        if (nick == null || nick.trim().isEmpty()) {
-            nick = legacyPrefs.getString("nickname", "");
-        }
+        if (nick == null || nick.trim().isEmpty()) nick = profilePrefs.getString("nickname", "");
+        if (nick == null || nick.trim().isEmpty()) nick = legacyPrefs.getString("nickname", "");
         return nick == null ? "" : nick.trim();
     }
 
@@ -1445,12 +1092,7 @@ public class AndroidBridge {
         saveEncryptedKeyToVault(cleanKey);
         recordWorkingHwid(cleanKey, serverRes);
         getOrInitKeyDeadlineMs(cleanKey, serverRes);
-        prefs.edit()
-                .remove("saved_license_key")
-                .putString("owned_token_" + cleanKey, "OWNED_" + cleanKey)
-                .putBoolean(PREF_FIRST_LOGIN_DONE, true)
-                .putLong("last_server_ok_ts", System.currentTimeMillis())
-                .apply();
+        prefs.edit().remove("saved_license_key").putString("owned_token_" + cleanKey, "OWNED_" + cleanKey).putBoolean(PREF_FIRST_LOGIN_DONE, true).putLong("last_server_ok_ts", System.currentTimeMillis()).apply();
         legacyPrefs.edit().putString("license_key", cleanKey).apply();
         ProfileManager.saveActivatedProfile(context, nick, cleanKey);
     }
@@ -1463,9 +1105,7 @@ public class AndroidBridge {
             return "ERROR|Обнаружена модификация файлов приложения!";
         }
         final String cleanKey = ApiManager.normalizeKeyInput(key);
-        if (cleanKey.length() < 5 || isBlacklistedArtifact(cleanKey)) {
-            return "ERROR|Введите лицензионный ключ из Telegram-бота";
-        }
+        if (cleanKey.length() < 5 || isBlacklistedArtifact(cleanKey)) return "ERROR|Введите лицензионный ключ из Telegram-бота";
         final String hwidCsv = getAllHwidCandidatesCsv(cleanKey);
         final String nick = getSavedNickname().isEmpty() ? "dare" : getSavedNickname();
 
@@ -1486,29 +1126,17 @@ public class AndroidBridge {
                 return "ERROR|Сервер временно недоступен, проверьте интернет";
             }
 
-            boolean explicitlyBanned = "banned".equalsIgnoreCase(status)
-                    || "blocked".equalsIgnoreCase(status)
-                    || "expired".equalsIgnoreCase(status)
-                    || "device_mismatch".equalsIgnoreCase(status)
-                    || res.optBoolean("blocked", false);
-
-            boolean ok = (res.optBoolean("ok", false)
-                    || "ok".equalsIgnoreCase(status)
-                    || "active".equalsIgnoreCase(status)
-                    || "success".equalsIgnoreCase(status)) && !explicitlyBanned;
+            boolean explicitlyBanned = "banned".equalsIgnoreCase(status) || "blocked".equalsIgnoreCase(status) || "expired".equalsIgnoreCase(status) || "device_mismatch".equalsIgnoreCase(status) || res.optBoolean("blocked", false);
+            boolean ok = (res.optBoolean("ok", false) || "ok".equalsIgnoreCase(status) || "active".equalsIgnoreCase(status) || "success".equalsIgnoreCase(status)) && !explicitlyBanned;
 
             if (ok) {
                 markKeyActivated(nick, cleanKey, res);
                 SecurityShield.issueVerifiedSessionToken(context, cleanKey);
                 String liveLabel = buildLiveSubscriptionLabel(res, cleanKey);
-                if ("EXPIRED".equals(liveLabel)) {
-                    liveLabel = "АКТИВНА";
-                }
+                if ("EXPIRED".equals(liveLabel)) liveLabel = "АКТИВНА";
                 return "OK|" + liveLabel;
             }
-
-            String errMsg = res.optString("message", "Ключ не найден или истёк!");
-            return "ERROR|" + errMsg;
+            return "ERROR|" + res.optString("message", "Ключ не найден или истёк!");
         } catch (Exception e) {
             if (cleanKey.equalsIgnoreCase(getSavedKey()) || isValidOfficialBotKeyFormat(cleanKey)) {
                 markKeyActivated(nick, cleanKey, null);
@@ -1528,20 +1156,13 @@ public class AndroidBridge {
             return "BANNED|Модификация файлов приложения";
         }
 
-        final String cleanKey = (key != null && !key.trim().isEmpty())
-                ? ApiManager.normalizeKeyInput(key)
-                : getSavedKey();
-
-        if (cleanKey.length() < 5 || isBlacklistedArtifact(cleanKey)) {
-            return "EXPIRED|Введите ключ";
-        }
+        final String cleanKey = (key != null && !key.trim().isEmpty()) ? ApiManager.normalizeKeyInput(key) : getSavedKey();
+        if (cleanKey.length() < 5 || isBlacklistedArtifact(cleanKey)) return "EXPIRED|Введите ключ";
 
         long lastOkTs = prefs.getLong("last_server_ok_ts", 0L);
         if (System.currentTimeMillis() - lastOkTs < 25000L && cleanKey.equalsIgnoreCase(getSavedKey())) {
             String cachedLabel = buildLiveSubscriptionLabel(null, cleanKey);
-            if (!"EXPIRED".equals(cachedLabel)) {
-                return "OK|" + cachedLabel;
-            }
+            if (!"EXPIRED".equals(cachedLabel)) return "OK|" + cachedLabel;
         }
 
         try {
@@ -1563,18 +1184,13 @@ public class AndroidBridge {
                 return "BANNED|" + msg;
             }
 
-            boolean ok = res.optBoolean("ok", false)
-                    || "ok".equalsIgnoreCase(status)
-                    || "active".equalsIgnoreCase(status);
-
+            boolean ok = res.optBoolean("ok", false) || "ok".equalsIgnoreCase(status) || "active".equalsIgnoreCase(status);
             if (ok) {
                 String nick = getSavedNickname().isEmpty() ? "dare" : getSavedNickname();
                 markKeyActivated(nick, cleanKey, res);
                 SecurityShield.issueVerifiedSessionToken(context, cleanKey);
                 String label = buildLiveSubscriptionLabel(res, cleanKey);
-                if ("EXPIRED".equals(label)) {
-                    label = "АКТИВНА";
-                }
+                if ("EXPIRED".equals(label)) label = "АКТИВНА";
                 return "OK|" + label;
             }
 
@@ -1587,9 +1203,7 @@ public class AndroidBridge {
     }
 
     @JavascriptInterface
-    public void logoutLicenseKey() {
-        forceKickExpiredUser("Смена логина или лицензионного ключа");
-    }
+    public void logoutLicenseKey() { forceKickExpiredUser("Смена логина или лицензионного ключа"); }
 
     @JavascriptInterface
     public void openTelegramBot() {
@@ -1615,16 +1229,12 @@ public class AndroidBridge {
 
     @JavascriptInterface
     public String requestFriendsHub(String jsonPayload) {
-        if (getSavedKey().isEmpty() || !safeNativeIsSessionOk() || isClientTampered()) {
-            return "{\"status\":\"error\",\"ok\":false,\"message\":\"Сначала активируйте ключ\"}";
-        }
+        if (getSavedKey().isEmpty() || !safeNativeIsSessionOk() || isClientTampered()) return "{\"status\":\"error\",\"ok\":false,\"message\":\"Сначала активируйте ключ\"}";
         try {
             Callable<String> task = () -> ApiManager.callFriendsApi(jsonPayload);
             Future<String> future = networkExecutor.submit(task);
             return future.get(4500, TimeUnit.MILLISECONDS);
-        } catch (Exception e) {
-            return "{\"status\":\"error\",\"ok\":false,\"message\":\"Ошибка сети\"}";
-        }
+        } catch (Exception e) { return "{\"status\":\"error\",\"ok\":false,\"message\":\"Ошибка сети\"}"; }
     }
 
     private static class BridgeTrashView extends View {
