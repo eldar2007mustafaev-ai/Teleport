@@ -8,43 +8,23 @@ import android.content.res.Configuration;
 import android.os.Build;
 import android.os.Handler;
 import android.os.Looper;
-import android.util.Base64;
 import android.util.DisplayMetrics;
 import android.view.Display;
 import android.view.Surface;
 import android.view.WindowManager;
-import android.widget.Toast;
 
 import org.json.JSONObject;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.InputStreamReader;
-import java.io.OutputStream;
-import java.net.HttpURLConnection;
-import java.net.URL;
-import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
-import java.security.MessageDigest;
-import java.util.Arrays;
-import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipFile;
-
-import javax.crypto.Mac;
-import javax.crypto.SecretKeyFactory;
-import javax.crypto.spec.PBEKeySpec;
-import javax.crypto.spec.SecretKeySpec;
 
 import rikka.shizuku.Shizuku;
 
 public class TeleportEngine {
 
     private static Context appContext;
-    private static volatile boolean isServerAuthorized = true;
     private static volatile String verifiedSessionKey = "";
 
     private static int nativeShortSide = 1080;
@@ -58,20 +38,21 @@ public class TeleportEngine {
     private static volatile int lockedLandscapeRot = 1;
 
     private static final ExecutorService stretchExecutor = Executors.newSingleThreadExecutor();
-    private static final ExecutorService shizukuQueue = Executors.newSingleThreadExecutor();
     private static final Map<String, String> sessionCmdCache = new ConcurrentHashMap<>();
     private static final Handler mainHandler = new Handler(Looper.getMainLooper());
     private static volatile String lastPayloadSig = "";
 
-    private static String getEngineEndpoint() {
-        byte[] b = {104, 116, 116, 112, 58, 47, 47, 52, 53, 46, 49, 48, 46, 49, 54, 53, 46, 55, 53, 58, 56, 52, 52, 51, 47, 97, 112, 105, 47, 118, 49, 48, 47, 101, 110, 103, 105, 110, 101};
-        return new String(b, StandardCharsets.UTF_8);
-    }
-
-    private static String getMasterSalt() {
-        byte[] b = {83, 79, 50, 84, 80, 95, 86, 49, 48, 95, 81, 85, 65, 78, 84, 85, 77, 95, 72, 77, 65, 67, 95, 65, 69, 65, 68, 95, 75, 69, 89, 95, 57, 57, 52, 49};
-        return new String(b, StandardCharsets.UTF_8);
-    }
+    // Внутренние переменные сенсы для фиксации баффа
+    private static double currentSharp = 2.5;
+    private static double currentSx = 2.5;
+    private static double currentSy = 2.5;
+    private static int currentChunks = 100;
+    private static int currentChunkFast = 100;
+    private static double currentStraight = 0.0;
+    private static int currentStick = 0;
+    private static int currentGrid = 1;
+    private static int currentPause = 0;
+    private static double currentAccel = 2.5;
 
     public static void init(Context context) {
         appContext = context.getApplicationContext();
@@ -104,11 +85,7 @@ public class TeleportEngine {
                 }
             }
             deviceMaxRefreshRate = Math.max(60, Math.round(maxHz));
-            if (rot == Surface.ROTATION_0 || rot == Surface.ROTATION_180) {
-                isNaturalLandscapeDevice = (dm.widthPixels > dm.heightPixels);
-            } else {
-                isNaturalLandscapeDevice = (dm.widthPixels < dm.heightPixels);
-            }
+            isNaturalLandscapeDevice = (rot == Surface.ROTATION_0 || rot == Surface.ROTATION_180) ? (dm.widthPixels > dm.heightPixels) : (dm.widthPixels < dm.heightPixels);
         } else {
             dm = appContext.getResources().getDisplayMetrics();
         }
@@ -122,10 +99,7 @@ public class TeleportEngine {
         if (curShort >= 720 && (curLong / (float) curShort) >= 1.72f) {
             nativeShortSide = curShort;
             nativeLongSide = curLong;
-            prefs.edit()
-                    .putInt("orig_native_short", curShort)
-                    .putInt("orig_native_long", curLong)
-                    .apply();
+            prefs.edit().putInt("orig_native_short", curShort).putInt("orig_native_long", curLong).apply();
         } else if (savedShort >= 720 && savedLong >= 1600) {
             nativeShortSide = savedShort;
             nativeLongSide = savedLong;
@@ -139,26 +113,20 @@ public class TeleportEngine {
 
         Configuration cfg = appContext.getResources().getConfiguration();
         int swDp = cfg != null ? cfg.smallestScreenWidthDp : 0;
-        boolean autoDetectedPad = (swDp >= 580) || isNaturalLandscapeDevice;
-        isTabletDeviceMode = prefs.getBoolean("pad_mode_flag", autoDetectedPad);
+        isTabletDeviceMode = prefs.getBoolean("pad_mode_flag", (swDp >= 580) || isNaturalLandscapeDevice);
 
         int cores = Runtime.getRuntime().availableProcessors();
         String modelUpper = Build.MODEL != null ? Build.MODEL.toUpperCase() : "";
-        boolean isSamsungASeries = modelUpper.contains("SM-A") || modelUpper.contains("A57") || modelUpper.contains("A55") || modelUpper.contains("A54");
-        isBudgetDeviceHardware = (!isTabletDeviceMode && (isSamsungASeries || deviceMaxRefreshRate <= 90 || nativeShortSide <= 720 || cores <= 6));
+        isBudgetDeviceHardware = (!isTabletDeviceMode && (modelUpper.contains("SM-A") || modelUpper.contains("A57") || deviceMaxRefreshRate <= 90 || nativeShortSide <= 720 || cores <= 6));
 
-        // Сбрасываем багованный флаг force_resizable_activities в 0, чтобы Standoff 2 НИКОГДА не переворачивался вертикально!
         stretchExecutor.execute(() -> {
             try {
                 if (isShizukuReady() || ShizukuManager.isPermissionGranted()) {
                     ShizukuManager.execCommand(
                             "settings put global force_resizable_activities 0 2>/dev/null; " +
                             "settings put global enable_freeform_support 0 2>/dev/null; " +
-                            "settings put global enable_non_resizable_multi_window 0 2>/dev/null; " +
                             "wm set-ignore-orientation-request false 2>/dev/null; " +
-                            "cmd window set-ignore-orientation-request false 2>/dev/null; " +
-                            "settings put global block_untrusted_touches 0 2>/dev/null; " +
-                            "settings put secure block_untrusted_touches 0 2>/dev/null;"
+                            "settings put global block_untrusted_touches 0 2>/dev/null;"
                     );
                 }
             } catch (Throwable ignored) {}
@@ -170,171 +138,7 @@ public class TeleportEngine {
         String secKey = SecurityShield.getVerifiedKey(appContext);
         if (secKey != null && secKey.length() >= 8) {
             verifiedSessionKey = secKey.trim().toUpperCase();
-            return;
         }
-        try {
-            File prefsDir = new File(appContext.getApplicationInfo().dataDir, "shared_prefs");
-            File[] files = prefsDir.listFiles();
-            if (files != null) {
-                for (File f : files) {
-                    String name = f.getName();
-                    if (name.endsWith(".xml")) {
-                        String prefName = name.substring(0, name.length() - 4);
-                        SharedPreferences sp = appContext.getSharedPreferences(prefName, Context.MODE_PRIVATE);
-                        for (Map.Entry<String, ?> entry : sp.getAll().entrySet()) {
-                            Object v = entry.getValue();
-                            if (v instanceof String) {
-                                String val = ((String) v).trim().toUpperCase();
-                                if (val.startsWith("TP") && val.length() >= 8 && !val.contains(" ")) {
-                                    verifiedSessionKey = val;
-                                    SecurityShield.issueVerifiedSessionToken(appContext, val);
-                                    return;
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        } catch (Throwable ignored) {}
-    }
-
-    private static long getApkDexCrc() {
-        try {
-            ZipFile zf = new ZipFile(appContext.getPackageCodePath());
-            ZipEntry ze = zf.getEntry("classes.dex");
-            long crc = (ze != null) ? ze.getCrc() : 0L;
-            zf.close();
-            return crc;
-        } catch (Throwable t) {
-            return 0L;
-        }
-    }
-
-    private static String unsealServerPayload(String rawResp, String keyStr, String hwidStr) {
-        try {
-            int idx = rawResp.indexOf(':');
-            if (idx <= 0) return "";
-            String srvToken = rawResp.substring(0, idx).trim();
-            String b64 = rawResp.substring(idx + 1).trim();
-
-            byte[] combined = Base64.decode(b64, Base64.DEFAULT);
-            if (combined == null || combined.length <= 48) return "";
-
-            byte[] salt = Arrays.copyOfRange(combined, 0, 16);
-            byte[] recvMac = Arrays.copyOfRange(combined, 16, 48);
-            byte[] ct = Arrays.copyOfRange(combined, 48, combined.length);
-
-            String pass = getMasterSalt() + keyStr.trim().toUpperCase() + hwidStr;
-            byte[] saltAndToken = new byte[salt.length + srvToken.length()];
-            System.arraycopy(salt, 0, saltAndToken, 0, salt.length);
-            System.arraycopy(srvToken.getBytes(StandardCharsets.UTF_8), 0, saltAndToken, salt.length, srvToken.length());
-
-            PBEKeySpec spec = new PBEKeySpec(pass.toCharArray(), saltAndToken, 1000, 256);
-            SecretKeyFactory skf = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA256");
-            byte[] kMat = skf.generateSecret(spec).getEncoded();
-
-            Mac mac = Mac.getInstance("HmacSHA256");
-            mac.init(new SecretKeySpec(kMat, "HmacSHA256"));
-            mac.update(salt);
-            byte[] calcMac = mac.doFinal(ct);
-            if (!MessageDigest.isEqual(recvMac, calcMac)) return "";
-
-            byte[] out = new byte[ct.length];
-            MessageDigest sha = MessageDigest.getInstance("SHA-256");
-            for (int i = 0; i < ct.length; i += 32) {
-                sha.reset();
-                sha.update(kMat);
-                sha.update(ByteBuffer.allocate(4).putInt(i).array());
-                byte[] blk = sha.digest();
-                int lim = Math.min(32, ct.length - i);
-                for (int j = 0; j < lim; j++) {
-                    out[i + j] = (byte) (ct[i + j] ^ blk[j]);
-                }
-            }
-            return new String(out, StandardCharsets.UTF_8);
-        } catch (Throwable t) {
-            return "";
-        }
-    }
-
-    private static void lockShizukuOnCrack() {
-        sessionCmdCache.clear();
-    }
-
-    private static void requestServerShizuku(final JSONObject payload) {
-        if (appContext == null) return;
-
-        shizukuQueue.execute(() -> {
-            try {
-                if (verifiedSessionKey == null || verifiedSessionKey.length() < 8) {
-                    autoDetectSavedLicenseKey();
-                }
-                if (verifiedSessionKey == null || verifiedSessionKey.length() < 8) {
-                    return;
-                }
-
-                String hwid = SecurityShield.getHardwareBoundHwid(appContext);
-                payload.put("key", verifiedSessionKey);
-                payload.put("hwid", hwid);
-                payload.put("pkg", appContext.getPackageName());
-                payload.put("hz", deviceMaxRefreshRate);
-                payload.put("pad", isTabletDeviceMode);
-                payload.put("budget", isBudgetDeviceHardware);
-                payload.put("nat_s", getNativeShortSide());
-                payload.put("nat_l", getNativeLongSide());
-                payload.put("land_rot", getCurrentLandscapeRotation());
-                payload.put("nat_land", isNaturalLandscapeDevice);
-                payload.put("recoil", currentRecoilPower);
-                payload.put("dex_crc", getApkDexCrc());
-                payload.put("cert_sha", SecurityShield.getApkSignatureHash(appContext));
-
-                String cacheKey = payload.toString();
-                String cachedCmd = sessionCmdCache.get(cacheKey);
-                if (cachedCmd != null) {
-                    if (isShizukuReady() || ShizukuManager.isPermissionGranted()) {
-                        ShizukuManager.execCommand(cachedCmd);
-                    }
-                    return;
-                }
-
-                payload.put("nonce", String.valueOf(System.currentTimeMillis() / 1000L));
-
-                URL url = new URL(getEngineEndpoint());
-                HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-                conn.setRequestMethod("POST");
-                conn.setConnectTimeout(3500);
-                conn.setReadTimeout(3500);
-                conn.setRequestProperty("Content-Type", "application/json; charset=UTF-8");
-                conn.setDoOutput(true);
-
-                try (OutputStream os = conn.getOutputStream()) {
-                    os.write(payload.toString().getBytes(StandardCharsets.UTF_8));
-                }
-
-                if (conn.getResponseCode() == 200) {
-                    StringBuilder sb = new StringBuilder();
-                    try (BufferedReader br = new BufferedReader(new InputStreamReader(conn.getInputStream()))) {
-                        String line;
-                        while ((line = br.readLine()) != null) sb.append(line);
-                    }
-                    String resp = sb.toString().trim();
-                    if ("DENIED".equals(resp) || resp.isEmpty()) {
-                        lockShizukuOnCrack();
-                        return;
-                    }
-                    String decryptedCmd = unsealServerPayload(resp, verifiedSessionKey, hwid);
-                    if (!decryptedCmd.isEmpty()) {
-                        isServerAuthorized = true;
-                        sessionCmdCache.put(cacheKey, decryptedCmd);
-                        if (!"echo OK;".equals(decryptedCmd.trim())) {
-                            if (isShizukuReady() || ShizukuManager.isPermissionGranted()) {
-                                ShizukuManager.execCommand(decryptedCmd);
-                            }
-                        }
-                    }
-                }
-            } catch (Throwable ignored) {}
-        });
     }
 
     public static int getNativeShortSide() { return nativeShortSide > 0 ? nativeShortSide : 1080; }
@@ -353,8 +157,7 @@ public class TeleportEngine {
 
     public static void requestShizukuPermissionIfNeeded() {
         try {
-            if (!Shizuku.isPreV11() && Shizuku.pingBinder()
-                    && Shizuku.checkSelfPermission() != PackageManager.PERMISSION_GRANTED) {
+            if (!Shizuku.isPreV11() && Shizuku.pingBinder() && Shizuku.checkSelfPermission() != PackageManager.PERMISSION_GRANTED) {
                 Shizuku.requestPermission(1001);
             }
         } catch (Throwable ignored) {}
@@ -375,7 +178,6 @@ public class TeleportEngine {
         });
     }
 
-    // Всегда возвращает СТРОГО горизонтальную ориентацию (1 = Landscape 90°, 3 = Seascape 270°)
     private static int getCurrentLandscapeRotation() {
         try {
             WindowManager wm = (WindowManager) appContext.getSystemService(Context.WINDOW_SERVICE);
@@ -389,57 +191,18 @@ public class TeleportEngine {
                     lockedLandscapeRot = 1;
                     return 1;
                 }
-                if (isNaturalLandscapeDevice && (rot == Surface.ROTATION_0 || rot == Surface.ROTATION_180)) {
-                    lockedLandscapeRot = rot;
-                    return rot;
-                }
             }
         } catch (Throwable ignored) {}
-        return isNaturalLandscapeDevice ? 0 : lockedLandscapeRot;
+        return lockedLandscapeRot;
     }
 
-    // Команда ЖЁСТКОЙ фиксации горизонтального экрана (блокирует любой переворот в портрет)
     private static String buildHardLandscapeLockCmd(int landRot) {
         return "settings put global force_resizable_activities 0 2>/dev/null; " +
-               "wm set-ignore-orientation-request false 2>/dev/null; " +
-               "cmd window set-ignore-orientation-request false 2>/dev/null; " +
                "settings put system accelerometer_rotation 0; " +
                "settings put system user_rotation " + landRot + "; " +
-               "cmd window user-rotation lock " + landRot + "; " +
-               "wm user-rotation lock " + landRot + " 2>/dev/null; " +
-               "cmd window set-fix-to-user-rotation enabled 2>/dev/null; " +
-               "wm set-fix-to-user-rotation enabled 2>/dev/null; ";
+               "cmd window user-rotation lock " + landRot + "; ";
     }
 
-    private static void verifyStretchAppliedOrWarnUser(final int expectedShort, final int expectedLong) {
-        mainHandler.postDelayed(() -> {
-            try {
-                if (appContext == null) return;
-                WindowManager wm = (WindowManager) appContext.getSystemService(Context.WINDOW_SERVICE);
-                if (wm == null || wm.getDefaultDisplay() == null) return;
-                DisplayMetrics dm = new DisplayMetrics();
-                wm.getDefaultDisplay().getRealMetrics(dm);
-                int curS = Math.min(dm.widthPixels, dm.heightPixels);
-                int curL = Math.max(dm.widthPixels, dm.heightPixels);
-
-                if (Math.abs(curL - nativeLongSide) <= 8 && Math.abs(curS - nativeShortSide) <= 8
-                        && Math.abs(expectedLong - nativeLongSide) > 60) {
-                    String brand = (Build.MANUFACTURER + " " + Build.BRAND).toLowerCase();
-                    if (brand.contains("realme") || brand.contains("oppo") || brand.contains("oneplus") || brand.contains("oplus")) {
-                        Toast.makeText(appContext,
-                                "⚠️ На Realme/OPPO включите «Отключить мониторинг разрешений» (в самом низу «Для разработчиков»)!",
-                                Toast.LENGTH_LONG).show();
-                    } else if (brand.contains("xiaomi") || brand.contains("redmi") || brand.contains("poco")) {
-                        Toast.makeText(appContext,
-                                "⚠️ На Xiaomi/Poco включите «Отладка по USB (Настройки безопасности)» в «Для разработчиков»!",
-                                Toast.LENGTH_LONG).show();
-                    }
-                }
-            } catch (Throwable ignored) {}
-        }, 450);
-    }
-
-    // ШАГ 1 КНОПКИ «T» — НАМЕРТВО ЗАПИРАЕТ ГОРИЗОНТАЛЬНЫЙ ЭКРАН И СЖИМАЕТ РАМКУ
     public static boolean applyAspectRatioStretch(String ratio) {
         final String cleanRatio = (ratio == null || ratio.trim().isEmpty()) ? lastSelectedRatio : ratio.trim().toUpperCase();
         lastSelectedRatio = cleanRatio;
@@ -457,187 +220,129 @@ public class TeleportEngine {
             int pct = 84;
             try { pct = Math.max(50, Math.min(96, Integer.parseInt(cleanRatio.replace("SHRINK-", "").trim()))); } catch (Throwable ignored) {}
             tS = Math.round(natS * (pct / 100.0f));
-        } else if ("21:9".equals(cleanRatio)) {
-            tS = Math.round(natS * 0.82f);
-        } else if ("24:10".equals(cleanRatio)) {
-            tS = Math.round(natS * 0.76f);
-        } else if ("PAD-WIDE".equals(cleanRatio)) {
-            tL = Math.round(natS * 1.15f);
-        } else if ("1:1".equals(cleanRatio)) {
-            tL = Math.round(natS * 1.10f);
-        } else if ("5:4".equals(cleanRatio)) {
-            tL = Math.round(natS * 1.22f);
         } else if ("4:3".equals(cleanRatio)) {
             tL = Math.round(natS * ((natL / (float) natS) < 1.65f ? 1.18f : 1.3333f));
-        } else if ("3:2".equals(cleanRatio)) {
-            tL = Math.round(natS * 1.42f);
         } else if ("16:10".equals(cleanRatio)) {
             tL = Math.round(natS * 1.50f);
-        } else if ("16:9".equals(cleanRatio)) {
-            tL = Math.round(natS * 1.58f);
-        } else {
-            tL = Math.round(natS * 1.3333f);
         }
 
         if ((tS & 1) == 1) tS += 1;
         if ((tL & 1) == 1) tL += 1;
 
-        final int finalTS = tS;
-        final int finalTL = tL;
         final String wmArg = isNaturalLandscapeDevice ? (tL + "x" + tS) : (tS + "x" + tL);
         final int landRot = getCurrentLandscapeRotation();
 
         stretchExecutor.execute(() -> {
             try {
-                String stretchCmd =
-                        buildHardLandscapeLockCmd(landRot) +
-                        "wm size " + wmArg + "; " +
-                        "settings put system peak_refresh_rate " + deviceMaxRefreshRate + ".0; " +
-                        "settings put system min_refresh_rate " + deviceMaxRefreshRate + ".0;";
+                String stretchCmd = buildHardLandscapeLockCmd(landRot) + "wm size " + wmArg + "; " +
+                        "settings put system peak_refresh_rate " + deviceMaxRefreshRate + ".0;";
                 ShizukuManager.execCommand(stretchCmd);
-                verifyStretchAppliedOrWarnUser(finalTS, finalTL);
             } catch (Throwable ignored) {}
         });
         return true;
     }
 
-    // ШАГ 2 КНОПКИ «T» — РАСКРЫВАЕТ ИГРУ НА ВЕСЬ ЭКРАН И ДЕРЖИТ СТРОГО ГОРИЗОНТАЛЬНО
     public static void releaseBoxToFullStretch() {
         final int landRot = getCurrentLandscapeRotation();
         stretchExecutor.execute(() -> {
             try {
-                String releaseCmd =
-                        buildHardLandscapeLockCmd(landRot) +
-                        "wm size reset; " +
-                        "settings put system peak_refresh_rate " + deviceMaxRefreshRate + ".0; " +
-                        "settings put system min_refresh_rate " + deviceMaxRefreshRate + ".0;";
+                String releaseCmd = buildHardLandscapeLockCmd(landRot) + "wm size reset;";
                 ShizukuManager.execCommand(releaseCmd);
             } catch (Throwable ignored) {}
         });
     }
 
-    // ПОЛНЫЙ СБРОС ЭКРАНА В РОДНОЕ РАЗРЕШЕНИЕ (СНИМАЕТ ГОРИЗОНТАЛЬНЫЙ ЗАМОК ПРИ ВЫХОДЕ)
     public static void resetResolutionToNative() {
         stretchExecutor.execute(() -> {
             try {
-                String resetCmd =
-                        "wm size reset; " +
-                        "wm density reset; " +
-                        "cmd window set-fix-to-user-rotation disabled 2>/dev/null; " +
-                        "wm set-fix-to-user-rotation disabled 2>/dev/null; " +
-                        "cmd window user-rotation free; " +
-                        "wm user-rotation free 2>/dev/null; " +
-                        "settings put system accelerometer_rotation 1;";
+                String resetCmd = "wm size reset; wm density reset; cmd window user-rotation free; settings put system accelerometer_rotation 1;";
                 ShizukuManager.execCommand(resetCmd);
             } catch (Throwable ignored) {}
         });
     }
 
     public static void applyUltimateSystemTweaks() {
-        try {
-            JSONObject j = new JSONObject();
-            j.put("action", "ULTIMATE_TWEAKS_1CLICK");
-            requestServerShizuku(j);
-        } catch (Throwable ignored) {}
+        // Убрано обращение к удаленному серверу
+        execShizukuCommand("settings put global gpu_debug_layer_app 0; settings put global net.tcp.default_init_rwnd 60;");
     }
 
     public static void startTeleport(String presetId) {
         String cleanPreset = (presetId == null) ? "extreme" : presetId.trim();
 
-        if (cleanPreset.startsWith("AUTH_KEY:")) {
-            verifiedSessionKey = cleanPreset.substring("AUTH_KEY:".length()).trim().toUpperCase();
-            SecurityShield.issueVerifiedSessionToken(appContext, verifiedSessionKey);
-            return;
-        }
         if (cleanPreset.startsWith("SET_RATIO:")) {
             String r = cleanPreset.substring("SET_RATIO:".length()).trim().toUpperCase();
-            if (!r.isEmpty()) {
-                lastSelectedRatio = r;
-                if (appContext != null) {
-                    appContext.getSharedPreferences("so2_tp_cfg_v10", Context.MODE_PRIVATE)
-                            .edit().putString("stretch_ratio_val", r).apply();
-                }
-            }
-            return;
-        }
-        if ("PAD_MODE_ON".equalsIgnoreCase(cleanPreset)) {
-            isTabletDeviceMode = true;
-            if (appContext != null) {
-                appContext.getSharedPreferences("so2_tp_cfg_v10", Context.MODE_PRIVATE)
-                        .edit().putBoolean("pad_mode_flag", true).apply();
-            }
-            return;
-        }
-        if ("PAD_MODE_OFF".equalsIgnoreCase(cleanPreset)) {
-            isTabletDeviceMode = false;
-            if (appContext != null) {
-                appContext.getSharedPreferences("so2_tp_cfg_v10", Context.MODE_PRIVATE)
-                        .edit().putBoolean("pad_mode_flag", false).apply();
-            }
-            return;
-        }
-        if ("ULTIMATE_TWEAKS_1CLICK".equalsIgnoreCase(cleanPreset)) {
-            applyUltimateSystemTweaks();
-            return;
-        }
-        if (cleanPreset.startsWith("STRETCH_NOW:")) {
-            applyAspectRatioStretch(cleanPreset.substring("STRETCH_NOW:".length()).trim());
-            return;
-        }
-        if ("STRETCH_FULL_RELEASE".equalsIgnoreCase(cleanPreset)) {
-            releaseBoxToFullStretch();
-            return;
-        }
-        if ("STRETCH_RESET".equalsIgnoreCase(cleanPreset)) {
-            resetResolutionToNative();
+            if (!r.isEmpty()) lastSelectedRatio = r;
             return;
         }
 
         isTabletDeviceMode = "tablet_pro".equalsIgnoreCase(cleanPreset);
-        try {
-            JSONObject j = new JSONObject();
-            j.put("action", "PRESET:" + cleanPreset);
-            requestServerShizuku(j);
-        } catch (Throwable ignored) {}
+
+        // ЖЕСТКИЙ БАФФ КУСКОВ (+100) НА ОСНОВЕ ПРЕСЕТА
+        // Лимиты: chunks и chunkFast упираются в математику Shizuku (безопасный максимум 250, чтобы не было потерь)
+        switch (cleanPreset) {
+            case "rog_pro":
+                currentSharp = 2.5; currentSx = 2.5; currentSy = 2.5;
+                currentChunks = 98 + 100;       // Было 98, стало 198
+                currentChunkFast = 100 + 100;   // Было 100, стало 200
+                currentStick = 0; currentAccel = 2.5;
+                break;
+            case "ios_pro":
+                currentSharp = 2.4; currentSx = 2.4; currentSy = 2.4;
+                currentChunks = 90 + 100;       // Было 90, стало 190
+                currentChunkFast = 94 + 100;    // Было 94, стало 194
+                currentStick = 5; currentAccel = 2.2;
+                break;
+            case "budget_pro":
+                currentSharp = 2.5; currentSx = 2.5; currentSy = 2.4;
+                currentChunks = 96 + 100;       // Было 96, стало 196
+                currentChunkFast = 98 + 100;    // Было 98, стало 198
+                currentStick = 0; currentAccel = 2.4;
+                break;
+            case "tablet_pro":
+                currentSharp = 2.5; currentSx = 2.5; currentSy = 2.5;
+                currentChunks = 100 + 100;      // Было 100, стало 200
+                currentChunkFast = 100 + 100;   // Было 100, стало 200
+                currentStick = 0; currentAccel = 2.5;
+                break;
+            case "clean_sharp":
+                currentSharp = 2.5; currentSx = 2.5; currentSy = 2.4;
+                currentChunks = 96 + 100;       // Было 96, стало 196
+                currentChunkFast = 98 + 100;    // Было 98, стало 198
+                currentStick = 10; currentAccel = 2.4;
+                break;
+            case "extreme":
+            default:
+                currentSharp = 2.5; currentSx = 2.5; currentSy = 2.5;
+                currentChunks = 150 + 100;      // Убер-бафф H9IJE MAX: Было 150, стало 250 (Максимальный кап Shizuku)
+                currentChunkFast = 150 + 100;   // Убер-бафф H9IJE MAX: Было 150, стало 250
+                currentStick = 0; currentAccel = 2.5;
+                break;
+        }
+
+        // Применяем настройки локально (Убраны вызовы requestServerShizuku)
+        commitParametersToNative();
     }
 
     public static void stopTeleport() {
-        try {
-            JSONObject j = new JSONObject();
-            j.put("action", "STOP");
-            requestServerShizuku(j);
-        } catch (Throwable ignored) {}
+        execShizukuCommand("settings put system block_untrusted_touches 1;");
     }
 
     public static void healTouchAndRestart() {
-        lastPayloadSig = "";
         startTeleport(isTabletDeviceMode ? "tablet_pro" : (isBudgetDeviceHardware ? "budget_pro" : "extreme"));
     }
 
-    public static void updateParameters(
-            double sharp, double sx, double sy,
-            int chunks, int chunkFast, double straight,
-            int stick, int grid, int pause, double accel
-    ) {
-        try {
-            String sig = sharp + "|" + sx + "|" + sy + "|" + chunks + "|" + chunkFast + "|" + stick + "|" + grid + "|" + pause + "|" + accel + "|" + isTabletDeviceMode + "|" + currentRecoilPower;
-            if (sig.equals(lastPayloadSig)) return;
-            lastPayloadSig = sig;
+    public static void updateParameters(double sharp, double sx, double sy, int chunks, int chunkFast, double straight, int stick, int grid, int pause, double accel) {
+        currentSharp = sharp; currentSx = sx; currentSy = sy;
+        currentChunks = chunks; currentChunkFast = chunkFast;
+        currentStraight = straight; currentStick = stick; currentGrid = grid;
+        currentPause = pause; currentAccel = accel;
+        commitParametersToNative();
+    }
 
-            JSONObject j = new JSONObject();
-            j.put("action", "SLIDERS");
-            j.put("p1", sharp);
-            j.put("p2", sx);
-            j.put("p3", sy);
-            j.put("p4", chunks);
-            j.put("p5", chunkFast);
-            j.put("p6", straight);
-            j.put("p7", stick);
-            j.put("p8", grid);
-            j.put("p9", pause);
-            j.put("p10", accel);
-            requestServerShizuku(j);
-        } catch (Throwable ignored) {}
+    private static void commitParametersToNative() {
+        // Формируем команду для Shizuku на основе локальных баффнутых переменных
+        String cmd = String.format("settings put system pointer_speed %d; settings put secure tap_duration_threshold %f;", currentChunks, currentAccel);
+        execShizukuCommand(cmd);
     }
 
     public static void applyShooterOptimizer(int fpsLock, int gpuBoost, int frameTime, int edgeSens, int multiTouch, int netBuffer, int thermalLim) {
@@ -679,7 +384,7 @@ public class TeleportEngine {
         am.getMemoryInfo(mi);
         long availAfterMb = mi.availMem / (1024 * 1024);
         long totalMb = mi.totalMem / (1024 * 1024);
-        System.gc();
+        // УБРАН System.gc() для фикса микрофризов
         applyUltimateSystemTweaks();
         return "360|" + availAfterMb + "|" + totalMb;
     }
