@@ -1,9 +1,11 @@
 package com.teleport.so2;
 
 import android.app.Activity;
+import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.LinearGradient;
@@ -131,6 +133,26 @@ public class AndroidBridge {
         TeleportEngine.init(context);
         TeleportEngine.requestShizukuPermissionIfNeeded();
         startLicenseWatchdog();
+    }
+
+    private int dpToPx(int dp) {
+        return Math.round(dp * context.getResources().getDisplayMetrics().density);
+    }
+
+    private boolean isValidOfficialBotKeyFormat(String rawKey) {
+        String u = ApiManager.normalizeKeyInput(rawKey);
+        if (u.length() < 8 || u.length() > 42 || isBlacklistedArtifact(u)) return false;
+        String baseKey = u.split("_")[0];
+        String[] parts = baseKey.split("-");
+        if (parts.length < 2 || parts.length > 3) return false;
+        String prefix = parts[0];
+        boolean validPrefix = prefix.startsWith("TP") || "TRIAL".equals(prefix) || "UNLIM".equals(prefix);
+        if (!validPrefix) return false;
+        if (parts.length == 3) {
+            if (parts[1].length() < 2 || parts[1].length() > 10) return false;
+            if (parts[2].length() < 4) return false;
+        }
+        return true;
     }
 
     private void migrateExistingKeysAcrossStores() {
