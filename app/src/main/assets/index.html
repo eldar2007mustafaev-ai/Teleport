@@ -165,6 +165,14 @@
     body.budget-mode .btn-main, body.budget-mode .liquid-glass-btn {
       background: rgba(var(--accent-rgb), 0.85) !important; box-shadow: none !important;
     }
+    
+    /* Упрощение линзы навигации для бюджеток */
+    body.budget-mode .nav-liquid-lens {
+      background: rgba(var(--accent-rgb), 0.25) !important;
+      border: 1px solid rgba(var(--accent-rgb), 0.3) !important;
+      box-shadow: none !important;
+    }
+    body.budget-mode .nav-item.active { text-shadow: none !important; }
     /* ========================================================================= */
 
     .top-brand-header { border-radius: 28px; padding: 14px 16px; margin-block-end: 12px; }
@@ -398,16 +406,16 @@
     .tab-section { display: none; }
     .tab-section.active { display: block; }
 
-    /* ОПТИМИЗАЦИЯ ЛИНЗЫ: ЗАМЕНА BACKDROP-FILTER НА ФОН */
+    /* ОПТИМИЗАЦИЯ ПАНЕЛИ И ЛИНЗЫ ДЛЯ ПЛАВНОСТИ (NO FILTER DROP-SHADOW) */
     .bottom-nav-bar {
       --nav-idx: 0; --lens-sx: 1; --lens-sy: 1;
       position: fixed; bottom: calc(env(safe-area-inset-bottom, 0px) + 12px); left: 12px; right: 12px;
       max-width: 480px; margin-inline: auto; height: 68px; background: var(--glass-tint-nav); border-radius: 999px;
       display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); align-items: center; padding-inline: 6px;
       z-index: 9000; touch-action: pan-y;
-      box-shadow: 0 14px 34px rgba(0, 0, 0, 0.58);
+      box-shadow: 0 10px 24px rgba(0, 0, 0, 0.45);
       border: 1px solid rgba(255, 255, 255, 0.1);
-      transform: translateZ(0);
+      transform: translateZ(0); /* Включаем аппаратное ускорение панели */
     }
     
     .nav-liquid-lens {
@@ -424,9 +432,19 @@
       color: rgba(255, 255, 255, 0.82); font-size: 0.6875rem; font-weight: 600; cursor: pointer;
       transition: color 200ms ease, transform 260ms var(--spring-ease);
     }
-    .nav-item svg { width: 21px; height: 21px; stroke: currentColor; fill: none; stroke-width: 2.1; vector-effect: non-scaling-stroke; transition: transform 260ms var(--spring-ease), filter 200ms ease; }
-    .nav-item.active, .nav-item.lens-pass { color: var(--accent-bright); text-shadow: 0 0 10px rgba(var(--accent-rgb), 0.55); }
-    .nav-item.active svg, .nav-item.lens-pass svg { transform: scale(1.10); filter: drop-shadow(0 0 6px rgba(var(--accent-rgb), 0.65)); }
+    .nav-item svg { 
+      width: 21px; height: 21px; stroke: currentColor; fill: none; stroke-width: 2.1; 
+      vector-effect: non-scaling-stroke; 
+      transition: transform 260ms var(--spring-ease); /* Удалили убийцу FPS - filter transition */
+      will-change: transform;
+    }
+    .nav-item.active, .nav-item.lens-pass { 
+      color: var(--accent-bright); 
+      text-shadow: 0 0 4px rgba(var(--accent-rgb), 0.4); 
+    }
+    .nav-item.active svg, .nav-item.lens-pass svg { 
+      transform: scale(1.12); /* Удалили drop-shadow */
+    }
 
     #cyberToast {
       position: fixed; top: max(calc(env(safe-area-inset-top, 42px) + 10px), 42px); left: 50%;
