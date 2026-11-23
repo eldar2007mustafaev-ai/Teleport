@@ -448,7 +448,6 @@
 </head>
 <body>
 
-  <!-- ОПТИМИЗИРОВАННЫЙ ФОН LIQUID GLASS -->
   <div id="animatedBgLayer" aria-hidden="true"></div>
   <div id="bgThemeTintLayer" aria-hidden="true"></div>
   <div id="bgVignetteOverlay" aria-hidden="true"></div>
@@ -2769,6 +2768,74 @@
       if (overlay) overlay.style.display = "none";
     }
 
+    function renderFriendsList() {
+      const container = document.getElementById("friendsListBox");
+      if (!container) return;
+      if (!hasBridge()) {
+         container.innerHTML = '<div style="text-align:center; padding: 20px; color: var(--text-muted); font-size: 0.8125rem;">Сначала активируйте ключ, чтобы пользоваться списком друзей</div>';
+         return;
+      }
+      try {
+        const payload = JSON.stringify({action: "sync"});
+        const raw = AndroidBridge.requestFriendsHub(payload);
+        const res = JSON.parse(raw);
+        if (res && res.ok && res.friends) {
+            let html = '';
+            if (res.friends.length === 0) {
+                html = '<div style="text-align:center; padding: 20px; color: var(--text-muted); font-size: 0.8125rem;">У вас пока нет друзей в списке</div>';
+            } else {
+                res.friends.forEach(f => {
+                    html += `
+                    <div class="friend-item">
+                      <div>
+                        <div style="font-size:0.8125rem; font-weight:700; color:var(--text-main);">${f.nick}</div>
+                        <div style="font-size:0.6875rem; color:var(--text-muted);">${f.code} ${f.online ? '<span style="color:#30D158;">• В сети</span>' : ''}</div>
+                      </div>
+                      <button class="btn-danger" style="width:auto; min-height:32px; padding:6px 12px;" onclick="removeFriend('${f.code}')">Удалить</button>
+                    </div>`;
+                });
+            }
+            container.innerHTML = html;
+        } else {
+            container.innerHTML = '<div style="text-align:center; padding: 20px; color: var(--text-muted); font-size: 0.8125rem;">' + (res.message || "Ошибка загрузки списка друзей") + '</div>';
+        }
+      } catch(e) {
+          container.innerHTML = '<div style="text-align:center; padding: 20px; color: var(--text-muted); font-size: 0.8125rem;">Ошибка синхронизации</div>';
+      }
+    }
+
+    function addFriendByCode() {
+        const inp = document.getElementById("friendAddInput");
+        if (!inp) return;
+        const code = inp.value.trim();
+        if (!code) {
+            showToast("Введите ID тиммейта");
+            return;
+        }
+        if (!hasBridge()) return;
+        try {
+            const raw = AndroidBridge.requestFriendsHub(JSON.stringify({action: "add", target_code: code}));
+            const res = JSON.parse(raw);
+            showToast(res.message || "Запрос отправлен");
+            inp.value = "";
+            renderFriendsList();
+        } catch(e) {
+            showToast("Ошибка при добавлении");
+        }
+    }
+
+    function removeFriend(code) {
+        if (!hasBridge()) return;
+        try {
+            const raw = AndroidBridge.requestFriendsHub(JSON.stringify({action: "remove", target_code: code}));
+            const res = JSON.parse(raw);
+            showToast(res.message || "Удалено");
+            renderFriendsList();
+        } catch(e) {
+            showToast("Ошибка при удалении");
+        }
+    }
+
     function syncFriendsHub() {
       renderFriendsList();
     }
@@ -2835,9 +2902,7 @@
       showToast("Кастомный фон отключен ради максимальной плавности 120 FPS");
     }
 
-    function onCustomBgFileSelected(event) {
-      // Игнорируется для оптимизации FPS
-    }
+    function onCustomBgFileSelected(event) {}
 
     function resetCustomBgToCarbon() {
       showToast("Используется стандартный Liquid Glass (Аппаратный рендер)");
@@ -2862,7 +2927,6 @@
     function initAppOnBoot() {
       upgradeShizukuModalGuideAndGuard();
       
-      // Инициализация тем (Графитовый Титан по умолчанию)
       let idx = 0;
       let hasSaved = false;
       try {
