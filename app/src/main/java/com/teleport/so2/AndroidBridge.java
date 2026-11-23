@@ -135,7 +135,6 @@ public class AndroidBridge {
         startLicenseWatchdog();
     }
 
-    // МЕТОД dpToPx ВОЗВРАЩЕН В КЛАСС
     private int dpToPx(int dp) {
         return Math.round(dp * context.getResources().getDisplayMetrics().density);
     }
@@ -1138,13 +1137,7 @@ public class AndroidBridge {
             }
             return "ERROR|" + res.optString("message", "Ключ не найден или истёк!");
         } catch (Exception e) {
-            if (cleanKey.equalsIgnoreCase(getSavedKey()) || isValidOfficialBotKeyFormat(cleanKey)) {
-                markKeyActivated(nick, cleanKey, null);
-                SecurityShield.issueVerifiedSessionToken(context, cleanKey);
-                String lbl = buildLiveSubscriptionLabel(null, cleanKey);
-                return "OK|" + ("EXPIRED".equals(lbl) ? "АКТИВНА" : lbl);
-            }
-            return "ERROR|Неверный формат ключа. Получите ключ в боте @SO2TeleportShop_bot";
+            return "ERROR|Ошибка сети или неверный ключ. Проверьте подключение к интернету.";
         }
     }
 
@@ -1385,7 +1378,7 @@ public class AndroidBridge {
                     canvas.drawLine(cx - dist, cy - dist, cx - dist + leg, cy - dist, p); canvas.drawLine(cx - dist, cy - dist, cx - dist, cy - dist + leg, p);
                     canvas.drawLine(cx + dist, cy - dist, cx + dist - leg, cy - dist, p); canvas.drawLine(cx + dist, cy - dist, cx + dist, cy - dist + leg, p);
                     canvas.drawLine(cx - dist, cy + dist, cx - dist + leg, cy + dist, p); canvas.drawLine(cx - dist, cy + dist, cx - dist, cy + dist - leg, p);
-                    canvas.drawLine(cx + dist, cy + dist, cx + dist - leg, cy + dist, p); canvas.drawLine(cx + dist, cy + dist, cx + dist, cy - dist - leg, p);
+                    canvas.drawLine(cx + dist, cy + dist, cx + dist - leg, cy + dist, p); canvas.drawLine(cx + dist, cy + dist, cx + dist, cy + dist - leg, p);
                 }
                 paint.setStyle(Paint.Style.FILL); canvas.drawCircle(cx, cy, dotRadPx * 0.85f, paint);
                 return;
