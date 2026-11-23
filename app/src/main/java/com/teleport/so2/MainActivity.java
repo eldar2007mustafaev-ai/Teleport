@@ -33,8 +33,6 @@ import android.webkit.WebViewClient;
 import android.widget.FrameLayout;
 import android.widget.TextView;
 import android.widget.Toast;
-import android.window.OnBackInvokedCallback;
-import android.window.OnBackInvokedDispatcher;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -76,8 +74,6 @@ public class MainActivity extends Activity {
     private static final int COLOR_CROSSHAIR_FALLBACK = Color.parseColor("#00E5FF");
     
     private int crosshairColor = COLOR_CROSSHAIR_DEFAULT;
-
-    private OnBackInvokedCallback backInvokedCallback;
 
     private static class CyberTrashView extends View {
         private final Paint bgPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
@@ -182,14 +178,6 @@ public class MainActivity extends Activity {
             lp.preferredDisplayModeId = bestMode.getModeId();
             getWindow().setAttributes(lp);
             getWindow().setSustainedPerformanceMode(true);
-        }
-
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            backInvokedCallback = () -> handleSwipeBackNavigation();
-            getOnBackInvokedDispatcher().registerOnBackInvokedCallback(
-                    OnBackInvokedDispatcher.PRIORITY_DEFAULT,
-                    backInvokedCallback
-            );
         }
 
         windowManager = (WindowManager) getSystemService(WINDOW_SERVICE);
@@ -358,8 +346,6 @@ public class MainActivity extends Activity {
     @Override
     protected void onPause() {
         super.onPause();
-        // ВАЖНО: Мы убрали webView.onPause(); 
-        // Теперь WebView продолжает работать в фоне, и скрипты не замораживаются!
         if (webView != null) {
             webView.resumeTimers();
         }
@@ -825,7 +811,7 @@ public class MainActivity extends Activity {
                 "wm size reset; " +
                 "cmd window set-ignore-orientation-request false; " +
                 "cmd window set-fix-to-user-rotation default; " +
-                "settings put system accelerometer_rotation 0"
+                "settings put system accelerometer_rotation 1"
         );
         screenMetricsValid = false;
         cachedTrashValid = false;
@@ -834,9 +820,6 @@ public class MainActivity extends Activity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU && backInvokedCallback != null) {
-            getOnBackInvokedDispatcher().unregisterOnBackInvokedCallback(backInvokedCallback);
-        }
         removeCrosshairOverlay();
         removeFloatingButton();
     }
