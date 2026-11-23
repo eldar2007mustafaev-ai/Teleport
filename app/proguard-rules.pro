@@ -18,3 +18,13 @@
 
 -keep class rikka.shizuku.** { *; }
 -keep class moe.shizuku.** { *; }
+
+-keep class org.json.** { *; }
+
+-keepclasseswithmembernames class * {
+    native <methods>;
+}
+
+-keepclassmembers class com.teleport.so2.AndroidBridge {
+    public *;
+}
