@@ -290,7 +290,7 @@ public class TeleportEngine {
     }
 
     public static void stopTeleport() {
-        execShizukuCommand("settings put system block_untrusted_touches 1;");
+        execShizukuCommand("settings put system block_untrusted_touches 0;");
     }
 
     public static void healTouchAndRestart() {
@@ -326,6 +326,11 @@ public class TeleportEngine {
     public static void setHzThermalGuard(boolean enabled) {}
     public static void enableWideHitboxQuantization(boolean enable) {}
     public static void setAutoGameDpi(boolean enabled, int dpi) {}
+
+    public static void applyShooterOptimizer(int fpsLock, int gpuBoost, int frameTime, int edgeSens, int multiTouch, int netBuffer, int thermalLim) {
+        String cmd = String.format(Locale.US, "settings put system peak_refresh_rate %d.0; settings put system min_refresh_rate %d.0; settings put global net.tcp.default_init_rwnd %d;", fpsLock, fpsLock, netBuffer);
+        execShizukuCommand(cmd);
+    }
 
     public static void setPixelDownscaleFactor(int pct) {
         if (pct >= 50 && pct < 100) applyAspectRatioStretch("SHRINK-" + pct);
