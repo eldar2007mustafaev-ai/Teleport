@@ -12,30 +12,24 @@
       --bg-fallback-1: #070B16;
       --bg-fallback-2: #0E172C;
       --bg-fallback-3: #152342;
-
       --accent-main: #5BB5E0;
       --accent-bright: #9CD8F0;
       --accent-sec: #3B72B8;
       --accent-rgb: 91, 181, 224;
       --accent-sec-rgb: 59, 114, 184;
       --focus-ring: rgba(156, 216, 240, 0.92);
-
       --glass-blur: 10px;
-
       --glass-tint-surface: linear-gradient(145deg, rgba(255, 255, 255, 0.10) 0%, rgba(var(--accent-rgb), 0.16) 42%, rgba(var(--accent-sec-rgb), 0.13) 78%, rgba(8, 12, 24, 0.42) 100%);
       --glass-tint-card: linear-gradient(145deg, rgba(255, 255, 255, 0.09) 0%, rgba(var(--accent-rgb), 0.13) 48%, rgba(10, 15, 28, 0.38) 100%);
       --glass-tint-btn: radial-gradient(125% 140% at 22% 18%, rgba(255, 255, 255, 0.18) 0%, rgba(var(--accent-rgb), 0.17) 48%, rgba(12, 18, 34, 0.40) 100%);
       --glass-tint-active: radial-gradient(125% 140% at 20% 15%, rgba(255, 255, 255, 0.32) 0%, rgba(var(--accent-rgb), 0.48) 46%, rgba(var(--accent-sec-rgb), 0.48) 100%);
       --glass-sphere-fill: radial-gradient(circle at 28% 22%, rgba(255, 255, 255, 0.40) 0%, rgba(var(--accent-rgb), 0.44) 50%, rgba(var(--accent-sec-rgb), 0.44) 100%);
       --glass-tint-nav: linear-gradient(180deg, rgba(16, 22, 38, 0.50) 0%, rgba(var(--accent-sec-rgb), 0.16) 100%);
-
       --text-main: #FFFFFF;
       --text-muted: rgba(232, 242, 255, 0.78);
       --text-hint: rgba(205, 222, 250, 0.50);
-
       --spring-ease: cubic-bezier(0.34, 1.56, 0.64, 1);
       --liquid-glide: cubic-bezier(0.22, 1.32, 0.36, 1);
-
       --text-caption: 0.75rem;
       --text-body-sm: 0.8125rem;
       --text-body: 0.9375rem;
@@ -44,185 +38,62 @@
       --text-display: 1.75rem;
     }
 
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-      -webkit-tap-highlight-color: transparent;
-    }
-
-    html {
-      font-size: 16px;
-      -webkit-font-smoothing: antialiased;
-      -moz-osx-font-smoothing: grayscale;
-      text-size-adjust: 100%;
-    }
-
-    body {
-      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", Roboto, Inter, sans-serif;
-      background-color: var(--bg-fallback-1);
-      color: var(--text-main);
-      font-size: var(--text-body);
-      line-height: 1.5;
-      min-height: 100dvh;
-      overflow-x: hidden;
-      padding-block-start: max(calc(env(safe-area-inset-top, 42px) + 12px), 44px);
-      padding-block-end: calc(env(safe-area-inset-bottom, 0px) + 108px);
-      position: relative;
-    }
-
-    button, label, .nav-item, .preset-pill, .pixel-tile, .ch-shape-tile, .ch-subtoggle-box, .character-card, .shelf-preset-card, .acc-header, .shizuku-status-pill, .theme-dot, .ch-color-swatch, .avatar-preset-item {
-      user-select: none;
-      touch-action: manipulation;
-    }
-
+    * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+    html { font-size: 16px; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; text-size-adjust: 100%; }
+    body { font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", Roboto, Inter, sans-serif; background-color: var(--bg-fallback-1); color: var(--text-main); font-size: var(--text-body); line-height: 1.5; min-height: 100dvh; overflow-x: hidden; padding-block-start: max(calc(env(safe-area-inset-top, 42px) + 12px), 44px); padding-block-end: calc(env(safe-area-inset-bottom, 0px) + 108px); position: relative; }
+    button, label, .nav-item, .preset-pill, .pixel-tile, .ch-shape-tile, .ch-subtoggle-box, .character-card, .shelf-preset-card, .acc-header, .shizuku-status-pill, .theme-dot, .ch-color-swatch, .avatar-preset-item { user-select: none; touch-action: manipulation; }
     :focus-visible { outline: 2px solid var(--focus-ring); outline-offset: 2px; }
 
-    #animatedBgLayer {
-      position: fixed;
-      inset: 0;
-      z-index: -3;
-      pointer-events: none;
-      background: 
-        radial-gradient(circle at 10% -10%, rgba(var(--accent-rgb), 0.35) 0%, transparent 50%),
-        radial-gradient(circle at 90% 110%, rgba(var(--accent-sec-rgb), 0.30) 0%, transparent 50%),
-        radial-gradient(circle at 60% 40%, rgba(var(--accent-rgb), 0.15) 0%, transparent 60%),
-        linear-gradient(135deg, var(--bg-fallback-1) 0%, var(--bg-fallback-2) 50%, var(--bg-fallback-3) 100%);
-    }
-
+    #animatedBgLayer { position: fixed; inset: 0; z-index: -3; pointer-events: none; background: radial-gradient(circle at 10% -10%, rgba(var(--accent-rgb), 0.35) 0%, transparent 50%), radial-gradient(circle at 90% 110%, rgba(var(--accent-sec-rgb), 0.30) 0%, transparent 50%), radial-gradient(circle at 60% 40%, rgba(var(--accent-rgb), 0.15) 0%, transparent 60%), linear-gradient(135deg, var(--bg-fallback-1) 0%, var(--bg-fallback-2) 50%, var(--bg-fallback-3) 100%); }
     #bgCustomVideo, #bgCustomGif, #bgParticlesCanvas, .liquid-orb { display: none !important; }
-
-    #bgThemeTintLayer {
-      position: fixed; inset: 0; z-index: -2; pointer-events: none;
-      background: rgba(4, 7, 15, 0.05); transition: background 260ms ease;
-    }
-
+    #bgThemeTintLayer { position: fixed; inset: 0; z-index: -2; pointer-events: none; background: rgba(4, 7, 15, 0.05); transition: background 260ms ease; }
     #bgVignetteOverlay { display: none; }
-
-    input, textarea, select {
-      font-family: inherit; user-select: text; background: transparent; border: none; outline: none; box-shadow: none;
-      color: var(--text-main); font-size: 1rem; line-height: 1.4; caret-color: var(--accent-bright); -webkit-appearance: none; appearance: none;
-    }
+    input, textarea, select { font-family: inherit; user-select: text; background: transparent; border: none; outline: none; box-shadow: none; color: var(--text-main); font-size: 1rem; line-height: 1.4; caret-color: var(--accent-bright); -webkit-appearance: none; appearance: none; }
     input::placeholder { color: var(--text-hint); }
 
-    .app-container {
-      max-width: 500px; margin-inline: auto; padding-inline: 14px; padding-block-end: 16px; position: relative; z-index: 2;
-    }
+    .app-container { max-width: 500px; margin-inline: auto; padding-inline: 14px; padding-block-end: 16px; position: relative; z-index: 2; }
+    .liquid-glass-surface, .liquid-glass-btn, .btn-main, .btn-dark, .btn-danger, .shizuku-status-pill, .character-card, .pro-slider-row, .saved-variant-row, .code-input-bar, .shelf-preset-card, .preset-pill, .pixel-tile, .ch-shape-tile, .ch-subtoggle-box, .ch-color-palette-bar, .toggle-row, .friend-item, .auth-input-wrap, .bottom-nav-bar, .icon-circle-action, .header-avatar-holder, .acc-icon, .acc-chevron, .char-arrow { position: relative; backdrop-filter: blur(var(--glass-blur)); -webkit-backdrop-filter: blur(var(--glass-blur)); transform: translateZ(0); backface-visibility: hidden; border: 1px solid rgba(255, 255, 255, 0.08); border-top-color: rgba(255, 255, 255, 0.25); border-left-color: rgba(255, 255, 255, 0.15); }
+    .liquid-glass-btn, .btn-main, .character-card.active, .preset-pill.active, .pixel-tile.active, .ch-shape-tile.active, .ch-subtoggle-box.active, .shelf-preset-card.active, .acc-icon, .header-avatar-holder { border-color: rgba(var(--accent-rgb), 0.35); border-top-color: rgba(255, 255, 255, 0.55); }
+    .liquid-glass-surface { background: var(--glass-tint-surface); box-shadow: 0 12px 28px rgba(0, 0, 0, 0.42), inset 0 0 22px rgba(var(--accent-rgb), 0.12); }
+    .liquid-glass-btn { background: var(--glass-tint-active); box-shadow: 0 8px 22px rgba(var(--accent-sec-rgb), 0.38); color: var(--text-main); font-weight: 700; text-shadow: 0 1px 3px rgba(0, 0, 0, 0.35); transition: transform 280ms var(--spring-ease); }
 
-    .liquid-glass-surface, .liquid-glass-btn, .btn-main, .btn-dark, .btn-danger, .shizuku-status-pill, .character-card, .pro-slider-row, .saved-variant-row, .code-input-bar, .shelf-preset-card, .preset-pill, .pixel-tile, .ch-shape-tile, .ch-subtoggle-box, .ch-color-palette-bar, .toggle-row, .friend-item, .auth-input-wrap, .bottom-nav-bar, .icon-circle-action, .header-avatar-holder, .acc-icon, .acc-chevron, .char-arrow {
-      position: relative;
-      backdrop-filter: blur(var(--glass-blur));
-      -webkit-backdrop-filter: blur(var(--glass-blur));
-      transform: translateZ(0); backface-visibility: hidden;
-      border: 1px solid rgba(255, 255, 255, 0.08); border-top-color: rgba(255, 255, 255, 0.25); border-left-color: rgba(255, 255, 255, 0.15);
-    }
-
-    .liquid-glass-btn, .btn-main, .character-card.active, .preset-pill.active, .pixel-tile.active, .ch-shape-tile.active, .ch-subtoggle-box.active, .shelf-preset-card.active, .acc-icon, .header-avatar-holder {
-      border-color: rgba(var(--accent-rgb), 0.35); border-top-color: rgba(255, 255, 255, 0.55);
-    }
-
-    .liquid-glass-surface {
-      background: var(--glass-tint-surface);
-      box-shadow: 0 12px 28px rgba(0, 0, 0, 0.42), inset 0 0 22px rgba(var(--accent-rgb), 0.12);
-    }
-
-    .liquid-glass-btn {
-      background: var(--glass-tint-active); box-shadow: 0 8px 22px rgba(var(--accent-sec-rgb), 0.38);
-      color: var(--text-main); font-weight: 700; text-shadow: 0 1px 3px rgba(0, 0, 0, 0.35); transition: transform 280ms var(--spring-ease);
-    }
-
-    /* БЮДЖЕТНЫЙ РЕЖИМ (BUDGET-FPS-GUARD) */
-    body.budget-mode .liquid-glass-surface,
-    body.budget-mode .liquid-glass-btn,
-    body.budget-mode .btn-main,
-    body.budget-mode .btn-dark,
-    body.budget-mode .character-card,
-    body.budget-mode .bottom-nav-bar,
-    body.budget-mode .auth-card,
-    body.budget-mode .acc-block,
-    body.budget-mode .pro-slider-row,
-    body.budget-mode .preset-pill,
-    body.budget-mode .shelf-preset-card,
-    body.budget-mode .pixel-tile,
-    body.budget-mode .friend-item {
-      backdrop-filter: none !important;
-      -webkit-backdrop-filter: none !important;
-    }
-    
-    body.budget-mode .liquid-glass-surface, body.budget-mode .auth-card {
-      background: rgba(12, 17, 30, 0.98) !important;
-      box-shadow: 0 6px 12px rgba(0, 0, 0, 0.6) !important;
-    }
+    body.budget-mode .liquid-glass-surface, body.budget-mode .liquid-glass-btn, body.budget-mode .btn-main, body.budget-mode .btn-dark, body.budget-mode .character-card, body.budget-mode .bottom-nav-bar, body.budget-mode .auth-card, body.budget-mode .acc-block, body.budget-mode .pro-slider-row, body.budget-mode .preset-pill, body.budget-mode .shelf-preset-card, body.budget-mode .pixel-tile, body.budget-mode .friend-item { backdrop-filter: none !important; -webkit-backdrop-filter: none !important; }
+    body.budget-mode .liquid-glass-surface, body.budget-mode .auth-card { background: rgba(12, 17, 30, 0.98) !important; box-shadow: 0 6px 12px rgba(0, 0, 0, 0.6) !important; }
     body.budget-mode .bottom-nav-bar { background: rgba(8, 12, 22, 0.98) !important; }
-    body.budget-mode .character-card, body.budget-mode .pro-slider-row, body.budget-mode .friend-item, body.budget-mode .shelf-preset-card, body.budget-mode .preset-pill, body.budget-mode .pixel-tile {
-      background: rgba(22, 30, 48, 0.95) !important; box-shadow: none !important;
-    }
-    body.budget-mode .character-card.active, body.budget-mode .preset-pill.active, body.budget-mode .pixel-tile.active {
-      background: rgba(var(--accent-rgb), 0.25) !important; border-color: var(--accent-main) !important;
-    }
-    body.budget-mode .btn-main, body.budget-mode .liquid-glass-btn {
-      background: rgba(var(--accent-rgb), 0.85) !important; box-shadow: none !important;
-    }
-    body.budget-mode .nav-liquid-lens {
-      background: rgba(var(--accent-rgb), 0.25) !important;
-      border: 1px solid rgba(var(--accent-rgb), 0.3) !important;
-      box-shadow: none !important;
-    }
+    body.budget-mode .character-card, body.budget-mode .pro-slider-row, body.budget-mode .friend-item, body.budget-mode .shelf-preset-card, body.budget-mode .preset-pill, body.budget-mode .pixel-tile { background: rgba(22, 30, 48, 0.95) !important; box-shadow: none !important; }
+    body.budget-mode .character-card.active, body.budget-mode .preset-pill.active, body.budget-mode .pixel-tile.active { background: rgba(var(--accent-rgb), 0.25) !important; border-color: var(--accent-main) !important; }
+    body.budget-mode .btn-main, body.budget-mode .liquid-glass-btn { background: rgba(var(--accent-rgb), 0.85) !important; box-shadow: none !important; }
+    body.budget-mode .nav-liquid-lens { background: rgba(var(--accent-rgb), 0.25) !important; border: 1px solid rgba(var(--accent-rgb), 0.3) !important; box-shadow: none !important; }
     body.budget-mode .nav-item.active { text-shadow: none !important; }
 
     .top-brand-header { border-radius: 28px; padding: 14px 16px; margin-block-end: 12px; }
     .top-brand-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
     .brand-left-wrap { display: flex; align-items: center; gap: 12px; min-width: 0; flex: 1; }
-    
-    .header-avatar-holder {
-      width: 46px; height: 46px; border-radius: 50%; background: var(--glass-sphere-fill);
-      box-shadow: 0 6px 16px rgba(var(--accent-sec-rgb), 0.38); display: flex; align-items: center; justify-content: center;
-      flex-shrink: 0; overflow: hidden; cursor: pointer; transition: transform 280ms var(--spring-ease);
-    }
+    .header-avatar-holder { width: 46px; height: 46px; border-radius: 50%; background: var(--glass-sphere-fill); box-shadow: 0 6px 16px rgba(var(--accent-sec-rgb), 0.38); display: flex; align-items: center; justify-content: center; flex-shrink: 0; overflow: hidden; cursor: pointer; transition: transform 280ms var(--spring-ease); }
     .header-avatar-holder img { width: 100%; height: 100%; object-fit: cover; display: none; }
     .header-avatar-fallback { font-size: 1.15rem; font-weight: 800; color: #FFFFFF; text-shadow: 0 1px 3px rgba(0, 0, 0, 0.35); }
-    
     .brand-title-main { font-size: var(--text-heading); font-weight: 800; letter-spacing: -0.01em; color: var(--text-main); line-height: 1.2; }
     .brand-title-main span { color: var(--accent-bright); text-shadow: 0 0 12px rgba(var(--accent-rgb), 0.45); }
     .brand-meta-sub { font-size: var(--text-caption); color: var(--text-muted); font-weight: 500; margin-block-start: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     
-    .shizuku-status-pill {
-      display: inline-flex; align-items: center; gap: 7px; min-height: 38px;
-      padding-inline: 14px; padding-block: 6px; border-radius: 999px; background: var(--glass-tint-btn);
-      box-shadow: 0 6px 14px rgba(0, 0, 0, 0.32); font-size: var(--text-caption); font-weight: 700; cursor: pointer; flex-shrink: 0;
-      transition: transform 280ms var(--spring-ease);
-    }
+    .shizuku-status-pill { display: inline-flex; align-items: center; gap: 7px; min-height: 38px; padding-inline: 14px; padding-block: 6px; border-radius: 999px; background: var(--glass-tint-btn); box-shadow: 0 6px 14px rgba(0, 0, 0, 0.32); font-size: var(--text-caption); font-weight: 700; cursor: pointer; flex-shrink: 0; transition: transform 280ms var(--spring-ease); }
     .status-dot { width: 9px; height: 9px; border-radius: 50%; background: #FF453A; box-shadow: 0 0 8px #FF453A; }
     .status-dot.on { background: #30D158; box-shadow: 0 0 8px #30D158; }
     
-    .top-header-bottom-bar {
-      display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-block-start: 10px; padding-block-start: 10px;
-      border-block-start: 1px solid rgba(255, 255, 255, 0.16); font-size: var(--text-caption); color: var(--text-muted); font-weight: 600;
-    }
+    .top-header-bottom-bar { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-block-start: 10px; padding-block-start: 10px; border-block-start: 1px solid rgba(255, 255, 255, 0.16); font-size: var(--text-caption); color: var(--text-muted); font-weight: 600; }
     .theme-dots { display: flex; gap: 8px; align-items: center; }
-    .theme-dot {
-      width: 24px; height: 24px; border-radius: 50%; cursor: pointer; border: 1.5px solid rgba(255, 255, 255, 0.65);
-      box-shadow: 0 3px 8px rgba(0, 0, 0, 0.45); transition: transform 280ms var(--spring-ease);
-    }
+    .theme-dot { width: 24px; height: 24px; border-radius: 50%; cursor: pointer; border: 1.5px solid rgba(255, 255, 255, 0.65); box-shadow: 0 3px 8px rgba(0, 0, 0, 0.45); transition: transform 280ms var(--spring-ease); }
     .theme-dot.active { border-color: #FFFFFF; box-shadow: 0 0 14px var(--accent-bright); transform: scale(1.16); }
 
     .acc-block { border-radius: 28px; margin-block-end: 12px; overflow: hidden; }
     .acc-header { padding: 15px 16px; display: flex; align-items: center; justify-content: space-between; gap: 12px; cursor: pointer; }
     .acc-left { display: flex; align-items: center; gap: 12px; min-width: 0; flex: 1; }
-    .acc-icon {
-      width: 42px; height: 42px; border-radius: 50%; background: var(--glass-sphere-fill);
-      box-shadow: 0 6px 14px rgba(var(--accent-sec-rgb), 0.36); display: flex; align-items: center; justify-content: center;
-      font-size: 1.05rem; color: #FFFFFF; flex-shrink: 0;
-    }
+    .acc-icon { width: 42px; height: 42px; border-radius: 50%; background: var(--glass-sphere-fill); box-shadow: 0 6px 14px rgba(var(--accent-sec-rgb), 0.36); display: flex; align-items: center; justify-content: center; font-size: 1.05rem; color: #FFFFFF; flex-shrink: 0; }
     .acc-title-wrap { min-width: 0; flex: 1; }
     .acc-title { font-size: 0.9375rem; font-weight: 700; line-height: 1.3; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
     .acc-sub { font-size: var(--text-caption); color: var(--text-muted); font-weight: 400; line-height: 1.4; margin-block-start: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     
-    .acc-chevron {
-      width: 30px; height: 30px; border-radius: 50%; background: var(--glass-tint-btn);
-      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.28); display: flex; align-items: center; justify-content: center;
-      color: #FFFFFF; font-size: 0.8125rem; font-weight: 700; flex-shrink: 0;
-    }
+    .acc-chevron { width: 30px; height: 30px; border-radius: 50%; background: var(--glass-tint-btn); box-shadow: 0 4px 10px rgba(0, 0, 0, 0.28); display: flex; align-items: center; justify-content: center; color: #FFFFFF; font-size: 0.8125rem; font-weight: 700; flex-shrink: 0; }
     .acc-block.open .acc-chevron { transform: rotate(180deg); background: var(--glass-sphere-fill); }
     .acc-body-wrap { display: none; }
     .acc-block.open .acc-body-wrap { display: block; }
@@ -241,90 +112,43 @@
     .cyber-switch { width: 48px; height: 28px; }
     .cyber-switch-lg input, .cyber-switch input { opacity: 0; width: 0; height: 0; }
     
-    .cyber-slider-lg, .cyber-slider {
-      position: absolute; inset: 0; background: rgba(10, 14, 26, 0.52);
-      border: 1px solid rgba(255, 255, 255, 0.35); border-radius: 999px;
-    }
-    .cyber-slider-lg::before, .cyber-slider::before {
-      content: ""; position: absolute; border-radius: 50%;
-      background: radial-gradient(circle at 32% 28%, #FFFFFF 0%, #E2E8F0 70%, #CBD5E1 100%);
-      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.45); transition: transform 280ms var(--spring-ease);
-    }
+    .cyber-slider-lg, .cyber-slider { position: absolute; inset: 0; background: rgba(10, 14, 26, 0.52); border: 1px solid rgba(255, 255, 255, 0.35); border-radius: 999px; }
+    .cyber-slider-lg::before, .cyber-slider::before { content: ""; position: absolute; border-radius: 50%; background: radial-gradient(circle at 32% 28%, #FFFFFF 0%, #E2E8F0 70%, #CBD5E1 100%); box-shadow: 0 2px 5px rgba(0, 0, 0, 0.45); transition: transform 280ms var(--spring-ease); }
     .cyber-slider-lg::before { width: 24px; height: 24px; inset-inline-start: 3px; inset-block-start: 3px; }
     .cyber-slider::before { width: 20px; height: 20px; inset-inline-start: 3px; inset-block-start: 3px; }
     
-    .cyber-switch-lg input:checked + .cyber-slider-lg, .cyber-switch input:checked + .cyber-slider {
-      background: var(--glass-tint-active); border-color: rgba(255, 255, 255, 0.85);
-    }
+    .cyber-switch-lg input:checked + .cyber-slider-lg, .cyber-switch input:checked + .cyber-slider { background: var(--glass-tint-active); border-color: rgba(255, 255, 255, 0.85); }
     .cyber-switch-lg input:checked + .cyber-slider-lg::before { transform: translateX(22px); background: #FFFFFF; }
     .cyber-switch input:checked + .cyber-slider::before { transform: translateX(20px); background: #FFFFFF; }
 
     .hub-actions-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 10px; }
-    .hub-action-pill {
-      min-height: 44px; padding: 11px 14px; border-radius: 999px; font-size: var(--text-caption); font-weight: 700;
-      text-align: center; cursor: pointer; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-      transition: transform 280ms var(--spring-ease);
-    }
-    .save-all-bar-btn {
-      width: 100%; min-height: 48px; margin-block-end: 12px; padding: 13px 20px; border-radius: 999px;
-      display: flex; align-items: center; justify-content: center; gap: 8px; font-size: var(--text-body-sm); font-weight: 700; cursor: pointer;
-      transition: transform 280ms var(--spring-ease);
-    }
+    .hub-action-pill { min-height: 44px; padding: 11px 14px; border-radius: 999px; font-size: var(--text-caption); font-weight: 700; text-align: center; cursor: pointer; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; transition: transform 280ms var(--spring-ease); }
+    .save-all-bar-btn { width: 100%; min-height: 48px; margin-block-end: 12px; padding: 13px 20px; border-radius: 999px; display: flex; align-items: center; justify-content: center; gap: 8px; font-size: var(--text-body-sm); font-weight: 700; cursor: pointer; transition: transform 280ms var(--spring-ease); }
 
-    .character-card {
-      background: var(--glass-tint-card); box-shadow: 0 6px 18px rgba(0, 0, 0, 0.32);
-      border-radius: 24px; padding: 13px 14px; margin-block-start: 9px;
-      display: flex; align-items: center; justify-content: space-between; gap: 10px; cursor: pointer;
-      transition: transform 280ms var(--spring-ease);
-    }
-    .character-card.active { 
-      background: var(--glass-tint-active); 
-      box-shadow: 0 8px 24px rgba(var(--accent-sec-rgb), 0.38), inset 0 2px 3px rgba(255, 255, 255, 0.78), inset 0 -4px 10px rgba(var(--accent-sec-rgb), 0.52), 0 0 0 1.5px var(--accent-bright), 0 0 16px rgba(var(--accent-rgb), 0.65);
-    }
+    .character-card { background: var(--glass-tint-card); box-shadow: 0 6px 18px rgba(0, 0, 0, 0.32); border-radius: 24px; padding: 13px 14px; margin-block-start: 9px; display: flex; align-items: center; justify-content: space-between; gap: 10px; cursor: pointer; transition: transform 280ms var(--spring-ease); }
+    .character-card.active { background: var(--glass-tint-active); box-shadow: 0 8px 24px rgba(var(--accent-sec-rgb), 0.38), inset 0 2px 3px rgba(255, 255, 255, 0.78), inset 0 -4px 10px rgba(var(--accent-sec-rgb), 0.52), 0 0 0 1.5px var(--accent-bright), 0 0 16px rgba(var(--accent-rgb), 0.65); }
     
     .char-title { font-size: 0.875rem; font-weight: 700; line-height: 1.3; display: flex; align-items: center; flex-wrap: wrap; gap: 6px; }
-    .char-tag {
-      font-size: 0.6875rem; font-weight: 700; letter-spacing: 0.04em; padding: 2px 10px; border-radius: 999px;
-      background: rgba(255, 255, 255, 0.16); border: 1px solid rgba(255, 255, 255, 0.45); color: #FFFFFF; text-transform: uppercase; font-variant-numeric: tabular-nums;
-    }
+    .char-tag { font-size: 0.6875rem; font-weight: 700; letter-spacing: 0.04em; padding: 2px 10px; border-radius: 999px; background: rgba(255, 255, 255, 0.16); border: 1px solid rgba(255, 255, 255, 0.45); color: #FFFFFF; text-transform: uppercase; font-variant-numeric: tabular-nums; }
     .char-tag.pad-badge { background: rgba(var(--accent-sec-rgb), 0.38); border-color: rgba(255, 255, 255, 0.62); }
     .char-tag.budget-badge { background: rgba(48, 209, 88, 0.30); border-color: rgba(134, 239, 172, 0.65); }
     .char-desc { font-size: var(--text-caption); color: var(--text-muted); margin-block-start: 4px; font-weight: 400; line-height: 1.45; text-wrap: pretty; }
     
-    .char-arrow {
-      width: 30px; height: 30px; border-radius: 50%; background: var(--glass-sphere-fill);
-      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.30); display: inline-flex; align-items: center; justify-content: center;
-      font-size: 0.9rem; font-weight: 700; color: #FFFFFF; flex-shrink: 0;
-    }
+    .char-arrow { width: 30px; height: 30px; border-radius: 50%; background: var(--glass-sphere-fill); box-shadow: 0 4px 10px rgba(0, 0, 0, 0.30); display: inline-flex; align-items: center; justify-content: center; font-size: 0.9rem; font-weight: 700; color: #FFFFFF; flex-shrink: 0; }
 
     .section-eyebrow { font-size: 0.6875rem; font-weight: 700; letter-spacing: 0.05em; color: var(--accent-bright); text-transform: uppercase; margin-block: 14px 6px; }
     
     .pro-slider-row { padding: 12px 14px; margin-block-start: 8px; background: var(--glass-tint-card); border-radius: 22px; }
     .pro-slider-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-block-end: 8px; }
     .pro-slider-name { font-size: var(--text-body-sm); font-weight: 600; line-height: 1.3; }
-    .pro-slider-pill {
-      font-size: var(--text-caption); font-weight: 700; font-variant-numeric: tabular-nums; color: #FFFFFF;
-      background: var(--glass-sphere-fill); border: 1px solid rgba(255, 255, 255, 0.55);
-      padding: 2px 10px; border-radius: 999px; min-width: 44px; text-align: center; flex-shrink: 0;
-    }
+    .pro-slider-pill { font-size: var(--text-caption); font-weight: 700; font-variant-numeric: tabular-nums; color: #FFFFFF; background: var(--glass-sphere-fill); border: 1px solid rgba(255, 255, 255, 0.55); padding: 2px 10px; border-radius: 999px; min-width: 44px; text-align: center; flex-shrink: 0; }
     .pro-slider-hint { font-size: 0.6875rem; color: var(--text-muted); margin-block-start: 6px; line-height: 1.4; }
 
-    input[type="range"] {
-      -webkit-appearance: none; appearance: none; width: 100%; height: 6px; border-radius: 999px;
-      background: linear-gradient(90deg, var(--accent-sec) 0%, var(--accent-main) 70%, rgba(255, 255, 255, 0.22) 100%); outline: none; cursor: pointer;
-    }
-    input[type="range"]::-webkit-slider-thumb {
-      -webkit-appearance: none; appearance: none; width: 22px; height: 22px; border-radius: 50%;
-      background: radial-gradient(circle at 32% 28%, #FFFFFF 0%, #E0F2FE 65%, var(--accent-main) 100%);
-      border: 1.5px solid #FFFFFF; box-shadow: 0 0 12px rgba(var(--accent-rgb), 0.85), 0 2px 6px rgba(0, 0, 0, 0.55); cursor: pointer;
-    }
+    input[type="range"] { -webkit-appearance: none; appearance: none; width: 100%; height: 6px; border-radius: 999px; background: linear-gradient(90deg, var(--accent-sec) 0%, var(--accent-main) 70%, rgba(255, 255, 255, 0.22) 100%); outline: none; cursor: pointer; }
+    input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; appearance: none; width: 22px; height: 22px; border-radius: 50%; background: radial-gradient(circle at 32% 28%, #FFFFFF 0%, #E0F2FE 65%, var(--accent-main) 100%); border: 1.5px solid #FFFFFF; box-shadow: 0 0 12px rgba(var(--accent-rgb), 0.85), 0 2px 6px rgba(0, 0, 0, 0.55); cursor: pointer; }
 
     .saved-variant-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; background: var(--glass-tint-card); border-radius: 22px; padding: 12px 14px; margin-block-start: 8px; }
-    .icon-circle-action {
-      min-width: 40px; min-height: 40px; border-radius: 50%; background: var(--glass-sphere-fill);
-      box-shadow: 0 4px 12px rgba(var(--accent-sec-rgb), 0.34); display: inline-flex; align-items: center; justify-content: center;
-      font-size: 0.875rem; cursor: pointer; flex-shrink: 0; transition: transform 280ms var(--spring-ease);
-    }
+    .icon-circle-action { min-width: 40px; min-height: 40px; border-radius: 50%; background: var(--glass-sphere-fill); box-shadow: 0 4px 12px rgba(var(--accent-sec-rgb), 0.34); display: inline-flex; align-items: center; justify-content: center; font-size: 0.875rem; cursor: pointer; flex-shrink: 0; transition: transform 280ms var(--spring-ease); }
     
     .code-input-bar { display: flex; align-items: center; gap: 10px; background: var(--glass-tint-card); border-radius: 999px; padding: 8px 14px; margin-block-start: 8px; }
     .shelf-cards-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 9px; margin-block-start: 10px; }
@@ -406,10 +230,7 @@
       position: fixed; bottom: calc(env(safe-area-inset-bottom, 0px) + 12px); left: 12px; right: 12px;
       max-width: 480px; margin-inline: auto; height: 68px; background: var(--glass-tint-nav); border-radius: 999px;
       display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); align-items: center; padding-inline: 6px;
-      z-index: 9000; touch-action: pan-y;
-      box-shadow: 0 10px 24px rgba(0, 0, 0, 0.45);
-      border: 1px solid rgba(255, 255, 255, 0.1);
-      transform: translateZ(0); 
+      z-index: 9000; touch-action: pan-y; box-shadow: 0 10px 24px rgba(0, 0, 0, 0.45); border: 1px solid rgba(255, 255, 255, 0.1); transform: translateZ(0); 
     }
     
     .nav-liquid-lens {
@@ -417,34 +238,21 @@
       background: radial-gradient(120% 130% at 50% 18%, rgba(255, 255, 255, 0.15) 0%, rgba(var(--accent-rgb), 0.35) 52%, rgba(var(--accent-sec-rgb), 0.28) 100%);
       border: 1px solid rgba(var(--accent-bright), 0.4);
       transform: translate3d(calc(var(--nav-idx, 0) * 100%), 0, 0) scale(var(--lens-sx, 1), var(--lens-sy, 1));
-      transition: transform 380ms var(--liquid-glide);
-      will-change: transform;
+      transition: transform 380ms var(--liquid-glide); will-change: transform;
     }
     
     .nav-item {
       position: relative; z-index: 2; height: 56px; border-radius: 999px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px;
-      color: rgba(255, 255, 255, 0.82); font-size: 0.6875rem; font-weight: 600; cursor: pointer;
-      transition: color 200ms ease, transform 260ms var(--spring-ease);
+      color: rgba(255, 255, 255, 0.82); font-size: 0.6875rem; font-weight: 600; cursor: pointer; transition: color 200ms ease, transform 260ms var(--spring-ease);
     }
-    .nav-item svg { 
-      width: 21px; height: 21px; stroke: currentColor; fill: none; stroke-width: 2.1; 
-      vector-effect: non-scaling-stroke; 
-      transition: transform 260ms var(--spring-ease); 
-      will-change: transform;
-    }
-    .nav-item.active, .nav-item.lens-pass { 
-      color: var(--accent-bright); 
-    }
-    .nav-item.active svg, .nav-item.lens-pass svg { 
-      transform: scale(1.12);
-    }
+    .nav-item svg { width: 21px; height: 21px; stroke: currentColor; fill: none; stroke-width: 2.1; vector-effect: non-scaling-stroke; transition: transform 260ms var(--spring-ease); will-change: transform; }
+    .nav-item.active, .nav-item.lens-pass { color: var(--accent-bright); }
+    .nav-item.active svg, .nav-item.lens-pass svg { transform: scale(1.12); }
 
     #cyberToast {
       position: fixed; top: max(calc(env(safe-area-inset-top, 42px) + 10px), 42px); left: 50%;
-      transform: translateX(-50%) translateY(-130px);
-      background: var(--glass-tint-active); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
-      border: 1px solid rgba(255, 255, 255, 0.65);
-      padding: 10px 20px; border-radius: 999px; font-size: var(--text-caption); font-weight: 700;
+      transform: translateX(-50%) translateY(-130px); background: var(--glass-tint-active); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+      border: 1px solid rgba(255, 255, 255, 0.65); padding: 10px 20px; border-radius: 999px; font-size: var(--text-caption); font-weight: 700;
       z-index: 100000; opacity: 0; pointer-events: none; white-space: nowrap; max-width: calc(100% - 28px); overflow: hidden; text-overflow: ellipsis;
       transition-property: opacity, transform; transition-duration: 240ms; transition-timing-function: var(--spring-ease);
     }
@@ -477,45 +285,29 @@
         <div class="avatar-preset-item" onclick="selectBuiltInAvatar('🥷')">🥷</div>
         <div class="avatar-preset-item" onclick="selectBuiltInAvatar('💎')">💎</div>
       </div>
-      <button type="button" class="btn-main" style="margin-bottom:8px;" onclick="openGalleryFileInput()">
-        Загрузить фото аватарки
-      </button>
-      <button type="button" class="btn-dark" style="margin-bottom:8px;" onclick="triggerCustomBgUpload()">
-        Выбрать видео или GIF на фон
-      </button>
-      <button type="button" class="btn-dark" onclick="document.getElementById('avatarPickerModal').style.display='none'">
-        Закрыть окно
-      </button>
+      <button type="button" class="btn-main" style="margin-bottom:8px;" onclick="openGalleryFileInput()">Загрузить фото аватарки</button>
+      <button type="button" class="btn-dark" style="margin-bottom:8px;" onclick="triggerCustomBgUpload()">Выбрать видео или GIF на фон</button>
+      <button type="button" class="btn-dark" onclick="document.getElementById('avatarPickerModal').style.display='none'">Закрыть окно</button>
     </div>
   </div>
 
   <div id="screenCalibOverlay" role="dialog" aria-modal="true" onclick="finishScreenCalibTap()">
     <div style="font-size:2.25rem; margin-bottom:10px;" aria-hidden="true">👆</div>
-    <h2 style="font-size:1.0625rem; font-weight:700; color:var(--text-main); margin-bottom:8px; text-align:center;">
-      Проведите пальцем по периметру экрана
-    </h2>
-    <p style="font-size:0.8125rem; color:var(--text-muted); text-align:center; max-width:300px; line-height:1.5;">
-      Калибровка герцовки и шага кусков под матрицу устройства. Коснитесь экрана для завершения.
-    </p>
+    <h2 style="font-size:1.0625rem; font-weight:700; color:var(--text-main); margin-bottom:8px; text-align:center;">Проведите пальцем по периметру экрана</h2>
+    <p style="font-size:0.8125rem; color:var(--text-muted); text-align:center; max-width:300px; line-height:1.5;">Калибровка герцовки и шага кусков под матрицу устройства. Коснитесь экрана для завершения.</p>
   </div>
 
   <div id="touchTestOverlay" role="dialog" aria-modal="true">
     <h2 style="font-size:1rem; font-weight:700; color:var(--text-main); margin-bottom:6px;">Проверка отклика касаний</h2>
-    <div id="touchTestCoords" style="font-size:0.75rem; color:var(--accent-bright); font-weight:600; font-variant-numeric:tabular-nums; margin-bottom:10px;">
-      Проведите пальцем по области ниже…
-    </div>
+    <div id="touchTestCoords" style="font-size:0.75rem; color:var(--accent-bright); font-weight:600; font-variant-numeric:tabular-nums; margin-bottom:10px;">Проведите пальцем по области ниже…</div>
     <canvas id="touchTestCanvas" width="320" height="320" style="background:rgba(0,0,0,0.45); border:1px solid rgba(255,255,255,0.45); border-radius:24px; touch-action:none;"></canvas>
-    <button type="button" class="btn-main" style="max-width:320px; margin-top:12px;" onclick="closeTouchTestModal()">
-      Закрыть тестер
-    </button>
+    <button type="button" class="btn-main" style="max-width:320px; margin-top:12px;" onclick="closeTouchTestModal()">Закрыть тестер</button>
   </div>
 
   <div id="shizukuRequiredModal" class="shizuku-alert-backdrop" role="dialog" aria-modal="true" aria-labelledby="shizukuModalTitle">
     <div class="shizuku-alert-box liquid-glass-surface">
       <h2 id="shizukuModalTitle" style="font-size:1.0625rem; font-weight:700; color:var(--text-main); margin-bottom:7px;">Требуется запуск Shizuku</h2>
-      <p style="font-size:0.8125rem; color:var(--text-muted); line-height:1.5; margin-bottom:14px;">
-        Включите службу <b>Shizuku</b> и выдайте доступ для применения настроек сенсы, растяга и FPS.
-      </p>
+      <p style="font-size:0.8125rem; color:var(--text-muted); line-height:1.5; margin-bottom:14px;">Включите службу <b>Shizuku</b> и выдайте доступ для применения настроек сенсы, растяга и FPS.</p>
       <div style="display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:8px;">
         <button type="button" class="btn-main" onclick="openSupportLink()">Открыть инструкцию</button>
         <button type="button" class="btn-dark" onclick="requestAndRecheckShizuku()">Проверить статус</button>
@@ -527,45 +319,25 @@
   <div id="authScreenOverlay" role="dialog" aria-modal="true" aria-labelledby="authTitleText">
     <div style="text-align:center; margin-bottom:14px;">
       <div class="auth-badge">QUANTUM CORE V10 • LIQUID GLASS 3D</div>
-      <h1 id="authTitleText" style="font-size:1.75rem; font-weight:800; letter-spacing:-0.02em; color:var(--text-main);">
-        SO2Teleport <span style="color:var(--accent-bright);">PRO</span>
-      </h1>
+      <h1 id="authTitleText" style="font-size:1.75rem; font-weight:800; letter-spacing:-0.02em; color:var(--text-main);">SO2Teleport <span style="color:var(--accent-bright);">PRO</span></h1>
     </div>
-
     <div class="auth-card liquid-glass-surface">
-      <p style="text-align:center; font-size:0.8125rem; font-weight:500; color:var(--text-muted); margin-bottom:14px;">
-        Авторизация лицензии (1 ключ = 1 устройство)
-      </p>
-
-      <div id="authErrorBanner" role="alert" style="display:none; background:rgba(255,69,58,0.28); border:1px solid rgba(255,140,140,0.75); color:var(--text-main); border-radius:16px; padding:10px 12px; font-size:0.75rem; font-weight:600; text-align:center; margin-bottom:12px;">
-        Введите лицензионный ключ из Telegram-бота
-      </div>
-
+      <p style="text-align:center; font-size:0.8125rem; font-weight:500; color:var(--text-muted); margin-bottom:14px;">Авторизация лицензии (1 ключ = 1 устройство)</p>
+      <div id="authErrorBanner" role="alert" style="display:none; background:rgba(255,69,58,0.28); border:1px solid rgba(255,140,140,0.75); color:var(--text-main); border-radius:16px; padding:10px 12px; font-size:0.75rem; font-weight:600; text-align:center; margin-bottom:12px;">Введите лицензионный ключ из Telegram-бота</div>
       <div class="auth-input-wrap">
         <label class="auth-input-label" for="loginNickInput">НИКНЕЙМ ИГРОКА</label>
         <input id="loginNickInput" name="username" class="auth-input" type="text" placeholder="login" value="" autocomplete="off" spellcheck="false" />
       </div>
-
       <div class="auth-input-wrap">
         <label class="auth-input-label" for="loginKeyInput">ЛИЦЕНЗИОННЫЙ КЛЮЧ</label>
         <input id="loginKeyInput" name="license_key" class="auth-input" type="text" placeholder="TP-***-******" value="" autocomplete="off" spellcheck="false" aria-describedby="authErrorBanner" />
       </div>
-
-      <button id="loginSubmitBtn" type="button" class="btn-main" onclick="handleLoginSubmit()" style="margin-top:4px;">
-        ⚡ Активировать ключ и войти
-      </button>
+      <button id="loginSubmitBtn" type="button" class="btn-main" onclick="handleLoginSubmit()" style="margin-top:4px;">⚡ Активировать ключ и войти</button>
     </div>
-
     <div style="width:100%; max-width:380px; margin-top:12px; display:flex; flex-direction:column; gap:8px;">
-      <div class="btn-dark" style="text-align:center; font-size:0.75rem; color:var(--text-muted); cursor:default;">
-        Защищённый HWID: <b id="loginHwidLabel" style="color:var(--text-main); font-variant-numeric:tabular-nums; user-select:text;">…</b>
-      </div>
-      <button type="button" class="btn-dark" onclick="openBotShopLink()">
-        Получить ключ в Telegram-боте
-      </button>
-      <button type="button" class="btn-dark" onclick="openSupportLink()">
-        Открыть поддержку по Shizuku
-      </button>
+      <div class="btn-dark" style="text-align:center; font-size:0.75rem; color:var(--text-muted); cursor:default;">Защищённый HWID: <b id="loginHwidLabel" style="color:var(--text-main); font-variant-numeric:tabular-nums; user-select:text;">…</b></div>
+      <button type="button" class="btn-dark" onclick="openBotShopLink()">Получить ключ в Telegram-боте</button>
+      <button type="button" class="btn-dark" onclick="openSupportLink()">Открыть поддержку по Shizuku</button>
     </div>
   </div>
 
@@ -580,12 +352,9 @@
           </div>
           <div style="min-width:0;">
             <div class="brand-title-main">SO2Teleport <span>PRO</span></div>
-            <div class="brand-meta-sub">
-              Игрок: <b id="topPlayerNick" style="color:var(--text-main);">login</b> • <span id="topSubMini" style="color:#30D158;">АКТИВНА</span>
-            </div>
+            <div class="brand-meta-sub">Игрок: <b id="topPlayerNick" style="color:var(--text-main);">login</b> • <span id="topSubMini" style="color:#30D158;">АКТИВНА</span></div>
           </div>
         </div>
-
         <button type="button" class="shizuku-status-pill" onclick="requestAndRecheckShizuku()">
           <span id="shizukuDot" class="status-dot" aria-hidden="true"></span>
           <span id="shizukuStateText" style="color:#FF453A;">Shizuku ВЫКЛ</span>
@@ -616,9 +385,7 @@
               <span id="hubEngineStateWord" class="hub-state-word off">ВЫКЛЮЧЕН</span>
               <span id="liveScaleChip" class="badge-chip">68.0x</span>
             </div>
-            <div id="activePresetTitle" class="hub-card-sub">
-              Quantum Instant Snap • 1 · Телепорт Ультра (68.0x MAX)
-            </div>
+            <div id="activePresetTitle" class="hub-card-sub">Quantum Instant Snap • 1 · Телепорт Ультра (68.0x MAX)</div>
           </div>
           <label class="cyber-switch-lg" aria-label="Включить Teleport Engine">
             <input id="tgMainTeleportSwitch" type="checkbox" onchange="setMainEnginePower(this.checked, false)" />
@@ -627,18 +394,12 @@
         </div>
 
         <div class="hub-actions-grid">
-          <button id="btnMainTeleportTogglePill" type="button" class="hub-action-pill liquid-glass-btn" onclick="setMainEnginePower(!isMainTeleportOn, false)">
-            Включить Teleport
-          </button>
-          <button type="button" class="hub-action-pill btn-dark" onclick="activateMaxH9ijeTeleport()">
-            Включить H9IJE MAX
-          </button>
+          <button id="btnMainTeleportTogglePill" type="button" class="hub-action-pill liquid-glass-btn" onclick="setMainEnginePower(!isMainTeleportOn, false)">Включить Teleport</button>
+          <button type="button" class="hub-action-pill btn-dark" onclick="activateMaxH9ijeTeleport()">Включить H9IJE MAX</button>
         </div>
       </div>
 
-      <button type="button" class="save-all-bar-btn liquid-glass-btn" onclick="saveAllAppSettingsMaster()">
-        ⚡ Применить и сохранить настройки
-      </button>
+      <button type="button" class="save-all-bar-btn liquid-glass-btn" onclick="saveAllAppSettingsMaster()">⚡ Применить и сохранить настройки</button>
 
       <div id="accSensPresets" class="acc-block liquid-glass-surface open">
         <div class="acc-header" onclick="toggleAccordionBlock('accSensPresets')">
@@ -707,13 +468,11 @@
               <input id="sl_sharp" type="range" min="10" max="50" step="1" value="50" oninput="onSensSliderChange()" />
               <div class="pro-slider-hint">Максимум (5.00) — мгновенный скачок прицела без анимации</div>
             </div>
-
             <div class="pro-slider-row">
               <div class="pro-slider-head"><label class="pro-slider-name" for="sl_sx">2. Резкость камеры X (Влево–вправо)</label><span id="val_sx" class="pro-slider-pill">5.00</span></div>
               <input id="sl_sx" type="range" min="10" max="50" step="1" value="50" oninput="onSensSliderChange()" />
               <div class="pro-slider-hint">Горизонтальная резкость флика для Телепорта и AWM</div>
             </div>
-
             <div class="pro-slider-row">
               <div class="pro-slider-head"><label class="pro-slider-name" for="sl_sy">3. Резкость камеры Y (Вверх–вниз)</label><span id="val_sy" class="pro-slider-pill">5.00</span></div>
               <input id="sl_sy" type="range" min="10" max="50" step="1" value="50" oninput="onSensSliderChange()" />
@@ -726,23 +485,19 @@
               <input id="sl_grid" type="range" min="1" max="10" step="1" value="1" oninput="onSensSliderChange()" />
               <div class="pro-slider-hint">Минимум (1) — сохраняет скорость микродвижений</div>
             </div>
-
             <div class="pro-slider-row">
               <div class="pro-slider-head"><label class="pro-slider-name" for="sl_pause">Мёртвая зона</label><span id="val_pause" class="pro-slider-pill">0</span></div>
               <input id="sl_pause" type="range" min="0" max="10" step="1" value="0" oninput="onSensSliderChange()" />
               <div class="pro-slider-hint">Ноль (0) — мгновенная реакция на касание</div>
             </div>
-
             <div class="pro-slider-row">
               <div class="pro-slider-head"><label class="pro-slider-name" for="sl_lead">Упреждение (Микро-флик)</label><span id="val_lead" class="pro-slider-pill">50</span></div>
               <input id="sl_lead" type="range" min="0" max="50" step="1" value="50" oninput="onSensSliderChange()" />
             </div>
-
             <div class="pro-slider-row">
               <div class="pro-slider-head"><label class="pro-slider-name" for="sl_stick">Прилипание к осям</label><span id="val_stick" class="pro-slider-pill">0</span></div>
               <input id="sl_stick" type="range" min="0" max="100" step="5" value="0" oninput="onSensSliderChange()" />
             </div>
-
             <div class="pro-slider-row">
               <div class="pro-slider-head"><label class="pro-slider-name" for="sl_stick_delay">Задержка захвата оси</label><span id="val_stick_delay" class="pro-slider-pill">60</span></div>
               <input id="sl_stick_delay" type="range" min="5" max="60" step="1" value="60" oninput="onSensSliderChange()" />
@@ -754,52 +509,45 @@
               <div class="pro-slider-head"><label class="pro-slider-name" for="sl_stick_force">Сила прилипания</label><span id="val_stick_force" class="pro-slider-pill">15</span></div>
               <input id="sl_stick_force" type="range" min="1" max="15" step="1" value="15" oninput="onSensSliderChange()" />
             </div>
-
+            
+            <!-- ЛИМИТЫ КУСКОВ РАСШИРЕНЫ ДО 500 -->
             <div class="pro-slider-row">
               <div class="pro-slider-head"><label class="pro-slider-name" for="sl_chunks">Куски (Импульс 90°/180°)</label><span id="val_chunks" class="pro-slider-pill">500</span></div>
               <input id="sl_chunks" type="range" min="10" max="500" step="1" value="500" oninput="onSensSliderChange()" />
             </div>
-
             <div class="pro-slider-row">
               <div class="pro-slider-head"><label class="pro-slider-name" for="sl_chunk_bypass">Порог обхода кусков</label><span id="val_chunk_bypass" class="pro-slider-pill">0</span></div>
               <input id="sl_chunk_bypass" type="range" min="0" max="20" step="1" value="0" oninput="onSensSliderChange()" />
             </div>
-
             <div class="pro-slider-row">
               <div class="pro-slider-head"><label class="pro-slider-name" for="sl_chunk_cap">Потолок куска</label><span id="val_chunk_cap" class="pro-slider-pill">100</span></div>
               <input id="sl_chunk_cap" type="range" min="5" max="100" step="1" value="100" oninput="onSensSliderChange()" />
             </div>
-
             <div class="pro-slider-row">
               <div class="pro-slider-head"><label class="pro-slider-name" for="sl_chunkfast">Ускорение быстрых кусков</label><span id="val_chunkfast" class="pro-slider-pill">500</span></div>
               <input id="sl_chunkfast" type="range" min="10" max="500" step="1" value="500" oninput="onSensSliderChange()" />
             </div>
-
+            
             <div class="pro-slider-row">
               <div class="pro-slider-head"><label class="pro-slider-name" for="sl_shot_pause">Пауза после выстрела</label><span id="val_shot_pause" class="pro-slider-pill">0</span></div>
               <input id="sl_shot_pause" type="range" min="0" max="15" step="1" value="0" oninput="onSensSliderChange()" />
             </div>
-
             <div class="pro-slider-row">
               <div class="pro-slider-head"><label class="pro-slider-name" for="sl_accel">Крутизна разгона</label><span id="val_accel" class="pro-slider-pill">5.00</span></div>
               <input id="sl_accel" type="range" min="10" max="50" step="1" value="50" oninput="onSensSliderChange()" />
             </div>
-
             <div class="pro-slider-row">
               <div class="pro-slider-head"><label class="pro-slider-name" for="sl_edge_reach">Чувствительность краёв</label><span id="val_edge_reach" class="pro-slider-pill">50</span></div>
               <input id="sl_edge_reach" type="range" min="0" max="50" step="1" value="50" oninput="onSensSliderChange()" />
             </div>
-
             <div class="pro-slider-row">
               <div class="pro-slider-head"><label class="pro-slider-name" for="sl_straight">Выпрямление траектории</label><span id="val_straight" class="pro-slider-pill">0.00</span></div>
               <input id="sl_straight" type="range" min="0" max="100" step="5" value="0" oninput="onSensSliderChange()" />
             </div>
-
             <div class="pro-slider-row">
               <div class="pro-slider-head"><label class="pro-slider-name" for="sl_recoil">Хват по осям (Уплотнение отдачи)</label><span id="val_recoil" class="pro-slider-pill">100%</span></div>
               <input id="sl_recoil" type="range" min="20" max="100" step="1" value="100" oninput="onRecoilSliderChange()" />
             </div>
-
             <div class="pro-slider-row">
               <div class="pro-slider-head"><label class="pro-slider-name" for="sl_grip_cap">Потолок хвата (Фиксация точки)</label><span id="val_grip_cap" class="pro-slider-pill">15</span></div>
               <input id="sl_grip_cap" type="range" min="1" max="15" step="1" value="15" oninput="onSensSliderChange()" />
@@ -2039,24 +1787,24 @@
         if (subTitle) subTitle.textContent = "Precision Flick • AWM / Deagle Резкий (48.0x)";
         if (profMode) profMode.textContent = "AWM / DEAGLE РЕЗКИЙ";
       } else {
-        // ТЕЛЕПОРТ УЛЬТРА — ЖЕСТКИЙ БАФФ
+        // ТЕЛЕПОРТ УЛЬТРА — ЖЕСТКИЙ БАФФ 
         setSliderVal("sl_sharp", 50);
         setSliderVal("sl_sx", 50);
         setSliderVal("sl_sy", 50);
-        setSliderVal("sl_grid", 1);      // Минимальное значение для фильтра
-        setSliderVal("sl_pause", 0);     // Мертвая зона = 0 (как просили)
+        setSliderVal("sl_grid", 10);     
+        setSliderVal("sl_pause", 0);     // Жестко 0
         setSliderVal("sl_lead", 50);
-        setSliderVal("sl_stick", 0);     // 0, чтобы не ходило квадратами
+        setSliderVal("sl_stick", 0);     // 0 чтобы без квадратной доводки
         setSliderVal("sl_stick_delay", 60);
         setSliderVal("sl_stick_force", 15);
-        setSliderVal("sl_chunks", 500);  // МАКС КУСКИ
+        setSliderVal("sl_chunks", 500);  // МАКСИМУМ
         setSliderVal("sl_chunk_bypass", 20);
         setSliderVal("sl_chunk_cap", 100);
-        setSliderVal("sl_chunkfast", 500); // МАКС БЫСТРЫЕ КУСКИ
-        setSliderVal("sl_shot_pause", 0);  // Задержка выстрела = 0 (как просили)
+        setSliderVal("sl_chunkfast", 500); // МАКСИМУМ
+        setSliderVal("sl_shot_pause", 0);  // Жестко 0
         setSliderVal("sl_accel", 50);
         setSliderVal("sl_edge_reach", 50);
-        setSliderVal("sl_straight", 0);    // 0, чтобы не выпрямляло квадратами
+        setSliderVal("sl_straight", 0);    // 0 чтобы без рывков
         setSliderVal("sl_recoil", 100);
         setSliderVal("sl_grip_cap", 15);
         if (scaleChip) scaleChip.textContent = "68.0x";
@@ -2139,15 +1887,9 @@
           const sx = getSliderNum("sl_sx", 50) / 10.0;
           const sy = getSliderNum("sl_sy", 50) / 10.0;
           
-          const uiChunks = Math.round(getSliderNum("sl_chunks", 500));
-          const uiChunkFast = Math.round(getSliderNum("sl_chunkfast", 500));
-          
-          // МНОЖИТЕЛЬ КУСКОВ ДЛЯ СИСТЕМЫ (БЫЛ x100 И КРАШИЛ COMMAND). 
-          // Android имеет жесткий лимит в 14. 
-          // Мы отправляем системе 14, чтобы она 100% сработала и выдала самую дикую сенсу, 
-          // но на случай, если ползунок меньше 14, отдаём его.
-          const chunks = Math.min(14, uiChunks);
-          const chunkFast = Math.min(14, uiChunkFast);
+          // Мы отправляем значение кусков напрямую без множителей
+          const chunks = Math.round(getSliderNum("sl_chunks", 500));
+          const chunkFast = Math.round(getSliderNum("sl_chunkfast", 500));
             
           const straight = getSliderNum("sl_straight", 0) / 100.0;
           const stick = getSliderNum("sl_stick", 0); 
@@ -2223,7 +1965,7 @@
         s.sl_sharp = 50;
         s.sl_sx = 50;
         s.sl_sy = 50;
-        s.sl_grid = 1;
+        s.sl_grid = 10;
         s.sl_pause = 0;
         s.sl_lead = 50;
         s.sl_stick = 0;
@@ -3019,6 +2761,15 @@
       } else {
         loadSavedConfigLocal(true); 
       }
+
+      // Отложенное принудительное восстановление состояния ползунка Teleport Engine
+      setTimeout(() => {
+        let switchState = "off";
+        try {
+            switchState = localStorage.getItem("so2_teleport_switch_state") || "off";
+        } catch (e) {}
+        setMainEnginePower(switchState === "on", true);
+      }, 500);
 
       setInterval(pollLicenseExpiration, 30000);
       setInterval(refreshShizukuIndicator, 6000);
