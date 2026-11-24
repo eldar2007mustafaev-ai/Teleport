@@ -1816,7 +1816,7 @@
       activeSessionKey = "";
       try {
         localStorage.removeItem("so2_saved_lic_key_v11");
-        localStorage.removeItem("so2_teleport_switch_state"); // Очищаем состояние Teleport
+        localStorage.removeItem("so2_teleport_switch_state");
       } catch (e) {}
       callBridgeAsync(b => b.logoutLicenseKey());
       forceShowKickScreen("Введите новый лицензионный ключ для входа");
@@ -1861,7 +1861,6 @@
     function setMainEnginePower(turnOn, silent) {
       isMainTeleportOn = !!turnOn;
       
-      // Мгновенное сохранение состояния ползунка, чтобы он не выключался после перезахода
       try {
           localStorage.setItem("so2_teleport_switch_state", isMainTeleportOn ? "on" : "off");
       } catch (e) {}
@@ -2039,24 +2038,25 @@
         if (headerBadge) headerBadge.textContent = "48.0X AWM SHARP";
         if (subTitle) subTitle.textContent = "Precision Flick • AWM / Deagle Резкий (48.0x)";
         if (profMode) profMode.textContent = "AWM / DEAGLE РЕЗКИЙ";
-      } else { // ТЕЛЕПОРТ УЛЬТРА - МАКСИМАЛЬНЫЙ БАФФ (ВСЁ НА МАКС)
+      } else {
+        // ТЕЛЕПОРТ УЛЬТРА — ЖЕСТКИЙ БАФФ
         setSliderVal("sl_sharp", 50);
         setSliderVal("sl_sx", 50);
         setSliderVal("sl_sy", 50);
-        setSliderVal("sl_grid", 10);
-        setSliderVal("sl_pause", 0);
+        setSliderVal("sl_grid", 1);      // Минимальное значение для фильтра
+        setSliderVal("sl_pause", 0);     // Мертвая зона = 0 (как просили)
         setSliderVal("sl_lead", 50);
-        setSliderVal("sl_stick", 100);
+        setSliderVal("sl_stick", 0);     // 0, чтобы не ходило квадратами
         setSliderVal("sl_stick_delay", 60);
         setSliderVal("sl_stick_force", 15);
-        setSliderVal("sl_chunks", 500);
+        setSliderVal("sl_chunks", 500);  // МАКС КУСКИ
         setSliderVal("sl_chunk_bypass", 20);
         setSliderVal("sl_chunk_cap", 100);
-        setSliderVal("sl_chunkfast", 500);
-        setSliderVal("sl_shot_pause", 0);
+        setSliderVal("sl_chunkfast", 500); // МАКС БЫСТРЫЕ КУСКИ
+        setSliderVal("sl_shot_pause", 0);  // Задержка выстрела = 0 (как просили)
         setSliderVal("sl_accel", 50);
         setSliderVal("sl_edge_reach", 50);
-        setSliderVal("sl_straight", 100);
+        setSliderVal("sl_straight", 0);    // 0, чтобы не выпрямляло квадратами
         setSliderVal("sl_recoil", 100);
         setSliderVal("sl_grip_cap", 15);
         if (scaleChip) scaleChip.textContent = "68.0x";
@@ -2135,22 +2135,25 @@
       clearTimeout(bridgeBatchTimer);
       bridgeBatchTimer = setTimeout(() => {
         try {
-          const boostMult = (currentPresetId === "extreme" || currentPresetId === "tablet_pro") ? 15.0 : 7.0;
-          const sharp = (getSliderNum("sl_sharp", 50) / 10.0) * boostMult;
-          const sx = (getSliderNum("sl_sx", 50) / 10.0) * boostMult;
-          const sy = (getSliderNum("sl_sy", 50) / 10.0) * boostMult;
+          const sharp = getSliderNum("sl_sharp", 50) / 10.0;
+          const sx = getSliderNum("sl_sx", 50) / 10.0;
+          const sy = getSliderNum("sl_sy", 50) / 10.0;
           
-          const baseChunks = Math.round(getSliderNum("sl_chunks", 500));
-          const baseFast = Math.round(getSliderNum("sl_chunkfast", 500));
-          // ОГРОМНЫЙ МНОЖИТЕЛЬ х100 ДЛЯ КУСКОВ!
-          const chunks = Math.round(baseChunks * 100);
-          const chunkFast = Math.round(baseFast * 100);
+          const uiChunks = Math.round(getSliderNum("sl_chunks", 500));
+          const uiChunkFast = Math.round(getSliderNum("sl_chunkfast", 500));
+          
+          // МНОЖИТЕЛЬ КУСКОВ ДЛЯ СИСТЕМЫ (БЫЛ x100 И КРАШИЛ COMMAND). 
+          // Android имеет жесткий лимит в 14. 
+          // Мы отправляем системе 14, чтобы она 100% сработала и выдала самую дикую сенсу, 
+          // но на случай, если ползунок меньше 14, отдаём его.
+          const chunks = Math.min(14, uiChunks);
+          const chunkFast = Math.min(14, uiChunkFast);
             
           const straight = getSliderNum("sl_straight", 0) / 100.0;
-          const stick = 0; 
-          const grid = 0;
-          const pause = 0;
-          const accel = (getSliderNum("sl_accel", 50) / 10.0) * boostMult;
+          const stick = getSliderNum("sl_stick", 0); 
+          const grid = getSliderNum("sl_grid", 1);
+          const pause = getSliderNum("sl_pause", 0);
+          const accel = getSliderNum("sl_accel", 50) / 10.0;
 
           AndroidBridge.setRawInputNoSmoothing(true);
           AndroidBridge.updateParameters(sharp, sx, sy, chunks, chunkFast, straight, stick, grid, pause, accel);
@@ -2220,10 +2223,10 @@
         s.sl_sharp = 50;
         s.sl_sx = 50;
         s.sl_sy = 50;
-        s.sl_grid = 10;
+        s.sl_grid = 1;
         s.sl_pause = 0;
         s.sl_lead = 50;
-        s.sl_stick = 100;
+        s.sl_stick = 0;
         s.sl_stick_delay = 60;
         s.sl_stick_force = 15;
         s.sl_chunks = 500;
@@ -2233,7 +2236,7 @@
         s.sl_shot_pause = 0;
         s.sl_accel = 50;
         s.sl_edge_reach = 50;
-        s.sl_straight = 100;
+        s.sl_straight = 0;
         s.sl_recoil = 100;
         s.sl_grip_cap = 15;
       }
@@ -2248,8 +2251,6 @@
         selectTeleportPreset(cfg.preset, true);
       }
       
-      // ИГНОРИРУЕМ сохраненное состояние mainOn из конфига,
-      // используем то, что сохранено в localStorage для самого переключателя
       let switchState = "off";
       try {
           switchState = localStorage.getItem("so2_teleport_switch_state") || "off";
@@ -3016,8 +3017,6 @@
         unlockWorkspaceWithKey(savedNick, savedKey, "АКТИВНА");
         setTimeout(pollLicenseExpiration, 1500);
       } else {
-        // При самом первом запуске приложения ползунок всегда выключен, 
-        // так как localStorage пуст
         loadSavedConfigLocal(true); 
       }
 
