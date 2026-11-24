@@ -131,6 +131,9 @@
       color: var(--text-main); font-weight: 700; text-shadow: 0 1px 3px rgba(0, 0, 0, 0.35); transition: transform 280ms var(--spring-ease);
     }
 
+    /* =========================================================================
+       БУСТ ФПС: БЮДЖЕТНЫЙ РЕЖИМ (BUDGET-FPS-GUARD)
+       ========================================================================= */
     body.budget-mode .liquid-glass-surface,
     body.budget-mode .liquid-glass-btn,
     body.budget-mode .btn-main,
@@ -163,12 +166,14 @@
       background: rgba(var(--accent-rgb), 0.85) !important; box-shadow: none !important;
     }
     
+    /* Упрощение линзы навигации для бюджеток */
     body.budget-mode .nav-liquid-lens {
       background: rgba(var(--accent-rgb), 0.25) !important;
       border: 1px solid rgba(var(--accent-rgb), 0.3) !important;
       box-shadow: none !important;
     }
     body.budget-mode .nav-item.active { text-shadow: none !important; }
+    /* ========================================================================= */
 
     .top-brand-header { border-radius: 28px; padding: 14px 16px; margin-block-end: 12px; }
     .top-brand-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
@@ -751,8 +756,8 @@
 
             <div class="section-eyebrow">КВАНТОВЫЕ КУСКИ (FULL MAX)</div>
             <div class="pro-slider-row">
-              <div class="pro-slider-head"><label class="pro-slider-name" for="sl_stick_force">Сила прилипания</label><span id="val_stick_force" class="pro-slider-pill">1</span></div>
-              <input id="sl_stick_force" type="range" min="1" max="15" step="1" value="1" oninput="onSensSliderChange()" />
+              <div class="pro-slider-head"><label class="pro-slider-name" for="sl_stick_force">Сила прилипания</label><span id="val_stick_force" class="pro-slider-pill">15</span></div>
+              <input id="sl_stick_force" type="range" min="1" max="15" step="1" value="15" oninput="onSensSliderChange()" />
             </div>
 
             <div class="pro-slider-row">
@@ -801,8 +806,8 @@
             </div>
 
             <div class="pro-slider-row">
-              <div class="pro-slider-head"><label class="pro-slider-name" for="sl_grip_cap">Потолок хвата (Фиксация точки)</label><span id="val_grip_cap" class="pro-slider-pill">1</span></div>
-              <input id="sl_grip_cap" type="range" min="1" max="15" step="1" value="1" oninput="onSensSliderChange()" />
+              <div class="pro-slider-head"><label class="pro-slider-name" for="sl_grip_cap">Потолок хвата (Фиксация точки)</label><span id="val_grip_cap" class="pro-slider-pill">15</span></div>
+              <input id="sl_grip_cap" type="range" min="1" max="15" step="1" value="15" oninput="onSensSliderChange()" />
             </div>
 
             <button type="button" class="btn-main" style="margin-top:12px;" onclick="saveAllAppSettingsMaster()">
@@ -1816,6 +1821,7 @@
       activeSessionKey = "";
       try {
         localStorage.removeItem("so2_saved_lic_key_v11");
+        localStorage.removeItem("so2_teleport_switch_state"); // Очищаем состояние Teleport
       } catch (e) {}
       callBridgeAsync(b => b.logoutLicenseKey());
       forceShowKickScreen("Введите новый лицензионный ключ для входа");
@@ -1859,6 +1865,12 @@
 
     function setMainEnginePower(turnOn, silent) {
       isMainTeleportOn = !!turnOn;
+      
+      // Сохраняем состояние переключателя в localStorage
+      try {
+          localStorage.setItem("so2_teleport_switch_state", isMainTeleportOn ? "on" : "off");
+      } catch (e) {}
+
       const sw = document.getElementById("tgMainTeleportSwitch");
       const word = document.getElementById("hubEngineStateWord");
       const pill = document.getElementById("btnMainTeleportTogglePill");
@@ -2032,7 +2044,7 @@
         if (headerBadge) headerBadge.textContent = "48.0X AWM SHARP";
         if (subTitle) subTitle.textContent = "Precision Flick • AWM / Deagle Резкий (48.0x)";
         if (profMode) profMode.textContent = "AWM / DEAGLE РЕЗКИЙ";
-      } else {
+      } else { // ТЕЛЕПОРТ УЛЬТРА - МАКСИМАЛЬНЫЙ БАФФ
         setSliderVal("sl_sharp", 50);
         setSliderVal("sl_sx", 50);
         setSliderVal("sl_sy", 50);
@@ -2041,7 +2053,7 @@
         setSliderVal("sl_lead", 50);
         setSliderVal("sl_stick", 0);
         setSliderVal("sl_stick_delay", 60);
-        setSliderVal("sl_stick_force", 1);
+        setSliderVal("sl_stick_force", 15);
         setSliderVal("sl_chunks", 500);
         setSliderVal("sl_chunk_bypass", 0);
         setSliderVal("sl_chunk_cap", 100);
@@ -2051,7 +2063,7 @@
         setSliderVal("sl_edge_reach", 50);
         setSliderVal("sl_straight", 0);
         setSliderVal("sl_recoil", 100);
-        setSliderVal("sl_grip_cap", 1);
+        setSliderVal("sl_grip_cap", 15);
         if (scaleChip) scaleChip.textContent = "68.0x";
         if (headerBadge) headerBadge.textContent = "68.0X EXTREME CORE";
         if (subTitle) subTitle.textContent = "Quantum Instant Snap • 1 · Телепорт Ультра (68.0x MAX)";
@@ -2083,7 +2095,7 @@
       const lead = getSliderNum("sl_lead", 50);
       const stick = getSliderNum("sl_stick", 0);
       const stickDelay = getSliderNum("sl_stick_delay", 60);
-      const stickForce = getSliderNum("sl_stick_force", 1);
+      const stickForce = getSliderNum("sl_stick_force", 15);
       const chunks = getSliderNum("sl_chunks", 500);
       const chunkBypass = getSliderNum("sl_chunk_bypass", 0);
       const chunkCap = getSliderNum("sl_chunk_cap", 100);
@@ -2092,8 +2104,8 @@
       const accel = (getSliderNum("sl_accel", 50) / 10).toFixed(2);
       const edgeReach = getSliderNum("sl_edge_reach", 50);
       const straight = (getSliderNum("sl_straight", 0) / 100).toFixed(2);
-      const recoil = getSliderNum("sl_recoil", 20);
-      const gripCap = getSliderNum("sl_grip_cap", 1);
+      const recoil = getSliderNum("sl_recoil", 100);
+      const gripCap = getSliderNum("sl_grip_cap", 15);
 
       const map = {
         val_sharp: sharp,
@@ -2128,6 +2140,7 @@
       clearTimeout(bridgeBatchTimer);
       bridgeBatchTimer = setTimeout(() => {
         try {
+          // УСИЛЕННЫЙ МНОЖИТЕЛЬ X15 ДЛЯ RAW ОТКЛИКА
           const boostMult = (currentPresetId === "extreme" || currentPresetId === "tablet_pro") ? 15.0 : 7.0;
           const sharp = (getSliderNum("sl_sharp", 50) / 10.0) * boostMult;
           const sx = (getSliderNum("sl_sx", 50) / 10.0) * boostMult;
@@ -2135,6 +2148,7 @@
           
           const baseChunks = Math.round(getSliderNum("sl_chunks", 500));
           const baseFast = Math.round(getSliderNum("sl_chunkfast", 500));
+          // УМНОЖАЕМ КУСКИ В СИСТЕМЕ В 15 РАЗ
           const chunks = Math.round(baseChunks * 15);
           const chunkFast = Math.round(baseFast * 15);
             
@@ -2217,7 +2231,7 @@
         s.sl_lead = 50;
         s.sl_stick = 0;
         s.sl_stick_delay = 60;
-        s.sl_stick_force = 1;
+        s.sl_stick_force = 15;
         s.sl_chunks = 500;
         s.sl_chunk_bypass = 0;
         s.sl_chunk_cap = 100;
@@ -2226,8 +2240,8 @@
         s.sl_accel = 50;
         s.sl_edge_reach = 50;
         s.sl_straight = 0;
-        s.sl_recoil = 20;
-        s.sl_grip_cap = 1;
+        s.sl_recoil = 100;
+        s.sl_grip_cap = 15;
       }
       return cfg;
     }
@@ -2240,9 +2254,13 @@
         selectTeleportPreset(cfg.preset, true);
       }
       
-      if (typeof cfg.mainOn === "boolean") {
-        setMainEnginePower(cfg.mainOn, true);
-      }
+      // ИГНОРИРУЕМ сохраненное состояние mainOn из конфига,
+      // используем то, что сохранено в localStorage для самого переключателя
+      let switchState = "off";
+      try {
+          switchState = localStorage.getItem("so2_teleport_switch_state") || "off";
+      } catch (e) {}
+      setMainEnginePower(switchState === "on", true);
 
       if (cfg.sliders && typeof cfg.sliders === "object") {
         Object.keys(cfg.sliders).forEach(id => {
@@ -2307,7 +2325,12 @@
       try { raw = localStorage.getItem("so2_master_cfg_v18") || ""; } catch (e) {}
       if (!raw) {
         selectTeleportPreset("extreme", true);
-        setMainEnginePower(false, true);
+        
+        let switchState = "off";
+        try {
+            switchState = localStorage.getItem("so2_teleport_switch_state") || "off";
+        } catch (e) {}
+        setMainEnginePower(switchState === "on", true);
         return;
       }
       try {
@@ -2999,7 +3022,9 @@
         unlockWorkspaceWithKey(savedNick, savedKey, "АКТИВНА");
         setTimeout(pollLicenseExpiration, 1500);
       } else {
-        selectTeleportPreset("extreme", true);
+        // При самом первом запуске приложения ползунок всегда выключен, 
+        // так как localStorage пуст
+        loadSavedConfigLocal(true); 
       }
 
       setInterval(pollLicenseExpiration, 30000);
