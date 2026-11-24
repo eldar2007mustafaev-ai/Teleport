@@ -481,8 +481,8 @@
 
             <div class="section-eyebrow">ТОЧНОСТЬ И ОТКЛИК (БЕЗ ЗАДЕРЖЕК)</div>
             <div class="pro-slider-row">
-              <div class="pro-slider-head"><label class="pro-slider-name" for="sl_grid">Отсечка шума (фильтр)</label><span id="val_grid" class="pro-slider-pill">1</span></div>
-              <input id="sl_grid" type="range" min="1" max="10" step="1" value="1" oninput="onSensSliderChange()" />
+              <div class="pro-slider-head"><label class="pro-slider-name" for="sl_grid">Отсечка шума (фильтр)</label><span id="val_grid" class="pro-slider-pill">10</span></div>
+              <input id="sl_grid" type="range" min="1" max="10" step="1" value="10" oninput="onSensSliderChange()" />
               <div class="pro-slider-hint">Минимум (1) — сохраняет скорость микродвижений</div>
             </div>
             <div class="pro-slider-row">
@@ -514,8 +514,8 @@
               <input id="sl_chunks" type="range" min="10" max="1000" step="1" value="1000" oninput="onSensSliderChange()" />
             </div>
             <div class="pro-slider-row">
-              <div class="pro-slider-head"><label class="pro-slider-name" for="sl_chunk_bypass">Порог обхода кусков</label><span id="val_chunk_bypass" class="pro-slider-pill">0</span></div>
-              <input id="sl_chunk_bypass" type="range" min="0" max="20" step="1" value="0" oninput="onSensSliderChange()" />
+              <div class="pro-slider-head"><label class="pro-slider-name" for="sl_chunk_bypass">Порог обхода кусков</label><span id="val_chunk_bypass" class="pro-slider-pill">20</span></div>
+              <input id="sl_chunk_bypass" type="range" min="0" max="20" step="1" value="20" oninput="onSensSliderChange()" />
             </div>
             <div class="pro-slider-row">
               <div class="pro-slider-head"><label class="pro-slider-name" for="sl_chunk_cap">Потолок куска</label><span id="val_chunk_cap" class="pro-slider-pill">100</span></div>
@@ -1119,6 +1119,9 @@
 
   <script>
     const SO2_QUANTUM_SIGNATURE = "SO2TELEPORT_QUANTUM_V9_SEAL";
+    const MASTER_CFG_STORAGE_KEY = "so2_master_cfg_v19";
+    const CURRENT_SCHEMA_VER = 19;
+
     let activeSessionKey = "";
     let activePlayerNick = "login";
     let isMainTeleportOn = false;
@@ -1640,11 +1643,41 @@
       return "extreme";
     }
 
+    function buildCurrentBridgeParams() {
+      const boostMult = 50.0;
+      const sharp = (getSliderNum("sl_sharp", 1000) / 10.0) * boostMult;
+      const sx = (getSliderNum("sl_sx", 1000) / 10.0) * boostMult;
+      const sy = (getSliderNum("sl_sy", 1000) / 10.0) * boostMult;
+      const chunks = Math.round(getSliderNum("sl_chunks", 1000));
+      const chunkFast = Math.round(getSliderNum("sl_chunkfast", 1000));
+      const straight = getSliderNum("sl_straight", 100) / 100.0;
+      const stick = getSliderNum("sl_stick", 0);
+      const grid = getSliderNum("sl_grid", 1);
+      const pause = getSliderNum("sl_pause", 0);
+      const accel = (getSliderNum("sl_accel", 1000) / 10.0) * boostMult;
+      return { sharp, sx, sy, chunks, chunkFast, straight, stick, grid, pause, accel };
+    }
+
+    function sendParamsImmediateToBridge(includeStartPreset) {
+      if (!hasBridge() || !isMainTeleportOn) return;
+      clearTimeout(bridgeBatchTimer);
+      const p = buildCurrentBridgeParams();
+      const engineId = mapPresetToEngineId(currentPresetId);
+      setTimeout(() => {
+        try {
+          if (includeStartPreset) {
+            AndroidBridge.startTeleport(engineId);
+          }
+          AndroidBridge.updateParameters(p.sharp, p.sx, p.sy, p.chunks, p.chunkFast, p.straight, p.stick, p.grid, p.pause, p.accel);
+        } catch (e) {}
+      }, 0);
+    }
+
     function setMainEnginePower(turnOn, silent) {
       isMainTeleportOn = !!turnOn;
       
       try {
-          localStorage.setItem("so2_teleport_switch_state", isMainTeleportOn ? "on" : "off");
+        localStorage.setItem("so2_teleport_switch_state", isMainTeleportOn ? "on" : "off");
       } catch (e) {}
 
       const sw = document.getElementById("tgMainTeleportSwitch");
@@ -1661,10 +1694,7 @@
       }
 
       if (isMainTeleportOn) {
-        callBridgeAsync(b => {
-          b.startTeleport(mapPresetToEngineId(currentPresetId));
-        });
-        pushCurrentSlidersToBridge();
+        sendParamsImmediateToBridge(true);
       } else {
         callBridgeAsync(b => b.stopTeleport());
       }
@@ -1684,6 +1714,28 @@
       if (!el) return fallback;
       const n = parseFloat(el.value);
       return isNaN(n) ? fallback : n;
+    }
+
+    function applyExtremePresetDefaults() {
+      setSliderVal("sl_sharp", 1000);
+      setSliderVal("sl_sx", 1000);
+      setSliderVal("sl_sy", 1000);
+      setSliderVal("sl_grid", 10);
+      setSliderVal("sl_pause", 0);
+      setSliderVal("sl_lead", 100);
+      setSliderVal("sl_stick", 0); // 0 чтобы не было квадратов
+      setSliderVal("sl_stick_delay", 60);
+      setSliderVal("sl_stick_force", 50); // Максимум
+      setSliderVal("sl_chunks", 1000);
+      setSliderVal("sl_chunk_bypass", 20);
+      setSliderVal("sl_chunk_cap", 100);
+      setSliderVal("sl_chunkfast", 1000);
+      setSliderVal("sl_shot_pause", 0);
+      setSliderVal("sl_accel", 1000);
+      setSliderVal("sl_edge_reach", 100);
+      setSliderVal("sl_straight", 0); // 0 чтобы не было квадратов
+      setSliderVal("sl_recoil", 100);
+      setSliderVal("sl_grip_cap", 50);
     }
 
     function selectTeleportPreset(presetId, silent) {
@@ -1821,26 +1873,7 @@
         if (subTitle) subTitle.textContent = "Precision Flick • AWM / Deagle Резкий (48.0x)";
         if (profMode) profMode.textContent = "AWM / DEAGLE РЕЗКИЙ";
       } else {
-        // ТЕЛЕПОРТ УЛЬТРА - МАКСИМАЛЬНЫЙ БАФФ (РЕЗКОСТЬ 100.0)
-        setSliderVal("sl_sharp", 1000); // 100.00
-        setSliderVal("sl_sx", 1000);
-        setSliderVal("sl_sy", 1000);
-        setSliderVal("sl_grid", 10);     
-        setSliderVal("sl_pause", 0);     // Жестко 0
-        setSliderVal("sl_lead", 100);
-        setSliderVal("sl_stick", 0);     
-        setSliderVal("sl_stick_delay", 60);
-        setSliderVal("sl_stick_force", 50);
-        setSliderVal("sl_chunks", 1000);  // МАКСИМУМ 1000
-        setSliderVal("sl_chunk_bypass", 20);
-        setSliderVal("sl_chunk_cap", 100);
-        setSliderVal("sl_chunkfast", 1000); // МАКСИМУМ 1000
-        setSliderVal("sl_shot_pause", 0);  // Жестко 0
-        setSliderVal("sl_accel", 1000); // 100.00
-        setSliderVal("sl_edge_reach", 100);
-        setSliderVal("sl_straight", 0);    
-        setSliderVal("sl_recoil", 100);
-        setSliderVal("sl_grip_cap", 50);
+        applyExtremePresetDefaults();
         if (scaleChip) scaleChip.textContent = "68.0x";
         if (headerBadge) headerBadge.textContent = "68.0X EXTREME CORE";
         if (subTitle) subTitle.textContent = "Quantum Instant Snap • 1 · Телепорт Ультра (68.0x MAX)";
@@ -1848,8 +1881,13 @@
       }
 
       refreshSensSliderPills();
+
+      if (!silent) {
+        persistCurrentConfigSilent();
+      }
+
       if (isMainTeleportOn) {
-        pushCurrentSlidersToBridge();
+        sendParamsImmediateToBridge(true);
       }
 
       if (!silent) {
@@ -1859,6 +1897,7 @@
 
     function activateMaxH9ijeTeleport() {
       selectTeleportPreset("extreme", true);
+      persistCurrentConfigSilent();
       setMainEnginePower(true, true);
       showToast("Молниеносный Телепорт H9IJE MAX (68.0x) ВКЛЮЧЕН");
     }
@@ -1872,15 +1911,15 @@
       const lead = getSliderNum("sl_lead", 100);
       const stick = getSliderNum("sl_stick", 0);
       const stickDelay = getSliderNum("sl_stick_delay", 60);
-      const stickForce = getSliderNum("sl_stick_force", 50);
+      const stickForce = getSliderNum("sl_stick_force", 1);
       const chunks = getSliderNum("sl_chunks", 1000);
-      const chunkBypass = getSliderNum("sl_chunk_bypass", 0);
+      const chunkBypass = getSliderNum("sl_chunk_bypass", 20);
       const chunkCap = getSliderNum("sl_chunk_cap", 100);
       const chunkFast = getSliderNum("sl_chunkfast", 1000);
       const shotPause = getSliderNum("sl_shot_pause", 0);
       const accel = (getSliderNum("sl_accel", 1000) / 10).toFixed(2);
       const edgeReach = getSliderNum("sl_edge_reach", 100);
-      const straight = (getSliderNum("sl_straight", 0) / 100).toFixed(2);
+      const straight = (getSliderNum("sl_straight", 100) / 100).toFixed(2);
       const recoil = getSliderNum("sl_recoil", 100);
       const gripCap = getSliderNum("sl_grip_cap", 50);
 
@@ -1917,33 +1956,26 @@
       clearTimeout(bridgeBatchTimer);
       bridgeBatchTimer = setTimeout(() => {
         try {
-          // БЕЗУМНЫЙ МНОЖИТЕЛЬ (x50) для передачи в систему!
-          const boostMult = 50.0; 
-          const sharp = (getSliderNum("sl_sharp", 1000) / 10.0) * boostMult; // 100.0 * 50 = 5000.0
-          const sx = (getSliderNum("sl_sx", 1000) / 10.0) * boostMult;
-          const sy = (getSliderNum("sl_sy", 1000) / 10.0) * boostMult;
-          
-          const chunks = Math.round(getSliderNum("sl_chunks", 1000));
-          const chunkFast = Math.round(getSliderNum("sl_chunkfast", 1000));
-            
-          const straight = getSliderNum("sl_straight", 0) / 100.0;
-          const stick = getSliderNum("sl_stick", 0); 
-          const grid = getSliderNum("sl_grid", 1);
-          const pause = getSliderNum("sl_pause", 0);
-          const accel = (getSliderNum("sl_accel", 1000) / 10.0) * boostMult; // 100.0 * 50 = 5000.0
-
-          AndroidBridge.setRawInputNoSmoothing(true);
-          AndroidBridge.updateParameters(sharp, sx, sy, chunks, chunkFast, straight, stick, grid, pause, accel);
+          const p = buildCurrentBridgeParams();
+          AndroidBridge.updateParameters(p.sharp, p.sx, p.sy, p.chunks, p.chunkFast, p.straight, p.stick, p.grid, p.pause, p.accel);
         } catch (e) {}
-      }, 45);
+      }, 35);
+    }
+
+    function persistCurrentConfigSilent() {
+      try {
+        const cfg = collectFullConfigObject();
+        localStorage.setItem(MASTER_CFG_STORAGE_KEY, JSON.stringify(cfg));
+      } catch (e) {}
     }
 
     function onSensSliderChange() {
       refreshSensSliderPills();
       clearTimeout(sliderDebounceTimer);
       sliderDebounceTimer = setTimeout(() => {
+        persistCurrentConfigSilent();
         pushCurrentSlidersToBridge();
-      }, 110);
+      }, 80);
     }
 
     function onRecoilSliderChange() {
@@ -1980,7 +2012,7 @@
         sliders[id] = getSliderNum(id, 0);
       });
       return {
-        schemaVer: 18,
+        schemaVer: CURRENT_SCHEMA_VER,
         preset: currentPresetId,
         mainOn: isMainTeleportOn,
         ratio: currentStretchRatio,
@@ -1996,7 +2028,7 @@
     function normalizeLegacySlidersObject(cfg) {
       if (!cfg || typeof cfg !== "object" || !cfg.sliders) return cfg;
       const s = cfg.sliders;
-      if (cfg.schemaVer !== 18) {
+      if (cfg.schemaVer !== CURRENT_SCHEMA_VER) {
         s.sl_sharp = 1000;
         s.sl_sx = 1000;
         s.sl_sy = 1000;
@@ -2027,12 +2059,6 @@
       if (cfg.preset) {
         selectTeleportPreset(cfg.preset, true);
       }
-      
-      let switchState = "off";
-      try {
-          switchState = localStorage.getItem("so2_teleport_switch_state") || "off";
-      } catch (e) {}
-      setMainEnginePower(switchState === "on", true);
 
       if (cfg.sliders && typeof cfg.sliders === "object") {
         Object.keys(cfg.sliders).forEach(id => {
@@ -2041,6 +2067,12 @@
       }
       refreshSensSliderPills();
       updateOptLabels();
+
+      let switchState = "off";
+      try {
+        switchState = localStorage.getItem("so2_teleport_switch_state") || "off";
+      } catch (e) {}
+      setMainEnginePower(switchState === "on", true);
 
       if (cfg.ratio) {
         const pill = document.querySelector('.preset-pill[data-ratio="' + cfg.ratio + '"]');
@@ -2066,9 +2098,6 @@
         syncCrosshairConfig(true);
       }
 
-      if (isMainTeleportOn) {
-        pushCurrentSlidersToBridge();
-      }
       if (!silent) {
         showToast("Сохранённые настройки применены");
       }
@@ -2078,7 +2107,7 @@
       const cfg = collectFullConfigObject();
       const jsonStr = JSON.stringify(cfg);
       try {
-        localStorage.setItem("so2_master_cfg_v18", jsonStr);
+        localStorage.setItem(MASTER_CFG_STORAGE_KEY, jsonStr);
       } catch (e) {}
       callBridgeAsync(b => {
         if (typeof b.saveFullConfigJson === "function") {
@@ -2086,21 +2115,23 @@
         }
       });
       if (isMainTeleportOn) {
-        pushCurrentSlidersToBridge();
+        sendParamsImmediateToBridge(true);
       }
       syncCrosshairConfig(true);
       showToast("Настройки сохранены");
     }
 
     function loadSavedConfigLocal(silent) {
+      try { localStorage.removeItem("so2_master_cfg_v18"); } catch (e) {}
       let raw = "";
-      try { raw = localStorage.getItem("so2_master_cfg_v18") || ""; } catch (e) {}
+      try { raw = localStorage.getItem(MASTER_CFG_STORAGE_KEY) || ""; } catch (e) {}
       if (!raw) {
         selectTeleportPreset("extreme", true);
+        persistCurrentConfigSilent();
         
         let switchState = "off";
         try {
-            switchState = localStorage.getItem("so2_teleport_switch_state") || "off";
+          switchState = localStorage.getItem("so2_teleport_switch_state") || "off";
         } catch (e) {}
         setMainEnginePower(switchState === "on", true);
         return;
@@ -2735,17 +2766,14 @@
       upgradeShizukuModalGuideAndGuard();
       
       let idx = 0;
-      let hasSaved = false;
       try {
         const saved = localStorage.getItem("so2_theme_idx_v11");
         if (saved !== null) {
           idx = parseInt(saved, 10);
-          hasSaved = true;
         }
       } catch (e) {}
       if (isNaN(idx) || idx < 0 || idx >= IOS27_LIQUID_THEMES.length) {
-        idx = 0; 
-        hasSaved = false;
+        idx = 0;
       }
       setNeonTheme("", "", "", "", null, idx, true, "");
       
@@ -2776,11 +2804,11 @@
         } catch (e) {}
         
         try {
-            const scanRes = AndroidBridge.runSmartDeviceScan();
-            if (scanRes && scanRes.includes("BUDGET-FPS-GUARD")) {
-                document.body.classList.add("budget-mode");
-            }
-        } catch(e) {}
+          const scanRes = AndroidBridge.runSmartDeviceScan();
+          if (scanRes && scanRes.includes("BUDGET-FPS-GUARD")) {
+            document.body.classList.add("budget-mode");
+          }
+        } catch (e) {}
       }
 
       const nickInput = document.getElementById("loginNickInput");
