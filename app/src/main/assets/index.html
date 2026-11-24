@@ -131,9 +131,7 @@
       color: var(--text-main); font-weight: 700; text-shadow: 0 1px 3px rgba(0, 0, 0, 0.35); transition: transform 280ms var(--spring-ease);
     }
 
-    /* =========================================================================
-       БУСТ ФПС: БЮДЖЕТНЫЙ РЕЖИМ (BUDGET-FPS-GUARD)
-       ========================================================================= */
+    /* БЮДЖЕТНЫЙ РЕЖИМ (BUDGET-FPS-GUARD) */
     body.budget-mode .liquid-glass-surface,
     body.budget-mode .liquid-glass-btn,
     body.budget-mode .btn-main,
@@ -165,15 +163,12 @@
     body.budget-mode .btn-main, body.budget-mode .liquid-glass-btn {
       background: rgba(var(--accent-rgb), 0.85) !important; box-shadow: none !important;
     }
-    
-    /* Упрощение линзы навигации для бюджеток */
     body.budget-mode .nav-liquid-lens {
       background: rgba(var(--accent-rgb), 0.25) !important;
       border: 1px solid rgba(var(--accent-rgb), 0.3) !important;
       box-shadow: none !important;
     }
     body.budget-mode .nav-item.active { text-shadow: none !important; }
-    /* ========================================================================= */
 
     .top-brand-header { border-radius: 28px; padding: 14px 16px; margin-block-end: 12px; }
     .top-brand-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
@@ -1327,7 +1322,7 @@
       <span>Экран «T»</span>
     </div>
     <div class="nav-item" data-tab="tabBoost" data-nav-idx="2" role="button" tabindex="0" onclick="switchTab('tabBoost')">
-      <svg aria-hidden="true" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+      <svg aria-hidden="true" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1 2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
       <span>Бустер</span>
     </div>
     <div class="nav-item" data-tab="tabSquad" data-nav-idx="3" role="button" tabindex="0" onclick="switchTab('tabSquad'); syncFriendsHub();">
@@ -1866,7 +1861,7 @@
     function setMainEnginePower(turnOn, silent) {
       isMainTeleportOn = !!turnOn;
       
-      // Сохраняем состояние переключателя в localStorage
+      // Мгновенное сохранение состояния ползунка, чтобы он не выключался после перезахода
       try {
           localStorage.setItem("so2_teleport_switch_state", isMainTeleportOn ? "on" : "off");
       } catch (e) {}
@@ -2044,24 +2039,24 @@
         if (headerBadge) headerBadge.textContent = "48.0X AWM SHARP";
         if (subTitle) subTitle.textContent = "Precision Flick • AWM / Deagle Резкий (48.0x)";
         if (profMode) profMode.textContent = "AWM / DEAGLE РЕЗКИЙ";
-      } else { // ТЕЛЕПОРТ УЛЬТРА - МАКСИМАЛЬНЫЙ БАФФ
+      } else { // ТЕЛЕПОРТ УЛЬТРА - МАКСИМАЛЬНЫЙ БАФФ (ВСЁ НА МАКС)
         setSliderVal("sl_sharp", 50);
         setSliderVal("sl_sx", 50);
         setSliderVal("sl_sy", 50);
-        setSliderVal("sl_grid", 1);
+        setSliderVal("sl_grid", 10);
         setSliderVal("sl_pause", 0);
         setSliderVal("sl_lead", 50);
-        setSliderVal("sl_stick", 0);
+        setSliderVal("sl_stick", 100);
         setSliderVal("sl_stick_delay", 60);
         setSliderVal("sl_stick_force", 15);
         setSliderVal("sl_chunks", 500);
-        setSliderVal("sl_chunk_bypass", 0);
+        setSliderVal("sl_chunk_bypass", 20);
         setSliderVal("sl_chunk_cap", 100);
         setSliderVal("sl_chunkfast", 500);
         setSliderVal("sl_shot_pause", 0);
         setSliderVal("sl_accel", 50);
         setSliderVal("sl_edge_reach", 50);
-        setSliderVal("sl_straight", 0);
+        setSliderVal("sl_straight", 100);
         setSliderVal("sl_recoil", 100);
         setSliderVal("sl_grip_cap", 15);
         if (scaleChip) scaleChip.textContent = "68.0x";
@@ -2140,7 +2135,6 @@
       clearTimeout(bridgeBatchTimer);
       bridgeBatchTimer = setTimeout(() => {
         try {
-          // УСИЛЕННЫЙ МНОЖИТЕЛЬ X15 ДЛЯ RAW ОТКЛИКА
           const boostMult = (currentPresetId === "extreme" || currentPresetId === "tablet_pro") ? 15.0 : 7.0;
           const sharp = (getSliderNum("sl_sharp", 50) / 10.0) * boostMult;
           const sx = (getSliderNum("sl_sx", 50) / 10.0) * boostMult;
@@ -2148,9 +2142,9 @@
           
           const baseChunks = Math.round(getSliderNum("sl_chunks", 500));
           const baseFast = Math.round(getSliderNum("sl_chunkfast", 500));
-          // УМНОЖАЕМ КУСКИ В СИСТЕМЕ В 15 РАЗ
-          const chunks = Math.round(baseChunks * 15);
-          const chunkFast = Math.round(baseFast * 15);
+          // ОГРОМНЫЙ МНОЖИТЕЛЬ х100 ДЛЯ КУСКОВ!
+          const chunks = Math.round(baseChunks * 100);
+          const chunkFast = Math.round(baseFast * 100);
             
           const straight = getSliderNum("sl_straight", 0) / 100.0;
           const stick = 0; 
@@ -2226,20 +2220,20 @@
         s.sl_sharp = 50;
         s.sl_sx = 50;
         s.sl_sy = 50;
-        s.sl_grid = 1;
+        s.sl_grid = 10;
         s.sl_pause = 0;
         s.sl_lead = 50;
-        s.sl_stick = 0;
+        s.sl_stick = 100;
         s.sl_stick_delay = 60;
         s.sl_stick_force = 15;
         s.sl_chunks = 500;
-        s.sl_chunk_bypass = 0;
+        s.sl_chunk_bypass = 20;
         s.sl_chunk_cap = 100;
         s.sl_chunkfast = 500;
         s.sl_shot_pause = 0;
         s.sl_accel = 50;
         s.sl_edge_reach = 50;
-        s.sl_straight = 0;
+        s.sl_straight = 100;
         s.sl_recoil = 100;
         s.sl_grip_cap = 15;
       }
