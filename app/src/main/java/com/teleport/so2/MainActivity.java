@@ -34,7 +34,6 @@ import android.widget.FrameLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -201,9 +200,6 @@ public class MainActivity extends Activity {
         TeleportEngine.requestShizukuPermissionIfNeeded();
         healBrokenTouchTimeouts();
 
-        // Запуск проверки обновлений OTA
-        OtaUpdater.checkForUpdatesInBackground(this);
-
         stealthModeEnabled = prefs.getBoolean("stealth_overlays", false);
 
         webView = new WebView(this);
@@ -280,13 +276,8 @@ public class MainActivity extends Activity {
         webView.setWebViewClient(new WebViewClient());
         webView.addJavascriptInterface(new AndroidBridge(this), "AndroidBridge");
 
-        // ПРОВЕРКА И ЗАГРУЗКА OTA ОБНОВЛЕНИЯ ИЛИ ДЕФОЛТНОГО АССЕТА
-        File otaHtml = new File(getFilesDir(), "index.html");
-        if (otaHtml.exists() && otaHtml.length() > 1000) {
-            webView.loadUrl("file://" + otaHtml.getAbsolutePath());
-        } else {
-            webView.loadUrl("file:///android_asset/index.html");
-        }
+        // Загрузка только из ассетов, никаких OTA
+        webView.loadUrl("file:///android_asset/index.html");
 
         setContentView(webView);
 
