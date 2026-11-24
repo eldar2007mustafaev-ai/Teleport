@@ -233,11 +233,15 @@ public class TeleportEngine {
     }
 
     public static void stopTeleport() {
+        // Безопасное выключение без блокировки сенсора!
         execShizukuCommand(
             "settings put system pointer_speed 7; " +
             "settings delete secure touch_blocking_period; " +
             "settings delete secure tap_duration_threshold; " +
             "settings delete system motion_engine_enabled; " +
+            "settings put global windows_animation_scale 1.0; " +
+            "settings put global transition_animation_scale 1.0; " +
+            "settings put global animator_duration_scale 1.0; " +
             "settings put system block_untrusted_touches 0;"
         );
     }
@@ -257,17 +261,18 @@ public class TeleportEngine {
     private static void commitParametersToNative() {
         StringBuilder cmd = new StringBuilder();
 
-        // 1. Прямой проброс кусков. Больше никаких лимитов в Java.
-        // Если ты ставишь 500, в систему летит ровно 500.
-        cmd.append("settings put system pointer_speed ").append(currentChunks).append("; ");
+        // 1. Прямой проброс кусков. Лимит 14 обходим через множители в скрипте.
+        int finalSpeed = Math.min(14, currentChunks);
+        cmd.append("settings put system pointer_speed ").append(finalSpeed).append("; ");
 
         // 2. Адаптивные команды в зависимости от профиля
         if ("extreme".equals(currentActivePreset)) {
             // ТЕЛЕПОРТ УЛЬТРА: Жесткий бафф
+            // Здесь НЕТ команды long_press_timeout, поэтому телефон больше не заглючит!
             cmd.append("settings put secure touch_blocking_period 0.0; ");
             cmd.append("settings put secure tap_duration_threshold 0.0; ");
-            cmd.append("settings put secure long_press_timeout 10; "); 
             cmd.append("settings put system motion_engine_enabled 0; ");
+            // Отключаем системные анимации для мгновенного отклика
             cmd.append("settings put global windows_animation_scale 0.0; ");
             cmd.append("settings put global transition_animation_scale 0.0; ");
             cmd.append("settings put global animator_duration_scale 0.0; ");
@@ -277,13 +282,13 @@ public class TeleportEngine {
             }
 
         } else if ("ios_pro".equals(currentActivePreset)) {
-            // iOS КОНФИГ: Линейная траектория, Apple CoreAnimation Curve
-            cmd.append("settings put secure touch_blocking_period 1.5; ");
+            // iOS КОНФИГ: Линейная траектория
+            cmd.append("settings put secure touch_blocking_period 1.5; "); 
             cmd.append("settings put secure tap_duration_threshold 0.0; ");
             cmd.append("settings put system motion_engine_enabled 1; "); 
             
         } else if ("rog_pro".equals(currentActivePreset)) {
-            // ROG PHONE: Максимальная агрессия тач-матрицы
+            // ROG PHONE: Максимальная агрессия
             cmd.append("settings put secure touch_blocking_period 0.0; ");
             cmd.append("settings put secure tap_duration_threshold 0.0; ");
             cmd.append("settings put system multi_press_timeout 150; ");
