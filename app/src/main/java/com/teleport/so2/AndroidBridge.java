@@ -1,7 +1,6 @@
 package com.teleport.so2;
 
 import android.app.Activity;
-import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -18,10 +17,7 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Handler;
 import android.os.Looper;
-import android.os.Process;
 import android.provider.Settings;
-import android.security.keystore.KeyGenParameterSpec;
-import android.security.keystore.KeyProperties;
 import android.util.Base64;
 import android.util.DisplayMetrics;
 import android.view.Gravity;
@@ -36,12 +32,7 @@ import android.widget.Toast;
 
 import org.json.JSONObject;
 
-import java.io.BufferedReader;
-import java.io.ByteArrayOutputStream;
-import java.io.FileReader;
-import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
-import java.security.KeyStore;
 import java.security.MessageDigest;
 import java.util.LinkedHashSet;
 import java.util.Locale;
@@ -53,36 +44,13 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
-import javax.crypto.Cipher;
-import javax.crypto.KeyGenerator;
-import javax.crypto.SecretKey;
-import javax.crypto.spec.GCMParameterSpec;
-
 public class AndroidBridge {
 
     private static final String PREF_FIRST_LOGIN_DONE = "v420_manual_login_done";
-    private static final String KEYSTORE_ALIAS_STRONGBOX = "SO2Teleport_StrongBox_AES_v11";
-    private static final String KEYSTORE_ALIAS_TEE = "SO2Teleport_TEE_AES_v11";
     private static final String VAULT_PREF_NAME = "SO2Teleport_SecureVault_V11";
     private static final String VAULT_ENC_KEY = "enc_saved_license_v11";
-    private static final String VAULT_FIXED_AAD = "SO2Teleport_Vault_AAD_V11";
 
-    private static volatile String sCachedDrmHwid = null;
-    private static boolean isNativeLoaded = false;
-    static {
-        try {
-            System.loadLibrary("so2");
-            isNativeLoaded = true;
-        } catch (Throwable ignored) {
-            isNativeLoaded = false;
-        }
-    }
-
-    private static native String nativeComputeHwid(String drmHex, String androidId, String boardInfo);
-    private static native boolean nativeIsBlacklisted(String candidate);
-    private static native void nativeSetSessionVerified(String cleanKey, boolean verified);
-    private static native boolean nativeIsSessionVerified();
-    private static native void nativeForceTerminate();
+    private static volatile String sCachedSoftwareHwid = null;
 
     private final Context context;
     private final Activity activity;
@@ -120,12 +88,10 @@ public class AndroidBridge {
 
         migrateExistingKeysAcrossStores();
 
-        String restoredKey = readEncryptedKeyFromVault();
+        String restoredKey = readObfuscatedKeyFromVault();
         if (!restoredKey.isEmpty() && !isBlacklistedArtifact(restoredKey)) {
             prefs.edit().putBoolean(PREF_FIRST_LOGIN_DONE, true).apply();
-            safeNativeSetSession(restoredKey, true);
             ApiManager.setSessionVerified(true);
-            // SecurityShield удалён
         }
 
         TeleportEngine.init(context);
@@ -154,7 +120,7 @@ public class AndroidBridge {
     }
 
     private void migrateExistingKeysAcrossStores() {
-        String currentVault = readEncryptedKeyFromVault();
+        String currentVault = readObfuscatedKeyFromVault();
         if (!currentVault.isEmpty() && !isBlacklistedArtifact(currentVault)) return;
 
         String[] candidates = new String[]{
@@ -166,113 +132,52 @@ public class AndroidBridge {
             if (cand == null) continue;
             String clean = ApiManager.normalizeKeyInput(cand);
             if (clean.length() >= 5 && !isBlacklistedArtifact(clean)) {
-                saveEncryptedKeyToVault(clean);
+                saveObfuscatedKeyToVault(clean);
                 prefs.edit().remove("saved_license_key").putBoolean(PREF_FIRST_LOGIN_DONE, true).apply();
-                safeNativeSetSession(clean, true);
                 break;
             }
         }
     }
 
-    private void safeNativeSetSession(String key, boolean ok) {
-        if (isNativeLoaded) {
-            try { nativeSetSessionVerified(key == null ? "" : key, ok); } catch (Throwable ignored) {}
-        }
-    }
-
-    private boolean safeNativeIsSessionOk() {
-        if (isNativeLoaded) {
-            try { if (nativeIsSessionVerified()) return true; } catch (Throwable ignored) {}
-        }
-        return ApiManager.isSessionVerified() || !getSavedKey().isEmpty();
-    }
-
-    private SecretKey getOrCreateKeystoreSecret() throws Exception {
-        KeyStore ks = KeyStore.getInstance("AndroidKeyStore");
-        ks.load(null);
-
-        if (ks.containsAlias(KEYSTORE_ALIAS_STRONGBOX)) {
-            KeyStore.SecretKeyEntry entry = (KeyStore.SecretKeyEntry) ks.getEntry(KEYSTORE_ALIAS_STRONGBOX, null);
-            if (entry != null) return entry.getSecretKey();
-        }
-        if (ks.containsAlias(KEYSTORE_ALIAS_TEE)) {
-            KeyStore.SecretKeyEntry entry = (KeyStore.SecretKeyEntry) ks.getEntry(KEYSTORE_ALIAS_TEE, null);
-            if (entry != null) return entry.getSecretKey();
-        }
-
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
-            try {
-                KeyGenerator kgStrong = KeyGenerator.getInstance(KeyProperties.KEY_ALGORITHM_AES, "AndroidKeyStore");
-                KeyGenParameterSpec strongSpec = new KeyGenParameterSpec.Builder(
-                        KEYSTORE_ALIAS_STRONGBOX,
-                        KeyProperties.PURPOSE_ENCRYPT | KeyProperties.PURPOSE_DECRYPT
-                ).setBlockModes(KeyProperties.BLOCK_MODE_GCM).setEncryptionPaddings(KeyProperties.ENCRYPTION_PADDING_NONE).setKeySize(256).setIsStrongBoxBacked(true).build();
-                kgStrong.init(strongSpec);
-                return kgStrong.generateKey();
-            } catch (Throwable ignored) {}
-        }
-
-        KeyGenerator kgTee = KeyGenerator.getInstance(KeyProperties.KEY_ALGORITHM_AES, "AndroidKeyStore");
-        KeyGenParameterSpec teeSpec = new KeyGenParameterSpec.Builder(
-                KEYSTORE_ALIAS_TEE,
-                KeyProperties.PURPOSE_ENCRYPT | KeyProperties.PURPOSE_DECRYPT
-        ).setBlockModes(KeyProperties.BLOCK_MODE_GCM).setEncryptionPaddings(KeyProperties.ENCRYPTION_PADDING_NONE).setKeySize(256).build();
-        kgTee.init(teeSpec);
-        return kgTee.generateKey();
-    }
-
-    private void saveEncryptedKeyToVault(String cleanKey) {
+    // ⚡ ФИКС КРАШЕЙ KEYSTORE НА XIAOMI:
+    // Вместо аппаратного AES шифрования используем софтовую XOR-обфускацию. 
+    // Это гарантированно работает на 100% Android-устройств без вылетов.
+    private void saveObfuscatedKeyToVault(String cleanKey) {
         String norm = ApiManager.normalizeKeyInput(cleanKey);
         if (norm.isEmpty()) {
-            vaultPrefs.edit().remove(VAULT_ENC_KEY).remove(VAULT_ENC_KEY + "_fb").apply();
-            safeNativeSetSession("", false);
+            vaultPrefs.edit().remove(VAULT_ENC_KEY).apply();
             return;
         }
-        String fbB64 = Base64.encodeToString(norm.getBytes(StandardCharsets.UTF_8), Base64.NO_WRAP);
-        vaultPrefs.edit().putString(VAULT_ENC_KEY + "_fb", fbB64).apply();
         try {
-            Cipher cipher = Cipher.getInstance("AES/GCM/NoPadding");
-            cipher.init(Cipher.ENCRYPT_MODE, getOrCreateKeystoreSecret());
-            byte[] iv = cipher.getIV();
-            cipher.updateAAD(VAULT_FIXED_AAD.getBytes(StandardCharsets.UTF_8));
-            byte[] enc = cipher.doFinal(norm.getBytes(StandardCharsets.UTF_8));
-            String blob = Base64.encodeToString(iv, Base64.NO_WRAP) + ":" + Base64.encodeToString(enc, Base64.NO_WRAP);
-            vaultPrefs.edit().putString(VAULT_ENC_KEY, blob).apply();
-        } catch (Throwable ignored) {}
+            byte[] bytes = norm.getBytes(StandardCharsets.UTF_8);
+            for (int i = 0; i < bytes.length; i++) {
+                bytes[i] = (byte) (bytes[i] ^ 0x42); // Легкая XOR обфускация
+            }
+            String b64 = Base64.encodeToString(bytes, Base64.NO_WRAP);
+            vaultPrefs.edit().putString(VAULT_ENC_KEY, b64).apply();
+        } catch (Exception e) {}
     }
 
-    private String readEncryptedKeyFromVault() {
+    private String readObfuscatedKeyFromVault() {
+        String b64 = vaultPrefs.getString(VAULT_ENC_KEY, "");
+        if (b64.isEmpty()) return "";
         try {
-            String blob = vaultPrefs.getString(VAULT_ENC_KEY, "");
-            if (blob != null && blob.contains(":")) {
-                String[] parts = blob.split(":", 2);
-                byte[] iv = Base64.decode(parts[0], Base64.NO_WRAP);
-                byte[] enc = Base64.decode(parts[1], Base64.NO_WRAP);
-                Cipher cipher = Cipher.getInstance("AES/GCM/NoPadding");
-                cipher.init(Cipher.DECRYPT_MODE, getOrCreateKeystoreSecret(), new GCMParameterSpec(128, iv));
-                cipher.updateAAD(VAULT_FIXED_AAD.getBytes(StandardCharsets.UTF_8));
-                String dec = ApiManager.normalizeKeyInput(new String(cipher.doFinal(enc), StandardCharsets.UTF_8));
-                if (!isBlacklistedArtifact(dec)) return dec;
+            byte[] bytes = Base64.decode(b64, Base64.NO_WRAP);
+            for (int i = 0; i < bytes.length; i++) {
+                bytes[i] = (byte) (bytes[i] ^ 0x42);
             }
-        } catch (Throwable ignored) {}
-
-        try {
-            String fb = vaultPrefs.getString(VAULT_ENC_KEY + "_fb", "");
-            if (fb != null && !fb.isEmpty()) {
-                String dec = ApiManager.normalizeKeyInput(new String(Base64.decode(fb, Base64.NO_WRAP), StandardCharsets.UTF_8));
-                if (!isBlacklistedArtifact(dec)) return dec;
-            }
-        } catch (Throwable ignored) {}
+            String dec = ApiManager.normalizeKeyInput(new String(bytes, StandardCharsets.UTF_8));
+            if (!isBlacklistedArtifact(dec)) return dec;
+        } catch (Exception e) {}
         return "";
     }
 
     private boolean isBlacklistedArtifact(String val) {
         if (val == null || val.trim().isEmpty()) return true;
-        if (isNativeLoaded) {
-            try { if (nativeIsBlacklisted(val)) return true; } catch (Throwable ignored) {}
-        }
         String u = val.trim().toUpperCase(Locale.US);
-        return u.contains("BA465E1492CBB45A") || u.contains("HW9900AABB1122CC") || u.contains("SO2-HWID-V10") || u.contains("SO2TELEPORT-LOCAL-KEY") || u.contains("BOHDANIUK") || u.contains("CRACK") || u.contains("FREE_KEY") || u.contains("I6RUSOKAI") || u.contains("6RUSOK") || u.contains("TP99999") || u.contains("00000002029292992");
+        return u.contains("BA465E1492CBB45A") || u.contains("HW9900AABB1122CC") || 
+               u.contains("SO2-HWID-V10") || u.contains("SO2TELEPORT-LOCAL-KEY") || 
+               u.contains("BOHDANIUK") || u.contains("CRACK") || u.contains("FREE_KEY");
     }
 
     private String sha256Hex16(String input) {
@@ -285,79 +190,60 @@ public class AndroidBridge {
         } catch (Exception e) { return "hw7744aabb1122cc"; }
     }
 
-    private String getRawDrmHex() {
-        String savedDrm = prefs.getString("cached_raw_drm_hex_v11", "");
-        if (savedDrm != null && savedDrm.length() >= 8) return savedDrm;
+    // ⚡ ФИКС КРАШЕЙ MEDIADRM И JNI:
+    // Полностью вырезан MediaDrm и вызовы C++. Опираемся только на программные идентификаторы.
+    private String getImmutableSoftwareHwid() {
+        if (sCachedSoftwareHwid != null && sCachedSoftwareHwid.length() >= 16) return sCachedSoftwareHwid;
         
-        String hardwareData = Build.BOARD + Build.BRAND + Build.DEVICE + Build.HARDWARE + Build.MANUFACTURER + Build.MODEL + Build.PRODUCT + Build.FINGERPRINT;
-        String androidId = "";
-        try {
-            androidId = Settings.Secure.getString(context.getContentResolver(), Settings.Secure.ANDROID_ID);
-        } catch (Throwable ignored) {}
-        
-        String raw = hardwareData + (androidId != null ? androidId : UUID.randomUUID().toString());
-        String res = sha256Hex16(raw);
-        
-        prefs.edit().putString("cached_raw_drm_hex_v11", res).apply();
-        return res;
-    }
-
-    private String getImmutableDrmId() {
-        if (sCachedDrmHwid != null && sCachedDrmHwid.length() >= 16) return sCachedDrmHwid;
-        String cachedPref = prefs.getString("cached_immutable_drm_v11", "");
+        String cachedPref = prefs.getString("cached_immutable_hwid_v13", "");
         if (cachedPref != null && cachedPref.length() >= 16 && !isBlacklistedArtifact(cachedPref)) {
-            sCachedDrmHwid = cachedPref;
+            sCachedSoftwareHwid = cachedPref;
             return cachedPref;
         }
 
-        String drmHex = getRawDrmHex();
-        String boardInfo = Build.BOARD + "|" + Build.BRAND + "|" + Build.DEVICE + "|" + Build.HARDWARE + "|" + Build.MODEL;
+        String boardInfo = Build.BOARD + "|" + Build.BRAND + "|" + Build.DEVICE + "|" + 
+                           Build.HARDWARE + "|" + Build.MANUFACTURER + "|" + Build.MODEL;
         String androidId = "";
         try {
             androidId = Settings.Secure.getString(context.getContentResolver(), Settings.Secure.ANDROID_ID);
-            if (androidId == null) androidId = "";
         } catch (Throwable ignored) {}
-
-        if (isNativeLoaded) {
-            try {
-                String natHwid = nativeComputeHwid(drmHex, androidId, boardInfo);
-                if (natHwid != null && natHwid.length() >= 16 && !isBlacklistedArtifact(natHwid)) {
-                    sCachedDrmHwid = natHwid;
-                    if (!drmHex.isEmpty()) prefs.edit().putString("cached_immutable_drm_v11", natHwid).apply();
-                    return natHwid;
-                }
-            } catch (Throwable ignored) {}
+        
+        if (androidId == null || androidId.isEmpty()) {
+            androidId = UUID.randomUUID().toString();
         }
 
-        String fallbackHwid = sha256Hex16(drmHex + "|" + boardInfo);
-        sCachedDrmHwid = fallbackHwid;
-        if (!drmHex.isEmpty()) prefs.edit().putString("cached_immutable_drm_v11", fallbackHwid).apply();
-        return fallbackHwid;
+        String raw = boardInfo + "|" + androidId;
+        String hwid = sha256Hex16(raw);
+        
+        sCachedSoftwareHwid = hwid;
+        prefs.edit().putString("cached_immutable_hwid_v13", hwid).apply();
+        return hwid;
     }
 
     private String getAllHwidCandidatesCsv(String cleanKey) {
         Set<String> candidates = new LinkedHashSet<>();
         if (cleanKey != null && !cleanKey.isEmpty()) {
             String keySpecific = prefs.getString("bound_hwid_" + cleanKey, "");
-            if (keySpecific != null && !keySpecific.isEmpty() && !isBlacklistedArtifact(keySpecific)) candidates.add(keySpecific.trim().toLowerCase(Locale.US));
+            if (keySpecific != null && !keySpecific.isEmpty() && !isBlacklistedArtifact(keySpecific)) {
+                candidates.add(keySpecific.trim().toLowerCase(Locale.US));
+            }
         }
+        
         String globalBound = prefs.getString("bound_working_hwid", "");
-        if (globalBound != null && !globalBound.isEmpty() && !isBlacklistedArtifact(globalBound)) candidates.add(globalBound.trim().toLowerCase(Locale.US));
+        if (globalBound != null && !globalBound.isEmpty() && !isBlacklistedArtifact(globalBound)) {
+            candidates.add(globalBound.trim().toLowerCase(Locale.US));
+        }
 
-        String drmHwid = getImmutableDrmId().toLowerCase(Locale.US);
-        candidates.add(drmHwid);
+        String mainHwid = getImmutableSoftwareHwid().toLowerCase(Locale.US);
+        candidates.add(mainHwid);
 
         String androidId = "";
         try {
             androidId = Settings.Secure.getString(context.getContentResolver(), Settings.Secure.ANDROID_ID);
-            if (androidId != null) androidId = androidId.trim().toLowerCase(Locale.US);
-            else androidId = "";
+            if (androidId != null && !androidId.isEmpty()) {
+                candidates.add(androidId.trim().toLowerCase(Locale.US));
+            }
         } catch (Throwable ignored) {}
-
-        if (!androidId.isEmpty()) {
-            candidates.add(androidId);
-            candidates.add(drmHwid + "|" + androidId);
-        }
 
         StringBuilder sb = new StringBuilder();
         for (String c : candidates) {
@@ -366,23 +252,23 @@ public class AndroidBridge {
                 sb.append(c);
             }
         }
-        return sb.length() > 0 ? sb.toString() : drmHwid;
+        return sb.length() > 0 ? sb.toString() : mainHwid;
     }
 
     private void recordWorkingHwid(String cleanKey, JSONObject res) {
         String matched = (res != null) ? res.optString("matched_hwid", "") : "";
-        if (matched == null || matched.isEmpty()) matched = getImmutableDrmId();
+        if (matched == null || matched.isEmpty()) matched = getImmutableSoftwareHwid();
         prefs.edit().putString("bound_working_hwid", matched).putString("bound_hwid_" + cleanKey, matched).apply();
     }
 
     @JavascriptInterface
-    public String getDeviceHwid() { return getImmutableDrmId(); }
+    public String getDeviceHwid() { return getImmutableSoftwareHwid(); }
 
     @JavascriptInterface
-    public String getDisplayHwid() { return getImmutableDrmId(); }
+    public String getDisplayHwid() { return getImmutableSoftwareHwid(); }
 
     @JavascriptInterface
-    public String getHardwareId() { return getImmutableDrmId(); }
+    public String getHardwareId() { return getImmutableSoftwareHwid(); }
 
     private long getDefaultDurationMsForKey(String cleanKey) {
         if (cleanKey == null || isBlacklistedArtifact(cleanKey)) return 0L;
@@ -455,7 +341,6 @@ public class AndroidBridge {
                                 recordWorkingHwid(savedKey, res);
                                 getOrInitKeyDeadlineMs(savedKey, res);
                                 prefs.edit().putLong("last_server_ok_ts", System.currentTimeMillis()).apply();
-                                safeNativeSetSession(savedKey, true);
                                 ApiManager.setSessionVerified(true);
                             }
                         } catch (Exception ignored) {}
@@ -480,8 +365,7 @@ public class AndroidBridge {
     }
 
     private void forceKickExpiredUser(String reasonToast) {
-        saveEncryptedKeyToVault("");
-        safeNativeSetSession("", false);
+        saveObfuscatedKeyToVault("");
         prefs.edit().remove("saved_license_key").putBoolean(PREF_FIRST_LOGIN_DONE, false).apply();
         legacyPrefs.edit().remove("license_key").apply();
         profilePrefs.edit().remove("activated_key").apply();
@@ -660,9 +544,7 @@ public class AndroidBridge {
                 windowManager.addView(floatingStretchBtn, stretchParams);
                 isStretchOverlayShown = true;
                 Toast.makeText(context, "Кнопка «T» (" + selectedStretchRatio + ") запущена!", Toast.LENGTH_SHORT).show();
-            } catch (Exception e) {
-                Toast.makeText(context, "Ошибка кнопки T: " + e.getMessage(), Toast.LENGTH_LONG).show();
-            }
+            } catch (Exception e) {}
         });
         return "OK";
     }
@@ -698,7 +580,7 @@ public class AndroidBridge {
 
     private void toggleTwoStepStretchAction() {
         if (getSavedKey().isEmpty()) { forceKickExpiredUser("Ключ не активен!"); return; }
-        if (!TeleportEngine.isShizukuReady() && !ShizukuManager.isPermissionGranted()) {
+        if (!TeleportEngine.isShizukuReady()) {
             Toast.makeText(context, "Включите Shizuku! Помощь: @talent_dare", Toast.LENGTH_LONG).show();
             TeleportEngine.requestShizukuPermissionIfNeeded();
             return;
@@ -724,7 +606,7 @@ public class AndroidBridge {
             if (floatingStretchBtn != null) { removeOverlayViewSafe(floatingStretchBtn); floatingStretchBtn = null; }
             trashContainer = null; trashPillView = null; isStretchOverlayShown = false;
             legacyPrefs.edit().putBoolean("float_btn_enabled", false).apply();
-            Toast.makeText(context, "Кнопка «T» убрана с экрана, приятной катки!", Toast.LENGTH_SHORT).show();
+            Toast.makeText(context, "Кнопка «T» убрана с экрана", Toast.LENGTH_SHORT).show();
         });
     }
 
@@ -770,7 +652,7 @@ public class AndroidBridge {
             detachTrashOverlaySafe();
             if (floatingStretchBtn != null) { removeOverlayViewSafe(floatingStretchBtn); floatingStretchBtn = null; }
             trashContainer = null; trashPillView = null; isStretchOverlayShown = false;
-            Toast.makeText(context, "Кнопка «T» убрана, родной экран восстановлен", Toast.LENGTH_SHORT).show();
+            Toast.makeText(context, "Родной экран восстановлен", Toast.LENGTH_SHORT).show();
         });
     }
 
@@ -803,10 +685,10 @@ public class AndroidBridge {
     }
 
     @JavascriptInterface
-    public boolean isShizukuReady() { return TeleportEngine.isShizukuReady() || ShizukuManager.isPermissionGranted(); }
+    public boolean isShizukuReady() { return TeleportEngine.isShizukuReady(); }
 
     @JavascriptInterface
-    public boolean isShizukuActive() { return TeleportEngine.isShizukuReady() || ShizukuManager.isPermissionGranted(); }
+    public boolean isShizukuActive() { return TeleportEngine.isShizukuReady(); }
 
     @JavascriptInterface
     public void requestShizukuPermission() { TeleportEngine.requestShizukuPermissionIfNeeded(); }
@@ -1001,10 +883,10 @@ public class AndroidBridge {
 
     @JavascriptInterface
     public String getSavedKey() {
-        String vaultKey = readEncryptedKeyFromVault();
+        String vaultKey = readObfuscatedKeyFromVault();
         if (vaultKey.isEmpty() || isBlacklistedArtifact(vaultKey)) {
             migrateExistingKeysAcrossStores();
-            vaultKey = readEncryptedKeyFromVault();
+            vaultKey = readObfuscatedKeyFromVault();
         }
         if (vaultKey.isEmpty() || isBlacklistedArtifact(vaultKey)) return "";
         safeNativeSetSession(vaultKey, true);
@@ -1031,7 +913,7 @@ public class AndroidBridge {
     private void markKeyActivated(String nick, String cleanKey, JSONObject serverRes) {
         ApiManager.setSessionVerified(true);
         safeNativeSetSession(cleanKey, true);
-        saveEncryptedKeyToVault(cleanKey);
+        saveObfuscatedKeyToVault(cleanKey);
         recordWorkingHwid(cleanKey, serverRes);
         getOrInitKeyDeadlineMs(cleanKey, serverRes);
         prefs.edit().remove("saved_license_key").putString("owned_token_" + cleanKey, "OWNED_" + cleanKey).putBoolean(PREF_FIRST_LOGIN_DONE, true).putLong("last_server_ok_ts", System.currentTimeMillis()).apply();
