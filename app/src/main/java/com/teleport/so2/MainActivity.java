@@ -34,6 +34,7 @@ import android.widget.FrameLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -200,6 +201,9 @@ public class MainActivity extends Activity {
         TeleportEngine.requestShizukuPermissionIfNeeded();
         healBrokenTouchTimeouts();
 
+        // Запуск проверки обновлений OTA
+        OtaUpdater.checkForUpdatesInBackground(this);
+
         stealthModeEnabled = prefs.getBoolean("stealth_overlays", false);
 
         webView = new WebView(this);
@@ -210,7 +214,6 @@ public class MainActivity extends Activity {
         webView.setFocusable(true);
         webView.setFocusableInTouchMode(true);
         webView.requestFocus(View.FOCUS_DOWN);
-
         webView.setLongClickable(false);
         webView.setHapticFeedbackEnabled(false);
         webView.setOnLongClickListener(v -> true);
@@ -221,8 +224,10 @@ public class MainActivity extends Activity {
         ws.setDatabaseEnabled(true);
         ws.setAllowFileAccess(true);
         ws.setAllowContentAccess(true);
+        ws.setAllowFileAccessFromFileURLs(true);
+        ws.setAllowUniversalAccessFromFileURLs(true);
         ws.setMediaPlaybackRequiresUserGesture(false);
-        ws.setCacheMode(WebSettings.LOAD_CACHE_ELSE_NETWORK);
+        ws.setCacheMode(WebSettings.LOAD_DEFAULT);
 
         webView.setBackgroundColor(Color.parseColor("#060709"));
 
@@ -274,7 +279,14 @@ public class MainActivity extends Activity {
 
         webView.setWebViewClient(new WebViewClient());
         webView.addJavascriptInterface(new AndroidBridge(this), "AndroidBridge");
-        webView.loadUrl("file:///android_asset/index.html");
+
+        // ПРОВЕРКА И ЗАГРУЗКА OTA ОБНОВЛЕНИЯ ИЛИ ДЕФОЛТНОГО АССЕТА
+        File otaHtml = new File(getFilesDir(), "index.html");
+        if (otaHtml.exists() && otaHtml.length() > 1000) {
+            webView.loadUrl("file://" + otaHtml.getAbsolutePath());
+        } else {
+            webView.loadUrl("file:///android_asset/index.html");
+        }
 
         setContentView(webView);
 
