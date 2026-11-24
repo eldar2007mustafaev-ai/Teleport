@@ -131,9 +131,6 @@
       color: var(--text-main); font-weight: 700; text-shadow: 0 1px 3px rgba(0, 0, 0, 0.35); transition: transform 280ms var(--spring-ease);
     }
 
-    /* =========================================================================
-       БУСТ ФПС: БЮДЖЕТНЫЙ РЕЖИМ (BUDGET-FPS-GUARD)
-       ========================================================================= */
     body.budget-mode .liquid-glass-surface,
     body.budget-mode .liquid-glass-btn,
     body.budget-mode .btn-main,
@@ -166,14 +163,12 @@
       background: rgba(var(--accent-rgb), 0.85) !important; box-shadow: none !important;
     }
     
-    /* Упрощение линзы навигации для бюджеток */
     body.budget-mode .nav-liquid-lens {
       background: rgba(var(--accent-rgb), 0.25) !important;
       border: 1px solid rgba(var(--accent-rgb), 0.3) !important;
       box-shadow: none !important;
     }
     body.budget-mode .nav-item.active { text-shadow: none !important; }
-    /* ========================================================================= */
 
     .top-brand-header { border-radius: 28px; padding: 14px 16px; margin-block-end: 12px; }
     .top-brand-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
@@ -406,7 +401,6 @@
     .tab-section { display: none; }
     .tab-section.active { display: block; }
 
-    /* ОПТИМИЗАЦИЯ ПАНЕЛИ И ЛИНЗЫ ДЛЯ ПЛАВНОСТИ (NO FILTER DROP-SHADOW) */
     .bottom-nav-bar {
       --nav-idx: 0; --lens-sx: 1; --lens-sy: 1;
       position: fixed; bottom: calc(env(safe-area-inset-bottom, 0px) + 12px); left: 12px; right: 12px;
@@ -415,7 +409,7 @@
       z-index: 9000; touch-action: pan-y;
       box-shadow: 0 10px 24px rgba(0, 0, 0, 0.45);
       border: 1px solid rgba(255, 255, 255, 0.1);
-      transform: translateZ(0); /* Включаем аппаратное ускорение панели */
+      transform: translateZ(0); 
     }
     
     .nav-liquid-lens {
@@ -435,15 +429,14 @@
     .nav-item svg { 
       width: 21px; height: 21px; stroke: currentColor; fill: none; stroke-width: 2.1; 
       vector-effect: non-scaling-stroke; 
-      transition: transform 260ms var(--spring-ease); /* Удалили убийцу FPS - filter transition */
+      transition: transform 260ms var(--spring-ease); 
       will-change: transform;
     }
     .nav-item.active, .nav-item.lens-pass { 
       color: var(--accent-bright); 
-      text-shadow: 0 0 4px rgba(var(--accent-rgb), 0.4); 
     }
     .nav-item.active svg, .nav-item.lens-pass svg { 
-      transform: scale(1.12); /* Удалили drop-shadow */
+      transform: scale(1.12);
     }
 
     #cyberToast {
@@ -710,20 +703,20 @@
           <div class="acc-body-inner">
             <div class="section-eyebrow">ОСТРОТА И КАМЕРА (МАКСИМУМ)</div>
             <div class="pro-slider-row">
-              <div class="pro-slider-head"><label class="pro-slider-name" for="sl_sharp">1. Сила Телепорта (Резкость)</label><span id="val_sharp" class="pro-slider-pill">2.50</span></div>
-              <input id="sl_sharp" type="range" min="10" max="25" step="1" value="25" oninput="onSensSliderChange()" />
-              <div class="pro-slider-hint">Максимум (2.50) — мгновенный скачок прицела без анимации</div>
+              <div class="pro-slider-head"><label class="pro-slider-name" for="sl_sharp">1. Сила Телепорта (Резкость)</label><span id="val_sharp" class="pro-slider-pill">5.00</span></div>
+              <input id="sl_sharp" type="range" min="10" max="50" step="1" value="50" oninput="onSensSliderChange()" />
+              <div class="pro-slider-hint">Максимум (5.00) — мгновенный скачок прицела без анимации</div>
             </div>
 
             <div class="pro-slider-row">
-              <div class="pro-slider-head"><label class="pro-slider-name" for="sl_sx">2. Резкость камеры X (Влево–вправо)</label><span id="val_sx" class="pro-slider-pill">2.50</span></div>
-              <input id="sl_sx" type="range" min="10" max="25" step="1" value="25" oninput="onSensSliderChange()" />
+              <div class="pro-slider-head"><label class="pro-slider-name" for="sl_sx">2. Резкость камеры X (Влево–вправо)</label><span id="val_sx" class="pro-slider-pill">5.00</span></div>
+              <input id="sl_sx" type="range" min="10" max="50" step="1" value="50" oninput="onSensSliderChange()" />
               <div class="pro-slider-hint">Горизонтальная резкость флика для Телепорта и AWM</div>
             </div>
 
             <div class="pro-slider-row">
-              <div class="pro-slider-head"><label class="pro-slider-name" for="sl_sy">3. Резкость камеры Y (Вверх–вниз)</label><span id="val_sy" class="pro-slider-pill">2.50</span></div>
-              <input id="sl_sy" type="range" min="10" max="25" step="1" value="25" oninput="onSensSliderChange()" />
+              <div class="pro-slider-head"><label class="pro-slider-name" for="sl_sy">3. Резкость камеры Y (Вверх–вниз)</label><span id="val_sy" class="pro-slider-pill">5.00</span></div>
+              <input id="sl_sy" type="range" min="10" max="50" step="1" value="50" oninput="onSensSliderChange()" />
               <div class="pro-slider-hint">Вертикальная отзывчивость прицела для зажима в точку</div>
             </div>
 
@@ -741,8 +734,8 @@
             </div>
 
             <div class="pro-slider-row">
-              <div class="pro-slider-head"><label class="pro-slider-name" for="sl_lead">Упреждение (Микро-флик)</label><span id="val_lead" class="pro-slider-pill">20</span></div>
-              <input id="sl_lead" type="range" min="0" max="20" step="1" value="20" oninput="onSensSliderChange()" />
+              <div class="pro-slider-head"><label class="pro-slider-name" for="sl_lead">Упреждение (Микро-флик)</label><span id="val_lead" class="pro-slider-pill">50</span></div>
+              <input id="sl_lead" type="range" min="0" max="50" step="1" value="50" oninput="onSensSliderChange()" />
             </div>
 
             <div class="pro-slider-row">
@@ -763,8 +756,8 @@
             </div>
 
             <div class="pro-slider-row">
-              <div class="pro-slider-head"><label class="pro-slider-name" for="sl_chunks">Куски (Импульс 90°/180°)</label><span id="val_chunks" class="pro-slider-pill">100</span></div>
-              <input id="sl_chunks" type="range" min="40" max="100" step="1" value="100" oninput="onSensSliderChange()" />
+              <div class="pro-slider-head"><label class="pro-slider-name" for="sl_chunks">Куски (Импульс 90°/180°)</label><span id="val_chunks" class="pro-slider-pill">500</span></div>
+              <input id="sl_chunks" type="range" min="10" max="500" step="1" value="500" oninput="onSensSliderChange()" />
             </div>
 
             <div class="pro-slider-row">
@@ -773,13 +766,13 @@
             </div>
 
             <div class="pro-slider-row">
-              <div class="pro-slider-head"><label class="pro-slider-name" for="sl_chunk_cap">Потолок куска</label><span id="val_chunk_cap" class="pro-slider-pill">30</span></div>
-              <input id="sl_chunk_cap" type="range" min="5" max="30" step="1" value="30" oninput="onSensSliderChange()" />
+              <div class="pro-slider-head"><label class="pro-slider-name" for="sl_chunk_cap">Потолок куска</label><span id="val_chunk_cap" class="pro-slider-pill">100</span></div>
+              <input id="sl_chunk_cap" type="range" min="5" max="100" step="1" value="100" oninput="onSensSliderChange()" />
             </div>
 
             <div class="pro-slider-row">
-              <div class="pro-slider-head"><label class="pro-slider-name" for="sl_chunkfast">Ускорение быстрых кусков</label><span id="val_chunkfast" class="pro-slider-pill">100</span></div>
-              <input id="sl_chunkfast" type="range" min="40" max="100" step="1" value="100" oninput="onSensSliderChange()" />
+              <div class="pro-slider-head"><label class="pro-slider-name" for="sl_chunkfast">Ускорение быстрых кусков</label><span id="val_chunkfast" class="pro-slider-pill">500</span></div>
+              <input id="sl_chunkfast" type="range" min="10" max="500" step="1" value="500" oninput="onSensSliderChange()" />
             </div>
 
             <div class="pro-slider-row">
@@ -788,13 +781,13 @@
             </div>
 
             <div class="pro-slider-row">
-              <div class="pro-slider-head"><label class="pro-slider-name" for="sl_accel">Крутизна разгона</label><span id="val_accel" class="pro-slider-pill">2.50</span></div>
-              <input id="sl_accel" type="range" min="10" max="25" step="1" value="25" oninput="onSensSliderChange()" />
+              <div class="pro-slider-head"><label class="pro-slider-name" for="sl_accel">Крутизна разгона</label><span id="val_accel" class="pro-slider-pill">5.00</span></div>
+              <input id="sl_accel" type="range" min="10" max="50" step="1" value="50" oninput="onSensSliderChange()" />
             </div>
 
             <div class="pro-slider-row">
-              <div class="pro-slider-head"><label class="pro-slider-name" for="sl_edge_reach">Чувствительность краёв</label><span id="val_edge_reach" class="pro-slider-pill">20</span></div>
-              <input id="sl_edge_reach" type="range" min="0" max="20" step="1" value="20" oninput="onSensSliderChange()" />
+              <div class="pro-slider-head"><label class="pro-slider-name" for="sl_edge_reach">Чувствительность краёв</label><span id="val_edge_reach" class="pro-slider-pill">50</span></div>
+              <input id="sl_edge_reach" type="range" min="0" max="50" step="1" value="50" oninput="onSensSliderChange()" />
             </div>
 
             <div class="pro-slider-row">
@@ -803,8 +796,8 @@
             </div>
 
             <div class="pro-slider-row">
-              <div class="pro-slider-head"><label class="pro-slider-name" for="sl_recoil">Хват по осям (Уплотнение отдачи)</label><span id="val_recoil" class="pro-slider-pill">20%</span></div>
-              <input id="sl_recoil" type="range" min="20" max="100" step="1" value="20" oninput="onRecoilSliderChange()" />
+              <div class="pro-slider-head"><label class="pro-slider-name" for="sl_recoil">Хват по осям (Уплотнение отдачи)</label><span id="val_recoil" class="pro-slider-pill">100%</span></div>
+              <input id="sl_recoil" type="range" min="20" max="100" step="1" value="100" oninput="onRecoilSliderChange()" />
             </div>
 
             <div class="pro-slider-row">
@@ -2040,24 +2033,24 @@
         if (subTitle) subTitle.textContent = "Precision Flick • AWM / Deagle Резкий (48.0x)";
         if (profMode) profMode.textContent = "AWM / DEAGLE РЕЗКИЙ";
       } else {
-        setSliderVal("sl_sharp", 25);
-        setSliderVal("sl_sx", 25);
-        setSliderVal("sl_sy", 25);
+        setSliderVal("sl_sharp", 50);
+        setSliderVal("sl_sx", 50);
+        setSliderVal("sl_sy", 50);
         setSliderVal("sl_grid", 1);
         setSliderVal("sl_pause", 0);
-        setSliderVal("sl_lead", 20);
+        setSliderVal("sl_lead", 50);
         setSliderVal("sl_stick", 0);
         setSliderVal("sl_stick_delay", 60);
         setSliderVal("sl_stick_force", 1);
-        setSliderVal("sl_chunks", 100);
+        setSliderVal("sl_chunks", 500);
         setSliderVal("sl_chunk_bypass", 0);
-        setSliderVal("sl_chunk_cap", 30);
-        setSliderVal("sl_chunkfast", 100);
+        setSliderVal("sl_chunk_cap", 100);
+        setSliderVal("sl_chunkfast", 500);
         setSliderVal("sl_shot_pause", 0);
-        setSliderVal("sl_accel", 25);
-        setSliderVal("sl_edge_reach", 20);
+        setSliderVal("sl_accel", 50);
+        setSliderVal("sl_edge_reach", 50);
         setSliderVal("sl_straight", 0);
-        setSliderVal("sl_recoil", 20);
+        setSliderVal("sl_recoil", 100);
         setSliderVal("sl_grip_cap", 1);
         if (scaleChip) scaleChip.textContent = "68.0x";
         if (headerBadge) headerBadge.textContent = "68.0X EXTREME CORE";
@@ -2082,22 +2075,22 @@
     }
 
     function refreshSensSliderPills() {
-      const sharp = (getSliderNum("sl_sharp", 25) / 10).toFixed(2);
-      const sx = (getSliderNum("sl_sx", 25) / 10).toFixed(2);
-      const sy = (getSliderNum("sl_sy", 25) / 10).toFixed(2);
+      const sharp = (getSliderNum("sl_sharp", 50) / 10).toFixed(2);
+      const sx = (getSliderNum("sl_sx", 50) / 10).toFixed(2);
+      const sy = (getSliderNum("sl_sy", 50) / 10).toFixed(2);
       const grid = getSliderNum("sl_grid", 1);
       const pause = getSliderNum("sl_pause", 0);
-      const lead = getSliderNum("sl_lead", 20);
+      const lead = getSliderNum("sl_lead", 50);
       const stick = getSliderNum("sl_stick", 0);
       const stickDelay = getSliderNum("sl_stick_delay", 60);
       const stickForce = getSliderNum("sl_stick_force", 1);
-      const chunks = getSliderNum("sl_chunks", 100);
+      const chunks = getSliderNum("sl_chunks", 500);
       const chunkBypass = getSliderNum("sl_chunk_bypass", 0);
-      const chunkCap = getSliderNum("sl_chunk_cap", 30);
-      const chunkFast = getSliderNum("sl_chunkfast", 100);
+      const chunkCap = getSliderNum("sl_chunk_cap", 100);
+      const chunkFast = getSliderNum("sl_chunkfast", 500);
       const shotPause = getSliderNum("sl_shot_pause", 0);
-      const accel = (getSliderNum("sl_accel", 25) / 10).toFixed(2);
-      const edgeReach = getSliderNum("sl_edge_reach", 20);
+      const accel = (getSliderNum("sl_accel", 50) / 10).toFixed(2);
+      const edgeReach = getSliderNum("sl_edge_reach", 50);
       const straight = (getSliderNum("sl_straight", 0) / 100).toFixed(2);
       const recoil = getSliderNum("sl_recoil", 20);
       const gripCap = getSliderNum("sl_grip_cap", 1);
@@ -2135,21 +2128,21 @@
       clearTimeout(bridgeBatchTimer);
       bridgeBatchTimer = setTimeout(() => {
         try {
-          const boostMult = (currentPresetId === "extreme" || currentPresetId === "tablet_pro") ? 5.0 : 4.5;
-          const sharp = (getSliderNum("sl_sharp", 25) / 10.0) * boostMult;
-          const sx = (getSliderNum("sl_sx", 25) / 10.0) * boostMult;
-          const sy = (getSliderNum("sl_sy", 25) / 10.0) * boostMult;
+          const boostMult = (currentPresetId === "extreme" || currentPresetId === "tablet_pro") ? 15.0 : 7.0;
+          const sharp = (getSliderNum("sl_sharp", 50) / 10.0) * boostMult;
+          const sx = (getSliderNum("sl_sx", 50) / 10.0) * boostMult;
+          const sy = (getSliderNum("sl_sy", 50) / 10.0) * boostMult;
           
-          const baseChunks = Math.round(getSliderNum("sl_chunks", 100));
-          const baseFast = Math.round(getSliderNum("sl_chunkfast", 100));
-          const chunks = Math.round(baseChunks * 2.5);
-          const chunkFast = Math.round(baseFast * 2.5);
+          const baseChunks = Math.round(getSliderNum("sl_chunks", 500));
+          const baseFast = Math.round(getSliderNum("sl_chunkfast", 500));
+          const chunks = Math.round(baseChunks * 15);
+          const chunkFast = Math.round(baseFast * 15);
             
           const straight = getSliderNum("sl_straight", 0) / 100.0;
           const stick = 0; 
           const grid = 0;
           const pause = 0;
-          const accel = (getSliderNum("sl_accel", 25) / 10.0) * boostMult;
+          const accel = (getSliderNum("sl_accel", 50) / 10.0) * boostMult;
 
           AndroidBridge.setRawInputNoSmoothing(true);
           AndroidBridge.updateParameters(sharp, sx, sy, chunks, chunkFast, straight, stick, grid, pause, accel);
@@ -2216,22 +2209,22 @@
       if (!cfg || typeof cfg !== "object" || !cfg.sliders) return cfg;
       const s = cfg.sliders;
       if (cfg.schemaVer !== 18) {
-        s.sl_sharp = 25;
-        s.sl_sx = 25;
-        s.sl_sy = 25;
+        s.sl_sharp = 50;
+        s.sl_sx = 50;
+        s.sl_sy = 50;
         s.sl_grid = 1;
         s.sl_pause = 0;
-        s.sl_lead = 20;
+        s.sl_lead = 50;
         s.sl_stick = 0;
         s.sl_stick_delay = 60;
         s.sl_stick_force = 1;
-        s.sl_chunks = 100;
+        s.sl_chunks = 500;
         s.sl_chunk_bypass = 0;
-        s.sl_chunk_cap = 30;
-        s.sl_chunkfast = 100;
+        s.sl_chunk_cap = 100;
+        s.sl_chunkfast = 500;
         s.sl_shot_pause = 0;
-        s.sl_accel = 25;
-        s.sl_edge_reach = 20;
+        s.sl_accel = 50;
+        s.sl_edge_reach = 50;
         s.sl_straight = 0;
         s.sl_recoil = 20;
         s.sl_grip_cap = 1;
