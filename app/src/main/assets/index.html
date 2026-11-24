@@ -417,7 +417,7 @@
             <div id="preset_extreme" class="character-card active" onclick="selectTeleportPreset('extreme')">
               <div style="min-width:0;">
                 <div class="char-title">1 · ТЕЛЕПОРТ УЛЬТРА <span class="char-tag">QUANTUM SNAP • 68.0X</span></div>
-                <div class="char-desc">Мгновенная телепортация прицела в точку за 1 кадр: убрана вся вязкость осей, максимальный импульс кусков 1000 и прямой Raw-отклик 720 Гц.</div>
+                <div class="char-desc">Экстремальный квантовый телепорт. Сглаживание убито в ноль. Прицел прыгает чёткими пиксельными рывками без инерции.</div>
               </div>
               <span class="char-arrow" aria-hidden="true">→</span>
             </div>
@@ -455,7 +455,7 @@
             <div class="acc-icon" aria-hidden="true">🎛</div>
             <div class="acc-title-wrap">
               <div class="acc-title">Тонкая настройка и Куски <span class="badge-chip">19 ПАРАМЕТРОВ</span></div>
-              <div class="acc-sub">Все бафы Телепорта на максимуме, замедлители на нуле</div>
+              <div class="acc-sub">Лимиты резкости и кусков разблокированы (х10)</div>
             </div>
           </div>
           <div class="acc-chevron" aria-hidden="true">⌄</div>
@@ -464,18 +464,18 @@
           <div class="acc-body-inner">
             <div class="section-eyebrow">ОСТРОТА И КАМЕРА (МАКСИМУМ)</div>
             <div class="pro-slider-row">
-              <div class="pro-slider-head"><label class="pro-slider-name" for="sl_sharp">1. Сила Телепорта (Резкость)</label><span id="val_sharp" class="pro-slider-pill">10.00</span></div>
-              <input id="sl_sharp" type="range" min="10" max="100" step="1" value="100" oninput="onSensSliderChange()" />
-              <div class="pro-slider-hint">Максимум (10.00) — мгновенный скачок прицела без анимации</div>
+              <div class="pro-slider-head"><label class="pro-slider-name" for="sl_sharp">1. Сила Телепорта (Резкость)</label><span id="val_sharp" class="pro-slider-pill">100.00</span></div>
+              <input id="sl_sharp" type="range" min="10" max="1000" step="1" value="1000" oninput="onSensSliderChange()" />
+              <div class="pro-slider-hint">Максимум (100.00) — мгновенный скачок прицела без анимации</div>
             </div>
             <div class="pro-slider-row">
-              <div class="pro-slider-head"><label class="pro-slider-name" for="sl_sx">2. Резкость камеры X (Влево–вправо)</label><span id="val_sx" class="pro-slider-pill">10.00</span></div>
-              <input id="sl_sx" type="range" min="10" max="100" step="1" value="100" oninput="onSensSliderChange()" />
+              <div class="pro-slider-head"><label class="pro-slider-name" for="sl_sx">2. Резкость камеры X (Влево–вправо)</label><span id="val_sx" class="pro-slider-pill">100.00</span></div>
+              <input id="sl_sx" type="range" min="10" max="1000" step="1" value="1000" oninput="onSensSliderChange()" />
               <div class="pro-slider-hint">Горизонтальная резкость флика для Телепорта и AWM</div>
             </div>
             <div class="pro-slider-row">
-              <div class="pro-slider-head"><label class="pro-slider-name" for="sl_sy">3. Резкость камеры Y (Вверх–вниз)</label><span id="val_sy" class="pro-slider-pill">10.00</span></div>
-              <input id="sl_sy" type="range" min="10" max="100" step="1" value="100" oninput="onSensSliderChange()" />
+              <div class="pro-slider-head"><label class="pro-slider-name" for="sl_sy">3. Резкость камеры Y (Вверх–вниз)</label><span id="val_sy" class="pro-slider-pill">100.00</span></div>
+              <input id="sl_sy" type="range" min="10" max="1000" step="1" value="1000" oninput="onSensSliderChange()" />
               <div class="pro-slider-hint">Вертикальная отзывчивость прицела для зажима в точку</div>
             </div>
 
@@ -530,8 +530,8 @@
               <input id="sl_shot_pause" type="range" min="0" max="15" step="1" value="0" oninput="onSensSliderChange()" />
             </div>
             <div class="pro-slider-row">
-              <div class="pro-slider-head"><label class="pro-slider-name" for="sl_accel">Крутизна разгона</label><span id="val_accel" class="pro-slider-pill">10.00</span></div>
-              <input id="sl_accel" type="range" min="10" max="100" step="1" value="100" oninput="onSensSliderChange()" />
+              <div class="pro-slider-head"><label class="pro-slider-name" for="sl_accel">Крутизна разгона</label><span id="val_accel" class="pro-slider-pill">100.00</span></div>
+              <input id="sl_accel" type="range" min="10" max="1000" step="1" value="1000" oninput="onSensSliderChange()" />
             </div>
             <div class="pro-slider-row">
               <div class="pro-slider-head"><label class="pro-slider-name" for="sl_edge_reach">Чувствительность краёв</label><span id="val_edge_reach" class="pro-slider-pill">100</span></div>
@@ -1701,9 +1701,9 @@
       const profMode = document.getElementById("profDeviceModeText");
 
       if (currentPresetId === "rog_pro") {
-        setSliderVal("sl_sharp", 25);
-        setSliderVal("sl_sx", 25);
-        setSliderVal("sl_sy", 25);
+        setSliderVal("sl_sharp", 250);
+        setSliderVal("sl_sx", 250);
+        setSliderVal("sl_sy", 250);
         setSliderVal("sl_grid", 1);
         setSliderVal("sl_pause", 0);
         setSliderVal("sl_lead", 20);
@@ -1715,7 +1715,7 @@
         setSliderVal("sl_chunk_cap", 30);
         setSliderVal("sl_chunkfast", 100);
         setSliderVal("sl_shot_pause", 0);
-        setSliderVal("sl_accel", 25);
+        setSliderVal("sl_accel", 250);
         setSliderVal("sl_edge_reach", 20);
         setSliderVal("sl_straight", 0);
         setSliderVal("sl_recoil", 20);
@@ -1725,9 +1725,9 @@
         if (subTitle) subTitle.textContent = "ASUS ROG Touch Matrix • 2 · Конфиг ROG Phone (720Hz)";
         if (profMode) profMode.textContent = "КОНФИГ ROG PHONE";
       } else if (currentPresetId === "ios_pro") {
-        setSliderVal("sl_sharp", 24);
-        setSliderVal("sl_sx", 24);
-        setSliderVal("sl_sy", 24);
+        setSliderVal("sl_sharp", 240);
+        setSliderVal("sl_sx", 240);
+        setSliderVal("sl_sy", 240);
         setSliderVal("sl_grid", 1);
         setSliderVal("sl_pause", 0);
         setSliderVal("sl_lead", 19);
@@ -1739,7 +1739,7 @@
         setSliderVal("sl_chunk_cap", 28);
         setSliderVal("sl_chunkfast", 94);
         setSliderVal("sl_shot_pause", 0);
-        setSliderVal("sl_accel", 22);
+        setSliderVal("sl_accel", 220);
         setSliderVal("sl_edge_reach", 20);
         setSliderVal("sl_straight", 10);
         setSliderVal("sl_recoil", 28);
@@ -1749,9 +1749,9 @@
         if (subTitle) subTitle.textContent = "Apple CoreAnimation Curve • 3 · Конфиг iOS (iPhone / iPad Pro)";
         if (profMode) profMode.textContent = "КОНФИГ iOS PRO";
       } else if (currentPresetId === "budget_pro") {
-        setSliderVal("sl_sharp", 25);
-        setSliderVal("sl_sx", 25);
-        setSliderVal("sl_sy", 24);
+        setSliderVal("sl_sharp", 250);
+        setSliderVal("sl_sx", 250);
+        setSliderVal("sl_sy", 240);
         setSliderVal("sl_grid", 1);
         setSliderVal("sl_pause", 0);
         setSliderVal("sl_lead", 20);
@@ -1763,7 +1763,7 @@
         setSliderVal("sl_chunk_cap", 30);
         setSliderVal("sl_chunkfast", 98);
         setSliderVal("sl_shot_pause", 0);
-        setSliderVal("sl_accel", 24);
+        setSliderVal("sl_accel", 240);
         setSliderVal("sl_edge_reach", 20);
         setSliderVal("sl_straight", 0);
         setSliderVal("sl_recoil", 22);
@@ -1773,9 +1773,9 @@
         if (subTitle) subTitle.textContent = "Frame Guard • 4 · Для Бюджеток и A57 (48.0x)";
         if (profMode) profMode.textContent = "ДЛЯ БЮДЖЕТОК И A57";
       } else if (currentPresetId === "tablet_pro") {
-        setSliderVal("sl_sharp", 25);
-        setSliderVal("sl_sx", 25);
-        setSliderVal("sl_sy", 25);
+        setSliderVal("sl_sharp", 250);
+        setSliderVal("sl_sx", 250);
+        setSliderVal("sl_sy", 250);
         setSliderVal("sl_grid", 1);
         setSliderVal("sl_pause", 0);
         setSliderVal("sl_lead", 20);
@@ -1787,7 +1787,7 @@
         setSliderVal("sl_chunk_cap", 30);
         setSliderVal("sl_chunkfast", 100);
         setSliderVal("sl_shot_pause", 0);
-        setSliderVal("sl_accel", 25);
+        setSliderVal("sl_accel", 250);
         setSliderVal("sl_edge_reach", 20);
         setSliderVal("sl_straight", 0);
         setSliderVal("sl_recoil", 20);
@@ -1797,9 +1797,9 @@
         if (subTitle) subTitle.textContent = "Pad Impulse Transfer • Для Падов Ультра (128.0x)";
         if (profMode) profMode.textContent = "ДЛЯ ПАДОВ УЛЬТРА";
       } else if (currentPresetId === "clean_sharp") {
-        setSliderVal("sl_sharp", 25);
-        setSliderVal("sl_sx", 25);
-        setSliderVal("sl_sy", 24);
+        setSliderVal("sl_sharp", 250);
+        setSliderVal("sl_sx", 250);
+        setSliderVal("sl_sy", 240);
         setSliderVal("sl_grid", 1);
         setSliderVal("sl_pause", 0);
         setSliderVal("sl_lead", 20);
@@ -1811,7 +1811,7 @@
         setSliderVal("sl_chunk_cap", 30);
         setSliderVal("sl_chunkfast", 98);
         setSliderVal("sl_shot_pause", 0);
-        setSliderVal("sl_accel", 24);
+        setSliderVal("sl_accel", 240);
         setSliderVal("sl_edge_reach", 20);
         setSliderVal("sl_straight", 5);
         setSliderVal("sl_recoil", 25);
@@ -1821,10 +1821,10 @@
         if (subTitle) subTitle.textContent = "Precision Flick • AWM / Deagle Резкий (48.0x)";
         if (profMode) profMode.textContent = "AWM / DEAGLE РЕЗКИЙ";
       } else {
-        // ТЕЛЕПОРТ УЛЬТРА 
-        setSliderVal("sl_sharp", 100);
-        setSliderVal("sl_sx", 100);
-        setSliderVal("sl_sy", 100);
+        // ТЕЛЕПОРТ УЛЬТРА - МАКСИМАЛЬНЫЙ БАФФ (РЕЗКОСТЬ 100.0)
+        setSliderVal("sl_sharp", 1000); // 100.00
+        setSliderVal("sl_sx", 1000);
+        setSliderVal("sl_sy", 1000);
         setSliderVal("sl_grid", 10);     
         setSliderVal("sl_pause", 0);     // Жестко 0
         setSliderVal("sl_lead", 100);
@@ -1836,7 +1836,7 @@
         setSliderVal("sl_chunk_cap", 100);
         setSliderVal("sl_chunkfast", 1000); // МАКСИМУМ 1000
         setSliderVal("sl_shot_pause", 0);  // Жестко 0
-        setSliderVal("sl_accel", 100);
+        setSliderVal("sl_accel", 1000); // 100.00
         setSliderVal("sl_edge_reach", 100);
         setSliderVal("sl_straight", 0);    
         setSliderVal("sl_recoil", 100);
@@ -1864,9 +1864,9 @@
     }
 
     function refreshSensSliderPills() {
-      const sharp = (getSliderNum("sl_sharp", 100) / 10).toFixed(2);
-      const sx = (getSliderNum("sl_sx", 100) / 10).toFixed(2);
-      const sy = (getSliderNum("sl_sy", 100) / 10).toFixed(2);
+      const sharp = (getSliderNum("sl_sharp", 1000) / 10).toFixed(2);
+      const sx = (getSliderNum("sl_sx", 1000) / 10).toFixed(2);
+      const sy = (getSliderNum("sl_sy", 1000) / 10).toFixed(2);
       const grid = getSliderNum("sl_grid", 1);
       const pause = getSliderNum("sl_pause", 0);
       const lead = getSliderNum("sl_lead", 100);
@@ -1878,7 +1878,7 @@
       const chunkCap = getSliderNum("sl_chunk_cap", 100);
       const chunkFast = getSliderNum("sl_chunkfast", 1000);
       const shotPause = getSliderNum("sl_shot_pause", 0);
-      const accel = (getSliderNum("sl_accel", 100) / 10).toFixed(2);
+      const accel = (getSliderNum("sl_accel", 1000) / 10).toFixed(2);
       const edgeReach = getSliderNum("sl_edge_reach", 100);
       const straight = (getSliderNum("sl_straight", 0) / 100).toFixed(2);
       const recoil = getSliderNum("sl_recoil", 100);
@@ -1917,10 +1917,11 @@
       clearTimeout(bridgeBatchTimer);
       bridgeBatchTimer = setTimeout(() => {
         try {
-          const boostMult = 10.0;
-          const sharp = (getSliderNum("sl_sharp", 100) / 10.0) * boostMult;
-          const sx = (getSliderNum("sl_sx", 100) / 10.0) * boostMult;
-          const sy = (getSliderNum("sl_sy", 100) / 10.0) * boostMult;
+          // БЕЗУМНЫЙ МНОЖИТЕЛЬ (x50) для передачи в систему!
+          const boostMult = 50.0; 
+          const sharp = (getSliderNum("sl_sharp", 1000) / 10.0) * boostMult; // 100.0 * 50 = 5000.0
+          const sx = (getSliderNum("sl_sx", 1000) / 10.0) * boostMult;
+          const sy = (getSliderNum("sl_sy", 1000) / 10.0) * boostMult;
           
           const chunks = Math.round(getSliderNum("sl_chunks", 1000));
           const chunkFast = Math.round(getSliderNum("sl_chunkfast", 1000));
@@ -1929,7 +1930,7 @@
           const stick = getSliderNum("sl_stick", 0); 
           const grid = getSliderNum("sl_grid", 1);
           const pause = getSliderNum("sl_pause", 0);
-          const accel = (getSliderNum("sl_accel", 100) / 10.0) * boostMult;
+          const accel = (getSliderNum("sl_accel", 1000) / 10.0) * boostMult; // 100.0 * 50 = 5000.0
 
           AndroidBridge.setRawInputNoSmoothing(true);
           AndroidBridge.updateParameters(sharp, sx, sy, chunks, chunkFast, straight, stick, grid, pause, accel);
@@ -1996,9 +1997,9 @@
       if (!cfg || typeof cfg !== "object" || !cfg.sliders) return cfg;
       const s = cfg.sliders;
       if (cfg.schemaVer !== 18) {
-        s.sl_sharp = 100;
-        s.sl_sx = 100;
-        s.sl_sy = 100;
+        s.sl_sharp = 1000;
+        s.sl_sx = 1000;
+        s.sl_sy = 1000;
         s.sl_grid = 10;
         s.sl_pause = 0;
         s.sl_lead = 100;
@@ -2010,7 +2011,7 @@
         s.sl_chunk_cap = 100;
         s.sl_chunkfast = 1000;
         s.sl_shot_pause = 0;
-        s.sl_accel = 100;
+        s.sl_accel = 1000;
         s.sl_edge_reach = 100;
         s.sl_straight = 0;
         s.sl_recoil = 100;
