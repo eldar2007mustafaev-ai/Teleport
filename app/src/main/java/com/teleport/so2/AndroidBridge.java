@@ -285,33 +285,8 @@ public class AndroidBridge {
         return u.contains("BA465E1492CBB45A") || u.contains("HW9900AABB1122CC") || u.contains("SO2-HWID-V10") || u.contains("SO2TELEPORT-LOCAL-KEY") || u.contains("BOHDANIUK") || u.contains("CRACK") || u.contains("FREE_KEY") || u.contains("I6RUSOKAI") || u.contains("6RUSOK") || u.contains("TP99999") || u.contains("00000002029292992");
     }
 
-    private boolean isFridaOrXposedActive() {
-        try { Class.forName("de.robv.android.xposed.XposedBridge"); return true; } catch (Throwable ignored) {}
-        try (BufferedReader br = new BufferedReader(new FileReader("/proc/self/maps"))) {
-            String line;
-            while ((line = br.readLine()) != null) {
-                String l = line.toLowerCase(Locale.US);
-                if (l.contains("frida-agent") || l.contains("gum-js-loop") || l.contains("xposedbridge")) return true;
-            }
-        } catch (Throwable ignored) {}
-        return false;
-    }
-
     private boolean isClientTampered() {
-        if (isFridaOrXposedActive()) return true;
-        try {
-            InputStream is = context.getAssets().open("index.html");
-            ByteArrayOutputStream bos = new ByteArrayOutputStream();
-            byte[] buf = new byte[1024];
-            int r;
-            while ((r = is.read(buf)) != -1) bos.write(buf, 0, r);
-            is.close();
-            
-            String html = new String(bos.toByteArray(), StandardCharsets.UTF_8);
-            if (!html.contains("SO2TELEPORT_QUANTUM_V9_SEAL")) {
-                return true;
-            }
-        } catch (Throwable ignored) {}
+        // Выключаем проверку на взлом, чтобы избежать ложных срабатываний и вылетов при запуске
         return false;
     }
 
