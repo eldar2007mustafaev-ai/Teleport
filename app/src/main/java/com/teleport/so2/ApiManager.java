@@ -14,13 +14,6 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Set;
-import java.util.concurrent.Callable;
-import java.util.concurrent.CompletionService;
-import java.util.concurrent.ExecutorCompletionService;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -39,10 +32,7 @@ public class ApiManager {
         getBaseHost() + ":8080/api",
         getBaseHost() + ":8080",
         getBaseHost() + ":5000/api",
-        getBaseHost() + ":5000",
-        getBaseHost() + "/api",
-        getBaseHost() + ":8000/api",
-        getBaseHost() + ":8443/api"
+        getBaseHost() + ":5000"
     };
 
     public static final int CLIENT_BUILD_VERSION = 403;
@@ -52,7 +42,6 @@ public class ApiManager {
 
     private static volatile boolean sessionVerified = false;
     private static volatile String lastWorkingBase = null;
-    private static final ExecutorService probePool = Executors.newCachedThreadPool();
 
     public static boolean isSessionVerified() {
         return sessionVerified;
@@ -195,7 +184,7 @@ public class ApiManager {
 
             String firstHwid = candidates.get(0);
             JSONObject firstPayload = buildAuthPayload("activate", cleanKey, firstHwid, cleanNick);
-            String firstRaw = postWithParallelDiscovery("/activate", firstPayload.toString());
+            String firstRaw = postSafeNetworkDiscovery("/activate", firstPayload.toString());
 
             if (firstRaw == null || firstRaw.isEmpty() || firstRaw.contains("\"offline\"")) {
                 return "{\"status\":\"offline\",\"ok\":false,\"blocked\":false,\"message\":\"Сервер временно недоступен\"}";
@@ -211,14 +200,11 @@ public class ApiManager {
                     if (!firstRes.has("matched_hwid")) {
                         firstRes.put("matched_hwid", firstHwid);
                     }
-                    if (!firstRes.has("expires_in") && firstRes.has("days_left")) {
-                        firstRes.put("expires_in", firstRes.optString("days_left"));
-                    }
                     return firstRes.toString();
                 }
             } catch (Exception ignored) {}
 
-            int limit = Math.min(candidates.size(), 6);
+            int limit = Math.min(candidates.size(), 4);
             for (int i = 0; i < limit; i++) {
                 String candidateHwid = candidates.get(i);
                 try {
@@ -235,37 +221,15 @@ public class ApiManager {
                                 if (!resAct.has("matched_hwid")) {
                                     resAct.put("matched_hwid", candidateHwid);
                                 }
-                                if (!resAct.has("expires_in") && resAct.has("days_left")) {
-                                    resAct.put("expires_in", resAct.optString("days_left"));
-                                }
                                 return resAct.toString();
                             }
                         }
                     }
-
-                    JSONObject verPayload = buildAuthPayload("verify", cleanKey, candidateHwid, cleanNick);
-                    String rawVer = postFastOnKnownBase("/verify", verPayload.toString());
-                    if (rawVer != null && rawVer.startsWith("{")) {
-                        JSONObject resVer = new JSONObject(rawVer);
-                        if (isResponseSuccess(resVer)) {
-                            sessionVerified = true;
-                            resVer.put("status", "ok");
-                            resVer.put("ok", true);
-                            if (!resVer.has("matched_hwid")) {
-                                resVer.put("matched_hwid", candidateHwid);
-                            }
-                            if (!resVer.has("expires_in") && resVer.has("days_left")) {
-                                resVer.put("expires_in", resVer.optString("days_left"));
-                            }
-                            return resVer.toString();
-                        }
-                    }
                 } catch (Exception ignored) {}
             }
-
             return lastRawResponse;
         } catch (Exception e) {
-            return "{\"status\":\"offline\",\"ok\":false,\"blocked\":false,\"message\":\"Сервер временно недоступен\"}";
+            return "{\"status\":\"offline\",\"ok\":false,\"blocked\":false,\"message\":\"Ошибка проверки ключа\"}";
         }
     }
 
@@ -280,7 +244,7 @@ public class ApiManager {
             List<String> candidates = parseCandidates(androidId);
             String firstHwid = candidates.get(0);
             JSONObject firstPayload = buildAuthPayload("verify", cleanKey, firstHwid, null);
-            String firstRaw = postWithParallelDiscovery("/verify", firstPayload.toString());
+            String firstRaw = postSafeNetworkDiscovery("/verify", firstPayload.toString());
 
             if (firstRaw == null || firstRaw.isEmpty() || firstRaw.contains("\"offline\"")) {
                 return "{\"status\":\"offline\",\"ok\":false,\"blocked\":false,\"message\":\"Ожидание связи с сервером\"}";
@@ -297,7 +261,7 @@ public class ApiManager {
                 return lastRes.toString();
             }
 
-            int limit = Math.min(candidates.size(), 6);
+            int limit = Math.min(candidates.size(), 4);
             for (int i = 0; i < limit; i++) {
                 String candidateHwid = candidates.get(i);
                 try {
@@ -316,20 +280,6 @@ public class ApiManager {
                                 }
                                 return res.toString();
                             }
-                        }
-                    }
-                    JSONObject actPayload = buildAuthPayload("activate", cleanKey, candidateHwid, "dare");
-                    String rawAct = postFastOnKnownBase("/activate", actPayload.toString());
-                    if (rawAct != null && rawAct.startsWith("{")) {
-                        JSONObject resAct = new JSONObject(rawAct);
-                        if (isResponseSuccess(resAct)) {
-                            sessionVerified = true;
-                            resAct.put("status", "ok");
-                            resAct.put("ok", true);
-                            if (!resAct.has("matched_hwid")) {
-                                resAct.put("matched_hwid", candidateHwid);
-                            }
-                            return resAct.toString();
                         }
                     }
                 } catch (Exception ignored) {}
@@ -366,7 +316,7 @@ public class ApiManager {
             payload.put("build_version", CLIENT_BUILD_VERSION);
 
             try {
-                String raw = postWithParallelDiscovery("/preset", payload.toString());
+                String raw = postSafeNetworkDiscovery("/preset", payload.toString());
                 if (raw != null && raw.startsWith("{")) {
                     JSONObject res = new JSONObject(raw);
                     if (res.has("share_code")) {
@@ -396,7 +346,7 @@ public class ApiManager {
             payload.put("share_code", shareCode == null ? "" : shareCode.trim().toUpperCase(Locale.US));
             payload.put("build_version", CLIENT_BUILD_VERSION);
 
-            String raw = postWithParallelDiscovery("/preset", payload.toString());
+            String raw = postSafeNetworkDiscovery("/preset", payload.toString());
             if (raw != null && raw.startsWith("{") && !raw.contains("\"offline\"")) {
                 return raw;
             }
@@ -408,7 +358,7 @@ public class ApiManager {
 
     public static String callFriendsApi(String jsonPayload) {
         try {
-            return postWithParallelDiscovery("/friends", jsonPayload);
+            return postSafeNetworkDiscovery("/friends", jsonPayload);
         } catch (Exception e) {
             return "{\"status\":\"error\",\"ok\":false,\"message\":\"Нет связи с сервером друзей\"}";
         }
@@ -424,10 +374,11 @@ public class ApiManager {
                 }
             } catch (Exception ignored) {}
         }
-        return postWithParallelDiscovery(path, jsonBody);
+        return postSafeNetworkDiscovery(path, jsonBody);
     }
 
-    private static String postWithParallelDiscovery(final String path, final String jsonBody) {
+    // БЕЗОПАСНЫЙ ПОСЛЕДОВАТЕЛЬНЫЙ ОПРОС (БЕЗ УТЕЧЕК ПОТОКОВ)
+    private static String postSafeNetworkDiscovery(final String path, final String jsonBody) {
         String cached = lastWorkingBase;
         if (cached != null) {
             try {
@@ -438,73 +389,56 @@ public class ApiManager {
             } catch (Exception ignored) {}
         }
 
-        CompletionService<String[]> ecs = new ExecutorCompletionService<>(probePool);
-        List<Future<String[]>> futures = new ArrayList<>();
-
-        for (final String base : API_ENDPOINTS) {
-            futures.add(ecs.submit(new Callable<String[]>() {
-                @Override
-                public String[] call() throws Exception {
-                    String resp = postJson(base + path, jsonBody, 4500);
-                    if (resp != null && resp.trim().startsWith("{")) {
-                        return new String[]{base, resp.trim()};
-                    }
-                    throw new RuntimeException("Invalid JSON");
+        // Опрашиваем только 2 главных эндпоинта по очереди, чтобы не перегружать бюджетные устройства
+        for (int i = 0; i < 2; i++) {
+            String base = API_ENDPOINTS[i];
+            try {
+                String resp = postJson(base + path, jsonBody, 3500);
+                if (resp != null && resp.trim().startsWith("{")) {
+                    lastWorkingBase = base;
+                    return resp.trim();
                 }
-            }));
-        }
-
-        long deadline = System.currentTimeMillis() + 5500L;
-        try {
-            for (int i = 0; i < futures.size(); i++) {
-                long rem = deadline - System.currentTimeMillis();
-                if (rem <= 0) break;
-                Future<String[]> completed = ecs.poll(rem, TimeUnit.MILLISECONDS);
-                if (completed == null) break;
-                try {
-                    String[] pair = completed.get();
-                    if (pair != null && pair.length == 2 && pair[1].startsWith("{")) {
-                        lastWorkingBase = pair[0];
-                        return pair[1];
-                    }
-                } catch (Exception ignored) {}
-            }
-        } catch (Exception ignored) {
-        } finally {
-            for (Future<String[]> f : futures) {
-                f.cancel(true);
-            }
+            } catch (Exception ignored) {}
         }
         return "{\"status\":\"offline\",\"ok\":false}";
     }
 
+    // БЕЗОПАСНЫЙ HTTP-КЛИЕНТ С ЗАКРЫТИЕМ СОКЕТОВ (ФИКС УТЕЧКИ FD)
     private static String postJson(String urlStr, String jsonBody, int timeoutMs) throws Exception {
-        URL url = new URL(urlStr);
-        HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-        conn.setRequestMethod("POST");
-        conn.setConnectTimeout(timeoutMs);
-        conn.setReadTimeout(timeoutMs);
-        conn.setDoOutput(true);
-        conn.setRequestProperty("Content-Type", "application/json; charset=UTF-8");
-        conn.setRequestProperty("X-Client-Build", String.valueOf(CLIENT_BUILD_VERSION));
+        HttpURLConnection conn = null;
+        try {
+            URL url = new URL(urlStr);
+            conn = (HttpURLConnection) url.openConnection();
+            conn.setRequestMethod("POST");
+            conn.setConnectTimeout(timeoutMs);
+            conn.setReadTimeout(timeoutMs);
+            conn.setDoOutput(true);
+            conn.setRequestProperty("Content-Type", "application/json; charset=UTF-8");
+            conn.setRequestProperty("X-Client-Build", String.valueOf(CLIENT_BUILD_VERSION));
+            conn.setRequestProperty("Connection", "close"); // Принудительно закрываем соединение после ответа
 
-        try (OutputStream os = conn.getOutputStream()) {
-            os.write(jsonBody.getBytes(StandardCharsets.UTF_8));
-        }
+            try (OutputStream os = conn.getOutputStream()) {
+                os.write(jsonBody.getBytes(StandardCharsets.UTF_8));
+            }
 
-        int code = conn.getResponseCode();
-        InputStream is = (code >= 200 && code < 400) ? conn.getInputStream() : conn.getErrorStream();
-        if (is == null) {
-            return "";
-        }
+            int code = conn.getResponseCode();
+            InputStream is = (code >= 200 && code < 400) ? conn.getInputStream() : conn.getErrorStream();
+            if (is == null) return "";
 
-        StringBuilder resp = new StringBuilder();
-        try (BufferedReader br = new BufferedReader(new InputStreamReader(is, StandardCharsets.UTF_8))) {
-            String line;
-            while ((line = br.readLine()) != null) {
-                resp.append(line);
+            StringBuilder resp = new StringBuilder();
+            try (BufferedReader br = new BufferedReader(new InputStreamReader(is, StandardCharsets.UTF_8))) {
+                String line;
+                while ((line = br.readLine()) != null) {
+                    resp.append(line);
+                }
+            }
+            return resp.toString();
+        } finally {
+            if (conn != null) {
+                try {
+                    conn.disconnect(); // ГАРАНТИРОВАННОЕ ОСВОБОЖДЕНИЕ ПАМЯТИ
+                } catch (Exception ignored) {}
             }
         }
-        return resp.toString();
     }
 }
