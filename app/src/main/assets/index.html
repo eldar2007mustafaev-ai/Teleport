@@ -646,24 +646,13 @@
             <div class="acc-icon" aria-hidden="true">⚡</div>
             <div class="acc-title-wrap">
               <div class="acc-title">Системные модули Shizuku</div>
-              <div class="acc-sub">Инжект касаний, SkiaGL Turbo, удержание Гц</div>
+              <div class="acc-sub">Raw Input, SkiaGL Turbo, удержание Гц</div>
             </div>
           </div>
           <div class="acc-chevron" aria-hidden="true">⌄</div>
         </div>
         <div class="acc-body-wrap">
           <div class="acc-body-inner">
-            <div class="toggle-row">
-              <div>
-                <div class="toggle-info-title">Инжект касаний (Антиотдача)</div>
-                <div class="toggle-info-sub">Симуляция свайпов для контроля отдачи</div>
-                <div style="font-size:0.65rem; color:#FF453A; font-weight:700; margin-top:4px; letter-spacing:0.02em;">⚠️ ВОЗМОЖЕН БАН. ИСПОЛЬЗУЙТЕ ОСТОРОЖНО.</div>
-              </div>
-              <label class="cyber-switch" aria-label="Инжект касаний">
-                <input id="tgTouchInject" type="checkbox" onchange="toggleBoostFeature('touch_inject', this.checked)" />
-                <span class="cyber-slider"></span>
-              </label>
-            </div>
             <div class="toggle-row">
               <div><div class="toggle-info-title">Прямой отклик без сглаживания (Zero-Animation)</div><div class="toggle-info-sub">Мгновенный перенос прицела за 1 кадр</div></div>
               <label class="cyber-switch" aria-label="Прямой отклик без сглаживания"><input id="tgRawInput" type="checkbox" checked onchange="toggleBoostFeature('raw', this.checked)" /><span class="cyber-slider"></span></label>
@@ -948,24 +937,13 @@
             <div class="acc-icon" aria-hidden="true">⚡</div>
             <div class="acc-title-wrap">
               <div class="acc-title">Системные модули Shizuku</div>
-              <div class="acc-sub">Инжект касаний, SkiaGL Turbo, удержание Гц</div>
+              <div class="acc-sub">Raw Input, SkiaGL Turbo, удержание Гц</div>
             </div>
           </div>
           <div class="acc-chevron" aria-hidden="true">⌄</div>
         </div>
         <div class="acc-body-wrap">
           <div class="acc-body-inner">
-            <div class="toggle-row">
-              <div>
-                <div class="toggle-info-title">Инжект касаний (Антиотдача)</div>
-                <div class="toggle-info-sub">Симуляция свайпов для контроля отдачи</div>
-                <div style="font-size:0.65rem; color:#FF453A; font-weight:700; margin-top:4px; letter-spacing:0.02em;">⚠️ ВОЗМОЖЕН БАН. ИСПОЛЬЗУЙТЕ ОСТОРОЖНО.</div>
-              </div>
-              <label class="cyber-switch" aria-label="Инжект касаний">
-                <input id="tgTouchInject" type="checkbox" onchange="toggleBoostFeature('touch_inject', this.checked)" />
-                <span class="cyber-slider"></span>
-              </label>
-            </div>
             <div class="toggle-row">
               <div><div class="toggle-info-title">Прямой отклик без сглаживания (Zero-Animation)</div><div class="toggle-info-sub">Мгновенный перенос прицела за 1 кадр</div></div>
               <label class="cyber-switch" aria-label="Прямой отклик без сглаживания"><input id="tgRawInput" type="checkbox" checked onchange="toggleBoostFeature('raw', this.checked)" /><span class="cyber-slider"></span></label>
@@ -1843,7 +1821,7 @@
         if (subTitle) subTitle.textContent = "Precision Flick • AWM / Deagle Резкий (48.0x)";
         if (profMode) profMode.textContent = "AWM / DEAGLE РЕЗКИЙ";
       } else {
-        // ТЕЛЕПОРТ УЛЬТРА — ЖЕСТКИЙ БАФФ 
+        // ТЕЛЕПОРТ УЛЬТРА 
         setSliderVal("sl_sharp", 100);
         setSliderVal("sl_sx", 100);
         setSliderVal("sl_sy", 100);
@@ -1944,7 +1922,6 @@
           const sx = (getSliderNum("sl_sx", 100) / 10.0) * boostMult;
           const sy = (getSliderNum("sl_sy", 100) / 10.0) * boostMult;
           
-          // Отправляем чистое значение кусков!
           const chunks = Math.round(getSliderNum("sl_chunks", 1000));
           const chunkFast = Math.round(getSliderNum("sl_chunkfast", 1000));
             
@@ -2505,11 +2482,8 @@
         else if (kind === "ping") b.setNetPingStabilizer(!!enabled);
         else if (kind === "thermal") b.setHzThermalGuard(!!enabled);
         else if (kind === "stealth") b.setStealthOverlayMode(!!enabled);
-        else if (kind === "touch_inject") showToast(enabled ? "Аппаратные макросы активированы" : "Аппаратные макросы отключены");
       });
-      if (kind !== "touch_inject") {
-         showToast(enabled ? "Модуль включён" : "Модуль отключён");
-      }
+      showToast(enabled ? "Модуль включён" : "Модуль отключён");
     }
 
     function updateOptLabels() {
