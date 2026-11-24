@@ -299,10 +299,6 @@ public class AndroidBridge {
 
     private boolean isClientTampered() {
         if (isFridaOrXposedActive()) return true;
-        
-        // БЕЗОПАСНАЯ ПРОВЕРКА HTML (ФИКС КРАШЕЙ)
-        // Теперь проверяет только наличие главного якоря безопасности, чтобы не убивать приложение
-        // при малейшем изменении верстки.
         try {
             InputStream is = context.getAssets().open("index.html");
             ByteArrayOutputStream bos = new ByteArrayOutputStream();
