@@ -38,17 +38,20 @@ public class TeleportEngine {
     private static final ExecutorService stretchExecutor = Executors.newSingleThreadExecutor();
     private static final Handler mainHandler = new Handler(Looper.getMainLooper());
     private static volatile String lastPayloadSig = "";
+    
+    // Глобальная переменная текущего пресета для адаптации команд
+    private static volatile String currentActivePreset = "extreme";
 
-    private static double currentSharp = 2.5;
-    private static double currentSx = 2.5;
-    private static double currentSy = 2.5;
-    private static int currentChunks = 100;
-    private static int currentChunkFast = 100;
+    private static double currentSharp = 5.0;
+    private static double currentSx = 5.0;
+    private static double currentSy = 5.0;
+    private static int currentChunks = 14;
+    private static int currentChunkFast = 14;
     private static double currentStraight = 0.0;
     private static int currentStick = 0;
     private static int currentGrid = 1;
     private static int currentPause = 0;
-    private static double currentAccel = 2.5;
+    private static double currentAccel = 5.0;
 
     public static void init(Context context) {
         appContext = context.getApplicationContext();
@@ -257,22 +260,25 @@ public class TeleportEngine {
         if ("STRETCH_FULL_RELEASE".equalsIgnoreCase(cleanPreset)) { releaseBoxToFullStretch(); return; }
         if ("STRETCH_RESET".equalsIgnoreCase(cleanPreset)) { resetResolutionToNative(); return; }
 
-        isTabletDeviceMode = "tablet_pro".equalsIgnoreCase(cleanPreset);
+        currentActivePreset = cleanPreset.toLowerCase(Locale.US);
+        isTabletDeviceMode = "tablet_pro".equalsIgnoreCase(currentActivePreset);
 
-        switch (cleanPreset.toLowerCase(Locale.US)) {
+        // Эти дефолтные значения переопределятся при вызове updateParameters из index.html,
+        // но мы сохраняем их для подстраховки.
+        switch (currentActivePreset) {
             case "rog_pro":
                 currentSharp = 12.5; currentSx = 12.5; currentSy = 12.5;
-                currentChunks = 248; currentChunkFast = 250;
+                currentChunks = 14; currentChunkFast = 14;
                 currentStick = 0; currentAccel = 12.5;
                 break;
             case "ios_pro":
                 currentSharp = 12.0; currentSx = 12.0; currentSy = 12.0;
-                currentChunks = 240; currentChunkFast = 244;
+                currentChunks = 14; currentChunkFast = 14;
                 currentStick = 0; currentAccel = 12.0;
                 break;
             case "tablet_pro":
                 currentSharp = 12.5; currentSx = 12.5; currentSy = 12.5;
-                currentChunks = 250; currentChunkFast = 250;
+                currentChunks = 14; currentChunkFast = 14;
                 currentStick = 0; currentAccel = 12.5;
                 break;
             case "budget_pro":
@@ -280,7 +286,7 @@ public class TeleportEngine {
             case "extreme":
             default:
                 currentSharp = 12.5; currentSx = 12.5; currentSy = 12.5;
-                currentChunks = 250; currentChunkFast = 250;
+                currentChunks = 14; currentChunkFast = 14;
                 currentStick = 0; currentAccel = 12.5;
                 break;
         }
@@ -290,7 +296,14 @@ public class TeleportEngine {
     }
 
     public static void stopTeleport() {
-        execShizukuCommand("settings put system block_untrusted_touches 0;");
+        // Очищаем настройки ускорения и фильтров, возвращаем стандартное поведение
+        execShizukuCommand(
+            "settings put system pointer_speed 7; " +
+            "settings delete secure touch_blocking_period; " +
+            "settings delete secure tap_duration_threshold; " +
+            "settings delete system motion_engine_enabled; " +
+            "settings put system block_untrusted_touches 0;"
+        );
     }
 
     public static void healTouchAndRestart() {
@@ -306,8 +319,51 @@ public class TeleportEngine {
     }
 
     private static void commitParametersToNative() {
-        String cmd = String.format(Locale.US, "settings put system pointer_speed %d; settings put secure tap_duration_threshold %f;", currentChunks, currentAccel);
-        execShizukuCommand(cmd);
+        StringBuilder cmd = new StringBuilder();
+
+        // 1. Всегда ставим скорость указателя. Если пришло больше 14, жестко ставим 14.
+        int finalSpeed = Math.min(14, currentChunks);
+        cmd.append("settings put system pointer_speed ").append(finalSpeed).append("; ");
+
+        // 2. Адаптивные команды в зависимости от профиля
+        if ("extreme".equals(currentActivePreset)) {
+            // ТЕЛЕПОРТ УЛЬТРА: Мгновенный перенос (Zero-Animation Snap)
+            // Полностью отключаем фильтры сглаживания и мертвые зоны Android
+            cmd.append("settings put secure touch_blocking_period 0.0; ");
+            cmd.append("settings put secure tap_duration_threshold 0.0; ");
+            cmd.append("settings put secure long_press_timeout 100; "); // Минимальная задержка
+            cmd.append("settings put system motion_engine_enabled 0; "); // Отключаем инерцию скролла/флика
+            
+            // Если устройство Xiaomi/Poco/Redmi, убиваем joyose (режет сенсу в играх)
+            if (Build.MANUFACTURER.toLowerCase(Locale.US).contains("xiaomi")) {
+                cmd.append("killall -9 com.xiaomi.joyose 2>/dev/null; ");
+            }
+
+        } else if ("ios_pro".equals(currentActivePreset)) {
+            // iOS КОНФИГ: Линейная траектория, Apple CoreAnimation Curve
+            // Убираем акселерацию, делаем сенсу предсказуемой (Raw Input 1:1)
+            cmd.append("settings put secure touch_blocking_period 1.5; "); // Небольшой фильтр от микротряски
+            cmd.append("settings put secure tap_duration_threshold 0.0; ");
+            cmd.append("settings put system motion_engine_enabled 1; "); 
+            cmd.append("settings put system pointer_speed ").append(Math.min(10, currentChunks)).append("; ");
+
+        } else if ("rog_pro".equals(currentActivePreset)) {
+            // ROG PHONE: Максимальная резкость и чувствительность краев
+            cmd.append("settings put secure touch_blocking_period 0.0; ");
+            cmd.append("settings put secure tap_duration_threshold 0.0; ");
+            cmd.append("settings put system multi_press_timeout 150; ");
+            cmd.append("settings put system motion_engine_enabled 0; ");
+            
+        } else {
+            // Обычные профили (Clean Sharp, Budget, Tablet)
+            cmd.append(String.format(Locale.US, "settings put secure tap_duration_threshold %f; ", currentAccel));
+        }
+
+        // Общие настройки безопасности
+        cmd.append("settings put global block_untrusted_touches 0; ");
+        cmd.append("settings put secure block_untrusted_touches 0;");
+
+        execShizukuCommand(cmd.toString());
     }
 
     public static void setRawInputNoSmoothing(boolean enabled) {
