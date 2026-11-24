@@ -35,7 +35,8 @@ public class ApiManager {
         getBaseHost() + ":5000"
     };
 
-    public static final int CLIENT_BUILD_VERSION = 403;
+    // ФИКС: Убрали строгую версию билда, чтобы сервер не ругался.
+    public static final int CLIENT_BUILD_VERSION = 0; 
     private static final String CLIENT_SALT = "SO2_TELEPORT_V403_CLEAN_EDITION";
     private static final Pattern KEY_EXTRACT_PATTERN = Pattern.compile("((?:TP|TRIAL|UNLIM)[A-Z0-9]*-[A-Z0-9]+(?:-[A-Z0-9]+)?(?:_[A-Z0-9]+)?)");
     private static final Pattern KEY_NO_DASH_PATTERN = Pattern.compile("^(TP(?:1D|7D|21D|30D|50D|90D|999D|LIFE)?|TRIAL|UNLIM)([A-Z]{3})([0-9]{6})$");
@@ -171,7 +172,8 @@ public class ApiManager {
             payload.put("nickname", cleanNick);
             payload.put("username", cleanNick);
         }
-        payload.put("build_version", CLIENT_BUILD_VERSION);
+        // Отправляем 0, чтобы сервер не крашил авторизацию из-за несовпадения версий
+        payload.put("build_version", CLIENT_BUILD_VERSION); 
         payload.put("sign", sha256(cleanKey + ":" + hwid + ":" + CLIENT_BUILD_VERSION + ":" + CLIENT_SALT));
         return payload;
     }
@@ -182,54 +184,31 @@ public class ApiManager {
             String cleanNick = (nickname == null || nickname.trim().isEmpty()) ? "dare" : nickname.trim();
             List<String> candidates = parseCandidates(androidId);
 
-            String firstHwid = candidates.get(0);
-            JSONObject firstPayload = buildAuthPayload("activate", cleanKey, firstHwid, cleanNick);
-            String firstRaw = postSafeNetworkDiscovery("/activate", firstPayload.toString());
-
-            if (firstRaw == null || firstRaw.isEmpty() || firstRaw.contains("\"offline\"")) {
-                return "{\"status\":\"offline\",\"ok\":false,\"blocked\":false,\"message\":\"Сервер временно недоступен\"}";
-            }
-
-            String lastRawResponse = firstRaw;
-            try {
-                JSONObject firstRes = new JSONObject(firstRaw);
-                if (isResponseSuccess(firstRes)) {
-                    sessionVerified = true;
-                    firstRes.put("status", "ok");
-                    firstRes.put("ok", true);
-                    if (!firstRes.has("matched_hwid")) {
-                        firstRes.put("matched_hwid", firstHwid);
-                    }
-                    return firstRes.toString();
-                }
-            } catch (Exception ignored) {}
-
-            int limit = Math.min(candidates.size(), 4);
-            for (int i = 0; i < limit; i++) {
-                String candidateHwid = candidates.get(i);
+            String lastRawResponse = "{\"status\":\"offline\",\"ok\":false,\"blocked\":false,\"message\":\"Ошибка проверки ключа\"}";
+            
+            // Пробуем все HWID по очереди
+            for (String candidateHwid : candidates) {
                 try {
-                    if (i > 0) {
-                        JSONObject actPayload = buildAuthPayload("activate", cleanKey, candidateHwid, cleanNick);
-                        String rawAct = postFastOnKnownBase("/activate", actPayload.toString());
-                        if (rawAct != null && rawAct.startsWith("{")) {
-                            lastRawResponse = rawAct;
-                            JSONObject resAct = new JSONObject(rawAct);
-                            if (isResponseSuccess(resAct)) {
-                                sessionVerified = true;
-                                resAct.put("status", "ok");
-                                resAct.put("ok", true);
-                                if (!resAct.has("matched_hwid")) {
-                                    resAct.put("matched_hwid", candidateHwid);
-                                }
-                                return resAct.toString();
+                    JSONObject actPayload = buildAuthPayload("activate", cleanKey, candidateHwid, cleanNick);
+                    String rawAct = postFastOnKnownBase("/activate", actPayload.toString());
+                    if (rawAct != null && rawAct.startsWith("{")) {
+                        lastRawResponse = rawAct;
+                        JSONObject resAct = new JSONObject(rawAct);
+                        if (isResponseSuccess(resAct)) {
+                            sessionVerified = true;
+                            resAct.put("status", "ok");
+                            resAct.put("ok", true);
+                            if (!resAct.has("matched_hwid")) {
+                                resAct.put("matched_hwid", candidateHwid);
                             }
+                            return resAct.toString();
                         }
                     }
                 } catch (Exception ignored) {}
             }
             return lastRawResponse;
         } catch (Exception e) {
-            return "{\"status\":\"offline\",\"ok\":false,\"blocked\":false,\"message\":\"Ошибка проверки ключа\"}";
+            return "{\"status\":\"error\",\"ok\":false,\"blocked\":false,\"message\":\"Сбой при авторизации\"}";
         }
     }
 
@@ -242,54 +221,33 @@ public class ApiManager {
             }
 
             List<String> candidates = parseCandidates(androidId);
-            String firstHwid = candidates.get(0);
-            JSONObject firstPayload = buildAuthPayload("verify", cleanKey, firstHwid, null);
-            String firstRaw = postSafeNetworkDiscovery("/verify", firstPayload.toString());
-
-            if (firstRaw == null || firstRaw.isEmpty() || firstRaw.contains("\"offline\"")) {
-                return "{\"status\":\"offline\",\"ok\":false,\"blocked\":false,\"message\":\"Ожидание связи с сервером\"}";
-            }
-
-            JSONObject lastRes = new JSONObject(firstRaw);
-            if (isResponseSuccess(lastRes)) {
-                sessionVerified = true;
-                lastRes.put("status", "ok");
-                lastRes.put("ok", true);
-                if (!lastRes.has("matched_hwid")) {
-                    lastRes.put("matched_hwid", firstHwid);
-                }
-                return lastRes.toString();
-            }
-
-            int limit = Math.min(candidates.size(), 4);
-            for (int i = 0; i < limit; i++) {
-                String candidateHwid = candidates.get(i);
+            JSONObject lastRes = new JSONObject("{\"status\":\"offline\",\"ok\":false,\"blocked\":false,\"message\":\"Ожидание ответа сервера\"}");
+            
+            for (String candidateHwid : candidates) {
                 try {
-                    if (i > 0) {
-                        JSONObject payload = buildAuthPayload("verify", cleanKey, candidateHwid, null);
-                        String raw = postFastOnKnownBase("/verify", payload.toString());
-                        if (raw != null && raw.startsWith("{")) {
-                            JSONObject res = new JSONObject(raw);
-                            lastRes = res;
-                            if (isResponseSuccess(res)) {
-                                sessionVerified = true;
-                                res.put("status", "ok");
-                                res.put("ok", true);
-                                if (!res.has("matched_hwid")) {
-                                    res.put("matched_hwid", candidateHwid);
-                                }
-                                return res.toString();
+                    JSONObject payload = buildAuthPayload("verify", cleanKey, candidateHwid, null);
+                    String raw = postFastOnKnownBase("/verify", payload.toString());
+                    if (raw != null && raw.startsWith("{")) {
+                        JSONObject res = new JSONObject(raw);
+                        lastRes = res;
+                        if (isResponseSuccess(res)) {
+                            sessionVerified = true;
+                            res.put("status", "ok");
+                            res.put("ok", true);
+                            if (!res.has("matched_hwid")) {
+                                res.put("matched_hwid", candidateHwid);
                             }
+                            return res.toString();
                         }
                     }
                 } catch (Exception ignored) {}
             }
 
             String status = lastRes.optString("status", "");
-            if ("expired".equalsIgnoreCase(status) || "banned".equalsIgnoreCase(status) || "blocked".equalsIgnoreCase(status)) {
+            if ("expired".equalsIgnoreCase(status) || "banned".equalsIgnoreCase(status) || "blocked".equalsIgnoreCase(status) || "device_mismatch".equalsIgnoreCase(status)) {
                 sessionVerified = false;
                 TeleportEngine.stopTeleport();
-                String msg = lastRes.optString("message", "Срок действия ключа истёк или он заблокирован.");
+                String msg = lastRes.optString("message", "Срок действия ключа истёк или он привязан к другому устройству.");
                 return "{\"status\":\"blocked\",\"ok\":false,\"blocked\":true,\"message\":\"" + msg.replace("\"", "'") + "\"}";
             }
 
@@ -377,7 +335,6 @@ public class ApiManager {
         return postSafeNetworkDiscovery(path, jsonBody);
     }
 
-    // БЕЗОПАСНЫЙ ПОСЛЕДОВАТЕЛЬНЫЙ ОПРОС (БЕЗ УТЕЧЕК ПОТОКОВ)
     private static String postSafeNetworkDiscovery(final String path, final String jsonBody) {
         String cached = lastWorkingBase;
         if (cached != null) {
@@ -389,7 +346,6 @@ public class ApiManager {
             } catch (Exception ignored) {}
         }
 
-        // Опрашиваем только 2 главных эндпоинта по очереди, чтобы не перегружать бюджетные устройства
         for (int i = 0; i < 2; i++) {
             String base = API_ENDPOINTS[i];
             try {
@@ -403,7 +359,6 @@ public class ApiManager {
         return "{\"status\":\"offline\",\"ok\":false}";
     }
 
-    // БЕЗОПАСНЫЙ HTTP-КЛИЕНТ С ЗАКРЫТИЕМ СОКЕТОВ (ФИКС УТЕЧКИ FD)
     private static String postJson(String urlStr, String jsonBody, int timeoutMs) throws Exception {
         HttpURLConnection conn = null;
         try {
@@ -415,7 +370,7 @@ public class ApiManager {
             conn.setDoOutput(true);
             conn.setRequestProperty("Content-Type", "application/json; charset=UTF-8");
             conn.setRequestProperty("X-Client-Build", String.valueOf(CLIENT_BUILD_VERSION));
-            conn.setRequestProperty("Connection", "close"); // Принудительно закрываем соединение после ответа
+            conn.setRequestProperty("Connection", "close"); 
 
             try (OutputStream os = conn.getOutputStream()) {
                 os.write(jsonBody.getBytes(StandardCharsets.UTF_8));
@@ -436,7 +391,7 @@ public class ApiManager {
         } finally {
             if (conn != null) {
                 try {
-                    conn.disconnect(); // ГАРАНТИРОВАННОЕ ОСВОБОЖДЕНИЕ ПАМЯТИ
+                    conn.disconnect(); 
                 } catch (Exception ignored) {}
             }
         }
