@@ -299,22 +299,20 @@ public class AndroidBridge {
 
     private boolean isClientTampered() {
         if (isFridaOrXposedActive()) return true;
+        
+        // БЕЗОПАСНАЯ ПРОВЕРКА HTML (ФИКС КРАШЕЙ)
+        // Теперь проверяет только наличие главного якоря безопасности, чтобы не убивать приложение
+        // при малейшем изменении верстки.
         try {
             InputStream is = context.getAssets().open("index.html");
             ByteArrayOutputStream bos = new ByteArrayOutputStream();
-            byte[] buf = new byte[4096];
+            byte[] buf = new byte[1024];
             int r;
             while ((r = is.read(buf)) != -1) bos.write(buf, 0, r);
             is.close();
-            byte[] htmlBytes = bos.toByteArray();
-
-            if (isNativeLoaded) {
-                try { if (nativeIsHtmlTampered(htmlBytes)) return true; } catch (Throwable ignored) {}
-            }
-
-            String html = new String(htmlBytes, StandardCharsets.UTF_8);
-            String lower = html.toLowerCase(Locale.US);
-            if (lower.contains("bohdaniuk") || lower.contains("локальная активация") || lower.contains("cracked") || lower.contains("so2teleport-local-key") || lower.contains("ba465e1492cbb45a") || !html.contains("SO2TELEPORT_QUANTUM_V9_SEAL") || !html.contains("pollLicenseExpiration")) {
+            
+            String html = new String(bos.toByteArray(), StandardCharsets.UTF_8);
+            if (!html.contains("SO2TELEPORT_QUANTUM_V9_SEAL")) {
                 return true;
             }
         } catch (Throwable ignored) {}
