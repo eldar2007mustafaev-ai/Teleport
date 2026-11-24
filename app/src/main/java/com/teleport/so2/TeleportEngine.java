@@ -12,7 +12,6 @@ import android.util.DisplayMetrics;
 import android.view.Display;
 import android.view.Surface;
 import android.view.WindowManager;
-import android.widget.Toast;
 
 import java.util.Locale;
 import java.util.concurrent.ExecutorService;
@@ -23,8 +22,6 @@ import rikka.shizuku.Shizuku;
 public class TeleportEngine {
 
     private static Context appContext;
-    private static volatile String verifiedSessionKey = "";
-
     private static int nativeShortSide = 1080;
     private static int nativeLongSide = 2400;
     private static int deviceMaxRefreshRate = 120;
@@ -35,8 +32,6 @@ public class TeleportEngine {
     private static volatile String lastSelectedRatio = "4:3";
 
     private static final ExecutorService stretchExecutor = Executors.newSingleThreadExecutor();
-    private static final Handler mainHandler = new Handler(Looper.getMainLooper());
-    
     private static volatile String currentActivePreset = "extreme";
 
     private static double currentSharp = 5000.0;
@@ -53,10 +48,7 @@ public class TeleportEngine {
     public static void init(Context context) {
         appContext = context.getApplicationContext();
         
-        // ФИКС КРАШЕЙ ПРИ СТАРТЕ: Игнорируем падения внутри SecurityShield
-        try {
-            SecurityShield.startBackgroundGuard(appContext);
-        } catch (Throwable ignored) {}
+        // SecurityShield полностью удалён отсюда, чтобы не ронять приложение при старте
         
         SharedPreferences prefs = appContext.getSharedPreferences("so2_tp_cfg_v10", Context.MODE_PRIVATE);
         lastSelectedRatio = prefs.getString("stretch_ratio_val", "4:3");
