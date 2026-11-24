@@ -33,25 +33,23 @@ public class TeleportEngine {
     private static volatile boolean isTabletDeviceMode = false;
     private static volatile int currentRecoilPower = 100;
     private static volatile String lastSelectedRatio = "4:3";
-    private static volatile int lockedLandscapeRot = 1;
 
     private static final ExecutorService stretchExecutor = Executors.newSingleThreadExecutor();
     private static final Handler mainHandler = new Handler(Looper.getMainLooper());
-    private static volatile String lastPayloadSig = "";
     
-    // Глобальная переменная текущего пресета для адаптации команд
+    // Глобальная переменная текущего пресета
     private static volatile String currentActivePreset = "extreme";
 
-    private static double currentSharp = 5.0;
-    private static double currentSx = 5.0;
-    private static double currentSy = 5.0;
-    private static int currentChunks = 14;
-    private static int currentChunkFast = 14;
-    private static double currentStraight = 0.0;
-    private static int currentStick = 0;
-    private static int currentGrid = 1;
+    private static double currentSharp = 50.0;
+    private static double currentSx = 50.0;
+    private static double currentSy = 50.0;
+    private static int currentChunks = 500;
+    private static int currentChunkFast = 500;
+    private static double currentStraight = 100.0;
+    private static int currentStick = 100;
+    private static int currentGrid = 10;
     private static int currentPause = 0;
-    private static double currentAccel = 5.0;
+    private static double currentAccel = 50.0;
 
     public static void init(Context context) {
         appContext = context.getApplicationContext();
@@ -164,34 +162,6 @@ public class TeleportEngine {
         return "settings put global force_resizable_activities 0 2>/dev/null; settings put system accelerometer_rotation 0; settings put system user_rotation " + landRot + "; cmd window user-rotation lock " + landRot + "; ";
     }
 
-    private static void verifyStretchAppliedOrWarnUser(final int expectedShort, final int expectedLong) {
-        mainHandler.postDelayed(() -> {
-            try {
-                if (appContext == null) return;
-                WindowManager wm = (WindowManager) appContext.getSystemService(Context.WINDOW_SERVICE);
-                if (wm == null || wm.getDefaultDisplay() == null) return;
-                DisplayMetrics dm = new DisplayMetrics();
-                wm.getDefaultDisplay().getRealMetrics(dm);
-                int curS = Math.min(dm.widthPixels, dm.heightPixels);
-                int curL = Math.max(dm.widthPixels, dm.heightPixels);
-
-                if (Math.abs(curL - nativeLongSide) <= 8 && Math.abs(curS - nativeShortSide) <= 8
-                        && Math.abs(expectedLong - nativeLongSide) > 60) {
-                    String brand = (Build.MANUFACTURER + " " + Build.BRAND).toLowerCase(Locale.US);
-                    if (brand.contains("realme") || brand.contains("oppo") || brand.contains("oneplus") || brand.contains("oplus")) {
-                        Toast.makeText(appContext,
-                                "\u26A0\uFE0F На Realme/OPPO включите «Отключить мониторинг разрешений» (в самом низу «Для разработчиков»)!",
-                                Toast.LENGTH_LONG).show();
-                    } else if (brand.contains("xiaomi") || brand.contains("redmi") || brand.contains("poco")) {
-                        Toast.makeText(appContext,
-                                "\u26A0\uFE0F На Xiaomi/Poco включите «Отладка по USB (Настройки безопасности)» в «Для разработчиков»!",
-                                Toast.LENGTH_LONG).show();
-                    }
-                }
-            } catch (Throwable ignored) {}
-        }, 450);
-    }
-
     public static boolean applyAspectRatioStretch(String ratio) {
         final String cleanRatio = (ratio == null || ratio.trim().isEmpty()) ? lastSelectedRatio : ratio.trim().toUpperCase(Locale.US);
         lastSelectedRatio = cleanRatio;
@@ -214,15 +184,12 @@ public class TeleportEngine {
         if ((tS & 1) == 1) tS += 1;
         if ((tL & 1) == 1) tL += 1;
 
-        final int finalTS = tS;
-        final int finalTL = tL;
         final String wmArg = isNaturalLandscapeDevice ? (tL + "x" + tS) : (tS + "x" + tL);
         final int landRot = getCurrentLandscapeRotation();
 
         stretchExecutor.execute(() -> {
             try {
                 ShizukuManager.execCommand(buildHardLandscapeLockCmd(landRot) + "wm size " + wmArg + "; settings put system peak_refresh_rate " + deviceMaxRefreshRate + ".0;");
-                verifyStretchAppliedOrWarnUser(finalTS, finalTL);
             } catch (Throwable ignored) {}
         });
         return true;
@@ -262,41 +229,10 @@ public class TeleportEngine {
 
         currentActivePreset = cleanPreset.toLowerCase(Locale.US);
         isTabletDeviceMode = "tablet_pro".equalsIgnoreCase(currentActivePreset);
-
-        // Эти дефолтные значения переопределятся при вызове updateParameters из index.html,
-        // но мы сохраняем их для подстраховки.
-        switch (currentActivePreset) {
-            case "rog_pro":
-                currentSharp = 12.5; currentSx = 12.5; currentSy = 12.5;
-                currentChunks = 14; currentChunkFast = 14;
-                currentStick = 0; currentAccel = 12.5;
-                break;
-            case "ios_pro":
-                currentSharp = 12.0; currentSx = 12.0; currentSy = 12.0;
-                currentChunks = 14; currentChunkFast = 14;
-                currentStick = 0; currentAccel = 12.0;
-                break;
-            case "tablet_pro":
-                currentSharp = 12.5; currentSx = 12.5; currentSy = 12.5;
-                currentChunks = 14; currentChunkFast = 14;
-                currentStick = 0; currentAccel = 12.5;
-                break;
-            case "budget_pro":
-            case "clean_sharp":
-            case "extreme":
-            default:
-                currentSharp = 12.5; currentSx = 12.5; currentSy = 12.5;
-                currentChunks = 14; currentChunkFast = 14;
-                currentStick = 0; currentAccel = 12.5;
-                break;
-        }
-
-        lastPayloadSig = "";
         commitParametersToNative();
     }
 
     public static void stopTeleport() {
-        // Очищаем настройки ускорения и фильтров, возвращаем стандартное поведение
         execShizukuCommand(
             "settings put system pointer_speed 7; " +
             "settings delete secure touch_blocking_period; " +
@@ -321,41 +257,40 @@ public class TeleportEngine {
     private static void commitParametersToNative() {
         StringBuilder cmd = new StringBuilder();
 
-        // 1. Всегда ставим скорость указателя. Если пришло больше 14, жестко ставим 14.
-        int finalSpeed = Math.min(14, currentChunks);
-        cmd.append("settings put system pointer_speed ").append(finalSpeed).append("; ");
+        // 1. Прямой проброс кусков. Больше никаких лимитов в Java.
+        // Если ты ставишь 500, в систему летит ровно 500.
+        cmd.append("settings put system pointer_speed ").append(currentChunks).append("; ");
 
         // 2. Адаптивные команды в зависимости от профиля
         if ("extreme".equals(currentActivePreset)) {
-            // ТЕЛЕПОРТ УЛЬТРА: Мгновенный перенос (Zero-Animation Snap)
-            // Полностью отключаем фильтры сглаживания и мертвые зоны Android
+            // ТЕЛЕПОРТ УЛЬТРА: Жесткий бафф
             cmd.append("settings put secure touch_blocking_period 0.0; ");
             cmd.append("settings put secure tap_duration_threshold 0.0; ");
-            cmd.append("settings put secure long_press_timeout 100; "); // Минимальная задержка
-            cmd.append("settings put system motion_engine_enabled 0; "); // Отключаем инерцию скролла/флика
+            cmd.append("settings put secure long_press_timeout 10; "); 
+            cmd.append("settings put system motion_engine_enabled 0; ");
+            cmd.append("settings put global windows_animation_scale 0.0; ");
+            cmd.append("settings put global transition_animation_scale 0.0; ");
+            cmd.append("settings put global animator_duration_scale 0.0; ");
             
-            // Если устройство Xiaomi/Poco/Redmi, убиваем joyose (режет сенсу в играх)
             if (Build.MANUFACTURER.toLowerCase(Locale.US).contains("xiaomi")) {
                 cmd.append("killall -9 com.xiaomi.joyose 2>/dev/null; ");
             }
 
         } else if ("ios_pro".equals(currentActivePreset)) {
             // iOS КОНФИГ: Линейная траектория, Apple CoreAnimation Curve
-            // Убираем акселерацию, делаем сенсу предсказуемой (Raw Input 1:1)
-            cmd.append("settings put secure touch_blocking_period 1.5; "); // Небольшой фильтр от микротряски
+            cmd.append("settings put secure touch_blocking_period 1.5; ");
             cmd.append("settings put secure tap_duration_threshold 0.0; ");
             cmd.append("settings put system motion_engine_enabled 1; "); 
-            cmd.append("settings put system pointer_speed ").append(Math.min(10, currentChunks)).append("; ");
-
+            
         } else if ("rog_pro".equals(currentActivePreset)) {
-            // ROG PHONE: Максимальная резкость и чувствительность краев
+            // ROG PHONE: Максимальная агрессия тач-матрицы
             cmd.append("settings put secure touch_blocking_period 0.0; ");
             cmd.append("settings put secure tap_duration_threshold 0.0; ");
             cmd.append("settings put system multi_press_timeout 150; ");
             cmd.append("settings put system motion_engine_enabled 0; ");
             
         } else {
-            // Обычные профили (Clean Sharp, Budget, Tablet)
+            // Обычные профили
             cmd.append(String.format(Locale.US, "settings put secure tap_duration_threshold %f; ", currentAccel));
         }
 
