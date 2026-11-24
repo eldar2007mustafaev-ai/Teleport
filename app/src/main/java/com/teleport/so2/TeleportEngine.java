@@ -37,19 +37,18 @@ public class TeleportEngine {
     private static final ExecutorService stretchExecutor = Executors.newSingleThreadExecutor();
     private static final Handler mainHandler = new Handler(Looper.getMainLooper());
     
-    // Глобальная переменная текущего пресета
     private static volatile String currentActivePreset = "extreme";
 
-    private static double currentSharp = 50.0;
-    private static double currentSx = 50.0;
-    private static double currentSy = 50.0;
-    private static int currentChunks = 500;
-    private static int currentChunkFast = 500;
+    private static double currentSharp = 100.0;
+    private static double currentSx = 100.0;
+    private static double currentSy = 100.0;
+    private static int currentChunks = 1000;
+    private static int currentChunkFast = 1000;
     private static double currentStraight = 100.0;
     private static int currentStick = 100;
     private static int currentGrid = 10;
     private static int currentPause = 0;
-    private static double currentAccel = 50.0;
+    private static double currentAccel = 100.0;
 
     public static void init(Context context) {
         appContext = context.getApplicationContext();
@@ -233,12 +232,10 @@ public class TeleportEngine {
     }
 
     public static void stopTeleport() {
-        // Безопасное выключение
         execShizukuCommand(
             "settings put system pointer_speed 7; " +
             "settings delete secure touch_blocking_period; " +
             "settings delete secure tap_duration_threshold; " +
-            "settings delete secure long_press_timeout; " + 
             "settings delete system motion_engine_enabled; " +
             "settings delete system touch_slop; " +
             "settings put global windows_animation_scale 1.0; " +
@@ -264,18 +261,24 @@ public class TeleportEngine {
     private static void commitParametersToNative() {
         StringBuilder cmd = new StringBuilder();
 
-        // Отправляем значение кусков НАПРЯМУЮ, без обрезания и без левых множителей
+        // 1. Прямой проброс кусков. Больше никаких лимитов в Java.
         cmd.append("settings put system pointer_speed ").append(currentChunks).append("; ");
+        
+        // 2. Явно передаем параметры резкости в систему, чтобы нативный демон (C++) мог их прочитать
+        cmd.append("settings put system teleport_sharpness ").append(currentSharp).append("; ");
+        cmd.append("settings put system teleport_sx ").append(currentSx).append("; ");
+        cmd.append("settings put system teleport_sy ").append(currentSy).append("; ");
+        cmd.append("settings put system teleport_accel ").append(currentAccel).append("; ");
 
-        // Адаптивные команды в зависимости от профиля
+        // 3. Адаптивные команды в зависимости от профиля
         if ("extreme".equals(currentActivePreset)) {
-            // ТЕЛЕПОРТ УЛЬТРА: Правильная реализация кусков
+            // ТЕЛЕПОРТ УЛЬТРА: Жесткий бафф
             cmd.append("settings put secure touch_blocking_period 0.0; ");
             cmd.append("settings put secure tap_duration_threshold 0.0; ");
             
-            // Безопасные тайминги, чтобы не убить тач
-            cmd.append("settings put secure long_press_timeout 300; "); 
-            cmd.append("settings put secure multi_press_timeout 200; "); 
+            // БЕЗОПАСНЫЕ тайминги. Тач больше не заглючит!
+            cmd.append("settings put secure long_press_timeout 250; "); 
+            cmd.append("settings put secure multi_press_timeout 150; "); 
             
             // УБИРАЕМ СГЛАЖИВАНИЕ И АНИМАЦИИ
             cmd.append("settings put system motion_engine_enabled 0; ");
@@ -307,11 +310,9 @@ public class TeleportEngine {
             cmd.append("settings put system touch_slop 2; "); 
             
         } else {
-            // Обычные профили
             cmd.append(String.format(Locale.US, "settings put secure tap_duration_threshold %f; ", currentAccel));
         }
 
-        // Общие настройки безопасности
         cmd.append("settings put global block_untrusted_touches 0; ");
         cmd.append("settings put secure block_untrusted_touches 0;");
 
