@@ -14,7 +14,6 @@ import android.graphics.PixelFormat;
 import android.graphics.RectF;
 import android.graphics.Shader;
 import android.graphics.drawable.GradientDrawable;
-import android.media.MediaDrm;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Handler;
@@ -38,9 +37,7 @@ import android.widget.Toast;
 import org.json.JSONObject;
 
 import java.io.BufferedReader;
-import java.io.ByteArrayOutputStream;
 import java.io.FileReader;
-import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.security.KeyStore;
 import java.security.MessageDigest;
@@ -80,7 +77,6 @@ public class AndroidBridge {
     }
 
     private static native String nativeComputeHwid(String drmHex, String androidId, String boardInfo);
-    private static native boolean nativeIsHtmlTampered(byte[] htmlBytes);
     private static native boolean nativeIsBlacklisted(String candidate);
     private static native void nativeSetSessionVerified(String cleanKey, boolean verified);
     private static native boolean nativeIsSessionVerified();
@@ -127,7 +123,7 @@ public class AndroidBridge {
             prefs.edit().putBoolean(PREF_FIRST_LOGIN_DONE, true).apply();
             safeNativeSetSession(restoredKey, true);
             ApiManager.setSessionVerified(true);
-            SecurityShield.issueVerifiedSessionToken(context, restoredKey);
+            try { SecurityShield.issueVerifiedSessionToken(context, restoredKey); } catch(Throwable t){}
         }
 
         TeleportEngine.init(context);
@@ -159,13 +155,17 @@ public class AndroidBridge {
         String currentVault = readEncryptedKeyFromVault();
         if (!currentVault.isEmpty() && !isBlacklistedArtifact(currentVault)) return;
 
+        String sKey = "";
+        try { sKey = SecurityShield.getVerifiedKey(context); } catch(Throwable t){}
+
         String[] candidates = new String[]{
                 prefs.getString("saved_license_key", ""),
                 profilePrefs.getString("activated_key", ""),
                 legacyPrefs.getString("license_key", ""),
-                SecurityShield.getVerifiedKey(context)
+                sKey
         };
         for (String cand : candidates) {
+            if (cand == null) continue;
             String clean = ApiManager.normalizeKeyInput(cand);
             if (clean.length() >= 5 && !isBlacklistedArtifact(clean)) {
                 saveEncryptedKeyToVault(clean);
@@ -187,14 +187,6 @@ public class AndroidBridge {
             try { if (nativeIsSessionVerified()) return true; } catch (Throwable ignored) {}
         }
         return ApiManager.isSessionVerified() || !getSavedKey().isEmpty();
-    }
-
-    private void executeNativeKillOnTamper() {
-        if (isNativeLoaded) {
-            try { nativeForceTerminate(); } catch (Throwable ignored) {}
-        }
-        try { Process.killProcess(Process.myPid()); } catch (Throwable ignored) {}
-        try { Runtime.getRuntime().halt(1); } catch (Throwable ignored) {}
     }
 
     private SecretKey getOrCreateKeystoreSecret() throws Exception {
@@ -285,11 +277,6 @@ public class AndroidBridge {
         return u.contains("BA465E1492CBB45A") || u.contains("HW9900AABB1122CC") || u.contains("SO2-HWID-V10") || u.contains("SO2TELEPORT-LOCAL-KEY") || u.contains("BOHDANIUK") || u.contains("CRACK") || u.contains("FREE_KEY") || u.contains("I6RUSOKAI") || u.contains("6RUSOK") || u.contains("TP99999") || u.contains("00000002029292992");
     }
 
-    private boolean isClientTampered() {
-        // Выключаем проверку на взлом, чтобы избежать ложных срабатываний и вылетов при запуске
-        return false;
-    }
-
     private String sha256Hex16(String input) {
         try {
             MessageDigest md = MessageDigest.getInstance("SHA-256");
@@ -300,23 +287,21 @@ public class AndroidBridge {
         } catch (Exception e) { return "hw7744aabb1122cc"; }
     }
 
+    // ⚡ ФИКС КРАШЕЙ: Полностью вырезан MediaDrm, используется безопасный софт-HWID
     private String getRawDrmHex() {
         String savedDrm = prefs.getString("cached_raw_drm_hex_v11", "");
         if (savedDrm != null && savedDrm.length() >= 8) return savedDrm;
-        StringBuilder drmHex = new StringBuilder();
+        
+        String hardwareData = Build.BOARD + Build.BRAND + Build.DEVICE + Build.HARDWARE + Build.MANUFACTURER + Build.MODEL + Build.PRODUCT + Build.FINGERPRINT;
+        String androidId = "";
         try {
-            UUID widevineUuid = new UUID(-0x121074568629b532L, -0x5c37d8232ae2de13L);
-            MediaDrm drm = new MediaDrm(widevineUuid);
-            byte[] drmId = drm.getPropertyByteArray(MediaDrm.PROPERTY_DEVICE_UNIQUE_ID);
-            if (drmId != null) {
-                for (byte b : drmId) drmHex.append(String.format("%02x", b));
-            }
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) drm.close();
-            else drm.release();
+            androidId = Settings.Secure.getString(context.getContentResolver(), Settings.Secure.ANDROID_ID);
         } catch (Throwable ignored) {}
-
-        String res = drmHex.toString();
-        if (res.length() >= 8) prefs.edit().putString("cached_raw_drm_hex_v11", res).apply();
+        
+        String raw = hardwareData + (androidId != null ? androidId : UUID.randomUUID().toString());
+        String res = sha256Hex16(raw);
+        
+        prefs.edit().putString("cached_raw_drm_hex_v11", res).apply();
         return res;
     }
 
@@ -391,7 +376,7 @@ public class AndroidBridge {
         String matched = (res != null) ? res.optString("matched_hwid", "") : "";
         if (matched == null || matched.isEmpty()) matched = getImmutableDrmId();
         prefs.edit().putString("bound_working_hwid", matched).putString("bound_hwid_" + cleanKey, matched).apply();
-        SecurityShield.setVerifiedHwid(context, matched);
+        try { SecurityShield.setVerifiedHwid(context, matched); } catch (Throwable t){}
     }
 
     @JavascriptInterface
@@ -461,11 +446,6 @@ public class AndroidBridge {
         mainHandler.postDelayed(new Runnable() {
             @Override
             public void run() {
-                if (isClientTampered()) {
-                    forceKickExpiredUser("Обнаружена модификация клиента!");
-                    executeNativeKillOnTamper();
-                    return;
-                }
                 final String savedKey = getSavedKey();
                 if (!savedKey.isEmpty() && prefs.getBoolean(PREF_FIRST_LOGIN_DONE, false)) {
                     networkExecutor.execute(() -> {
@@ -506,7 +486,7 @@ public class AndroidBridge {
     private void forceKickExpiredUser(String reasonToast) {
         saveEncryptedKeyToVault("");
         safeNativeSetSession("", false);
-        SecurityShield.clearSessionToken(context);
+        try{ SecurityShield.clearSessionToken(context); } catch(Throwable t){}
         prefs.edit().remove("saved_license_key").putBoolean(PREF_FIRST_LOGIN_DONE, false).apply();
         legacyPrefs.edit().remove("license_key").apply();
         profilePrefs.edit().remove("activated_key").apply();
@@ -567,7 +547,7 @@ public class AndroidBridge {
 
     @JavascriptInterface
     public String activateStretchFloatingButton(String ratio) {
-        if (getSavedKey().isEmpty() || isClientTampered()) return "NEED_AUTH";
+        if (getSavedKey().isEmpty()) return "NEED_AUTH";
         if (ratio != null && !ratio.trim().isEmpty()) this.selectedStretchRatio = ratio.trim().toUpperCase(Locale.US);
         prefs.edit().putString("saved_stretch_ratio", this.selectedStretchRatio).apply();
         legacyPrefs.edit().putString("stretch_ratio", this.selectedStretchRatio).putBoolean("float_btn_enabled", true).apply();
@@ -781,7 +761,7 @@ public class AndroidBridge {
 
     @JavascriptInterface
     public void applyDirectStretchRatio(String ratio) {
-        if (getSavedKey().isEmpty() || isClientTampered()) return;
+        if (getSavedKey().isEmpty()) return;
         TeleportEngine.applyAspectRatioStretch(ratio);
     }
 
@@ -811,7 +791,7 @@ public class AndroidBridge {
 
     @JavascriptInterface
     public String setWideHitboxMode(boolean enabled, String ratio) {
-        if (getSavedKey().isEmpty() || isClientTampered()) return "NEED_AUTH";
+        if (getSavedKey().isEmpty()) return "NEED_AUTH";
         String targetRatio = (ratio != null && !ratio.isEmpty()) ? ratio : "4:3";
         prefs.edit().putBoolean("wide_hitbox_mode", enabled).apply();
         if (enabled) {
@@ -844,7 +824,7 @@ public class AndroidBridge {
 
     @JavascriptInterface
     public void startTeleport(String presetId) {
-        if (getSavedKey().isEmpty() || isClientTampered()) return;
+        if (getSavedKey().isEmpty()) return;
         TeleportEngine.startTeleport(presetId);
     }
 
@@ -853,31 +833,31 @@ public class AndroidBridge {
 
     @JavascriptInterface
     public void updateParameters(double sharp, double sx, double sy, int chunks, int chunkFast, double straight, int stick, int grid, int pause, double accel) {
-        if (getSavedKey().isEmpty() || isClientTampered()) return;
+        if (getSavedKey().isEmpty()) return;
         TeleportEngine.updateParameters(sharp, sx, sy, chunks, chunkFast, straight, stick, grid, pause, accel);
     }
 
     @JavascriptInterface
     public void setRawInputNoSmoothing(boolean enabled) {
-        if (getSavedKey().isEmpty() || isClientTampered()) return;
+        if (getSavedKey().isEmpty()) return;
         TeleportEngine.setRawInputNoSmoothing(enabled);
     }
 
     @JavascriptInterface
     public void setVulkanGpuTurbo(boolean enabled) {
-        if (getSavedKey().isEmpty() || isClientTampered()) return;
+        if (getSavedKey().isEmpty()) return;
         TeleportEngine.setVulkanGpuTurbo(enabled);
     }
 
     @JavascriptInterface
     public void setNetPingStabilizer(boolean enabled) {
-        if (getSavedKey().isEmpty() || isClientTampered()) return;
+        if (getSavedKey().isEmpty()) return;
         TeleportEngine.setNetPingStabilizer(enabled);
     }
 
     @JavascriptInterface
     public void setTouchSamplingBoost(boolean enabled, int hz) {
-        if (getSavedKey().isEmpty() || isClientTampered()) return;
+        if (getSavedKey().isEmpty()) return;
         TeleportEngine.setTouchSamplingBoost(enabled, hz);
     }
 
@@ -889,13 +869,13 @@ public class AndroidBridge {
 
     @JavascriptInterface
     public void applyShooterOptimizer(int fpsLock, int gpuBoost, int frameTime, int edgeSens, int multiTouch, int netBuffer, int thermalLim) {
-        if (getSavedKey().isEmpty() || isClientTampered()) return;
+        if (getSavedKey().isEmpty()) return;
         TeleportEngine.applyShooterOptimizer(fpsLock, gpuBoost, frameTime, edgeSens, multiTouch, netBuffer, thermalLim);
     }
 
     @JavascriptInterface
     public void setEnhancedRecoilFix(boolean enabled, int power) {
-        if (getSavedKey().isEmpty() || isClientTampered()) return;
+        if (getSavedKey().isEmpty()) return;
         TeleportEngine.setEnhancedRecoilFix(enabled, power);
     }
 
@@ -904,7 +884,7 @@ public class AndroidBridge {
 
     @JavascriptInterface
     public void setPixelDownscaleFactor(int pct) {
-        if (getSavedKey().isEmpty() || isClientTampered()) return;
+        if (getSavedKey().isEmpty()) return;
         TeleportEngine.setPixelDownscaleFactor(pct);
     }
 
@@ -913,15 +893,15 @@ public class AndroidBridge {
 
     @JavascriptInterface
     public void applyUltraProTouchMatrix(int modeLevel) {
-        if (getSavedKey().isEmpty() || isClientTampered()) return;
-        ProfileManager.addTeleportCountToTotal(context, 1);
+        if (getSavedKey().isEmpty()) return;
+        try { ProfileManager.addTeleportCountToTotal(context, 1); } catch (Throwable t) {}
         TeleportEngine.startTeleport("extreme");
     }
 
     @JavascriptInterface
     public String uploadCloudConfig(String title, String presetJson) {
         String key = getSavedKey();
-        if (key.isEmpty() || isClientTampered()) return "{\"status\":\"error\",\"ok\":false,\"message\":\"Сначала активируйте ключ\"}";
+        if (key.isEmpty()) return "{\"status\":\"error\",\"ok\":false,\"message\":\"Сначала активируйте ключ\"}";
         try {
             Callable<String> task = () -> ApiManager.uploadCloudPreset(key, getAllHwidCandidatesCsv(key), title, presetJson);
             Future<String> future = networkExecutor.submit(task);
@@ -932,7 +912,7 @@ public class AndroidBridge {
     @JavascriptInterface
     public String downloadCloudConfig(String shareCode) {
         String key = getSavedKey();
-        if (key.isEmpty() || isClientTampered()) return "{\"status\":\"error\",\"ok\":false,\"message\":\"Сначала активируйте ключ\"}";
+        if (key.isEmpty()) return "{\"status\":\"error\",\"ok\":false,\"message\":\"Сначала активируйте ключ\"}";
         try {
             Callable<String> task = () -> ApiManager.downloadCloudPresetByCode(key, getAllHwidCandidatesCsv(key), shareCode);
             Future<String> future = networkExecutor.submit(task);
@@ -1062,16 +1042,11 @@ public class AndroidBridge {
         getOrInitKeyDeadlineMs(cleanKey, serverRes);
         prefs.edit().remove("saved_license_key").putString("owned_token_" + cleanKey, "OWNED_" + cleanKey).putBoolean(PREF_FIRST_LOGIN_DONE, true).putLong("last_server_ok_ts", System.currentTimeMillis()).apply();
         legacyPrefs.edit().putString("license_key", cleanKey).apply();
-        ProfileManager.saveActivatedProfile(context, nick, cleanKey);
+        try { ProfileManager.saveActivatedProfile(context, nick, cleanKey); } catch(Throwable t){}
     }
 
     @JavascriptInterface
     public String activateLicenseKey(String key) {
-        if (isClientTampered()) {
-            forceKickExpiredUser("Обнаружена модификация файлов приложения!");
-            executeNativeKillOnTamper();
-            return "ERROR|Обнаружена модификация файлов приложения!";
-        }
         final String cleanKey = ApiManager.normalizeKeyInput(key);
         if (cleanKey.length() < 5 || isBlacklistedArtifact(cleanKey)) return "ERROR|Введите лицензионный ключ из Telegram-бота";
         final String hwidCsv = getAllHwidCandidatesCsv(cleanKey);
@@ -1087,7 +1062,7 @@ public class AndroidBridge {
             if ("offline".equalsIgnoreCase(status)) {
                 if (cleanKey.equalsIgnoreCase(getSavedKey()) || isValidOfficialBotKeyFormat(cleanKey)) {
                     markKeyActivated(nick, cleanKey, null);
-                    SecurityShield.issueVerifiedSessionToken(context, cleanKey);
+                    try { SecurityShield.issueVerifiedSessionToken(context, cleanKey); } catch(Throwable t){}
                     String lbl = buildLiveSubscriptionLabel(null, cleanKey);
                     return "OK|" + ("EXPIRED".equals(lbl) ? "АКТИВНА" : lbl);
                 }
@@ -1099,7 +1074,7 @@ public class AndroidBridge {
 
             if (ok) {
                 markKeyActivated(nick, cleanKey, res);
-                SecurityShield.issueVerifiedSessionToken(context, cleanKey);
+                try { SecurityShield.issueVerifiedSessionToken(context, cleanKey); } catch(Throwable t){}
                 String liveLabel = buildLiveSubscriptionLabel(res, cleanKey);
                 if ("EXPIRED".equals(liveLabel)) liveLabel = "АКТИВНА";
                 return "OK|" + liveLabel;
@@ -1112,12 +1087,6 @@ public class AndroidBridge {
 
     @JavascriptInterface
     public String verifyLicenseKey(String key) {
-        if (isClientTampered()) {
-            forceKickExpiredUser("Обнаружена модификация приложения!");
-            executeNativeKillOnTamper();
-            return "BANNED|Модификация файлов приложения";
-        }
-
         final String cleanKey = (key != null && !key.trim().isEmpty()) ? ApiManager.normalizeKeyInput(key) : getSavedKey();
         if (cleanKey.length() < 5 || isBlacklistedArtifact(cleanKey)) return "EXPIRED|Введите ключ";
 
@@ -1150,7 +1119,7 @@ public class AndroidBridge {
             if (ok) {
                 String nick = getSavedNickname().isEmpty() ? "dare" : getSavedNickname();
                 markKeyActivated(nick, cleanKey, res);
-                SecurityShield.issueVerifiedSessionToken(context, cleanKey);
+                try { SecurityShield.issueVerifiedSessionToken(context, cleanKey); } catch(Throwable t){}
                 String label = buildLiveSubscriptionLabel(res, cleanKey);
                 if ("EXPIRED".equals(label)) label = "АКТИВНА";
                 return "OK|" + label;
@@ -1191,7 +1160,7 @@ public class AndroidBridge {
 
     @JavascriptInterface
     public String requestFriendsHub(String jsonPayload) {
-        if (getSavedKey().isEmpty() || !safeNativeIsSessionOk() || isClientTampered()) return "{\"status\":\"error\",\"ok\":false,\"message\":\"Сначала активируйте ключ\"}";
+        if (getSavedKey().isEmpty() || !safeNativeIsSessionOk()) return "{\"status\":\"error\",\"ok\":false,\"message\":\"Сначала активируйте ключ\"}";
         try {
             Callable<String> task = () -> ApiManager.callFriendsApi(jsonPayload);
             Future<String> future = networkExecutor.submit(task);
