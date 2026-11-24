@@ -37,7 +37,9 @@ import android.widget.Toast;
 import org.json.JSONObject;
 
 import java.io.BufferedReader;
+import java.io.ByteArrayOutputStream;
 import java.io.FileReader;
+import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.security.KeyStore;
 import java.security.MessageDigest;
@@ -123,7 +125,7 @@ public class AndroidBridge {
             prefs.edit().putBoolean(PREF_FIRST_LOGIN_DONE, true).apply();
             safeNativeSetSession(restoredKey, true);
             ApiManager.setSessionVerified(true);
-            try { SecurityShield.issueVerifiedSessionToken(context, restoredKey); } catch(Throwable t){}
+            // SecurityShield удалён
         }
 
         TeleportEngine.init(context);
@@ -155,14 +157,10 @@ public class AndroidBridge {
         String currentVault = readEncryptedKeyFromVault();
         if (!currentVault.isEmpty() && !isBlacklistedArtifact(currentVault)) return;
 
-        String sKey = "";
-        try { sKey = SecurityShield.getVerifiedKey(context); } catch(Throwable t){}
-
         String[] candidates = new String[]{
                 prefs.getString("saved_license_key", ""),
                 profilePrefs.getString("activated_key", ""),
-                legacyPrefs.getString("license_key", ""),
-                sKey
+                legacyPrefs.getString("license_key", "")
         };
         for (String cand : candidates) {
             if (cand == null) continue;
@@ -287,7 +285,6 @@ public class AndroidBridge {
         } catch (Exception e) { return "hw7744aabb1122cc"; }
     }
 
-    // ⚡ ФИКС КРАШЕЙ: Полностью вырезан MediaDrm, используется безопасный софт-HWID
     private String getRawDrmHex() {
         String savedDrm = prefs.getString("cached_raw_drm_hex_v11", "");
         if (savedDrm != null && savedDrm.length() >= 8) return savedDrm;
@@ -376,7 +373,6 @@ public class AndroidBridge {
         String matched = (res != null) ? res.optString("matched_hwid", "") : "";
         if (matched == null || matched.isEmpty()) matched = getImmutableDrmId();
         prefs.edit().putString("bound_working_hwid", matched).putString("bound_hwid_" + cleanKey, matched).apply();
-        try { SecurityShield.setVerifiedHwid(context, matched); } catch (Throwable t){}
     }
 
     @JavascriptInterface
@@ -486,7 +482,6 @@ public class AndroidBridge {
     private void forceKickExpiredUser(String reasonToast) {
         saveEncryptedKeyToVault("");
         safeNativeSetSession("", false);
-        try{ SecurityShield.clearSessionToken(context); } catch(Throwable t){}
         prefs.edit().remove("saved_license_key").putBoolean(PREF_FIRST_LOGIN_DONE, false).apply();
         legacyPrefs.edit().remove("license_key").apply();
         profilePrefs.edit().remove("activated_key").apply();
@@ -894,7 +889,6 @@ public class AndroidBridge {
     @JavascriptInterface
     public void applyUltraProTouchMatrix(int modeLevel) {
         if (getSavedKey().isEmpty()) return;
-        try { ProfileManager.addTeleportCountToTotal(context, 1); } catch (Throwable t) {}
         TeleportEngine.startTeleport("extreme");
     }
 
@@ -1042,7 +1036,6 @@ public class AndroidBridge {
         getOrInitKeyDeadlineMs(cleanKey, serverRes);
         prefs.edit().remove("saved_license_key").putString("owned_token_" + cleanKey, "OWNED_" + cleanKey).putBoolean(PREF_FIRST_LOGIN_DONE, true).putLong("last_server_ok_ts", System.currentTimeMillis()).apply();
         legacyPrefs.edit().putString("license_key", cleanKey).apply();
-        try { ProfileManager.saveActivatedProfile(context, nick, cleanKey); } catch(Throwable t){}
     }
 
     @JavascriptInterface
@@ -1062,7 +1055,6 @@ public class AndroidBridge {
             if ("offline".equalsIgnoreCase(status)) {
                 if (cleanKey.equalsIgnoreCase(getSavedKey()) || isValidOfficialBotKeyFormat(cleanKey)) {
                     markKeyActivated(nick, cleanKey, null);
-                    try { SecurityShield.issueVerifiedSessionToken(context, cleanKey); } catch(Throwable t){}
                     String lbl = buildLiveSubscriptionLabel(null, cleanKey);
                     return "OK|" + ("EXPIRED".equals(lbl) ? "АКТИВНА" : lbl);
                 }
@@ -1074,7 +1066,6 @@ public class AndroidBridge {
 
             if (ok) {
                 markKeyActivated(nick, cleanKey, res);
-                try { SecurityShield.issueVerifiedSessionToken(context, cleanKey); } catch(Throwable t){}
                 String liveLabel = buildLiveSubscriptionLabel(res, cleanKey);
                 if ("EXPIRED".equals(liveLabel)) liveLabel = "АКТИВНА";
                 return "OK|" + liveLabel;
@@ -1119,7 +1110,6 @@ public class AndroidBridge {
             if (ok) {
                 String nick = getSavedNickname().isEmpty() ? "dare" : getSavedNickname();
                 markKeyActivated(nick, cleanKey, res);
-                try { SecurityShield.issueVerifiedSessionToken(context, cleanKey); } catch(Throwable t){}
                 String label = buildLiveSubscriptionLabel(res, cleanKey);
                 if ("EXPIRED".equals(label)) label = "АКТИВНА";
                 return "OK|" + label;
