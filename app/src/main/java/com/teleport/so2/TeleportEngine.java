@@ -39,7 +39,6 @@ public class TeleportEngine {
     
     private static volatile String currentActivePreset = "extreme";
 
-    // Изначально заряжаем космические значения для старта
     private static double currentSharp = 5000.0;
     private static double currentSx = 5000.0;
     private static double currentSy = 5000.0;
@@ -53,36 +52,44 @@ public class TeleportEngine {
 
     public static void init(Context context) {
         appContext = context.getApplicationContext();
-        SecurityShield.startBackgroundGuard(appContext);
+        
+        // ФИКС КРАШЕЙ ПРИ СТАРТЕ: Игнорируем падения внутри SecurityShield
+        try {
+            SecurityShield.startBackgroundGuard(appContext);
+        } catch (Throwable ignored) {}
         
         SharedPreferences prefs = appContext.getSharedPreferences("so2_tp_cfg_v10", Context.MODE_PRIVATE);
         lastSelectedRatio = prefs.getString("stretch_ratio_val", "4:3");
 
         DisplayMetrics dm = new DisplayMetrics();
-        WindowManager wm = (WindowManager) appContext.getSystemService(Context.WINDOW_SERVICE);
-        int modeShort = 0;
-        int modeLong = 0;
+        try {
+            WindowManager wm = (WindowManager) appContext.getSystemService(Context.WINDOW_SERVICE);
+            int modeShort = 0;
+            int modeLong = 0;
 
-        if (wm != null && wm.getDefaultDisplay() != null) {
-            Display d = wm.getDefaultDisplay();
-            d.getRealMetrics(dm);
-            int rot = d.getRotation();
+            if (wm != null && wm.getDefaultDisplay() != null) {
+                Display d = wm.getDefaultDisplay();
+                d.getRealMetrics(dm);
+                int rot = d.getRotation();
 
-            float maxHz = d.getRefreshRate();
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                for (Display.Mode m : d.getSupportedModes()) {
-                    if (m.getRefreshRate() > maxHz) maxHz = m.getRefreshRate();
-                    int sSide = Math.min(m.getPhysicalWidth(), m.getPhysicalHeight());
-                    int lSide = Math.max(m.getPhysicalWidth(), m.getPhysicalHeight());
-                    if (sSide >= 720 && lSide >= 1600 && (sSide <= 1440)) {
-                        modeShort = sSide;
-                        modeLong = lSide;
+                float maxHz = d.getRefreshRate();
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                    for (Display.Mode m : d.getSupportedModes()) {
+                        if (m.getRefreshRate() > maxHz) maxHz = m.getRefreshRate();
+                        int sSide = Math.min(m.getPhysicalWidth(), m.getPhysicalHeight());
+                        int lSide = Math.max(m.getPhysicalWidth(), m.getPhysicalHeight());
+                        if (sSide >= 720 && lSide >= 1600 && (sSide <= 1440)) {
+                            modeShort = sSide;
+                            modeLong = lSide;
+                        }
                     }
                 }
+                deviceMaxRefreshRate = Math.max(60, Math.round(maxHz));
+                isNaturalLandscapeDevice = (rot == Surface.ROTATION_0 || rot == Surface.ROTATION_180) ? (dm.widthPixels > dm.heightPixels) : (dm.widthPixels < dm.heightPixels);
+            } else {
+                dm = appContext.getResources().getDisplayMetrics();
             }
-            deviceMaxRefreshRate = Math.max(60, Math.round(maxHz));
-            isNaturalLandscapeDevice = (rot == Surface.ROTATION_0 || rot == Surface.ROTATION_180) ? (dm.widthPixels > dm.heightPixels) : (dm.widthPixels < dm.heightPixels);
-        } else {
+        } catch (Throwable t) {
             dm = appContext.getResources().getDisplayMetrics();
         }
 
@@ -96,8 +103,6 @@ public class TeleportEngine {
             prefs.edit().putInt("orig_native_short", curShort).putInt("orig_native_long", curLong).apply();
         } else if (savedShort >= 720 && savedLong >= 1600) {
             nativeShortSide = savedShort; nativeLongSide = savedLong;
-        } else if (modeShort >= 720 && modeLong >= 1600) {
-            nativeShortSide = modeShort; nativeLongSide = modeLong;
         } else {
             nativeShortSide = curShort >= 720 ? curShort : 1080;
             nativeLongSide = curLong >= 1800 ? curLong : 2400;
@@ -233,7 +238,6 @@ public class TeleportEngine {
     }
 
     public static void stopTeleport() {
-        // Безопасное отключение
         execShizukuCommand(
             "settings put system pointer_speed 7; " +
             "settings delete secure touch_blocking_period; " +
@@ -269,27 +273,21 @@ public class TeleportEngine {
     private static void commitParametersToNative() {
         StringBuilder cmd = new StringBuilder();
 
-        // Android speed
         cmd.append("settings put system pointer_speed ").append(Math.min(14, currentChunks)).append("; ");
         
-        // ПЕРЕДАЕМ АДСКУЮ РЕЗКОСТЬ ДЛЯ so2_native.cpp 
         cmd.append("settings put system teleport_sharpness ").append(String.format(Locale.US, "%.1f", currentSharp)).append("; ");
         cmd.append("settings put system teleport_sx ").append(String.format(Locale.US, "%.1f", currentSx)).append("; ");
         cmd.append("settings put system teleport_sy ").append(String.format(Locale.US, "%.1f", currentSy)).append("; ");
         cmd.append("settings put system teleport_accel ").append(String.format(Locale.US, "%.1f", currentAccel)).append("; ");
 
-        // Адаптивные команды в зависимости от профиля
         if ("extreme".equals(currentActivePreset)) {
-            // ТЕЛЕПОРТ УЛЬТРА: Эффект кусков через touch_slop + отключение анимаций
-            cmd.append("settings put system touch_slop 0; "); // Мгновенный отклик
+            cmd.append("settings put system touch_slop 0; "); 
             cmd.append("settings put secure touch_blocking_period 0.0; ");
             cmd.append("settings put secure tap_duration_threshold 0.0; ");
             
-            // БЕЗОПАСНЫЕ ТАЙМИНГИ (Телефон 100% не заглючит)
             cmd.append("settings put secure long_press_timeout 250; "); 
             cmd.append("settings put secure multi_press_timeout 150; "); 
             
-            // УБИРАЕМ СГЛАЖИВАНИЕ И АНИМАЦИИ
             cmd.append("settings put system motion_engine_enabled 0; ");
             cmd.append("settings put global windows_animation_scale 0.0; ");
             cmd.append("settings put global transition_animation_scale 0.0; ");
