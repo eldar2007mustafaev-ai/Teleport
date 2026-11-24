@@ -233,15 +233,18 @@ public class TeleportEngine {
     }
 
     public static void stopTeleport() {
-        // Безопасное выключение без блокировки сенсора!
+        // Безопасное выключение
         execShizukuCommand(
             "settings put system pointer_speed 7; " +
             "settings delete secure touch_blocking_period; " +
             "settings delete secure tap_duration_threshold; " +
+            "settings delete secure long_press_timeout; " + 
             "settings delete system motion_engine_enabled; " +
+            "settings delete system touch_slop; " +
             "settings put global windows_animation_scale 1.0; " +
             "settings put global transition_animation_scale 1.0; " +
             "settings put global animator_duration_scale 1.0; " +
+            "settings put system pointer_location 0; " +
             "settings put system block_untrusted_touches 0;"
         );
     }
@@ -261,38 +264,47 @@ public class TeleportEngine {
     private static void commitParametersToNative() {
         StringBuilder cmd = new StringBuilder();
 
-        // 1. Прямой проброс кусков. Лимит 14 обходим через множители в скрипте.
-        int finalSpeed = Math.min(14, currentChunks);
-        cmd.append("settings put system pointer_speed ").append(finalSpeed).append("; ");
+        // Отправляем значение кусков НАПРЯМУЮ, без обрезания и без левых множителей
+        cmd.append("settings put system pointer_speed ").append(currentChunks).append("; ");
 
-        // 2. Адаптивные команды в зависимости от профиля
+        // Адаптивные команды в зависимости от профиля
         if ("extreme".equals(currentActivePreset)) {
-            // ТЕЛЕПОРТ УЛЬТРА: Жесткий бафф
-            // Здесь НЕТ команды long_press_timeout, поэтому телефон больше не заглючит!
+            // ТЕЛЕПОРТ УЛЬТРА: Правильная реализация кусков
             cmd.append("settings put secure touch_blocking_period 0.0; ");
             cmd.append("settings put secure tap_duration_threshold 0.0; ");
+            
+            // Безопасные тайминги, чтобы не убить тач
+            cmd.append("settings put secure long_press_timeout 300; "); 
+            cmd.append("settings put secure multi_press_timeout 200; "); 
+            
+            // УБИРАЕМ СГЛАЖИВАНИЕ И АНИМАЦИИ
             cmd.append("settings put system motion_engine_enabled 0; ");
-            // Отключаем системные анимации для мгновенного отклика
             cmd.append("settings put global windows_animation_scale 0.0; ");
             cmd.append("settings put global transition_animation_scale 0.0; ");
             cmd.append("settings put global animator_duration_scale 0.0; ");
+            
+            // ГЛАВНОЕ: Убираем "мертвую зону" тачскрина для мгновенного отклика (создает "куски")
+            cmd.append("settings put system touch_slop 0; ");
+            
+            // Отключаем системную отрисовку касаний для снижения инпут лага
+            cmd.append("settings put system pointer_location 0; ");
             
             if (Build.MANUFACTURER.toLowerCase(Locale.US).contains("xiaomi")) {
                 cmd.append("killall -9 com.xiaomi.joyose 2>/dev/null; ");
             }
 
         } else if ("ios_pro".equals(currentActivePreset)) {
-            // iOS КОНФИГ: Линейная траектория
             cmd.append("settings put secure touch_blocking_period 1.5; "); 
             cmd.append("settings put secure tap_duration_threshold 0.0; ");
             cmd.append("settings put system motion_engine_enabled 1; "); 
+            cmd.append("settings put system touch_slop 8; "); 
             
         } else if ("rog_pro".equals(currentActivePreset)) {
-            // ROG PHONE: Максимальная агрессия
             cmd.append("settings put secure touch_blocking_period 0.0; ");
             cmd.append("settings put secure tap_duration_threshold 0.0; ");
             cmd.append("settings put system multi_press_timeout 150; ");
             cmd.append("settings put system motion_engine_enabled 0; ");
+            cmd.append("settings put system touch_slop 2; "); 
             
         } else {
             // Обычные профили
