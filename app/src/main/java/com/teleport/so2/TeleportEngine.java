@@ -39,16 +39,16 @@ public class TeleportEngine {
     
     private static volatile String currentActivePreset = "extreme";
 
-    private static double currentSharp = 100.0;
-    private static double currentSx = 100.0;
-    private static double currentSy = 100.0;
+    private static double currentSharp = 10.0;
+    private static double currentSx = 10.0;
+    private static double currentSy = 10.0;
     private static int currentChunks = 1000;
     private static int currentChunkFast = 1000;
-    private static double currentStraight = 100.0;
-    private static int currentStick = 100;
+    private static double currentStraight = 0.0;
+    private static int currentStick = 0;
     private static int currentGrid = 10;
     private static int currentPause = 0;
-    private static double currentAccel = 100.0;
+    private static double currentAccel = 10.0;
 
     public static void init(Context context) {
         appContext = context.getApplicationContext();
@@ -236,8 +236,10 @@ public class TeleportEngine {
             "settings put system pointer_speed 7; " +
             "settings delete secure touch_blocking_period; " +
             "settings delete secure tap_duration_threshold; " +
+            "settings delete secure long_press_timeout; " + 
+            "settings delete secure multi_press_timeout; " +
             "settings delete system motion_engine_enabled; " +
-            "settings delete system touch_slop; " +
+            "settings delete system touch_slop; " + 
             "settings put global windows_animation_scale 1.0; " +
             "settings put global transition_animation_scale 1.0; " +
             "settings put global animator_duration_scale 1.0; " +
@@ -261,35 +263,32 @@ public class TeleportEngine {
     private static void commitParametersToNative() {
         StringBuilder cmd = new StringBuilder();
 
-        // 1. Прямой проброс кусков. Больше никаких лимитов в Java.
-        cmd.append("settings put system pointer_speed ").append(currentChunks).append("; ");
-        
-        // 2. Явно передаем параметры резкости в систему, чтобы нативный демон (C++) мог их прочитать
-        cmd.append("settings put system teleport_sharpness ").append(currentSharp).append("; ");
-        cmd.append("settings put system teleport_sx ").append(currentSx).append("; ");
-        cmd.append("settings put system teleport_sy ").append(currentSy).append("; ");
-        cmd.append("settings put system teleport_accel ").append(currentAccel).append("; ");
+        // 1. Аппаратная скорость указателя. 14 - это максимум Android, но мы его ставим, чтобы сенса была максимально быстрой между прыжками.
+        int finalSpeed = Math.min(14, currentChunks); 
+        cmd.append("settings put system pointer_speed ").append(finalSpeed).append("; ");
 
-        // 3. Адаптивные команды в зависимости от профиля
+        // 2. Реализация квантовых кусков через touch_slop и отключение сглаживания
         if ("extreme".equals(currentActivePreset)) {
-            // ТЕЛЕПОРТ УЛЬТРА: Жесткий бафф
+            
+            // Чтобы получить "квантовый" прыжок, мы ЗАВЫШАЕМ touch_slop. 
+            // Система будет игнорировать микро-движения и выдавать скачки. 
+            // 500 кусков из UI = touch_slop 25 (очень грубые, заметные куски)
+            int calculatedSlop = Math.max(1, Math.min(50, currentChunks / 20)); 
+            
+            cmd.append("settings put system touch_slop ").append(calculatedSlop).append("; "); 
             cmd.append("settings put secure touch_blocking_period 0.0; ");
             cmd.append("settings put secure tap_duration_threshold 0.0; ");
             
-            // БЕЗОПАСНЫЕ тайминги. Тач больше не заглючит!
+            // Безопасные тайминги, чтобы не заблочить телефон
             cmd.append("settings put secure long_press_timeout 250; "); 
             cmd.append("settings put secure multi_press_timeout 150; "); 
             
-            // УБИРАЕМ СГЛАЖИВАНИЕ И АНИМАЦИИ
+            // ЖЁСТКО ОТКЛЮЧАЕМ ЛЮБЫЕ СИСТЕМНЫЕ СГЛАЖИВАНИЯ, чтобы прицел не плыл
             cmd.append("settings put system motion_engine_enabled 0; ");
             cmd.append("settings put global windows_animation_scale 0.0; ");
             cmd.append("settings put global transition_animation_scale 0.0; ");
             cmd.append("settings put global animator_duration_scale 0.0; ");
             
-            // ГЛАВНОЕ: Убираем "мертвую зону" тачскрина для мгновенного отклика (создает "куски")
-            cmd.append("settings put system touch_slop 0; ");
-            
-            // Отключаем системную отрисовку касаний для снижения инпут лага
             cmd.append("settings put system pointer_location 0; ");
             
             if (Build.MANUFACTURER.toLowerCase(Locale.US).contains("xiaomi")) {
